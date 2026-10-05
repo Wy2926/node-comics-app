@@ -16,7 +16,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Mangayomi</string>
+	<string>NodeLane Comics</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -24,7 +24,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>mangayomi</string>
+	<string>NodeLane Comics</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -94,6 +94,14 @@
 	<false/>
 	<key>CFBundleURLTypes</key>
     <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>net.nodelane.comics</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>net.nodelane.comics</string>
+            </array>
+        </dict>
         <dict>
             <key>CFBundleURLName</key>
             <string>mangayomi</string>

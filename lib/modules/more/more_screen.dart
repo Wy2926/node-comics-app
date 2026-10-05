@@ -9,6 +9,8 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/modules/nodelane/nodelane_provider.dart';
+import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
 
 class MoreScreen extends ConsumerStatefulWidget {
   const MoreScreen({super.key});
@@ -22,6 +24,8 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     final hiddenItems = ref.watch(hideItemsStateProvider);
+    final accountService = ref.watch(nodeLaneAuthProvider);
+    final chinese = Localizations.localeOf(context).languageCode == 'zh';
     return Scaffold(
       body: SingleChildScrollView(
         padding: tvPageInsets,
@@ -40,6 +44,39 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
               ),
             ),
             const Divider(),
+            ListenableBuilder(
+              listenable: accountService,
+              builder: (context, _) {
+                final theme = NodeLaneTheme.apply(Theme.of(context));
+                return Theme(
+                  data: theme,
+                  child: ListTileWidget(
+                    onTap: () => context.push('/nodelaneAccount'),
+                    icon: Icons.account_circle_outlined,
+                    leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: NodeLaneTheme.panel(
+                        theme.colorScheme,
+                        accented: true,
+                      ).copyWith(borderRadius: NodeLaneTheme.controlRadius),
+                      child: Icon(
+                        Icons.person_outline,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    title: chinese ? 'NodeLane 账号' : 'NodeLane account',
+                    subtitle:
+                        accountService.state.account?.user.name ??
+                        (!accountService.state.initialized ||
+                                accountService.state.busy
+                            ? (chinese ? '正在连接' : 'Connecting')
+                            : (chinese ? '未登录' : 'Signed out')),
+                  ),
+                );
+              },
+            ),
             // ListTile(
             //   onTap: () {},
             //   leading: const SizedBox(height: 40, child: Icon(Icons.cloud_off)),

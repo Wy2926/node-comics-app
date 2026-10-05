@@ -1,6 +1,7 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
 
 /// Pure black dark mode used to paint only the scaffold black by hand, leaving
 /// `blendLevel` to go on tinting every other surface. The slider that sets the
@@ -22,6 +23,16 @@ ThemeData darkTheme({required bool pureBlack, required int blendLevel}) =>
     );
 
 void main() {
+  test('NodeLane styling preserves pure black in nested account themes', () {
+    final pure = darkTheme(pureBlack: true, blendLevel: 40);
+    final branded = NodeLaneTheme.apply(
+      NodeLaneTheme.apply(pure, pureBlack: true),
+    );
+    expect(branded.scaffoldBackgroundColor, Colors.black);
+    expect(branded.colorScheme.surface, Colors.black);
+    expect(branded.navigationBarTheme.backgroundColor, Colors.black);
+  });
+
   test('pure black makes the page actually black', () {
     final theme = darkTheme(pureBlack: true, blendLevel: 0);
     expect(theme.scaffoldBackgroundColor, const Color(0xFF000000));

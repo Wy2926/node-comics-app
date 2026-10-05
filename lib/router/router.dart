@@ -63,6 +63,7 @@ import 'package:mangayomi/modules/more/settings/reader/novel_reader_screen.dart'
 import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
 import 'package:mangayomi/modules/more/settings/settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/security/security_screen.dart';
+import 'package:mangayomi/modules/nodelane/account_screen.dart';
 import 'package:mangayomi/services/crash_route_observer.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
@@ -209,6 +210,10 @@ class RouterNotifier extends ChangeNotifier {
       builder: (itemType) => ExtensionsLang(itemType: itemType),
     ),
     _genericRoute(name: "settings", child: const SettingsScreen()),
+    _genericRoute(
+      name: "nodelaneAccount",
+      child: const NodeLaneAccountScreen(),
+    ),
     _genericRoute(name: "appearance", child: const AppearanceScreen()),
     _genericRoute<Source>(
       name: "extension_detail",

@@ -1,6 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 
+import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
@@ -347,7 +349,11 @@ class StorageProvider {
         // TV defaults to dark on first run (a fresh library). Only the
         // initial Settings row is seeded, so switching to light later sticks.
         await isar.writeTxn(
-          () async => isar.settings.put(Settings()..themeIsDark = isTv),
+          () async => isar.settings.put(
+            Settings()
+              ..themeIsDark = isTv
+              ..flexSchemeColorIndex = NodeLaneTheme.schemeIndex,
+          ),
         );
       }
     } catch (_) {
@@ -358,7 +364,11 @@ class StorageProvider {
             // TV defaults to dark on first run (a fresh library). Only the
             // initial Settings row is seeded, so switching to light later sticks.
             await isar.writeTxn(
-              () async => isar.settings.put(Settings()..themeIsDark = isTv),
+              () async => isar.settings.put(
+                Settings()
+                  ..themeIsDark = isTv
+                  ..flexSchemeColorIndex = NodeLaneTheme.schemeIndex,
+              ),
             );
           }
         } catch (e) {

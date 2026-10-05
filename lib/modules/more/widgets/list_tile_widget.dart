@@ -9,6 +9,7 @@ class ListTileWidget extends StatelessWidget {
   final IconData icon;
   final String? subtitle;
   final Widget? trailing;
+  final Widget? leading;
 
   /// Claim focus on first build. Set on the first row of a pushed menu (the
   /// settings hub, etc.) so the remote has a starting point instead of being
@@ -21,6 +22,7 @@ class ListTileWidget extends StatelessWidget {
     required this.icon,
     this.subtitle,
     this.trailing,
+    this.leading,
     this.autofocus = false,
   });
 
@@ -38,10 +40,12 @@ class ListTileWidget extends StatelessWidget {
               autofocus: autofocus,
               onTap: onTap,
               child: ListTile(
-                leading: SizedBox(
-                  height: 40,
-                  child: Icon(icon, color: context.primaryColor),
-                ),
+                leading:
+                    leading ??
+                    SizedBox(
+                      height: 40,
+                      child: Icon(icon, color: context.primaryColor),
+                    ),
                 title: Text(title),
                 subtitle: subtitle != null
                     ? Text(
@@ -67,10 +71,9 @@ class ListTileWidget extends StatelessWidget {
       //         style: TextStyle(fontSize: 11, color: context.secondaryColor),
       //       )
       //     : null,
-      leading: SizedBox(
-        height: 40,
-        child: Icon(icon, color: context.primaryColor),
-      ),
+      leading:
+          leading ??
+          SizedBox(height: 40, child: Icon(icon, color: context.primaryColor)),
       title: Text(title),
       subtitle: subtitle != null
           ? Text(

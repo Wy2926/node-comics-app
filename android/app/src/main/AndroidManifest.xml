@@ -18,8 +18,11 @@
         android:required="false" />
 
    <application
-        android:label="Mangayomi"
+        android:label="NodeLane Comics"
         android:name="${applicationName}"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/launcher_icon"
         android:banner="@drawable/tv_banner"
         android:usesCleartextTraffic="true">
@@ -71,11 +74,17 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="mangayomi" />
             </intent-filter>
+            <intent-filter android:label="NodeLane account">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="net.nodelane.comics" android:host="oauth" android:path="/callback" />
+            </intent-filter>
         </activity>
         
         <provider
         android:name="androidx.core.content.FileProvider"
-        android:authorities="com.kodjodevf.mangayomi.fileprovider"
+        android:authorities="${applicationId}.fileprovider"
         android:exported="false"
         android:grantUriPermissions="true">
         <meta-data

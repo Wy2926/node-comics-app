@@ -8,6 +8,7 @@ import 'pure_black_dark_mode_state_provider.dart';
 import 'app_font_family.dart';
 
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
 
 /// Material draws a focused InkWell's highlight from the ambient
 /// [ThemeData.focusColor], and the default is nearly invisible on a TV
@@ -49,24 +50,28 @@ final lightThemeProvider = Provider<ThemeData>((ref) {
   final blendLevel = ref.watch(blendLevelStateProvider).toInt();
   final fontFamily = ref.watch(appFontFamilyProvider.select((t) => t.$2));
 
-  return _tvFocus(
-    FlexThemeData.light(
-      colors: colors,
-      surfaceMode: FlexSurfaceMode.highScaffoldLevelSurface,
-      blendLevel: blendLevel,
-      appBarOpacity: 0.00,
-      subThemesData: const FlexSubThemesData(
-        blendOnLevel: 10,
-        thinBorderWidth: 2.0,
-        unselectedToggleIsColored: true,
-        inputDecoratorRadius: 24.0,
-        chipRadius: 24.0,
-      ),
-      useMaterial3ErrorColors: true,
-      visualDensity: FlexColorScheme.comfortablePlatformDensity,
-      useMaterial3: true,
-      fontFamily: fontFamily,
+  final theme = FlexThemeData.light(
+    colors: colors,
+    surfaceMode: FlexSurfaceMode.highScaffoldLevelSurface,
+    blendLevel: blendLevel,
+    appBarOpacity: 0.00,
+    subThemesData: const FlexSubThemesData(
+      blendOnLevel: 10,
+      thinBorderWidth: 2.0,
+      unselectedToggleIsColored: true,
+      inputDecoratorRadius: 24.0,
+      chipRadius: 24.0,
     ),
+    useMaterial3ErrorColors: true,
+    visualDensity: FlexColorScheme.comfortablePlatformDensity,
+    useMaterial3: true,
+    fontFamily: fontFamily,
+  );
+  return _tvFocus(
+    ref.watch(flexSchemeColorStateProvider.select((t) => t.$2)) ==
+            ThemeAA.nodeLaneIndex
+        ? NodeLaneTheme.apply(theme)
+        : theme,
   );
 });
 
@@ -78,36 +83,40 @@ final darkThemeProvider = Provider<ThemeData>((ref) {
   final fontFamily = ref.watch(appFontFamilyProvider.select((t) => t.$2));
   final pureBlack = ref.watch(pureBlackDarkModeStateProvider);
 
-  return _tvFocus(
-    FlexThemeData.dark(
-      colors: colors,
-      surfaceMode: FlexSurfaceMode.level,
-      // Pure black means pure black. The slider that sets this is hidden while
-      // the toggle is on, but hiding a control does not stop it applying, so a
-      // blend chosen beforehand went on tinting every surface that is not the
-      // scaffold: cards, sheets, dialogs, the nav bar. The result was a black
-      // page with visibly grey-blue things floating on it, and no way to
-      // correct it without turning pure black back off.
-      //
-      // The stored level is left alone, so turning the toggle off restores
-      // whatever blend was chosen.
-      blendLevel: pureBlack ? 0 : blendLevel,
-      appBarOpacity: 0.00,
-      // The framework's own switch rather than painting the scaffold black by
-      // hand: it takes the surfaces down with it, which is the half that was
-      // missing.
-      darkIsTrueBlack: pureBlack,
-      subThemesData: const FlexSubThemesData(
-        blendOnLevel: 10,
-        thinBorderWidth: 2.0,
-        unselectedToggleIsColored: true,
-        inputDecoratorRadius: 24.0,
-        chipRadius: 24.0,
-      ),
-      useMaterial3ErrorColors: true,
-      visualDensity: FlexColorScheme.comfortablePlatformDensity,
-      useMaterial3: true,
-      fontFamily: fontFamily,
+  final theme = FlexThemeData.dark(
+    colors: colors,
+    surfaceMode: FlexSurfaceMode.level,
+    // Pure black means pure black. The slider that sets this is hidden while
+    // the toggle is on, but hiding a control does not stop it applying, so a
+    // blend chosen beforehand went on tinting every surface that is not the
+    // scaffold: cards, sheets, dialogs, the nav bar. The result was a black
+    // page with visibly grey-blue things floating on it, and no way to
+    // correct it without turning pure black back off.
+    //
+    // The stored level is left alone, so turning the toggle off restores
+    // whatever blend was chosen.
+    blendLevel: pureBlack ? 0 : blendLevel,
+    appBarOpacity: 0.00,
+    // The framework's own switch rather than painting the scaffold black by
+    // hand: it takes the surfaces down with it, which is the half that was
+    // missing.
+    darkIsTrueBlack: pureBlack,
+    subThemesData: const FlexSubThemesData(
+      blendOnLevel: 10,
+      thinBorderWidth: 2.0,
+      unselectedToggleIsColored: true,
+      inputDecoratorRadius: 24.0,
+      chipRadius: 24.0,
     ),
+    useMaterial3ErrorColors: true,
+    visualDensity: FlexColorScheme.comfortablePlatformDensity,
+    useMaterial3: true,
+    fontFamily: fontFamily,
+  );
+  return _tvFocus(
+    ref.watch(flexSchemeColorStateProvider.select((t) => t.$2)) ==
+            ThemeAA.nodeLaneIndex
+        ? NodeLaneTheme.apply(theme, pureBlack: pureBlack)
+        : theme,
   );
 });

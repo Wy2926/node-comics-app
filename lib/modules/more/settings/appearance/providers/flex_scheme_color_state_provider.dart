@@ -1,4 +1,6 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -28,7 +30,24 @@ class FlexSchemeColorState extends _$FlexSchemeColorState {
 }
 
 class ThemeAA {
-  static const List<FlexSchemeData> schemes = <FlexSchemeData>[
+  static final nodeLaneIndex = NodeLaneTheme.schemeIndex;
+  static final List<FlexSchemeData> schemes = <FlexSchemeData>[
     ...FlexColor.schemesList,
+    const FlexSchemeData(
+      name: 'NodeLane',
+      description: 'NodeLane Comics',
+      light: FlexSchemeColor(
+        primary: Color(0xff1769b3),
+        primaryContainer: Color(0xffeaf3ff),
+        secondary: Color(0xff1769b3),
+        secondaryContainer: Color(0xfff0f3f8),
+      ),
+      dark: FlexSchemeColor(
+        primary: Color(0xff8dc7ff),
+        primaryContainer: Color(0xff253e58),
+        secondary: Color(0xff8dc7ff),
+        secondaryContainer: Color(0xff263246),
+      ),
+    ),
   ];
 }
