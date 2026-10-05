@@ -7,6 +7,7 @@ pub mod aidoku_wasm;
 pub mod epub;
 pub mod rar;
 pub mod rhttp;
+pub mod translation_image;
 
 pub use epub::{EpubChapter, EpubNovel, EpubResource};
 pub use rar::{LocalRarArchive, LocalRarImage, LocalRarMetadata};

@@ -21,6 +21,20 @@ import UniformTypeIdentifiers
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
+    let privateStorage = FlutterMethodChannel(name: "net.nodelane.comics/private_storage", binaryMessenger: messenger)
+    privateStorage.setMethodCallHandler { call, result in
+      guard call.method == "excludeFromBackup",
+            let args = call.arguments as? [String: Any], let path = args["path"] as? String else {
+        result(FlutterMethodNotImplemented); return
+      }
+      do {
+        var url = URL(fileURLWithPath: path).standardizedFileURL
+        let root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).standardizedFileURL
+        guard url.path.hasPrefix(root.path + "/") else { throw CocoaError(.fileWriteNoPermission) }
+        var values = URLResourceValues(); values.isExcludedFromBackup = true
+        try url.setResourceValues(values); result(nil)
+      } catch { result(FlutterError(code: "STORAGE_FAILED", message: "Private storage unavailable", details: nil)) }
+    }
 
     let mChannel = FlutterMethodChannel(
       name: "com.kodjodevf.mangayomi.libmtorrentserver",

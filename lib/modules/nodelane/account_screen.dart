@@ -4,6 +4,8 @@ import 'package:mangayomi/modules/nodelane/nodelane_models.dart';
 import 'package:mangayomi/modules/nodelane/nodelane_provider.dart';
 import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
 
+import 'translation/translation_tasks_screen.dart';
+
 class NodeLaneAccountScreen extends ConsumerWidget {
   const NodeLaneAccountScreen({super.key});
 
@@ -216,6 +218,16 @@ class NodeLaneAccountScreen extends ConsumerWidget {
                         ],
                         const SizedBox(height: 28),
                         if (account != null) ...[
+                          OutlinedButton.icon(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const TranslationTasksScreen(),
+                              ),
+                            ),
+                            icon: const Icon(Icons.translate),
+                            label: Text(text('翻译任务', 'Translations')),
+                          ),
+                          const SizedBox(height: 16),
                           if (mode != null)
                             Container(
                               decoration: NodeLaneTheme.panel(colors).copyWith(

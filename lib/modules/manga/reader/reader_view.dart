@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'providers/reader_translation_provider.dart';
+import 'providers/reader_translation_window.dart';
+
 import 'package:flutter/scheduler.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:photo_view/photo_view.dart';
@@ -177,6 +180,8 @@ class _MangaChapterPageGalleryState
 
   @override
   void dispose() {
+    _currentPageViewIndex.removeListener(_updateTranslationWindow);
+    _translationWindow?.update(const []);
     WidgetsBinding.instance.removeObserver(this);
     _readingStopwatch.stop();
     _readerController.setHistoryUpdate(
@@ -336,6 +341,11 @@ class _MangaChapterPageGalleryState
   void initState() {
     super.initState();
     _readingStopwatch.start();
+    _translationWindow = ref.read(readerTranslationWindowProvider);
+    _currentPageViewIndex.addListener(_updateTranslationWindow);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _updateTranslationWindow(),
+    );
 
     final saved = _readerController.getPageIndex();
     if (saved > 0 && _cachedReaderMode.isContinuous) {
@@ -366,6 +376,19 @@ class _MangaChapterPageGalleryState
     if (keepOn) {
       WakelockPlus.enable();
     }
+  }
+
+  ReaderTranslationWindow? _translationWindow;
+  void _updateTranslationWindow() {
+    if (!mounted) return;
+    final index = _pageViewToActualIndex(_currentIndex ?? 0);
+    _translationWindow?.update(
+      pages
+          .skip(index.clamp(0, pages.length))
+          .where((p) => !p.isTransitionPage)
+          .take(8)
+          .map((p) => readerTranslationPage(p, ref)),
+    );
   }
 
   // final double _horizontalScaleValue = 1.0; TODO
@@ -533,6 +556,9 @@ class _MangaChapterPageGalleryState
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(
+      readerTranslationWindowProvider.select((window) => window.enabled),
+    );
     final backgroundColor = ref.watch(backgroundColorStateProvider);
     final fullScreenReader = ref.watch(fullScreenReaderStateProvider);
     final readerMode = ref.watch(_currentReaderMode);

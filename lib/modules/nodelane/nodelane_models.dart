@@ -111,11 +111,17 @@ class NodeLaneAuthState {
 /// Only fixed, safe user messages may be stored here. Raw provider responses,
 /// callback URLs and transport exceptions must not escape through this type.
 class NodeLaneException implements Exception {
-  const NodeLaneException(this.code, this.message, {this.statusCode});
+  const NodeLaneException(
+    this.code,
+    this.message, {
+    this.statusCode,
+    this.retryAfterSeconds,
+  });
 
   final String code;
   final String message;
   final int? statusCode;
+  final int? retryAfterSeconds;
 
   @override
   String toString() => 'NodeLaneException($code): $message';

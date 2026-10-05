@@ -11,6 +11,43 @@ import 'package:mangayomi/modules/nodelane/nodelane_credential_store.dart';
 import 'package:mangayomi/modules/nodelane/nodelane_models.dart';
 
 void main() {
+  test('stream upload reopens the same body once after 401 rotation', () async {
+    final h = _Harness();
+    await h.service.signIn();
+    var attempts = 0, opened = 0;
+    h.apiHandler = (request) async {
+      expect(request.bodyBytes, [1, 2, 3, 4]);
+      expect(request.headers['X-Translation-Protocol'], 'overlay-v1');
+      return http.Response('{}', ++attempts == 1 ? 401 : 200);
+    };
+    final response = await h.service.requestStream(
+      'PUT',
+      '/v1/translations/fixture/input',
+      body: () {
+        opened++;
+        return Stream.value([1, 2, 3, 4]);
+      },
+      contentLength: 4,
+    );
+    await response.stream.drain<void>();
+    expect(attempts, 2);
+    expect(opened, 2);
+    expect(h.refreshRequests, 1);
+  });
+  test(
+    'sign out after stream headers prevents consuming old account bytes',
+    () async {
+      final h = _Harness();
+      await h.service.signIn();
+      h.apiHandler = (_) async => http.Response('private-result', 200);
+      final response = await h.service.requestStream(
+        'GET',
+        '/v1/translations/fixture/result',
+      );
+      await h.service.signOut();
+      await expectLater(response.stream.toBytes(), _error('SESSION_CHANGED'));
+    },
+  );
   test(
     'missing native client does not fall back to the browser client',
     () async {

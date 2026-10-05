@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
@@ -15,6 +14,8 @@ import 'package:mangayomi/utils/share.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:path/path.dart' as p;
+
+import 'translation_actions.dart';
 
 /// Bottom sheet dialog for long-press actions on manga images.
 ///
@@ -36,8 +37,7 @@ class ImageActionsDialog {
     required Manga manga,
     required String chapterName,
   }) async {
-    final imageBytes = await data.getImageBytes;
-    if (imageBytes == null || !context.mounted) return;
+    if (!context.mounted) return;
 
     final name = "${manga.name} $chapterName - ${data.pageIndex}".replaceAll(
       RegExp(r'[^a-zA-Z0-9 .()\-\s]'),
@@ -47,24 +47,21 @@ class ImageActionsDialog {
     showModalBottomSheet(
       context: context,
       constraints: BoxConstraints(maxWidth: context.width(1)),
-      builder: (context) => _ImageActionsSheet(
-        imageBytes: imageBytes,
-        manga: manga,
-        fileName: name,
-      ),
+      builder: (context) =>
+          _ImageActionsSheet(manga: manga, fileName: name, data: data),
     );
   }
 }
 
 class _ImageActionsSheet extends StatelessWidget {
-  final Uint8List imageBytes;
   final Manga manga;
   final String fileName;
+  final UChapDataPreload data;
 
   const _ImageActionsSheet({
-    required this.imageBytes,
     required this.manga,
     required this.fileName,
+    required this.data,
   });
 
   @override
@@ -82,6 +79,7 @@ class _ImageActionsSheet extends StatelessWidget {
           ),
           child: Column(
             children: [
+              TranslationActions(data: data),
               // Handle bar
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -124,11 +122,15 @@ class _ImageActionsSheet extends StatelessWidget {
   Future<void> _setAsCover(BuildContext context) async {
     final confirmed = await confirmUseAsMangaCover(context);
     if (!confirmed || !context.mounted) return;
+    final imageBytes = await data.getImageBytes;
+    if (imageBytes == null || !context.mounted) return;
     await applyMangaCover(context, manga, imageBytes);
     if (context.mounted) Navigator.pop(context);
   }
 
   Future<void> _shareImage(BuildContext context) async {
+    final imageBytes = await data.getImageBytes;
+    if (imageBytes == null) return;
     if (!context.mounted) return;
 
     final ext = detectImageExtension(imageBytes);
@@ -147,6 +149,8 @@ class _ImageActionsSheet extends StatelessWidget {
   }
 
   Future<void> _saveImage(BuildContext context) async {
+    final imageBytes = await data.getImageBytes;
+    if (imageBytes == null || !context.mounted) return;
     final dir = await StorageProvider().getGalleryDirectory();
     if (dir == null) return;
     final ext = detectImageExtension(imageBytes);

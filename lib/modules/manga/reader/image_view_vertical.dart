@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'providers/reader_translation_provider.dart';
+
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/color_filter_widget.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
@@ -31,9 +34,10 @@ class ImageViewVertical extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final (colorBlendMode, color) = chapterColorFIlterValues(context, ref);
     final cropBorders = ref.watch(cropBordersStateProvider);
+    final display = ref.watch(readerTranslationImageProvider(data));
 
     final imageWidget = MinSubsamplingImage(
-      data: data,
+      data: display,
       fit: getBoxFit(ref.watch(scaleTypeStateProvider)),
       color: color,
       colorBlendMode: colorBlendMode,
@@ -42,7 +46,7 @@ class ImageViewVertical extends ConsumerWidget {
       failedToLoadImage: failedToLoadImage,
       loadStateChanged: loadStateChanged,
       rotation: rotation,
-      onImageLoaded: onImageLoaded,
+      onImageLoaded: identical(display, data) ? onImageLoaded : null,
     );
 
     return applyReaderColorFilter(

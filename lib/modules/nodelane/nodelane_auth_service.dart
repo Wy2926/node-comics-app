@@ -46,6 +46,7 @@ class NodeLaneAuthService extends ChangeNotifier {
   Future<void> _storageQueue = Future.value();
   int _epoch = 0;
   bool _disposed = false;
+  final _streamAborts = <Completer<void>>{};
 
   NodeLaneAuthState get state => _state;
 
@@ -89,6 +90,7 @@ class NodeLaneAuthService extends ChangeNotifier {
       throw error;
     }
     final epoch = ++_epoch;
+    _abortStreams();
     _session = null;
     _pendingRotation = null;
     _refreshRetryAt = null;
@@ -200,6 +202,7 @@ class NodeLaneAuthService extends ChangeNotifier {
   /// and browser SSO untouched; the next sign-in requests login and consent.
   Future<void> signOut() async {
     final epoch = ++_epoch;
+    _abortStreams();
     _session = null;
     _pendingRotation = null;
     _refreshRetryAt = null;
@@ -256,8 +259,29 @@ class NodeLaneAuthService extends ChangeNotifier {
     List<int>? bodyBytes,
     Map<String, String> headers = const {},
   }) async {
-    final epoch = _epoch;
     final bytes = bodyBytes == null ? null : List<int>.unmodifiable(bodyBytes);
+    final response = await requestStream(
+      method,
+      path,
+      body: bytes == null ? null : () => Stream.value(bytes),
+      contentLength: bytes?.length,
+      headers: headers,
+    );
+    return http.Response.fromStream(response);
+  }
+
+  /// Reopens the same frozen file on the single permitted 401 replay.
+  /// The caller consumes/cancels the response stream; credentials never escape.
+  Future<http.StreamedResponse> requestStream(
+    String method,
+    String path, {
+    Stream<List<int>> Function()? body,
+    int? contentLength,
+    Map<String, String> headers = const {},
+    Future<void>? abort,
+    Duration idleTimeout = const Duration(seconds: 45),
+  }) async {
+    final epoch = _epoch;
     final immutableHeaders = Map<String, String>.unmodifiable(headers);
     if (immutableHeaders.keys.any(
       (key) => [
@@ -288,33 +312,195 @@ class NodeLaneAuthService extends ChangeNotifier {
       session = await _refresh(session);
     }
     _assertEpoch(epoch);
-    var response = await _send(
+    var response = await _sendStream(
       method,
       uri,
-      token: session.tokens.accessToken,
-      bytes: bytes,
-      headers: immutableHeaders,
+      session.tokens.accessToken,
+      body,
+      contentLength,
+      immutableHeaders,
+      abort,
+      epoch,
+      idleTimeout,
     );
     _assertEpoch(epoch);
     if (response.statusCode == 401) {
+      await response.stream.listen(null).cancel();
       session = await _refresh(session, force: true);
       _assertEpoch(epoch);
-      response = await _send(
+      response = await _sendStream(
         method,
         uri,
-        token: session.tokens.accessToken,
-        bytes: bytes,
-        headers: immutableHeaders,
+        session.tokens.accessToken,
+        body,
+        contentLength,
+        immutableHeaders,
+        abort,
+        epoch,
+        idleTimeout,
       );
       _assertEpoch(epoch);
       if (response.statusCode == 401 &&
           _session?.tokens.accessToken == session.tokens.accessToken) {
+        await response.stream.listen(null).cancel();
         await signOut();
         throw const NodeLaneException('LOGIN_REQUIRED', '登录已失效，请重新登录。');
       }
     }
-    _requireSuccess(response);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      // Do not expose raw backend payloads (which may contain private URLs).
+      final status = response.statusCode;
+      final retry = int.tryParse(response.headers['retry-after'] ?? '');
+      String? code;
+      try {
+        final bytes = <int>[];
+        await for (final chunk in response.stream) {
+          if (bytes.length + chunk.length > 16384) break;
+          bytes.addAll(chunk);
+        }
+        final value =
+            (_tryObject(utf8.decode(bytes))?['error'] as Map?)?['code'];
+        if (value is String &&
+            RegExp(r'^[A-Z][A-Z0-9_]{0,59}$').hasMatch(value)) {
+          code = value;
+        }
+      } catch (_) {
+        _assertEpoch(epoch);
+      }
+      _assertEpoch(epoch);
+      if (code != null) {
+        throw NodeLaneException(
+          code,
+          '请求暂时未完成。',
+          statusCode: status,
+          retryAfterSeconds: retry,
+        );
+      }
+      if (status == 429 || status == 503) {
+        throw NodeLaneException(
+          'RATE_LIMITED',
+          '服务繁忙，请稍后继续。',
+          statusCode: status,
+          retryAfterSeconds: retry,
+        );
+      }
+      _requireSuccess(http.Response('', status));
+    }
     return response;
+  }
+
+  Future<http.StreamedResponse> _sendStream(
+    String method,
+    Uri uri,
+    String token,
+    Stream<List<int>> Function()? body,
+    int? length,
+    Map<String, String> headers,
+    Future<void>? abort,
+    int epoch,
+    Duration idleTimeout,
+  ) async {
+    final stop = Completer<void>();
+    void cancel() {
+      if (!stop.isCompleted) stop.complete();
+    }
+
+    _streamAborts.add(stop);
+    if (abort != null) unawaited(abort.then((_) => cancel()));
+    final request = _FileStreamRequest(method, uri, body, stop.future)
+      ..followRedirects = false
+      ..contentLength = length
+      ..headers.addAll({
+        'Accept': 'application/json',
+        ...headers,
+        'Authorization': 'Bearer $token',
+        if (uri.path.startsWith('/v1/translations'))
+          'X-Translation-Protocol': 'overlay-v1',
+      });
+    try {
+      final response = await _client
+          .send(request)
+          .timeout(
+            const Duration(minutes: 2),
+            onTimeout: () {
+              cancel();
+              throw _connectionError;
+            },
+          );
+      _assertEpoch(epoch);
+      late StreamController<List<int>> guarded;
+      StreamSubscription<List<int>>? subscription;
+      void cleanup() {
+        cancel();
+        _streamAborts.remove(stop);
+      }
+
+      void fail(Object error, StackTrace stack) {
+        try {
+          _assertEpoch(epoch);
+        } catch (changed) {
+          error = changed;
+        }
+        guarded.addError(
+          error is NodeLaneException ? error : _connectionError,
+          stack,
+        );
+        cleanup();
+        unawaited(subscription?.cancel());
+        unawaited(guarded.close());
+      }
+
+      guarded = StreamController<List<int>>(
+        onListen: () {
+          subscription = response.stream
+              .timeout(idleTimeout)
+              .listen(
+                (chunk) {
+                  try {
+                    _assertEpoch(epoch);
+                    guarded.add(chunk);
+                  } catch (error, stack) {
+                    fail(error, stack);
+                  }
+                },
+                onError: fail,
+                onDone: () {
+                  try {
+                    _assertEpoch(epoch);
+                  } catch (error, stack) {
+                    guarded.addError(error, stack);
+                  }
+                  cleanup();
+                  unawaited(guarded.close());
+                },
+              );
+        },
+        onPause: () => subscription?.pause(),
+        onResume: () => subscription?.resume(),
+        onCancel: () async {
+          cleanup();
+          await subscription?.cancel();
+        },
+      );
+      return http.StreamedResponse(
+        guarded.stream,
+        response.statusCode,
+        headers: response.headers,
+        contentLength: response.contentLength,
+      );
+    } catch (_) {
+      cancel();
+      _streamAborts.remove(stop);
+      _assertEpoch(epoch);
+      throw _connectionError;
+    }
+  }
+
+  void _abortStreams() {
+    for (final abort in _streamAborts) {
+      if (!abort.isCompleted) abort.complete();
+    }
+    _streamAborts.clear();
   }
 
   Future<_Session> _refresh(_Session expected, {bool force = false}) async {
@@ -493,6 +679,7 @@ class NodeLaneAuthService extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     ++_epoch;
+    _abortStreams();
     _client.close();
     super.dispose();
   }
@@ -502,6 +689,18 @@ class NodeLaneAuthService extends ChangeNotifier {
         url: uri.toString(),
         callbackUrlScheme: scheme,
       );
+}
+
+class _FileStreamRequest extends http.BaseRequest with http.Abortable {
+  _FileStreamRequest(super.method, super.url, this.body, this.abortTrigger);
+  final Stream<List<int>> Function()? body;
+  @override
+  final Future<void> abortTrigger;
+  @override
+  http.ByteStream finalize() {
+    super.finalize();
+    return http.ByteStream(body?.call() ?? const Stream.empty());
+  }
 }
 
 const _connectionError = NodeLaneException(

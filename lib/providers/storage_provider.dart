@@ -2,6 +2,7 @@
 import 'dart:io';
 
 import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
+import 'package:mangayomi/models/translation_record.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
@@ -323,6 +324,7 @@ class StorageProvider {
     final isar = await Isar.open(
       [
         MangaSchema,
+        TranslationRecordSchema,
         ChangedPartSchema,
         ChapterSchema,
         CategorySchema,
