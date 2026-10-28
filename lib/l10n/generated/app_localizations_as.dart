@@ -2514,6 +2514,14 @@ class AppLocalizationsAs extends AppLocalizations {
       'যেতিয়া এপ্লিকেশন লক সক্ষম থাকে, আপোনাক প্রমাণ কৰিবলৈ কোৱা হব\\nপ্রতিবাৰ যেতিয়া আপুনি এপ্লিকেশন খোলেন বা পটভূমিৰ পৰা ঘূৰি আহেন।';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => 'স্ক্রীন চালু ৰাখক';
 
   @override

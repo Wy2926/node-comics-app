@@ -5,6 +5,8 @@ import 'package:mangayomi/modules/more/settings/security/providers/security_stat
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
+import 'mobile_security_views.dart';
+
 class SecurityScreen extends ConsumerStatefulWidget {
   const SecurityScreen({super.key});
 
@@ -15,7 +17,9 @@ class SecurityScreen extends ConsumerStatefulWidget {
 class _SecurityScreenState extends ConsumerState<SecurityScreen> {
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _canCheckBiometrics = false;
-  late final l10n = context.l10n;
+  bool _isCheckingAvailability = true;
+  bool _isAuthenticating = false;
+  bool _authenticationIncomplete = false;
   @override
   void initState() {
     super.initState();
@@ -29,30 +33,64 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
       if (mounted) {
         setState(() {
           _canCheckBiometrics = canAuth || isDeviceSupported;
+          _isCheckingAvailability = false;
         });
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _canCheckBiometrics = false);
+        setState(() {
+          _canCheckBiometrics = false;
+          _isCheckingAvailability = false;
+        });
       }
     }
   }
 
-  Future<bool> _authenticate() async {
+  Future<void> _changeAppLock(bool value) async {
+    if (!mounted || !_canCheckBiometrics || _isAuthenticating) return;
+    setState(() {
+      _isAuthenticating = true;
+      _authenticationIncomplete = false;
+    });
+    var authenticated = false;
     try {
-      return await _localAuth.authenticate(
-        localizedReason: l10n.auth_to_change_security_setting,
+      authenticated = await _localAuth.authenticate(
+        localizedReason: context.l10n.auth_to_change_security_setting,
         biometricOnly: false,
         persistAcrossBackgrounding: true,
       );
     } catch (_) {
-      return false;
+      // Cancellation or a platform failure leaves the preference unchanged.
+    }
+    if (!mounted) return;
+    setState(() {
+      _isAuthenticating = false;
+      _authenticationIncomplete = !authenticated;
+    });
+    if (authenticated) {
+      ref.read(appLockEnabledStateProvider.notifier).set(value);
+      if (!value) ref.read(appUnlockedStateProvider.notifier).unlock();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final appLockEnabled = ref.watch(appLockEnabledStateProvider);
+    final onChanged = _canCheckBiometrics && !_isAuthenticating
+        ? _changeAppLock
+        : null;
+
+    if (isMobile && !isTv) {
+      return MobileSecuritySettingsView(
+        enabled: appLockEnabled,
+        canAuthenticate: _canCheckBiometrics,
+        isChecking: _isCheckingAvailability,
+        isAuthenticating: _isAuthenticating,
+        authenticationIncomplete: _authenticationIncomplete,
+        onChanged: onChanged,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.security)),
@@ -73,26 +111,7 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
                   color: Theme.of(context).hintColor,
                 ),
               ),
-              onChanged: _canCheckBiometrics
-                  ? (value) async {
-                      if (value) {
-                        final authenticated = await _authenticate();
-                        if (authenticated) {
-                          ref
-                              .read(appLockEnabledStateProvider.notifier)
-                              .set(true);
-                        }
-                      } else {
-                        final authenticated = await _authenticate();
-                        if (authenticated) {
-                          ref
-                              .read(appLockEnabledStateProvider.notifier)
-                              .set(false);
-                          ref.read(appUnlockedStateProvider.notifier).unlock();
-                        }
-                      }
-                    }
-                  : null,
+              onChanged: onChanged,
             ),
 
             const Divider(),

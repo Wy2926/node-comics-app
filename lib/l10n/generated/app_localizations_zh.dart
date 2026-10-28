@@ -2397,10 +2397,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tracked => '已追踪';
 
   @override
-  String get auth_unlock_msg => '验证以解锁Mangayomi';
+  String get auth_unlock_msg => '验证以解锁应用';
 
   @override
-  String get app_locked => 'Mangayomi已锁定';
+  String get app_locked => '应用已锁定';
 
   @override
   String get auth_to_continue => '验证以继续';
@@ -2427,10 +2427,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get require_biometric_or_device_credential => '需要生物识别或设备凭证才能打开应用';
 
   @override
-  String get biometric_or_device_credential_not_available => '此设备上没有生物识别';
+  String get biometric_or_device_credential_not_available =>
+      '此设备暂不可使用生物识别或设备密码验证';
 
   @override
   String get app_lock_description => '启用应用锁后，每次打开应用或从后台返回时都会要求您进行身份验证。';
+
+  @override
+  String get checking_device_authentication => '正在检查设备验证方式…';
+
+  @override
+  String get device_authentication_incomplete => '验证未完成，设置保持不变。';
 
   @override
   String get keep_screen_on => '保持屏幕开启';

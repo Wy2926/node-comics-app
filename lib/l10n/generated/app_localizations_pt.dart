@@ -2537,6 +2537,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Quando o bloqueio do aplicativo está ativado, você será solicitado a se autenticar\\na cada vez que você abrir o aplicativo ou retornar do fundo.';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => 'Manter a tela ligada';
 
   @override

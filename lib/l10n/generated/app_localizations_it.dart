@@ -2541,6 +2541,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Quando il blocco dell\'app è abilitato, ti verrà richiesto di autenticarti\\ndevice ogni volta che apri l\'app o torni ad essa dallo sfondo.';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => 'Mantieni lo schermo acceso';
 
   @override

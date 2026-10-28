@@ -2507,6 +2507,14 @@ class AppLocalizationsTh extends AppLocalizations {
       'เมื่อเปิดใช้งานล็อกแอป คุณจะได้รับการขอให้ยืนยันตัวตน\\nทุกครั้งที่คุณเปิดแอปหรือกลับมาจากพื้นหลัง';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => 'เปิดหน้าจอไว้';
 
   @override

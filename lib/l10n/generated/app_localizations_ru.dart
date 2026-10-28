@@ -2551,6 +2551,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Когда блокировка приложения включена, вам будет предложено пройти аутентификацию\\nкаждый раз, когда вы открываете приложение или возвращаетесь из фона.';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => 'Держать экран включённым';
 
   @override

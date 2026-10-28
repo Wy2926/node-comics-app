@@ -4498,13 +4498,13 @@ abstract class AppLocalizations {
   /// No description provided for @auth_unlock_msg.
   ///
   /// In en, this message translates to:
-  /// **'Authenticate to unlock Mangayomi'**
+  /// **'Authenticate to unlock the app'**
   String get auth_unlock_msg;
 
   /// No description provided for @app_locked.
   ///
   /// In en, this message translates to:
-  /// **'Mangayomi is locked'**
+  /// **'App locked'**
   String get app_locked;
 
   /// No description provided for @auth_to_continue.
@@ -4558,14 +4558,26 @@ abstract class AppLocalizations {
   /// No description provided for @biometric_or_device_credential_not_available.
   ///
   /// In en, this message translates to:
-  /// **'Biometric authentication not available on this device'**
+  /// **'Biometric or device credential authentication is not available on this device'**
   String get biometric_or_device_credential_not_available;
 
   /// No description provided for @app_lock_description.
   ///
   /// In en, this message translates to:
-  /// **'When app lock is enabled, you will be asked to authenticate \nevery time you open the app or switch back to it from the background.'**
+  /// **'When app lock is enabled, you will be asked to authenticate every time you open the app or switch back to it from the background.'**
   String get app_lock_description;
+
+  /// No description provided for @checking_device_authentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking device authentication…'**
+  String get checking_device_authentication;
+
+  /// No description provided for @device_authentication_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication was not completed. Your setting has not changed.'**
+  String get device_authentication_incomplete;
 
   /// No description provided for @keep_screen_on.
   ///

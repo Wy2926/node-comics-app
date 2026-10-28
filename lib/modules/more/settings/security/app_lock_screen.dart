@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:mangayomi/modules/more/settings/security/providers/security_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_security_views.dart';
 
 class AppLockScreen extends ConsumerStatefulWidget {
   const AppLockScreen({super.key});
@@ -23,7 +26,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
   }
 
   Future<void> _authenticate() async {
-    if (_isAuthenticating) return;
+    if (!mounted || _isAuthenticating) return;
     setState(() => _isAuthenticating = true);
 
     try {
@@ -47,39 +50,44 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.lock_outline,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                l10n.app_locked,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.auth_unlock_msg,
-                style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: Theme.of(context).hintColor),
-              ),
-              const SizedBox(height: 32),
-              FilledButton.icon(
-                onPressed: _isAuthenticating ? null : _authenticate,
-                icon: const Icon(Icons.fingerprint),
-                label: Text(
-                  _isAuthenticating ? l10n.authenticating : l10n.unlock,
+      child: isMobile && !isTv
+          ? MobileAppLockView(
+              isAuthenticating: _isAuthenticating,
+              onUnlock: _authenticate,
+            )
+          : Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.lock_outline,
+                      size: 80,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.app_locked,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.auth_unlock_msg,
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: Theme.of(context).hintColor),
+                    ),
+                    const SizedBox(height: 32),
+                    FilledButton.icon(
+                      onPressed: _isAuthenticating ? null : _authenticate,
+                      icon: const Icon(Icons.fingerprint),
+                      label: Text(
+                        _isAuthenticating ? l10n.authenticating : l10n.unlock,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

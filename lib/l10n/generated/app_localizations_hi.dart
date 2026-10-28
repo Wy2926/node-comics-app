@@ -2515,6 +2515,14 @@ class AppLocalizationsHi extends AppLocalizations {
       'जब ऐप लॉक सक्षम हो, तो आपको प्रमाणित करने के लिए कहा जाएगा\\nहर बार जब आप ऐप खोलते हैं या पृष्ठभूमि से वापस आते हैं।';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => 'स्क्रीन को चालू रखें';
 
   @override

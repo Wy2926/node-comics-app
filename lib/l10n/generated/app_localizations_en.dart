@@ -2470,10 +2470,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tracked => 'Tracked';
 
   @override
-  String get auth_unlock_msg => 'Authenticate to unlock Mangayomi';
+  String get auth_unlock_msg => 'Authenticate to unlock the app';
 
   @override
-  String get app_locked => 'Mangayomi is locked';
+  String get app_locked => 'App locked';
 
   @override
   String get auth_to_continue => 'Authenticate to continue';
@@ -2503,11 +2503,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get biometric_or_device_credential_not_available =>
-      'Biometric authentication not available on this device';
+      'Biometric or device credential authentication is not available on this device';
 
   @override
   String get app_lock_description =>
-      'When app lock is enabled, you will be asked to authenticate \nevery time you open the app or switch back to it from the background.';
+      'When app lock is enabled, you will be asked to authenticate every time you open the app or switch back to it from the background.';
+
+  @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
 
   @override
   String get keep_screen_on => 'Keep screen on';

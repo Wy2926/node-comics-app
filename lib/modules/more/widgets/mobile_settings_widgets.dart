@@ -109,7 +109,7 @@ class MobileSettingsSwitch extends StatelessWidget {
   final String title, subtitle;
   final IconData icon;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {

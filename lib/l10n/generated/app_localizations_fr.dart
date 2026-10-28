@@ -2547,6 +2547,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Lorsque le verrouillage de l\'application est activé, vous serez invité à vous authentifier\nchaque fois que vous ouvrez l\'application ou que vous la restaurez à partir de l\'arrière-plan.';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => 'Garder l\'écran allumé';
 
   @override

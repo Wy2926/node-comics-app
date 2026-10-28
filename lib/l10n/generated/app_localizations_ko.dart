@@ -2459,6 +2459,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '앱 잠금이 활성화되면 앱을 열거나 백그라운드에서 다시 돌아올 때마다 인증을 요구합니다.';
 
   @override
+  String get checking_device_authentication =>
+      'Checking device authentication…';
+
+  @override
+  String get device_authentication_incomplete =>
+      'Authentication was not completed. Your setting has not changed.';
+
+  @override
   String get keep_screen_on => '화면 켜짐 유지';
 
   @override
