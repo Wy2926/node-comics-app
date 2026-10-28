@@ -12,6 +12,9 @@ import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+import 'mobile_reader_widgets.dart';
 
 String _navLayoutName(int index, BuildContext context) {
   final l10n = l10nLocalizations(context)!;
@@ -64,35 +67,58 @@ class ReaderSettingsModal {
 
     final l10n = l10nLocalizations(context)!;
 
-    await customDraggableTabBar(
-      tabs: [
-        Tab(text: l10n.reading_mode),
-        Tab(text: l10n.general),
-        Tab(text: l10n.custom_filter),
-      ],
-      children: [
-        // Reading Mode Tab
-        _ReadingModeTab(
-          currentReaderModeProvider: currentReaderModeProvider,
-          autoScrollPage: autoScrollPage,
-          pageOffset: pageOffset,
-          onReaderModeChanged: onReaderModeChanged,
-          onAutoScrollSave: onAutoScrollSave,
-          onAutoScroll: (val) {
-            autoScroll.value = val;
-          },
+    final labels = [l10n.reading_mode, l10n.general, l10n.custom_filter];
+    final children = <Widget>[
+      // Reading Mode Tab
+      _ReadingModeTab(
+        currentReaderModeProvider: currentReaderModeProvider,
+        autoScrollPage: autoScrollPage,
+        pageOffset: pageOffset,
+        onReaderModeChanged: onReaderModeChanged,
+        onAutoScrollSave: onAutoScrollSave,
+        onAutoScroll: (val) {
+          autoScroll.value = val;
+        },
+      ),
+
+      // General Tab
+      _GeneralTab(onFullScreenToggle: onFullScreenToggle),
+
+      // Custom Filter Tab
+      const _CustomFilterTab(),
+    ];
+    if (isMobile && !isTv) {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        backgroundColor: NodeLaneTokens.of(context).surface,
+        builder: (sheetContext) => NodeLaneSurface(
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: MediaQuery.sizeOf(sheetContext).height * .8,
+              child: MobileReaderSettingsTabs(
+                labels: labels,
+                closeLabel: MaterialLocalizations.of(sheetContext)
+                    .closeButtonTooltip,
+                onClose: () => Navigator.pop(sheetContext),
+                children: children,
+              ),
+            ),
+          ),
         ),
-
-        // General Tab
-        _GeneralTab(onFullScreenToggle: onFullScreenToggle),
-
-        // Custom Filter Tab
-        const _CustomFilterTab(),
-      ],
-      context: context,
-      vsync: vsync,
-      fullWidth: true,
-    );
+      );
+    } else {
+      await customDraggableTabBar(
+        tabs: [for (final label in labels) Tab(text: label)],
+        children: children,
+        context: context,
+        vsync: vsync,
+        fullWidth: true,
+      );
+    }
 
     // Resume auto-scroll if it was running
     if (autoScrollWasRunning || autoScroll.value) {
@@ -714,7 +740,9 @@ class _GeneralTab extends ConsumerWidget {
                 ),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Row(
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       ChoiceChip(
                         label: Text(l10n.flash_color_black),
@@ -725,7 +753,6 @@ class _GeneralTab extends ConsumerWidget {
                           }
                         },
                       ),
-                      const SizedBox(width: 8),
                       ChoiceChip(
                         label: Text(l10n.flash_color_white),
                         selected: flashColor == 1,
@@ -735,7 +762,6 @@ class _GeneralTab extends ConsumerWidget {
                           }
                         },
                       ),
-                      const SizedBox(width: 8),
                       ChoiceChip(
                         label: Text(l10n.flash_color_white_black),
                         selected: flashColor == 2,
@@ -1108,6 +1134,33 @@ class _CustomFilterTab extends ConsumerWidget {
     required BuildContext context,
   }) {
     final isDefault = (value - defaultValue).abs() < 0.01;
+    if (isMobile && !isTv) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(label)),
+                const SizedBox(width: 12),
+                Text(value.toStringAsFixed(1)),
+                IconButton(
+                  tooltip: l10nLocalizations(context)!.reset,
+                  icon: const Icon(Icons.replay),
+                  onPressed: isDefault ? null : () => onChanged(defaultValue),
+                ),
+              ],
+            ),
+            Slider(
+              min: min,
+              max: max,
+              value: value.clamp(min, max),
+              onChanged: onChanged,
+            ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(

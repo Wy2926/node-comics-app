@@ -14,6 +14,7 @@ import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/utils/headers.dart';
 
 import 'u_chap_data_preload.dart';
+import 'widgets/mobile_reader_widgets.dart';
 
 TranslationPage readerTranslationPage(UChapDataPreload data) {
   final manga = data.chapter?.manga.value;
@@ -117,10 +118,18 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
           ?.owner
           .display(original) ??
       original;
-  static Widget button(BuildContext context) {
+  static Widget button(BuildContext context, {bool labeled = false}) {
     final scope = context
         .dependOnInheritedWidgetOfExactType<_ReaderTranslationScope>();
     if (scope == null) return const SizedBox.shrink();
+    if (labeled) {
+      return MobileReaderAction(
+        label: '翻译',
+        active: scope.notifier!.enabled,
+        icon: Icons.translate,
+        onPressed: () => showTranslationControls(context, scope.notifier!),
+      );
+    }
     return IconButton(
       tooltip: '漫画翻译',
       icon: Icon(

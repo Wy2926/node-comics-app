@@ -1,4 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 
 /// Auto-scroll play/pause button for continuous reading modes.
 ///
@@ -35,9 +39,13 @@ class ReaderAutoScrollButton extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final mobile = isMobile && !isTv;
+    final media = MediaQuery.of(context);
     return Positioned(
-      bottom: 0,
-      right: 0,
+      bottom: mobile
+          ? max(media.viewPadding.bottom, media.systemGestureInsets.bottom) + 8
+          : 0,
+      right: mobile ? 12 : 0,
       child: isUiVisible
           ? const SizedBox.shrink()
           : ValueListenableBuilder(
@@ -46,6 +54,17 @@ class ReaderAutoScrollButton extends StatelessWidget {
                   ? ValueListenableBuilder(
                       valueListenable: autoScroll,
                       builder: (context, isPlaying, child) => IconButton(
+                        tooltip: isPlaying
+                            ? context.l10n.tts_pause
+                            : context.l10n.resume,
+                        style: mobile
+                            ? IconButton.styleFrom(
+                                backgroundColor: Colors.black.withValues(
+                                  alpha: .6,
+                                ),
+                                foregroundColor: Colors.white,
+                              )
+                            : null,
                         onPressed: onToggle,
                         icon: Icon(
                           isPlaying ? Icons.pause_circle : Icons.play_circle,

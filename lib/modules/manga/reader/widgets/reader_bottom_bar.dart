@@ -13,6 +13,14 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
+
+enum _MobileLayoutAction { crop, doublePage }
 
 /// The bottom bar for the manga reader.
 ///
@@ -110,6 +118,57 @@ class ReaderBottomBar extends ConsumerWidget {
     final readerMode = ref.watch(currentReaderModeProvider);
     if (readerMode == null) return const SizedBox.shrink();
     final isHorizontalContinuous = readerMode.isHorizontalContinuous;
+    if (isMobile && !isTv) {
+      return MobileReaderPanel(
+        visible: isVisible,
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ValueListenableBuilder<int>(
+              valueListenable: currentPageListenable,
+              builder: (context, index, _) => MobileReaderProgress(
+                currentIndex: index,
+                totalPages: totalPages,
+                label: currentIndexLabel(index),
+                reverse: isReverseHorizontal,
+                previousLabel: context.l10n.previous(context.l10n.chapter),
+                nextLabel: context.l10n.next_chapter,
+                onPrevious: hasPreviousChapter ? onPreviousChapter : null,
+                onNext: hasNextChapter ? onNextChapter : null,
+                onChanged: (value) => onSliderChanged(value, ref),
+                onChangeEnd: onSliderChangeEnd,
+              ),
+            ),
+            Divider(height: 1, color: NodeLaneTokens.of(context).line),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: btnToShowChapterListDialog(
+                    context,
+                    context.l10n.chapters,
+                    chapter,
+                    labeled: true,
+                  ),
+                ),
+                Expanded(
+                  child: ReaderTranslationHost.button(context, labeled: true),
+                ),
+                Expanded(child: _mobileLayoutMenu(context, ref, readerMode)),
+                Expanded(
+                  child: MobileReaderAction(
+                    label: context.l10n.settings,
+                    icon: Icons.tune_rounded,
+                    onPressed: onSettingsPressed,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
     final mediaQuery = MediaQuery.of(context);
     final bottomInset = max(
       mediaQuery.viewPadding.bottom,
@@ -143,6 +202,51 @@ class ReaderBottomBar extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _mobileLayoutMenu(
+    BuildContext context,
+    WidgetRef ref,
+    ReaderMode mode,
+  ) {
+    final crop = ref.watch(cropBordersStateProvider);
+    final l10n = context.l10n;
+    return PopupMenuButton<Object>(
+      tooltip: l10n.display,
+      onSelected: (value) {
+        if (value is ReaderMode) {
+          onReaderModeChanged(value, ref);
+        } else if (value == _MobileLayoutAction.crop) {
+          ref.read(cropBordersStateProvider.notifier).set(!crop);
+        } else if (value == _MobileLayoutAction.doublePage) {
+          onPageModeToggle?.call();
+        }
+      },
+      itemBuilder: (_) => [
+        for (final value in ReaderMode.values)
+          CheckedPopupMenuItem<Object>(
+            value: value,
+            checked: value == mode,
+            child: Text(getReaderModeName(value, context)),
+          ),
+        const PopupMenuDivider(),
+        CheckedPopupMenuItem<Object>(
+          value: _MobileLayoutAction.crop,
+          checked: crop,
+          child: Text(l10n.crop_borders),
+        ),
+        CheckedPopupMenuItem<Object>(
+          value: _MobileLayoutAction.doublePage,
+          checked: _isDoublePageMode,
+          enabled: !mode.isHorizontalContinuous && onPageModeToggle != null,
+          child: Text(l10n.double_page),
+        ),
+      ],
+      child: MobileReaderAction(
+        label: l10n.display,
+        icon: Icons.auto_stories_outlined,
       ),
     );
   }
