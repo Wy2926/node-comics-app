@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/more/mobile_more_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/modules/more/widgets/incognito_mode_widget.dart';
@@ -20,6 +21,7 @@ class MoreScreen extends ConsumerStatefulWidget {
 class MoreScreenState extends ConsumerState<MoreScreen> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobileMoreScreen();
     final l10n = l10nLocalizations(context)!;
     final hiddenItems = ref.watch(hideItemsStateProvider);
     return Scaffold(
