@@ -20,6 +20,7 @@ import 'package:mangayomi/modules/browse/widgets/tv_browse_tab_strip.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_header.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_widgets.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
@@ -130,6 +131,12 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
   }
 
   bool _isSearch = false;
+
+  Future<void> _openWebPage() async {
+    final url = await showBrowserAddress(context);
+    if (!mounted || url == null) return;
+    context.push('/mangawebview', extra: {'url': url, 'title': ''});
+  }
 
   /// The top-bar action icons, which differ per tab (see #729): Sources =
   /// global-search + filter; Extensions = add + search + language filter.
@@ -440,6 +447,11 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
                         extra: currentTab.type,
                       ),
                       actions: [
+                        IconButton(
+                          tooltip: '打开网页',
+                          onPressed: _openWebPage,
+                          icon: const Icon(Icons.public_rounded),
+                        ),
                         if (extensions) ...[
                           if (ref.watch(developerModeStateProvider))
                             IconButton(

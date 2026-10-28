@@ -11,8 +11,12 @@ import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'translation_bridge.dart';
+import 'browser_url.dart';
+import 'browser_navigation.dart';
+import 'mobile_browser_widgets.dart';
 
 class BrowserTab {
   BrowserTab(
@@ -55,10 +59,10 @@ class BrowserTab {
   };
   static BrowserTab? fromJson(dynamic value) {
     try {
-      if (value is! Map || !_webUrl(value['url'])) return null;
+      if (value is! Map || !isBrowserUrl(value['url'])) return null;
       final history = (value['history'] as List)
           .whereType<String>()
-          .where(_webUrl)
+          .where(isBrowserUrl)
           .take(20)
           .toList();
       if (history.isEmpty) history.add(value['url'] as String);
@@ -83,15 +87,6 @@ class BrowserTab {
       return null;
     }
   }
-}
-
-bool _webUrl(dynamic value) {
-  if (value is! String || value.length > 8192) return false;
-  final uri = Uri.tryParse(value);
-  return uri != null &&
-      {'http', 'https'}.contains(uri.scheme) &&
-      uri.host.isNotEmpty &&
-      uri.userInfo.isEmpty;
 }
 
 /// Logical tabs outlive controllers. One active and one 30-second warm view.
@@ -211,7 +206,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   void _new(String url) {
-    if (!_webUrl(url) || tabs.length >= 12) return;
+    if (!isBrowserUrl(url) || tabs.length >= 12) return;
     final tab = BrowserTab(url);
     tabs.add(tab);
     _select(tab);
@@ -232,39 +227,151 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   Future<void> _address({bool newTab = false}) async {
-    final input = TextEditingController(
-      text: newTab ? 'https://' : current?.url,
+    final value = await showBrowserAddress(
+      context,
+      initialUrl: newTab ? '' : current?.url ?? '',
+      newTab: newTab,
     );
-    final value = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(newTab ? '新标签页' : '打开网址'),
-        content: TextField(
-          controller: input,
-          autofocus: true,
-          keyboardType: TextInputType.url,
-          onSubmitted: (value) => Navigator.pop(context, value),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, input.text.trim()),
-            child: const Text('打开'),
-          ),
-        ],
-      ),
-    );
-    input.dispose();
-    if (!mounted || !_webUrl(value)) return;
+    if (!mounted || !isBrowserUrl(value)) return;
     if (newTab) {
       _new(value!);
     } else {
       current?.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(value!)));
     }
   }
+
+  Future<void> _showTabs() async {
+    final action = await showModalBottomSheet<(String, BrowserTab?)>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: NodeLaneTokens.of(context).canvas,
+      builder: (sheetContext) => NodeLaneSurface(
+        child: StatefulBuilder(
+          builder: (context, refreshSheet) => SafeArea(
+            top: false,
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height * .8,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 8, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '标签页 · ${tabs.length}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: MaterialLocalizations.of(context)
+                              .closeButtonTooltip,
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: tabs.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final item = tabs[index];
+                        return MobileBrowserTabCard(
+                          key: ValueKey(item.id),
+                          title: item.title,
+                          url: item.url,
+                          selected: item.id == active,
+                          onSelect: () =>
+                              Navigator.pop(sheetContext, ('select', item)),
+                          onClose: () {
+                            if (tabs.length == 1) {
+                              Navigator.pop(sheetContext, ('close', item));
+                            } else {
+                              _close(item);
+                              refreshSheet(() {});
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (tabs.length >= 12)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text('最多打开 12 个标签页，请先关闭一个。'),
+                          ),
+                        FilledButton.icon(
+                          onPressed: tabs.length < 12
+                              ? () => Navigator.pop(sheetContext, ('new', null))
+                              : null,
+                          icon: const Icon(Icons.add),
+                          label: const Text('新标签页'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    switch (action.$1) {
+      case 'new':
+        await _address(newTab: true);
+      case 'select':
+        _select(action.$2!);
+      case 'close':
+        _close(action.$2!);
+    }
+  }
+
+  Widget _menu(BrowserTab? tab) => PopupMenuButton<String>(
+    tooltip: '更多',
+    onSelected: (action) async {
+      if (action == 'reload') await tab?.controller?.reload();
+      if (action == 'new') await _address(newTab: true);
+      if (action == 'cookies') {
+        for (final item in tabs) {
+          item.translation.configure(enabled: false);
+        }
+        await CookieManager.instance().deleteAllCookies();
+        for (final item in tabs) {
+          await MClient.deleteAllCookies(item.url);
+        }
+        await tab?.controller?.reload();
+      }
+    },
+    itemBuilder: (_) => [
+      PopupMenuItem(
+        value: 'reload',
+        enabled: tab != null,
+        child: const Text('刷新'),
+      ),
+      PopupMenuItem(
+        value: 'new',
+        enabled: ready && tabs.length < 12,
+        child: const Text('新标签页'),
+      ),
+      const PopupMenuItem(value: 'cookies', child: Text('清除网站登录状态')),
+    ],
+  );
 
   Future<void> _history(int delta) async {
     final tab = current;
@@ -308,132 +415,60 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _history(-1);
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: InkWell(
-            onTap: _address,
-            child: Text(
-              tab?.title.isNotEmpty == true ? tab!.title : tab?.url ?? '浏览器',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          actions: [
-            if (tab != null)
-              IconButton(
-                tooltip: '漫画翻译',
-                icon: const Icon(Icons.translate),
-                onPressed: () =>
-                    showTranslationControls(context, tab.translation),
+      child: NodeLaneSurface(
+        child: Scaffold(
+          body: Column(
+            children: [
+              MobileBrowserHeader(
+                title: tab?.title ?? '',
+                url: tab?.url ?? '',
+                onAddress: _address,
+                onClose: () => Navigator.of(context).pop(),
+                menu: _menu(tab),
               ),
-            IconButton(
-              tooltip: '新标签页',
-              onPressed: tabs.length < 12 ? () => _address(newTab: true) : null,
-              icon: const Icon(Icons.add),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (action) async {
-                if (action == 'reload') await tab?.controller?.reload();
-                if (action == 'cookies') {
-                  for (final item in tabs) {
-                    item.translation.configure(enabled: false);
-                  }
-                  await CookieManager.instance().deleteAllCookies();
-                  for (final item in tabs) {
-                    await MClient.deleteAllCookies(item.url);
-                  }
-                  await tab?.controller?.reload();
-                }
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'reload', child: Text('刷新')),
-                PopupMenuItem(value: 'cookies', child: Text('清除网站登录状态')),
-              ],
-            ),
-          ],
-        ),
-        body: !ready
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  SizedBox(
-                    height: 46,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        for (final item in tabs)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: InputChip(
-                              selected: item.id == active,
-                              label: SizedBox(
-                                width: 120,
-                                child: Text(
-                                  item.title.isEmpty
-                                      ? Uri.tryParse(item.url)?.host ?? ''
-                                      : item.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+              Expanded(
+                child: !ready
+                    ? const Center(child: CircularProgressIndicator())
+                    : Stack(
+                        children: [
+                          for (final item in tabs.where(
+                            (item) => item.id == active || item.id == warm,
+                          ))
+                            Offstage(
+                              key: ValueKey(item.id),
+                              offstage: item.id != active,
+                              child: _BrowserTabView(
+                                tab: item,
+                                active: foreground && item.id == active,
+                                changed: () {
+                                  if (mounted) setState(() {});
+                                  _save();
+                                },
+                                save: _save,
+                                newTab: _new,
                               ),
-                              onPressed: () => _select(item),
-                              onDeleted: () => _close(item),
                             ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        for (final item in tabs.where(
-                          (item) => item.id == active || item.id == warm,
-                        ))
-                          Offstage(
-                            key: ValueKey(item.id),
-                            offstage: item.id != active,
-                            child: _BrowserTabView(
-                              tab: item,
-                              active: foreground && item.id == active,
-                              changed: () {
-                                if (mounted) setState(() {});
-                                _save();
-                              },
-                              save: _save,
-                              newTab: _new,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  SafeArea(
-                    top: false,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          onPressed: tab != null && tab.historyIndex > 0
-                              ? () => _history(-1)
-                              : null,
-                          icon: const Icon(Icons.arrow_back),
-                        ),
-                        IconButton(
-                          onPressed:
-                              tab != null &&
-                                  tab.historyIndex + 1 < tab.history.length
-                              ? () => _history(1)
-                              : null,
-                          icon: const Icon(Icons.arrow_forward),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('返回阅读器'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                        ],
+                      ),
               ),
+              if (tab != null)
+                ListenableBuilder(
+                  listenable: tab.translation,
+                  builder: (context, _) => MobileBrowserToolbar(
+                    tabCount: tabs.length,
+                    translating: tab.translation.enabled,
+                    onBack: tab.historyIndex > 0 ? () => _history(-1) : null,
+                    onForward: tab.historyIndex + 1 < tab.history.length
+                        ? () => _history(1)
+                        : null,
+                    onTranslate: () =>
+                        showTranslationControls(context, tab.translation),
+                    onTabs: _showTabs,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -459,7 +494,9 @@ class _BrowserTabView extends StatefulWidget {
 class _BrowserTabViewState extends State<_BrowserTabView> {
   WebTranslationBridge? bridge;
   late int restoreX = widget.tab.x, restoreY = widget.tab.y;
-  bool loading = true;
+  bool loading = true, loadError = false;
+  double progress = 0;
+  String? loadingUrl;
   int navigation = 0;
   Future<void> _visibility() async {
     final controller = widget.tab.controller;
@@ -493,102 +530,152 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   }
 
   @override
-  Widget build(BuildContext context) => InAppWebView(
-    initialUrlRequest: URLRequest(url: WebUri(widget.tab.url)),
-    initialSettings: InAppWebViewSettings(
-      javaScriptEnabled: true,
-      javaScriptBridgeForMainFrameOnly: true,
-      javaScriptHandlersForMainFrameOnly: true,
-      useShouldOverrideUrlLoading: true,
-      supportMultipleWindows: true,
-      javaScriptCanOpenWindowsAutomatically: false,
-      allowFileAccess: false,
-      allowContentAccess: false,
-      allowFileAccessFromFileURLs: false,
-      allowUniversalAccessFromFileURLs: false,
-      sharedCookiesEnabled: true,
-    ),
-    onWebViewCreated: (controller) {
-      widget.tab.controller = controller;
-      bridge = WebTranslationBridge(
-        controller,
-        widget.tab.translation,
-        widget.tab.id,
-      );
-      widget.tab.captureAnchor = bridge!.captureAnchor;
-      _visibility();
-    },
-    shouldOverrideUrlLoading: (controller, action) async =>
-        _webUrl(action.request.url?.toString())
-        ? NavigationActionPolicy.ALLOW
-        : NavigationActionPolicy.CANCEL,
-    onCreateWindow: (controller, action) async {
-      final url = action.request.url?.toString();
-      final gesture =
-          action.hasGesture == true ||
-          action.navigationType == NavigationType.LINK_ACTIVATED;
-      if (widget.active && gesture && _webUrl(url)) widget.newTab(url!);
-      return false;
-    },
-    onCloseWindow: (_) {},
-    onLoadStart: (controller, url) {
-      navigation++;
-      loading = true;
-      bridge?.navigate();
-      if (url?.toString() != widget.tab.url) {
-        if (Uri.tryParse(url?.toString() ?? '')?.origin !=
-            Uri.tryParse(widget.tab.url)?.origin) {
-          widget.tab.translation.configure(enabled: false);
-        }
-        restoreX = 0;
-        restoreY = 0;
-        widget.tab.anchor = null;
-      }
-    },
-    onLoadStop: (controller, url) async {
-      if (url == null || !mounted) return;
-      final epoch = navigation;
-      widget.tab.visited(url.toString());
-      widget.tab.title = await controller.getTitle() ?? '';
-      if (!mounted || epoch != navigation) return;
-      try {
-        await bridge?.install(Uri.parse(url.toString()));
-        final ua = await controller.evaluateJavascript(
-          source: 'navigator.userAgent',
-        );
-        await MClient.setCookie(url.toString(), ua ?? '', controller);
-        if (restoreX != 0 || restoreY != 0) {
-          await controller.scrollTo(x: restoreX, y: restoreY);
-        }
-        await bridge?.restoreAnchor(widget.tab.anchor);
-      } catch (_) {}
-      if (!mounted || epoch != navigation) return;
-      loading = false;
-      widget.changed();
-    },
-    onUpdateVisitedHistory: (controller, url, isReload) async {
-      if (url == null || loading || url.toString() == widget.tab.url) return;
-      navigation++;
-      bridge?.navigate();
-      widget.tab.visited(url.toString());
-      try {
-        await bridge?.install(Uri.parse(url.toString()));
-      } catch (_) {}
-      if (mounted) widget.changed();
-    },
-    onScrollChanged: (controller, x, y) {
-      if (!loading) {
-        widget.tab.anchor = null;
-        widget.tab.x = restoreX = x;
-        widget.tab.y = restoreY = y;
-        widget.save();
-      }
-    },
-    onTitleChanged: (controller, title) {
-      if (mounted && title != null) {
-        widget.tab.title = title;
-        widget.changed();
-      }
-    },
+  Widget build(BuildContext context) => Stack(
+    children: [
+      InAppWebView(
+        initialUrlRequest: URLRequest(url: WebUri(widget.tab.url)),
+        initialSettings: InAppWebViewSettings(
+          javaScriptEnabled: true,
+          javaScriptBridgeForMainFrameOnly: true,
+          javaScriptHandlersForMainFrameOnly: true,
+          useShouldOverrideUrlLoading: true,
+          supportMultipleWindows: true,
+          javaScriptCanOpenWindowsAutomatically: false,
+          allowFileAccess: false,
+          allowContentAccess: false,
+          allowFileAccessFromFileURLs: false,
+          allowUniversalAccessFromFileURLs: false,
+          sharedCookiesEnabled: true,
+        ),
+        onWebViewCreated: (controller) {
+          widget.tab.controller = controller;
+          bridge = WebTranslationBridge(
+            controller,
+            widget.tab.translation,
+            widget.tab.id,
+          );
+          widget.tab.captureAnchor = bridge!.captureAnchor;
+          _visibility();
+        },
+        shouldOverrideUrlLoading: (controller, action) async =>
+            browserNavigationPolicy(
+              action,
+              isIos: Platform.isIOS,
+              active: mounted && widget.active,
+              openTab: widget.newTab,
+            ),
+        onCreateWindow: (controller, action) async {
+          final url = action.request.url?.toString();
+          final gesture =
+              action.hasGesture == true ||
+              action.navigationType == NavigationType.LINK_ACTIVATED;
+          if (widget.active && gesture && isBrowserUrl(url)) {
+            widget.newTab(url!);
+          }
+          return false;
+        },
+        onCloseWindow: (_) {},
+        onLoadStart: (controller, url) {
+          if (!mounted) return;
+          navigation++;
+          setState(() {
+            loading = true;
+            loadError = false;
+            progress = 0;
+            loadingUrl = url?.toString();
+          });
+          bridge?.navigate();
+          if (url?.toString() != widget.tab.url) {
+            if (Uri.tryParse(url?.toString() ?? '')?.origin !=
+                Uri.tryParse(widget.tab.url)?.origin) {
+              widget.tab.translation.configure(enabled: false);
+            }
+            restoreX = 0;
+            restoreY = 0;
+            widget.tab.anchor = null;
+          }
+        },
+        onLoadStop: (controller, url) async {
+          if (url == null || !mounted) return;
+          final epoch = navigation;
+          widget.tab.visited(url.toString());
+          widget.tab.title = await controller.getTitle() ?? '';
+          if (!mounted || epoch != navigation) return;
+          try {
+            await bridge?.install(Uri.parse(url.toString()));
+            final ua = await controller.evaluateJavascript(
+              source: 'navigator.userAgent',
+            );
+            await MClient.setCookie(url.toString(), ua ?? '', controller);
+            if (restoreX != 0 || restoreY != 0) {
+              await controller.scrollTo(x: restoreX, y: restoreY);
+            }
+            await bridge?.restoreAnchor(widget.tab.anchor);
+          } catch (_) {}
+          if (!mounted || epoch != navigation) return;
+          setState(() => loading = false);
+          widget.changed();
+        },
+        onUpdateVisitedHistory: (controller, url, isReload) async {
+          if (url == null || loading || url.toString() == widget.tab.url) {
+            return;
+          }
+          navigation++;
+          bridge?.navigate();
+          widget.tab.visited(url.toString());
+          try {
+            await bridge?.install(Uri.parse(url.toString()));
+          } catch (_) {}
+          if (mounted) widget.changed();
+        },
+        onScrollChanged: (controller, x, y) {
+          if (!loading) {
+            widget.tab.anchor = null;
+            widget.tab.x = restoreX = x;
+            widget.tab.y = restoreY = y;
+            widget.save();
+          }
+        },
+        onTitleChanged: (controller, title) {
+          if (mounted && title != null) {
+            widget.tab.title = title;
+            widget.changed();
+          }
+        },
+        onProgressChanged: (_, value) {
+          if (mounted) setState(() => progress = value / 100);
+        },
+        onReceivedError: (_, request, error) {
+          if (!mounted ||
+              request.isForMainFrame != true ||
+              error.type == WebResourceErrorType.CANCELLED ||
+              request.url.toString() != (loadingUrl ?? widget.tab.url)) {
+            return;
+          }
+          setState(() {
+            loading = false;
+            loadError = true;
+          });
+        },
+      ),
+      if (loading)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: LinearProgressIndicator(
+            minHeight: 2,
+            value: progress > 0 ? progress : null,
+          ),
+        ),
+      if (loadError)
+        Positioned.fill(
+          child: MobileBrowserLoadError(
+            onRetry: () => widget.tab.controller?.loadUrl(
+              urlRequest: URLRequest(url: WebUri(loadingUrl ?? widget.tab.url)),
+            ),
+          ),
+        ),
+    ],
   );
 }
