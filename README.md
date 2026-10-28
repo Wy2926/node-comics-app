@@ -12,7 +12,7 @@
 | --- | --- |
 | [开发约定](AGENTS.md) | 产品边界、翻译解耦、性能与验证要求 |
 | [翻译架构与实现状态](docs/TRANSLATION_ARCHITECTURE.md) | 接入方式、共享渠道、回执恢复、资源预算及尚未通过的验收门槛 |
-| [手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md) | 书架、平台底栏、视图边界与逐页迭代清单 |
+| [手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md) | 书架、浏览与来源、平台底栏及逐页迭代清单 |
 | [上游基线](UPSTREAM.md) | 来源、固定提交、许可证和摘要 |
 | [Mangayomi 原始说明](README.mangayomi.md) | 上游功能、构建说明和致谢 |
 | [Flutter 配置](pubspec.yaml) | Dart SDK 与依赖要求 |

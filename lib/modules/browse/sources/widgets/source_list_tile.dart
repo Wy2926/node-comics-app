@@ -10,6 +10,8 @@ import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/language.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 class SourceListTile extends StatelessWidget {
   final ItemType itemType;
@@ -23,39 +25,92 @@ class SourceListTile extends StatelessWidget {
     required this.itemType,
   });
 
+  void _openSource(BuildContext context) {
+    if (!isLocal) sourceRepository.markLastUsed(itemType, source.id);
+    context.push('/mangaHome', extra: (source, false));
+  }
+
+  Widget _icon(BuildContext context) => Container(
+    height: 37,
+    width: 37,
+    decoration: BoxDecoration(
+      color: Theme.of(context).secondaryHeaderColor.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(isMobile && !isTv ? 10 : 5),
+    ),
+    child: (source.iconUrl ?? '').isEmpty
+        ? Icon(isLocal ? Icons.folder_outlined : Icons.extension_rounded)
+        : cachedNetworkImage(
+            imageUrl: source.iconUrl!,
+            fit: BoxFit.contain,
+            width: 37,
+            height: 37,
+            errorWidget: const Icon(Icons.extension_rounded),
+            useCustomNetworkImage: false,
+          ),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final title = isLocal
+        ? "${context.l10n.local_source} ${source.itemType.localized(context.l10n)}"
+        : source.name ?? '';
+    if (isMobile && !isTv) {
+      return MobileSourceCard(
+        title: title,
+        icon: _icon(context),
+        onTap: () => _openSource(context),
+        metadata: isLocal
+            ? null
+            : Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  Text(completeLanguageName((source.lang ?? '').toLowerCase())),
+                  if (source.isNsfw ?? false)
+                    Text(
+                      'NSFW',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                ],
+              ),
+        actions: Row(
+          children: [
+            Expanded(
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  minimumSize: const Size(44, 44),
+                ),
+                onPressed: () =>
+                    context.push('/mangaHome', extra: (source, true)),
+                icon: const Icon(Icons.new_releases_outlined, size: 20),
+                label: Text(context.l10n.latest),
+              ),
+            ),
+            if (!isLocal)
+              IconButton(
+                tooltip: context.l10n.pinned,
+                isSelected: source.isPinned ?? false,
+                onPressed: () => sourceRepository.save(
+                  source..isPinned = !(source.isPinned ?? false),
+                ),
+                icon: const Icon(Icons.push_pin_outlined, size: 20),
+                selectedIcon: Icon(
+                  Icons.push_pin_rounded,
+                  size: 20,
+                  color: context.primaryColor,
+                ),
+              ),
+          ],
+        ),
+      );
+    }
     return Consumer(
       builder: (context, ref, child) => ListTile(
-        onTap: () {
-          if (!isLocal) {
-            sourceRepository.markLastUsed(itemType, source.id);
-          }
-          context.push('/mangaHome', extra: (source, false));
-        },
-        leading: Container(
-          height: 37,
-          width: 37,
-          decoration: BoxDecoration(
-            color: Theme.of(context).secondaryHeaderColor
-                .withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: source.iconUrl!.isEmpty
-              ? const Icon(Icons.extension_rounded)
-              : cachedNetworkImage(
-                  imageUrl: source.iconUrl!,
-                  fit: BoxFit.contain,
-                  width: 37,
-                  height: 37,
-                  errorWidget: const SizedBox(
-                    width: 37,
-                    height: 37,
-                    child: Center(child: Icon(Icons.extension_rounded)),
-                  ),
-                  useCustomNetworkImage: false,
-                ),
-        ),
+        onTap: () => _openSource(context),
+        leading: _icon(context),
         subtitle: Row(
           children: [
             Text(
@@ -86,11 +141,7 @@ class SourceListTile extends StatelessWidget {
               ),
           ],
         ),
-        title: Text(
-          !isLocal
-              ? source.name!
-              : "${context.l10n.local_source} ${source.itemType.localized(context.l10n)}",
-        ),
+        title: Text(title),
         trailing: SizedBox(
           width: 150,
           child: Row(

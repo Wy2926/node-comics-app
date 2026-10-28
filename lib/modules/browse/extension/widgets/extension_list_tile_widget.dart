@@ -11,6 +11,7 @@ import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 class ExtensionListTileWidget extends ConsumerStatefulWidget {
   final Source source;
@@ -29,10 +30,10 @@ class _ExtensionListTileWidgetState
       (widget.source.isAdded ?? false) &&
       !(widget.source.isObsolete ?? false) &&
       compareVersions(
-        widget.source.version ?? '',
-        widget.source.versionLast ?? '',
-      ) <
-      0;
+            widget.source.version ?? '',
+            widget.source.versionLast ?? '',
+          ) <
+          0;
 
   bool get _sourceNotEmpty =>
       widget.source.sourceCode != null && widget.source.sourceCode!.isNotEmpty;
@@ -123,7 +124,7 @@ class _ExtensionListTileWidgetState
         color: Theme.of(context).secondaryHeaderColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(5),
       ),
-      child: widget.source.iconUrl!.isEmpty
+      child: (widget.source.iconUrl ?? '').isEmpty
           ? const Icon(Icons.extension_rounded)
           : cachedNetworkImage(
               imageUrl: widget.source.iconUrl!,
@@ -291,6 +292,60 @@ class _ExtensionListTileWidgetState
     );
   }
 
+  Widget _buildMobileCard(BuildContext context, String label) {
+    final source = widget.source;
+    return MobileSourceCard(
+      title: source.name ?? '',
+      icon: _icon(),
+      onTap: _isLoading ? null : () => _onMainTap(context),
+      metadata: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          Text(completeLanguageName((source.lang ?? '').toLowerCase())),
+          if ((source.version ?? '').isNotEmpty) Text(source.version!),
+          if (source.isNsfw ?? false)
+            Text(
+              'NSFW',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          if ((source.repo?.name ?? '').isNotEmpty) Text(source.repo!.name!),
+          if (source.isObsolete ?? false)
+            Text('OBSOLETE', style: TextStyle(color: context.primaryColor)),
+        ],
+      ),
+      actions: Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                alignment: Alignment.centerLeft,
+                minimumSize: const Size(44, 44),
+              ),
+              onPressed: _isLoading ? null : () => _onActionTap(context),
+              icon: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(_actionIcon(context, label), size: 20),
+              label: Text(label),
+            ),
+          ),
+          if (_sourceNotEmpty)
+            IconButton(
+              tooltip: context.l10n.uninstall,
+              onPressed: _isLoading
+                  ? null
+                  : () => _openUninstallDialog(context),
+              icon: const Icon(Icons.delete_outline_rounded, size: 20),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
@@ -301,6 +356,7 @@ class _ExtensionListTileWidgetState
         : l10n.settings;
 
     if (isTv) return _buildTvRow(context, buttonLabel);
+    if (isMobile) return _buildMobileCard(context, buttonLabel);
 
     return ListTile(
       onTap: _isLoading ? null : () => _onMainTap(context),

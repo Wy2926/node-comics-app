@@ -12,6 +12,8 @@ import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_empty.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 final getSourcesStreamProvider = StreamProvider.family<List<Source>, ItemType>((
   ref,
@@ -67,6 +69,32 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
     return SourceListTile(source: source, itemType: widget.itemType);
   }
 
+  void _showExtensions() {
+    final index = widget.tabs.indexWhere(
+      (tab) =>
+          tab.type == widget.itemType && tab.kind == BrowseTabKind.extensions,
+    );
+    if (index >= 0) widget.tabIndex(index);
+  }
+
+  Widget _localSource() => SourceListTile(
+    source: Source(name: 'local', lang: '', itemType: widget.itemType),
+    itemType: widget.itemType,
+  );
+
+  Widget _sectionTitle(String title) => isMobile && !isTv
+      ? MobileBrowseSectionTitle(title)
+      : Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+        );
+
   @override
   void dispose() {
     for (final n in [
@@ -88,7 +116,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
 
     return Padding(
       padding: EdgeInsets.only(
-        top: 10,
+        top: isMobile && !isTv ? 0 : 10,
         left: tvHorizontalInset,
         right: tvHorizontalInset,
       ),
@@ -99,6 +127,24 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
               .where((e) => showNSFW || !(e.isNsfw ?? false))
               .toList();
           if (sources.isEmpty) {
+            if (isMobile && !isTv) {
+              return ListView(
+                controller: controller,
+                padding: EdgeInsets.only(
+                  bottom: pageBottomInsets(context).bottom,
+                ),
+                children: [
+                  MobileBrowseEmpty(
+                    icon: Icons.travel_explore_rounded,
+                    title: l10n.no_sources_installed,
+                    actionLabel: l10n.show_extensions,
+                    onAction: _showExtensions,
+                  ),
+                  _sectionTitle(l10n.other),
+                  _localSource(),
+                ],
+              );
+            }
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -110,43 +156,13 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      final extensionIndex = widget.tabs.indexWhere(
-                        (t) =>
-                            t.type == widget.itemType &&
-                            t.kind == BrowseTabKind.extensions,
-                      );
-
-                      if (extensionIndex != -1) {
-                        widget.tabIndex(extensionIndex);
-                      }
-                    },
+                    onPressed: _showExtensions,
                     icon: const Icon(Icons.extension_rounded),
                     label: Text(context.l10n.show_extensions),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        l10n.other,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SourceListTile(
-                  source: Source(
-                    name: "local",
-                    lang: "",
-                    itemType: widget.itemType,
-                  ),
-                  itemType: widget.itemType,
-                ),
+                _sectionTitle(l10n.other),
+                _localSource(),
               ],
             );
           }
@@ -161,7 +177,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
           return Scrollbar(
             interactive: true,
             controller: controller,
-            thickness: 12,
+            thickness: isMobile && !isTv ? 3 : 12,
             radius: const Radius.circular(10),
             child: CustomScrollView(
               controller: controller,
@@ -173,20 +189,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 CustomSliverGroupedListView<Source, String>(
                   elements: lastUsedEntries,
                   groupBy: (element) => "",
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          l10n.last_used,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  groupSeparatorBuilder: (String groupByValue) =>
+                      _sectionTitle(l10n.last_used),
                   itemBuilder: (context, Source element) {
                     return _row(element, shareNodes: false);
                   },
@@ -198,20 +202,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 CustomSliverGroupedListView<Source, String>(
                   elements: isPinnedEntries,
                   groupBy: (element) => "",
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          l10n.pinned,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  groupSeparatorBuilder: (String groupByValue) =>
+                      _sectionTitle(l10n.pinned),
                   itemBuilder: (context, Source element) {
                     return _row(element);
                   },
@@ -224,20 +216,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                   elements: allEntriesWithoutIspinned,
                   groupBy: (element) =>
                       completeLanguageName(element.lang!.toLowerCase()),
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          groupByValue,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  groupSeparatorBuilder: (String groupByValue) =>
+                      _sectionTitle(groupByValue),
                   itemBuilder: (context, Source element) {
                     return _row(element);
                   },
@@ -248,30 +228,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 ),
                 SliverToBoxAdapter(
                   child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Row(
-                          children: [
-                            Text(
-                              l10n.other,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SourceListTile(
-                        source: Source(
-                          name: "local",
-                          lang: "",
-                          itemType: widget.itemType,
-                        ),
-                        itemType: widget.itemType,
-                      ),
-                    ],
+                    children: [_sectionTitle(l10n.other), _localSource()],
                   ),
                 ),
                 // Trailing room rather than padding around the viewport, so rows

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Presentation tokens shared by the mobile shelf and Android navigation.
+/// Presentation tokens shared by mobile screens and Android navigation.
 /// The user's existing accent and font preferences remain authoritative.
 class NodeLaneTokens {
   const NodeLaneTokens({

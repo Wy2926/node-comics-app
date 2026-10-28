@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
@@ -14,13 +15,17 @@ import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/extension_list_tile_widget.dart';
 import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_empty.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 class ExtensionScreen extends ConsumerStatefulWidget {
   final ItemType itemType;
   final String query;
+  final VoidCallback? onClearQuery;
   const ExtensionScreen({
     required this.query,
     required this.itemType,
+    this.onClearQuery,
     super.key,
   });
 
@@ -83,7 +88,7 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
       child: Padding(
         // Match the sources tab's inset so the two Browse tabs line up on TV.
         padding: EdgeInsets.only(
-          top: 10,
+          top: isMobile && !isTv ? 0 : 10,
           left: tvHorizontalInset,
           right: tvHorizontalInset,
         ),
@@ -141,11 +146,42 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
             return Scrollbar(
               interactive: true,
               controller: controller,
-              thickness: 12,
+              thickness: isMobile && !isTv ? 3 : 12,
               radius: const Radius.circular(10),
               child: CustomScrollView(
                 controller: controller,
+                physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
+                  if (isMobile &&
+                      !isTv &&
+                      updateEntries.isEmpty &&
+                      installedEntries.isEmpty &&
+                      notInstalledEntries.isEmpty)
+                    SliverToBoxAdapter(
+                      child: MobileBrowseEmpty(
+                        icon: widget.query.isEmpty
+                            ? Icons.extension_outlined
+                            : Icons.search_off_rounded,
+                        title: l10n.no_result,
+                        actionLabel: widget.query.isNotEmpty
+                            ? l10n.reset
+                            : repositories.isEmpty
+                            ? l10n.add_extensions_repo
+                            : l10n.language,
+                        onAction: widget.query.isNotEmpty
+                            ? () => widget.onClearQuery?.call()
+                            : () => context.push(
+                                repositories.isEmpty
+                                    ? '/SourceRepositories'
+                                    : '/ExtensionLang',
+                                extra: widget.itemType,
+                              ),
+                        secondaryLabel: widget.query.isEmpty
+                            ? l10n.refresh
+                            : null,
+                        onSecondary: _refreshSources,
+                      ),
+                    ),
                   if (showWarning)
                     const SliverToBoxAdapter(
                       child: ExtensionServerWarningBanner(),
@@ -185,17 +221,22 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
       groupSeparatorBuilder: (_) => StatefulBuilder(
         builder: (context, setState) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile && !isTv ? 20 : 12,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.update_pending,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                Expanded(
+                  child: Text(
+                    l10n.update_pending,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: isUpdating
                       ? null
@@ -237,13 +278,18 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
     return CustomSliverGroupedListView<Source, String>(
       elements: installedEntries,
       groupBy: (_) => "",
-      groupSeparatorBuilder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          l10n.installed,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
+      groupSeparatorBuilder: (_) => isMobile && !isTv
+          ? MobileBrowseSectionTitle(l10n.installed)
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                l10n.installed,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
       itemBuilder: (context, Source element) =>
           ExtensionListTileWidget(key: ValueKey(element.id), source: element),
       groupComparator: (group1, group2) => group1.compareTo(group2),
@@ -258,13 +304,18 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
       elements: notInstalledEntries,
       groupBy: (element) =>
           completeLanguageName(element.lang?.toLowerCase() ?? ''),
-      groupSeparatorBuilder: (String groupByValue) => Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: Text(
-          groupByValue,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
+      groupSeparatorBuilder: (String groupByValue) => isMobile && !isTv
+          ? MobileBrowseSectionTitle(groupByValue)
+          : Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Text(
+                groupByValue,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
       itemBuilder: (context, Source element) =>
           ExtensionListTileWidget(key: ValueKey(element.id), source: element),
       groupComparator: (group1, group2) => group1.compareTo(group2),

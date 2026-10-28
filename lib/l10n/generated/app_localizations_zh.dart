@@ -906,7 +906,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get global_search => '全球搜索';
+  String get global_search => '全局搜索';
 
   @override
   String get color_blend_level => '颜色混合级别';
@@ -1562,7 +1562,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateProgressAfterReading => '阅读后更新进度';
 
   @override
-  String get no_sources_installed => '未安装任何来源！';
+  String get no_sources_installed => '还没有可用来源';
 
   @override
   String get show_extensions => '显示扩展';
