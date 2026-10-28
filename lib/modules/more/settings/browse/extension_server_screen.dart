@@ -24,6 +24,7 @@ import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../providers/storage_provider.dart';
+import 'mobile_extension_server_settings.dart';
 
 class ExtensionServerScreen extends ConsumerStatefulWidget {
   const ExtensionServerScreen({super.key});
@@ -47,15 +48,12 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   String _latestVersion = '';
   String _releaseCheckMessage = '';
   ExtensionServerRelease? _latestRelease;
-  bool _runtimeRunning = false;
-  bool _runtimeBusy = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_refreshStatus());
-      unawaited(_refreshRuntimeStatus());
+      if (mounted && (!isMobile || isTv)) unawaited(_refreshStatus());
     });
   }
 
@@ -89,6 +87,25 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     final autoStartServer = ref.watch(
       autoStartExtensionServerOnLaunchStateProvider,
     );
+    if (isMobile && !isTv) {
+      final server = MExtensionServerPlatform(ref);
+      return MobileExtensionServerSettings(
+        proxyAddress: androidProxyServer,
+        onProxyAddressChanged: ref
+            .read(androidProxyServerStateProvider.notifier)
+            .set,
+        onGetServer: _openMExtensionServerRelease,
+        showRuntime: Platform.isIOS,
+        autoStart: autoStartServer,
+        onAutoStartChanged: ref
+            .read(autoStartExtensionServerOnLaunchStateProvider.notifier)
+            .set,
+        checkRuntime: server.checkLocalServer,
+        onRuntimeChange: (running) => running
+            ? server.startServer(forceLocal: true)
+            : server.stopServer(),
+      );
+    }
     final actionLabel = !_isInstalled
         ? l10n.download
         : (_hasUpdateAvailable ? l10n.update_files : l10n.up_to_date);
@@ -287,47 +304,6 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
                   ),
                 ],
               ),
-              if (Platform.isIOS) ...[
-                const SizedBox(height: 24),
-                Text(
-                  l10n.zero_interpreter,
-                  style: TextStyle(fontSize: 13, color: context.primaryColor),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.zero_interpreter_description,
-                  style: TextStyle(color: context.secondaryColor),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.start_server_on_launch),
-                  value: autoStartServer,
-                  onChanged: ref
-                      .read(
-                        autoStartExtensionServerOnLaunchStateProvider.notifier,
-                      )
-                      .set,
-                ),
-                const SizedBox(height: 12),
-                ExtensionServerStatusTile(
-                  label: l10n.runtime_status,
-                  value: _runtimeRunning ? l10n.running : l10n.stopped,
-                  exists: _runtimeRunning,
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _runtimeBusy ? null : _toggleRuntime,
-                    icon: Icon(
-                      _runtimeRunning
-                          ? Icons.stop_circle_outlined
-                          : Icons.play_circle_outline,
-                    ),
-                    label: Text(_runtimeRunning ? l10n.stop : l10n.start),
-                  ),
-                ),
-              ],
             ],
             if (_showDesktopAdvancedMExtensionServerSection) ...[
               const SizedBox(height: 24),
@@ -441,34 +417,6 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
       _isChecking = false;
       _releaseCheckMessage = message;
     });
-  }
-
-  Future<void> _refreshRuntimeStatus() async {
-    if (!Platform.isIOS) return;
-    var running = false;
-    try {
-      running = await MExtensionServerPlatform(ref).checkLocalServer();
-    } catch (_) {
-      // A missing local runtime is a stopped server, not a global app crash.
-    }
-    if (mounted) setState(() => _runtimeRunning = running);
-  }
-
-  Future<void> _toggleRuntime() async {
-    setState(() => _runtimeBusy = true);
-    final server = MExtensionServerPlatform(ref);
-    if (_runtimeRunning) {
-      await server.stopServer();
-    } else {
-      await server.startServer(forceLocal: true);
-    }
-    final running = await server.checkLocalServer();
-    if (mounted) {
-      setState(() {
-        _runtimeRunning = running;
-        _runtimeBusy = false;
-      });
-    }
   }
 
   Future<void> _downloadOrUpdate() async {

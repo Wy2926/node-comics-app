@@ -3463,6 +3463,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get network_settings => '网络';
 
   @override
+  String get extension_service => '扩展服务';
+
+  @override
+  String get extension_service_description => '管理扩展运行服务与代理地址。';
+
+  @override
+  String get proxy_address => '代理地址';
+
+  @override
+  String get checking_runtime_status => '正在检查状态…';
+
+  @override
   String download_delay_value(int seconds) {
     return '$seconds 秒 + 随机延迟';
   }

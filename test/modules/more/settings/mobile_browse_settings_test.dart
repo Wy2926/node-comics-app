@@ -80,10 +80,7 @@ void main() {
         await tester.tap(find.text(label));
       }
       expect(repositories, ItemType.values);
-      expect(
-        find.text('Android Proxy Server (M-Extension-Server)'),
-        findsNothing,
-      );
+      expect(find.text('Extension service'), findsNothing);
       await reveal(tester, 'Check for extension updates');
       await tester.tap(find.text('Check for extension updates'));
       await tester.pumpAndSettle();
@@ -142,8 +139,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await reveal(tester, 'Android Proxy Server (M-Extension-Server)');
-      await tester.tap(find.text('Android Proxy Server (M-Extension-Server)'));
+      await reveal(tester, 'Extension service');
+      await tester.tap(find.text('Extension service'));
       expect(actions, ['proxy']);
       await reveal(tester, 'Data and storage');
       expect(find.text('Clear all sources'), findsNothing);

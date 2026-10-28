@@ -68,8 +68,8 @@ class MobileBrowseSettings extends ConsumerWidget {
                   ),
                   if (showProxyServer)
                     MobileSettingsLink(
-                      title: l10n.android_proxy_server,
-                      subtitle: l10n.m_extension_server_description,
+                      title: l10n.extension_service,
+                      subtitle: l10n.extension_service_description,
                       icon: Icons.dns_outlined,
                       onTap: onProxyServer,
                     ),

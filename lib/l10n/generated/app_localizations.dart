@@ -6451,6 +6451,30 @@ abstract class AppLocalizations {
   /// **'Network'**
   String get network_settings;
 
+  /// No description provided for @extension_service.
+  ///
+  /// In en, this message translates to:
+  /// **'Extension service'**
+  String get extension_service;
+
+  /// No description provided for @extension_service_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage the extension runtime and proxy address.'**
+  String get extension_service_description;
+
+  /// No description provided for @proxy_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy address'**
+  String get proxy_address;
+
+  /// No description provided for @checking_runtime_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking status…'**
+  String get checking_runtime_status;
+
   /// No description provided for @download_delay_value.
   ///
   /// In en, this message translates to:

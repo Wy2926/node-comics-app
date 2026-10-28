@@ -3632,6 +3632,19 @@ class AppLocalizationsIt extends AppLocalizations {
   String get network_settings => 'Network';
 
   @override
+  String get extension_service => 'Extension service';
+
+  @override
+  String get extension_service_description =>
+      'Manage the extension runtime and proxy address.';
+
+  @override
+  String get proxy_address => 'Proxy address';
+
+  @override
+  String get checking_runtime_status => 'Checking status…';
+
+  @override
   String download_delay_value(int seconds) {
     return '$seconds s + random delay';
   }
