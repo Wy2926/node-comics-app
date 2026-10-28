@@ -10,6 +10,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// The detail page's app bar: the normal title/actions bar, or - while a
 /// long-press has put the chapter list into multi-select - a count plus
@@ -49,6 +50,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = l10nLocalizations(context)!;
+    final mobile = isMobile && !isTv;
     final isLongPressed = ref.watch(isLongPressedStateProvider);
     final chapterList = ref.watch(chaptersListStateProvider);
     final checkCategoryList =
@@ -69,6 +71,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
               title: Text(chapterList.length.toString()),
               backgroundColor: context.primaryColor.withValues(alpha: 0.2),
               leading: IconButton(
+                tooltip: l10n.cancel,
                 onPressed: () {
                   ref.read(chaptersListStateProvider.notifier).clear();
                   ref
@@ -79,9 +82,13 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
               actions: [
                 IconButton(
+                  tooltip: MaterialLocalizations.of(context)
+                      .selectAllButtonLabel,
                   onPressed: () {
                     for (var chapter in chapters) {
-                      ref.read(chaptersListStateProvider.notifier).selectAll(chapter);
+                      ref
+                          .read(chaptersListStateProvider.notifier)
+                          .selectAll(chapter);
                     }
                   },
                   icon: const Icon(Icons.select_all),
@@ -112,10 +119,16 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
           )
         : AppBar(
             title: ref.watch(offsetProvider.select((val) => val > 200))
-                ? Text(manga.name!, style: const TextStyle(fontSize: 17))
+                ? Text(
+                    manga.name!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 17),
+                  )
                 : null,
-            backgroundColor:
-                ref.watch(offsetProvider.select((val) => val == 0.0))
+            backgroundColor: mobile
+                ? NodeLaneTokens.of(context).canvas
+                : ref.watch(offsetProvider.select((val) => val == 0.0))
                 ? Colors.transparent
                 : Theme.of(context).scaffoldBackgroundColor,
             actions: [
@@ -127,14 +140,16 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   onDownload: onDownload,
                 ),
               ],
-              IconButton(
-                splashRadius: 20,
-                onPressed: onShowFilterMenu,
-                icon: Icon(
-                  Icons.filter_list_sharp,
-                  color: isNotFiltering ? null : Colors.yellow,
+              if (!mobile)
+                IconButton(
+                  tooltip: l10n.filter,
+                  splashRadius: 20,
+                  onPressed: onShowFilterMenu,
+                  icon: Icon(
+                    Icons.filter_list_sharp,
+                    color: isNotFiltering ? null : Colors.yellow,
+                  ),
                 ),
-              ),
               // The menu's items are conditional, so its values
               // are not its indices: keep label and value paired so
               // the centred TV menu cannot fire the wrong action.
@@ -170,28 +185,23 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 )
               else
                 PopupMenuButton(
+                  tooltip: l10n.more,
+                  icon: Icon(
+                    mobile && isApple ? Icons.more_horiz : Icons.more_vert,
+                  ),
                   popUpAnimationStyle: popupAnimationStyle,
                   itemBuilder: (context) {
                     return [
                       if (!isLocalArchive)
-                        PopupMenuItem<int>(
-                          value: 0,
-                          child: Text(l10n.refresh),
-                        ),
+                        PopupMenuItem<int>(value: 0, child: Text(l10n.refresh)),
                       if (manga.favorite! && checkCategoryList)
                         PopupMenuItem<int>(
                           value: 1,
                           child: Text(l10n.set_categories),
                         ),
                       if (!isLocalArchive)
-                        PopupMenuItem<int>(
-                          value: 2,
-                          child: Text(l10n.share),
-                        ),
-                      PopupMenuItem<int>(
-                        value: 3,
-                        child: Text(l10n.migrate),
-                      ),
+                        PopupMenuItem<int>(value: 2, child: Text(l10n.share)),
+                      PopupMenuItem<int>(value: 3, child: Text(l10n.migrate)),
                       PopupMenuItem<int>(
                         value: 6,
                         child: Text(l10n.mass_migration_title),

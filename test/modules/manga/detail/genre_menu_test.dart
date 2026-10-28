@@ -4,16 +4,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/manga_info_header.dart';
 
 void main() {
-  testWidgets('genre chip opens its search menu', (tester) async {
+  testWidgets('mobile genre chip opens both searches with large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final selected = <int>[];
     final semantics = tester.ensureSemantics();
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(2)),
+          child: child!,
+        ),
         home: Scaffold(
           body: Center(
             child: DetailGenreChip(
               label: 'Animation',
+              mobile: true,
               libraryLabel: 'Search genre in library',
               sourceLabel: 'Browse in source',
               onSelected: selected.add,

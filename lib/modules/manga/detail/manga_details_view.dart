@@ -13,6 +13,9 @@ import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/services/get_detail.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
 import 'package:mangayomi/modules/manga/detail/manga_detail_view.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
@@ -152,83 +155,15 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     if (context.mounted) Navigator.pop(context);
   }
 
-  Size measureText(String text, TextStyle style) {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    return textPainter.size;
-  }
-
-  double calculateDynamicButtonWidth(
-    String text,
-    TextStyle textStyle,
-    double padding,
-  ) {
-    final textSize = measureText(text, textStyle);
-    return textSize.width + padding;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     bool? isLocalArchive = widget.manga.isLocalArchive ?? false;
-    return Scaffold(
-      floatingActionButton: Consumer(
-        builder: (context, ref, child) {
-          final chaptersList = ref.watch(chaptersListttStateProvider);
-          final isExtended = ref.watch(isExtendedStateProvider);
-          return ref.watch(isLongPressedStateProvider)
-              ? Container()
-              : chaptersList.isNotEmpty &&
-                    chaptersList
-                        .where((element) => !element.isRead!)
-                        .toList()
-                        .isNotEmpty
-              ? StreamBuilder(
-                  stream: historyRepository.watchByItemType(
-                    widget.manga.itemType,
-                  ),
-                  builder: (context, snapshot) {
-                    String buttonLabel = widget.manga.itemType != ItemType.anime
-                        ? l10n.read
-                        : l10n.watch;
-                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                      final incognitoMode = ref.watch(
-                        incognitoModeStateProvider,
-                      );
-                      final entries = snapshot.data!
-                          .where(
-                            (element) => element.mangaId == widget.manga.id,
-                          )
-                          .toList();
-
-                      if (entries.isNotEmpty && !incognitoMode) {
-                        final chap = entries.last.chapter.value!;
-                        return CustomFloatingActionBtn(
-                          isExtended: !isExtended,
-                          label: l10n.resume,
-                          onPressed: () {
-                            chap.pushToReaderView(context);
-                          },
-                        );
-                      }
-                    }
-                    return CustomFloatingActionBtn(
-                      isExtended: !isExtended,
-                      label: buttonLabel,
-                      onPressed: () {
-                        widget.manga.chapters.toList().first.pushToReaderView(
-                          context,
-                        );
-                      },
-                    );
-                  },
-                )
-              : Container();
-        },
-      ),
+    final mobile = isMobile && !isTv;
+    final page = Scaffold(
+      floatingActionButton: mobile ? null : _readingAction(false),
       body: MangaDetailView(
+        readingAction: mobile ? _readingAction(true) : null,
         titleDescription: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -268,19 +203,24 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
             ),
           ],
         ),
-        action: widget.manga.favorite!
+        action: mobile
+            ? MobileDetailButton(
+                label: widget.manga.favorite!
+                    ? l10n.in_library
+                    : l10n.add_to_library,
+                icon: widget.manga.favorite!
+                    ? Icons.check_rounded
+                    : Icons.add_rounded,
+                onPressed: _onFavoritePressed,
+              )
+            : widget.manga.favorite!
             ? SizedBox(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     elevation: 0,
                   ),
-                  onPressed: () async {
-                    final model = widget.manga;
-                    model.favorite = false;
-                    model.dateAdded = 0;
-                    await mangaRepository.save(model);
-                  },
+                  onPressed: _onFavoritePressed,
                   child: Column(
                     children: [
                       const Icon(Icons.favorite, size: 20),
@@ -299,7 +239,7 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   elevation: 0,
                 ),
-                onPressed: () => _onAddToLibraryPressed(context),
+                onPressed: _onFavoritePressed,
                 child: Column(
                   children: [
                     Icon(
@@ -328,5 +268,94 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
         itemType: widget.manga.itemType,
       ),
     );
+    return mobile ? NodeLaneSurface(child: page) : page;
   }
+
+  Future<void> _onFavoritePressed() async {
+    final model = widget.manga;
+    if (model.favorite!) {
+      model.favorite = false;
+      model.dateAdded = 0;
+      await mangaRepository.save(model);
+    } else {
+      await _onAddToLibraryPressed(context);
+    }
+  }
+
+  Widget _readingAction(bool mobile) {
+    final l10n = l10nLocalizations(context)!;
+    return Consumer(
+      builder: (context, ref, child) {
+        final chaptersList = ref.watch(chaptersListttStateProvider);
+        final isExtended = mobile ? false : ref.watch(isExtendedStateProvider);
+        return ref.watch(isLongPressedStateProvider)
+            ? const SizedBox.shrink()
+            : chaptersList.isNotEmpty &&
+                  chaptersList
+                      .where((element) => !element.isRead!)
+                      .toList()
+                      .isNotEmpty
+            ? StreamBuilder(
+                stream: historyRepository.watchByItemType(
+                  widget.manga.itemType,
+                ),
+                builder: (context, snapshot) {
+                  String buttonLabel = widget.manga.itemType != ItemType.anime
+                      ? l10n.read
+                      : l10n.watch;
+                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    final incognitoMode = ref.watch(incognitoModeStateProvider);
+                    final entries = snapshot.data!
+                        .where((element) => element.mangaId == widget.manga.id)
+                        .toList();
+
+                    if (entries.isNotEmpty && !incognitoMode) {
+                      final chap = entries.last.chapter.value!;
+                      return _readingButton(
+                        mobile: mobile,
+                        isExtended: !isExtended,
+                        label: l10n.resume,
+                        onPressed: () {
+                          chap.pushToReaderView(context);
+                        },
+                      );
+                    }
+                  }
+                  return _readingButton(
+                    mobile: mobile,
+                    isExtended: !isExtended,
+                    label: buttonLabel,
+                    onPressed: () {
+                      widget.manga.chapters.toList().first.pushToReaderView(
+                        context,
+                      );
+                    },
+                  );
+                },
+              )
+            : const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _readingButton({
+    required bool mobile,
+    required bool isExtended,
+    required String label,
+    required VoidCallback onPressed,
+  }) => mobile
+      ? Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: MobileDetailButton(
+            label: label,
+            icon: Icons.play_arrow_rounded,
+            onPressed: onPressed,
+            primary: true,
+          ),
+        )
+      : CustomFloatingActionBtn(
+          isExtended: isExtended,
+          label: label,
+          onPressed: onPressed,
+        );
 }

@@ -27,6 +27,10 @@ import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/headers.dart';
 import 'package:mangayomi/utils/utils.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
 
 /// The detail page's info block: cover, title, favourite/webview/tracker
 /// actions, description (collapsible), genre chips and the
@@ -39,6 +43,8 @@ class MangaInfoHeader extends ConsumerStatefulWidget {
   final Widget titleDescription;
   final Widget action;
   final int chapterLength;
+  final Widget? readingAction;
+  final VoidCallback? onShowFilterMenu;
 
   const MangaInfoHeader({
     super.key,
@@ -47,6 +53,8 @@ class MangaInfoHeader extends ConsumerStatefulWidget {
     required this.titleDescription,
     required this.action,
     required this.chapterLength,
+    this.readingAction,
+    this.onShowFilterMenu,
   });
 
   @override
@@ -59,6 +67,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
+    if (isMobile && !isTv) return _mobileHeader(l10n);
     return Stack(
       children: [
         Container(
@@ -229,28 +238,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                                       color: context.secondaryColor,
                                     ),
                                   ),
-                                  onPressed: () async {
-                                    final manga = widget.manga;
-                                    if (manga.source == "torrent") {
-                                      addTorrent(context, manga: manga);
-                                    } else {
-                                      final splitChapters =
-                                          manga.itemType == ItemType.novel
-                                          ? await showSplitChaptersDialog(
-                                              context,
-                                            )
-                                          : true;
-                                      if (!context.mounted) return;
-                                      await ref.watch(
-                                        importArchivesFromFileProvider(
-                                          itemType: manga.itemType,
-                                          manga,
-                                          init: false,
-                                          splitChapters: splitChapters,
-                                        ).future,
-                                      );
-                                    }
-                                  },
+                                  onPressed: _addChapters,
                                 ),
                             ],
                           ),
@@ -272,9 +260,152 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     );
   }
 
+  Widget _mobileHeader(AppLocalizations l10n) {
+    final colors = NodeLaneTokens.of(context);
+    final missing = widget.manga.missingChapterCount();
+    final filtering = !ref.watch(
+      chapterFilterResultStateProvider(manga: widget.manga),
+    );
+    final genres = widget.manga.genre ?? const <String>[];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MobileDetailHeading(
+            cover: _coverCard(),
+            title: _titles(includeMetadata: false),
+            metadata: DefaultTextStyle.merge(
+              style: TextStyle(fontSize: 13, height: 1.5, color: colors.muted),
+              child: widget.titleDescription,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            runSpacing: 8,
+            children: [
+              if (widget.readingAction != null) widget.readingAction!,
+              widget.action,
+            ],
+          ),
+          if (widget.manga.description?.trim().isNotEmpty ?? false) ...[
+            const SizedBox(height: 20),
+            ReadMoreWidget(
+              text: widget.manga.description!,
+              onChanged: (value) => setState(() => _expanded = value),
+            ),
+          ],
+          if (genres.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            if (_expanded)
+              Wrap(
+                children: [
+                  for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
+                ],
+              )
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
+                  ],
+                ),
+              ),
+          ],
+          const SizedBox(height: 16),
+          ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+            childrenPadding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+            backgroundColor: colors.surface,
+            collapsedBackgroundColor: colors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: colors.line),
+            ),
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: colors.line),
+            ),
+            title: Text(
+              l10n.more,
+              style: TextStyle(fontSize: 15, color: colors.ink),
+            ),
+            children: [
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    if (widget.isLocalArchive)
+                      _headerButton(
+                        icon: Icons.edit_outlined,
+                        label: l10n.edit,
+                        onPressed: _editLocalArchiveInfos,
+                      ),
+                    if (!widget.isLocalArchive) _webviewButton(),
+                    if (!widget.isLocalArchive) _smartUpdateDays(),
+                    _action(),
+                  ],
+                ),
+              ),
+              _DetailActions(manga: widget.manga),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.manga.itemType != ItemType.anime
+                      ? l10n.n_chapters(widget.chapterLength)
+                      : l10n.n_episodes(widget.chapterLength),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: colors.ink,
+                  ),
+                ),
+              ),
+              if (widget.isLocalArchive)
+                IconButton(
+                  tooltip: widget.manga.itemType != ItemType.anime
+                      ? l10n.add_chapters
+                      : l10n.add_episodes,
+                  onPressed: _addChapters,
+                  icon: const Icon(Icons.add_rounded),
+                ),
+              IconButton(
+                tooltip: l10n.filter,
+                onPressed: widget.onShowFilterMenu,
+                style: IconButton.styleFrom(
+                  backgroundColor: filtering ? colors.accentSoft : null,
+                  foregroundColor: filtering ? colors.accent : colors.ink,
+                ),
+                icon: const Icon(Icons.tune_rounded),
+              ),
+            ],
+          ),
+          if (missing > 0)
+            Text(
+              widget.manga.itemType != ItemType.anime
+                  ? l10n.missing_chapters(missing)
+                  : l10n.missing_episodes(missing),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _genreChip(int index, AppLocalizations l10n) {
     return DetailGenreChip(
       label: widget.manga.genre![index],
+      mobile: isMobile && !isTv,
       libraryLabel: l10n.genre_search_library,
       sourceLabel: l10n.genre_search_source,
       onSelected: (value) => _selectGenre(index, value, l10n),
@@ -330,6 +461,36 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                     ),
                   ),
           );
+    if (isMobile && !isTv) {
+      final colors = NodeLaneTokens.of(context);
+      return Semantics(
+        button: true,
+        image: true,
+        label: widget.manga.name,
+        child: GestureDetector(
+          onTap: () => _openImage(imageProvider),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
+            child: Image(
+              image: ResizeImage.resizeIfNeeded(
+                (96 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                null,
+                imageProvider,
+              ),
+              width: 96,
+              height: 144,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                width: 96,
+                height: 144,
+                color: colors.soft,
+                child: Icon(Icons.menu_book_outlined, color: colors.muted),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
       child: GestureDetector(
@@ -350,7 +511,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     );
   }
 
-  Widget _titles() {
+  Widget _titles({bool includeMetadata = true}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -375,9 +536,18 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
               }
             }
           },
-          child: Text(widget.manga.name!, style: const TextStyle(fontSize: 20)),
+          child: Text(
+            widget.manga.name!,
+            style: TextStyle(
+              fontSize: isMobile && !isTv ? 24 : 20,
+              fontWeight: isMobile && !isTv
+                  ? FontWeight.w700
+                  : FontWeight.normal,
+              color: isMobile && !isTv ? NodeLaneTokens.of(context).ink : null,
+            ),
+          ),
         ),
-        widget.titleDescription,
+        if (includeMetadata) widget.titleDescription,
       ],
     );
   }
@@ -391,151 +561,140 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
           Expanded(child: widget.action),
           if (!widget.isLocalArchive) Expanded(child: _smartUpdateDays()),
           _action(),
-          if (!widget.isLocalArchive)
-            Expanded(
-              child: SizedBox(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    elevation: 0,
-                  ),
-                  onPressed: () async {
-                    final manga = widget.manga;
-
-                    final source = getSource(
-                      widget.manga.lang!,
-                      widget.manga.source!,
-                      widget.manga.sourceId,
-                    );
-                    if (source == null) return;
-                    String url = "";
-                    final baseUrl = source.baseUrl;
-                    final link = widget.manga.link!.getUrlWithoutDomain;
-                    if (baseUrl == null) return;
-                    if (baseUrl.endsWith("/") && link.startsWith("/")) {
-                      url = baseUrl + link.substring(1);
-                    } else if (!baseUrl.endsWith("/") &&
-                        !link.startsWith("/")) {
-                      url = "$baseUrl/$link";
-                    } else {
-                      url = "$baseUrl$link";
-                    }
-
-                    Map<String, dynamic> data = {
-                      'url': url,
-                      'sourceId': source.id.toString(),
-                      'title': manga.name!,
-                    };
-                    context.push("/mangawebview", extra: data);
-                  },
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.public,
-                        size: 20,
-                        color: context.secondaryColor,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        context.l10n.webview,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: context.secondaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          if (!widget.isLocalArchive) Expanded(child: _webviewButton()),
         ],
       ),
     );
   }
 
-  Widget _smartUpdateDays() {
-    return SizedBox(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          elevation: 0,
-        ),
-        onPressed: () =>
-            context.push("/calendarScreen", extra: widget.manga.itemType),
-        child: Column(
-          children: [
-            Icon(
-              Icons.hourglass_empty,
-              size: 20,
-              color: context.secondaryColor,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              widget.manga.smartUpdateDays != null
-                  ? context.l10n.n_days(widget.manga.smartUpdateDays!)
-                  : "N/A",
-              style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+  Widget _headerButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    Color? color,
+  }) {
+    if (isMobile && !isTv) {
+      return TextButton.icon(
+        style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 20),
+        label: Text(label),
+      );
+    }
+    color ??= context.secondaryColor;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+      ),
+      onPressed: onPressed,
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: color),
+          ),
+        ],
       ),
     );
   }
 
-  /// Tracker button
-  Widget _action() {
-    return StreamBuilder(
-      stream: trackRepository.watchAllWithSyncId(),
-      builder: (context, snapshot) {
-        List<TrackPreference>? entries = snapshot.hasData ? snapshot.data! : [];
-        if (entries.isEmpty) {
-          return SizedBox.shrink();
-        }
-        return Expanded(
-          child: StreamBuilder(
-            stream: trackRepository.watchByMangaId(widget.manga.id!),
-            builder: (context, snapshot) {
-              final l10n = l10nLocalizations(context)!;
-              List<Track>? trackRes = snapshot.hasData ? snapshot.data : [];
-              bool isNotEmpty = trackRes!.isNotEmpty;
-              Color color = isNotEmpty
-                  ? context.primaryColor
-                  : context.secondaryColor;
-              return ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  elevation: 0,
-                ),
-                onPressed: () {
-                  _trackingDraggableMenu(entries);
-                },
-                child: Column(
-                  children: [
-                    Icon(
-                      isNotEmpty ? Icons.done_rounded : Icons.sync_outlined,
-                      size: 20,
-                      color: color,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isNotEmpty
-                          ? trackRes.length == 1
-                                ? l10n.one_tracker
-                                : l10n.n_tracker(trackRes.length)
-                          : l10n.tracking,
-                      style: TextStyle(fontSize: 11, color: color),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
+  Widget _webviewButton() => _headerButton(
+    icon: Icons.public,
+    label: context.l10n.webview,
+    onPressed: _openWebview,
+  );
+
+  void _openWebview() {
+    final manga = widget.manga;
+
+    final source = getSource(
+      widget.manga.lang!,
+      widget.manga.source!,
+      widget.manga.sourceId,
     );
+    if (source == null) return;
+    String url = "";
+    final baseUrl = source.baseUrl;
+    final link = widget.manga.link!.getUrlWithoutDomain;
+    if (baseUrl == null) return;
+    if (baseUrl.endsWith("/") && link.startsWith("/")) {
+      url = baseUrl + link.substring(1);
+    } else if (!baseUrl.endsWith("/") && !link.startsWith("/")) {
+      url = "$baseUrl/$link";
+    } else {
+      url = "$baseUrl$link";
+    }
+
+    Map<String, dynamic> data = {
+      'url': url,
+      'sourceId': source.id.toString(),
+      'title': manga.name!,
+    };
+    context.push("/mangawebview", extra: data);
   }
+
+  Future<void> _addChapters() async {
+    final manga = widget.manga;
+    if (manga.source == "torrent") {
+      addTorrent(context, manga: manga);
+    } else {
+      final splitChapters = manga.itemType == ItemType.novel
+          ? await showSplitChaptersDialog(context)
+          : true;
+      if (!context.mounted) return;
+      await ref.watch(
+        importArchivesFromFileProvider(
+          itemType: manga.itemType,
+          manga,
+          init: false,
+          splitChapters: splitChapters,
+        ).future,
+      );
+    }
+  }
+
+  Widget _smartUpdateDays() => _headerButton(
+    icon: Icons.hourglass_empty,
+    label: widget.manga.smartUpdateDays != null
+        ? context.l10n.n_days(widget.manga.smartUpdateDays!)
+        : isMobile && !isTv
+        ? context.l10n.calendar
+        : 'N/A',
+    onPressed: () =>
+        context.push('/calendarScreen', extra: widget.manga.itemType),
+  );
+
+  Widget _action() => StreamBuilder(
+    stream: trackRepository.watchAllWithSyncId(),
+    builder: (context, snapshot) {
+      final entries = snapshot.data ?? <TrackPreference>[];
+      if (entries.isEmpty) return const SizedBox.shrink();
+      final button = StreamBuilder(
+        stream: trackRepository.watchByMangaId(widget.manga.id!),
+        builder: (context, snapshot) {
+          final l10n = l10nLocalizations(context)!;
+          final tracks = snapshot.data ?? <Track>[];
+          return _headerButton(
+            icon: tracks.isNotEmpty ? Icons.done_rounded : Icons.sync_outlined,
+            label: tracks.isNotEmpty
+                ? tracks.length == 1
+                      ? l10n.one_tracker
+                      : l10n.n_tracker(tracks.length)
+                : l10n.tracking,
+            color: tracks.isNotEmpty
+                ? context.primaryColor
+                : context.secondaryColor,
+            onPressed: () => _trackingDraggableMenu(entries),
+          );
+        },
+      );
+      return isMobile && !isTv ? button : Expanded(child: button);
+    },
+  );
 
   void _openImage(ImageProvider imageProvider) {
     showMangaCoverViewer(
@@ -545,80 +704,55 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     );
   }
 
-  void _editLocalArchiveInfos() {
+  Future<void> _editLocalArchiveInfos() async {
     final l10n = l10nLocalizations(context)!;
-    TextEditingController? name = TextEditingController(
-      text: widget.manga.name!,
+    final name = TextEditingController(text: widget.manga.name ?? '');
+    final description = TextEditingController(
+      text: widget.manga.description ?? '',
     );
-    TextEditingController? description = TextEditingController(
-      text: widget.manga.description!,
-    );
-    showDialog(
+    final route = DialogRoute<void>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(l10n.edit),
-          content: SizedBox(
-            height: 200,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15),
-                        child: Text(l10n.name),
-                      ),
-                      TextFormField(controller: name),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15),
-                        child: Text(l10n.description),
-                      ),
-                      TextFormField(controller: description),
-                    ],
-                  ),
-                ),
-              ],
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.edit),
+        scrollable: true,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: name,
+              decoration: InputDecoration(labelText: l10n.name),
             ),
-          ),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(l10n.cancel),
-                ),
-                const SizedBox(width: 15),
-                TextButton(
-                  onPressed: () {
-                    final manga = widget.manga;
-                    manga.description = description.text;
-                    manga.name = name.text;
-                    mangaRepository.save(manga);
-                    Navigator.pop(context);
-                  },
-                  child: Text(l10n.edit),
-                ),
-              ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: description,
+              minLines: 2,
+              maxLines: 5,
+              decoration: InputDecoration(labelText: l10n.description),
             ),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final manga = widget.manga;
+              manga.description = description.text;
+              manga.name = name.text;
+              mangaRepository.save(manga);
+              Navigator.pop(dialogContext);
+            },
+            child: Text(l10n.edit),
+          ),
+        ],
+      ),
     );
+    await Navigator.of(context).push(route);
+    await route.completed;
+    name.dispose();
+    description.dispose();
   }
 
   void _trackingDraggableMenu(List<TrackPreference>? entries) {
@@ -638,8 +772,10 @@ class DetailGenreChip extends StatelessWidget {
     required this.libraryLabel,
     required this.sourceLabel,
     required this.onSelected,
+    this.mobile = false,
   });
 
+  final bool mobile;
   final String label;
   final String libraryLabel;
   final String sourceLabel;
@@ -647,6 +783,32 @@ class DetailGenreChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (mobile) {
+      final colors = NodeLaneTokens.of(context);
+      return Padding(
+        padding: const EdgeInsets.only(right: 8, bottom: 8),
+        child: PopupMenuButton<int>(
+          popUpAnimationStyle: popupAnimationStyle,
+          onSelected: onSelected,
+          itemBuilder: (context) => [
+            PopupMenuItem(value: 0, child: Text(libraryLabel)),
+            PopupMenuItem(value: 1, child: Text(sourceLabel)),
+          ],
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: colors.soft,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 13, color: colors.ink),
+            ),
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.only(left: 2, right: 2, bottom: 5),
       child: SizedBox(
@@ -795,6 +957,24 @@ class _DetailActions extends ConsumerWidget {
   }
 
   Widget _strip(BuildContext context, List<_DetailAction> actions) {
+    if (isMobile && !isTv) {
+      return Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            for (final action in actions)
+              TextButton.icon(
+                style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
+                onPressed: action.onPressed,
+                icon: Icon(action.icon, size: 20),
+                label: Text(action.label),
+              ),
+          ],
+        ),
+      );
+    }
     // Tinted rather than the neutral outline, so the border belongs to the
     // accent the segments are drawn in. Kept faint: it frames the strip, it
     // is not another thing to look at.
