@@ -22,6 +22,8 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/app_ui_scale_state_provider.dart';
 import 'package:mangayomi/modules/widgets/tv_escapable_slider.dart';
 
+import 'mobile_appearance_screen.dart';
+
 final navigationItems = {
   "/MangaLibrary": "Manga",
   "/AnimeLibrary": "Anime",
@@ -69,6 +71,7 @@ class AppearanceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return const MobileAppearanceScreen();
     final l10n = l10nLocalizations(context);
     final pureBlackDarkMode = ref.watch(pureBlackDarkModeStateProvider);
     final isDarkTheme = ref.watch(themeModeStateProvider);
