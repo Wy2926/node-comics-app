@@ -3463,6 +3463,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get network_settings => '网络';
 
   @override
+  String get reader_page_layout => '页面布局';
+
+  @override
+  String get reader_continuous_options => '连续阅读';
+
+  @override
+  String get reader_default_mode_hint => '默认阅读模式用于尚未在阅读时单独设置模式的漫画。';
+
+  @override
   String get extension_service => '扩展服务';
 
   @override

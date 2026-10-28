@@ -8,11 +8,17 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/widgets/tv_escapable_slider.dart';
 
+import 'mobile_reader_screen.dart';
+import 'reader_settings_labels.dart';
+
+export 'reader_settings_labels.dart';
+
 class ReaderScreen extends ConsumerWidget {
   const ReaderScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return const MobileReaderScreen();
     // ── Reading Mode & Display ──
     final defaultReadingMode = ref.watch(defaultReadingModeStateProvider);
     final animatePageTransitions = ref.watch(
@@ -698,7 +704,9 @@ class ReaderScreen extends ConsumerWidget {
                             children: List.generate(6, (i) {
                               return RadioListTile<int>(
                                 value: i,
-                                title: Text(_navLayoutNameGlobal(i, context)),
+                                title: Text(
+                                  getReaderNavigationLayoutName(i, context),
+                                ),
                               );
                             }),
                           ),
@@ -710,7 +718,7 @@ class ReaderScreen extends ConsumerWidget {
               },
               title: Text(context.l10n.navigation_layout),
               subtitle: Text(
-                _navLayoutNameGlobal(navigationLayout, context),
+                getReaderNavigationLayoutName(navigationLayout, context),
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
             ),
@@ -960,7 +968,7 @@ class ReaderScreen extends ConsumerWidget {
                               return RadioListTile<ChapterSwipeAction>(
                                 value: action,
                                 title: Text(
-                                  _chapterSwipeActionName(action, context),
+                                  getChapterSwipeActionName(action, context),
                                 ),
                               );
                             }).toList(),
@@ -973,7 +981,7 @@ class ReaderScreen extends ConsumerWidget {
               },
               title: Text(context.l10n.chapter_swipe_start),
               subtitle: Text(
-                _chapterSwipeActionName(chapterSwipeStart, context),
+                getChapterSwipeActionName(chapterSwipeStart, context),
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
             ),
@@ -1004,7 +1012,7 @@ class ReaderScreen extends ConsumerWidget {
                               return RadioListTile<ChapterSwipeAction>(
                                 value: action,
                                 title: Text(
-                                  _chapterSwipeActionName(action, context),
+                                  getChapterSwipeActionName(action, context),
                                 ),
                               );
                             }).toList(),
@@ -1017,7 +1025,7 @@ class ReaderScreen extends ConsumerWidget {
               },
               title: Text(context.l10n.chapter_swipe_end),
               subtitle: Text(
-                _chapterSwipeActionName(chapterSwipeEnd, context),
+                getChapterSwipeActionName(chapterSwipeEnd, context),
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
             ),
@@ -1042,125 +1050,4 @@ class ReaderScreen extends ConsumerWidget {
       ),
     );
   }
-}
-
-String getReaderModeName(ReaderMode readerMode, BuildContext context) {
-  return switch (readerMode) {
-    ReaderMode.vertical => context.l10n.reading_mode_vertical,
-    ReaderMode.verticalContinuous =>
-      context.l10n.reading_mode_vertical_continuous,
-    ReaderMode.ltr => context.l10n.reading_mode_left_to_right,
-    ReaderMode.rtl => context.l10n.reading_mode_right_to_left,
-    ReaderMode.horizontalContinuous => context.l10n.horizontal_continious,
-    ReaderMode.horizontalContinuousRTL =>
-      "${context.l10n.horizontal_continious} (RTL)",
-    _ => context.l10n.reading_mode_webtoon,
-  };
-}
-
-String getBackgroundColorName(
-  BackgroundColor backgroundColor,
-  BuildContext context,
-) {
-  return switch (backgroundColor) {
-    BackgroundColor.white => context.l10n.white,
-    BackgroundColor.grey => context.l10n.grey,
-    BackgroundColor.black => context.l10n.black,
-    _ => context.l10n.automaic,
-  };
-}
-
-Color? getBackgroundColor(BackgroundColor backgroundColor) {
-  return switch (backgroundColor) {
-    BackgroundColor.white => Colors.white,
-    BackgroundColor.grey => Colors.grey,
-    BackgroundColor.black => Colors.black,
-    _ => null,
-  };
-}
-
-String getColorFilterBlendModeName(
-  ColorFilterBlendMode backgroundColor,
-  BuildContext context,
-) {
-  return switch (backgroundColor) {
-    ColorFilterBlendMode.none => context.l10n.blend_mode_default,
-    ColorFilterBlendMode.multiply => context.l10n.blend_mode_multiply,
-    ColorFilterBlendMode.screen => context.l10n.blend_mode_screen,
-    ColorFilterBlendMode.overlay => context.l10n.blend_mode_overlay,
-    ColorFilterBlendMode.colorDodge => context.l10n.blend_mode_colorDodge,
-    ColorFilterBlendMode.lighten => context.l10n.blend_mode_lighten,
-    ColorFilterBlendMode.colorBurn => context.l10n.blend_mode_colorBurn,
-    ColorFilterBlendMode.difference => context.l10n.blend_mode_difference,
-    ColorFilterBlendMode.saturation => context.l10n.blend_mode_saturation,
-    ColorFilterBlendMode.softLight => context.l10n.blend_mode_softLight,
-    ColorFilterBlendMode.plus => context.l10n.blend_mode_plus,
-    ColorFilterBlendMode.exclusion => context.l10n.blend_mode_exclusion,
-    _ => context.l10n.blend_mode_darken,
-  };
-}
-
-BlendMode? getColorFilterBlendMode(
-  ColorFilterBlendMode backgroundColor,
-  BuildContext context,
-) {
-  return switch (backgroundColor) {
-    ColorFilterBlendMode.none => null,
-    ColorFilterBlendMode.multiply => BlendMode.multiply,
-    ColorFilterBlendMode.screen => BlendMode.screen,
-    ColorFilterBlendMode.overlay => BlendMode.overlay,
-    ColorFilterBlendMode.colorDodge => BlendMode.colorDodge,
-    ColorFilterBlendMode.lighten => BlendMode.lighten,
-    ColorFilterBlendMode.colorBurn => BlendMode.colorBurn,
-    ColorFilterBlendMode.difference => BlendMode.difference,
-    ColorFilterBlendMode.saturation => BlendMode.saturation,
-    ColorFilterBlendMode.softLight => BlendMode.softLight,
-    ColorFilterBlendMode.plus => BlendMode.plus,
-    ColorFilterBlendMode.exclusion => BlendMode.exclusion,
-    _ => BlendMode.darken,
-  };
-}
-
-String getAnimationSpeedName(int type, BuildContext context) {
-  return switch (type) {
-    0 => context.l10n.no_animation,
-    1 => context.l10n.normal,
-    _ => context.l10n.fast,
-  };
-}
-
-List<String> getScaleTypeNames(BuildContext context) {
-  return [
-    context.l10n.scale_type_fit_screen,
-    context.l10n.scale_type_stretch,
-    context.l10n.scale_type_fit_width,
-    context.l10n.scale_type_fit_height,
-    // l10n.scale_type_original_size,
-    // l10n.scale_type_smart_fit,
-  ];
-}
-
-String _navLayoutNameGlobal(int index, BuildContext context) {
-  return switch (index) {
-    0 => context.l10n.nav_layout_default,
-    1 => context.l10n.nav_layout_l_shaped,
-    2 => context.l10n.nav_layout_kindle,
-    3 => context.l10n.nav_layout_edge,
-    4 => context.l10n.nav_layout_right_and_left,
-    5 => context.l10n.nav_layout_disabled,
-    _ => context.l10n.nav_layout_default,
-  };
-}
-
-String _chapterSwipeActionName(
-  ChapterSwipeAction action,
-  BuildContext context,
-) {
-  return switch (action) {
-    ChapterSwipeAction.toggleBookmark =>
-      context.l10n.chapter_swipe_toggle_bookmark,
-    ChapterSwipeAction.toggleRead => context.l10n.chapter_swipe_toggle_read,
-    ChapterSwipeAction.download => context.l10n.chapter_swipe_download,
-    ChapterSwipeAction.disabled => context.l10n.chapter_swipe_disabled,
-  };
 }

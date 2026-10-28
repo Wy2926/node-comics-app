@@ -8,26 +8,13 @@ import 'package:mangayomi/modules/manga/reader/providers/color_filter_provider.d
 import 'package:mangayomi/modules/manga/reader/widgets/color_filter_widget.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/custom_popup_menu_button.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
+import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'mobile_reader_widgets.dart';
-
-String _navLayoutName(int index, BuildContext context) {
-  final l10n = l10nLocalizations(context)!;
-  return switch (index) {
-    0 => l10n.nav_layout_default,
-    1 => l10n.nav_layout_l_shaped,
-    2 => l10n.nav_layout_kindle,
-    3 => l10n.nav_layout_edge,
-    4 => l10n.nav_layout_right_and_left,
-    5 => l10n.nav_layout_disabled,
-    _ => l10n.nav_layout_default,
-  };
-}
 
 /// Settings modal for the manga reader using Riverpod providers directly.
 ///
@@ -614,7 +601,9 @@ class _GeneralTab extends ConsumerWidget {
                   fontSize: 14,
                 ),
               ),
-              subtitle: Text(_navLayoutName(navigationLayout, context)),
+              subtitle: Text(
+                getReaderNavigationLayoutName(navigationLayout, context),
+              ),
               onTap: () {
                 showDialog(
                   context: context,
@@ -637,7 +626,9 @@ class _GeneralTab extends ConsumerWidget {
                             children: List.generate(6, (i) {
                               return RadioListTile<int>(
                                 value: i,
-                                title: Text(_navLayoutName(i, context)),
+                                title: Text(
+                                  getReaderNavigationLayoutName(i, context),
+                                ),
                               );
                             }),
                           ),

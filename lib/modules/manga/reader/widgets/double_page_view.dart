@@ -13,7 +13,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
-import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
+import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:photo_view/photo_view.dart';
 
 /// Unified double page view for both paged and continuous reading modes.

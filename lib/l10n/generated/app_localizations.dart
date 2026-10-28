@@ -6451,6 +6451,24 @@ abstract class AppLocalizations {
   /// **'Network'**
   String get network_settings;
 
+  /// No description provided for @reader_page_layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Page layout'**
+  String get reader_page_layout;
+
+  /// No description provided for @reader_continuous_options.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous reading'**
+  String get reader_continuous_options;
+
+  /// No description provided for @reader_default_mode_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'The default reading mode applies to titles without an individual mode set while reading.'**
+  String get reader_default_mode_hint;
+
   /// No description provided for @extension_service.
   ///
   /// In en, this message translates to:

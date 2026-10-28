@@ -3625,6 +3625,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get network_settings => 'Network';
 
   @override
+  String get reader_page_layout => 'Page layout';
+
+  @override
+  String get reader_continuous_options => 'Continuous reading';
+
+  @override
+  String get reader_default_mode_hint =>
+      'The default reading mode applies to titles without an individual mode set while reading.';
+
+  @override
   String get extension_service => 'Extension service';
 
   @override
