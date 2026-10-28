@@ -6,6 +6,8 @@ import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 class SourcePreferenceWidget extends StatefulWidget {
   final List<SourcePreference> sourcePreference;
@@ -23,6 +25,7 @@ class SourcePreferenceWidget extends StatefulWidget {
 class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
   @override
   Widget build(BuildContext context) {
+    final mobile = isMobile && !isTv;
     return Column(
       children: [
         for (var index = 0; index < widget.sourcePreference.length; index++)
@@ -37,7 +40,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                   subtitle: Text(
                     pref.summary!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: mobile ? 13 : 11,
                       color: context.secondaryColor,
                     ),
                   ),
@@ -65,7 +68,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                   subtitle: Text(
                     pref.summary!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: mobile ? 13 : 11,
                       color: context.secondaryColor,
                     ),
                   ),
@@ -80,12 +83,12 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                 );
               } else if (preference.switchPreferenceCompat != null) {
                 final pref = preference.switchPreferenceCompat!;
-                w = SwitchListTile(
+                w = (mobile ? SwitchListTile.adaptive : SwitchListTile.new)(
                   title: Text(pref.title!),
                   subtitle: Text(
                     pref.summary!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: mobile ? 13 : 11,
                       color: context.secondaryColor,
                     ),
                   ),
@@ -105,7 +108,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                   subtitle: Text(
                     pref.entries![pref.valueIndex!],
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: mobile ? 13 : 11,
                       color: context.secondaryColor,
                     ),
                   ),
@@ -140,28 +143,16 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                                   dense: true,
                                   contentPadding: const EdgeInsets.all(0),
                                   value: index,
-                                  title: Row(
-                                    children: [Text(pref.entries![index])],
-                                  ),
+                                  title: Text(pref.entries![index]),
                                 );
                               },
                             ),
                           ),
                         ),
                         actions: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                },
-                                child: Text(
-                                  context.l10n.cancel,
-                                  style: TextStyle(color: context.primaryColor),
-                                ),
-                              ),
-                            ],
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(context.l10n.cancel),
                           ),
                         ],
                       ),
@@ -181,7 +172,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                   subtitle: Text(
                     pref.summary!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: mobile ? 13 : 11,
                       color: context.secondaryColor,
                     ),
                   ),
@@ -237,32 +228,13 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                                 ),
                               ),
                               actions: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        context.l10n.cancel,
-                                        style: TextStyle(
-                                          color: context.primaryColor,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        context.l10n.ok,
-                                        style: TextStyle(
-                                          color: context.primaryColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(context.l10n.cancel),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(context.l10n.ok),
                                 ),
                               ],
                             );
@@ -309,7 +281,10 @@ class _EditTextDialogWidgetState extends State<EditTextDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final mobile = isMobile && !isTv;
     return AlertDialog(
+      scrollable: true,
+      backgroundColor: mobile ? NodeLaneTokens.of(context).surface : null,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -317,45 +292,37 @@ class _EditTextDialogWidgetState extends State<EditTextDialogWidget> {
           Text(widget.dialogMessage, style: const TextStyle(fontSize: 13)),
         ],
       ),
-      content: Padding(
-        padding: const EdgeInsets.only(top: 20),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              isDense: true,
-              filled: false,
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: context.secondaryColor),
+      content: TextField(
+        controller: _controller,
+        decoration: mobile
+            ? InputDecoration(
+                filled: true,
+                fillColor: NodeLaneTokens.of(context).soft,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              )
+            : InputDecoration(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: context.secondaryColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: context.primaryColor),
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: context.primaryColor),
-              ),
-              border: const OutlineInputBorder(borderSide: BorderSide()),
-            ),
-          ),
-        ),
       ),
       actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(context.l10n.cancel),
-            ),
-            const SizedBox(width: 15),
-            TextButton(
-              onPressed: () {
-                widget.onChanged(_controller.text);
-                Navigator.pop(context);
-              },
-              child: Text(context.l10n.ok),
-            ),
-          ],
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            widget.onChanged(_controller.text);
+            Navigator.pop(context);
+          },
+          child: Text(context.l10n.ok),
         ),
       ],
     );

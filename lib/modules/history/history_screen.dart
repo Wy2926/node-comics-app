@@ -23,6 +23,9 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
+import 'package:mangayomi/modules/widgets/deferred_cover_image.dart';
+import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -64,7 +67,12 @@ class _HistoryScreenState extends BaseLibraryTabScreenState<HistoryScreen> {
 
   @override
   Widget buildTab(ItemType type) {
-    return HistoryTab(itemType: type, query: textEditingController.text);
+    return HistoryTab(
+      key: PageStorageKey('history-${type.name}'),
+      itemType: type,
+      query: textEditingController.text,
+      onResetQuery: () => setState(textEditingController.clear),
+    );
   }
 
   @override
@@ -74,6 +82,7 @@ class _HistoryScreenState extends BaseLibraryTabScreenState<HistoryScreen> {
     return [
       IconButton(
         splashRadius: 20,
+        tooltip: l10n.remove_everything,
         focusColor: tvIconFocusColor(context),
         icon: Icon(
           Icons.delete_sweep_outlined,
@@ -116,7 +125,13 @@ class _HistoryScreenState extends BaseLibraryTabScreenState<HistoryScreen> {
 class HistoryTab extends ConsumerStatefulWidget {
   final String query;
   final ItemType itemType;
-  const HistoryTab({required this.itemType, required this.query, super.key});
+  final VoidCallback? onResetQuery;
+  const HistoryTab({
+    required this.itemType,
+    required this.query,
+    this.onResetQuery,
+    super.key,
+  });
 
   @override
   ConsumerState<HistoryTab> createState() => _HistoryTabState();
@@ -141,6 +156,7 @@ class _HistoryTabState extends ConsumerState<HistoryTab>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = l10nLocalizations(context)!;
+    final mobile = isMobile && !isTv;
     final history = ref.watch(
       getAllHistoryStreamProvider(
         itemType: widget.itemType,
@@ -175,6 +191,7 @@ class _HistoryTabState extends ConsumerState<HistoryTab>
         }).toList();
         if (entries.isNotEmpty) {
           return CustomScrollView(
+            key: PageStorageKey('history-list-${widget.itemType.name}'),
             slivers: [
               CustomSliverGroupedListView<History, String>(
                 elements: entries,
@@ -186,23 +203,47 @@ class _HistoryTabState extends ConsumerState<HistoryTab>
                   useRelativeTimesTamps: false,
                 ),
                 groupSeparatorBuilder: (String groupByValue) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8, left: 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        dateFormat(
-                          null,
-                          context: context,
-                          stringDate: groupByValue,
-                          ref: ref,
-                        ),
-                      ),
-                    ],
+                  padding: mobile
+                      ? const EdgeInsets.fromLTRB(24, 12, 24, 10)
+                      : const EdgeInsets.only(bottom: 8, left: 12),
+                  child: Text(
+                    dateFormat(
+                      null,
+                      context: context,
+                      stringDate: groupByValue,
+                      ref: ref,
+                    ),
+                    style: mobile
+                        ? TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: NodeLaneTokens.of(context).muted,
+                          )
+                        : null,
                   ),
                 ),
                 itemBuilder: (context, History element) {
                   final chapter = chapterById[element.chapterId]!;
                   final manga = mangaById[chapter.mangaId]!;
+                  if (mobile) {
+                    return MobileActivityCard(
+                      title: manga.name ?? '',
+                      chapter: chapter.name ?? '',
+                      metadata: dateFormatHour(element.date!, context),
+                      cover: _getCoverImage(manga),
+                      readLabel: l10n.resume,
+                      detailLabel: manga.name ?? '',
+                      onRead: () => chapter.pushToReaderView(context),
+                      onDetail: () =>
+                          context.push('/manga-reader/detail', extra: manga.id),
+                      trailing: IconButton(
+                        tooltip: l10n.remove,
+                        onPressed: () =>
+                            _openDeleteDialog(l10n, manga, element.id),
+                        icon: const Icon(Icons.delete_outline_rounded),
+                      ),
+                    );
+                  }
                   // Two focusable targets on TV, matching the Browse source
                   // rows: the entry itself, and remove. The cover's own
                   // tap-to-detail folds into the entry rather than becoming a
@@ -423,7 +464,23 @@ class _HistoryTabState extends ConsumerState<HistoryTab>
                     item1.date!.compareTo(item2.date!),
                 order: GroupedListOrder.DESC,
               ),
+              if (mobile)
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: pageBottomInsets(context).bottom + 16,
+                  ),
+                ),
             ],
+          );
+        }
+        if (mobile) {
+          return MobileActivityEmpty(
+            icon: Icons.history_rounded,
+            message: widget.query.isEmpty
+                ? l10n.nothing_read_recently
+                : l10n.no_result,
+            resetLabel: l10n.reset,
+            onReset: widget.query.isEmpty ? null : widget.onResetQuery,
           );
         }
         return Center(child: Text(l10n.nothing_read_recently));
@@ -438,11 +495,16 @@ class _HistoryTabState extends ConsumerState<HistoryTab>
   }
 
   Widget _getCoverImage(Manga manga) {
-    return _DeferredCoverImage(
+    return DeferredCoverImage(
       width: 60,
       height: 90,
       builder: (context) => manga.customCoverImage != null
-          ? Image.memory(manga.customCoverImage as Uint8List)
+          ? Image.memory(
+              manga.customCoverImage as Uint8List,
+              width: 60,
+              height: 90,
+              fit: BoxFit.cover,
+            )
           : cachedCompressedNetworkImage(
               headers: ref.watch(
                 headersProvider(
@@ -468,22 +530,15 @@ class _HistoryTabState extends ConsumerState<HistoryTab>
         return AlertDialog(
           title: Text(l10n.remove),
           content: Text(l10n.remove_history_msg),
+          scrollable: true,
           actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(l10n.cancel),
-                ),
-                const SizedBox(width: 15),
-                TextButton(
-                  onPressed: () async => deleteManga(context, manga, deleteId),
-                  child: Text(l10n.remove),
-                ),
-              ],
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () async => deleteManga(context, manga, deleteId),
+              child: Text(l10n.remove),
             ),
           ],
         );
@@ -500,57 +555,5 @@ class _HistoryTabState extends ConsumerState<HistoryTab>
     if (context.mounted) {
       Navigator.pop(context);
     }
-  }
-}
-
-/// Skips building the real cover — a network fetch + decode — while the
-/// nearest Scrollable is flinging fast, showing an empty box of the same
-/// size instead. Swaps in the real image once scrolling settles, using
-/// ScrollerNotif to know when to re-check.
-class _DeferredCoverImage extends StatefulWidget {
-  final Widget Function(BuildContext context) builder;
-  final double width;
-  final double height;
-
-  const _DeferredCoverImage({
-    required this.builder,
-    required this.width,
-    required this.height,
-  });
-
-  @override
-  State<_DeferredCoverImage> createState() => _DeferredCoverImageState();
-}
-
-class _DeferredCoverImageState extends State<_DeferredCoverImage> {
-  ScrollPosition? _scrollPosition;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final position = Scrollable.maybeOf(context)?.position;
-    if (!identical(position, _scrollPosition)) {
-      _scrollPosition?.isScrollingNotifier.removeListener(_onScrollingChanged);
-      _scrollPosition = position;
-      _scrollPosition?.isScrollingNotifier.addListener(_onScrollingChanged);
-    }
-  }
-
-  void _onScrollingChanged() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _scrollPosition?.isScrollingNotifier.removeListener(_onScrollingChanged);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (Scrollable.recommendDeferredLoadingForContext(context)) {
-      return SizedBox(width: widget.width, height: widget.height);
-    }
-    return widget.builder(context);
   }
 }

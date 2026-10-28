@@ -9,6 +9,8 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
+import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
     extends ConsumerState<T>
@@ -16,7 +18,8 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
   final textEditingController = TextEditingController();
   late TabController tabController;
   late List<ItemType> visibleTabTypes;
-  late final List<String> hideItems;
+  final _retiredControllers = <TabController>[];
+  int _selectedIndex = 0;
   bool isSearch = false;
 
   /// Screen-specific title
@@ -28,6 +31,8 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
   /// Optional extra actions (refresh, delete, etc.)
   List<Widget> buildExtraActions(BuildContext context) => [];
 
+  Widget? buildMobileMediaBadge(ItemType type) => null;
+
   /// Optional custom Tab widget (Updates needs this)
   Widget buildTabLabel(ItemType type, String label) {
     return Tab(text: label);
@@ -36,26 +41,57 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
   @override
   void initState() {
     super.initState();
-    hideItems = ref.read(hideItemsStateProvider);
+    visibleTabTypes = _visibleTypes(
+      ref.read(hideItemsStateProvider),
+      ref.read(animeOnlyTvModeProvider),
+    );
+    tabController = TabController(length: visibleTabTypes.length, vsync: this)
+      ..addListener(_onTabChanged);
+  }
 
-    visibleTabTypes = hiddenItemTypes(hideItems);
-
-    // Anime-only layout: only the anime tab (hides manga/novel in History,
-    // Updates, and any other screen built on this base).
-    if (ref.read(animeOnlyTvModeProvider)) {
-      visibleTabTypes = visibleTabTypes
-          .where((t) => t == ItemType.anime)
+  List<ItemType> _visibleTypes(List<String> hidden, bool animeOnly) =>
+      hiddenItemTypes(hidden)
+          .where((type) => !animeOnly || type == ItemType.anime)
           .toList();
+
+  void _onTabChanged() {
+    if (_selectedIndex == tabController.index || visibleTabTypes.isEmpty) {
+      return;
     }
+    _selectedIndex = tabController.index;
+    onTabChanged(getCurrentItemType());
+    setState(() {
+      textEditingController.clear();
+      isSearch = false;
+    });
+  }
 
-    tabController = TabController(length: visibleTabTypes.length, vsync: this);
-
-    tabController.addListener(() {
-      onTabChanged(visibleTabTypes[tabController.index]);
-      setState(() {
-        textEditingController.clear();
-        isSearch = false;
-      });
+  void _syncVisibleTypes(List<ItemType> types) {
+    if (types.length == visibleTabTypes.length &&
+        types.asMap().entries.every((e) => visibleTabTypes[e.key] == e.value)) {
+      return;
+    }
+    final previousType = getCurrentItemType();
+    final previous = tabController..removeListener(_onTabChanged);
+    _retiredControllers.add(previous);
+    visibleTabTypes = types;
+    final index = types.indexOf(previousType);
+    _selectedIndex = index < 0 ? 0 : index;
+    tabController = TabController(
+      length: types.length,
+      initialIndex: _selectedIndex,
+      vsync: this,
+    )..addListener(_onTabChanged);
+    if (getCurrentItemType() != previousType) {
+      textEditingController.clear();
+      isSearch = false;
+    }
+    // Let the previous TabBarView finish this frame before releasing its controller.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_retiredControllers.remove(previous)) previous.dispose();
+      if (mounted && visibleTabTypes.isNotEmpty) {
+        onTabChanged(getCurrentItemType());
+      }
     });
   }
 
@@ -65,11 +101,17 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
   @override
   void dispose() {
     tabController.dispose();
+    for (final controller in _retiredControllers) {
+      controller.dispose();
+    }
+    _retiredControllers.clear();
     textEditingController.dispose();
     super.dispose();
   }
 
-  ItemType getCurrentItemType() => visibleTabTypes[tabController.index];
+  ItemType getCurrentItemType() => visibleTabTypes.isEmpty
+      ? ItemType.manga
+      : visibleTabTypes[tabController.index];
 
   /// Accent focus tint for a top-bar action icon on Android TV so the focused
   /// icon is clearly visible on a remote; `null` (default) off-TV. Subclasses
@@ -125,6 +167,13 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
 
   @override
   Widget build(BuildContext context) {
+    _syncVisibleTypes(
+      _visibleTypes(
+        ref.watch(hideItemsStateProvider),
+        ref.watch(animeOnlyTvModeProvider),
+      ),
+    );
+    if (isMobile && !isTv) return _mobileView(context);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -152,13 +201,107 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
                   onPressed: () => setState(() => isSearch = true),
                   icon: Icon(Icons.search, color: Theme.of(context).hintColor),
                 ),
-          ...buildExtraActions(context),
+          if (visibleTabTypes.isNotEmpty) ...buildExtraActions(context),
         ],
         bottom: _buildTabSwitcher(context),
       ),
       body: TabBarView(
         controller: tabController,
         children: visibleTabTypes.map(buildTab).toList(),
+      ),
+    );
+  }
+
+  Widget _mobileView(BuildContext context) {
+    final l10n = context.l10n;
+    final selectedType = getCurrentItemType();
+    return NodeLaneSurface(
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) => Column(
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: constraints.maxHeight * .65,
+                  ),
+                  child: SingleChildScrollView(
+                    child: MobileActivityHeader(
+                      title: title,
+                      mediaMenu: visibleTabTypes.isEmpty
+                          ? const SizedBox.shrink()
+                          : PopupMenuButton<ItemType>(
+                              initialValue: selectedType,
+                              position: PopupMenuPosition.under,
+                              onSelected: (type) {
+                                FocusScope.of(context).unfocus();
+                                tabController.index = visibleTabTypes.indexOf(
+                                  type,
+                                );
+                              },
+                              itemBuilder: (_) => [
+                                for (final type in visibleTabTypes)
+                                  CheckedPopupMenuItem(
+                                    value: type,
+                                    checked: selectedType == type,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(type.localized(l10n)),
+                                        ),
+                                        ?buildMobileMediaBadge(type),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(selectedType.localized(l10n)),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    ?buildMobileMediaBadge(selectedType),
+                                  ],
+                                ),
+                              ),
+                            ),
+                      actions: visibleTabTypes.isEmpty
+                          ? const []
+                          : buildExtraActions(context),
+                      controller: textEditingController,
+                      searchLabel: l10n.search,
+                      clearLabel: l10n.reset,
+                      onSearchChanged: () => setState(() {}),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: tabController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      for (final type in visibleTabTypes)
+                        KeyedSubtree(
+                          key: ValueKey(type),
+                          child: buildTab(type),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

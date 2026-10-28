@@ -7,12 +7,14 @@ class MobileBrowsePage extends StatelessWidget {
     super.key,
     required this.title,
     required this.body,
+    this.leading,
     this.actions,
     this.bottomAction,
   });
 
   final String title;
   final Widget body;
+  final Widget? leading;
   final List<Widget>? actions;
   final Widget? bottomAction;
 
@@ -22,6 +24,7 @@ class MobileBrowsePage extends StatelessWidget {
     return NodeLaneSurface(
       child: Scaffold(
         appBar: AppBar(
+          leading: leading,
           // AppBar caps title scaling; reserve two lines without applying
           // the much larger accessibility body-text scale to the whole bar.
           toolbarHeight:

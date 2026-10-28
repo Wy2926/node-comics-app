@@ -18,6 +18,9 @@ import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 class ExtensionDetail extends ConsumerStatefulWidget {
   final Source source;
@@ -50,9 +53,209 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     }
   }
 
+  Future<void> _editCode() async {
+    final res = await context.push('/codeEditor', extra: source.id);
+    if (res != null && mounted) {
+      setState(() {
+        source = res as Source;
+        sourcePreference = getSourcePreference(source: source)
+            .map((e) => getSourcePreferenceEntry(e.key!, source.id!))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> _editMetadata() async {
+    final res = await context.push('/createExtension', extra: source);
+    if (res != null && mounted) setState(() => source = res as Source);
+  }
+
+  void _clearCookies() {
+    MClient.deleteAllCookies(source.baseUrl ?? '');
+    botToast(context.l10n.cookies_deleted);
+  }
+
+  void _confirmUninstall() {
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        scrollable: true,
+        title: Text(source.name ?? ''),
+        content: Text(l10n.uninstall_extension(source.name ?? '')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              sourceRepository.uninstall(ref, source);
+              Navigator.pop(dialogContext);
+              Navigator.pop(context);
+            },
+            child: Text(l10n.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String label) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+    child: Text(
+      label,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: NodeLaneTokens.of(context).muted,
+      ),
+    ),
+  );
+
+  Widget _mobileView(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = NodeLaneTokens.of(context);
+    final developerMode = ref.watch(developerModeStateProvider);
+    return MobileBrowsePage(
+      title: l10n.extension_detail,
+      leading: BackButton(onPressed: () => Navigator.pop(context, source)),
+      body: ListView(
+        padding: const EdgeInsets.only(top: 12, bottom: 24),
+        children: [
+          if (source.sourceCodeLanguage == SourceCodeLanguage.mihon)
+            const ExtensionServerWarningBanner(),
+          MobileBrowseGroup(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: colors.soft,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: (source.iconUrl ?? '').isEmpty
+                            ? Icon(
+                                Icons.extension_outlined,
+                                color: colors.muted,
+                              )
+                            : cachedNetworkImage(
+                                imageUrl: source.iconUrl!,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.contain,
+                                useCustomNetworkImage: false,
+                                errorWidget: Center(
+                                  child: Icon(
+                                    Icons.extension_outlined,
+                                    color: colors.muted,
+                                  ),
+                                ),
+                                headers: const {},
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          source.name ?? '',
+                          style: TextStyle(
+                            color: colors.ink,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '${l10n.version} ${source.version ?? ''} · ${completeLanguageName(source.lang ?? '')}',
+                    style: TextStyle(fontSize: 14, color: colors.muted),
+                  ),
+                  if (source.isNsfw ?? false) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'NSFW (18+)',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                  if (source.repo?.website != null) ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            _launchInBrowser(Uri.parse(source.repo!.website!)),
+                        icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                        label: Text(l10n.open_in_browser),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          if (sourcePreference?.isNotEmpty ?? false) ...[
+            _sectionLabel(l10n.settings),
+            MobileBrowseGroup(
+              child: SourcePreferenceWidget(
+                sourcePreference: sourcePreference!,
+                source: source,
+              ),
+            ),
+          ],
+          _sectionLabel(l10n.advanced),
+          MobileBrowseGroup(
+            child: Column(
+              children: [
+                if (developerMode)
+                  ListTile(
+                    leading: const Icon(Icons.code_rounded),
+                    title: Text(l10n.edit_code),
+                    onTap: _editCode,
+                  ),
+                if (developerMode && (source.isLocal ?? false))
+                  ListTile(
+                    leading: const Icon(Icons.edit_outlined),
+                    title: const Text('Edit metadata'),
+                    onTap: _editMetadata,
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.cookie_outlined),
+                  title: Text(l10n.delete_all_cookies),
+                  onTap: _clearCookies,
+                ),
+                Divider(height: 1, color: colors.line),
+                ListTile(
+                  leading: const Icon(Icons.delete_outline_rounded),
+                  iconColor: Theme.of(context).colorScheme.error,
+                  textColor: Theme.of(context).colorScheme.error,
+                  title: Text(l10n.uninstall),
+                  onTap: _confirmUninstall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
+    if (isMobile && !isTv) return _mobileView(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.extension_detail),
@@ -193,23 +396,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                       elevation: 0,
                       shadowColor: Colors.transparent,
                     ),
-                    onPressed: () async {
-                      final res = await context.push(
-                        '/codeEditor',
-                        extra: source.id,
-                      );
-                      if (res != null && mounted) {
-                        setState(() {
-                          source = res as Source;
-                          sourcePreference = getSourcePreference(source: source)
-                              .map(
-                                (e) =>
-                                    getSourcePreferenceEntry(e.key!, source.id!),
-                              )
-                              .toList();
-                        });
-                      }
-                    },
+                    onPressed: _editCode,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -245,17 +432,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                       elevation: 0,
                       shadowColor: Colors.transparent,
                     ),
-                    onPressed: () async {
-                      final res = await context.push(
-                        '/createExtension',
-                        extra: source,
-                      );
-                      if (res != null && mounted) {
-                        setState(() {
-                          source = res as Source;
-                        });
-                      }
-                    },
+                    onPressed: _editMetadata,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -289,10 +466,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                     elevation: 0,
                     shadowColor: Colors.transparent,
                   ),
-                  onPressed: () async {
-                    MClient.deleteAllCookies(source.baseUrl ?? "");
-                    botToast(context.l10n.cookies_deleted);
-                  },
+                  onPressed: _clearCookies,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
@@ -321,42 +495,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                     elevation: 0,
                     shadowColor: Colors.transparent,
                   ),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) {
-                        return AlertDialog(
-                          title: Text(widget.source.name!),
-                          content: Text(
-                            l10n.uninstall_extension(widget.source.name!),
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                  },
-                                  child: Text(l10n.cancel),
-                                ),
-                                const SizedBox(width: 15),
-                                TextButton(
-                                  onPressed: () {
-                                    sourceRepository.uninstall(ref, source);
-
-                                    Navigator.pop(ctx);
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(l10n.ok),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: _confirmUninstall,
                   child: Text(
                     l10n.uninstall,
                     style: const TextStyle(

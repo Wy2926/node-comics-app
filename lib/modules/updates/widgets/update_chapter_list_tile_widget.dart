@@ -13,6 +13,8 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/widgets/deferred_cover_image.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
+import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 
 class UpdateChapterListTileWidget extends ConsumerWidget {
   final Chapter chapter;
@@ -41,7 +43,9 @@ class UpdateChapterListTileWidget extends ConsumerWidget {
                     ? MemoryImage(manga.customCoverImage as Uint8List)
                           as ImageProvider
                     : coverProvider(
-                        toImgUrl(manga.customCoverFromTracker ?? manga.imageUrl!),
+                        toImgUrl(
+                          manga.customCoverFromTracker ?? manga.imageUrl!,
+                        ),
                         headers: ref.watch(
                           headersProvider(
                             source: manga.source!,
@@ -75,9 +79,8 @@ class UpdateChapterListTileWidget extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).textTheme.bodyLarge!.color!.withValues(
-                          alpha: (chapter.isRead ?? false) ? 0.5 : 1,
-                        ),
+                    color: Theme.of(context).textTheme.bodyLarge!.color!
+                        .withValues(alpha: (chapter.isRead ?? false) ? 0.5 : 1),
                   ),
                 ),
               ],
@@ -110,6 +113,41 @@ class UpdateChapterListTileWidget extends ConsumerWidget {
               child: ChapterPageDownload(chapter: chapter),
             ),
         ],
+      );
+    }
+    if (isMobile) {
+      return MobileActivityCard(
+        title: manga.name ?? '',
+        chapter: chapter.name ?? '',
+        muted: chapter.isRead ?? false,
+        readLabel: context.l10n.read,
+        detailLabel: manga.name ?? '',
+        onRead: () => chapter.pushToReaderView(context, ignoreIsRead: true),
+        onDetail: () => context.push('/manga-reader/detail', extra: manga.id),
+        trailing: sourceExist ? ChapterPageDownload(chapter: chapter) : null,
+        cover: DeferredCoverImage(
+          width: 60,
+          height: 90,
+          builder: (context) => Image(
+            image: manga.customCoverImage != null
+                ? MemoryImage(manga.customCoverImage as Uint8List)
+                : coverProvider(
+                    toImgUrl(
+                      manga.customCoverFromTracker ?? manga.imageUrl ?? '',
+                    ),
+                    headers: ref.watch(
+                      headersProvider(
+                        source: manga.source!,
+                        lang: manga.lang!,
+                        sourceId: manga.sourceId,
+                      ),
+                    ),
+                  ),
+            width: 60,
+            height: 90,
+            fit: BoxFit.cover,
+          ),
+        ),
       );
     }
     return Material(
@@ -199,12 +237,15 @@ class UpdateChapterListTileWidget extends ConsumerWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color!
-                                          .withValues(
-                                            alpha: (chapter.isRead ?? false)
-                                                ? 0.5
-                                                : 1,
-                                          ),
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .color!
+                                      .withValues(
+                                        alpha: (chapter.isRead ?? false)
+                                            ? 0.5
+                                            : 1,
+                                      ),
                                 ),
                               ),
                             ],

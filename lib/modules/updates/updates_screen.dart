@@ -17,6 +17,9 @@ import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class UpdatesScreen extends ConsumerStatefulWidget {
   const UpdatesScreen({super.key});
@@ -34,14 +37,19 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
   @override
   Widget buildTab(ItemType type) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: EdgeInsets.only(top: isMobile && !isTv ? 0 : 10),
       child: UpdateTab(
+        key: PageStorageKey('updates-${type.name}'),
+        onResetQuery: () => setState(textEditingController.clear),
         itemType: type,
         query: textEditingController.text,
         isLoading: _isLoading,
       ),
     );
   }
+
+  @override
+  Widget buildMobileMediaBadge(ItemType type) => _updateNumbers(ref, type);
 
   @override
   Widget buildTabLabel(ItemType type, String label) {
@@ -99,6 +107,7 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
         ),
       IconButton(
         splashRadius: 20,
+        tooltip: l10n.remove_everything,
         icon: Icon(
           Icons.delete_sweep_outlined,
           color: Theme.of(context).hintColor,
@@ -160,10 +169,12 @@ class UpdateTab extends ConsumerStatefulWidget {
   final String query;
   final ItemType itemType;
   final bool isLoading;
+  final VoidCallback? onResetQuery;
   const UpdateTab({
     required this.itemType,
     required this.query,
     required this.isLoading,
+    this.onResetQuery,
     super.key,
   });
 
@@ -180,6 +191,7 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = l10nLocalizations(context)!;
+    final mobile = isMobile && !isTv;
     final update = ref.watch(
       getAllUpdateStreamProvider(
         itemType: widget.itemType,
@@ -228,12 +240,13 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
             }
             if (resolved.isNotEmpty) {
               return CustomScrollView(
+                key: PageStorageKey('updates-list-${widget.itemType.name}'),
                 slivers: [
                   if (lastUpdated != null)
                     SliverPadding(
-                      padding: const EdgeInsets.only(
-                        left: 10,
-                        right: 10,
+                      padding: EdgeInsets.only(
+                        left: mobile ? 24 : 10,
+                        right: mobile ? 24 : 10,
                         top: 10,
                         bottom: 20,
                       ),
@@ -249,8 +262,13 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
                               ),
                             ),
                             style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: context.secondaryColor,
+                              fontSize: mobile ? 13 : null,
+                              fontStyle: mobile
+                                  ? FontStyle.normal
+                                  : FontStyle.italic,
+                              color: mobile
+                                  ? NodeLaneTokens.of(context).muted
+                                  : context.secondaryColor,
                             ),
                           ),
                         ]),
@@ -266,18 +284,23 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
                       useRelativeTimesTamps: false,
                     ),
                     groupSeparatorBuilder: (String groupByValue) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8, left: 12),
-                      child: Row(
-                        children: [
-                          Text(
-                            dateFormat(
-                              null,
-                              context: context,
-                              stringDate: groupByValue,
-                              ref: ref,
-                            ),
-                          ),
-                        ],
+                      padding: mobile
+                          ? const EdgeInsets.fromLTRB(24, 12, 24, 10)
+                          : const EdgeInsets.only(bottom: 8, left: 12),
+                      child: Text(
+                        dateFormat(
+                          null,
+                          context: context,
+                          stringDate: groupByValue,
+                          ref: ref,
+                        ),
+                        style: mobile
+                            ? TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: NodeLaneTokens.of(context).muted,
+                              )
+                            : null,
                       ),
                     ),
                     itemBuilder: (context, element) {
@@ -293,7 +316,23 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
                         item1.date!.compareTo(item2.date!),
                     order: GroupedListOrder.DESC,
                   ),
+                  if (mobile)
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: pageBottomInsets(context).bottom + 16,
+                      ),
+                    ),
                 ],
+              );
+            }
+            if (mobile) {
+              return MobileActivityEmpty(
+                icon: Icons.update_rounded,
+                message: widget.query.isEmpty
+                    ? l10n.no_recent_updates
+                    : l10n.no_result,
+                resetLabel: l10n.reset,
+                onReset: widget.query.isEmpty ? null : widget.onResetQuery,
               );
             }
             return Center(child: Text(l10n.no_recent_updates));
