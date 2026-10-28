@@ -20,14 +20,25 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
 
-class GeneralScreen extends ConsumerStatefulWidget {
+import 'mobile_general_screen.dart';
+
+class GeneralScreen extends StatelessWidget {
   const GeneralScreen({super.key});
 
   @override
-  ConsumerState<GeneralScreen> createState() => _GeneralStateScreen();
+  Widget build(BuildContext context) => isMobile && !isTv
+      ? const MobileGeneralScreen()
+      : const _LegacyGeneralScreen();
 }
 
-class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
+class _LegacyGeneralScreen extends ConsumerStatefulWidget {
+  const _LegacyGeneralScreen();
+
+  @override
+  ConsumerState<_LegacyGeneralScreen> createState() => _GeneralStateScreen();
+}
+
+class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
   int _genre = 0;
   int _setting = 0;
   int _synopsis = 0;

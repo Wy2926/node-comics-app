@@ -6432,6 +6432,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'TV player (beta)'**
   String get tv_player_beta;
+
+  /// No description provided for @network_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get network_settings;
+
+  /// No description provided for @cf_proxy_helper.
+  ///
+  /// In en, this message translates to:
+  /// **'FlareSolverr / Byparr endpoint. Leave empty to disable.'**
+  String get cf_proxy_helper;
+
+  /// No description provided for @mobile_navigation_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.'**
+  String get mobile_navigation_description;
 }
 
 class _AppLocalizationsDelegate

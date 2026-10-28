@@ -1457,5 +1457,8 @@
   "anime_only_tv_layout": "Anime-only TV layout",
   "anime_only_beta": "Anime only (beta)",
   "tv_home_beta": "TV home (beta)",
-  "tv_player_beta": "TV player (beta)"
+  "tv_player_beta": "TV player (beta)",
+  "network_settings": "Network",
+  "cf_proxy_helper": "FlareSolverr / Byparr endpoint. Leave empty to disable.",
+  "mobile_navigation_description": "Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More."
 }

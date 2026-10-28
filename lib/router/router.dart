@@ -75,8 +75,10 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 GoRouter router(Ref ref) {
   final router = RouterNotifier();
   final hiddenItems = ref.read(hideItemsStateProvider);
+  // This is a launch preference. Reordering the visible tabs must not replace
+  // the router and discard the settings page or retained tab stacks.
   final initLocation = ref
-      .watch(navigationOrderStateProvider)
+      .read(navigationOrderStateProvider)
       .where((e) => !hiddenItems.contains(e))
       .first;
 

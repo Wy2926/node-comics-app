@@ -57,10 +57,12 @@ class MobileSettingsLink extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.subtitle,
+    this.subtitleMaxLines,
   });
 
   final String title;
   final String? subtitle;
+  final int? subtitleMaxLines;
   final IconData icon;
   final VoidCallback onTap;
 
@@ -85,6 +87,8 @@ class MobileSettingsLink extends StatelessWidget {
           ? null
           : Text(
               subtitle!,
+              maxLines: subtitleMaxLines,
+              overflow: subtitleMaxLines == null ? null : TextOverflow.ellipsis,
               style: TextStyle(fontSize: 13, color: colors.muted),
             ),
       trailing: Icon(Icons.chevron_right, size: 20, color: colors.muted),

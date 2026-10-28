@@ -3432,16 +3432,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get migrate_source => 'Migrate source';
 
   @override
-  String get cloudflare_bypass_proxy => 'Cloudflare bypass proxy';
+  String get cloudflare_bypass_proxy => 'Cloudflare 验证代理';
 
   @override
-  String get custom_doh_url => 'Custom DoH URL';
+  String get custom_doh_url => '自定义 DoH 地址';
 
   @override
-  String get custom_doh_url_helper => 'Must be an https DoH (JSON) endpoint';
+  String get custom_doh_url_helper => '须为 HTTPS 的 DoH（JSON）服务地址';
 
   @override
-  String get anime_only_tv_layout => 'Anime-only TV layout';
+  String get anime_only_tv_layout => '电视仅动画布局';
 
   @override
   String get anime_only_beta => 'Anime only (beta)';
@@ -3451,4 +3451,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tv_player_beta => 'TV player (beta)';
+
+  @override
+  String get network_settings => '网络';
+
+  @override
+  String get cf_proxy_helper => 'FlareSolverr / Byparr 服务地址，留空关闭。';
+
+  @override
+  String get mobile_navigation_description =>
+      '拖动调整顺序。漫画、动画和小说共用书架入口，首个显示项目为启动页。浏览与更多始终显示，多余入口收进更多。';
 }

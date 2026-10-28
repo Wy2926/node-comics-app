@@ -6,6 +6,8 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
+import 'mobile_navigation_settings.dart';
+
 class CustomNavigationSettings extends ConsumerStatefulWidget {
   const CustomNavigationSettings({super.key});
 
@@ -18,6 +20,7 @@ class _CustomNavigationSettingsState
     extends ConsumerState<CustomNavigationSettings> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobileNavigationSettings();
     final l10n = context.l10n;
     final navigationOrder = ref.watch(navigationOrderStateProvider);
     final hideItems = ref.watch(hideItemsStateProvider);

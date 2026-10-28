@@ -3625,6 +3625,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tv_player_beta => 'TV player (beta)';
+
+  @override
+  String get network_settings => 'Network';
+
+  @override
+  String get cf_proxy_helper =>
+      'FlareSolverr / Byparr endpoint. Leave empty to disable.';
+
+  @override
+  String get mobile_navigation_description =>
+      'Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.';
 }
 
 /// The translations for Spanish Castilian, as used in Latin America and the Caribbean (`es_419`).
