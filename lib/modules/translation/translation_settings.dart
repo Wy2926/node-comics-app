@@ -1,15 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
-class TranslationSettings extends ConsumerStatefulWidget {
+import 'mobile_translation_settings.dart';
+import 'translation_language_picker.dart';
+
+class TranslationSettings extends StatelessWidget {
   const TranslationSettings({super.key});
   @override
-  ConsumerState<TranslationSettings> createState() =>
-      _TranslationSettingsState();
+  Widget build(BuildContext context) => isMobile && !isTv
+      ? const MobileTranslationSettings()
+      : const _LegacyTranslationSettings();
 }
 
-class _TranslationSettingsState extends ConsumerState<TranslationSettings> {
+class _LegacyTranslationSettings extends ConsumerStatefulWidget {
+  const _LegacyTranslationSettings();
+  @override
+  ConsumerState<_LegacyTranslationSettings> createState() =>
+      _LegacyTranslationSettingsState();
+}
+
+class _LegacyTranslationSettingsState
+    extends ConsumerState<_LegacyTranslationSettings> {
   late final service = ref.read(translationServiceProvider);
   @override
   void initState() {
@@ -43,11 +56,12 @@ class _TranslationSettingsState extends ConsumerState<TranslationSettings> {
             title: const Text('目标语言'),
             trailing: DropdownButton<String>(
               value: service.language,
-              items: const [
-                DropdownMenuItem(value: 'zh-Hans', child: Text('简体中文')),
-                DropdownMenuItem(value: 'zh-Hant', child: Text('繁體中文')),
-                DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'ja', child: Text('日本語')),
+              items: [
+                for (final language in translationLanguageNames.entries)
+                  DropdownMenuItem(
+                    value: language.key,
+                    child: Text(language.value),
+                  ),
               ],
               onChanged: service.busy
                   ? null
