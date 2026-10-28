@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/widgets/floating_nav_bar.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'nav_badges.dart';
+import 'nodelane_mobile_navigation.dart';
 
 class MainMobileBottomNavigation extends StatelessWidget {
   const MainMobileBottomNavigation({
@@ -18,6 +24,7 @@ class MainMobileBottomNavigation extends StatelessWidget {
     required this.useFloatingNav,
     this.shrink = 0,
     this.onWake,
+    this.mobileRoutes,
   });
 
   final bool isLongPressed;
@@ -32,9 +39,24 @@ class MainMobileBottomNavigation extends StatelessWidget {
   final bool useFloatingNav;
   final double shrink;
   final VoidCallback? onWake;
+  final List<String>? mobileRoutes;
 
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv && mobileRoutes != null) {
+      return NavigationBadgeCounts(
+        routes: mobileRoutes!,
+        builder: (badges) => NodeLaneMobileNavigation(
+          routes: mobileRoutes!,
+          location: location,
+          visible: _getBottomNavigationHeight(isLongPressed, location) != 0,
+          maintainSpace: !isLongPressed,
+          nativeIos: Platform.isIOS,
+          badges: badges,
+          onSelected: onDestinationSelected,
+        ),
+      );
+    }
     if (useFloatingNav) {
       return SizedBox(
         width: context.width(1),

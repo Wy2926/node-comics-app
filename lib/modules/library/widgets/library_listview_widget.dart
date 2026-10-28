@@ -7,10 +7,14 @@ import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_bookshelf_card.dart';
 
 class LibraryListViewWidget extends StatelessWidget {
   final List<Manga> entriesManga;
   final bool language;
+  final bool sourceBadge;
   final bool downloadedChapter;
   final Set<int> mangaIdsList;
   final bool continueReaderBtn;
@@ -20,6 +24,7 @@ class LibraryListViewWidget extends StatelessWidget {
     super.key,
     required this.entriesManga,
     required this.language,
+    this.sourceBadge = false,
     required this.downloadedChapter,
     required this.continueReaderBtn,
     required this.mangaIdsList,
@@ -36,6 +41,38 @@ class LibraryListViewWidget extends StatelessWidget {
         return Consumer(
           builder: (context, ref, child) {
             final isLongPressed = ref.watch(isLongPressedStateProvider);
+            if (isMobile && !isTv) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: MobileBookshelfCard(
+                  title: entry.name ?? '',
+                  subtitle: [
+                    if (sourceBadge) entry.source ?? '',
+                    if (language) entry.lang?.toUpperCase() ?? '',
+                  ].where((value) => value.isNotEmpty).join(' · '),
+                  image: resolveCoverImage(entry, ref),
+                  list: true,
+                  selected: mangaIdsList.contains(entry.id),
+                  onTap: () => onTapEntry(
+                    isLongPressed: isLongPressed,
+                    ref: ref,
+                    context: context,
+                    entry: entry,
+                  ),
+                  onLongPress: () =>
+                      handleLongOrSecondaryTap(isLongPressed, ref, entry),
+                  badges: LibraryBadgeWidget(
+                    entry: entry,
+                    showLocal: localSource,
+                    showDownloaded: downloadedChapter,
+                    settings: settings,
+                  ),
+                  continueButton: continueReaderBtn && entry.chapters.isNotEmpty
+                      ? ContinueReaderButton(entry: entry, large: true)
+                      : null,
+                ),
+              );
+            }
             return Material(
               borderRadius: BorderRadius.circular(5),
               color: Colors.transparent,

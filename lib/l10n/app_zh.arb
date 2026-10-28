@@ -1,6 +1,6 @@
 {
   "@@locale": "zh",
-  "library": "图书馆",
+  "library": "书架",
   "updates": "更新",
   "history": "历史",
   "browse": "浏览",
@@ -49,7 +49,7 @@
   "show_numbers_of_items": "显示项目数",
   "other": "其他",
   "show_continue_reading_buttons": "显示继续阅读按钮",
-  "empty_library": "空图书馆",
+  "empty_library": "书架还是空的",
   "search": "搜索...",
   "no_recent_updates": "无最近更新",
   "remove_everything": "删除所有",

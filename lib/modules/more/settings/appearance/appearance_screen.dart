@@ -164,7 +164,7 @@ class AppearanceScreen extends ConsumerWidget {
                 ),
                 _buildLanguageTile(context, ref, l10n),
                 _buildFontTile(context, ref, l10n),
-                if (supportsFloatingNav)
+                if (supportsFloatingNav && !isMobile)
                   SwitchListTile(
                     secondary: const Icon(Icons.call_to_action_outlined),
                     title: Text(l10n.floating_navigation_bar),

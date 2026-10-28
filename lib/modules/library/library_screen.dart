@@ -28,6 +28,8 @@ import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/library/widgets/library_settings_sheet.dart';
 
 /// Main library screen — refactored from 2309 lines to ~350 lines.
 ///
@@ -197,7 +199,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
 
     final searchQuery = _textEditingController.text;
 
-    return Scaffold(
+    final content = Scaffold(
       body: mangaAll.when(
         data: (man) {
           return categories.when(
@@ -245,6 +247,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   searchQuery: searchQuery,
                   ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
                   sourceIds: sourceFilterIds,
+                  onAdjustFilters: () => showLibrarySettingsSheet(
+                    context: context,
+                    vsync: this,
+                    settings: settings,
+                    itemType: widget.itemType,
+                    entries: man,
+                  ),
                 );
               }
 
@@ -306,6 +315,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
 
               return Scaffold(
                 appBar: LibraryAppBar(
+                  textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
+                  selectionMode: ref.watch(isLongPressedStateProvider),
                   itemType: widget.itemType,
                   isNotFiltering: isNotFiltering,
                   showNumbersOfItems: showNumbersOfItems,
@@ -341,8 +352,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
         error: (error, _) => ErrorText(error),
         loading: () => const ProgressCenter(),
       ),
-      bottomNavigationBar: _buildBottomBar(),
+      // Even a zero-height bottom bar makes Scaffold strip the shell's bottom
+      // padding. Omit it when inactive so the final row clears the native bar.
+      bottomNavigationBar:
+          isMobile && !isTv && !ref.watch(isLongPressedStateProvider)
+          ? null
+          : _buildBottomBar(),
     );
+    return isMobile && !isTv ? NodeLaneSurface(child: content) : content;
   }
 
   Widget _buildWithCategories({
@@ -397,6 +414,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       length: entr.length,
       child: Scaffold(
         appBar: LibraryAppBar(
+          textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
+          selectionMode: ref.watch(isLongPressedStateProvider),
           itemType: widget.itemType,
           isNotFiltering: isNotFiltering,
           showNumbersOfItems: showNumbersOfItems,
@@ -463,9 +482,28 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     required Widget Function(int categoryId) badgeForCategory,
   }) {
     final l10n = l10nLocalizations(context)!;
+    final mobile = isMobile && !isTv;
+    final colors = NodeLaneTokens.of(context);
     return TabBar(
       isScrollable: true,
       controller: tabBarController,
+      tabAlignment: mobile ? TabAlignment.start : null,
+      dividerColor: mobile ? Colors.transparent : null,
+      padding: mobile
+          ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+          : null,
+      indicatorSize: mobile ? TabBarIndicatorSize.tab : null,
+      indicatorPadding: mobile
+          ? const EdgeInsets.symmetric(horizontal: 4, vertical: 6)
+          : EdgeInsets.zero,
+      indicator: mobile
+          ? BoxDecoration(
+              color: colors.accentSoft,
+              borderRadius: BorderRadius.circular(12),
+            )
+          : null,
+      labelColor: mobile ? colors.accent : null,
+      unselectedLabelColor: mobile ? colors.muted : null,
       tabs: [
         if (withoutCategory.isNotEmpty)
           Row(
@@ -512,8 +550,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
         final color = Theme.of(context).textTheme.bodyLarge!.color!;
         return BottomSelectBar(
           isVisible: ref.watch(isLongPressedStateProvider),
+          backgroundColor: isMobile && !isTv
+              ? NodeLaneTokens.of(context).surface
+              : null,
+          respectSafeArea: isMobile && !isTv,
           actions: [
             BottomSelectButton(
+              tooltip: context.l10n.categories,
               icon: Icon(Icons.label_outline_rounded, color: color),
               onPressed: () {
                 final List<Manga> bulkMangas = mangaIds
@@ -556,6 +599,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               },
             ),
             BottomSelectButton(
+              tooltip: context.l10n.migrate,
               icon: Icon(Icons.swap_horiz_rounded, color: color),
               onPressed: () {
                 final List<Manga> bulkMangas = mangaIds
@@ -571,6 +615,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               },
             ),
             BottomSelectButton(
+              tooltip: context.l10n.remove,
               icon: Icon(Icons.delete_outline_outlined, color: color),
               onPressed: () => showDeleteMangaDialog(
                 context: context,

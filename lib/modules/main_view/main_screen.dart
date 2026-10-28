@@ -358,6 +358,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               final prefersNavRail = context.prefersNavRail(
                 useFloatingNav: useFloatingNav,
               );
+              final useMobileUi = isMobile && !isTv && !prefersNavRail;
               final isReadingScreen = _isReadingScreen(location);
               bool uniqueSwitch = false;
               List<String> dest = !prefersNavRail && isLibSwitch
@@ -419,7 +420,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               final isLongPressed = ref.watch(isLongPressedStateProvider);
 
               return FloatingNavigationScope(
-                enabled: useFloatingNav,
+                enabled: useMobileUi || useFloatingNav,
                 child: Column(
                   children: [
                     if (!isReadingScreen)
@@ -434,11 +435,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       ),
                     Flexible(
                       child: Scaffold(
-                        extendBody: useFloatingNav,
+                        extendBody: useMobileUi || useFloatingNav,
                         body: NotificationListener<ScrollNotification>(
                           onNotification: (notification) => _onPageScroll(
                             notification,
-                            useFloatingNav: useFloatingNav,
+                            useFloatingNav: !useMobileUi && useFloatingNav,
                           ),
                           child: prefersNavRail
                               ? MainTabletLayout(
@@ -461,6 +462,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                 location: location,
                                 currentIndex: currentIndex,
                                 dest: dest,
+                                mobileRoutes: navigationOrder
+                                    .where((nav) => !hideItems.contains(nav))
+                                    .toList(),
                                 route: route,
                                 ref: ref,
                                 useFloatingNav: useFloatingNav,

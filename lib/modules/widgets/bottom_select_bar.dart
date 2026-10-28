@@ -6,30 +6,40 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 class BottomSelectBar extends StatelessWidget {
   final bool isVisible;
   final List<BottomSelectButton> actions;
+  final Color? backgroundColor;
+  final bool respectSafeArea;
 
   const BottomSelectBar({
     super.key,
     required this.isVisible,
     required this.actions,
+    this.backgroundColor,
+    this.respectSafeArea = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bottom = respectSafeArea
+        ? MediaQuery.viewPaddingOf(context).bottom
+        : 0.0;
     return AnimatedContainer(
       curve: Curves.easeIn,
       decoration: BoxDecoration(
-        color: context.primaryColor.withValues(alpha: 0.2),
+        color: backgroundColor ?? context.primaryColor.withValues(alpha: 0.2),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
       ),
       duration: const Duration(milliseconds: 100),
-      height: isVisible ? 70 : 0,
+      height: isVisible ? 70 + bottom : 0,
       width: context.width(1),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: actions,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: isVisible ? bottom : 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: actions,
+        ),
       ),
     );
   }
@@ -39,11 +49,13 @@ class BottomSelectBar extends StatelessWidget {
 class BottomSelectButton extends StatelessWidget {
   final Widget icon;
   final VoidCallback onPressed;
+  final String? tooltip;
 
   const BottomSelectButton({
     super.key,
     required this.icon,
     required this.onPressed,
+    this.tooltip,
   });
 
   @override
@@ -58,7 +70,9 @@ class BottomSelectButton extends StatelessWidget {
             shadowColor: Colors.transparent,
           ),
           onPressed: onPressed,
-          child: icon,
+          child: tooltip == null
+              ? icon
+              : Tooltip(message: tooltip!, child: icon),
         ),
       ),
     );

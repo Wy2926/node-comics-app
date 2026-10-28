@@ -11,6 +11,9 @@ import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart';
 import 'package:mangayomi/modules/widgets/bottom_text_widget.dart';
 import 'package:mangayomi/modules/widgets/cover_view_widget.dart';
 import 'package:mangayomi/modules/widgets/gridview_widget.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+import 'mobile_bookshelf_card.dart';
 
 class LibraryGridViewWidget extends StatefulWidget {
   final bool isCoverOnlyGrid;
@@ -51,6 +54,85 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
         final gridSize = ref.watch(
           libraryGridSizeStateProvider(itemType: widget.itemType),
         );
+        if (isMobile && !isTv) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth - NodeLaneTokens.gutter * 2;
+              final maxColumns = ((width + 14) / 104).floor().clamp(1, 12);
+              final columns = (gridSize ?? 0) == 0
+                  ? ((width + 14) / 194).round().clamp(2, 6)
+                  : gridSize!.clamp(1, maxColumns);
+              final coverWidth = (width - (columns - 1) * 14) / columns;
+              final coverOnly =
+                  widget.isCoverOnlyGrid && !widget.isComfortableGrid;
+              final scale = MediaQuery.textScalerOf(context);
+              final captionHeight = coverOnly
+                  ? 0.0
+                  : 10 +
+                        scale.scale(15) * 2.5 +
+                        ((widget.sourceBadge || widget.language)
+                            ? scale.scale(12) * 1.3 + 4
+                            : 0);
+              return GridView.builder(
+                key: PageStorageKey('mobile-shelf-${widget.itemType}'),
+                physics: const AlwaysScrollableScrollPhysics(),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  12,
+                  20,
+                  24,
+                ).add(pageBottomInsets(context)),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 22,
+                  mainAxisExtent: coverWidth * 1.43 + captionHeight,
+                ),
+                itemCount: widget.entriesManga.length,
+                itemBuilder: (context, index) {
+                  final entry = widget.entriesManga[index];
+                  final subtitle = [
+                    if (widget.sourceBadge &&
+                        (entry.source?.isNotEmpty ?? false))
+                      entry.source!,
+                    if (widget.language && (entry.lang?.isNotEmpty ?? false))
+                      entry.lang!.toUpperCase(),
+                  ].join(' · ');
+                  return MobileBookshelfCard(
+                    title: entry.name ?? '',
+                    subtitle: subtitle,
+                    image: resolveCoverImage(entry, ref),
+                    selected: widget.mangaIdsList.contains(entry.id),
+                    coverOnly: coverOnly,
+                    onTap: () => onTapEntry(
+                      isLongPressed: ref.read(isLongPressedStateProvider),
+                      ref: ref,
+                      context: context,
+                      entry: entry,
+                    ),
+                    onLongPress: () => handleLongOrSecondaryTap(
+                      ref.read(isLongPressedStateProvider),
+                      ref,
+                      entry,
+                    ),
+                    badges: LibraryBadgeWidget(
+                      entry: entry,
+                      showLocal: widget.localSource,
+                      showDownloaded: widget.downloadedChapter,
+                      settings: widget.settings,
+                    ),
+                    continueButton:
+                        widget.continueReaderBtn && entry.chapters.isNotEmpty
+                        ? ContinueReaderButton(entry: entry, large: true)
+                        : null,
+                  );
+                },
+              );
+            },
+          );
+        }
         return GridViewWidget(
           gridSize: gridSize,
           childAspectRatio: widget.isComfortableGrid ? 0.642 : 0.69,

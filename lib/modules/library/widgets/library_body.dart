@@ -13,6 +13,11 @@ import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'library_dialogs.dart';
+import 'mobile_bookshelf_empty.dart';
 
 /// Displays the library body content for a given category (or uncategorized).
 ///
@@ -40,6 +45,7 @@ class LibraryBody extends ConsumerWidget {
   final String searchQuery;
   final bool ignoreFiltersOnSearch;
   final List<String> sourceIds;
+  final VoidCallback? onAdjustFilters;
 
   const LibraryBody({
     super.key,
@@ -63,6 +69,7 @@ class LibraryBody extends ConsumerWidget {
     required this.searchQuery,
     required this.ignoreFiltersOnSearch,
     required this.sourceIds,
+    this.onAdjustFilters,
   });
 
   @override
@@ -117,6 +124,21 @@ class LibraryBody extends ConsumerWidget {
         );
 
         if (entries.isEmpty) {
+          if (isMobile && !isTv) {
+            final filtered =
+                (allMangaStream.asData?.value.isNotEmpty ?? false) ||
+                searchQuery.isNotEmpty;
+            return MobileBookshelfEmpty(
+              title: filtered ? l10n.no_result : l10n.empty_library,
+              filtered: filtered,
+              primaryLabel: filtered ? l10n.filter : l10n.import,
+              onPrimary: filtered
+                  ? (onAdjustFilters ?? () {})
+                  : () => showImportLocalDialog(context, itemType),
+              secondaryLabel: l10n.browse,
+              onSecondary: () => context.go('/browse'),
+            );
+          }
           return Center(child: Text(l10n.empty_library));
         }
 
@@ -142,6 +164,7 @@ class LibraryBody extends ConsumerWidget {
           child: displayType == DisplayType.list
               ? LibraryListViewWidget(
                   entriesManga: entriesManga,
+                  sourceBadge: sourceBadge,
                   continueReaderBtn: continueReaderBtn,
                   downloadedChapter: downloadedChapter,
                   language: language,

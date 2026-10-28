@@ -10,7 +10,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get library => '图书馆';
+  String get library => '书架';
 
   @override
   String get updates => '更新';
@@ -163,7 +163,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get show_continue_watching_buttons => '显示继续观看按钮';
 
   @override
-  String get empty_library => '空图书馆';
+  String get empty_library => '书架还是空的';
 
   @override
   String get search => '搜索...';

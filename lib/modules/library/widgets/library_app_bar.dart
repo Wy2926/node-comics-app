@@ -19,6 +19,12 @@ import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
+
+import 'mobile_bookshelf_header.dart';
+
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// AppBar for the library screen.
 ///
@@ -39,6 +45,8 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback onSearchClear;
   final ValueChanged<bool> onIgnoreFiltersChanged;
   final TickerProvider vsync;
+  final double textScale;
+  final bool selectionMode;
 
   const LibraryAppBar({
     super.key,
@@ -57,10 +65,16 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onSearchClear,
     required this.onIgnoreFiltersChanged,
     required this.vsync,
+    this.textScale = 1,
+    this.selectionMode = false,
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+  Size get preferredSize => Size.fromHeight(
+    isMobile && !isTv && !selectionMode
+        ? MobileBookshelfHeader.preferredHeight(textScale)
+        : AppBar().preferredSize.height,
+  );
 
   /// The library menu actions, shared by the popup off-TV and the centred TV
   /// menu.
@@ -132,6 +146,92 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ),
         error: (error, _) => ErrorText(error),
         loading: () => const ProgressCenter(),
+      );
+    }
+
+    if (isMobile && !isTv) {
+      final hidden = ref.watch(hideItemsStateProvider);
+      const routes = {
+        ItemType.manga: '/MangaLibrary',
+        ItemType.anime: '/AnimeLibrary',
+        ItemType.novel: '/NovelLibrary',
+      };
+      return MobileBookshelfHeader(
+        title: l10n.library,
+        searchLabel: l10n.search,
+        importLabel: l10n.import,
+        filterLabel: l10n.filter,
+        controller: textEditingController,
+        onSearchChanged: onSearchClear,
+        count: showNumbersOfItems ? numberOfItems : null,
+        filtered: !isNotFiltering,
+        onImport: () => showImportLocalDialog(context, itemType),
+        onFilter: () => showLibrarySettingsSheet(
+          context: context,
+          vsync: vsync,
+          settings: settings,
+          itemType: itemType,
+          entries: entries,
+        ),
+        mediaMenu: PopupMenuButton<ItemType>(
+          tooltip: l10n.library,
+          onSelected: (type) => context.go(routes[type]!),
+          itemBuilder: (_) => [
+            for (final type in ItemType.values)
+              if (!hidden.contains(routes[type]))
+                CheckedPopupMenuItem(
+                  value: type,
+                  checked: type == itemType,
+                  child: Text(type.localized(l10n)),
+                ),
+          ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  itemType.localized(l10n),
+                  style: const TextStyle(fontSize: 13),
+                ),
+                const Icon(Icons.expand_more_rounded, size: 18),
+              ],
+            ),
+          ),
+        ),
+        updateControl: ref.watch(libraryUpdateProvider).running
+            ? IconButton(
+                tooltip: l10n.cancel,
+                icon: const Icon(Icons.stop_circle_outlined),
+                onPressed: () =>
+                    ref.read(libraryUpdateProvider.notifier).requestCancel(),
+              )
+            : null,
+        menu: PopupMenuButton<int>(
+          itemBuilder: (_) => [
+            PopupMenuItem(value: 0, child: Text(l10n.update_library)),
+            PopupMenuItem(
+              value: 1,
+              enabled: manga.asData?.value.isNotEmpty == true,
+              child: Text(l10n.open_random_entry),
+            ),
+            if (itemType == ItemType.anime)
+              PopupMenuItem(value: 3, child: Text(l10n.torrent_stream)),
+            const PopupMenuDivider(),
+            CheckedPopupMenuItem(
+              value: 4,
+              checked: ignoreFiltersOnSearch,
+              child: Text(l10n.ignore_filters),
+            ),
+          ],
+          onSelected: (value) {
+            if (value == 4) {
+              onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
+            } else {
+              _onLibraryMenu(context, ref, value, manga);
+            }
+          },
+        ),
       );
     }
 
@@ -301,8 +401,11 @@ class _SelectionAppBar extends ConsumerWidget {
       color: Theme.of(context).scaffoldBackgroundColor,
       child: AppBar(
         title: Text(mangaIdsList.length.toString()),
-        backgroundColor: context.primaryColor.withValues(alpha: 0.2),
+        backgroundColor: isMobile && !isTv
+            ? NodeLaneTokens.of(context).surface
+            : context.primaryColor.withValues(alpha: 0.2),
         leading: IconButton(
+          tooltip: context.l10n.cancel,
           onPressed: () {
             ref.read(mangasListStateProvider.notifier).clear();
             ref

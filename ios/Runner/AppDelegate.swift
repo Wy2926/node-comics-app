@@ -21,6 +21,9 @@ import UniformTypeIdentifiers
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
+    engineBridge.applicationRegistrar.register(
+      NodeLaneTabBarFactory(messenger: messenger), withId: "nodelane/native_tab_bar"
+    )
 
     let privateStorageChannel = FlutterMethodChannel(
       name: "nodelane/private_storage", binaryMessenger: messenger

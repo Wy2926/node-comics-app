@@ -4,6 +4,7 @@ import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/appearance_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 class CustomNavigationSettings extends ConsumerStatefulWidget {
   const CustomNavigationSettings({super.key});
@@ -40,15 +41,16 @@ class _CustomNavigationSettingsState
                     ref.read(animeOnlyTvModeProvider.notifier).set(value);
                   },
                 ),
-                SwitchListTile(
-                  value: mergeLibraryNavMobile,
-                  title: Text(context.l10n.merge_library_nav_mobile),
-                  onChanged: (value) {
-                    ref
-                        .read(mergeLibraryNavMobileStateProvider.notifier)
-                        .set(value);
-                  },
-                ),
+                if (!isMobile || isTv)
+                  SwitchListTile(
+                    value: mergeLibraryNavMobile,
+                    title: Text(context.l10n.merge_library_nav_mobile),
+                    onChanged: (value) {
+                      ref
+                          .read(mergeLibraryNavMobileStateProvider.notifier)
+                          .set(value);
+                    },
+                  ),
               ],
             ),
           ),
