@@ -744,7 +744,7 @@
   "get_m_extension_server": "Get M-Extension-Server",
   "get_sync_server": "Get Sync Server here",
   "undefined": "undefined",
-  "empty_extensions_repo": "You don't have any repository urls here. Click on the plus button to add one!",
+  "empty_extensions_repo": "No extension repositories yet",
   "add_extensions_repo": "Add repo URL",
   "remove_extensions_repo": "Remove repo URL",
   "manage_manga_repo_urls": "Manage Manga Repo URLs",

@@ -1947,8 +1947,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get undefined => 'undefined';
 
   @override
-  String get empty_extensions_repo =>
-      'You don\'t have any repository urls here. Click on the plus button to add one!';
+  String get empty_extensions_repo => 'No extension repositories yet';
 
   @override
   String get add_extensions_repo => 'Add repo URL';

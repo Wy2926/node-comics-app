@@ -21,14 +21,12 @@ void main() {
     addTearDown(tester.view.reset);
     final controller = TextEditingController();
     addTearDown(controller.dispose);
-    var extensions = false, compact = false;
+    var extensions = false;
     var searches = 0, filters = 0;
-    late StateSetter update;
     await tester.pumpWidget(
       app(
         StatefulBuilder(
           builder: (context, setState) {
-            update = setState;
             return Column(
               children: [
                 MobileBrowseHeader(
@@ -50,7 +48,6 @@ void main() {
                   onFilter: () => filters++,
                   clearLabel: '清除',
                   updateCount: 12,
-                  compact: compact,
                   actions: [
                     IconButton(
                       onPressed: () {},
@@ -73,13 +70,18 @@ void main() {
     await tester.tap(find.text('扩展'));
     await tester.pump();
     await tester.enterText(find.byType(TextField), 'sample');
-    update(() => compact = true);
-    await tester.pump();
+    tester.view.viewInsets = const FakeViewPadding(bottom: 250);
+    await tester.pumpAndSettle();
     expect(find.text('浏览'), findsNothing);
     expect(controller.text, 'sample');
     await tester.tap(find.byTooltip('清除'));
     await tester.pump();
     expect(controller.text, isEmpty);
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+    expect(find.text('浏览'), findsOneWidget);
+    expect(find.text('漫画'), findsOneWidget);
+    expect(find.text('扩展'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -15,6 +15,10 @@ import 'package:mangayomi/utils/error_toast.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_empty.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_repository_card.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class SourceRepositories extends ConsumerStatefulWidget {
   final ItemType itemType;
@@ -35,12 +39,123 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
     }
   }
 
+  String _repositoryName(Repo repo) {
+    if (repo.name != null &&
+        repo.name!.isNotEmpty &&
+        !repo.name!.endsWith('.json')) {
+      return repo.name!;
+    }
+    return repo.jsonUrl
+            ?.replaceAll(RegExp(r'/[^/]+\.json$'), '')
+            .split('/')
+            .where((part) => part.isNotEmpty)
+            .lastOrNull ??
+        repo.jsonUrl ??
+        'Invalid source - remove it';
+  }
+
+  Future<void> _refreshRepositories() async {
+    if (isRefreshing) return;
+    setState(() => isRefreshing = true);
+    try {
+      final refresh = ref.refresh(
+        fetchItemSourcesListProvider(
+          id: null,
+          reFresh: true,
+          itemType: widget.itemType,
+        ).future,
+      );
+      await refresh;
+    } finally {
+      if (mounted) setState(() => isRefreshing = false);
+    }
+  }
+
+  Widget _mobilePage(BuildContext context, List<Repo> repositories) {
+    final l10n = context.l10n;
+    final title = switch (widget.itemType) {
+      ItemType.manga => l10n.manga_extensions_repo,
+      ItemType.anime => l10n.anime_extensions_repo,
+      ItemType.novel => l10n.novel_extensions_repo,
+    };
+    return MobileBrowsePage(
+      title: title,
+      actions: [
+        IconButton(
+          tooltip: l10n.refresh,
+          onPressed: isRefreshing ? null : _refreshRepositories,
+          icon: isRefreshing
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh_rounded),
+        ),
+      ],
+      body: repositories.isEmpty
+          ? ListView(
+              children: [
+                MobileBrowseEmpty(
+                  icon: Icons.folder_open_rounded,
+                  title: l10n.empty_extensions_repo,
+                  actionLabel: l10n.add_extensions_repo,
+                  onAction: () => _showAddRepoDialog(context),
+                ),
+              ],
+            )
+          : SuperListView.builder(
+              padding: const EdgeInsets.only(top: 12, bottom: 16),
+              itemCount: repositories.length,
+              itemBuilder: (context, index) {
+                final repo = repositories[index];
+                return MobileRepositoryCard(
+                  name: _repositoryName(repo),
+                  host: Uri.tryParse(repo.jsonUrl ?? '')?.host ?? '',
+                  visible: !(repo.hidden ?? false),
+                  visibilityLabel: l10n.show_extensions,
+                  onVisibilityChanged: (visible) => ref
+                      .read(
+                        extensionsRepoStateProvider(widget.itemType).notifier,
+                      )
+                      .setVisibility(repo, !visible),
+                  copyLabel: MaterialLocalizations.of(context).copyButtonLabel,
+                  onCopy: () {
+                    if (repo.jsonUrl != null) {
+                      Clipboard.setData(ClipboardData(text: repo.jsonUrl!));
+                    }
+                  },
+                  browserLabel: l10n.open_in_browser,
+                  onOpenBrowser: repo.website == null
+                      ? null
+                      : () => _launchInBrowser(Uri.parse(repo.website!)),
+                  removeLabel: l10n.remove_extensions_repo,
+                  onRemove: () => _showRemoveRepoDialog(context, repo),
+                );
+              },
+            ),
+      bottomAction: repositories.isEmpty
+          ? null
+          : FilledButton.icon(
+              style: FilledButton.styleFrom(minimumSize: const Size(44, 48)),
+              onPressed: () => _showAddRepoDialog(context),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(
+                l10n.add_extensions_repo,
+                textAlign: TextAlign.center,
+              ),
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     final repositories = ref.watch(
       extensionsRepoStateProvider(widget.itemType),
     );
+    _entries = repositories;
+    if (isMobile && !isTv) return _mobilePage(context, repositories);
     final data = AsyncValue.data(repositories);
     return Scaffold(
       appBar: AppBar(
@@ -63,22 +178,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                   padding: EdgeInsets.all(8.0),
                   child: IconButton(
                     splashRadius: 20,
-                    onPressed: () async {
-                      setState(() {
-                        isRefreshing = true;
-                      });
-                      final result = await ref.refresh(
-                        fetchItemSourcesListProvider(
-                          id: null,
-                          reFresh: true,
-                          itemType: widget.itemType,
-                        ).future,
-                      );
-                      setState(() {
-                        isRefreshing = false;
-                      });
-                      return result;
-                    },
+                    onPressed: _refreshRepositories,
                     icon: Icon(
                       Icons.refresh,
                       color: Theme.of(context).hintColor,
@@ -134,25 +234,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  (repo.name != null &&
-                                          repo.name!.isNotEmpty &&
-                                          !repo.name!.endsWith('.json'))
-                                      ? repo.name!
-                                      : (repo.jsonUrl != null
-                                            ? (repo.jsonUrl!
-                                                      .replaceAll(
-                                                        RegExp(
-                                                          r'/[^/]+\.json$',
-                                                        ),
-                                                        '',
-                                                      )
-                                                      .split('/')
-                                                      .where(
-                                                        (s) => s.isNotEmpty,
-                                                      )
-                                                      .lastOrNull ??
-                                                  repo.jsonUrl!)
-                                            : "Invalid source - remove it"),
+                                  _repositoryName(repo),
                                   style: TextStyle(
                                     decoration: isHidden
                                         ? TextDecoration.lineThrough
@@ -218,7 +300,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                             SizedBox(width: 10),
                             IconButton(
                               onPressed: () =>
-                                  _showRemoveRepoDialog(context, index),
+                                  _showRemoveRepoDialog(context, repo),
                               icon: const Icon(Icons.delete_outlined),
                             ),
                           ],
@@ -278,52 +360,38 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
     }
   }
 
-  void _showRemoveRepoDialog(BuildContext context, int index) {
+  void _showRemoveRepoDialog(BuildContext context, Repo removedRepo) {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final l10n = context.l10n;
-            return AlertDialog(
-              title: Text(l10n.remove_extensions_repo),
-              content: Text(l10n.remove_extensions_repo),
-              actions: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(l10n.cancel),
-                    ),
-                    const SizedBox(width: 15),
-                    TextButton(
-                      onPressed: () async {
-                        final removedRepo = _entries[index];
-                        final mangaRepos = ref
-                            .read(extensionsRepoStateProvider(widget.itemType))
-                            .toList();
-                        mangaRepos.removeWhere((url) => url == removedRepo);
-                        await ref
-                            .read(
-                              extensionsRepoStateProvider(widget.itemType)
-                                  .notifier,
-                            )
-                            .set(mangaRepos);
-                        await _removeOrphanSources(removedRepo);
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: Text(l10n.ok),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+        final l10n = context.l10n;
+        return AlertDialog(
+          scrollable: true,
+          backgroundColor: isMobile && !isTv
+              ? NodeLaneTokens.of(context).surface
+              : null,
+          title: Text(l10n.remove_extensions_repo),
+          content: Text(_repositoryName(removedRepo)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                final repositories = ref
+                    .read(extensionsRepoStateProvider(widget.itemType))
+                    .toList();
+                repositories.removeWhere((repo) => repo == removedRepo);
+                await ref
+                    .read(extensionsRepoStateProvider(widget.itemType).notifier)
+                    .set(repositories);
+                await _removeOrphanSources(removedRepo);
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: Text(l10n.ok),
+            ),
+          ],
         );
       },
     );
@@ -332,14 +400,21 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
   void _showAddRepoDialog(BuildContext context) {
     bool isLoading = false;
     final controller = TextEditingController();
-    showDialog(
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final route = DialogRoute<void>(
       context: context,
+      themes: InheritedTheme.capture(from: context, to: navigator.context),
+      traversalEdgeBehavior: TraversalEdgeBehavior.closedLoop,
       builder: (context) {
         return SizedBox(
           child: StatefulBuilder(
             builder: (context, setState) {
               final l10n = context.l10n;
               return AlertDialog(
+                scrollable: true,
+                backgroundColor: isMobile && !isTv
+                    ? NodeLaneTokens.of(context).surface
+                    : null,
                 title: Text(l10n.add_extensions_repo),
                 content: TextFormField(
                   controller: controller,
@@ -378,126 +453,131 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                     }
                   },
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  decoration: outlinedFieldDecoration(
-                    hintText: l10n.url_must_end_with_dot_json_or_dot_pb,
-                  ),
+                  decoration: isMobile && !isTv
+                      ? InputDecoration(
+                          labelText: l10n.repo_url,
+                          hintText: l10n.url_must_end_with_dot_json_or_dot_pb,
+                          hintMaxLines: 3,
+                          errorMaxLines: 3,
+                          filled: true,
+                          fillColor: NodeLaneTokens.of(context).soft,
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        )
+                      : outlinedFieldDecoration(
+                          hintText: l10n.url_must_end_with_dot_json_or_dot_pb,
+                        ),
                 ),
                 actions: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text(l10n.cancel),
-                      ),
-                      const SizedBox(width: 15),
-                      StatefulBuilder(
-                        builder: (context, setState) {
-                          final text = controller.text.trim();
-                          final clean = text.toLowerCase();
-                          final alreadyExists = _entries.any((r) {
-                            final rUrl = r.jsonUrl?.trim().toLowerCase();
-                            if (rUrl == null) return false;
-                            return rUrl == clean ||
-                                rUrl == '$clean/' ||
-                                '$rUrl/' == clean;
-                          });
-                          final isValid =
-                              text.isNotEmpty &&
-                              !alreadyExists &&
-                              Uri.tryParse(text)?.isAbsolute == true;
-                          return TextButton(
-                            onPressed: !isValid
-                                ? null
-                                : () async {
-                                    setState(() => isLoading = true);
-                                    try {
-                                      final repoNotifier = ref.read(
-                                        extensionsRepoStateProvider(
-                                          widget.itemType,
-                                        ).notifier,
-                                      );
-                                      final currentRepos = ref.read(
-                                        extensionsRepoStateProvider(
-                                          widget.itemType,
-                                        ),
-                                      );
-                                      final repo = await ref.read(
-                                        getRepoInfosProvider(jsonUrl: text)
-                                            .future,
-                                      );
-                                      if (repo == null) {
-                                        if (context.mounted) {
-                                          setState(() => isLoading = false);
-                                        }
-                                        botToast(l10n.unsupported_repo);
-                                        return;
-                                      }
-                                      final repoUrl = repo.jsonUrl
-                                          ?.trim()
-                                          .toLowerCase();
-                                      final isDuplicate = currentRepos.any((r) {
-                                        final rUrl = r.jsonUrl
-                                            ?.trim()
-                                            .toLowerCase();
-                                        return (rUrl != null &&
-                                                (rUrl == repoUrl ||
-                                                    rUrl == clean ||
-                                                    rUrl == '$clean/' ||
-                                                    '$rUrl/' == clean ||
-                                                    (repoUrl != null &&
-                                                        (rUrl == '$repoUrl/' ||
-                                                            '$rUrl/' ==
-                                                                repoUrl)))) ||
-                                            r == repo;
-                                      });
-                                      if (isDuplicate) {
-                                        setState(() => isLoading = false);
-                                        botToast(l10n.repo_already_exists);
-                                        return;
-                                      }
-                                      await repoNotifier.set([
-                                        ...currentRepos,
-                                        repo,
-                                      ]);
-                                      botToast(l10n.repo_added);
-                                    } catch (e, s) {
-                                      if (context.mounted) {
-                                        setState(() => isLoading = false);
-                                      }
-                                      toastError(
-                                        e,
-                                        stack: s,
-                                        source: 'sourceRepositories',
-                                      );
-                                      return;
-                                    }
-
-                                    if (context.mounted) {
-                                      Navigator.pop(context);
-                                    }
-                                  },
-                            child: isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : Text(
-                                    l10n.add,
-                                    style: TextStyle(
-                                      color: !isValid
-                                          ? Theme.of(context).primaryColor
-                                                .withValues(alpha: 0.2)
-                                          : null,
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(l10n.cancel),
+                  ),
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      final text = controller.text.trim();
+                      final clean = text.toLowerCase();
+                      final alreadyExists = _entries.any((r) {
+                        final rUrl = r.jsonUrl?.trim().toLowerCase();
+                        if (rUrl == null) return false;
+                        return rUrl == clean ||
+                            rUrl == '$clean/' ||
+                            '$rUrl/' == clean;
+                      });
+                      final isValid =
+                          text.isNotEmpty &&
+                          !alreadyExists &&
+                          Uri.tryParse(text)?.isAbsolute == true;
+                      return TextButton(
+                        onPressed: !isValid || isLoading
+                            ? null
+                            : () async {
+                                setState(() => isLoading = true);
+                                try {
+                                  final repoNotifier = ref.read(
+                                    extensionsRepoStateProvider(widget.itemType)
+                                        .notifier,
+                                  );
+                                  final currentRepos = ref.read(
+                                    extensionsRepoStateProvider(
+                                      widget.itemType,
                                     ),
-                                  ),
-                          );
-                        },
-                      ),
-                    ],
+                                  );
+                                  final repo = await ref.read(
+                                    getRepoInfosProvider(jsonUrl: text).future,
+                                  );
+                                  if (repo == null) {
+                                    if (context.mounted) {
+                                      setState(() => isLoading = false);
+                                    }
+                                    botToast(l10n.unsupported_repo);
+                                    return;
+                                  }
+                                  final repoUrl = repo.jsonUrl
+                                      ?.trim()
+                                      .toLowerCase();
+                                  final isDuplicate = currentRepos.any((r) {
+                                    final rUrl = r.jsonUrl
+                                        ?.trim()
+                                        .toLowerCase();
+                                    return (rUrl != null &&
+                                            (rUrl == repoUrl ||
+                                                rUrl == clean ||
+                                                rUrl == '$clean/' ||
+                                                '$rUrl/' == clean ||
+                                                (repoUrl != null &&
+                                                    (rUrl == '$repoUrl/' ||
+                                                        '$rUrl/' ==
+                                                            repoUrl)))) ||
+                                        r == repo;
+                                  });
+                                  if (isDuplicate) {
+                                    setState(() => isLoading = false);
+                                    botToast(l10n.repo_already_exists);
+                                    return;
+                                  }
+                                  await repoNotifier.set([
+                                    ...currentRepos,
+                                    repo,
+                                  ]);
+                                  botToast(l10n.repo_added);
+                                } catch (e, s) {
+                                  if (context.mounted) {
+                                    setState(() => isLoading = false);
+                                  }
+                                  toastError(
+                                    e,
+                                    stack: s,
+                                    source: 'sourceRepositories',
+                                  );
+                                  return;
+                                }
+
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
+                              },
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(),
+                              )
+                            : Text(
+                                l10n.add,
+                                style: TextStyle(
+                                  color: !isValid
+                                      ? Theme.of(context).primaryColor
+                                            .withValues(alpha: 0.2)
+                                      : null,
+                                ),
+                              ),
+                      );
+                    },
                   ),
                 ],
               );
@@ -506,5 +586,9 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
         );
       },
     );
+    navigator.push(route);
+    // The pop future resolves before the closing animation. Keep the field
+    // alive until the route and its widgets have actually been removed.
+    route.completed.whenComplete(controller.dispose);
   }
 }

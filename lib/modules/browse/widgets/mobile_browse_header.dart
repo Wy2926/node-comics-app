@@ -21,14 +21,13 @@ class MobileBrowseHeader extends StatelessWidget {
     required this.clearLabel,
     required this.actions,
     this.updateCount = 0,
-    this.compact = false,
   });
 
   final String title, sourcesLabel, extensionsLabel, searchHint;
   final String filterLabel, clearLabel;
   final Widget mediaMenu;
   final List<Widget> actions;
-  final bool extensionsSelected, compact;
+  final bool extensionsSelected;
   final int updateCount;
   final TextEditingController searchController;
   final ValueChanged<bool> onSectionChanged;
@@ -37,6 +36,25 @@ class MobileBrowseHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final inheritedMetrics = MediaQuery.of(context);
+    // Scaffold consumes the keyboard inset. Subscribe to the view's metrics
+    // here so dismissing Android's keyboard restores the header without a tap.
+    return MediaQuery.fromView(
+      view: View.of(context),
+      child: Builder(
+        builder: (keyboardContext) => MediaQuery(
+          // Retain the surrounding safe-area and user text-scale adjustments.
+          data: inheritedMetrics,
+          child: _content(
+            context,
+            MediaQuery.viewInsetsOf(keyboardContext).bottom > 0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _content(BuildContext context, bool compact) {
     final colors = NodeLaneTokens.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 12, 12),

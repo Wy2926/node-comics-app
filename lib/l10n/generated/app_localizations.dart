@@ -3592,7 +3592,7 @@ abstract class AppLocalizations {
   /// No description provided for @empty_extensions_repo.
   ///
   /// In en, this message translates to:
-  /// **'You don\'t have any repository urls here. Click on the plus button to add one!'**
+  /// **'No extension repositories yet'**
   String get empty_extensions_repo;
 
   /// No description provided for @add_extensions_repo.

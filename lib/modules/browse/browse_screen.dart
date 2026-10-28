@@ -380,8 +380,6 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
                   child: SingleChildScrollView(
                     child: MobileBrowseHeader(
                       title: l10n.browse,
-                      // The shell Scaffold can consume MediaQuery's keyboard inset.
-                      compact: View.of(context).viewInsets.bottom > 0,
                       mediaMenu: PopupMenuButton<ItemType>(
                         initialValue: currentTab.type,
                         position: PopupMenuPosition.under,
