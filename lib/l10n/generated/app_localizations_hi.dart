@@ -3596,6 +3596,30 @@ class AppLocalizationsHi extends AppLocalizations {
   String get network_settings => 'Network';
 
   @override
+  String download_delay_value(int seconds) {
+    return '$seconds s + random delay';
+  }
+
+  @override
+  String download_queue_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count downloads',
+      one: '1 download',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get download_queue_empty_hint =>
+      'Open a chapter list to add downloads.';
+
+  @override
+  String get download_queue_order_hint =>
+      'Drag to change the order of waiting chapters.';
+
+  @override
   String get cf_proxy_helper =>
       'FlareSolverr / Byparr endpoint. Leave empty to disable.';
 

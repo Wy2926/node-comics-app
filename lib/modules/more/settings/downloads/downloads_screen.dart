@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,9 +10,12 @@ import 'package:mangayomi/modules/more/settings/downloads/providers/downloads_st
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/local_directory_access.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as p;
+
+import 'mobile_downloads_screen.dart';
 
 class DownloadsScreen extends ConsumerStatefulWidget {
   const DownloadsScreen({super.key});
@@ -20,8 +25,84 @@ class DownloadsScreen extends ConsumerStatefulWidget {
 }
 
 class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
+  late final _defaultFolder = getDefaultLocalFolder();
+  bool _isPickingDirectory = false;
+
+  Future<String?> _pickDirectory() async {
+    if (_isPickingDirectory) return null;
+    _isPickingDirectory = true;
+    try {
+      // A cancelled iOS picker must not open a second picker through fallback.
+      return await (Platform.isIOS
+          ? LocalDirectoryAccess.pickDirectory()
+          : FilePicker.getDirectoryPath(
+              linuxOptions: const LinuxOptions(lockParentWindow: true),
+            ));
+    } finally {
+      _isPickingDirectory = false;
+    }
+  }
+
+  Future<void> _chooseDownloadLocation() async {
+    final result = await _pickDirectory();
+    if (mounted && result != null) {
+      ref.read(downloadLocationStateProvider.notifier).set(result);
+    }
+  }
+
+  Future<void> _addLocalFolder() async {
+    final result = await _pickDirectory();
+    if (!mounted || result == null) return;
+    final name = await _showLocalFolderNameDialog(
+      context,
+      LocalFolder.fromPath(path: result).name ?? p.basename(result),
+    );
+    if (!mounted || name == null || name.trim().isEmpty) return;
+    final folders = ref.read(localFoldersStateProvider).toList()
+      ..add(LocalFolder(name: name.trim(), path: result));
+    ref.read(localFoldersStateProvider.notifier).set(folders);
+  }
+
+  Future<void> _removeLocalFolder(LocalFolder folder) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        title: Text(l10n.delete),
+        content: Text('${folder.name ?? ''}\n${folder.path ?? ''}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.ok),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+    final folders = ref.read(localFoldersStateProvider).toList()
+      ..removeWhere(
+        (entry) => entry.name == folder.name && entry.path == folder.path,
+      );
+    ref.read(localFoldersStateProvider.notifier).set(folders);
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      return MobileDownloadsScreen(
+        defaultFolder: _defaultFolder,
+        onPickLocation: _chooseDownloadLocation,
+        onAddFolder: _addLocalFolder,
+        onRemoveFolder: _removeLocalFolder,
+        onRescan: () => ref.read(scanLocalLibraryProvider.future),
+        onHelp: () => _showHelpDialog(context),
+      );
+    }
     final saveAsCBZArchiveState = ref.watch(saveAsCBZArchiveStateProvider);
     final deleteDownloadAfterReading = ref.watch(
       deleteDownloadAfterReadingStateProvider,
@@ -214,16 +295,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
               ),
             ),
             ListTile(
-              onTap: () async {
-                final result =
-                    await LocalDirectoryAccess.pickDirectory() ??
-                    await FilePicker.getDirectoryPath(
-                      linuxOptions: const LinuxOptions(lockParentWindow: true),
-                    );
-                if (result != null) {
-                  ref.read(downloadLocationStateProvider.notifier).set(result);
-                }
-              },
+              onTap: _chooseDownloadLocation,
               title: Text(l10n.download_location),
               subtitle: Text(
                 downloadLocation.$2.isEmpty
@@ -233,25 +305,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
               ),
             ),
             ListTile(
-              onTap: () async {
-                final result =
-                    await LocalDirectoryAccess.pickDirectory() ??
-                    await FilePicker.getDirectoryPath(
-                      linuxOptions: const LinuxOptions(lockParentWindow: true),
-                    );
-                if (result != null) {
-                  if (!context.mounted) return;
-                  final name = await _showLocalFolderNameDialog(
-                    context,
-                    LocalFolder.fromPath(path: result).name ??
-                        p.basename(result),
-                  );
-                  if (name == null || name.trim().isEmpty) return;
-                  final temp = localFolders.toList();
-                  temp.add(LocalFolder(name: name.trim(), path: result));
-                  ref.read(localFoldersStateProvider.notifier).set(temp);
-                }
-              },
+              onTap: _addLocalFolder,
               title: Text(context.l10n.add_local_folder),
             ),
             ListTile(
@@ -285,7 +339,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                     ),
                   ),
                   FutureBuilder<LocalFolder?>(
-                    future: getDefaultLocalFolder(),
+                    future: _defaultFolder,
                     builder: (context, snapshot) => Column(
                       children: [
                         if (snapshot.data?.path != null)
@@ -314,6 +368,16 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
     BuildContext context,
     String initialName,
   ) async {
+    if (isMobile && !isTv) {
+      return showDialog<String>(
+        context: context,
+        builder: (_) => MobileSettingsTextDialog(
+          title: context.l10n.name,
+          initialValue: initialName,
+          isValid: (value) => value.trim().isNotEmpty,
+        ),
+      );
+    }
     final controller = TextEditingController(text: initialName);
     return showDialog<String>(
       context: context,
@@ -433,6 +497,22 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
     showDialog(
       context: context,
       builder: (context) {
+        if (isMobile && !isTv) {
+          return AlertDialog(
+            scrollable: true,
+            title: Text(context.l10n.local_folder_structure),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: buildSubFolder(data, 0),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(context.l10n.close),
+              ),
+            ],
+          );
+        }
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
@@ -528,40 +608,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
             if (!isDefault)
               IconButton(
                 tooltip: l10n.delete,
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text(l10n.delete),
-                        content: Text("$folderName\n$folderPath"),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text(l10n.cancel),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              final temp = localFolders.toList();
-                              temp.removeWhere(
-                                (element) =>
-                                    element.name == folder.name &&
-                                    element.path == folder.path,
-                              );
-                              ref
-                                  .read(localFoldersStateProvider.notifier)
-                                  .set(temp);
-                              Navigator.pop(context);
-                            },
-                            child: Text(l10n.ok),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
+                onPressed: () => _removeLocalFolder(folder),
                 icon: const Icon(Icons.delete_outline),
               ),
           ],

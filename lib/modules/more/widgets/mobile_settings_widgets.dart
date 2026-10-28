@@ -100,13 +100,14 @@ class MobileSettingsSwitch extends StatelessWidget {
   const MobileSettingsSwitch({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.icon,
     required this.value,
     required this.onChanged,
   });
 
-  final String title, subtitle;
+  final String title;
+  final String? subtitle;
   final IconData icon;
   final bool value;
   final ValueChanged<bool>? onChanged;
@@ -127,10 +128,12 @@ class MobileSettingsSwitch extends StatelessWidget {
           color: colors.ink,
         ),
       ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(fontSize: 13, color: colors.muted),
-      ),
+      subtitle: subtitle == null
+          ? null
+          : Text(
+              subtitle!,
+              style: TextStyle(fontSize: 13, color: colors.muted),
+            ),
     );
   }
 }

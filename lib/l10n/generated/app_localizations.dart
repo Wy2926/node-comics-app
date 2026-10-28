@@ -6451,6 +6451,30 @@ abstract class AppLocalizations {
   /// **'Network'**
   String get network_settings;
 
+  /// No description provided for @download_delay_value.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} s + random delay'**
+  String download_delay_value(int seconds);
+
+  /// No description provided for @download_queue_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 download} other{{count} downloads}}'**
+  String download_queue_count(int count);
+
+  /// No description provided for @download_queue_empty_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a chapter list to add downloads.'**
+  String get download_queue_empty_hint;
+
+  /// No description provided for @download_queue_order_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to change the order of waiting chapters.'**
+  String get download_queue_order_hint;
+
   /// No description provided for @cf_proxy_helper.
   ///
   /// In en, this message translates to:

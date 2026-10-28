@@ -3433,7 +3433,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get share_backup_file => 'Share Mangayomi backup file';
 
   @override
-  String get close => 'Close';
+  String get close => '关闭';
 
   @override
   String get migrate_source => 'Migrate source';
@@ -3461,6 +3461,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get network_settings => '网络';
+
+  @override
+  String download_delay_value(int seconds) {
+    return '$seconds 秒 + 随机延迟';
+  }
+
+  @override
+  String download_queue_count(int count) {
+    return '$count 项下载任务';
+  }
+
+  @override
+  String get download_queue_empty_hint => '在章节列表中添加要下载的内容。';
+
+  @override
+  String get download_queue_order_hint => '拖动调整待下载章节的顺序。';
 
   @override
   String get cf_proxy_helper => 'FlareSolverr / Byparr 服务地址，留空关闭。';
