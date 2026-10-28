@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -47,6 +49,8 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
 
   String? _resolvedFilePath;
   bool _isAnimated = false;
+  String? _displayPath;
+  (double, Offset)? _restoreView;
 
   @override
   void initState() {
@@ -245,7 +249,23 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
   @override
   Widget build(BuildContext context) {
     final scaleType = ref.watch(scaleTypeStateProvider);
-    final image = widget.data.getImageProvider(ref, true);
+    final display = ReaderTranslationHost.display(context, widget.data);
+    final translated = !identical(display, widget.data);
+    final displayPath = translated
+        ? display.resolvedFilePath
+        : _resolvedFilePath;
+    if (_displayPath != displayPath && widget.controller?.isReady == true) {
+      final control = widget.controller!;
+      final center = control.center;
+      if (center != null && control.sWidth > 0 && control.sHeight > 0) {
+        _restoreView = (
+          control.scale / control.minScale,
+          Offset(center.dx / control.sWidth, center.dy / control.sHeight),
+        );
+      }
+    }
+    _displayPath = displayPath;
+    final image = display.getImageProvider(ref, true);
     final (colorBlendMode, color) = chapterColorFIlterValues(context, ref);
     final cropBorders = ref.watch(cropBordersStateProvider);
     final dualPageRotateToFit = ref.watch(dualPageRotateToFitStateProvider);
@@ -279,7 +299,7 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
       _resolvedFilePath = widget.data.resolvedFilePath;
     }
 
-    final bool isAnimated = _isAnimated;
+    final bool isAnimated = !translated && _isAnimated;
 
     final ssivScaleType = switch (scaleType) {
       ScaleType.fitScreen => ssiv.ScaleType.centerInside,
@@ -301,8 +321,8 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
     } else {
       content = ssiv.SubsamplingScaleImageView(
         image: image,
-        resolvedFilePath: _resolvedFilePath,
-        preloadData: widget.data,
+        resolvedFilePath: displayPath,
+        preloadData: display,
         colorBlendMode: colorBlendMode,
         color: color,
         minimumScaleType: ssivScaleType,
@@ -310,7 +330,7 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
         zoomEnabled: widget.zoomEnabled,
         panEnabled: widget.panEnabled,
         cropBorders: cropBorders,
-        srcRect: widget.data.srcRect,
+        srcRect: display.srcRect,
         onImageLoaded: widget.onImageLoaded,
         loadStateChanged: widget.loadStateChanged,
         pageController: widget.pageController,
@@ -318,7 +338,21 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
         controller: widget.controller,
         isVisible: widget.isVisible,
         doubleTapZoomDuration: _doubleTapAnimationDuration(),
-        onReady: _checkLandscapeZoom,
+        onReady: () {
+          final saved = _restoreView, control = widget.controller;
+          _restoreView = null;
+          if (saved != null && control != null) {
+            control.setScaleAndCenter(
+              saved.$1 * control.minScale,
+              Offset(
+                saved.$2.dx * control.sWidth,
+                saved.$2.dy * control.sHeight,
+              ),
+            );
+          } else {
+            _checkLandscapeZoom();
+          }
+        },
       );
     }
 

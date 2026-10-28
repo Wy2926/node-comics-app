@@ -1,108 +1,51 @@
-<p align="center">
- <img width=200px height=200px src="assets/app_icons/icon-red.png"/>
-</p>
+# NodeLane Comics App
 
-<h1 align="center"> Mangayomi </h1>
+`nodelane-comics-app` 是基于 [Mangayomi](https://github.com/kodjodevf/mangayomi) 开发的 NodeLane 手机漫画应用，优先支持 Android 和 iOS。
 
-<div align="center">
+产品目标是将漫画阅读、网站适配与 NodeLane 翻译结合起来，并提供内置多标签浏览器，在原网页中翻译漫画图片。
 
- [![GitHub downloads](https://img.shields.io/github/downloads/kodjodevf/mangayomi/total?label=downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/kodjodevf/mangayomi/releases)
-![star](https://img.shields.io/github/stars/kodjodevf/mangayomi)
- [![Discord server](https://img.shields.io/discord/1157628512077893666.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.com/invite/EjfBuYahsP) 
+当前代码基线为 Mangayomi **v0.9.9**。已接入独立翻译契约、官方渠道回执恢复、阅读器显示切换和手机多标签网页桥。设置中的“漫画翻译”用于登录和选择目标语言；阅读器及网页工具栏中的翻译按钮按当前阅读窗口启用。移动端交互、真实账号／服务和性能验收边界见架构文档，应用品牌及发布配置仍沿用上游。
 
+## 开发导航
 
-Mangayomi is an open-source Flutter app for reading manga, novels, and watching animes across multiple platforms.
-</div>
+| 入口 | 用途 |
+| --- | --- |
+| [开发约定](AGENTS.md) | 产品边界、翻译解耦、性能与验证要求 |
+| [翻译架构与实现状态](docs/TRANSLATION_ARCHITECTURE.md) | 接入方式、共享渠道、回执恢复、资源预算及尚未通过的验收门槛 |
+| [上游基线](UPSTREAM.md) | 来源、固定提交、许可证和摘要 |
+| [Mangayomi 原始说明](README.mangayomi.md) | 上游功能、构建说明和致谢 |
+| [Flutter 配置](pubspec.yaml) | Dart SDK 与依赖要求 |
+| [漫画阅读器](lib/modules/manga/reader) | 阅读交互和页面呈现 |
+| [手机网页入口](lib/modules/webview/mobile_browser.dart) | 有限保活的多标签与原位翻译；桌面继续使用上游 WebView |
+| [翻译契约](lib/services/translation/contracts.dart) | 来源、渠道运行时、结果与释放边界 |
+| [章节图片入口](lib/services/get_chapter_pages.dart) | 来源页面清单获取 |
+| [CI](.github/workflows/ci.yml) | 上游静态分析、测试和各平台构建流程 |
 
-> [!WARNING]
-> **Official Warning**: Mangayomi does not have an official website. This GitHub repository ([kodjodevf/mangayomi](https://github.com/kodjodevf/mangayomi)) and our official [Discord server](https://discord.com/invite/EjfBuYahsP) are the **only official sources** for Mangayomi. Always download official releases from our GitHub repository.
+## 本地运行与检查
 
-## Features
+需要满足 `pubspec.yaml` 的 Flutter / Dart SDK，以及 Rust 工具链。Android 需对应 Android SDK / Java 环境；iOS 需 macOS / Xcode。原生桥生成与平台准备见上游说明和 CI。
 
-<div align="left">
-
-Features include:
-* Reading manga, webtoons, comics, novels, animes, movies, and more.
-* Local reading of content.
-* A configurable reader with multiple viewers, reading directions and other settings.
-* Tracker support for anime and manga: [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [SIMKL](https://simkl.com/), [trakt](https://app.trakt.tv/) and [Kitsu](https://kitsu.io/) support.
-* Categories to organize your library.
-* Light and dark themes.
-* Create backups locally to read offline or to your desired cloud service.
-
-</div>
-
-## Download
-Get the app from our [releases page](https://github.com/kodjodevf/mangayomi/releases).
-
-## iOS Sideloading Sources
-<a href="https://intradeus.github.io/http-protocol-redirector?r=altstore://source?url=https://raw.githubusercontent.com/kodjodevf/mangayomi/refs/heads/main/repo/source.json"><img alt="AltStore Source" src="repo/images/buttons/altstore_button.png" width="150"></a>
-&nbsp;
-<a href="https://intradeus.github.io/http-protocol-redirector?r=feather://source/https://raw.githubusercontent.com/kodjodevf/mangayomi/refs/heads/main/repo/source.json"><img alt="Feather Source" src="repo/images/buttons/feather_button.png" width="150"></a>
-&nbsp;
-<a href="https://intradeus.github.io/http-protocol-redirector?r=sidestore://source?url=https://raw.githubusercontent.com/kodjodevf/mangayomi/refs/heads/main/repo/source.json"><img alt="Sidestore Source" src="repo/images/buttons/sidestore_button.png" width="150"></a>
-&nbsp;
-<a href="https://raw.githubusercontent.com/kodjodevf/mangayomi/refs/heads/main/repo/source.json"><img alt="Direct URL Source" src="repo/images/buttons/url_button.png" width="150"></a>
-
-Note: Only future releases (> 0.5.2) will be signed (and therefore have AltStore/SideStore compatibility).
-
-# Contributing
-
-Contributions are welcome!
-
-To get started with extension development, see [CONTRIBUTING-DART.md](https://github.com/kodjodevf/mangayomi-extensions/blob/main/CONTRIBUTING-DART.md) for create sources in Dart or [CONTRIBUTING-JS.md](https://github.com/kodjodevf/mangayomi-extensions/blob/main/CONTRIBUTING-JS.md) for create sources in JavaScript.
-
-## Using flutter_rust_bridge
-
-To run and build this app, you need to have
-[Flutter SDK](https://docs.flutter.dev/get-started/install)
-and [Rust toolchain](https://www.rust-lang.org/tools/install)
-installed on your system.
-You can check that your system is ready with the commands below.
-Note that all the Flutter subcomponents should be installed.
-
-```bash
-rustc --version
+```sh
 flutter doctor
-```
-
-You also need to have the CLI tool for flutter_rust_bridge ready.
-
-```bash
-cargo install 'flutter_rust_bridge_codegen'
-```
-
-run the following command:
-
-```bash
-flutter_rust_bridge_codegen generate
-```
-
-Now you can run and build this app just like any other Flutter projects.
-
-```bash
+flutter pub get
 flutter run
 ```
 
+沿用现有验证入口：
 
+```sh
+flutter analyze --no-fatal-infos --no-fatal-warnings
+flutter test
+flutter build apk --debug
+flutter build ios --debug --no-codesign
+```
 
-## License
+这些是运行入口，不代表已完成本机编译或真机验证。应用包名、图标、更新地址和发布配置目前仍来自上游，需要在 NodeLane 发布前完成独立配置。
 
-    Copyright 2023 Moustapha Kodjo Amadou
+## 既有 NodeLane 能力
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+同级 `node-comics` 仓库提供现有浏览器插件和翻译后端。设计时先从其 README 导航，按需核对翻译契约、渠道、网页原位翻译和网站适配文档及代码。该仓库作为参考，不随手机 App 构建隐式引入。
 
-    http://www.apache.org/licenses/LICENSE-2.0
+## 许可证
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-    
-
-## Disclaimer
-
-Mangayomi is not hosting any kind of content and the developer(s) of this application does not have any affiliation with the content providers that are freely available in the internet.
+上游代码采用 [Apache License 2.0](LICENSE)，原始版权和第三方许可声明继续保留。复制其他项目代码时，逐项记录其来源、版本和许可证；不能将 `node-comics` 的 GPL-3.0-only 代码默认视为 Apache-2.0 代码。

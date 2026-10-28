@@ -8,6 +8,7 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/translation/translation_settings.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -21,6 +22,16 @@ class SettingsScreen extends StatelessWidget {
         padding: tvPageInsets,
         child: Column(
           children: [
+            if (isMobile)
+              ListTileWidget(
+                title: '漫画翻译',
+                icon: Icons.translate,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const TranslationSettings(),
+                  ),
+                ),
+              ),
             ListTileWidget(
               autofocus: isTv,
               title: l10n.general,

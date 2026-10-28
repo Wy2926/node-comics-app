@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <exclude domain="file" path="nodelane-translation/" />
+    <exclude domain="sharedpref" path="nodelane_private.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureStorageConfiguration:nodelane_private.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureKeyStorage:nodelane_private.xml" />
+</full-backup-content>

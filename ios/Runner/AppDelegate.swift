@@ -22,6 +22,26 @@ import UniformTypeIdentifiers
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
 
+    let privateStorageChannel = FlutterMethodChannel(
+      name: "nodelane/private_storage", binaryMessenger: messenger
+    )
+    privateStorageChannel.setMethodCallHandler { call, result in
+      guard call.method == "prepare" else { result(FlutterMethodNotImplemented); return }
+      do {
+        let support = try FileManager.default.url(for: .applicationSupportDirectory,
+          in: .userDomainMask, appropriateFor: nil, create: true)
+        var root = support.appendingPathComponent("nodelane-translation", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true,
+          attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
+        var resources = URLResourceValues()
+        resources.isExcludedFromBackup = true
+        try root.setResourceValues(resources)
+        result(root.path)
+      } catch {
+        result(FlutterError(code: "PRIVATE_STORAGE_UNAVAILABLE", message: "Private storage unavailable", details: nil))
+      }
+    }
+
     let mChannel = FlutterMethodChannel(
       name: "com.kodjodevf.mangayomi.libmtorrentserver",
       binaryMessenger: messenger

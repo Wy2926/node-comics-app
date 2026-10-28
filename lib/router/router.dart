@@ -43,6 +43,7 @@ import 'package:mangayomi/modules/more/settings/track/track.dart';
 import 'package:mangayomi/modules/more/settings/track/manage_trackers/manage_trackers.dart';
 import 'package:mangayomi/modules/more/settings/track/manage_trackers/tracking_detail.dart';
 import 'package:mangayomi/modules/webview/webview.dart';
+import 'package:mangayomi/modules/webview/mobile_browser.dart';
 import 'package:mangayomi/modules/browse/browse_screen.dart';
 import 'package:mangayomi/modules/browse/extension/extension_lang.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
@@ -230,7 +231,9 @@ class RouterNotifier extends ChangeNotifier {
     _genericRoute(name: "downloadQueue", child: const DownloadQueueScreen()),
     _genericRoute<Map<String, dynamic>>(
       name: "mangawebview",
-      builder: (data) => MangaWebView(url: data["url"]!, title: data['title']!),
+      builder: (data) => isMobile
+          ? MobileComicBrowser(url: data['url']!, title: data['title']!)
+          : MangaWebView(url: data["url"]!, title: data['title']!),
     ),
     _genericRoute<(bool, int)>(
       name: "categories",
