@@ -15,11 +15,27 @@ import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
+import 'mobile_browse_cleanup_dialog.dart';
+import 'mobile_browse_settings.dart';
+
 class BrowseSScreen extends ConsumerWidget {
   const BrowseSScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) {
+      return MobileBrowseSettings(
+        showProxyServer: !Platform.isAndroid,
+        onRepositories: (type) =>
+            context.push('/SourceRepositories', extra: type),
+        onProxyServer: () => context.push('/extensionServer'),
+        onClearSources: () => _showClearAllSourcesDialog(context, context.l10n),
+        onCleanDatabase: () =>
+            _showCleanNonLibraryDialog(context, context.l10n, ref),
+        onClearLibrary: () => _showClearLibraryDialog(context, ref),
+        onClearLocalLibrary: () => _showClearLocalLibraryDialog(context, ref),
+      );
+    }
     final onlyIncludePinnedSource = ref.watch(
       onlyIncludePinnedSourceStateProvider,
     );
@@ -174,7 +190,7 @@ class BrowseSScreen extends ConsumerWidget {
                     ),
                   ),
                   ListTile(
-                    onTap: () => _showCleanNonLibraryDialog(context, l10n),
+                    onTap: () => _showCleanNonLibraryDialog(context, l10n, ref),
                     title: Text(l10n.clean_database),
                     subtitle: Text(
                       l10n.clean_database_desc,
@@ -325,7 +341,37 @@ class BrowseSScreen extends ConsumerWidget {
   }
 }
 
+void _showMobileCleanupDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  bool chooseTypes = false,
+  required Future<void> Function(List<ItemType>) onConfirm,
+}) {
+  showDialog<void>(
+    context: context,
+    builder: (_) => MobileBrowseCleanupDialog(
+      title: title,
+      message: message,
+      chooseTypes: chooseTypes,
+      onConfirm: onConfirm,
+    ),
+  );
+}
+
 void _showClearAllSourcesDialog(BuildContext context, dynamic l10n) {
+  if (isMobile && !isTv) {
+    _showMobileCleanupDialog(
+      context,
+      title: l10n.clear_all_sources,
+      message: l10n.clear_all_sources_msg,
+      onConfirm: (_) async {
+        await sourceRepository.clearAll();
+        if (context.mounted) botToast(l10n.sources_cleared);
+      },
+    );
+    return;
+  }
   showDialog(
     context: context,
     builder: (ctx) {
@@ -362,7 +408,24 @@ void _showClearAllSourcesDialog(BuildContext context, dynamic l10n) {
   );
 }
 
-void _showCleanNonLibraryDialog(BuildContext context, dynamic l10n) {
+void _showCleanNonLibraryDialog(
+  BuildContext context,
+  dynamic l10n,
+  WidgetRef ref,
+) {
+  if (isMobile && !isTv) {
+    _showMobileCleanupDialog(
+      context,
+      title: l10n.clean_database,
+      message: l10n.clean_database_desc,
+      onConfirm: (_) async {
+        final mangasList = mangaRepository.getNonFavorites();
+        await mangaRepository.wipeMangas(ref, mangasList);
+        if (context.mounted) botToast(l10n.cleaned_database(mangasList.length));
+      },
+    );
+    return;
+  }
   showDialog(
     context: context,
     builder: (ctx) {
@@ -401,6 +464,22 @@ void _showCleanNonLibraryDialog(BuildContext context, dynamic l10n) {
 }
 
 void _showClearLibraryDialog(BuildContext context, WidgetRef ref) {
+  if (isMobile && !isTv) {
+    _showMobileCleanupDialog(
+      context,
+      title: context.l10n.clear_library,
+      message: context.l10n.clear_library_desc,
+      chooseTypes: true,
+      onConfirm: (types) async {
+        final mangasList = mangaRepository.getByItemTypeNames(types);
+        await mangaRepository.wipeMangas(ref, mangasList);
+        if (context.mounted) {
+          botToast(context.l10n.cleaned_database(mangasList.length));
+        }
+      },
+    );
+    return;
+  }
   final itemTypes = ItemType.values.map((e) => e.name).toList();
   bool isInputError = true;
   final textController = TextEditingController();
@@ -489,6 +568,21 @@ void _showClearLibraryDialog(BuildContext context, WidgetRef ref) {
 }
 
 void _showClearLocalLibraryDialog(BuildContext context, WidgetRef ref) {
+  if (isMobile && !isTv) {
+    _showMobileCleanupDialog(
+      context,
+      title: context.l10n.clear_local_library,
+      message: context.l10n.clear_local_library_msg,
+      onConfirm: (_) async {
+        final mangasList = mangaRepository.getBySourceLocalOrArchive();
+        await mangaRepository.wipeMangas(ref, mangasList);
+        if (context.mounted) {
+          botToast(context.l10n.cleaned_database(mangasList.length));
+        }
+      },
+    );
+    return;
+  }
   showDialog(
     context: context,
     builder: (context) {
