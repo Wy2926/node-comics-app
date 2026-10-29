@@ -3560,4 +3560,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get custom_button_primary => '默认按钮';
+
+  @override
+  String get show_password => '显示密码';
+
+  @override
+  String get hide_password => '隐藏密码';
+
+  @override
+  String get tracking_accounts_empty => '先在追踪设置中登录服务，再管理其中的条目。';
 }

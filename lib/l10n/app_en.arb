@@ -1493,5 +1493,8 @@
   "mpv_restore_confirm": "Restore the bundled MPV configuration? Existing configuration, scripts and shaders with the same names will be overwritten. Other files will be kept.",
   "player_operation_incomplete": "The operation could not be completed. Check file access and try again.",
   "custom_buttons_empty_hint": "Add a player button with a label and a press action.",
-  "custom_button_primary": "Default button"
+  "custom_button_primary": "Default button",
+  "show_password": "Show password",
+  "hide_password": "Hide password",
+  "tracking_accounts_empty": "Connect a service in Tracking settings to manage its entries."
 }

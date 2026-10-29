@@ -6636,6 +6636,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Default button'**
   String get custom_button_primary;
+
+  /// No description provided for @show_password.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get show_password;
+
+  /// No description provided for @hide_password.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hide_password;
+
+  /// No description provided for @tracking_accounts_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a service in Tracking settings to manage its entries.'**
+  String get tracking_accounts_empty;
 }
 
 class _AppLocalizationsDelegate

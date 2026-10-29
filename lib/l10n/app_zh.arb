@@ -1440,5 +1440,8 @@
   "mpv_restore_confirm": "恢复内置 MPV 配置？现有配置、脚本和着色器的同名文件会被覆盖，其他文件保留。",
   "player_operation_incomplete": "未能完成操作，请检查文件访问权限后重试。",
   "custom_buttons_empty_hint": "添加播放器按钮，设置名称和点击时执行的操作。",
-  "custom_button_primary": "默认按钮"
+  "custom_button_primary": "默认按钮",
+  "show_password": "显示密码",
+  "hide_password": "隐藏密码",
+  "tracking_accounts_empty": "先在追踪设置中登录服务，再管理其中的条目。"
 }

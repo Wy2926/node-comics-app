@@ -3708,4 +3708,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get custom_button_primary => 'Default button';
+
+  @override
+  String get show_password => 'Show password';
+
+  @override
+  String get hide_password => 'Hide password';
+
+  @override
+  String get tracking_accounts_empty =>
+      'Connect a service in Tracking settings to manage its entries.';
 }

@@ -19,6 +19,8 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
 
+import 'mobile_sync_screen.dart';
+
 class SyncScreen extends ConsumerWidget {
   static const serverUrl = "https://github.com/Schnitzel5/mangayomi-server";
 
@@ -26,6 +28,7 @@ class SyncScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return const MobileSyncScreen(serverUrl: serverUrl);
     final l10n = l10nLocalizations(context)!;
     final autoSyncOptions = {
       l10n.sync_auto_off: 0,

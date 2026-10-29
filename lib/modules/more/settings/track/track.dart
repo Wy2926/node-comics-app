@@ -18,11 +18,14 @@ import 'package:mangayomi/services/trackers/trakt_tv.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
 
+import 'mobile_track_screen.dart';
+
 class TrackScreen extends ConsumerWidget {
   const TrackScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return const MobileTrackScreen();
     final updateProgressAfterReading = ref.watch(
       updateProgressAfterReadingStateProvider,
     );
