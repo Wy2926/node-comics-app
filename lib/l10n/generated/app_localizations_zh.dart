@@ -3592,4 +3592,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backup_selection_shared => '选择会立即保存，也用于自动备份。';
+
+  @override
+  String get library_snapshot_history => '恢复历史快照';
+
+  @override
+  String get library_snapshot_empty => '暂无可恢复的安全快照。';
+
+  @override
+  String get library_snapshot_restore_message =>
+      '当前数据将替换为此快照，快照后的更改会丢失。已删除的下载文件无法恢复。成功后会清除现有安全快照。';
+
+  @override
+  String get library_maintenance_working => '正在整理书库…';
+
+  @override
+  String get library_safety_snapshot_note => '操作前会保存安全快照。快照不包含下载文件。';
+
+  @override
+  String library_delete_summary(
+    int mangaCount,
+    int chapterCount,
+    int historyCount,
+    int updateCount,
+  ) {
+    return '此图源包含 $mangaCount 个条目、$chapterCount 个章节、$historyCount 条历史与 $updateCount 条更新。下方选项决定保留哪些内容。';
+  }
+
+  @override
+  String get library_delete_pick_message => '选择图源，查看其内容和删除选项。';
 }

@@ -1504,5 +1504,28 @@
   "@remove_tracking_confirm": {"placeholders": {"title": {"type": "String"}}},
   "tracking_refresh_required": "The tracking state could not be confirmed. Refresh before making another change.",
   "tracking_entry_unlinked": "This record is not linked to a local title, so it cannot be edited here.",
-  "backup_selection_shared": "Changes to these selections are saved immediately and also apply to automatic backups."
+  "backup_selection_shared": "Changes to these selections are saved immediately and also apply to automatic backups.",
+  "library_snapshot_history": "Restore a library snapshot",
+  "library_snapshot_empty": "No safety snapshots available.",
+  "library_snapshot_restore_message": "Current data will be replaced by this snapshot. Changes made since then will be lost. Deleted downloads cannot be restored. Available safety snapshots will be cleared after success.",
+  "library_maintenance_working": "Updating library…",
+  "library_safety_snapshot_note": "A safety snapshot will be saved before this operation. It does not include downloaded files.",
+  "library_delete_summary": "Library entries: {mangaCount}. Chapters: {chapterCount}. History entries: {historyCount}. Updates: {updateCount}.\n\nChoose what to keep below.",
+  "@library_delete_summary": {
+    "placeholders": {
+      "mangaCount": {
+        "type": "int"
+      },
+      "chapterCount": {
+        "type": "int"
+      },
+      "historyCount": {
+        "type": "int"
+      },
+      "updateCount": {
+        "type": "int"
+      }
+    }
+  },
+  "library_delete_pick_message": "Choose a source to review its contents and deletion options."
 }

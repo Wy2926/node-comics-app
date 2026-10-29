@@ -23,6 +23,8 @@ Future<MobileSettingOption<T>?> showMobileSettingsPicker<T>(
   required T current,
   required List<MobileSettingOption<T>> options,
   bool searchable = false,
+  String? description,
+  String? emptyMessage,
 }) => Navigator.of(context).push<MobileSettingOption<T>>(
   MaterialPageRoute(
     builder: (_) => _MobileSettingsPicker<T>(
@@ -30,6 +32,8 @@ Future<MobileSettingOption<T>?> showMobileSettingsPicker<T>(
       current: current,
       options: options,
       searchable: searchable,
+      description: description,
+      emptyMessage: emptyMessage,
     ),
   ),
 );
@@ -40,11 +44,15 @@ class _MobileSettingsPicker<T> extends StatefulWidget {
     required this.current,
     required this.options,
     required this.searchable,
+    this.description,
+    this.emptyMessage,
   });
   final String title;
   final T current;
   final List<MobileSettingOption<T>> options;
   final bool searchable;
+  final String? description;
+  final String? emptyMessage;
 
   @override
   State<_MobileSettingsPicker<T>> createState() =>
@@ -92,6 +100,16 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
           child: CustomScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
+              if (widget.description != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+                    child: Text(
+                      widget.description!,
+                      style: TextStyle(color: colors.muted),
+                    ),
+                  ),
+                ),
               if (widget.searchable)
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -127,9 +145,18 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        Text(l10n.no_result),
-                        const SizedBox(height: 12),
-                        TextButton(onPressed: _clear, child: Text(l10n.reset)),
+                        Text(
+                          query.isEmpty
+                              ? widget.emptyMessage ?? l10n.no_result
+                              : l10n.no_result,
+                        ),
+                        if (query.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: _clear,
+                            child: Text(l10n.reset),
+                          ),
+                        ],
                       ],
                     ),
                   ),

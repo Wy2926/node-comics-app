@@ -6696,6 +6696,53 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Changes to these selections are saved immediately and also apply to automatic backups.'**
   String get backup_selection_shared;
+
+  /// No description provided for @library_snapshot_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore a library snapshot'**
+  String get library_snapshot_history;
+
+  /// No description provided for @library_snapshot_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No safety snapshots available.'**
+  String get library_snapshot_empty;
+
+  /// No description provided for @library_snapshot_restore_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Current data will be replaced by this snapshot. Changes made since then will be lost. Deleted downloads cannot be restored. Available safety snapshots will be cleared after success.'**
+  String get library_snapshot_restore_message;
+
+  /// No description provided for @library_maintenance_working.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating library…'**
+  String get library_maintenance_working;
+
+  /// No description provided for @library_safety_snapshot_note.
+  ///
+  /// In en, this message translates to:
+  /// **'A safety snapshot will be saved before this operation. It does not include downloaded files.'**
+  String get library_safety_snapshot_note;
+
+  /// No description provided for @library_delete_summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library entries: {mangaCount}. Chapters: {chapterCount}. History entries: {historyCount}. Updates: {updateCount}.\n\nChoose what to keep below.'**
+  String library_delete_summary(
+    int mangaCount,
+    int chapterCount,
+    int historyCount,
+    int updateCount,
+  );
+
+  /// No description provided for @library_delete_pick_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a source to review its contents and deletion options.'**
+  String get library_delete_pick_message;
 }
 
 class _AppLocalizationsDelegate

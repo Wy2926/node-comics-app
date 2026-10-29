@@ -3791,6 +3791,37 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get backup_selection_shared =>
       'Changes to these selections are saved immediately and also apply to automatic backups.';
+
+  @override
+  String get library_snapshot_history => 'Restore a library snapshot';
+
+  @override
+  String get library_snapshot_empty => 'No safety snapshots available.';
+
+  @override
+  String get library_snapshot_restore_message =>
+      'Current data will be replaced by this snapshot. Changes made since then will be lost. Deleted downloads cannot be restored. Available safety snapshots will be cleared after success.';
+
+  @override
+  String get library_maintenance_working => 'Updating library…';
+
+  @override
+  String get library_safety_snapshot_note =>
+      'A safety snapshot will be saved before this operation. It does not include downloaded files.';
+
+  @override
+  String library_delete_summary(
+    int mangaCount,
+    int chapterCount,
+    int historyCount,
+    int updateCount,
+  ) {
+    return 'Library entries: $mangaCount. Chapters: $chapterCount. History entries: $historyCount. Updates: $updateCount.\n\nChoose what to keep below.';
+  }
+
+  @override
+  String get library_delete_pick_message =>
+      'Choose a source to review its contents and deletion options.';
 }
 
 /// The translations for Spanish Castilian, as used in Latin America and the Caribbean (`es_419`).
