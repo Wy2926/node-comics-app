@@ -12,19 +12,18 @@ import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.da
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
-import 'mobile_reader_widgets.dart';
+import 'mobile_reader_settings.dart';
 
-/// Settings modal for the manga reader using Riverpod providers directly.
-///
-/// This is a complete replacement for the _showModalSettings() method.
-/// It uses the same providers and matches the exact behavior.
+/// Settings modal using the reader's existing callbacks and global providers.
+/// Mobile controls distinguish per-comic and global settings; desktop and TV
+/// retain their original tabs.
 class ReaderSettingsModal {
   /// Shows the settings modal.
   ///
   /// Parameters:
   /// - [context]: The build context
+  /// - [bookTitle]: The comic identified by the per-comic settings
   /// - [vsync]: The ticker provider (usually the State object)
   /// - [currentReaderModeProvider]: The provider for current reader mode
   /// - [autoScrollPage]: ValueNotifier for auto-scroll page state
@@ -36,6 +35,7 @@ class ReaderSettingsModal {
   /// - [onAutoPageScroll]: Callback to trigger auto-scroll
   static Future<void> show({
     required BuildContext context,
+    required String bookTitle,
     required TickerProvider vsync,
     required ProviderListenable<ReaderMode?> currentReaderModeProvider,
     required ValueNotifier<bool> autoScrollPage,
@@ -46,6 +46,20 @@ class ReaderSettingsModal {
     required VoidCallback onFullScreenToggle,
     required VoidCallback onAutoPageScroll,
   }) async {
+    if (!context.mounted || ModalRoute.of(context)?.isCurrent != true) return;
+    if (isMobile && !isTv) {
+      return showMobileReaderSettings(
+        context: context,
+        bookTitle: bookTitle,
+        currentReaderModeProvider: currentReaderModeProvider,
+        autoScrollPage: autoScrollPage,
+        autoScroll: autoScroll,
+        pageOffset: pageOffset,
+        onReaderModeChanged: onReaderModeChanged,
+        onAutoScrollSave: onAutoScrollSave,
+        onAutoPageScroll: onAutoPageScroll,
+      );
+    }
     // Pause auto-scroll while settings are open
     final autoScrollWasRunning = autoScroll.value;
     if (autoScrollWasRunning) {
@@ -74,38 +88,13 @@ class ReaderSettingsModal {
       // Custom Filter Tab
       const _CustomFilterTab(),
     ];
-    if (isMobile && !isTv) {
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        showDragHandle: true,
-        backgroundColor: NodeLaneTokens.of(context).surface,
-        builder: (sheetContext) => NodeLaneSurface(
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: MediaQuery.sizeOf(sheetContext).height * .8,
-              child: MobileReaderSettingsTabs(
-                labels: labels,
-                closeLabel: MaterialLocalizations.of(sheetContext)
-                    .closeButtonTooltip,
-                onClose: () => Navigator.pop(sheetContext),
-                children: children,
-              ),
-            ),
-          ),
-        ),
-      );
-    } else {
-      await customDraggableTabBar(
-        tabs: [for (final label in labels) Tab(text: label)],
-        children: children,
-        context: context,
-        vsync: vsync,
-        fullWidth: true,
-      );
-    }
+    await customDraggableTabBar(
+      tabs: [for (final label in labels) Tab(text: label)],
+      children: children,
+      context: context,
+      vsync: vsync,
+      fullWidth: true,
+    );
 
     // Resume auto-scroll if it was running
     if (autoScrollWasRunning || autoScroll.value) {

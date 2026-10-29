@@ -4150,4 +4150,23 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get reader_image_action_failed =>
       'The action could not be confirmed. Close this menu and check the result before trying again.';
+
+  @override
+  String get reader_settings_book_scope =>
+      'These settings apply only to this comic.';
+
+  @override
+  String get reader_settings_global_scope =>
+      'These settings apply to all comics and save immediately.';
+
+  @override
+  String get reader_filters => 'Image filters';
+
+  @override
+  String get reader_filter_scope =>
+      'Applies to all comics. Changes the reading display without modifying original images.';
+
+  @override
+  String get reader_auto_scroll_pause =>
+      'Scrolling pauses while settings are open.';
 }

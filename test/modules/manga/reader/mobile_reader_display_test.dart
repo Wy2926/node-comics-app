@@ -115,6 +115,40 @@ void main() {
     },
   );
 
+  test(
+    'auto-scroll updates merge with global and other comic preferences',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final first = container.read(
+        readerControllerProvider(chapter: a).notifier,
+      );
+      final second = container.read(
+        readerControllerProvider(chapter: b).notifier,
+      );
+      container.read(cropBordersStateProvider.notifier).set(true);
+      first.setAutoScroll(true, 14);
+      second.setAutoScroll(false, 22);
+      first.setReaderMode(ReaderMode.rtl);
+      first.setAutoScroll(true, 18);
+      await dbWriteQueue.run(() {});
+      final settings = settingsRepository.current;
+      expect(settings.cropBorders, isTrue);
+      expect(
+        settings.autoScrollPages!.map(
+          (entry) => (entry.mangaId, entry.autoScroll, entry.pageOffset),
+        ),
+        unorderedEquals([(1, true, 18.0), (2, false, 22.0)]),
+      );
+      expect(
+        settings.personalReaderModeList!
+            .firstWhere((entry) => entry.mangaId == 1)
+            .readerMode,
+        ReaderMode.rtl,
+      );
+    },
+  );
+
   Future<void> mount(
     WidgetTester tester,
     ProviderContainer container,

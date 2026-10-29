@@ -7367,6 +7367,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The action could not be confirmed. Close this menu and check the result before trying again.'**
   String get reader_image_action_failed;
+
+  /// No description provided for @reader_settings_book_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'These settings apply only to this comic.'**
+  String get reader_settings_book_scope;
+
+  /// No description provided for @reader_settings_global_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'These settings apply to all comics and save immediately.'**
+  String get reader_settings_global_scope;
+
+  /// No description provided for @reader_filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Image filters'**
+  String get reader_filters;
+
+  /// No description provided for @reader_filter_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to all comics. Changes the reading display without modifying original images.'**
+  String get reader_filter_scope;
+
+  /// No description provided for @reader_auto_scroll_pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Scrolling pauses while settings are open.'**
+  String get reader_auto_scroll_pause;
 }
 
 class _AppLocalizationsDelegate

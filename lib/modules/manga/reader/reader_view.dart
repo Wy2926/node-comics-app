@@ -920,6 +920,7 @@ class _MangaChapterPageGalleryState
                     },
                     onSettingsPressed: () => ReaderSettingsModal.show(
                       context: context,
+                      bookTitle: _readerController.getMangaName(),
                       vsync: this,
                       currentReaderModeProvider: _currentReaderMode,
                       autoScroll: _autoScroll,

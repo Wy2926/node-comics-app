@@ -1661,5 +1661,10 @@
   "reader_image_share": "Open the system share sheet.",
   "reader_image_cover": "Change this comic’s cover after confirmation.",
   "reader_image_cover_limit": "Cover images must be smaller than 5 MB. Saving and sharing remain available.",
-  "reader_image_action_failed": "The action could not be confirmed. Close this menu and check the result before trying again."
+  "reader_image_action_failed": "The action could not be confirmed. Close this menu and check the result before trying again.",
+  "reader_settings_book_scope": "These settings apply only to this comic.",
+  "reader_settings_global_scope": "These settings apply to all comics and save immediately.",
+  "reader_filters": "Image filters",
+  "reader_filter_scope": "Applies to all comics. Changes the reading display without modifying original images.",
+  "reader_auto_scroll_pause": "Scrolling pauses while settings are open."
 }

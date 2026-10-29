@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'providers/reader_state_provider.dart';
 import 'reader_settings_labels.dart';
+import 'mobile_reader_settings_sections.dart';
 
 class MobileReaderScreen extends ConsumerWidget {
   const MobileReaderScreen({super.key});
@@ -42,7 +41,7 @@ class MobileReaderScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.reading_mode,
                 children: [
-                  _ReaderChoice<ReaderMode>(
+                  MobileReaderSettingsChoice<ReaderMode>(
                     title: l10n.default_reading_mode,
                     icon: Icons.chrome_reader_mode_outlined,
                     value: ref.watch(defaultReadingModeStateProvider),
@@ -52,7 +51,7 @@ class MobileReaderScreen extends ConsumerWidget {
                         .read(defaultReadingModeStateProvider.notifier)
                         .set,
                   ),
-                  _ReaderChoice<ScaleType>(
+                  MobileReaderSettingsChoice<ScaleType>(
                     title: l10n.scale_type,
                     icon: Icons.fit_screen_rounded,
                     value: ref.watch(scaleTypeStateProvider),
@@ -62,7 +61,7 @@ class MobileReaderScreen extends ConsumerWidget {
                         : l10n.unknown,
                     onChanged: ref.read(scaleTypeStateProvider.notifier).set,
                   ),
-                  _ReaderChoice<BackgroundColor>(
+                  MobileReaderSettingsChoice<BackgroundColor>(
                     title: l10n.background_color,
                     icon: Icons.palette_outlined,
                     value: ref.watch(backgroundColorStateProvider),
@@ -105,29 +104,29 @@ class MobileReaderScreen extends ConsumerWidget {
               ),
               MobileSettingsGroup(
                 children: [
-                  _ReaderExpansion(
+                  MobileReaderSettingsExpansion(
                     storageKey: 'reader-page-layout',
                     title: l10n.reader_page_layout,
                     icon: Icons.auto_stories_outlined,
-                    child: const _PageLayoutSettings(),
+                    child: const MobileReaderPageLayoutSettings(),
                   ),
-                  _ReaderExpansion(
+                  MobileReaderSettingsExpansion(
                     storageKey: 'reader-continuous',
                     title: l10n.reader_continuous_options,
                     icon: Icons.view_day_outlined,
-                    child: const _ContinuousSettings(),
+                    child: const MobileReaderContinuousSettings(),
                   ),
-                  _ReaderExpansion(
+                  MobileReaderSettingsExpansion(
                     storageKey: 'reader-navigation',
                     title: l10n.navigation_layout,
                     icon: Icons.touch_app_outlined,
-                    child: const _NavigationSettings(),
+                    child: const MobileReaderNavigationSettings(),
                   ),
-                  _ReaderExpansion(
+                  MobileReaderSettingsExpansion(
                     storageKey: 'reader-advanced',
                     title: l10n.advanced,
                     icon: Icons.tune_rounded,
-                    child: const _AdvancedSettings(),
+                    child: const MobileReaderAdvancedSettings(),
                   ),
                 ],
               ),
@@ -137,444 +136,4 @@ class MobileReaderScreen extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _ReaderExpansion extends StatelessWidget {
-  const _ReaderExpansion({
-    required this.storageKey,
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
-  final String storageKey, title;
-  final IconData icon;
-  final Widget child;
-  @override
-  Widget build(BuildContext context) => ExpansionTile(
-    key: PageStorageKey(storageKey),
-    title: Text(
-      title,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    ),
-    leading: Icon(icon, color: NodeLaneTokens.of(context).accent),
-    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    shape: const Border(),
-    collapsedShape: const Border(),
-    children: [child],
-  );
-}
-
-class _PageLayoutSettings extends ConsumerWidget {
-  const _PageLayoutSettings();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-
-    final split = ref.watch(splitWidePagesStateProvider);
-    final rotate = ref.watch(dualPageRotateToFitStateProvider);
-    final landscape = ref.watch(landscapeZoomStateProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MobileSettingsSwitch(
-          title: l10n.split_wide_pages,
-          icon: Icons.vertical_split_outlined,
-          value: split,
-          onChanged: ref.read(splitWidePagesStateProvider.notifier).set,
-        ),
-        if (split)
-          MobileSettingsSwitch(
-            title: l10n.dual_page_invert,
-            icon: Icons.swap_horiz_rounded,
-            value: ref.watch(dualPageInvertStateProvider),
-            onChanged: ref.read(dualPageInvertStateProvider.notifier).set,
-          ),
-        MobileSettingsSwitch(
-          title: l10n.dual_page_rotate_to_fit,
-          icon: Icons.screen_rotation_outlined,
-          value: rotate,
-          onChanged: ref.read(dualPageRotateToFitStateProvider.notifier).set,
-        ),
-        if (rotate)
-          MobileSettingsSwitch(
-            title: l10n.dual_page_rotate_to_fit_invert,
-            icon: Icons.rotate_left_rounded,
-            value: ref.watch(dualPageRotateToFitInvertStateProvider),
-            onChanged: ref
-                .read(dualPageRotateToFitInvertStateProvider.notifier)
-                .set,
-          ),
-        MobileSettingsSwitch(
-          title: l10n.double_page_single_first_page,
-          subtitle: l10n.double_page_single_first_page_subtitle,
-          icon: Icons.first_page_rounded,
-          value: ref.watch(doublePageSingleFirstPageStateProvider),
-          onChanged: ref
-              .read(doublePageSingleFirstPageStateProvider.notifier)
-              .set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.double_page_auto,
-          subtitle: l10n.double_page_auto_subtitle,
-          icon: Icons.view_week_outlined,
-          value: ref.watch(doublePageAutoStateProvider),
-          onChanged: ref.read(doublePageAutoStateProvider.notifier).set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.landscape_zoom,
-          icon: Icons.zoom_in_rounded,
-          value: landscape,
-          onChanged: ref.read(landscapeZoomStateProvider.notifier).set,
-        ),
-        if (landscape)
-          _ReaderChoice<int>(
-            title: l10n.zoom_start_position,
-            icon: Icons.horizontal_distribute_rounded,
-            value: ref.watch(zoomStartPositionStateProvider),
-            values: const [0, 1, 2],
-            label: (value) => switch (value) {
-              0 => l10n.zoom_start_left,
-              1 => l10n.zoom_start_right,
-              _ => l10n.zoom_start_center,
-            },
-            onChanged: ref.read(zoomStartPositionStateProvider.notifier).set,
-          ),
-      ],
-    );
-  }
-}
-
-class _ContinuousSettings extends ConsumerWidget {
-  const _ContinuousSettings();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MobileSettingsSwitch(
-          title: l10n.webtoon_disable_zoom_out,
-          icon: Icons.zoom_out_rounded,
-          value: ref.watch(webtoonDisableZoomOutStateProvider),
-          onChanged: ref.read(webtoonDisableZoomOutStateProvider.notifier).set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.webtoon_double_tap_zoom_enabled,
-          icon: Icons.touch_app_outlined,
-          value: ref.watch(webtoonDoubleTapZoomEnabledStateProvider),
-          onChanged: ref
-              .read(webtoonDoubleTapZoomEnabledStateProvider.notifier)
-              .set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.show_page_gaps,
-          icon: Icons.format_line_spacing_rounded,
-          value: ref.watch(showPageGapsStateProvider),
-          onChanged: ref.read(showPageGapsStateProvider.notifier).set,
-        ),
-        _ReaderSlider(
-          title: (value) => '${l10n.webtoon_side_padding}: $value%',
-          value: ref.watch(webtoonSidePaddingStateProvider),
-          min: 0,
-          max: 50,
-          divisions: 50,
-          onChanged: ref.read(webtoonSidePaddingStateProvider.notifier).set,
-        ),
-      ],
-    );
-  }
-}
-
-class _NavigationSettings extends ConsumerWidget {
-  const _NavigationSettings();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MobileSettingsSwitch(
-          title: l10n.use_page_tap_zones,
-          icon: Icons.touch_app_outlined,
-          value: ref.watch(usePageTapZonesStateProvider),
-          onChanged: ref.read(usePageTapZonesStateProvider.notifier).set,
-        ),
-        _ReaderChoice<int>(
-          title: l10n.navigation_layout,
-          icon: Icons.view_quilt_outlined,
-          value: ref.watch(readerNavigationLayoutStateProvider),
-          values: const [0, 1, 2, 3, 4, 5],
-          label: (value) => getReaderNavigationLayoutName(value, context),
-          onChanged: ref.read(readerNavigationLayoutStateProvider.notifier).set,
-        ),
-        _ReaderChoice<int>(
-          title: l10n.tapping_inversion,
-          icon: Icons.swap_horiz_rounded,
-          value: ref.watch(tappingInversionStateProvider),
-          values: const [0, 1, 2, 3],
-          label: (value) => switch (value) {
-            1 => l10n.tapping_inversion_horizontal,
-            2 => l10n.tapping_inversion_vertical,
-            3 => l10n.tapping_inversion_both,
-            _ => l10n.tapping_inversion_none,
-          },
-          onChanged: ref.read(tappingInversionStateProvider.notifier).set,
-        ),
-        _ReaderChoice<int>(
-          title: l10n.reader_hide_threshold,
-          icon: Icons.swipe_vertical_rounded,
-          value: ref.watch(readerHideThresholdStateProvider),
-          values: const [0, 1, 2, 3],
-          label: (value) => switch (value) {
-            0 => l10n.reader_hide_threshold_highest,
-            1 => l10n.reader_hide_threshold_high,
-            _ =>
-              value == 2
-                  ? l10n.reader_hide_threshold_low
-                  : l10n.reader_hide_threshold_lowest,
-          },
-          onChanged: ref.read(readerHideThresholdStateProvider.notifier).set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.show_navigation_overlay_on_start,
-          icon: Icons.grid_view_outlined,
-          value: ref.watch(showNavigationOverlayOnStartStateProvider),
-          onChanged: ref
-              .read(showNavigationOverlayOnStartStateProvider.notifier)
-              .set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.navigate_to_pan,
-          subtitle: l10n.navigate_to_pan_subtitle,
-          icon: Icons.pan_tool_alt_outlined,
-          value: ref.watch(navigateToPanStateProvider),
-          onChanged: ref.read(navigateToPanStateProvider.notifier).set,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Semantics(
-            header: true,
-            child: Text(
-              l10n.chapter_swipe_actions,
-              style: TextStyle(color: NodeLaneTokens.of(context).muted),
-            ),
-          ),
-        ),
-        _ReaderChoice<ChapterSwipeAction>(
-          title: l10n.chapter_swipe_start,
-          icon: Icons.swipe_right_outlined,
-          value: ref.watch(chapterSwipeStartActionStateProvider),
-          values: ChapterSwipeAction.values,
-          label: (value) => getChapterSwipeActionName(value, context),
-          onChanged: ref
-              .read(chapterSwipeStartActionStateProvider.notifier)
-              .set,
-        ),
-        _ReaderChoice<ChapterSwipeAction>(
-          title: l10n.chapter_swipe_end,
-          icon: Icons.swipe_left_outlined,
-          value: ref.watch(chapterSwipeEndActionStateProvider),
-          values: ChapterSwipeAction.values,
-          label: (value) => getChapterSwipeActionName(value, context),
-          onChanged: ref.read(chapterSwipeEndActionStateProvider.notifier).set,
-        ),
-      ],
-    );
-  }
-}
-
-class _AdvancedSettings extends ConsumerWidget {
-  const _AdvancedSettings();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-
-    final preload = ref.watch(pagePreloadAmountStateProvider);
-    final flash = ref.watch(flashOnPageChangeStateProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MobileSettingsLink(
-          title: l10n.page_preload_amount,
-          subtitle: preload.toString(),
-          icon: Icons.photo_library_outlined,
-          onTap: () async {
-            final value = await showDialog<String>(
-              context: context,
-              builder: (_) => MobileSettingsTextDialog(
-                title: l10n.page_preload_amount,
-                initialValue: preload.toString(),
-                helper: l10n.page_preload_amount_subtitle,
-                keyboardType: TextInputType.number,
-                isValid: (text) {
-                  final number = int.tryParse(text);
-                  return number != null && number >= 1 && number <= 20;
-                },
-              ),
-            );
-            if (!context.mounted || value == null) return;
-            final number = int.parse(value);
-            if (number != preload) {
-              ref.read(pagePreloadAmountStateProvider.notifier).set(number);
-            }
-          },
-        ),
-        MobileSettingsSwitch(
-          title: l10n.animate_page_transitions,
-          icon: Icons.animation_rounded,
-          value: ref.watch(animatePageTransitionsStateProvider),
-          onChanged: ref.read(animatePageTransitionsStateProvider.notifier).set,
-        ),
-        _ReaderChoice<int>(
-          title: l10n.double_tap_animation_speed,
-          icon: Icons.speed_rounded,
-          value: ref.watch(doubleTapAnimationSpeedStateProvider),
-          values: const [0, 1, 2],
-          label: (value) => getAnimationSpeedName(value, context),
-          onChanged: ref
-              .read(doubleTapAnimationSpeedStateProvider.notifier)
-              .set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.mark_duplicate_chapters_read,
-          icon: Icons.done_all_rounded,
-          value: ref.watch(autoReadDuplicateChaptersStateProvider),
-          onChanged: ref
-              .read(autoReadDuplicateChaptersStateProvider.notifier)
-              .set,
-        ),
-        MobileSettingsSwitch(
-          title: l10n.flash_on_page_change,
-          subtitle: l10n.flash_on_page_change_subtitle,
-          icon: Icons.flash_on_outlined,
-          value: flash,
-          onChanged: ref.read(flashOnPageChangeStateProvider.notifier).set,
-        ),
-        if (flash) ...[
-          _ReaderChoice<int>(
-            title: l10n.flash_color,
-            icon: Icons.contrast_rounded,
-            value: ref.watch(flashColorStateProvider),
-            values: const [0, 1, 2],
-            label: (value) => switch (value) {
-              0 => l10n.flash_color_black,
-              1 => l10n.flash_color_white,
-              _ => l10n.flash_color_white_black,
-            },
-            onChanged: ref.read(flashColorStateProvider.notifier).set,
-          ),
-          _ReaderSlider(
-            title: (value) => l10n.flash_interval(value.toString()),
-            value: ref.watch(flashIntervalStateProvider),
-            min: 1,
-            max: 10,
-            divisions: 9,
-            onChanged: ref.read(flashIntervalStateProvider.notifier).set,
-          ),
-          _ReaderSlider(
-            title: (value) => l10n.flash_duration(value.toString()),
-            value: ref.watch(flashDurationStateProvider),
-            min: 50,
-            max: 500,
-            divisions: 9,
-            onChanged: ref.read(flashDurationStateProvider.notifier).set,
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// A selection page owns no preferences; only a confirmed selection is saved.
-class _ReaderChoice<T> extends StatelessWidget {
-  const _ReaderChoice({
-    required this.title,
-    required this.icon,
-    required this.value,
-    required this.values,
-    required this.label,
-    required this.onChanged,
-  });
-  final String title;
-  final IconData icon;
-  final T value;
-  final List<T> values;
-  final String Function(T) label;
-  final ValueChanged<T> onChanged;
-  @override
-  Widget build(BuildContext context) => MobileSettingsLink(
-    title: title,
-    subtitle: label(value),
-    icon: icon,
-    onTap: () async {
-      final selected = await showMobileSettingsPicker<T>(
-        context,
-        title: title,
-        current: value,
-        options: [
-          for (final option in values)
-            MobileSettingOption(option, label(option)),
-        ],
-      );
-      if (context.mounted && selected != null && selected.value != value) {
-        onChanged(selected.value);
-      }
-    },
-  );
-}
-
-/// Keeps drag feedback local and persists once, when the gesture ends.
-class _ReaderSlider extends StatefulWidget {
-  const _ReaderSlider({
-    required this.title,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.onChanged,
-  });
-  final String Function(int) title;
-  final int value, min, max, divisions;
-  final ValueChanged<int> onChanged;
-  @override
-  State<_ReaderSlider> createState() => _ReaderSliderState();
-}
-
-class _ReaderSliderState extends State<_ReaderSlider> {
-  late int _draft = widget.value.clamp(widget.min, widget.max);
-  @override
-  void didUpdateWidget(covariant _ReaderSlider oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      _draft = widget.value.clamp(widget.min, widget.max);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          widget.title(_draft),
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        Slider.adaptive(
-          min: widget.min.toDouble(),
-          max: widget.max.toDouble(),
-          divisions: widget.divisions,
-          value: _draft.toDouble(),
-          label: _draft.toString(),
-          onChanged: (value) => setState(() => _draft = value.round()),
-          onChangeEnd: (value) {
-            final selected = value.round();
-            if (selected != widget.value) widget.onChanged(selected);
-          },
-        ),
-      ],
-    ),
-  );
 }

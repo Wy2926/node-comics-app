@@ -78,25 +78,21 @@ mixin ChapterReaderSettingsMixin on ChapterControllerMixin {
 
   /// Persists auto-scroll settings for the current manga.
   ///
-  /// Replaces any existing entry for this manga with the new values and updates
-  /// the global settings object. Calls [onSettingsMutated] afterwards so
+  /// Merges this manga's entry inside the existing settings write queue.
+  /// Calls [onSettingsMutated] afterwards so
   /// controllers can react (e.g. invalidate cached settings).
   void setAutoScroll(bool value, double offset) {
-    List<AutoScrollPages>? autoScrollPagesList = [];
-    for (var autoScrollPages in getIsarSetting().autoScrollPages ?? []) {
-      if (autoScrollPages.mangaId != getManga().id) {
-        autoScrollPagesList.add(autoScrollPages);
-      }
-    }
-    autoScrollPagesList.add(
-      AutoScrollPages()
-        ..mangaId = getManga().id
-        ..pageOffset = offset
-        ..autoScroll = value,
-    );
-    settingsRepository.save(
-      getIsarSetting()..autoScrollPages = autoScrollPagesList,
-    );
+    final mangaId = getManga().id;
+    settingsRepository.update((settings) {
+      settings.autoScrollPages = [
+        for (final entry in settings.autoScrollPages ?? <AutoScrollPages>[])
+          if (entry.mangaId != mangaId) entry,
+        AutoScrollPages()
+          ..mangaId = mangaId
+          ..pageOffset = offset
+          ..autoScroll = value,
+      ];
+    });
     onSettingsMutated();
   }
 

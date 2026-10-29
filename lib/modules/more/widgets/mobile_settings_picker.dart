@@ -62,6 +62,15 @@ class _MobileSettingsPicker<T> extends StatefulWidget {
 class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
   final _search = TextEditingController();
   String _query = '';
+  bool _leaving = false;
+
+  void _choose(MobileSettingOption<T> option) {
+    if (_leaving || !mounted || ModalRoute.of(context)?.isCurrent != true) {
+      return;
+    }
+    _leaving = true;
+    Navigator.pop(context, option);
+  }
 
   @override
   void dispose() {
@@ -191,7 +200,7 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                         trailing: selected
                             ? Icon(Icons.check_rounded, color: colors.accent)
                             : null,
-                        onTap: () => Navigator.pop(context, option),
+                        onTap: () => _choose(option),
                       ),
                     );
                   },

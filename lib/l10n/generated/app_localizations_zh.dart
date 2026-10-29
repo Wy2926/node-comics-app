@@ -3952,4 +3952,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reader_image_action_failed => '未能确认操作结果，请关闭菜单后核对，再决定是否重试。';
+
+  @override
+  String get reader_settings_book_scope => '以下设置仅用于当前漫画。';
+
+  @override
+  String get reader_settings_global_scope => '以下设置用于所有漫画，即时保存。';
+
+  @override
+  String get reader_filters => '图像滤镜';
+
+  @override
+  String get reader_filter_scope => '用于所有漫画，只改变阅读画面，不修改原始图片。';
+
+  @override
+  String get reader_auto_scroll_pause => '打开设置期间暂停滚动。';
 }
