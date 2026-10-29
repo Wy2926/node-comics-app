@@ -1529,5 +1529,20 @@
   "bookshelf_mark_read": "标为已读",
   "bookshelf_mark_unread": "标为未读",
   "bookshelf_select_all": "全选",
-  "bookshelf_invert_selection": "反选"
+  "bookshelf_invert_selection": "反选",
+  "bookshelf_settings": "书架设置",
+  "bookshelf_settings_live": "筛选、排序和显示更改即时生效。",
+  "bookshelf_filter_any": "不限",
+  "bookshelf_filter_include": "包含",
+  "bookshelf_filter_exclude": "排除",
+  "bookshelf_all_sources": "全部来源",
+  "bookshelf_sources_selected": "已选 {count} 个来源",
+  "@bookshelf_sources_selected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "bookshelf_sort_ascending": "升序",
+  "bookshelf_sort_descending": "降序",
+  "bookshelf_grid_hint": "列数会按当前屏幕宽度调整，默认自动排布。",
+  "bookshelf_layout": "书架布局",
+  "bookshelf_sources_hint": "不选表示全部来源；点按“筛选”后生效。"
 }

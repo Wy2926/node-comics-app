@@ -7013,6 +7013,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invert selection'**
   String get bookshelf_invert_selection;
+
+  /// No description provided for @bookshelf_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookshelf settings'**
+  String get bookshelf_settings;
+
+  /// No description provided for @bookshelf_settings_live.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter, sort and display changes take effect immediately.'**
+  String get bookshelf_settings_live;
+
+  /// No description provided for @bookshelf_filter_any.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get bookshelf_filter_any;
+
+  /// No description provided for @bookshelf_filter_include.
+  ///
+  /// In en, this message translates to:
+  /// **'Include'**
+  String get bookshelf_filter_include;
+
+  /// No description provided for @bookshelf_filter_exclude.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude'**
+  String get bookshelf_filter_exclude;
+
+  /// No description provided for @bookshelf_all_sources.
+  ///
+  /// In en, this message translates to:
+  /// **'All sources'**
+  String get bookshelf_all_sources;
+
+  /// No description provided for @bookshelf_sources_selected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sources selected'**
+  String bookshelf_sources_selected(int count);
+
+  /// No description provided for @bookshelf_sort_ascending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get bookshelf_sort_ascending;
+
+  /// No description provided for @bookshelf_sort_descending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get bookshelf_sort_descending;
+
+  /// No description provided for @bookshelf_grid_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns adapt to the screen width. Default arranges them automatically.'**
+  String get bookshelf_grid_hint;
+
+  /// No description provided for @bookshelf_layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookshelf layout'**
+  String get bookshelf_layout;
+
+  /// No description provided for @bookshelf_sources_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select none to show all sources. Changes apply when you tap Filter.'**
+  String get bookshelf_sources_hint;
 }
 
 class _AppLocalizationsDelegate

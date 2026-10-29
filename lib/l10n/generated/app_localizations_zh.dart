@@ -3767,4 +3767,42 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookshelf_invert_selection => '反选';
+
+  @override
+  String get bookshelf_settings => '书架设置';
+
+  @override
+  String get bookshelf_settings_live => '筛选、排序和显示更改即时生效。';
+
+  @override
+  String get bookshelf_filter_any => '不限';
+
+  @override
+  String get bookshelf_filter_include => '包含';
+
+  @override
+  String get bookshelf_filter_exclude => '排除';
+
+  @override
+  String get bookshelf_all_sources => '全部来源';
+
+  @override
+  String bookshelf_sources_selected(int count) {
+    return '已选 $count 个来源';
+  }
+
+  @override
+  String get bookshelf_sort_ascending => '升序';
+
+  @override
+  String get bookshelf_sort_descending => '降序';
+
+  @override
+  String get bookshelf_grid_hint => '列数会按当前屏幕宽度调整，默认自动排布。';
+
+  @override
+  String get bookshelf_layout => '书架布局';
+
+  @override
+  String get bookshelf_sources_hint => '不选表示全部来源；点按“筛选”后生效。';
 }

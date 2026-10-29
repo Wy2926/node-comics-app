@@ -14,6 +14,8 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
+import 'mobile_bookshelf_settings.dart';
+
 /// Shows the library filter/sort/display settings sheet.
 void showLibrarySettingsSheet({
   required BuildContext context,
@@ -22,6 +24,20 @@ void showLibrarySettingsSheet({
   required ItemType itemType,
   required List<Manga> entries,
 }) {
+  if (isMobile && !isTv && itemType == ItemType.manga) {
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: .9,
+        child: MobileBookshelfSettings(settings: settings, entries: entries),
+      ),
+    );
+    return;
+  }
   final l10n = l10nLocalizations(context)!;
   customDraggableTabBar(
     tabs: [

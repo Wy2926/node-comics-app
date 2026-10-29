@@ -1591,5 +1591,20 @@
   "bookshelf_mark_read": "Mark read",
   "bookshelf_mark_unread": "Mark unread",
   "bookshelf_select_all": "Select all",
-  "bookshelf_invert_selection": "Invert selection"
+  "bookshelf_invert_selection": "Invert selection",
+  "bookshelf_settings": "Bookshelf settings",
+  "bookshelf_settings_live": "Filter, sort and display changes take effect immediately.",
+  "bookshelf_filter_any": "Any",
+  "bookshelf_filter_include": "Include",
+  "bookshelf_filter_exclude": "Exclude",
+  "bookshelf_all_sources": "All sources",
+  "bookshelf_sources_selected": "{count} sources selected",
+  "@bookshelf_sources_selected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "bookshelf_sort_ascending": "Ascending",
+  "bookshelf_sort_descending": "Descending",
+  "bookshelf_grid_hint": "Columns adapt to the screen width. Default arranges them automatically.",
+  "bookshelf_layout": "Bookshelf layout",
+  "bookshelf_sources_hint": "Select none to show all sources. Changes apply when you tap Filter."
 }

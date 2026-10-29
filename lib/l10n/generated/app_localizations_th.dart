@@ -3923,4 +3923,45 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get bookshelf_invert_selection => 'Invert selection';
+
+  @override
+  String get bookshelf_settings => 'Bookshelf settings';
+
+  @override
+  String get bookshelf_settings_live =>
+      'Filter, sort and display changes take effect immediately.';
+
+  @override
+  String get bookshelf_filter_any => 'Any';
+
+  @override
+  String get bookshelf_filter_include => 'Include';
+
+  @override
+  String get bookshelf_filter_exclude => 'Exclude';
+
+  @override
+  String get bookshelf_all_sources => 'All sources';
+
+  @override
+  String bookshelf_sources_selected(int count) {
+    return '$count sources selected';
+  }
+
+  @override
+  String get bookshelf_sort_ascending => 'Ascending';
+
+  @override
+  String get bookshelf_sort_descending => 'Descending';
+
+  @override
+  String get bookshelf_grid_hint =>
+      'Columns adapt to the screen width. Default arranges them automatically.';
+
+  @override
+  String get bookshelf_layout => 'Bookshelf layout';
+
+  @override
+  String get bookshelf_sources_hint =>
+      'Select none to show all sources. Changes apply when you tap Filter.';
 }
