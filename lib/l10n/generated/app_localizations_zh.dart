@@ -3569,4 +3569,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tracking_accounts_empty => '先在追踪设置中登录服务，再管理其中的条目。';
+
+  @override
+  String get tracking_entries_empty => '此媒体类型暂无追踪条目，可从作品详情页添加追踪。';
+
+  @override
+  String get change_tracking_match => '更换匹配作品';
+
+  @override
+  String get remove_tracking => '移除追踪';
+
+  @override
+  String remove_tracking_confirm(String title) {
+    return '移除“$title”的追踪关联？追踪服务中的条目会保留。';
+  }
+
+  @override
+  String get tracking_refresh_required => '未能确认追踪状态，请刷新后再进行修改。';
+
+  @override
+  String get tracking_entry_unlinked => '此记录尚未关联本地作品，无法在这里编辑。';
 }

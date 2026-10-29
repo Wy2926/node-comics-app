@@ -11,6 +11,8 @@ import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
+import 'mobile_tracker_search.dart';
+
 class TrackerWidgetSearch extends ConsumerStatefulWidget {
   final ItemType itemType;
   final Track track;
@@ -285,6 +287,14 @@ Future<dynamic> trackersSearchDraggableMenu(
   required Track track,
   required ItemType itemType,
 }) async {
+  if (isMobile && !isTv) {
+    return Navigator.of(context).push<TrackSearch>(
+      MaterialPageRoute(
+        builder: (_) =>
+            MobileTrackerSearchScreen(track: track, itemType: itemType),
+      ),
+    );
+  }
   var padding = MediaQuery.of(context).padding;
   return await showDialog(
     context: context,

@@ -1443,5 +1443,11 @@
   "custom_button_primary": "默认按钮",
   "show_password": "显示密码",
   "hide_password": "隐藏密码",
-  "tracking_accounts_empty": "先在追踪设置中登录服务，再管理其中的条目。"
+  "tracking_accounts_empty": "先在追踪设置中登录服务，再管理其中的条目。",
+  "tracking_entries_empty": "此媒体类型暂无追踪条目，可从作品详情页添加追踪。",
+  "change_tracking_match": "更换匹配作品",
+  "remove_tracking": "移除追踪",
+  "remove_tracking_confirm": "移除“{title}”的追踪关联？追踪服务中的条目会保留。",
+  "tracking_refresh_required": "未能确认追踪状态，请刷新后再进行修改。",
+  "tracking_entry_unlinked": "此记录尚未关联本地作品，无法在这里编辑。"
 }

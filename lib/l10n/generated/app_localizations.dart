@@ -6654,6 +6654,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connect a service in Tracking settings to manage its entries.'**
   String get tracking_accounts_empty;
+
+  /// No description provided for @tracking_entries_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracked entries for this media type. Add tracking from a title’s detail page.'**
+  String get tracking_entries_empty;
+
+  /// No description provided for @change_tracking_match.
+  ///
+  /// In en, this message translates to:
+  /// **'Change matching title'**
+  String get change_tracking_match;
+
+  /// No description provided for @remove_tracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tracking'**
+  String get remove_tracking;
+
+  /// No description provided for @remove_tracking_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the tracking link for “{title}”? The entry in the tracking service will be kept.'**
+  String remove_tracking_confirm(String title);
+
+  /// No description provided for @tracking_refresh_required.
+  ///
+  /// In en, this message translates to:
+  /// **'The tracking state could not be confirmed. Refresh before making another change.'**
+  String get tracking_refresh_required;
+
+  /// No description provided for @tracking_entry_unlinked.
+  ///
+  /// In en, this message translates to:
+  /// **'This record is not linked to a local title, so it cannot be edited here.'**
+  String get tracking_entry_unlinked;
 }
 
 class _AppLocalizationsDelegate

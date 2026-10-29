@@ -14,6 +14,9 @@ import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_tracking_menu.dart';
 
 /// Opens the tracker list bottom sheet for [manga]. [entries] is the set of
 /// logged-in tracker services. Each row shows the current tracking state
@@ -24,6 +27,14 @@ void openTrackingMenu({
   required Manga manga,
   required List<TrackPreference> entries,
 }) {
+  if (isMobile && !isTv) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MobileTrackingMenu(manga: manga, accounts: entries),
+      ),
+    );
+    return;
+  }
   DraggableMenu.open(
     context,
     Consumer(

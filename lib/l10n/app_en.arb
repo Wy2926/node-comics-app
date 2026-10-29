@@ -1496,5 +1496,12 @@
   "custom_button_primary": "Default button",
   "show_password": "Show password",
   "hide_password": "Hide password",
-  "tracking_accounts_empty": "Connect a service in Tracking settings to manage its entries."
+  "tracking_accounts_empty": "Connect a service in Tracking settings to manage its entries.",
+  "tracking_entries_empty": "No tracked entries for this media type. Add tracking from a title’s detail page.",
+  "change_tracking_match": "Change matching title",
+  "remove_tracking": "Remove tracking",
+  "remove_tracking_confirm": "Remove the tracking link for “{title}”? The entry in the tracking service will be kept.",
+  "@remove_tracking_confirm": {"placeholders": {"title": {"type": "String"}}},
+  "tracking_refresh_required": "The tracking state could not be confirmed. Refresh before making another change.",
+  "tracking_entry_unlinked": "This record is not linked to a local title, so it cannot be edited here."
 }

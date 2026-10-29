@@ -3751,4 +3751,27 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get tracking_accounts_empty =>
       'Connect a service in Tracking settings to manage its entries.';
+
+  @override
+  String get tracking_entries_empty =>
+      'No tracked entries for this media type. Add tracking from a title’s detail page.';
+
+  @override
+  String get change_tracking_match => 'Change matching title';
+
+  @override
+  String get remove_tracking => 'Remove tracking';
+
+  @override
+  String remove_tracking_confirm(String title) {
+    return 'Remove the tracking link for “$title”? The entry in the tracking service will be kept.';
+  }
+
+  @override
+  String get tracking_refresh_required =>
+      'The tracking state could not be confirmed. Refresh before making another change.';
+
+  @override
+  String get tracking_entry_unlinked =>
+      'This record is not linked to a local title, so it cannot be edited here.';
 }
