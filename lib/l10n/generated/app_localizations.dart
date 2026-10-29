@@ -6743,6 +6743,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose a source to review its contents and deletion options.'**
   String get library_delete_pick_message;
+
+  /// No description provided for @mobile_categories_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder. Open a category to rename it or change its visibility and updates.'**
+  String get mobile_categories_hint;
+
+  /// No description provided for @mobile_category_visible.
+  ///
+  /// In en, this message translates to:
+  /// **'Show in library'**
+  String get mobile_category_visible;
+
+  /// No description provided for @mobile_category_hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden from library'**
+  String get mobile_category_hidden;
+
+  /// No description provided for @mobile_category_updates.
+  ///
+  /// In en, this message translates to:
+  /// **'Include in library updates'**
+  String get mobile_category_updates;
+
+  /// No description provided for @statistics_watched.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched'**
+  String get statistics_watched;
+
+  /// No description provided for @calendar_month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get calendar_month;
+
+  /// No description provided for @calendar_two_weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'2 weeks'**
+  String get calendar_two_weeks;
+
+  /// No description provided for @calendar_week.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get calendar_week;
+
+  /// No description provided for @calendar_show_all_dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all dates'**
+  String get calendar_show_all_dates;
 }
 
 class _AppLocalizationsDelegate

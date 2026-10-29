@@ -3789,4 +3789,32 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get library_delete_pick_message =>
       'Choose a source to review its contents and deletion options.';
+
+  @override
+  String get mobile_categories_hint =>
+      'Drag to reorder. Open a category to rename it or change its visibility and updates.';
+
+  @override
+  String get mobile_category_visible => 'Show in library';
+
+  @override
+  String get mobile_category_hidden => 'Hidden from library';
+
+  @override
+  String get mobile_category_updates => 'Include in library updates';
+
+  @override
+  String get statistics_watched => 'Watched';
+
+  @override
+  String get calendar_month => 'Month';
+
+  @override
+  String get calendar_two_weeks => '2 weeks';
+
+  @override
+  String get calendar_week => 'Week';
+
+  @override
+  String get calendar_show_all_dates => 'Show all dates';
 }

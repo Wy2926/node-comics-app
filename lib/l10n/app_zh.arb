@@ -1473,5 +1473,14 @@
       }
     }
   },
-  "library_delete_pick_message": "选择图源，查看其内容和删除选项。"
+  "library_delete_pick_message": "选择图源，查看其内容和删除选项。",
+  "mobile_categories_hint": "拖动调整顺序。打开分类可重命名，或设置显示与更新。",
+  "mobile_category_visible": "在书架中显示",
+  "mobile_category_hidden": "已从书架隐藏",
+  "mobile_category_updates": "参与书库更新",
+  "statistics_watched": "已观看",
+  "calendar_month": "月",
+  "calendar_two_weeks": "两周",
+  "calendar_week": "周",
+  "calendar_show_all_dates": "查看全部日期"
 }

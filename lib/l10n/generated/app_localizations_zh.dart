@@ -3621,4 +3621,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get library_delete_pick_message => '选择图源，查看其内容和删除选项。';
+
+  @override
+  String get mobile_categories_hint => '拖动调整顺序。打开分类可重命名，或设置显示与更新。';
+
+  @override
+  String get mobile_category_visible => '在书架中显示';
+
+  @override
+  String get mobile_category_hidden => '已从书架隐藏';
+
+  @override
+  String get mobile_category_updates => '参与书库更新';
+
+  @override
+  String get statistics_watched => '已观看';
+
+  @override
+  String get calendar_month => '月';
+
+  @override
+  String get calendar_two_weeks => '两周';
+
+  @override
+  String get calendar_week => '周';
+
+  @override
+  String get calendar_show_all_dates => '查看全部日期';
 }

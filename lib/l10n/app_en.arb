@@ -1527,5 +1527,14 @@
       }
     }
   },
-  "library_delete_pick_message": "Choose a source to review its contents and deletion options."
+  "library_delete_pick_message": "Choose a source to review its contents and deletion options.",
+  "mobile_categories_hint": "Drag to reorder. Open a category to rename it or change its visibility and updates.",
+  "mobile_category_visible": "Show in library",
+  "mobile_category_hidden": "Hidden from library",
+  "mobile_category_updates": "Include in library updates",
+  "statistics_watched": "Watched",
+  "calendar_month": "Month",
+  "calendar_two_weeks": "2 weeks",
+  "calendar_week": "Week",
+  "calendar_show_all_dates": "Show all dates"
 }
