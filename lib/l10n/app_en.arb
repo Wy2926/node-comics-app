@@ -1621,5 +1621,11 @@
   "manga_download_scope": "Download chapters",
   "manga_download_scope_hint": "Choose chapters within the current filters. Downloaded chapters are skipped.",
   "manga_download_scope_empty": "No chapters match the current filters. Close this menu and adjust the chapter filters.",
-  "manga_action_incomplete": "The action did not finish. Check the current state before trying again."
+  "manga_action_incomplete": "The action did not finish. Check the current state before trying again.",
+  "chapter_settings": "Chapter settings",
+  "chapter_settings_live": "Filter and sort changes apply immediately.",
+  "chapter_scanlators_all": "Show all scanlator groups",
+  "chapter_scanlators_hint": "Select groups to hide their chapters. Changes apply when you tap Filter.",
+  "chapter_scanlators_hidden": "{count} scanlator groups hidden",
+  "@chapter_scanlators_hidden": {"placeholders": {"count": {"type": "int"}}}
 }

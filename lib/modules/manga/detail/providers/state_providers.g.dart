@@ -215,7 +215,7 @@ final class SortChapterStateProvider
   }
 }
 
-String _$sortChapterStateHash() => r'34d1527e0a27945ba95b28713dca697097864712';
+String _$sortChapterStateHash() => r'b778b06927a3c001998f288e1586a2198248b3ab';
 
 final class SortChapterStateFamily extends $Family
     with
@@ -315,7 +315,7 @@ final class ChapterFilterDownloadedStateProvider
 }
 
 String _$chapterFilterDownloadedStateHash() =>
-    r'43e6381f896ed2af70da6eea1d8b9081af12073b';
+    r'be686487baac43999be7b6bb29e1321b526810c0';
 
 final class ChapterFilterDownloadedStateFamily extends $Family
     with
@@ -408,7 +408,7 @@ final class ChapterFilterUnreadStateProvider
 }
 
 String _$chapterFilterUnreadStateHash() =>
-    r'757be3a687541fd7a07aec0cae37d2d94cabe7c7';
+    r'0c6fc087fcf4e7b047a632bdd581a3202627514b';
 
 final class ChapterFilterUnreadStateFamily extends $Family
     with $ClassFamilyOverride<ChapterFilterUnreadState, int, int, int, int> {
@@ -501,7 +501,7 @@ final class ChapterFilterBookmarkedStateProvider
 }
 
 String _$chapterFilterBookmarkedStateHash() =>
-    r'727ae579b1cb33520515312833a328f48bb5695a';
+    r'96c348840843eaa14c8e1f183c57eba11652c6b8';
 
 final class ChapterFilterBookmarkedStateFamily extends $Family
     with
@@ -1033,7 +1033,7 @@ final class ScanlatorsFilterStateProvider
 }
 
 String _$scanlatorsFilterStateHash() =>
-    r'ec533b9b81b8d0f6d6229bd9c342c430975df885';
+    r'4688b7bca664aa77f0e21423ba8134b3d513e931';
 
 final class ScanlatorsFilterStateFamily extends $Family
     with

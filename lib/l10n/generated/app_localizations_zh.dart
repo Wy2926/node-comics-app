@@ -3852,4 +3852,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get manga_action_incomplete => '操作未完成。请先核对当前状态，再决定是否重新操作。';
+
+  @override
+  String get chapter_settings => '目录设置';
+
+  @override
+  String get chapter_settings_live => '筛选和排序更改即时生效。';
+
+  @override
+  String get chapter_scanlators_all => '显示所有翻译组';
+
+  @override
+  String get chapter_scanlators_hint => '勾选要隐藏的翻译组，点按“筛选”后生效。';
+
+  @override
+  String chapter_scanlators_hidden(int count) {
+    return '已隐藏 $count 个翻译组';
+  }
 }

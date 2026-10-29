@@ -22,8 +22,8 @@ mixin PerMangaTriStateFilter<T> {
   int typeOf(T entry);
   T create(int mangaId, int type);
 
-  /// Persists the updated per-manga list.
-  void persist(List<T> updated);
+  /// Merges this record into the latest settings inside the existing write queue.
+  void persist(T entry);
 
   int getType() {
     for (final entry in currentList()) {
@@ -33,12 +33,7 @@ mixin PerMangaTriStateFilter<T> {
   }
 
   void setType(int type) {
-    final updated = [
-      for (final entry in currentList())
-        if (mangaIdOf(entry) != mangaId) entry,
-      create(mangaId, type),
-    ];
-    persist(updated);
+    persist(create(mangaId, type));
     state = type;
   }
 

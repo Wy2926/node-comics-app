@@ -19,6 +19,7 @@ import 'package:mangayomi/modules/manga/detail/widgets/manga_info_header.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/split_chapters_dialog.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_list_tile_widget.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_sort_list_tile_widget.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_chapter_settings.dart';
 import 'package:mangayomi/modules/manga/download/providers/download_provider.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
@@ -737,6 +738,25 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
   }
 
   void _showDraggableMenu() {
+    if (isMobile && !isTv && widget.itemType == ItemType.manga) {
+      showModalBottomSheet<void>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheetContext).height * .75,
+          ),
+          child: MobileMangaChapterSettings(
+            manga: widget.manga!,
+            localArchive: isLocalArchive,
+          ),
+        ),
+      );
+      return;
+    }
     final scanlators = ref.read(scanlatorsFilterStateProvider(widget.manga!));
     final l10n = l10nLocalizations(context)!;
     final labels = [l10n.filter, l10n.sort, l10n.display];

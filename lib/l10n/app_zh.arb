@@ -1559,5 +1559,10 @@
   "manga_download_scope": "下载章节",
   "manga_download_scope_hint": "按当前目录筛选选择章节，已下载的章节会跳过。",
   "manga_download_scope_empty": "当前筛选下没有章节。请关闭并调整目录筛选。",
-  "manga_action_incomplete": "操作未完成。请先核对当前状态，再决定是否重新操作。"
+  "manga_action_incomplete": "操作未完成。请先核对当前状态，再决定是否重新操作。",
+  "chapter_settings": "目录设置",
+  "chapter_settings_live": "筛选和排序更改即时生效。",
+  "chapter_scanlators_all": "显示所有翻译组",
+  "chapter_scanlators_hint": "勾选要隐藏的翻译组，点按“筛选”后生效。",
+  "chapter_scanlators_hidden": "已隐藏 {count} 个翻译组"
 }

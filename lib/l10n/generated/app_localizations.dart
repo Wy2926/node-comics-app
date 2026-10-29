@@ -7175,6 +7175,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The action did not finish. Check the current state before trying again.'**
   String get manga_action_incomplete;
+
+  /// No description provided for @chapter_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter settings'**
+  String get chapter_settings;
+
+  /// No description provided for @chapter_settings_live.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter and sort changes apply immediately.'**
+  String get chapter_settings_live;
+
+  /// No description provided for @chapter_scanlators_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all scanlator groups'**
+  String get chapter_scanlators_all;
+
+  /// No description provided for @chapter_scanlators_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select groups to hide their chapters. Changes apply when you tap Filter.'**
+  String get chapter_scanlators_hint;
+
+  /// No description provided for @chapter_scanlators_hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} scanlator groups hidden'**
+  String chapter_scanlators_hidden(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -3965,4 +3965,23 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get manga_action_incomplete =>
       'The action did not finish. Check the current state before trying again.';
+
+  @override
+  String get chapter_settings => 'Chapter settings';
+
+  @override
+  String get chapter_settings_live =>
+      'Filter and sort changes apply immediately.';
+
+  @override
+  String get chapter_scanlators_all => 'Show all scanlator groups';
+
+  @override
+  String get chapter_scanlators_hint =>
+      'Select groups to hide their chapters. Changes apply when you tap Filter.';
+
+  @override
+  String chapter_scanlators_hidden(int count) {
+    return '$count scanlator groups hidden';
+  }
 }
