@@ -50,6 +50,8 @@ class ReaderBottomBar extends ConsumerWidget {
   /// Callback when next chapter button is pressed
   final VoidCallback? onNextChapter;
 
+  final VoidCallback? onChaptersClosed;
+
   /// Callback when slider value changes (for updating provider)
   final void Function(int value, WidgetRef ref) onSliderChanged;
 
@@ -99,6 +101,7 @@ class ReaderBottomBar extends ConsumerWidget {
     required this.hasNextChapter,
     this.onPreviousChapter,
     this.onNextChapter,
+    this.onChaptersClosed,
     required this.onSliderChanged,
     required this.onSliderChangeEnd,
     required this.onReaderModeChanged,
@@ -153,6 +156,9 @@ class ReaderBottomBar extends ConsumerWidget {
                     context.l10n.chapters,
                     chapter,
                     labeled: true,
+                    onChanged: (closed) {
+                      if (closed) onChaptersClosed?.call();
+                    },
                   ),
                 ),
                 Expanded(

@@ -16,6 +16,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'mobile_reader_widgets.dart';
+import 'mobile_reader_chapters.dart';
 
 Widget btnToShowChapterListDialog(
   BuildContext context,
@@ -25,6 +26,12 @@ Widget btnToShowChapterListDialog(
   Color? iconColor,
   bool labeled = false,
 }) {
+  if (labeled &&
+      isMobile &&
+      !isTv &&
+      chapter.manga.value?.itemType == ItemType.manga) {
+    return MobileReaderChaptersButton(chapter: chapter, onChanged: onChanged);
+  }
   Future<void> open() async {
     onChanged?.call(false);
     if (labeled && isMobile && !isTv) {

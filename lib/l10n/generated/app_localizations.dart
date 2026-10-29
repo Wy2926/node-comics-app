@@ -7277,6 +7277,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Applies to all comics.'**
   String get reader_display_crop_scope;
+
+  /// No description provided for @reader_chapter_locate.
+  ///
+  /// In en, this message translates to:
+  /// **'Locate current chapter'**
+  String get reader_chapter_locate;
+
+  /// No description provided for @reader_chapter_search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search chapters or scanlators'**
+  String get reader_chapter_search;
+
+  /// No description provided for @reader_chapter_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the chapter filters and sort order from comic details. Bookmarks are saved immediately.'**
+  String get reader_chapter_scope;
+
+  /// No description provided for @reader_chapter_current_hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'The chapter you are reading is outside the current filters.'**
+  String get reader_chapter_current_hidden;
+
+  /// No description provided for @reader_chapter_current.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading now'**
+  String get reader_chapter_current;
+
+  /// No description provided for @reader_chapter_read.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get reader_chapter_read;
+
+  /// No description provided for @reader_chapter_bookmark_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark save could not be confirmed. Close the list and check its current state.'**
+  String get reader_chapter_bookmark_failed;
 }
 
 class _AppLocalizationsDelegate

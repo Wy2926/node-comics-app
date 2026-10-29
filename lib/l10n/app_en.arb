@@ -1646,5 +1646,12 @@
   "reader_display_scope": "Reading mode and manual page layout apply to this comic. Choose a change to return to reading.",
   "reader_display_single_only": "Horizontal continuous reading uses single pages.",
   "reader_display_manual_pages": "Changing page layout turns off automatic double page for all comics.",
-  "reader_display_crop_scope": "Applies to all comics."
+  "reader_display_crop_scope": "Applies to all comics.",
+  "reader_chapter_locate": "Locate current chapter",
+  "reader_chapter_search": "Search chapters or scanlators",
+  "reader_chapter_scope": "Uses the chapter filters and sort order from comic details. Bookmarks are saved immediately.",
+  "reader_chapter_current_hidden": "The chapter you are reading is outside the current filters.",
+  "reader_chapter_current": "Reading now",
+  "reader_chapter_read": "Read",
+  "reader_chapter_bookmark_failed": "Bookmark save could not be confirmed. Close the list and check its current state."
 }

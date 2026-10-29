@@ -4142,6 +4142,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reader_display_crop_scope => 'Applies to all comics.';
+
+  @override
+  String get reader_chapter_locate => 'Locate current chapter';
+
+  @override
+  String get reader_chapter_search => 'Search chapters or scanlators';
+
+  @override
+  String get reader_chapter_scope =>
+      'Uses the chapter filters and sort order from comic details. Bookmarks are saved immediately.';
+
+  @override
+  String get reader_chapter_current_hidden =>
+      'The chapter you are reading is outside the current filters.';
+
+  @override
+  String get reader_chapter_current => 'Reading now';
+
+  @override
+  String get reader_chapter_read => 'Read';
+
+  @override
+  String get reader_chapter_bookmark_failed =>
+      'Bookmark save could not be confirmed. Close the list and check its current state.';
 }
 
 /// The translations for Spanish Castilian, as used in Latin America and the Caribbean (`es_419`).

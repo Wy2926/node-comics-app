@@ -1576,5 +1576,12 @@
   "reader_display_scope": "阅读模式和手动单双页应用于当前漫画；选择后返回阅读。",
   "reader_display_single_only": "横向连续阅读仅使用单页。",
   "reader_display_manual_pages": "切换单双页会关闭所有漫画的自动双页。",
-  "reader_display_crop_scope": "应用于所有漫画。"
+  "reader_display_crop_scope": "应用于所有漫画。",
+  "reader_chapter_locate": "定位当前章节",
+  "reader_chapter_search": "搜索章节或翻译组",
+  "reader_chapter_scope": "沿用漫画详情的筛选和排序，书签即时保存。",
+  "reader_chapter_current_hidden": "正在阅读的章节不在当前筛选后的目录中。",
+  "reader_chapter_current": "正在阅读",
+  "reader_chapter_read": "已读",
+  "reader_chapter_bookmark_failed": "未能确认书签保存结果，请关闭目录后核对。"
 }

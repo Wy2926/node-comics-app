@@ -3907,4 +3907,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reader_display_crop_scope => '应用于所有漫画。';
+
+  @override
+  String get reader_chapter_locate => '定位当前章节';
+
+  @override
+  String get reader_chapter_search => '搜索章节或翻译组';
+
+  @override
+  String get reader_chapter_scope => '沿用漫画详情的筛选和排序，书签即时保存。';
+
+  @override
+  String get reader_chapter_current_hidden => '正在阅读的章节不在当前筛选后的目录中。';
+
+  @override
+  String get reader_chapter_current => '正在阅读';
+
+  @override
+  String get reader_chapter_read => '已读';
+
+  @override
+  String get reader_chapter_bookmark_failed => '未能确认书签保存结果，请关闭目录后核对。';
 }

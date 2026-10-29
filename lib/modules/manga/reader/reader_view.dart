@@ -836,6 +836,15 @@ class _MangaChapterPageGalleryState
                     hasNextChapter: _readerController.hasNextChapter,
                     onPreviousChapter: () => _goToChapter(false),
                     onNextChapter: () => _goToChapter(true),
+                    onChaptersClosed: () {
+                      if (!mounted) return;
+                      final bookmarked = chapterRepository
+                          .findByIdSync(chapter.id!)
+                          ?.isBookmarked;
+                      if (bookmarked != null && bookmarked != _isBookmarked) {
+                        setState(() => _isBookmarked = bookmarked);
+                      }
+                    },
                     onSliderChanged: (value, ref) {
                       _currentPageDisplayIndex.value = value;
                       ref
