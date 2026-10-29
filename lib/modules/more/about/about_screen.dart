@@ -17,9 +17,12 @@ import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/share.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'mobile_about_screen.dart';
 
 class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
@@ -29,6 +32,39 @@ class AboutScreen extends ConsumerWidget {
     final l10n = l10nLocalizations(context);
     final checkForUpdates = ref.watch(checkForAppUpdatesProvider);
     final enableLogs = ref.watch(logsStateProvider);
+    if (isMobile && !isTv) {
+      return MobileAboutScreen(
+        packageInfo: ref.watch(getPackageInfoProvider),
+        onRetryPackageInfo: () => ref.invalidate(getPackageInfoProvider),
+        checkForUpdates: checkForUpdates,
+        onAutoCheckChanged: ref.read(checkForAppUpdatesProvider.notifier).set,
+        logsEnabled: enableLogs,
+        onLogsChanged: (value) async {
+          ref.read(logsStateProvider.notifier).set(value);
+          if (value) {
+            await AppLogger.init();
+          } else {
+            await AppLogger.dispose();
+          }
+        },
+        reportCount: () => CrashReports.reports.length,
+        onReports: () async {
+          await context.push('/errorReports');
+        },
+        onCheck: performManualUpdateCheck,
+        onUpdate: (update) => showDialog<void>(
+          context: context,
+          builder: (_) => DownloadFileScreen(updateAvailable: update),
+        ),
+        onShareLogs: () => _shareLogs(context),
+        onGitHub: () => _launchInBrowser(
+          Uri.parse('https://github.com/kodjodevf/mangayomi'),
+        ),
+        onDiscord: () => _launchInBrowser(
+          Uri.parse('https://discord.com/invite/EjfBuYahsP'),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text(l10n!.about)),
       body: ref
@@ -121,31 +157,7 @@ class AboutScreen extends ConsumerWidget {
                       ),
                       if (enableLogs)
                         ListTile(
-                          onTap: () async {
-                            final storage = StorageProvider();
-                            final directory = await storage
-                                .getDefaultDirectory();
-                            final file = File(
-                              path.join(directory!.path, 'logs.txt'),
-                            );
-                            if (await file.exists()) {
-                              if (context.mounted) {
-                                final box =
-                                    context.findRenderObject() as RenderBox?;
-                                await shareOrCopy(
-                                  ShareParams(
-                                    files: [XFile(file.path)],
-                                    text: "log.txt",
-                                    sharePositionOrigin:
-                                        box!.localToGlobal(Offset.zero) &
-                                        box.size,
-                                  ),
-                                );
-                              }
-                            } else {
-                              botToast(l10n.no_app_logs);
-                            }
-                          },
+                          onTap: () => _shareLogs(context),
                           title: Text(l10n.share_app_logs),
                         ),
                       // ListTile(
@@ -207,4 +219,23 @@ Future<void> _launchInBrowser(Uri url) async {
   if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
     throw 'Could not launch $url';
   }
+}
+
+Future<void> _shareLogs(BuildContext context) async {
+  final storage = StorageProvider();
+  final directory = await storage.getDefaultDirectory();
+  final file = File(path.join(directory!.path, 'logs.txt'));
+  if (!await file.exists()) {
+    if (context.mounted) botToast(context.l10n.no_app_logs);
+    return;
+  }
+  if (!context.mounted) return;
+  final box = context.findRenderObject() as RenderBox?;
+  await shareOrCopy(
+    ShareParams(
+      files: [XFile(file.path)],
+      text: 'log.txt',
+      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+    ),
+  );
 }

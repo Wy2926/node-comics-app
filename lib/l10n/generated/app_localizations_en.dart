@@ -3806,4 +3806,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendar_show_all_dates => 'Show all dates';
+
+  @override
+  String get update_check_no_result =>
+      'No installable update found. You can try again later.';
+
+  @override
+  String get release_notes => 'Release notes';
+
+  @override
+  String get no_release_notes => 'No release notes provided.';
+
+  @override
+  String get downloading_update => 'Downloading update…';
+
+  @override
+  String get preparing_installation => 'Preparing installation…';
 }

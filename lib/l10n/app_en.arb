@@ -1536,5 +1536,10 @@
   "calendar_month": "Month",
   "calendar_two_weeks": "2 weeks",
   "calendar_week": "Week",
-  "calendar_show_all_dates": "Show all dates"
+  "calendar_show_all_dates": "Show all dates",
+  "update_check_no_result": "No installable update found. You can try again later.",
+  "release_notes": "Release notes",
+  "no_release_notes": "No release notes provided.",
+  "downloading_update": "Downloading update…",
+  "preparing_installation": "Preparing installation…"
 }

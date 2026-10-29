@@ -6797,6 +6797,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show all dates'**
   String get calendar_show_all_dates;
+
+  /// No description provided for @update_check_no_result.
+  ///
+  /// In en, this message translates to:
+  /// **'No installable update found. You can try again later.'**
+  String get update_check_no_result;
+
+  /// No description provided for @release_notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes'**
+  String get release_notes;
+
+  /// No description provided for @no_release_notes.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes provided.'**
+  String get no_release_notes;
+
+  /// No description provided for @downloading_update.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading update…'**
+  String get downloading_update;
+
+  /// No description provided for @preparing_installation.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing installation…'**
+  String get preparing_installation;
 }
 
 class _AppLocalizationsDelegate

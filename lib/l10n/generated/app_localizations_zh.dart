@@ -3648,4 +3648,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get calendar_show_all_dates => '查看全部日期';
+
+  @override
+  String get update_check_no_result => '暂未找到可安装更新，可稍后再试。';
+
+  @override
+  String get release_notes => '更新说明';
+
+  @override
+  String get no_release_notes => '未提供更新说明。';
+
+  @override
+  String get downloading_update => '正在下载更新…';
+
+  @override
+  String get preparing_installation => '正在准备安装…';
 }

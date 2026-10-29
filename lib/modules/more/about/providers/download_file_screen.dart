@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/modules/more/about/mobile_app_update_dialog.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -31,8 +32,11 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
   String? _errorMessage;
   String _currentVersion = '';
 
-  http.StreamedResponse? _response;
-  final List<int> _bytes = [];
+  bool _closed = false;
+  bool get _active => mounted && !_closed;
+  http.Client? _client;
+  http.Client get _httpClient => _client ??= http.Client();
+  List<int> _bytes = [];
   StreamSubscription<List<int>>? _subscription;
   final ScrollController _changelogScrollController = ScrollController();
 
@@ -45,7 +49,7 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
   Future<void> _loadCurrentVersion() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      if (mounted) {
+      if (_active) {
         setState(() {
           _currentVersion = info.version;
         });
@@ -55,13 +59,50 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    _stop();
     _changelogScrollController.dispose();
     super.dispose();
   }
 
+  void _stop() {
+    if (_closed) return;
+    _closed = true;
+    _client?.close();
+    unawaited(_subscription?.cancel().catchError((Object _) {}));
+    _bytes.clear();
+  }
+
+  void _cancel() {
+    if (!_active) return;
+    _stop();
+    if (mounted) Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _stop();
+      },
+      child: isMobile && !isTv
+          ? MobileAppUpdateDialog(
+              currentVersion: _currentVersion,
+              targetVersion: widget.updateAvailable.$1,
+              notes: _cleanChangelog(widget.updateAvailable.$2),
+              downloadOnDevice: Platform.isAndroid,
+              busy: _isDownloading,
+              installing: _isInstalling,
+              received: _received,
+              total: _total,
+              hasError: _errorMessage != null,
+              onContinue: () => _handleDownloadOrOpen(widget.updateAvailable),
+              onCancel: _cancel,
+            )
+          : _buildLegacyDialog(context),
+    );
+  }
+
+  Widget _buildLegacyDialog(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = l10nLocalizations(context)!;
@@ -316,19 +357,7 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        TextButton(
-          onPressed: () async {
-            if (_isDownloading) {
-              try {
-                await _subscription?.cancel();
-              } catch (_) {}
-            }
-            if (context.mounted) {
-              Navigator.pop(context);
-            }
-          },
-          child: Text(l10n.cancel),
-        ),
+        TextButton(onPressed: _cancel, child: Text(l10n.cancel)),
         const SizedBox(width: 10),
         if (!_isDownloading)
           FilledButton.icon(
@@ -362,15 +391,19 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
   Future<void> _handleDownloadOrOpen(
     (String, String, String, List<dynamic>) updateAvailable,
   ) async {
-    if (Platform.isAndroid) {
-      setState(() {
-        _isDownloading = true;
-        _errorMessage = null;
-      });
-
-      try {
+    if (!_active || _isDownloading) return;
+    setState(() {
+      _isDownloading = true;
+      _isInstalling = false;
+      _errorMessage = null;
+      _received = 0;
+      _total = 0;
+    });
+    try {
+      if (Platform.isAndroid) {
         final deviceInfo = DeviceInfoPlugin();
         final androidInfo = await deviceInfo.androidInfo;
+        if (!_active) return;
         String apkUrl = '';
         final apks = updateAvailable.$4
             .whereType<String>()
@@ -404,33 +437,39 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
           await _downloadApk(apkUrl);
         } else {
           await _launchInBrowser(Uri.parse(updateAvailable.$3));
-          if (mounted) {
-            Navigator.pop(context);
-          }
+          _cancel();
         }
-      } catch (e) {
-        if (mounted) {
-          setState(() {
-            _isDownloading = false;
-            _errorMessage = 'Échec du téléchargement: $e';
-          });
-        }
+      } else {
+        await _launchInBrowser(Uri.parse(updateAvailable.$3));
+        _cancel();
       }
-    } else {
-      await _launchInBrowser(Uri.parse(updateAvailable.$3));
-      if (mounted) {
-        Navigator.pop(context);
-      }
+    } catch (_) {
+      _fail('Échec du téléchargement.');
     }
+  }
+
+  void _fail(String message) {
+    if (!_active) return;
+    _bytes.clear();
+    setState(() {
+      _isDownloading = false;
+      _isInstalling = false;
+      _errorMessage = message;
+    });
   }
 
   Future<void> _downloadApk(String url) async {
     var status = await Permission.storage.status;
+    if (!_active) return;
     if (!status.isGranted) {
       await Permission.storage.request();
+      if (!_active) return;
     }
     Directory? dir = Directory('/storage/emulated/0/Download');
-    if (!await dir.exists()) dir = await getExternalStorageDirectory();
+    final hasDownloads = await dir.exists();
+    if (!_active) return;
+    if (!hasDownloads) dir = await getExternalStorageDirectory();
+    if (!_active) return;
     final file = File(
       '${dir!.path}/${url.split("/").lastOrNull ?? "Mangayomi.apk"}',
     );
@@ -438,14 +477,18 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
     // If a file already exists, verify its integrity by comparing its size
     // against the server's Content-Length. A corrupt or incomplete download
     // would have a smaller size — delete it and re-download in that case.
-    if (await file.exists()) {
+    final fileExists = await file.exists();
+    if (!_active) return;
+    if (fileExists) {
       bool fileIsValid = false;
       try {
-        final headResponse = await http.head(Uri.parse(url));
+        final headResponse = await _httpClient.head(Uri.parse(url));
+        if (!_active) return;
         final contentLength = int.tryParse(
           headResponse.headers['content-length'] ?? '',
         );
         final localSize = await file.length();
+        if (!_active) return;
         if (contentLength != null && localSize == contentLength) {
           fileIsValid = true;
         }
@@ -455,15 +498,13 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
         fileIsValid = true;
       }
 
+      if (!_active) return;
       if (fileIsValid) {
-        if (!mounted) return;
         setState(() {
           _isInstalling = true;
         });
         await _installApk(file);
-        if (mounted) {
-          Navigator.pop(context);
-        }
+        _cancel();
         return;
       } else {
         // File is corrupted or incomplete — delete and re-download.
@@ -473,62 +514,57 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
       }
     }
 
+    if (!_active) return;
     _bytes.clear();
     _received = 0;
 
-    _response = await http.Client().send(http.Request('GET', Uri.parse(url)));
-    setState(() {
-      _total = _response?.contentLength ?? 0;
-    });
-    _subscription = _response?.stream.listen(
+    final response = await _httpClient.send(
+      http.Request('GET', Uri.parse(url)),
+    );
+    if (!_active) return;
+    setState(() => _total = response.contentLength ?? 0);
+    _subscription = response.stream.listen(
       (value) {
+        if (!_active) return;
         setState(() {
           _bytes.addAll(value);
           _received += value.length;
         });
       },
-      onError: (e) {
-        if (mounted) {
-          setState(() {
-            _isDownloading = false;
-            _errorMessage = 'Erreur réseau lors du téléchargement.';
-          });
+      onError: (Object _) => _fail('Erreur réseau lors du téléchargement.'),
+      cancelOnError: true,
+      onDone: () async {
+        if (!_active || !_isDownloading) return;
+        // Transfer ownership without copying the APK. Closing the dialog must
+        // not mutate bytes that an already-started file write is still using.
+        final bytes = _bytes;
+        _bytes = [];
+        try {
+          setState(() => _isInstalling = true);
+          await file.writeAsBytes(bytes);
+          if (!_active) return;
+          await _installApk(file);
+          _cancel();
+        } catch (_) {
+          _fail("Erreur lors de l'écriture du fichier APK.");
         }
       },
     );
-    _subscription?.onDone(() async {
-      try {
-        if (mounted) {
-          setState(() {
-            _isInstalling = true;
-          });
-        }
-        await file.writeAsBytes(_bytes);
-        await _installApk(file);
-        if (mounted) {
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() {
-            _isDownloading = false;
-            _isInstalling = false;
-            _errorMessage = "Erreur lors de l'écriture du fichier APK.";
-          });
-        }
-      }
-    });
   }
 
   Future<void> _installApk(File file) async {
+    if (!_active) return;
     var status = await Permission.requestInstallPackages.status;
+    if (!_active) return;
     if (!status.isGranted) {
       await Permission.requestInstallPackages.request();
+      if (!_active) return;
     }
     await ApkInstaller.installApk(file.path);
   }
 
   Future<void> _launchInBrowser(Uri url) async {
+    if (!_active) return;
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw 'Could not launch $url';
     }
