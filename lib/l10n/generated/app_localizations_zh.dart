@@ -3805,4 +3805,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookshelf_sources_hint => '不选表示全部来源；点按“筛选”后生效。';
+
+  @override
+  String get bookshelf_import_hint => '选择本地漫画压缩包，将漫画加入书架。';
+
+  @override
+  String get bookshelf_choose_files => '选择文件';
+
+  @override
+  String get bookshelf_import_wait => '请在文件选择器中选择文件，并等待导入完成。';
+
+  @override
+  String get bookshelf_import_incomplete =>
+      '导入未完成，部分文件可能已加入书架。请关闭后先核对，再决定是否重新导入。';
+
+  @override
+  String get bookshelf_categories_replace =>
+      '初始勾选包含已有的可见分类。保存会把勾选分类统一应用到所有所选漫画，替换原分类。';
+
+  @override
+  String get bookshelf_categories_hint => '可多选分类；留空则不分配分类。';
+
+  @override
+  String get bookshelf_categories_hidden => '这部漫画已有的隐藏分类会保留。';
+
+  @override
+  String get bookshelf_categories_incomplete => '分类未保存完成。请关闭后先核对书架，再继续操作。';
+
+  @override
+  String get bookshelf_categories_none_visible => '没有可选分类，可前往管理分类查看。';
+
+  @override
+  String get bookshelf_manage_categories => '管理分类';
 }

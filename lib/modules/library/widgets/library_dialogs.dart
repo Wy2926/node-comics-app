@@ -19,6 +19,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as p;
 
 import 'mobile_bookshelf_actions.dart';
+import 'mobile_manga_import_dialog.dart';
 
 /// Shows a dialog for deleting selected manga from library and/or device.
 void showDeleteMangaDialog({
@@ -256,9 +257,27 @@ Future<String> _deleteDownload(Manga manga, String mangaDirectory) async {
 
 /// Shows a dialog for importing local files (zip, cbz, epub, video).
 void showImportLocalDialog(BuildContext context, ItemType itemType) {
+  if (isMobile && !isTv && itemType == ItemType.manga) {
+    showDialog<int>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Consumer(
+        builder: (_, sheetRef, _) => MobileMangaImportDialog(
+          onImport: () => sheetRef.refresh(
+            importArchivesFromFileProvider(
+              null,
+              itemType: ItemType.manga,
+              init: true,
+            ).future,
+          ),
+        ),
+      ),
+    );
+    return;
+  }
   final l10n = l10nLocalizations(context)!;
   final filesText = switch (itemType) {
-    ItemType.manga => ".zip, .cbz, .rar, .cbr",
+    ItemType.manga => ".zip, .cbz",
     ItemType.anime => ".mp4, .mkv, .avi, and more",
     ItemType.novel => ".epub",
   };

@@ -13,14 +13,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'local_archive.g.dart';
 
 @riverpod
-Future importArchivesFromFile(
+Future<int> importArchivesFromFile(
   Ref ref,
   Manga? mManga, {
   required ItemType itemType,
   required bool init,
   bool splitChapters = true,
 }) async {
-  final keepAlile = ref.keepAlive();
+  final keepAlive = ref.keepAlive();
   try {
     List<PlatformFile> files = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -126,11 +126,10 @@ Future importArchivesFromFile(
         });
       }
     }
-    keepAlile.close();
-    return "";
-  } catch (e) {
-    keepAlile.close();
-    rethrow;
+    // Zero distinguishes picker cancellation from completed file imports.
+    return files.length;
+  } finally {
+    keepAlive.close();
   }
 }
 

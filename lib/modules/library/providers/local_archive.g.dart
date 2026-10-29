@@ -13,8 +13,8 @@ part of 'local_archive.dart';
 final importArchivesFromFileProvider = ImportArchivesFromFileFamily._();
 
 final class ImportArchivesFromFileProvider
-    extends $FunctionalProvider<AsyncValue<dynamic>, dynamic, FutureOr<dynamic>>
-    with $FutureModifier<dynamic>, $FutureProvider<dynamic> {
+    extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
+    with $FutureModifier<int>, $FutureProvider<int> {
   ImportArchivesFromFileProvider._({
     required ImportArchivesFromFileFamily super.from,
     required (Manga?, {ItemType itemType, bool init, bool splitChapters})
@@ -39,11 +39,11 @@ final class ImportArchivesFromFileProvider
 
   @$internal
   @override
-  $FutureProviderElement<dynamic> $createElement($ProviderPointer pointer) =>
+  $FutureProviderElement<int> $createElement($ProviderPointer pointer) =>
       $FutureProviderElement(pointer);
 
   @override
-  FutureOr<dynamic> create(Ref ref) {
+  FutureOr<int> create(Ref ref) {
     final argument =
         this.argument
             as (Manga?, {ItemType itemType, bool init, bool splitChapters});
@@ -69,12 +69,12 @@ final class ImportArchivesFromFileProvider
 }
 
 String _$importArchivesFromFileHash() =>
-    r'f13d1aa84a229cf153bde34279d279099488d16e';
+    r'6b3b9670e3a145e5a006f0bf671796fcb79b78be';
 
 final class ImportArchivesFromFileFamily extends $Family
     with
         $FunctionalFamilyOverride<
-          FutureOr<dynamic>,
+          FutureOr<int>,
           (Manga?, {ItemType itemType, bool init, bool splitChapters})
         > {
   ImportArchivesFromFileFamily._()

@@ -3909,4 +3909,42 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get bookshelf_sources_hint =>
       'Select none to show all sources. Changes apply when you tap Filter.';
+
+  @override
+  String get bookshelf_import_hint =>
+      'Choose a local comic archive to add it to your bookshelf.';
+
+  @override
+  String get bookshelf_choose_files => 'Choose files';
+
+  @override
+  String get bookshelf_import_wait =>
+      'Choose a file in the picker and wait for the import to finish.';
+
+  @override
+  String get bookshelf_import_incomplete =>
+      'Import did not finish. Some files may already be in your bookshelf. Close this dialog and check before importing again.';
+
+  @override
+  String get bookshelf_categories_replace =>
+      'Existing visible categories are initially selected. Saving assigns the selected categories to every chosen comic, replacing their previous categories.';
+
+  @override
+  String get bookshelf_categories_hint =>
+      'Choose one or more categories, or leave the selection empty to assign none.';
+
+  @override
+  String get bookshelf_categories_hidden =>
+      'Existing hidden categories are kept for this comic.';
+
+  @override
+  String get bookshelf_categories_incomplete =>
+      'Categories could not be saved completely. Close this dialog and check the bookshelf before trying again.';
+
+  @override
+  String get bookshelf_categories_none_visible =>
+      'No categories are available here. Open category management to review them.';
+
+  @override
+  String get bookshelf_manage_categories => 'Manage categories';
 }

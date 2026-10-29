@@ -7085,6 +7085,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select none to show all sources. Changes apply when you tap Filter.'**
   String get bookshelf_sources_hint;
+
+  /// No description provided for @bookshelf_import_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a local comic archive to add it to your bookshelf.'**
+  String get bookshelf_import_hint;
+
+  /// No description provided for @bookshelf_choose_files.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose files'**
+  String get bookshelf_choose_files;
+
+  /// No description provided for @bookshelf_import_wait.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a file in the picker and wait for the import to finish.'**
+  String get bookshelf_import_wait;
+
+  /// No description provided for @bookshelf_import_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Import did not finish. Some files may already be in your bookshelf. Close this dialog and check before importing again.'**
+  String get bookshelf_import_incomplete;
+
+  /// No description provided for @bookshelf_categories_replace.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing visible categories are initially selected. Saving assigns the selected categories to every chosen comic, replacing their previous categories.'**
+  String get bookshelf_categories_replace;
+
+  /// No description provided for @bookshelf_categories_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one or more categories, or leave the selection empty to assign none.'**
+  String get bookshelf_categories_hint;
+
+  /// No description provided for @bookshelf_categories_hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing hidden categories are kept for this comic.'**
+  String get bookshelf_categories_hidden;
+
+  /// No description provided for @bookshelf_categories_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories could not be saved completely. Close this dialog and check the bookshelf before trying again.'**
+  String get bookshelf_categories_incomplete;
+
+  /// No description provided for @bookshelf_categories_none_visible.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories are available here. Open category management to review them.'**
+  String get bookshelf_categories_none_visible;
+
+  /// No description provided for @bookshelf_manage_categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage categories'**
+  String get bookshelf_manage_categories;
 }
 
 class _AppLocalizationsDelegate
