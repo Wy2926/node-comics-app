@@ -4,6 +4,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/modules/library/providers/local_archive.dart';
+import 'package:mangayomi/repositories/manga_repository.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_image_actions.dart';
 import 'package:mangayomi/utils/manga_cover_actions.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/widgets/image_actions_sheet.dart';
@@ -36,6 +40,36 @@ class ImageActionsDialog {
     required Manga manga,
     required String chapterName,
   }) async {
+    if (!context.mounted ||
+        data.isTransitionPage ||
+        ModalRoute.of(context)?.isCurrent != true) {
+      return;
+    }
+    if (isMobile && !isTv) {
+      final actualChapter = data.chapter?.name ?? chapterName;
+      final pageIndex = data.index ?? data.pageIndex;
+      final name = "${manga.name} $actualChapter - ${data.pageIndex}"
+          .replaceAll(RegExp(r'[^a-zA-Z0-9 .()\-\s]'), '_');
+      await showModalBottomSheet<void>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        useSafeArea: true,
+        enableDrag: false,
+        backgroundColor: Colors.transparent,
+        builder: (_) => MobileReaderImageActions(
+          bookTitle: manga.name ?? '',
+          chapterTitle: actualChapter,
+          pageNumber: pageIndex == null ? null : pageIndex + 1,
+          loadImage: () => data.getImageBytes,
+          onSave: (bytes) => saveReaderPageImage(bytes, name),
+          onShare: (context, bytes) =>
+              _shareReaderPageImage(context, bytes, name),
+          onSetCover: (bytes) => setReaderPageCover(manga, bytes),
+        ),
+      );
+      return;
+    }
     final imageBytes = await data.getImageBytes;
     if (imageBytes == null || !context.mounted) return;
 
@@ -54,6 +88,50 @@ class ImageActionsDialog {
       ),
     );
   }
+}
+
+/// The existing page export destination, extension detection and file contents.
+Future<void> saveReaderPageImage(Uint8List bytes, String fileName) async {
+  final dir = await StorageProvider().getGalleryDirectory();
+  if (dir == null) throw StateError('Image directory unavailable');
+  final ext = detectImageExtension(bytes);
+  await File(p.join(dir.path, '$fileName$ext'))
+      .writeAsBytes(bytes, flush: true);
+}
+
+/// A reader always targets an existing comic. Preserve changes made while the
+/// image menu was open, and do not recreate a comic removed in the meantime.
+Future<void> setReaderPageCover(Manga manga, Uint8List bytes) async {
+  final cover = bytes.getCoverImage;
+  if (cover == null) throw StateError('Image cannot be used as cover');
+  await mangaRepository.writeTransaction(() {
+    final current = mangaRepository.findById(manga.id!);
+    if (current == null) throw StateError('Comic no longer available');
+    current.customCoverImage = cover;
+    current.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    mangaRepository.putSync(current);
+  });
+}
+
+Future<void> _shareReaderPageImage(
+  BuildContext context,
+  Uint8List bytes,
+  String fileName,
+) async {
+  if (!context.mounted) return;
+  final box = context.findRenderObject();
+  if (box is! RenderBox || !box.hasSize) {
+    throw StateError('Share anchor unavailable');
+  }
+  final ext = detectImageExtension(bytes);
+  await shareOrCopy(
+    ShareParams(
+      files: [XFile.fromData(bytes, mimeType: mimeTypeForImageExtension(ext))],
+      fileNameOverrides: ['$fileName$ext'],
+      sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size,
+    ),
+    fallbackName: '$fileName$ext',
+  );
 }
 
 class _ImageActionsSheet extends StatelessWidget {

@@ -4052,4 +4052,34 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get reader_chapter_bookmark_failed =>
       'Bookmark save could not be confirmed. Close the list and check its current state.';
+
+  @override
+  String get reader_image_actions => 'Image actions';
+
+  @override
+  String get reader_image_original =>
+      'Uses the full original page, without translation, cropping or reader color filters.';
+
+  @override
+  String get reader_image_save_ios =>
+      'Save to the Pictures folder in the current app storage location.';
+
+  @override
+  String get reader_image_save_android =>
+      'Save to the device’s Pictures/Mangayomi folder.';
+
+  @override
+  String get reader_image_share => 'Open the system share sheet.';
+
+  @override
+  String get reader_image_cover =>
+      'Change this comic’s cover after confirmation.';
+
+  @override
+  String get reader_image_cover_limit =>
+      'Cover images must be smaller than 5 MB. Saving and sharing remain available.';
+
+  @override
+  String get reader_image_action_failed =>
+      'The action could not be confirmed. Close this menu and check the result before trying again.';
 }

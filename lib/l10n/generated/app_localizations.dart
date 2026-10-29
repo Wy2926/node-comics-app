@@ -7319,6 +7319,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bookmark save could not be confirmed. Close the list and check its current state.'**
   String get reader_chapter_bookmark_failed;
+
+  /// No description provided for @reader_image_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Image actions'**
+  String get reader_image_actions;
+
+  /// No description provided for @reader_image_original.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the full original page, without translation, cropping or reader color filters.'**
+  String get reader_image_original;
+
+  /// No description provided for @reader_image_save_ios.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to the Pictures folder in the current app storage location.'**
+  String get reader_image_save_ios;
+
+  /// No description provided for @reader_image_save_android.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to the device’s Pictures/Mangayomi folder.'**
+  String get reader_image_save_android;
+
+  /// No description provided for @reader_image_share.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the system share sheet.'**
+  String get reader_image_share;
+
+  /// No description provided for @reader_image_cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Change this comic’s cover after confirmation.'**
+  String get reader_image_cover;
+
+  /// No description provided for @reader_image_cover_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover images must be smaller than 5 MB. Saving and sharing remain available.'**
+  String get reader_image_cover_limit;
+
+  /// No description provided for @reader_image_action_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'The action could not be confirmed. Close this menu and check the result before trying again.'**
+  String get reader_image_action_failed;
 }
 
 class _AppLocalizationsDelegate

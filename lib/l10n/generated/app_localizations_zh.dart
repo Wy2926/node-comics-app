@@ -3928,4 +3928,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reader_chapter_bookmark_failed => '未能确认书签保存结果，请关闭目录后核对。';
+
+  @override
+  String get reader_image_actions => '图片操作';
+
+  @override
+  String get reader_image_original => '使用原始整页图片，不含翻译、裁剪或阅读滤镜。';
+
+  @override
+  String get reader_image_save_ios => '保存到当前应用存储位置的 Pictures 文件夹。';
+
+  @override
+  String get reader_image_save_android => '保存到设备的 Pictures/Mangayomi 文件夹。';
+
+  @override
+  String get reader_image_share => '打开系统分享面板。';
+
+  @override
+  String get reader_image_cover => '确认后修改这本漫画的封面。';
+
+  @override
+  String get reader_image_cover_limit => '封面图片需小于 5 MB，仍可保存或分享。';
+
+  @override
+  String get reader_image_action_failed => '未能确认操作结果，请关闭菜单后核对，再决定是否重试。';
 }
