@@ -3511,4 +3511,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get novel_session_modes_hint => '阅读模式与单／双页在打开小说后设置。';
+
+  @override
+  String get tts_languages_failed => '无法读取语音引擎的语言列表。';
+
+  @override
+  String get tts_languages_empty => '语音引擎没有返回可选语言，已保留当前选择。';
+
+  @override
+  String get tts_language_unavailable => '设备当前的语言列表中没有这个已保存的语言。';
+
+  @override
+  String get tts_apply_failed => '未能向语音引擎应用此设置，可以重试。';
 }

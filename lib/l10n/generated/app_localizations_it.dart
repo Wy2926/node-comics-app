@@ -3692,4 +3692,20 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get novel_session_modes_hint =>
       'Set reading mode and single or double pages while reading a title.';
+
+  @override
+  String get tts_languages_failed =>
+      'Could not load languages from the speech engine.';
+
+  @override
+  String get tts_languages_empty =>
+      'The speech engine returned no languages. Your saved selection is kept.';
+
+  @override
+  String get tts_language_unavailable =>
+      'This saved language is not in the device’s current list.';
+
+  @override
+  String get tts_apply_failed =>
+      'Could not apply this setting to the speech engine. You can retry.';
 }

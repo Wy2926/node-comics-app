@@ -6540,6 +6540,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Set reading mode and single or double pages while reading a title.'**
   String get novel_session_modes_hint;
+
+  /// No description provided for @tts_languages_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load languages from the speech engine.'**
+  String get tts_languages_failed;
+
+  /// No description provided for @tts_languages_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'The speech engine returned no languages. Your saved selection is kept.'**
+  String get tts_languages_empty;
+
+  /// No description provided for @tts_language_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This saved language is not in the device’s current list.'**
+  String get tts_language_unavailable;
+
+  /// No description provided for @tts_apply_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not apply this setting to the speech engine. You can retry.'**
+  String get tts_apply_failed;
 }
 
 class _AppLocalizationsDelegate

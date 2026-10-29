@@ -1477,5 +1477,9 @@
   "cf_proxy_helper": "FlareSolverr / Byparr endpoint. Leave empty to disable.",
   "mobile_navigation_description": "Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.",
   "text_align_justify": "Justify",
-  "novel_session_modes_hint": "Set reading mode and single or double pages while reading a title."
+  "novel_session_modes_hint": "Set reading mode and single or double pages while reading a title.",
+  "tts_languages_failed": "Could not load languages from the speech engine.",
+  "tts_languages_empty": "The speech engine returned no languages. Your saved selection is kept.",
+  "tts_language_unavailable": "This saved language is not in the device’s current list.",
+  "tts_apply_failed": "Could not apply this setting to the speech engine. You can retry."
 }

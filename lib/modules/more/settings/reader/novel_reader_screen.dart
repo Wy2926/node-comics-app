@@ -6,9 +6,9 @@ import 'package:mangayomi/modules/novel/widgets/novel_general_settings_tab.dart'
 import 'package:mangayomi/modules/novel/widgets/novel_reader_settings_sheet.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'mobile_novel_reader_screen.dart';
+import 'mobile_tts_settings_screen.dart';
 
 class NovelReaderScreen extends ConsumerWidget {
   const NovelReaderScreen({super.key});
@@ -21,15 +21,7 @@ class NovelReaderScreen extends ConsumerWidget {
         onOpenTts: ttsSupported
             ? () => Navigator.of(context).push<void>(
                 MaterialPageRoute(
-                  builder: (context) => NodeLaneSurface(
-                    child: Scaffold(
-                      appBar: AppBar(title: Text(context.l10n.tts)),
-                      body: const SafeArea(
-                        top: false,
-                        child: SingleChildScrollView(child: TtsSettingsTab()),
-                      ),
-                    ),
-                  ),
+                  builder: (_) => const MobileTtsSettingsScreen(),
                 ),
               )
             : null,
