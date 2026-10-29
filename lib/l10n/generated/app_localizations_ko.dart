@@ -3752,4 +3752,20 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get preparing_installation => 'Preparing installation…';
+
+  @override
+  String get onboarding_mobile_libraries_body =>
+      'Choose at least one type of content. Switch types at the top of Library. You can change this later in Settings.';
+
+  @override
+  String get onboarding_content_title => 'Add reading content';
+
+  @override
+  String get onboarding_mobile_sources_body =>
+      'Add an extension repository or a folder of your own files. You can also skip this and add them later.';
+
+  @override
+  String onboarding_step_count(int step, int total) {
+    return 'Step $step of $total';
+  }
 }

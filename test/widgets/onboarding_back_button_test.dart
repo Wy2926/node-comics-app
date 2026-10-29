@@ -62,6 +62,27 @@ void main() {
     expect(find.text('Welcome to Mangayomi'), findsOneWidget);
   });
 
+  testWidgets('Back closes an inner dialog before changing the welcome step', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
+    final context = tester.element(find.text('Your libraries'));
+    final closed = showDialog<void>(
+      context: context,
+      builder: (_) =>
+          const AlertDialog(content: Text('Restore confirmation sample')),
+    );
+    await tester.pumpAndSettle();
+    await systemBack(tester);
+    await closed;
+    expect(find.text('Restore confirmation sample'), findsNothing);
+    expect(find.text('Your libraries'), findsOneWidget);
+    await systemBack(tester);
+    expect(find.text('Welcome to Mangayomi'), findsOneWidget);
+  });
+
   testWidgets('does nothing on the first step, where Skip is the way out', (
     tester,
   ) async {

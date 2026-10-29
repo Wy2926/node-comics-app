@@ -3663,4 +3663,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get preparing_installation => '正在准备安装…';
+
+  @override
+  String get onboarding_mobile_libraries_body =>
+      '至少选择一种内容，在书架顶部切换类型。之后可在设置中调整。';
+
+  @override
+  String get onboarding_content_title => '添加阅读内容';
+
+  @override
+  String get onboarding_mobile_sources_body => '添加扩展库或自己的本地文件夹，也可以跳过，稍后再添加。';
+
+  @override
+  String onboarding_step_count(int step, int total) {
+    return '第 $step 步，共 $total 步';
+  }
 }

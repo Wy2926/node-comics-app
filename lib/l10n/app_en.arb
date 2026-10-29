@@ -1541,5 +1541,19 @@
   "release_notes": "Release notes",
   "no_release_notes": "No release notes provided.",
   "downloading_update": "Downloading update…",
-  "preparing_installation": "Preparing installation…"
+  "preparing_installation": "Preparing installation…",
+  "onboarding_mobile_libraries_body": "Choose at least one type of content. Switch types at the top of Library. You can change this later in Settings.",
+  "onboarding_content_title": "Add reading content",
+  "onboarding_mobile_sources_body": "Add an extension repository or a folder of your own files. You can also skip this and add them later.",
+  "onboarding_step_count": "Step {step} of {total}",
+  "@onboarding_step_count": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

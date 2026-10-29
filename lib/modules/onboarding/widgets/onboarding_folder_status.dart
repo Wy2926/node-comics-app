@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// What became of the folder that was just added.
 class OnboardingFolderStatus extends StatefulWidget {
@@ -10,6 +12,7 @@ class OnboardingFolderStatus extends StatefulWidget {
     this.titles = const [],
     this.busy = false,
     this.warn = false,
+    this.mobile = false,
   });
 
   final String message;
@@ -24,6 +27,7 @@ class OnboardingFolderStatus extends StatefulWidget {
 
   final bool busy;
   final bool warn;
+  final bool mobile;
 
   @override
   State<OnboardingFolderStatus> createState() => _FolderStatusState();
@@ -105,6 +109,51 @@ class _FolderStatusState extends State<OnboardingFolderStatus> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.mobile) {
+      final colors = NodeLaneTokens.of(context);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              widget.message,
+              style: TextStyle(
+                color: widget.warn
+                    ? Theme.of(context).colorScheme.error
+                    : colors.ink,
+              ),
+            ),
+          ),
+          if (widget.path != null) ...[
+            const SizedBox(height: 8),
+            Text(widget.path!, style: TextStyle(color: colors.muted)),
+          ],
+          if (widget.titles.isNotEmpty)
+            ExpansionTile(
+              key: PageStorageKey((
+                'onboarding-folder-titles',
+                widget.path,
+                widget.message,
+              )),
+              tilePadding: EdgeInsets.zero,
+              title: Text(context.l10n.mass_migration_preview_items),
+              children: [
+                for (final title in widget.titles.take(_expandedLimit))
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(title),
+                    ),
+                  ),
+                if (widget.titles.length > _expandedLimit)
+                  Text('+${widget.titles.length - _expandedLimit}'),
+              ],
+            ),
+        ],
+      );
+    }
     final theme = Theme.of(context);
     final color = widget.warn ? theme.colorScheme.error : theme.hintColor;
     final muted = theme.textTheme.bodySmall?.copyWith(

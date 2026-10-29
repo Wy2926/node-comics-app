@@ -6827,6 +6827,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Preparing installation…'**
   String get preparing_installation;
+
+  /// No description provided for @onboarding_mobile_libraries_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one type of content. Switch types at the top of Library. You can change this later in Settings.'**
+  String get onboarding_mobile_libraries_body;
+
+  /// No description provided for @onboarding_content_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Add reading content'**
+  String get onboarding_content_title;
+
+  /// No description provided for @onboarding_mobile_sources_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an extension repository or a folder of your own files. You can also skip this and add them later.'**
+  String get onboarding_mobile_sources_body;
+
+  /// No description provided for @onboarding_step_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String onboarding_step_count(int step, int total);
 }
 
 class _AppLocalizationsDelegate
