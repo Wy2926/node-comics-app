@@ -3715,4 +3715,56 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mass_migration_needs_review => '部分作品需要核对';
+
+  @override
+  String get bookshelf_actions => '书架操作';
+
+  @override
+  String get bookshelf_ignore_filters => '搜索时忽略筛选';
+
+  @override
+  String get bookshelf_ignore_filters_hint => '搜索当前分类内的全部漫画，包括被筛选条件隐藏的漫画。';
+
+  @override
+  String get bookshelf_stop_update => '停止书架更新';
+
+  @override
+  String bookshelf_selected_count(int count) {
+    return '已选 $count 部漫画';
+  }
+
+  @override
+  String get bookshelf_remove_library => '从书架移除';
+
+  @override
+  String get bookshelf_remove_library_hint => '在线漫画取消收藏；本地导入条目同时移除书架和阅读记录。';
+
+  @override
+  String get bookshelf_remove_downloads => '删除下载文件';
+
+  @override
+  String get bookshelf_remove_downloads_hint => '仅删除下载文件，保留漫画和章节信息。';
+
+  @override
+  String get bookshelf_remove_local_files_hint =>
+      '也会删除所选本地压缩包文件，并移除对应书架记录。这些文件无法在此恢复。';
+
+  @override
+  String get bookshelf_remove_incomplete =>
+      '操作未完成，部分漫画或文件可能已处理。请关闭后先核对书架和下载记录，再继续操作。';
+
+  @override
+  String get bookshelf_processing => '正在处理…';
+
+  @override
+  String get bookshelf_mark_read => '标为已读';
+
+  @override
+  String get bookshelf_mark_unread => '标为未读';
+
+  @override
+  String get bookshelf_select_all => '全选';
+
+  @override
+  String get bookshelf_invert_selection => '反选';
 }

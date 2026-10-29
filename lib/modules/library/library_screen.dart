@@ -548,6 +548,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       builder: (context) {
         final mangaIds = ref.watch(mangasListStateProvider);
         final color = Theme.of(context).textTheme.bodyLarge!.color!;
+        final labeled = isMobile && !isTv && widget.itemType == ItemType.manga;
         return BottomSelectBar(
           isVisible: ref.watch(isLongPressedStateProvider),
           backgroundColor: isMobile && !isTv
@@ -557,6 +558,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
           actions: [
             BottomSelectButton(
               tooltip: context.l10n.categories,
+              label: labeled ? context.l10n.categories : null,
               icon: Icon(Icons.label_outline_rounded, color: color),
               onPressed: () {
                 final List<Manga> bulkMangas = mangaIds
@@ -571,6 +573,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               },
             ),
             BottomSelectButton(
+              label: labeled ? context.l10n.bookshelf_mark_read : null,
               icon: Icon(Icons.done_all_sharp, color: color),
               onPressed: () {
                 ref
@@ -585,6 +588,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               },
             ),
             BottomSelectButton(
+              label: labeled ? context.l10n.bookshelf_mark_unread : null,
               icon: Icon(Icons.remove_done_sharp, color: color),
               onPressed: () {
                 ref
@@ -600,6 +604,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             ),
             BottomSelectButton(
               tooltip: context.l10n.migrate,
+              label: labeled ? context.l10n.migrate : null,
               icon: Icon(Icons.swap_horiz_rounded, color: color),
               onPressed: () {
                 final List<Manga> bulkMangas = mangaIds
@@ -616,7 +621,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             ),
             BottomSelectButton(
               tooltip: context.l10n.remove,
-              icon: Icon(Icons.delete_outline_outlined, color: color),
+              label: labeled ? context.l10n.remove : null,
+              icon: Icon(
+                Icons.delete_outline_outlined,
+                color: labeled ? Theme.of(context).colorScheme.error : color,
+              ),
               onPressed: () => showDeleteMangaDialog(
                 context: context,
                 ref: ref,

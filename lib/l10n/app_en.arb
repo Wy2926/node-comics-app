@@ -1568,5 +1568,28 @@
   "mass_migration_select_source": "Choose the current source",
   "mass_migration_select_all": "Select all",
   "mass_migration_deselect_all": "Deselect all",
-  "mass_migration_needs_review": "Review incomplete migrations"
+  "mass_migration_needs_review": "Review incomplete migrations",
+  "bookshelf_actions": "Bookshelf actions",
+  "bookshelf_ignore_filters": "Ignore filters when searching",
+  "bookshelf_ignore_filters_hint": "Search all comics in this category, including those hidden by filters.",
+  "bookshelf_stop_update": "Stop library update",
+  "bookshelf_selected_count": "{count} comics selected",
+  "@bookshelf_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_remove_library": "Remove from bookshelf",
+  "bookshelf_remove_library_hint": "Online comics are removed from favorites. Local imports also lose their library and reading records.",
+  "bookshelf_remove_downloads": "Delete downloaded files",
+  "bookshelf_remove_downloads_hint": "Removes downloaded files while keeping comic and chapter information.",
+  "bookshelf_remove_local_files_hint": "Also deletes selected local archive files and removes their library records. These files cannot be recovered here.",
+  "bookshelf_remove_incomplete": "The operation did not finish. Some comics or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.",
+  "bookshelf_processing": "Processing…",
+  "bookshelf_mark_read": "Mark read",
+  "bookshelf_mark_unread": "Mark unread",
+  "bookshelf_select_all": "Select all",
+  "bookshelf_invert_selection": "Invert selection"
 }

@@ -6917,6 +6917,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review incomplete migrations'**
   String get mass_migration_needs_review;
+
+  /// No description provided for @bookshelf_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookshelf actions'**
+  String get bookshelf_actions;
+
+  /// No description provided for @bookshelf_ignore_filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore filters when searching'**
+  String get bookshelf_ignore_filters;
+
+  /// No description provided for @bookshelf_ignore_filters_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search all comics in this category, including those hidden by filters.'**
+  String get bookshelf_ignore_filters_hint;
+
+  /// No description provided for @bookshelf_stop_update.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop library update'**
+  String get bookshelf_stop_update;
+
+  /// No description provided for @bookshelf_selected_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} comics selected'**
+  String bookshelf_selected_count(int count);
+
+  /// No description provided for @bookshelf_remove_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from bookshelf'**
+  String get bookshelf_remove_library;
+
+  /// No description provided for @bookshelf_remove_library_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Online comics are removed from favorites. Local imports also lose their library and reading records.'**
+  String get bookshelf_remove_library_hint;
+
+  /// No description provided for @bookshelf_remove_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete downloaded files'**
+  String get bookshelf_remove_downloads;
+
+  /// No description provided for @bookshelf_remove_downloads_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes downloaded files while keeping comic and chapter information.'**
+  String get bookshelf_remove_downloads_hint;
+
+  /// No description provided for @bookshelf_remove_local_files_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Also deletes selected local archive files and removes their library records. These files cannot be recovered here.'**
+  String get bookshelf_remove_local_files_hint;
+
+  /// No description provided for @bookshelf_remove_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The operation did not finish. Some comics or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.'**
+  String get bookshelf_remove_incomplete;
+
+  /// No description provided for @bookshelf_processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing…'**
+  String get bookshelf_processing;
+
+  /// No description provided for @bookshelf_mark_read.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark read'**
+  String get bookshelf_mark_read;
+
+  /// No description provided for @bookshelf_mark_unread.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark unread'**
+  String get bookshelf_mark_unread;
+
+  /// No description provided for @bookshelf_select_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get bookshelf_select_all;
+
+  /// No description provided for @bookshelf_invert_selection.
+  ///
+  /// In en, this message translates to:
+  /// **'Invert selection'**
+  String get bookshelf_invert_selection;
 }
 
 class _AppLocalizationsDelegate

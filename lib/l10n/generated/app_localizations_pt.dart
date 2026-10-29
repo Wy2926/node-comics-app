@@ -3918,6 +3918,61 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get mass_migration_needs_review => 'Review incomplete migrations';
+
+  @override
+  String get bookshelf_actions => 'Bookshelf actions';
+
+  @override
+  String get bookshelf_ignore_filters => 'Ignore filters when searching';
+
+  @override
+  String get bookshelf_ignore_filters_hint =>
+      'Search all comics in this category, including those hidden by filters.';
+
+  @override
+  String get bookshelf_stop_update => 'Stop library update';
+
+  @override
+  String bookshelf_selected_count(int count) {
+    return '$count comics selected';
+  }
+
+  @override
+  String get bookshelf_remove_library => 'Remove from bookshelf';
+
+  @override
+  String get bookshelf_remove_library_hint =>
+      'Online comics are removed from favorites. Local imports also lose their library and reading records.';
+
+  @override
+  String get bookshelf_remove_downloads => 'Delete downloaded files';
+
+  @override
+  String get bookshelf_remove_downloads_hint =>
+      'Removes downloaded files while keeping comic and chapter information.';
+
+  @override
+  String get bookshelf_remove_local_files_hint =>
+      'Also deletes selected local archive files and removes their library records. These files cannot be recovered here.';
+
+  @override
+  String get bookshelf_remove_incomplete =>
+      'The operation did not finish. Some comics or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.';
+
+  @override
+  String get bookshelf_processing => 'Processing…';
+
+  @override
+  String get bookshelf_mark_read => 'Mark read';
+
+  @override
+  String get bookshelf_mark_unread => 'Mark unread';
+
+  @override
+  String get bookshelf_select_all => 'Select all';
+
+  @override
+  String get bookshelf_invert_selection => 'Invert selection';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).

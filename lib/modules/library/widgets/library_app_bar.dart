@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +25,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 
 import 'mobile_bookshelf_header.dart';
+import 'mobile_bookshelf_actions.dart';
 
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -95,7 +98,8 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
       });
     } else if (value == 1) {
       manga.whenData((value) {
-        var randomManga = (value..shuffle()).first;
+        if (value.isEmpty) return;
+        final randomManga = value[Random().nextInt(value.length)];
         pushToMangaReaderDetail(
           ref: ref,
           archiveId: randomManga.isLocalArchive ?? false
@@ -207,31 +211,64 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ref.read(libraryUpdateProvider.notifier).requestCancel(),
               )
             : null,
-        menu: PopupMenuButton<int>(
-          itemBuilder: (_) => [
-            PopupMenuItem(value: 0, child: Text(l10n.update_library)),
-            PopupMenuItem(
-              value: 1,
-              enabled: manga.asData?.value.isNotEmpty == true,
-              child: Text(l10n.open_random_entry),
-            ),
-            if (itemType == ItemType.anime)
-              PopupMenuItem(value: 3, child: Text(l10n.torrent_stream)),
-            const PopupMenuDivider(),
-            CheckedPopupMenuItem(
-              value: 4,
-              checked: ignoreFiltersOnSearch,
-              child: Text(l10n.ignore_filters),
-            ),
-          ],
-          onSelected: (value) {
-            if (value == 4) {
-              onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
-            } else {
-              _onLibraryMenu(context, ref, value, manga);
-            }
-          },
-        ),
+        menu: itemType == ItemType.manga
+            ? IconButton(
+                tooltip: l10n.bookshelf_actions,
+                icon: const Icon(Icons.more_horiz_rounded),
+                onPressed: () async {
+                  final action = await showModalBottomSheet<int>(
+                    context: context,
+                    // Cover the shell and its native tab bar, not just this
+                    // library branch's nested navigator.
+                    useRootNavigator: true,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (sheetContext) => Consumer(
+                      builder: (_, sheetRef, _) => MobileBookshelfMenu(
+                        hasEntries: manga.asData?.value.isNotEmpty == true,
+                        updating: sheetRef.watch(libraryUpdateProvider).running,
+                        ignoreFilters: ignoreFiltersOnSearch,
+                        onSelected: (value) =>
+                            Navigator.pop(sheetContext, value),
+                      ),
+                    ),
+                  );
+                  if (!context.mounted || action == null) return;
+                  if (action == 4) {
+                    onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
+                  } else if (action == 5) {
+                    ref.read(libraryUpdateProvider.notifier).requestCancel();
+                  } else {
+                    _onLibraryMenu(context, ref, action, manga);
+                  }
+                },
+              )
+            : PopupMenuButton<int>(
+                itemBuilder: (_) => [
+                  PopupMenuItem(value: 0, child: Text(l10n.update_library)),
+                  PopupMenuItem(
+                    value: 1,
+                    enabled: manga.asData?.value.isNotEmpty == true,
+                    child: Text(l10n.open_random_entry),
+                  ),
+                  if (itemType == ItemType.anime)
+                    PopupMenuItem(value: 3, child: Text(l10n.torrent_stream)),
+                  const PopupMenuDivider(),
+                  CheckedPopupMenuItem(
+                    value: 4,
+                    checked: ignoreFiltersOnSearch,
+                    child: Text(l10n.ignore_filters),
+                  ),
+                ],
+                onSelected: (value) {
+                  if (value == 4) {
+                    onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
+                  } else {
+                    _onLibraryMenu(context, ref, value, manga);
+                  }
+                },
+              ),
       );
     }
 
@@ -416,6 +453,7 @@ class _SelectionAppBar extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            tooltip: context.l10n.bookshelf_select_all,
             onPressed: () {
               for (var manga in data) {
                 ref.read(mangasListStateProvider.notifier).selectAll(manga);
@@ -424,6 +462,7 @@ class _SelectionAppBar extends ConsumerWidget {
             icon: const Icon(Icons.select_all),
           ),
           IconButton(
+            tooltip: context.l10n.bookshelf_invert_selection,
             onPressed: () {
               if (data.length == mangaIdsList.length) {
                 for (var manga in data) {
