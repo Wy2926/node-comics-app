@@ -603,10 +603,10 @@
   "split_epub_chapters_description": "将每个EPUB章节作为单独条目导入",
   "compression_info": "压缩率越高，备份文件占用的空间越小，但会消耗更多的CPU。默认值：{level}",
   "mass_migration_title": "批量迁移",
-  "mass_migration_preview_items": "预览项目",
-  "mass_migration_destination_source": "目标源",
-  "mass_migration_no_library_items": "没有可供批量迁移的图库项目。",
-  "mass_migration_no_destination_sources": "没有可用的已安装目标源。",
+  "mass_migration_preview_items": "选择作品",
+  "mass_migration_destination_source": "目标来源",
+  "mass_migration_no_library_items": "书库中暂无可迁移的作品。",
+  "mass_migration_no_destination_sources": "暂无可用的已安装目标来源。",
   "mass_migration_installed": "已安装",
   "mass_migration_items_ready_for_review": "{count, plural, =1{1个项目准备好复检} other{{count}个项目准备好复检}}",
   "@mass_migration_items_ready_for_review": {
@@ -616,7 +616,7 @@
       }
     }
   },
-  "mass_migration_item_count": "{count, plural, =1{1个项目} other{{count}个项目}}",
+  "mass_migration_item_count": "{count, plural, =1{1 部作品} other{{count} 部作品}}",
   "@mass_migration_item_count": {
     "placeholders": {
       "count": {
@@ -624,7 +624,7 @@
       }
     }
   },
-  "mass_migration_select_destination_source": "选择目标源",
+  "mass_migration_select_destination_source": "选择目标来源",
   "mass_migration_finding_matches": "正在 {source} • {language} 中寻找匹配项",
   "@mass_migration_finding_matches": {
     "placeholders": {
@@ -632,7 +632,7 @@
       "language": {}
     }
   },
-  "mass_migration_processing_item": "正在处理第 {current} / {total} 个项目",
+  "mass_migration_processing_item": "正在匹配第 {current} / {total} 部作品",
   "@mass_migration_processing_item": {
     "placeholders": {
       "current": {
@@ -661,7 +661,7 @@
       }
     }
   },
-  "mass_migration_review_matches": "复检 {source} 的匹配项",
+  "mass_migration_review_matches": "核对来自 {source} 的匹配结果",
   "@mass_migration_review_matches": {
     "placeholders": {
       "source": {}
@@ -683,7 +683,7 @@
       }
     }
   },
-  "mass_migration_selected_to_migrate": "选定迁移: {count}",
+  "mass_migration_selected_to_migrate": "已选 {count} 部作品",
   "@mass_migration_selected_to_migrate": {
     "placeholders": {
       "count": {
@@ -691,8 +691,8 @@
       }
     }
   },
-  "mass_migration_finish_review": "结束复检",
-  "mass_migration_migrate_selected": "迁移选定项目 ({count})",
+  "mass_migration_finish_review": "结束核对",
+  "mass_migration_migrate_selected": "迁移所选作品（{count}）",
   "@mass_migration_migrate_selected": {
     "placeholders": {
       "count": {
@@ -706,8 +706,8 @@
       "source": {}
     }
   },
-  "mass_migration_no_items_selected": "未选定任何迁移项目。",
-  "mass_migration_migrating_item": "正在迁移第 {current} / {total} 个项目",
+  "mass_migration_no_items_selected": "未选择任何作品进行迁移。",
+  "mass_migration_migrating_item": "正在迁移第 {current} / {total} 部作品",
   "@mass_migration_migrating_item": {
     "placeholders": {
       "current": {
@@ -736,7 +736,7 @@
   "mass_migration_failed_items": "失败项目",
   "mass_migration_exit": "退出批量迁移",
   "mass_migration_no_destination_match": "未找到目标匹配项",
-  "mass_migration_query": "查询条件: {query}",
+  "mass_migration_query": "搜索词：{query}",
   "@mass_migration_query": {
     "placeholders": {
       "query": {}
@@ -782,7 +782,7 @@
   },
   "mass_migration_unknown_title": "未知标题",
   "mass_migration_unknown_match": "未知匹配",
-  "mass_migration_unknown_source": "未知源",
+  "mass_migration_unknown_source": "未知来源",
   "mass_migration_unknown_chapter": "未知章节",
   "delete_download_after_reading": "完成阅读后删除下载内容",
   "total": "总计",
@@ -1502,5 +1502,9 @@
   "migration_original_item": "当前作品",
   "migration_target_item": "目标作品",
   "migration_partial_failure": "操作未完成，可能已保存部分更改。请返回书架核对当前条目后再继续。",
-  "migration_no_categories": "暂无分类，可直接添加到未分类书架。"
+  "migration_no_categories": "暂无分类，可直接添加到未分类书架。",
+  "mass_migration_select_source": "选择当前来源",
+  "mass_migration_select_all": "全选",
+  "mass_migration_deselect_all": "取消全选",
+  "mass_migration_needs_review": "部分作品需要核对"
 }

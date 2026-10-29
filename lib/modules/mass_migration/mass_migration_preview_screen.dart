@@ -5,6 +5,9 @@ import 'package:mangayomi/modules/mass_migration/widgets/mass_migration_widgets.
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/utils/language.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/mass_migration/widgets/mobile_mass_migration.dart';
 
 class MassMigrationPreviewScreen extends StatefulWidget {
   const MassMigrationPreviewScreen({required this.sourceGroup, super.key});
@@ -64,19 +67,109 @@ class _MassMigrationPreviewScreenState
     });
   }
 
+  void _openDestination() {
+    final group = widget.sourceGroup;
+    final filtered = MassMigrationSourceGroup(
+      sourceName: group.sourceName,
+      itemType: group.itemType,
+      items: [
+        for (var i = 0; i < group.items.length; i++)
+          if (_selected.contains(i)) group.items[i],
+      ],
+      source: group.source,
+      lang: group.lang,
+      sourceId: group.sourceId,
+    );
+    Navigator.push(
+      context,
+      createRoute(page: MassMigrationDestinationScreen(sourceGroup: filtered)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final sourceGroup = widget.sourceGroup;
     final total = sourceGroup.items.length;
     final allSelected = _selected.length == total;
+    if (isMobile && !isTv) {
+      return MobileBrowsePage(
+        title: l10n.mass_migration_preview_items,
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      sourceGroup.sourceName,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      [
+                        if (sourceGroup.lang?.isNotEmpty == true)
+                          completeLanguageName(sourceGroup.lang!),
+                        l10n.mass_migration_item_count(total),
+                      ].join(' · '),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: total == 0
+                            ? null
+                            : () => _setAll(!allSelected),
+                        child: Text(
+                          allSelected
+                              ? l10n.mass_migration_deselect_all
+                              : l10n.mass_migration_select_all,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverList.builder(
+              itemCount: total,
+              itemBuilder: (_, index) => MobileMassMigrationSelectionCard(
+                key: ValueKey(index),
+                item: sourceGroup.items[index],
+                source: sourceGroup.source,
+                selected: _selected.contains(index),
+                onToggle: () => _toggle(index),
+                onSelectRange: () => _selectRange(index),
+              ),
+            ),
+          ],
+        ),
+        bottomAction: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.mass_migration_selected_to_migrate(_selected.length)),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: _selected.isEmpty ? null : _openDestination,
+              child: Text(l10n.mass_migration_select_destination_source),
+            ),
+          ],
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.mass_migration_preview_items),
         actions: [
           TextButton(
             onPressed: total == 0 ? null : () => _setAll(!allSelected),
-            child: Text(allSelected ? 'Deselect all' : 'Select all'),
+            child: Text(
+              allSelected
+                  ? l10n.mass_migration_deselect_all
+                  : l10n.mass_migration_select_all,
+            ),
           ),
         ],
       ),
@@ -196,30 +289,7 @@ class _MassMigrationPreviewScreenState
             child: SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: _selected.isEmpty
-                    ? null
-                    : () {
-                        final selectedItems = [
-                          for (var i = 0; i < sourceGroup.items.length; i++)
-                            if (_selected.contains(i)) sourceGroup.items[i],
-                        ];
-                        final filtered = MassMigrationSourceGroup(
-                          sourceName: sourceGroup.sourceName,
-                          itemType: sourceGroup.itemType,
-                          items: selectedItems,
-                          source: sourceGroup.source,
-                          lang: sourceGroup.lang,
-                          sourceId: sourceGroup.sourceId,
-                        );
-                        Navigator.push(
-                          context,
-                          createRoute(
-                            page: MassMigrationDestinationScreen(
-                              sourceGroup: filtered,
-                            ),
-                          ),
-                        );
-                      },
+                onPressed: _selected.isEmpty ? null : _openDestination,
                 child: Text(l10n.mass_migration_select_destination_source),
               ),
             ),

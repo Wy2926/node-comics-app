@@ -220,16 +220,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mass_migration_title => '批量迁移';
 
   @override
-  String get mass_migration_preview_items => '预览项目';
+  String get mass_migration_preview_items => '选择作品';
 
   @override
-  String get mass_migration_destination_source => '目标源';
+  String get mass_migration_destination_source => '目标来源';
 
   @override
-  String get mass_migration_no_library_items => '没有可供批量迁移的图库项目。';
+  String get mass_migration_no_library_items => '书库中暂无可迁移的作品。';
 
   @override
-  String get mass_migration_no_destination_sources => '没有可用的已安装目标源。';
+  String get mass_migration_no_destination_sources => '暂无可用的已安装目标来源。';
 
   @override
   String get mass_migration_installed => '已安装';
@@ -250,14 +250,14 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count个项目',
-      one: '1个项目',
+      other: '$count 部作品',
+      one: '1 部作品',
     );
     return '$_temp0';
   }
 
   @override
-  String get mass_migration_select_destination_source => '选择目标源';
+  String get mass_migration_select_destination_source => '选择目标来源';
 
   @override
   String mass_migration_finding_matches(Object source, Object language) {
@@ -266,7 +266,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String mass_migration_processing_item(int current, int total) {
-    return '正在处理第 $current / $total 个项目';
+    return '正在匹配第 $current / $total 部作品';
   }
 
   @override
@@ -287,7 +287,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String mass_migration_review_matches(Object source) {
-    return '复检 $source 的匹配项';
+    return '核对来自 $source 的匹配结果';
   }
 
   @override
@@ -302,15 +302,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String mass_migration_selected_to_migrate(int count) {
-    return '选定迁移: $count';
+    return '已选 $count 部作品';
   }
 
   @override
-  String get mass_migration_finish_review => '结束复检';
+  String get mass_migration_finish_review => '结束核对';
 
   @override
   String mass_migration_migrate_selected(int count) {
-    return '迁移选定项目 ($count)';
+    return '迁移所选作品（$count）';
   }
 
   @override
@@ -319,11 +319,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get mass_migration_no_items_selected => '未选定任何迁移项目。';
+  String get mass_migration_no_items_selected => '未选择任何作品进行迁移。';
 
   @override
   String mass_migration_migrating_item(int current, int total) {
-    return '正在迁移第 $current / $total 个项目';
+    return '正在迁移第 $current / $total 部作品';
   }
 
   @override
@@ -366,7 +366,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String mass_migration_query(Object query) {
-    return '查询条件: $query';
+    return '搜索词：$query';
   }
 
   @override
@@ -432,7 +432,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mass_migration_unknown_match => '未知匹配';
 
   @override
-  String get mass_migration_unknown_source => '未知源';
+  String get mass_migration_unknown_source => '未知来源';
 
   @override
   String get mass_migration_unknown_chapter => '未知章节';
@@ -3703,4 +3703,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get migration_no_categories => '暂无分类，可直接添加到未分类书架。';
+
+  @override
+  String get mass_migration_select_source => '选择当前来源';
+
+  @override
+  String get mass_migration_select_all => '全选';
+
+  @override
+  String get mass_migration_deselect_all => '取消全选';
+
+  @override
+  String get mass_migration_needs_review => '部分作品需要核对';
 }

@@ -6893,6 +6893,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No categories. You can add this item without a category.'**
   String get migration_no_categories;
+
+  /// No description provided for @mass_migration_select_source.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the current source'**
+  String get mass_migration_select_source;
+
+  /// No description provided for @mass_migration_select_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get mass_migration_select_all;
+
+  /// No description provided for @mass_migration_deselect_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get mass_migration_deselect_all;
+
+  /// No description provided for @mass_migration_needs_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Review incomplete migrations'**
+  String get mass_migration_needs_review;
 }
 
 class _AppLocalizationsDelegate

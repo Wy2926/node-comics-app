@@ -8,6 +8,8 @@ import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 class MassMigrationSourceSelectionScreen extends StatelessWidget {
   const MassMigrationSourceSelectionScreen({
@@ -35,6 +37,54 @@ class MassMigrationSourceSelectionScreen extends StatelessWidget {
       prioritizedManga: prioritizedManga,
       selectedMangas: selectedMangas,
     );
+
+    void open(MassMigrationSourceGroup group) => Navigator.push(
+      context,
+      createRoute(page: MassMigrationPreviewScreen(sourceGroup: group)),
+    );
+
+    if (isMobile && !isTv) {
+      return MobileBrowsePage(
+        title: l10n.mass_migration_title,
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: MobileBrowseSectionTitle(
+                l10n.mass_migration_select_source,
+              ),
+            ),
+            if (sourceGroups.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(l10n.mass_migration_no_library_items),
+                ),
+              ),
+            SliverList.builder(
+              itemCount: sourceGroups.length,
+              itemBuilder: (_, index) {
+                final group = sourceGroups[index];
+                return Semantics(
+                  button: true,
+                  child: MobileSourceCard(
+                    title: group.sourceName,
+                    icon: MassMigrationSourceIcon(source: group.source),
+                    metadata: Text(
+                      [
+                        if (group.lang?.isNotEmpty == true)
+                          completeLanguageName(group.lang!),
+                        l10n.mass_migration_item_count(group.count),
+                      ].join(' · '),
+                    ),
+                    onTap: () => open(group),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.mass_migration_title)),

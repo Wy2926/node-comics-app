@@ -3915,6 +3915,18 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get migration_no_categories =>
       'No categories. You can add this item without a category.';
+
+  @override
+  String get mass_migration_select_source => 'Choose the current source';
+
+  @override
+  String get mass_migration_select_all => 'Select all';
+
+  @override
+  String get mass_migration_deselect_all => 'Deselect all';
+
+  @override
+  String get mass_migration_needs_review => 'Review incomplete migrations';
 }
 
 /// The translations for Spanish Castilian, as used in Latin America and the Caribbean (`es_419`).
