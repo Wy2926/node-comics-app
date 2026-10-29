@@ -1497,5 +1497,10 @@
   "onboarding_mobile_sources_body": "添加扩展库或自己的本地文件夹，也可以跳过，稍后再添加。",
   "onboarding_step_count": "第 {step} 步，共 {total} 步",
   "global_search_results_for": "“{query}”的搜索结果",
-  "global_search_scope": "{type} · {count} 个来源"
+  "global_search_scope": "{type} · {count} 个来源",
+  "migration_search_prompt": "搜索目标作品。",
+  "migration_original_item": "当前作品",
+  "migration_target_item": "目标作品",
+  "migration_partial_failure": "操作未完成，可能已保存部分更改。请返回书架核对当前条目后再继续。",
+  "migration_no_categories": "暂无分类，可直接添加到未分类书架。"
 }

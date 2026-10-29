@@ -3889,6 +3889,23 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$type · $_temp0';
   }
+
+  @override
+  String get migration_search_prompt => 'Search for the destination title.';
+
+  @override
+  String get migration_original_item => 'Current item';
+
+  @override
+  String get migration_target_item => 'Selected item';
+
+  @override
+  String get migration_partial_failure =>
+      'The operation did not finish. Some changes may have been saved. Check this item in your library before trying again.';
+
+  @override
+  String get migration_no_categories =>
+      'No categories. You can add this item without a category.';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).

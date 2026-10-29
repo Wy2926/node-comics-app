@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:mangayomi/utils/source_fetch_gate.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,6 +39,8 @@ import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_global_search.dart';
 
+export 'package:mangayomi/utils/source_fetch_gate.dart' show FetchGate;
+
 class GlobalSearchScreen extends ConsumerStatefulWidget {
   final String? search;
   final ItemType itemType;
@@ -44,40 +48,6 @@ class GlobalSearchScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<GlobalSearchScreen> createState() => _GlobalSearchScreenState();
-}
-
-/// Caps how many source rows fetch at once.
-///
-/// Every row used to call getPopular/search in initState, so opening the
-/// screen fired one isolate evaluation per installed source simultaneously —
-/// the more extensions installed, the worse the stall. Gating it to a
-/// handful in flight keeps the device's isolate pool from being flooded
-/// while still finishing the full scan in the background.
-class FetchGate {
-  FetchGate(this._maxConcurrent);
-  final int _maxConcurrent;
-  int _active = 0;
-  final _waiting = <Completer<void>>[];
-
-  Future<void> acquire() async {
-    if (_active < _maxConcurrent) {
-      _active++;
-      return;
-    }
-    final completer = Completer<void>();
-    _waiting.add(completer);
-    await completer.future;
-  }
-
-  void release() {
-    // Transfer the occupied slot directly. Making it available before the
-    // waiting continuation runs lets a new query exceed the concurrency cap.
-    if (_waiting.isNotEmpty) {
-      _waiting.removeAt(0).complete();
-    } else {
-      _active--;
-    }
-  }
 }
 
 class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {

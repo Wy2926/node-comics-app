@@ -6863,6 +6863,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{type} · {count, plural, =1{1 source} other{{count} sources}}'**
   String global_search_scope(String type, int count);
+
+  /// No description provided for @migration_search_prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for the destination title.'**
+  String get migration_search_prompt;
+
+  /// No description provided for @migration_original_item.
+  ///
+  /// In en, this message translates to:
+  /// **'Current item'**
+  String get migration_original_item;
+
+  /// No description provided for @migration_target_item.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected item'**
+  String get migration_target_item;
+
+  /// No description provided for @migration_partial_failure.
+  ///
+  /// In en, this message translates to:
+  /// **'The operation did not finish. Some changes may have been saved. Check this item in your library before trying again.'**
+  String get migration_partial_failure;
+
+  /// No description provided for @migration_no_categories.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories. You can add this item without a category.'**
+  String get migration_no_categories;
 }
 
 class _AppLocalizationsDelegate

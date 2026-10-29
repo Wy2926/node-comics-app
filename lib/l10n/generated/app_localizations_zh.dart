@@ -3688,4 +3688,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String global_search_scope(String type, int count) {
     return '$type · $count 个来源';
   }
+
+  @override
+  String get migration_search_prompt => '搜索目标作品。';
+
+  @override
+  String get migration_original_item => '当前作品';
+
+  @override
+  String get migration_target_item => '目标作品';
+
+  @override
+  String get migration_partial_failure => '操作未完成，可能已保存部分更改。请返回书架核对当前条目后再继续。';
+
+  @override
+  String get migration_no_categories => '暂无分类，可直接添加到未分类书架。';
 }

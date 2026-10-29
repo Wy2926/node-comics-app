@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/modules/browse/global_search/mobile_global_search.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
@@ -43,11 +47,88 @@ class GlobalSearchResultCard extends ConsumerStatefulWidget {
 class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
     with AutomaticKeepAliveClientMixin<GlobalSearchResultCard> {
   bool _focused = false;
+  late Stream<List<Manga>> _library = _watchLibrary();
+  Stream<List<Manga>> _watchLibrary() => mangaRepository.watchByLangNameSource(
+    widget.source.lang,
+    widget.manga.name,
+    widget.source.name,
+  );
+
+  @override
+  void didUpdateWidget(covariant GlobalSearchResultCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.manga.name != widget.manga.name ||
+        oldWidget.source.id != widget.source.id ||
+        oldWidget.source.name != widget.source.name ||
+        oldWidget.source.lang != widget.source.lang) {
+      _library = _watchLibrary();
+    }
+  }
+
+  Widget _mobileCover(Manga? matched, double width) {
+    final placeholder = Icon(
+      Icons.auto_stories_outlined,
+      size: 36,
+      color: NodeLaneTokens.of(context).muted,
+    );
+    final bytes = matched?.customCoverImage;
+    final rawUrl = matched == null
+        ? widget.manga.imageUrl ?? ''
+        : matched.customCoverFromTracker ?? matched.imageUrl ?? '';
+    if (bytes == null && rawUrl.trim().isEmpty) return placeholder;
+    try {
+      final image = bytes != null
+          ? ResizeImage.resizeIfNeeded(
+              (width * MediaQuery.devicePixelRatioOf(context)).round(),
+              null,
+              MemoryImage(bytes as Uint8List),
+            )
+          : coverProvider(
+              toImgUrl(rawUrl),
+              headers: ref.watch(
+                headersProvider(
+                  source: widget.source.name!,
+                  lang: widget.source.lang!,
+                  sourceId: widget.source.id,
+                ),
+              ),
+            );
+      return Image(
+        image: image,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => placeholder,
+      );
+    } catch (_) {
+      return placeholder;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final getMangaDetail = widget.manga;
+    if (isMobile && !isTv) {
+      return StreamBuilder<List<Manga>>(
+        stream: _library,
+        builder: (context, snapshot) {
+          final matched = snapshot.data
+              ?.where(
+                (entry) =>
+                    entry.sourceId == null ||
+                    entry.sourceId == widget.source.id,
+              )
+              .firstOrNull;
+          return LayoutBuilder(
+            builder: (context, constraints) => MobileGlobalResultCard(
+              title: widget.manga.name ?? '',
+              cover: _mobileCover(matched, constraints.maxWidth),
+              inLibrary: matched?.favorite ?? false,
+              onOpen: widget.onActivate,
+            ),
+          );
+        },
+      );
+    }
     // A bare GestureDetector never takes focus, so on a remote these covers
     // were unreachable: the only focusable things on the screen were the source
     // headers, and the d-pad could never get down into the results. Focus also
@@ -100,11 +181,7 @@ class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
           child: GestureDetector(
             onTap: widget.onActivate,
             child: StreamBuilder(
-              stream: mangaRepository.watchByLangNameSource(
-                widget.source.lang,
-                getMangaDetail.name,
-                widget.source.name,
-              ),
+              stream: _library,
               builder: (context, snapshot) {
                 final hasData = snapshot.hasData && snapshot.data!.isNotEmpty;
                 return Stack(
@@ -154,7 +231,10 @@ class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
                             fontSize: 12.0,
                             text: getMangaDetail.name!,
                             isLoading: true,
-                            textColor: Theme.of(context).textTheme.bodyLarge!.color,
+                            textColor: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .color,
                             isComfortableGrid: true,
                           ),
                         ],
@@ -190,5 +270,5 @@ class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
   }
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => !(isMobile && !isTv);
 }

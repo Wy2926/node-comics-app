@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_search_field.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -36,51 +37,12 @@ class MobileGlobalSearchPage extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Semantics(
-                          label: l10n.search,
-                          child: ValueListenableBuilder(
-                            valueListenable: controller,
-                            builder: (context, value, _) => TextField(
-                              controller: controller,
-                              autofocus: controller.text.isEmpty,
-                              textInputAction: TextInputAction.search,
-                              onSubmitted: (_) => onSubmit(),
-                              style: TextStyle(fontSize: 16, color: colors.ink),
-                              decoration: InputDecoration(
-                                hintText: l10n.search,
-                                filled: true,
-                                fillColor: colors.soft,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.all(14),
-                                suffixIcon: value.text.isEmpty
-                                    ? null
-                                    : IconButton(
-                                        tooltip: l10n.reset,
-                                        onPressed: onClear,
-                                        icon: const Icon(Icons.close_rounded),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton.filled(
-                        tooltip: l10n.global_search,
-                        constraints: const BoxConstraints(
-                          minHeight: 48,
-                          minWidth: 48,
-                        ),
-                        onPressed: onSubmit,
-                        icon: const Icon(Icons.search_rounded),
-                      ),
-                    ],
+                  child: MobileSearchField(
+                    controller: controller,
+                    onSubmit: onSubmit,
+                    onClear: onClear,
+                    autofocus: controller.text.isEmpty,
+                    submitLabel: l10n.global_search,
                   ),
                 ),
               ),
@@ -130,14 +92,16 @@ class MobileGlobalSourceSection extends StatelessWidget {
     super.key,
     required this.title,
     required this.language,
-    required this.onOpen,
+    this.onOpen,
+    this.status,
     required this.loading,
     required this.count,
     required this.itemBuilder,
   });
 
   final String title, language;
-  final VoidCallback onOpen;
+  final VoidCallback? onOpen;
+  final Widget? status;
   final bool loading;
   final int count;
   final IndexedWidgetBuilder itemBuilder;
@@ -153,7 +117,7 @@ class MobileGlobalSourceSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Semantics(
-              button: true,
+              button: onOpen != null,
               child: Material(
                 color: colors.surface,
                 borderRadius: BorderRadius.circular(16),
@@ -192,8 +156,13 @@ class MobileGlobalSourceSection extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Icon(Icons.chevron_right_rounded, color: colors.muted),
+                        if (onOpen != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: colors.muted,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -206,6 +175,11 @@ class MobileGlobalSourceSection extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: LinearProgressIndicator(),
+            )
+          else if (status != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: status,
             )
           else
             LayoutBuilder(
@@ -284,12 +258,13 @@ class MobileGlobalResultCard extends StatelessWidget {
     required this.cover,
     required this.inLibrary,
     required this.onOpen,
-    required this.onQuickAdd,
+    this.onQuickAdd,
   });
   final String title;
   final Widget cover;
   final bool inLibrary;
-  final VoidCallback onOpen, onQuickAdd;
+  final VoidCallback onOpen;
+  final VoidCallback? onQuickAdd;
 
   @override
   Widget build(BuildContext context) {
