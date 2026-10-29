@@ -7205,6 +7205,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} scanlator groups hidden'**
   String chapter_scanlators_hidden(int count);
+
+  /// No description provided for @chapter_selected_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} chapters selected'**
+  String chapter_selected_count(int count);
+
+  /// No description provided for @chapter_add_bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark'**
+  String get chapter_add_bookmark;
+
+  /// No description provided for @chapter_remove_bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Unbookmark'**
+  String get chapter_remove_bookmark;
+
+  /// No description provided for @chapter_read_following.
+  ///
+  /// In en, this message translates to:
+  /// **'Read below'**
+  String get chapter_read_following;
+
+  /// No description provided for @chapter_delete_records.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete chapter records'**
+  String get chapter_delete_records;
+
+  /// No description provided for @chapter_delete_local_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes the selected chapter records and reading progress. Original local archives are kept; downloaded copies are cleaned up.'**
+  String get chapter_delete_local_hint;
+
+  /// No description provided for @chapter_delete_last_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'These are all chapters in this comic. Deleting them also removes the comic from your bookshelf.'**
+  String get chapter_delete_last_hint;
+
+  /// No description provided for @chapter_action_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.'**
+  String get chapter_action_incomplete;
 }
 
 class _AppLocalizationsDelegate

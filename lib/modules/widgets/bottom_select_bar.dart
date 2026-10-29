@@ -58,7 +58,7 @@ class BottomSelectBar extends StatelessWidget {
 /// Button for the BottomSelectBar
 class BottomSelectButton extends StatelessWidget {
   final Widget icon;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final String? tooltip;
   final String? label;
 

@@ -3869,4 +3869,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String chapter_scanlators_hidden(int count) {
     return '已隐藏 $count 个翻译组';
   }
+
+  @override
+  String chapter_selected_count(int count) {
+    return '已选 $count 章';
+  }
+
+  @override
+  String get chapter_add_bookmark => '添加书签';
+
+  @override
+  String get chapter_remove_bookmark => '取消书签';
+
+  @override
+  String get chapter_read_following => '下方已读';
+
+  @override
+  String get chapter_delete_records => '删除章节记录';
+
+  @override
+  String get chapter_delete_local_hint => '移除所选章节与阅读进度，保留原始压缩包，并清理已有下载副本。';
+
+  @override
+  String get chapter_delete_last_hint => '所选章节是这部漫画的全部目录，删除后也会从书架移除这部漫画。';
+
+  @override
+  String get chapter_action_incomplete => '操作未完成，部分更改可能已保存。请关闭后先核对章节与下载，再继续操作。';
 }

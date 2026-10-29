@@ -71,8 +71,17 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ? Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: AppBar(
-              title: Text(chapterList.length.toString()),
-              backgroundColor: context.primaryColor.withValues(alpha: 0.2),
+              title: Text(
+                mobileManga
+                    ? l10n.chapter_selected_count(chapterList.length)
+                    : chapterList.length.toString(),
+                style: mobileManga ? const TextStyle(fontSize: 17) : null,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              backgroundColor: mobileManga
+                  ? NodeLaneTokens.of(context).surface
+                  : context.primaryColor.withValues(alpha: 0.2),
               leading: IconButton(
                 tooltip: l10n.cancel,
                 onPressed: () {
@@ -85,8 +94,9 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
               actions: [
                 IconButton(
-                  tooltip: MaterialLocalizations.of(context)
-                      .selectAllButtonLabel,
+                  tooltip: mobileManga
+                      ? null
+                      : MaterialLocalizations.of(context).selectAllButtonLabel,
                   onPressed: () {
                     for (var chapter in chapters) {
                       ref
@@ -94,9 +104,15 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                           .selectAll(chapter);
                     }
                   },
-                  icon: const Icon(Icons.select_all),
+                  icon: mobileManga
+                      ? Text(
+                          l10n.bookshelf_select_all,
+                          style: const TextStyle(fontSize: 14),
+                        )
+                      : const Icon(Icons.select_all),
                 ),
                 IconButton(
+                  tooltip: mobileManga ? null : l10n.bookshelf_invert_selection,
                   onPressed: () {
                     if (chapters.length == chapterList.length) {
                       for (var chapter in chapters) {
@@ -115,7 +131,12 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       }
                     }
                   },
-                  icon: const Icon(Icons.flip_to_back_rounded),
+                  icon: mobileManga
+                      ? Text(
+                          l10n.bookshelf_invert_selection,
+                          style: const TextStyle(fontSize: 14),
+                        )
+                      : const Icon(Icons.flip_to_back_rounded),
                 ),
               ],
             ),

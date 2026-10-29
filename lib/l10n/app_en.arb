@@ -1627,5 +1627,20 @@
   "chapter_scanlators_all": "Show all scanlator groups",
   "chapter_scanlators_hint": "Select groups to hide their chapters. Changes apply when you tap Filter.",
   "chapter_scanlators_hidden": "{count} scanlator groups hidden",
-  "@chapter_scanlators_hidden": {"placeholders": {"count": {"type": "int"}}}
+  "@chapter_scanlators_hidden": {"placeholders": {"count": {"type": "int"}}},
+  "chapter_selected_count": "{count} chapters selected",
+  "@chapter_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_add_bookmark": "Bookmark",
+  "chapter_remove_bookmark": "Unbookmark",
+  "chapter_read_following": "Read below",
+  "chapter_delete_records": "Delete chapter records",
+  "chapter_delete_local_hint": "Removes the selected chapter records and reading progress. Original local archives are kept; downloaded copies are cleaned up.",
+  "chapter_delete_last_hint": "These are all chapters in this comic. Deleting them also removes the comic from your bookshelf.",
+  "chapter_action_incomplete": "The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing."
 }

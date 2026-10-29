@@ -4103,4 +4103,33 @@ class AppLocalizationsRu extends AppLocalizations {
   String chapter_scanlators_hidden(int count) {
     return '$count scanlator groups hidden';
   }
+
+  @override
+  String chapter_selected_count(int count) {
+    return '$count chapters selected';
+  }
+
+  @override
+  String get chapter_add_bookmark => 'Bookmark';
+
+  @override
+  String get chapter_remove_bookmark => 'Unbookmark';
+
+  @override
+  String get chapter_read_following => 'Read below';
+
+  @override
+  String get chapter_delete_records => 'Delete chapter records';
+
+  @override
+  String get chapter_delete_local_hint =>
+      'Removes the selected chapter records and reading progress. Original local archives are kept; downloaded copies are cleaned up.';
+
+  @override
+  String get chapter_delete_last_hint =>
+      'These are all chapters in this comic. Deleting them also removes the comic from your bookshelf.';
+
+  @override
+  String get chapter_action_incomplete =>
+      'The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.';
 }
