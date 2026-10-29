@@ -16,6 +16,9 @@ import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/error_toast.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_restore_choices.dart';
 
 /// Whether there's a sync server configured to ask about (regardless of
 /// whether sync is currently on or off) and, if so, whether it's on.
@@ -328,6 +331,7 @@ Future<bool?> _confirmPlainRestore(BuildContext context) {
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
+        scrollable: isMobile && !isTv,
         title: Text(l10n.restore_backup),
         content: Row(
           children: [
@@ -346,6 +350,11 @@ Future<bool?> _confirmPlainRestore(BuildContext context) {
 }
 
 Future<bool?> _chooseImportMode(BuildContext context) {
+  if (isMobile && !isTv) {
+    return Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const MobileRestoreMode()));
+  }
   final l10n = context.l10n;
   return showDialog<bool>(
     context: context,
@@ -398,6 +407,13 @@ Future<Map<String, bool>?> _resolveCategoryConflicts(
   BuildContext context,
   List<String> conflicts,
 ) async {
+  if (isMobile && !isTv) {
+    return Navigator.of(context).push<Map<String, bool>>(
+      MaterialPageRoute(
+        builder: (_) => MobileRestoreCategories(conflicts: conflicts),
+      ),
+    );
+  }
   final l10n = context.l10n;
   final decisions = {for (final name in conflicts) name: true};
   return showDialog<Map<String, bool>>(
@@ -466,6 +482,18 @@ Future<Map<String, int>?> _resolveSourceConflicts(
   BuildContext context,
   Map<String, ItemType> unmatched,
 ) async {
+  if (isMobile && !isTv) {
+    final sources = {
+      for (final type in unmatched.values.toSet())
+        type: installedSourcesFor(type),
+    };
+    return Navigator.of(context).push<Map<String, int>>(
+      MaterialPageRoute(
+        builder: (_) =>
+            MobileRestoreSources(unmatched: unmatched, sources: sources),
+      ),
+    );
+  }
   final l10n = context.l10n;
   final selections = <String, int?>{
     for (final name in unmatched.keys) name: null,
@@ -597,6 +625,7 @@ Future<bool?> _confirmImportSummary(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
+        scrollable: isMobile && !isTv,
         title: Text(l10n.import_summary_title),
         content: Text(
           l10n.import_summary_message(
@@ -625,6 +654,7 @@ Future<bool?> _confirmReplaceSummary(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
+        scrollable: isMobile && !isTv,
         title: Text(l10n.replace_summary_title),
         content: Text(l10n.replace_summary_message(currentCount, backupCount)),
         actions: dialogCancelConfirmActions(

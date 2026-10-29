@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 List<Widget> dialogCancelConfirmActions({
   required BuildContext dialogContext,
@@ -10,6 +11,21 @@ List<Widget> dialogCancelConfirmActions({
   VoidCallback? onConfirm,
 }) {
   final l10n = dialogContext.l10n;
+  if (isMobile && !isTv) {
+    return [
+      TextButton(
+        onPressed: onCancel ?? () => Navigator.pop(dialogContext, false),
+        child: Text(l10n.cancel),
+      ),
+      FilledButton(
+        style: confirmColor == null
+            ? null
+            : FilledButton.styleFrom(backgroundColor: confirmColor),
+        onPressed: onConfirm ?? () => Navigator.pop(dialogContext, true),
+        child: Text(confirmLabel),
+      ),
+    ];
+  }
   return [
     Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -63,6 +79,7 @@ Future<bool?> confirmSyncAfterRestore(
       return PopScope(
         canPop: false,
         child: AlertDialog(
+          scrollable: isMobile && !isTv,
           title: Text(
             syncOn
                 ? l10n.restore_sync_question_title
@@ -105,6 +122,7 @@ void showBusyDialog(BuildContext context, String message) {
     builder: (dialogContext) => PopScope(
       canPop: false,
       child: AlertDialog(
+        scrollable: isMobile && !isTv,
         content: Row(
           children: [
             const SizedBox(

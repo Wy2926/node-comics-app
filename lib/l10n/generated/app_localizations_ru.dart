@@ -3792,4 +3792,8 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get tracking_entry_unlinked =>
       'This record is not linked to a local title, so it cannot be edited here.';
+
+  @override
+  String get backup_selection_shared =>
+      'Changes to these selections are saved immediately and also apply to automatic backups.';
 }

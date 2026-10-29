@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/backup_password_storage.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_backup_password_dialog.dart';
 
 /// Shows the backup-encryption password setup dialog. Returns `true` if a
 /// password was successfully persisted (either to secure storage or, after
@@ -10,7 +13,11 @@ Future<bool?> showBackupEncryptionPasswordDialog(BuildContext context) {
   return showDialog<bool>(
     context: context,
     barrierDismissible: false,
-    builder: (context) => const _BackupEncryptionPasswordDialog(),
+    builder: (context) => isMobile && !isTv
+        ? MobileBackupPasswordDialog(
+            onSave: (password) => persistResolvedPassword(password, context),
+          )
+        : const _BackupEncryptionPasswordDialog(),
   );
 }
 
@@ -24,6 +31,7 @@ Future<bool?> showSecureStorageFallbackPrompt(BuildContext context) {
   return showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
+      scrollable: isMobile && !isTv,
       title: Text(l10n.no_secure_storage),
       content: Text(l10n.no_keyring_warning),
       actions: [
@@ -73,8 +81,9 @@ Future<String?> showBackupDecryptPasswordDialog(
   return showDialog<String>(
     context: context,
     barrierDismissible: false,
-    builder: (context) =>
-        _BackupDecryptPasswordDialog(wasIncorrect: wasIncorrect),
+    builder: (context) => isMobile && !isTv
+        ? MobileBackupPasswordDialog(wasIncorrect: wasIncorrect)
+        : _BackupDecryptPasswordDialog(wasIncorrect: wasIncorrect),
   );
 }
 

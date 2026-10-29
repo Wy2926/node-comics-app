@@ -6690,6 +6690,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This record is not linked to a local title, so it cannot be edited here.'**
   String get tracking_entry_unlinked;
+
+  /// No description provided for @backup_selection_shared.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes to these selections are saved immediately and also apply to automatic backups.'**
+  String get backup_selection_shared;
 }
 
 class _AppLocalizationsDelegate

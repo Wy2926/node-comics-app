@@ -3589,4 +3589,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tracking_entry_unlinked => '此记录尚未关联本地作品，无法在这里编辑。';
+
+  @override
+  String get backup_selection_shared => '选择会立即保存，也用于自动备份。';
 }

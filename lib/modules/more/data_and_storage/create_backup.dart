@@ -10,6 +10,9 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_create_backup.dart';
 
 class CreateBackup extends ConsumerStatefulWidget {
   const CreateBackup({super.key});
@@ -40,6 +43,29 @@ class _CreateBackupState extends ConsumerState<CreateBackup> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final indexList = ref.watch(backupFrequencyOptionsStateProvider);
+    if (isMobile && !isTv) {
+      return MobileCreateBackup(
+        libraryOptions: _libraryList,
+        settingsOptions: _settingsList,
+        extensionOptions: _extensionList,
+        selected: indexList,
+        onToggle: (index) => _set(index, indexList),
+        onCreate: (selection) async {
+          final result = Platform.isIOS
+              ? (await StorageProvider().getIosBackupDirectory())?.path
+              : await FilePicker.getDirectoryPath();
+          if (result != null && context.mounted) {
+            await ref.read(
+              doBackUpProvider(
+                list: selection,
+                path: result,
+                context: context,
+              ).future,
+            );
+          }
+        },
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text(l10n.create_backup)),
       body: SingleChildScrollView(

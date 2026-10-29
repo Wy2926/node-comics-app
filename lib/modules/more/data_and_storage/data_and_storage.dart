@@ -21,11 +21,40 @@ import 'package:mangayomi/modules/widgets/tv_escapable_slider.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
+import 'mobile_data_and_storage.dart';
+
 class DataAndStorage extends ConsumerWidget {
   const DataAndStorage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) {
+      return MobileDataAndStorage(
+        onCreate: () => context.push('/createBackup'),
+        onRestore: () async {
+          await performRestore(context, ref);
+        },
+        onChooseDirectory: () => FilePicker.getDirectoryPath(),
+        onEncryptionChanged: (value) async {
+          if (!value) {
+            await ref.read(backupEncryptionEnabledProvider.notifier).set(false);
+            await BackupPasswordStorage.clear();
+            return;
+          }
+          final saved = await showBackupEncryptionPasswordDialog(context);
+          if (context.mounted && saved == true) {
+            await ref.read(backupEncryptionEnabledProvider.notifier).set(true);
+          }
+        },
+        canChooseBackupLocation: !Platform.isIOS,
+        maintenance: const [
+          RollbackLastChangeTile(),
+          MissingSourceCheckTile(),
+          DeleteSourceTile(),
+          MergeDuplicateMangaTile(),
+        ],
+      );
+    }
     final backupFrequency = ref.watch(backupFrequencyStateProvider);
     final autoBackupLocation = ref.watch(autoBackupLocationStateProvider);
     final downloadLocationState = ref.watch(downloadLocationStateProvider);
