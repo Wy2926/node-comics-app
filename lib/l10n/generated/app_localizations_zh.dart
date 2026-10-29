@@ -3895,4 +3895,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chapter_action_incomplete => '操作未完成，部分更改可能已保存。请关闭后先核对章节与下载，再继续操作。';
+
+  @override
+  String get reader_display_scope => '阅读模式和手动单双页应用于当前漫画；选择后返回阅读。';
+
+  @override
+  String get reader_display_single_only => '横向连续阅读仅使用单页。';
+
+  @override
+  String get reader_display_manual_pages => '切换单双页会关闭所有漫画的自动双页。';
+
+  @override
+  String get reader_display_crop_scope => '应用于所有漫画。';
 }

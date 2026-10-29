@@ -7253,6 +7253,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.'**
   String get chapter_action_incomplete;
+
+  /// No description provided for @reader_display_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading mode and manual page layout apply to this comic. Choose a change to return to reading.'**
+  String get reader_display_scope;
+
+  /// No description provided for @reader_display_single_only.
+  ///
+  /// In en, this message translates to:
+  /// **'Horizontal continuous reading uses single pages.'**
+  String get reader_display_single_only;
+
+  /// No description provided for @reader_display_manual_pages.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing page layout turns off automatic double page for all comics.'**
+  String get reader_display_manual_pages;
+
+  /// No description provided for @reader_display_crop_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to all comics.'**
+  String get reader_display_crop_scope;
 }
 
 class _AppLocalizationsDelegate

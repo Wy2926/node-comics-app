@@ -19,8 +19,7 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
-
-enum _MobileLayoutAction { crop, doublePage }
+import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_display.dart';
 
 /// The bottom bar for the manga reader.
 ///
@@ -77,6 +76,9 @@ class ReaderBottomBar extends ConsumerWidget {
   /// Current page mode (nullable for safety)
   final PageMode? currentPageMode;
 
+  /// Reads the owning reader's effective layout after orientation changes.
+  final PageMode Function() readPageMode;
+
   /// Whether RTL reading direction is active
   final bool isReverseHorizontal;
 
@@ -105,6 +107,7 @@ class ReaderBottomBar extends ConsumerWidget {
     required this.currentReaderModeProvider,
     required this.currentPageListenable,
     required this.currentPageMode,
+    required this.readPageMode,
     required this.isReverseHorizontal,
     required this.totalPages,
     required this.currentIndexLabel,
@@ -155,7 +158,15 @@ class ReaderBottomBar extends ConsumerWidget {
                 Expanded(
                   child: ReaderTranslationHost.button(context, labeled: true),
                 ),
-                Expanded(child: _mobileLayoutMenu(context, ref, readerMode)),
+                Expanded(
+                  child: MobileReaderDisplayButton(
+                    bookTitle: chapter.manga.value?.name ?? '',
+                    currentReaderModeProvider: currentReaderModeProvider,
+                    readPageMode: readPageMode,
+                    onReaderModeChanged: onReaderModeChanged,
+                    onPageModeToggle: onPageModeToggle,
+                  ),
+                ),
                 Expanded(
                   child: MobileReaderAction(
                     label: context.l10n.settings,
@@ -202,51 +213,6 @@ class ReaderBottomBar extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _mobileLayoutMenu(
-    BuildContext context,
-    WidgetRef ref,
-    ReaderMode mode,
-  ) {
-    final crop = ref.watch(cropBordersStateProvider);
-    final l10n = context.l10n;
-    return PopupMenuButton<Object>(
-      tooltip: l10n.display,
-      onSelected: (value) {
-        if (value is ReaderMode) {
-          onReaderModeChanged(value, ref);
-        } else if (value == _MobileLayoutAction.crop) {
-          ref.read(cropBordersStateProvider.notifier).set(!crop);
-        } else if (value == _MobileLayoutAction.doublePage) {
-          onPageModeToggle?.call();
-        }
-      },
-      itemBuilder: (_) => [
-        for (final value in ReaderMode.values)
-          CheckedPopupMenuItem<Object>(
-            value: value,
-            checked: value == mode,
-            child: Text(getReaderModeName(value, context)),
-          ),
-        const PopupMenuDivider(),
-        CheckedPopupMenuItem<Object>(
-          value: _MobileLayoutAction.crop,
-          checked: crop,
-          child: Text(l10n.crop_borders),
-        ),
-        CheckedPopupMenuItem<Object>(
-          value: _MobileLayoutAction.doublePage,
-          checked: _isDoublePageMode,
-          enabled: !mode.isHorizontalContinuous && onPageModeToggle != null,
-          child: Text(l10n.double_page),
-        ),
-      ],
-      child: MobileReaderAction(
-        label: l10n.display,
-        icon: Icons.auto_stories_outlined,
       ),
     );
   }

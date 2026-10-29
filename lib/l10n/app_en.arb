@@ -1642,5 +1642,9 @@
   "chapter_delete_records": "Delete chapter records",
   "chapter_delete_local_hint": "Removes the selected chapter records and reading progress. Original local archives are kept; downloaded copies are cleaned up.",
   "chapter_delete_last_hint": "These are all chapters in this comic. Deleting them also removes the comic from your bookshelf.",
-  "chapter_action_incomplete": "The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing."
+  "chapter_action_incomplete": "The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.",
+  "reader_display_scope": "Reading mode and manual page layout apply to this comic. Choose a change to return to reading.",
+  "reader_display_single_only": "Horizontal continuous reading uses single pages.",
+  "reader_display_manual_pages": "Changing page layout turns off automatic double page for all comics.",
+  "reader_display_crop_scope": "Applies to all comics."
 }

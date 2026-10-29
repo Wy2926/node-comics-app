@@ -75,21 +75,15 @@ class ReaderController extends _$ReaderController
 
   void setReaderMode(ReaderMode newReaderMode) {
     _cachedIsContinuousLike = null;
-    List<PersonalReaderMode>? personalReaderModeLists = [];
-    for (var personalReaderMode
-        in getIsarSetting().personalReaderModeList ?? []) {
-      if (personalReaderMode.mangaId != getManga().id) {
-        personalReaderModeLists.add(personalReaderMode);
-      }
-    }
-    personalReaderModeLists.add(
-      PersonalReaderMode()
-        ..mangaId = getManga().id
-        ..readerMode = newReaderMode,
-    );
-    settingsRepository.save(
-      getIsarSetting()..personalReaderModeList = personalReaderModeLists,
-    );
+    final mangaId = getManga().id;
+    settingsRepository.update((settings) {
+      settings.personalReaderModeList = [
+        for (final entry
+            in settings.personalReaderModeList ?? <PersonalReaderMode>[])
+          if (entry.mangaId != mangaId) entry,
+        PersonalReaderMode(mangaId: mangaId, readerMode: newReaderMode),
+      ];
+    });
     onSettingsMutated();
   }
 

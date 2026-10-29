@@ -10,6 +10,7 @@ import 'package:mangayomi/modules/manga/archive_reader/providers/archive_reader_
 import 'package:mangayomi/src/rust/api/epub.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/utils/localized_message.dart';
+import 'package:mangayomi/utils/ios_archive_path.dart';
 import 'package:path/path.dart' as p; // For manipulating file system paths
 import 'package:bot_toast/bot_toast.dart'; // For Exceptions
 import 'package:mangayomi/models/manga.dart'; // Has Manga model and ItemType enum
@@ -750,6 +751,9 @@ String localVirtualPathFromStoredPath(
 }
 
 Future<String> resolveLocalArchivePath(String archivePath) async {
+  if (Platform.isIOS && p.isAbsolute(archivePath)) {
+    return resolveRelocatedIosArchivePath(archivePath);
+  }
   final folders = await getAllLocalFolders();
   final normalized = normalizePath(archivePath);
   final parts = normalized.split('/');
@@ -803,7 +807,6 @@ String? _resolveDownloadFolderName(String? name, List<LocalFolder> folders) {
   return folders.firstOrNull?.name;
 }
 
-
 List<LocalFolder> _replaceLocalFolder(
   List<LocalFolder> folders,
   String originalPath,
@@ -828,4 +831,3 @@ String _debugLocalFolder(LocalFolder folder) {
   return 'name=${name?.isNotEmpty == true ? name : '<empty>'}, '
       'path=${path?.isNotEmpty == true ? path : '<empty>'}';
 }
-

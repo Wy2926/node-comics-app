@@ -1572,5 +1572,9 @@
   "chapter_delete_records": "删除章节记录",
   "chapter_delete_local_hint": "移除所选章节与阅读进度，保留原始压缩包，并清理已有下载副本。",
   "chapter_delete_last_hint": "所选章节是这部漫画的全部目录，删除后也会从书架移除这部漫画。",
-  "chapter_action_incomplete": "操作未完成，部分更改可能已保存。请关闭后先核对章节与下载，再继续操作。"
+  "chapter_action_incomplete": "操作未完成，部分更改可能已保存。请关闭后先核对章节与下载，再继续操作。",
+  "reader_display_scope": "阅读模式和手动单双页应用于当前漫画；选择后返回阅读。",
+  "reader_display_single_only": "横向连续阅读仅使用单页。",
+  "reader_display_manual_pages": "切换单双页会关闭所有漫画的自动双页。",
+  "reader_display_crop_scope": "应用于所有漫画。"
 }

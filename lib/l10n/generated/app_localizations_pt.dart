@@ -4118,6 +4118,21 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get chapter_action_incomplete =>
       'The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.';
+
+  @override
+  String get reader_display_scope =>
+      'Reading mode and manual page layout apply to this comic. Choose a change to return to reading.';
+
+  @override
+  String get reader_display_single_only =>
+      'Horizontal continuous reading uses single pages.';
+
+  @override
+  String get reader_display_manual_pages =>
+      'Changing page layout turns off automatic double page for all comics.';
+
+  @override
+  String get reader_display_crop_scope => 'Applies to all comics.';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).

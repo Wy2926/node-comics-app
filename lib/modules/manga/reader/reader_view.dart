@@ -935,6 +935,8 @@ class _MangaChapterPageGalleryState
                     currentReaderModeProvider: _currentReaderMode,
                     currentPageListenable: _currentPageDisplayIndex,
                     currentPageMode: effectivePageMode,
+                    readPageMode: () =>
+                        mounted ? _effectivePageMode : _pageMode,
                     isReverseHorizontal: _isReverseHorizontal,
                     totalPages: _readerController.getCachedPageLength(
                       _chapterUrlModel.pageUrls,
