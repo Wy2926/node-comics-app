@@ -7,7 +7,10 @@ import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/services/crash_report_issue.dart';
 import 'package:mangayomi/utils/device_description.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'mobile_error_reports_screen.dart';
 
 /// The errors the app caught, and the one button that matters: report it.
 class ErrorReportsScreen extends ConsumerStatefulWidget {
@@ -28,6 +31,19 @@ class _ErrorReportsScreenState extends ConsumerState<ErrorReportsScreen> {
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     final reports = CrashReports.reports.reversed.toList();
+
+    if (isMobile && !isTv) {
+      return MobileErrorReportsScreen(
+        reports: reports,
+        wasReported: CrashReports.wasReported,
+        onClear: () {
+          CrashReports.clear();
+          setState(() {});
+        },
+        onCopy: (report) => _copyReport(context, report),
+        onReport: (report) => _report(report, () => setState(() {})),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -153,7 +169,7 @@ class _ReportTile extends StatelessWidget {
               FilledButton.icon(
                 onPressed: CrashReports.wasReported(report)
                     ? null
-                    : () => _report(context),
+                    : () => _report(report, onReported),
                 icon: const Icon(Icons.bug_report_outlined, size: 18),
                 label: Text(
                   CrashReports.wasReported(report)
@@ -162,14 +178,7 @@ class _ReportTile extends StatelessWidget {
                 ),
               ),
             TextButton.icon(
-              onPressed: () async {
-                await Clipboard.setData(
-                  ClipboardData(
-                    text: '${report.error}\n\n${report.stack ?? ''}',
-                  ),
-                );
-                botToast(l10n.error_reports_copied, second: 2);
-              },
+              onPressed: () => _copyReport(context, report),
               icon: const Icon(Icons.copy, size: 18),
               label: Text(l10n.error_reports_copy),
             ),
@@ -178,18 +187,26 @@ class _ReportTile extends StatelessWidget {
       ],
     );
   }
+}
 
-  Future<void> _report(BuildContext context) async {
-    CrashReports.markReported(report);
-    onReported();
-    final url = buildIssueUrl(
-      report,
-      appVersion: await appVersionDescription(),
-      device: await deviceDescription(),
-      logs: recentErrorsText(CrashReports.reports),
-    );
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      await Clipboard.setData(ClipboardData(text: url.toString()));
-    }
+Future<void> _copyReport(BuildContext context, CrashReport report) async {
+  final copied = context.l10n.error_reports_copied;
+  await Clipboard.setData(
+    ClipboardData(text: '${report.error}\n\n${report.stack ?? ''}'),
+  );
+  botToast(copied, second: 2);
+}
+
+Future<void> _report(CrashReport report, VoidCallback onReported) async {
+  CrashReports.markReported(report);
+  onReported();
+  final url = buildIssueUrl(
+    report,
+    appVersion: await appVersionDescription(),
+    device: await deviceDescription(),
+    logs: recentErrorsText(CrashReports.reports),
+  );
+  if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+    await Clipboard.setData(ClipboardData(text: url.toString()));
   }
 }

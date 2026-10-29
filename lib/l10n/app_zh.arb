@@ -1482,5 +1482,9 @@
   "calendar_month": "月",
   "calendar_two_weeks": "两周",
   "calendar_week": "周",
-  "calendar_show_all_dates": "查看全部日期"
+  "calendar_show_all_dates": "查看全部日期",
+  "update_errors": "更新错误",
+  "no_update_errors": "没有更新错误",
+  "clear_all": "全部清除",
+  "dismiss": "忽略"
 }

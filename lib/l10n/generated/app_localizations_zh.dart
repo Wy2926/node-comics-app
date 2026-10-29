@@ -3371,16 +3371,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chapter_swipe_disabled => '已禁用';
 
   @override
-  String get update_errors => 'Update errors';
+  String get update_errors => '更新错误';
 
   @override
-  String get no_update_errors => 'No update errors';
+  String get no_update_errors => '没有更新错误';
 
   @override
-  String get clear_all => 'Clear all';
+  String get clear_all => '全部清除';
 
   @override
-  String get dismiss => 'Dismiss';
+  String get dismiss => '忽略';
 
   @override
   String get previous_episode => 'Previous episode';
