@@ -16,6 +16,9 @@ import 'package:mangayomi/modules/anime/widgets/desktop.dart';
 import 'package:mangayomi/modules/manga/reader/mixins/reader_gestures.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/auto_scroll_button.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_app_bar.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_novel_reader_screen.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_tts_settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/novel/novel_reader_controller_provider.dart';
 import 'package:mangayomi/modules/novel/tts/novel_tts_service.dart';
@@ -25,6 +28,8 @@ import 'package:mangayomi/modules/novel/utils/novel_paginator.dart';
 import 'package:mangayomi/modules/novel/utils/novel_reader_fonts.dart';
 import 'package:mangayomi/modules/novel/widgets/novel_general_settings_tab.dart';
 import 'package:mangayomi/modules/novel/widgets/novel_reader_settings_sheet.dart';
+import 'package:mangayomi/modules/novel/widgets/mobile_novel_controls.dart';
+import 'package:mangayomi/modules/novel/widgets/mobile_novel_session_settings.dart';
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/modules/widgets/error_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -33,6 +38,7 @@ import 'package:mangayomi/src/rust/api/epub.dart';
 import 'package:mangayomi/utils/extensions/dom_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/system_ui.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
@@ -266,6 +272,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   bool _isView = false;
   final _keyboardFocusNode = FocusNode();
   bool _showTts = false;
+  bool _mobileControlOpen = false;
   String? _currentHtmlContent;
   final ValueNotifier<({int paragraph, int wordStart, int wordEnd})>
   _ttsProgress = ValueNotifier((paragraph: -1, wordStart: -1, wordEnd: -1));
@@ -921,17 +928,21 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                     _gestureRightLeft(ref.watch(novelTapToScrollStateProvider)),
                     _gestureTopBottom(ref.watch(novelTapToScrollStateProvider)),
                     _appBar(),
-                    _bottomBar(backgroundColor, effectivePageMode),
+                    if (isMobile && !isTv)
+                      _mobileBottomBar(effectivePageMode)
+                    else
+                      _bottomBar(backgroundColor, effectivePageMode),
                     ReaderAutoScrollButton(
                       isContinuousMode: _readerMode.isContinuous,
-                      isUiVisible: _isView,
+                      isUiVisible: _isView || (isMobile && !isTv && _showTts),
                       autoScrollPage: _autoScrollPage,
                       autoScroll: _autoScroll,
                       onToggle: () {
                         _autoScroll.value = !_autoScroll.value;
                       },
                     ),
-                    if (_ttsSupported &&
+                    if (!(isMobile && !isTv) &&
+                        _ttsSupported &&
                         _showTts &&
                         _currentHtmlContent != null)
                       Positioned(
@@ -1155,7 +1166,189 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
     );
   }
 
+  Future<void> _presentMobileControl(Future<void> Function() show) async {
+    if (_mobileControlOpen) return;
+    _mobileControlOpen = true;
+    final wasRunning = _autoScroll.value;
+    if (wasRunning) _autoScroll.value = false;
+    try {
+      await show();
+    } finally {
+      if (mounted) {
+        _mobileControlOpen = false;
+        if ((wasRunning || _autoScroll.value) &&
+            _autoScrollPage.value &&
+            _isContinuousMode()) {
+          _autoScroll.value = true;
+        }
+      }
+    }
+  }
+
+  Future<void> _openMobileSettings() => _presentMobileControl(() async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (settingsContext) => MobileNovelReaderScreen(
+          sessionControls: MobileNovelSessionSettings(
+            readerMode: _readerMode,
+            pageMode: _pageMode,
+            autoScroll: _autoScrollPage,
+            speed: _pageOffset,
+            onReaderModeChanged: (mode) {
+              _readerController.setReaderMode(mode);
+              setState(() => _readerMode = mode);
+            },
+            onPageModeChanged: (mode) {
+              _readerController.setPageMode(mode);
+              setState(() => _pageMode = mode);
+            },
+            onAutoScrollChanged: (value) {
+              _readerController.setAutoScroll(value, _pageOffset.value);
+              _autoScrollPage.value = value;
+              _autoScroll.value = value;
+            },
+            onSpeedPreview: (value) => _pageOffset.value = value,
+            onSpeedChanged: (value) =>
+                _readerController.setAutoScroll(_autoScrollPage.value, value),
+          ),
+          onOpenTts: _ttsSupported
+              ? () => Navigator.push<void>(
+                  settingsContext,
+                  MaterialPageRoute(
+                    builder: (_) => const MobileTtsSettingsScreen(),
+                  ),
+                )
+              : null,
+        ),
+      ),
+    );
+  });
+
+  Widget _mobileBottomBar(PageMode effectivePageMode) {
+    return MobileNovelPanel(
+      controlsVisible: _isView,
+      player: _ttsSupported && _showTts && _currentHtmlContent != null
+          ? TtsPlayerBar(
+              key: const ValueKey('novel-tts-player'),
+              mobile: true,
+              htmlContent: _currentHtmlContent!,
+              onClose: () {
+                if (mounted) setState(() => _showTts = false);
+              },
+            )
+          : null,
+      controls: StreamBuilder<double>(
+        stream: _rebuildDetail.stream,
+        builder: (context, _) {
+          final pagination = _cachedPagination;
+          final doublePage = effectivePageMode == PageMode.doublePage;
+          final total = doublePage
+              ? (pagination?.spreadCount ?? 1)
+              : (pagination?.pageCount ?? 1);
+          final index = _currentSpreadIndex.clamp(0, max(0, total - 1)).toInt();
+          final extent = _scrollController.hasClients
+              ? _scrollController.position.maxScrollExtent
+              : maxOffset;
+          final position = _scrollController.hasClients
+              ? _scrollController.offset
+              : offset;
+          final percentage = extent > 0
+              ? ((position / extent) * 100).clamp(0, 100).toInt()
+              : 0;
+          final label = doublePage
+              ? (pagination?.spreadLabelForSpread(index) ?? '${index + 1}')
+              : '${index + 1}';
+          return MobileNovelControls(
+            progress: _isContinuousMode()
+                ? percentage / 100
+                : total > 1
+                ? index / (total - 1)
+                : 0,
+            progressLabel: _isContinuousMode()
+                ? '$percentage%'
+                : '$label / ${pagination?.pageCount ?? total}',
+            onSeek: _isContinuousMode()
+                ? extent > 0
+                      ? (value) {
+                          if (_scrollController.hasClients) {
+                            _scrollController.jumpTo(
+                              _scrollController.position.maxScrollExtent *
+                                  value,
+                            );
+                          }
+                        }
+                      : null
+                : total > 1
+                ? (value) {
+                    if (_spreadController.hasClients) {
+                      _spreadController.jumpToPage(
+                        (value * (total - 1)).round(),
+                      );
+                    }
+                  }
+                : null,
+            onPreviousChapter: _readerController.hasPreviousChapter
+                ? () => _goToChapter(false)
+                : null,
+            onNextChapter: _readerController.hasNextChapter
+                ? () => _goToChapter(true)
+                : null,
+            chapterAction: btnToShowChapterListDialog(
+              context,
+              context.l10n.chapters,
+              chapter,
+              labeled: true,
+            ),
+            onFontSize: () => _showFontSizeBottomSheet(context),
+            onSettings: _openMobileSettings,
+            listening: _showTts,
+            onListen: _ttsSupported
+                ? () => setState(() => _showTts = !_showTts)
+                : null,
+          );
+        },
+      ),
+    );
+  }
+
   void _showFontSizeBottomSheet(BuildContext context) {
+    if (isMobile && !isTv) {
+      _presentMobileControl(() async {
+        await showModalBottomSheet<void>(
+          context: context,
+          useSafeArea: true,
+          isScrollControlled: true,
+          showDragHandle: true,
+          backgroundColor: NodeLaneTokens.of(context).surface,
+          builder: (context) => NodeLaneSurface(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * .7,
+              ),
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  child: Consumer(
+                    builder: (context, ref, _) => MobileNovelFontSize(
+                      value: ref.watch(novelFontSizeStateProvider),
+                      onChanged: (value) {
+                        ref
+                            .read(novelFontSizeStateProvider.notifier)
+                            .set(value);
+                        setState(() => fontSize = value);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      });
+      return;
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,

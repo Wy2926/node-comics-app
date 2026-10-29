@@ -11,8 +11,15 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'providers/reader_state_provider.dart';
 
 class MobileNovelReaderScreen extends ConsumerWidget {
-  const MobileNovelReaderScreen({super.key, this.onOpenTts});
+  const MobileNovelReaderScreen({
+    super.key,
+    this.onOpenTts,
+    this.sessionControls,
+  });
   final VoidCallback? onOpenTts;
+
+  /// Only the in-reader entry supplies controls for the current book.
+  final Widget? sessionControls;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,6 +40,7 @@ class MobileNovelReaderScreen extends ConsumerWidget {
             key: const PageStorageKey('mobile-novel-reader-settings'),
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             children: [
+              ?sessionControls,
               MobileSettingsGroup(
                 title: l10n.font,
                 children: [

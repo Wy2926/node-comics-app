@@ -26,37 +26,41 @@ class MobileReaderPanel extends StatelessWidget {
         ignoring: !visible,
         child: ExcludeSemantics(
           excluding: !visible,
-          child: AnimatedSlide(
-            offset: visible ? Offset.zero : Offset(0, top ? -1 : 1),
-            duration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : const Duration(milliseconds: 180),
-            curve: Curves.easeOut,
-            child: NodeLaneSurface(
-              child: Material(
-                color: colors.surface,
-                borderRadius: top
-                    ? null
-                    : const BorderRadius.vertical(top: Radius.circular(20)),
-                clipBehavior: Clip.antiAlias,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight:
-                        MediaQuery.sizeOf(context).height * (top ? .32 : .48),
-                  ),
-                  child: SafeArea(
-                    top: top,
-                    bottom: !top,
-                    child: NotificationListener<ScrollNotification>(
-                      // Scrolling enlarged controls must not trigger the page's
-                      // scroll-to-hide handler.
-                      onNotification: (_) => true,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+          // Stack only clips layout overflow. A translated panel can otherwise
+          // paint outside its bounds into a surrounding safe area when hidden.
+          child: ClipRect(
+            child: AnimatedSlide(
+              offset: visible ? Offset.zero : Offset(0, top ? -1 : 1),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              child: NodeLaneSurface(
+                child: Material(
+                  color: colors.surface,
+                  borderRadius: top
+                      ? null
+                      : const BorderRadius.vertical(top: Radius.circular(20)),
+                  clipBehavior: Clip.antiAlias,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight:
+                          MediaQuery.sizeOf(context).height * (top ? .32 : .48),
+                    ),
+                    child: SafeArea(
+                      top: top,
+                      bottom: !top,
+                      child: NotificationListener<ScrollNotification>(
+                        // Scrolling enlarged controls must not trigger the page's
+                        // scroll-to-hide handler.
+                        onNotification: (_) => true,
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: child,
                         ),
-                        child: child,
                       ),
                     ),
                   ),
