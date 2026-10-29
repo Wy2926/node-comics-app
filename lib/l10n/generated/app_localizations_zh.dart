@@ -3505,4 +3505,10 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get mobile_navigation_description =>
       '拖动调整顺序。漫画、动画和小说共用书架入口，首个显示项目为启动页。浏览与更多始终显示，多余入口收进更多。';
+
+  @override
+  String get text_align_justify => '两端对齐';
+
+  @override
+  String get novel_session_modes_hint => '阅读模式与单／双页在打开小说后设置。';
 }

@@ -3682,6 +3682,13 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get mobile_navigation_description =>
       'Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.';
+
+  @override
+  String get text_align_justify => 'Justify';
+
+  @override
+  String get novel_session_modes_hint =>
+      'Set reading mode and single or double pages while reading a title.';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).

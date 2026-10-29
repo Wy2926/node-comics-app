@@ -4,6 +4,7 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/novel/novel_reader_controller_provider.dart';
 import 'package:mangayomi/modules/novel/utils/novel_reader_fonts.dart';
+import 'package:mangayomi/modules/novel/utils/novel_reader_palette.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/novel/widgets/novel_settings_controls.dart';
 
@@ -68,73 +69,28 @@ class _ReaderSettingsTabState extends ConsumerState<ReaderSettingsTab> {
               children: [
                 Row(
                   children: [
-                    Expanded(
-                      child: NovelThemeButton(
-                        backgroundColor: '#292832',
-                        textColor: '#CCCCCC',
-                        label: context.l10n.theme_dark,
-                        isSelected: backgroundColor == '#292832',
-                        onTap: () {
-                          ref
-                              .read(novelReaderThemeStateProvider.notifier)
-                              .set('#292832');
-                          ref
-                              .read(novelReaderTextColorStateProvider.notifier)
-                              .set('#CCCCCC');
-                        },
+                    for (final preset in NovelReaderThemePreset.values) ...[
+                      if (preset != NovelReaderThemePreset.values.first)
+                        const SizedBox(width: 8),
+                      Expanded(
+                        child: NovelThemeButton(
+                          backgroundColor: preset.background,
+                          textColor: preset.text,
+                          label: preset.label(context),
+                          isSelected: backgroundColor == preset.background,
+                          onTap: () {
+                            ref
+                                .read(novelReaderThemeStateProvider.notifier)
+                                .set(preset.background);
+                            ref
+                                .read(
+                                  novelReaderTextColorStateProvider.notifier,
+                                )
+                                .set(preset.text);
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: NovelThemeButton(
-                        backgroundColor: '#FFFFFF',
-                        textColor: '#000000',
-                        label: context.l10n.theme_light,
-                        isSelected: backgroundColor == '#FFFFFF',
-                        onTap: () {
-                          ref
-                              .read(novelReaderThemeStateProvider.notifier)
-                              .set('#FFFFFF');
-                          ref
-                              .read(novelReaderTextColorStateProvider.notifier)
-                              .set('#000000');
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: NovelThemeButton(
-                        backgroundColor: '#000000',
-                        textColor: '#FFFFFF',
-                        label: context.l10n.theme_black,
-                        isSelected: backgroundColor == '#000000',
-                        onTap: () {
-                          ref
-                              .read(novelReaderThemeStateProvider.notifier)
-                              .set('#000000');
-                          ref
-                              .read(novelReaderTextColorStateProvider.notifier)
-                              .set('#FFFFFF');
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: NovelThemeButton(
-                        backgroundColor: '#F5E6D3',
-                        textColor: '#5F4B32',
-                        label: context.l10n.theme_sepia,
-                        isSelected: backgroundColor == '#F5E6D3',
-                        onTap: () {
-                          ref
-                              .read(novelReaderThemeStateProvider.notifier)
-                              .set('#F5E6D3');
-                          ref
-                              .read(novelReaderTextColorStateProvider.notifier)
-                              .set('#5F4B32');
-                        },
-                      ),
-                    ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 10),

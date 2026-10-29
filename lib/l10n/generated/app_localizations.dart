@@ -6528,6 +6528,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.'**
   String get mobile_navigation_description;
+
+  /// No description provided for @text_align_justify.
+  ///
+  /// In en, this message translates to:
+  /// **'Justify'**
+  String get text_align_justify;
+
+  /// No description provided for @novel_session_modes_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set reading mode and single or double pages while reading a title.'**
+  String get novel_session_modes_hint;
 }
 
 class _AppLocalizationsDelegate

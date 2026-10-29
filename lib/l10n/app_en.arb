@@ -1475,5 +1475,7 @@
   "download_queue_empty_hint": "Open a chapter list to add downloads.",
   "download_queue_order_hint": "Drag to change the order of waiting chapters.",
   "cf_proxy_helper": "FlareSolverr / Byparr endpoint. Leave empty to disable.",
-  "mobile_navigation_description": "Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More."
+  "mobile_navigation_description": "Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.",
+  "text_align_justify": "Justify",
+  "novel_session_modes_hint": "Set reading mode and single or double pages while reading a title."
 }

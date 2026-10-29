@@ -1422,5 +1422,7 @@
   "cloudflare_bypass_proxy": "Cloudflare 验证代理",
   "custom_doh_url": "自定义 DoH 地址",
   "custom_doh_url_helper": "须为 HTTPS 的 DoH（JSON）服务地址",
-  "anime_only_tv_layout": "电视仅动画布局"
+  "anime_only_tv_layout": "电视仅动画布局",
+  "text_align_justify": "两端对齐",
+  "novel_session_modes_hint": "阅读模式与单／双页在打开小说后设置。"
 }

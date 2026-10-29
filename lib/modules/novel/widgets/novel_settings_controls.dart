@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/novel/utils/novel_reader_palette.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 class NovelSettingSection extends StatelessWidget {
@@ -254,34 +255,8 @@ class NovelColorPicker extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    _colorOption(context, Colors.white, selectedColor),
-                    _colorOption(context, Colors.black, selectedColor),
-                    _colorOption(
-                      context,
-                      const Color(0xFF292832),
-                      selectedColor,
-                    ),
-                    _colorOption(
-                      context,
-                      const Color(0xFFF5E6D3),
-                      selectedColor,
-                    ),
-                    _colorOption(
-                      context,
-                      const Color(0xFF5F4B32),
-                      selectedColor,
-                    ),
-                    _colorOption(
-                      context,
-                      const Color(0xFFCCCCCC),
-                      selectedColor,
-                    ),
-                    _colorOption(context, Colors.grey[800]!, selectedColor),
-                    _colorOption(context, Colors.grey[300]!, selectedColor),
-                    _colorOption(context, Colors.brown[100]!, selectedColor),
-                    _colorOption(context, Colors.blue[100]!, selectedColor),
-                    _colorOption(context, Colors.green[100]!, selectedColor),
-                    _colorOption(context, Colors.amber[100]!, selectedColor),
+                    for (final optionColor in novelReaderColorPalette)
+                      _colorOption(context, optionColor, selectedColor),
                   ],
                 ),
               ],
