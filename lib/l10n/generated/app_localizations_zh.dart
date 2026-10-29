@@ -1553,10 +1553,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mark_duplicate_chapters_read => '将重复的章节号标记为已读';
 
   @override
-  String get default_skip_intro_length => '默认跳过介绍长度';
+  String get default_skip_intro_length => '片头跳过时长';
 
   @override
-  String get default_playback_speed_length => '默认播放速度长度';
+  String get default_playback_speed_length => '默认播放速度';
 
   @override
   String get updateProgressAfterReading => '阅读后更新进度';
@@ -1568,13 +1568,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get show_extensions => '显示扩展';
 
   @override
-  String get default_skip_forward_skip_length => '默认向前跳过长度';
+  String get default_skip_forward_skip_length => '双击快进／快退时长';
 
   @override
-  String get aniskip_requires_info => 'AniSkip需要跟踪使用MAL或Anilist进行的动漫才能工作。';
+  String get aniskip_requires_info =>
+      '使用 AniSkip 前，需要将动画关联到 MyAnimeList 或 AniList 追踪。';
 
   @override
-  String get enable_aniskip => '启用AniSkip';
+  String get enable_aniskip => '启用 AniSkip';
 
   @override
   String get enable_auto_skip => '启用自动跳过';
@@ -3523,4 +3524,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tts_apply_failed => '未能向语音引擎应用此设置，可以重试。';
+
+  @override
+  String get player_controls => '控制';
+
+  @override
+  String get audio_channel_auto => '自动';
+
+  @override
+  String get audio_channel_auto_safe => '自动（安全模式）';
+
+  @override
+  String get audio_channel_mono => '单声道';
+
+  @override
+  String get audio_channel_stereo => '立体声';
+
+  @override
+  String get audio_channel_reverse_stereo => '交换左右声道';
 }

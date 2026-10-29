@@ -2950,13 +2950,13 @@ abstract class AppLocalizations {
   /// No description provided for @default_skip_intro_length.
   ///
   /// In en, this message translates to:
-  /// **'Default Skip intro length'**
+  /// **'Intro skip duration'**
   String get default_skip_intro_length;
 
   /// No description provided for @default_playback_speed_length.
   ///
   /// In en, this message translates to:
-  /// **'Default Playback speed length'**
+  /// **'Default playback speed'**
   String get default_playback_speed_length;
 
   /// No description provided for @updateProgressAfterReading.
@@ -2980,7 +2980,7 @@ abstract class AppLocalizations {
   /// No description provided for @default_skip_forward_skip_length.
   ///
   /// In en, this message translates to:
-  /// **'Default skip forward skip length'**
+  /// **'Double-tap seek duration'**
   String get default_skip_forward_skip_length;
 
   /// No description provided for @aniskip_requires_info.
@@ -4024,13 +4024,13 @@ abstract class AppLocalizations {
   /// No description provided for @audio_preferred_languages.
   ///
   /// In en, this message translates to:
-  /// **'Preferred langauages'**
+  /// **'Preferred languages'**
   String get audio_preferred_languages;
 
   /// No description provided for @audio_preferred_languages_info.
   ///
   /// In en, this message translates to:
-  /// **'Audio langauage(s) to be selected by default on a video with multiple audio streams, 2/3-letter languages codes (e.g.: en, de, fr) work. Multiple values can be delimited by a comma.'**
+  /// **'Audio languages to prefer when a video has multiple audio tracks. Use two- or three-letter codes, separated by commas (for example: ja, en).'**
   String get audio_preferred_languages_info;
 
   /// No description provided for @enable_audio_pitch_correction.
@@ -6564,6 +6564,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not apply this setting to the speech engine. You can retry.'**
   String get tts_apply_failed;
+
+  /// No description provided for @player_controls.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls'**
+  String get player_controls;
+
+  /// No description provided for @audio_channel_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get audio_channel_auto;
+
+  /// No description provided for @audio_channel_auto_safe.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic (safe)'**
+  String get audio_channel_auto_safe;
+
+  /// No description provided for @audio_channel_mono.
+  ///
+  /// In en, this message translates to:
+  /// **'Mono'**
+  String get audio_channel_mono;
+
+  /// No description provided for @audio_channel_stereo.
+  ///
+  /// In en, this message translates to:
+  /// **'Stereo'**
+  String get audio_channel_stereo;
+
+  /// No description provided for @audio_channel_reverse_stereo.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverse stereo'**
+  String get audio_channel_reverse_stereo;
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,8 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
+import 'mobile_player_decoder_screen.dart';
+
 class PlayerDecoderScreen extends ConsumerStatefulWidget {
   const PlayerDecoderScreen({super.key});
 
@@ -18,6 +20,7 @@ class PlayerDecoderScreen extends ConsumerStatefulWidget {
 class _PlayerDecoderScreenState extends ConsumerState<PlayerDecoderScreen> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobilePlayerDecoderScreen();
     final enableHardwareAccel = ref.watch(enableHardwareAccelStateProvider);
     final hwdecMode = ref.watch(hwdecModeStateProvider(rawValue: true));
     final useGpuNext = ref.watch(useGpuNextStateProvider);

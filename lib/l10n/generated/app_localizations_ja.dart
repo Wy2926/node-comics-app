@@ -3588,4 +3588,22 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get tts_apply_failed =>
       'Could not apply this setting to the speech engine. You can retry.';
+
+  @override
+  String get player_controls => 'Controls';
+
+  @override
+  String get audio_channel_auto => 'Automatic';
+
+  @override
+  String get audio_channel_auto_safe => 'Automatic (safe)';
+
+  @override
+  String get audio_channel_mono => 'Mono';
+
+  @override
+  String get audio_channel_stereo => 'Stereo';
+
+  @override
+  String get audio_channel_reverse_stereo => 'Reverse stereo';
 }

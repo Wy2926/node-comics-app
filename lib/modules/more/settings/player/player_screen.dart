@@ -9,6 +9,8 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
+import 'mobile_player_screen.dart';
+
 class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({super.key});
 
@@ -19,6 +21,7 @@ class PlayerScreen extends ConsumerStatefulWidget {
 class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobilePlayerScreen();
     final defaultSubtitleLang = ref.watch(defaultSubtitleLangStateProvider);
     final markEpisodeAsSeenType = ref.watch(markEpisodeAsSeenTypeStateProvider);
     final defaultSkipIntroLength = ref.watch(

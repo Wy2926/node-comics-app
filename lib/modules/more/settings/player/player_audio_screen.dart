@@ -10,6 +10,8 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
+import 'mobile_player_audio_screen.dart';
+
 class PlayerAudioScreen extends ConsumerStatefulWidget {
   const PlayerAudioScreen({super.key});
 
@@ -20,6 +22,7 @@ class PlayerAudioScreen extends ConsumerStatefulWidget {
 class _PlayerAudioScreenState extends ConsumerState<PlayerAudioScreen> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobilePlayerAudioScreen();
     final audioPreferredLang = ref.watch(audioPreferredLangStateProvider);
     final enableAudioPitchCorrection = ref.watch(
       enableAudioPitchCorrectionStateProvider,

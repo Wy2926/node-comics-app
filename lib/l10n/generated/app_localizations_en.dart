@@ -1598,10 +1598,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Mark duplicate chapter numbers as read';
 
   @override
-  String get default_skip_intro_length => 'Default Skip intro length';
+  String get default_skip_intro_length => 'Intro skip duration';
 
   @override
-  String get default_playback_speed_length => 'Default Playback speed length';
+  String get default_playback_speed_length => 'Default playback speed';
 
   @override
   String get updateProgressAfterReading => 'Update progress after reading';
@@ -1613,8 +1613,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get show_extensions => 'Show extensions';
 
   @override
-  String get default_skip_forward_skip_length =>
-      'Default skip forward skip length';
+  String get default_skip_forward_skip_length => 'Double-tap seek duration';
 
   @override
   String get aniskip_requires_info =>
@@ -2178,11 +2177,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'May fix black screens on some video codecs, can also improve performance at the cost of quality';
 
   @override
-  String get audio_preferred_languages => 'Preferred langauages';
+  String get audio_preferred_languages => 'Preferred languages';
 
   @override
   String get audio_preferred_languages_info =>
-      'Audio langauage(s) to be selected by default on a video with multiple audio streams, 2/3-letter languages codes (e.g.: en, de, fr) work. Multiple values can be delimited by a comma.';
+      'Audio languages to prefer when a video has multiple audio tracks. Use two- or three-letter codes, separated by commas (for example: ja, en).';
 
   @override
   String get enable_audio_pitch_correction => 'Enable audio pitch correction';
@@ -3671,4 +3670,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tts_apply_failed =>
       'Could not apply this setting to the speech engine. You can retry.';
+
+  @override
+  String get player_controls => 'Controls';
+
+  @override
+  String get audio_channel_auto => 'Automatic';
+
+  @override
+  String get audio_channel_auto_safe => 'Automatic (safe)';
+
+  @override
+  String get audio_channel_mono => 'Mono';
+
+  @override
+  String get audio_channel_stereo => 'Stereo';
+
+  @override
+  String get audio_channel_reverse_stereo => 'Reverse stereo';
 }
