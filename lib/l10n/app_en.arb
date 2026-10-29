@@ -1487,5 +1487,11 @@
   "audio_channel_auto_safe": "Automatic (safe)",
   "audio_channel_mono": "Mono",
   "audio_channel_stereo": "Stereo",
-  "audio_channel_reverse_stereo": "Reverse stereo"
+  "audio_channel_reverse_stereo": "Reverse stereo",
+  "mpv_bundled_config_hint": "Restore the configuration, scripts and shaders included with the app. Files with the same names will be overwritten.",
+  "mpv_restore_bundled": "Restore bundled configuration",
+  "mpv_restore_confirm": "Restore the bundled MPV configuration? Existing configuration, scripts and shaders with the same names will be overwritten. Other files will be kept.",
+  "player_operation_incomplete": "The operation could not be completed. Check file access and try again.",
+  "custom_buttons_empty_hint": "Add a player button with a label and a press action.",
+  "custom_button_primary": "Default button"
 }

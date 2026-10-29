@@ -3737,4 +3737,26 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get audio_channel_reverse_stereo => 'Reverse stereo';
+
+  @override
+  String get mpv_bundled_config_hint =>
+      'Restore the configuration, scripts and shaders included with the app. Files with the same names will be overwritten.';
+
+  @override
+  String get mpv_restore_bundled => 'Restore bundled configuration';
+
+  @override
+  String get mpv_restore_confirm =>
+      'Restore the bundled MPV configuration? Existing configuration, scripts and shaders with the same names will be overwritten. Other files will be kept.';
+
+  @override
+  String get player_operation_incomplete =>
+      'The operation could not be completed. Check file access and try again.';
+
+  @override
+  String get custom_buttons_empty_hint =>
+      'Add a player button with a label and a press action.';
+
+  @override
+  String get custom_button_primary => 'Default button';
 }

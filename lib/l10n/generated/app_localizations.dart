@@ -6600,6 +6600,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reverse stereo'**
   String get audio_channel_reverse_stereo;
+
+  /// No description provided for @mpv_bundled_config_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore the configuration, scripts and shaders included with the app. Files with the same names will be overwritten.'**
+  String get mpv_bundled_config_hint;
+
+  /// No description provided for @mpv_restore_bundled.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore bundled configuration'**
+  String get mpv_restore_bundled;
+
+  /// No description provided for @mpv_restore_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore the bundled MPV configuration? Existing configuration, scripts and shaders with the same names will be overwritten. Other files will be kept.'**
+  String get mpv_restore_confirm;
+
+  /// No description provided for @player_operation_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The operation could not be completed. Check file access and try again.'**
+  String get player_operation_incomplete;
+
+  /// No description provided for @custom_buttons_empty_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a player button with a label and a press action.'**
+  String get custom_buttons_empty_hint;
+
+  /// No description provided for @custom_button_primary.
+  ///
+  /// In en, this message translates to:
+  /// **'Default button'**
+  String get custom_button_primary;
 }
 
 class _AppLocalizationsDelegate

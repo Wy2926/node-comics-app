@@ -3542,4 +3542,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get audio_channel_reverse_stereo => '交换左右声道';
+
+  @override
+  String get mpv_bundled_config_hint => '恢复应用内置的配置、脚本和着色器。同名文件会被覆盖。';
+
+  @override
+  String get mpv_restore_bundled => '恢复内置配置';
+
+  @override
+  String get mpv_restore_confirm => '恢复内置 MPV 配置？现有配置、脚本和着色器的同名文件会被覆盖，其他文件保留。';
+
+  @override
+  String get player_operation_incomplete => '未能完成操作，请检查文件访问权限后重试。';
+
+  @override
+  String get custom_buttons_empty_hint => '添加播放器按钮，设置名称和点击时执行的操作。';
+
+  @override
+  String get custom_button_primary => '默认按钮';
 }

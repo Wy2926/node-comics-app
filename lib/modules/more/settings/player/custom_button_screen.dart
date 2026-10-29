@@ -6,6 +6,9 @@ import 'package:mangayomi/modules/more/settings/player/providers/custom_buttons_
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_custom_button_screen.dart';
 
 class CustomButtonScreen extends ConsumerStatefulWidget {
   const CustomButtonScreen({super.key});
@@ -17,6 +20,7 @@ class CustomButtonScreen extends ConsumerStatefulWidget {
 class _CustomButtonScreenState extends ConsumerState<CustomButtonScreen> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobileCustomButtonScreen();
     final l10n = context.l10n;
     final customButtons = ref.watch(getCustomButtonsStreamProvider);
     return Scaffold(
