@@ -4,6 +4,7 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/download_quick_menu.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_actions.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -53,13 +54,15 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final mobile = isMobile && !isTv;
     final isLongPressed = ref.watch(isLongPressedStateProvider);
     final chapterList = ref.watch(chaptersListStateProvider);
+    final mobileManga = mobile && itemType == ItemType.manga;
     final checkCategoryList =
-        ref
-            .watch(getMangaCategorieStreamProvider(itemType: itemType))
-            .asData
-            ?.value
-            .isNotEmpty ??
-        false;
+        mobileManga ||
+        (ref
+                .watch(getMangaCategorieStreamProvider(itemType: itemType))
+                .asData
+                ?.value
+                .isNotEmpty ??
+            false);
     final isNotFiltering = ref.watch(
       chapterFilterResultStateProvider(manga: manga),
     );
@@ -137,6 +140,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 DownloadQuickMenu(
                   itemType: itemType,
                   manga: manga,
+                  hasChapters: chapters.isNotEmpty,
                   onDownload: onDownload,
                 ),
               ],
@@ -182,6 +186,13 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       },
                     );
                   },
+                )
+              else if (mobileManga)
+                MobileMangaDetailActionsButton(
+                  bookTitle: manga.name ?? '',
+                  localArchive: isLocalArchive,
+                  favorite: manga.favorite ?? false,
+                  onSelected: onOverflowAction,
                 )
               else
                 PopupMenuButton(

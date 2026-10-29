@@ -1554,5 +1554,10 @@
   "bookshelf_categories_hidden": "这部漫画已有的隐藏分类会保留。",
   "bookshelf_categories_incomplete": "分类未保存完成。请关闭后先核对书架，再继续操作。",
   "bookshelf_categories_none_visible": "没有可选分类，可前往管理分类查看。",
-  "bookshelf_manage_categories": "管理分类"
+  "bookshelf_manage_categories": "管理分类",
+  "manga_actions": "漫画操作",
+  "manga_download_scope": "下载章节",
+  "manga_download_scope_hint": "按当前目录筛选选择章节，已下载的章节会跳过。",
+  "manga_download_scope_empty": "当前筛选下没有章节。请关闭并调整目录筛选。",
+  "manga_action_incomplete": "操作未完成。请先核对当前状态，再决定是否重新操作。"
 }

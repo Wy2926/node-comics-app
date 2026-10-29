@@ -3837,4 +3837,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookshelf_manage_categories => '管理分类';
+
+  @override
+  String get manga_actions => '漫画操作';
+
+  @override
+  String get manga_download_scope => '下载章节';
+
+  @override
+  String get manga_download_scope_hint => '按当前目录筛选选择章节，已下载的章节会跳过。';
+
+  @override
+  String get manga_download_scope_empty => '当前筛选下没有章节。请关闭并调整目录筛选。';
+
+  @override
+  String get manga_action_incomplete => '操作未完成。请先核对当前状态，再决定是否重新操作。';
 }

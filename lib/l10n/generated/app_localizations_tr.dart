@@ -4028,4 +4028,22 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get bookshelf_manage_categories => 'Manage categories';
+
+  @override
+  String get manga_actions => 'Comic actions';
+
+  @override
+  String get manga_download_scope => 'Download chapters';
+
+  @override
+  String get manga_download_scope_hint =>
+      'Choose chapters within the current filters. Downloaded chapters are skipped.';
+
+  @override
+  String get manga_download_scope_empty =>
+      'No chapters match the current filters. Close this menu and adjust the chapter filters.';
+
+  @override
+  String get manga_action_incomplete =>
+      'The action did not finish. Check the current state before trying again.';
 }

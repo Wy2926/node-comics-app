@@ -7145,6 +7145,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage categories'**
   String get bookshelf_manage_categories;
+
+  /// No description provided for @manga_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Comic actions'**
+  String get manga_actions;
+
+  /// No description provided for @manga_download_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Download chapters'**
+  String get manga_download_scope;
+
+  /// No description provided for @manga_download_scope_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose chapters within the current filters. Downloaded chapters are skipped.'**
+  String get manga_download_scope_hint;
+
+  /// No description provided for @manga_download_scope_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapters match the current filters. Close this menu and adjust the chapter filters.'**
+  String get manga_download_scope_empty;
+
+  /// No description provided for @manga_action_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The action did not finish. Check the current state before trying again.'**
+  String get manga_action_incomplete;
 }
 
 class _AppLocalizationsDelegate
