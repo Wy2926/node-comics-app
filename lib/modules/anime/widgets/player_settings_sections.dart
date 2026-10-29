@@ -335,33 +335,38 @@ class AppearanceSectionWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // FontSettingWidget/ColorSettingWidget style themselves from the ambient
-    // Theme - they used to open inside their own draggable menu.
-    // Forced dark here so they stay legible against this sheet's dark ground
-    // even when the app itself runs in light mode.
+    final mobile = SettingsDrilldownScope.of(context)?.mobile == true;
+    // Phone sections inherit the sheet tokens; preserve the desktop palette.
+    final theme = mobile
+        ? Theme.of(context)
+        : ThemeData.dark(useMaterial3: true);
     return Theme(
-      data: ThemeData.dark(useMaterial3: true),
+      data: theme,
       child: Column(
         children: [
           if (useLibass) ...[
             Consumer(
               builder: (context, ref, _) {
-                final overrideAss = ref.watch(overrideAssSubtitlesStateProvider);
+                final overrideAss = ref.watch(
+                  overrideAssSubtitlesStateProvider,
+                );
                 return SwitchListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   value: overrideAss,
                   title: Text(
                     context.l10n.override_ass_subtitles,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: mobile ? 16 : 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
                     context.l10n.override_ass_subtitles_info,
                     style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: mobile ? 13 : 12,
+                      color: mobile
+                          ? theme.colorScheme.onSurfaceVariant
+                          : Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                   onChanged: (val) {
@@ -372,7 +377,10 @@ class AppearanceSectionWidget extends ConsumerWidget {
                 );
               },
             ),
-            const Divider(height: 1, color: Color(0x14FFFFFF)),
+            Divider(
+              height: 1,
+              color: mobile ? theme.dividerColor : const Color(0x14FFFFFF),
+            ),
           ],
           SubtitleAppearanceWidget(hasSubtitleTrack: hasSubtitleTrack),
         ],

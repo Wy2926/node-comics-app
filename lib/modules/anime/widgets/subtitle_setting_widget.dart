@@ -227,6 +227,12 @@ class _SubtitleAppearanceWidgetState
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: SettingsDrilldownScope.of(context)?.mobile == true
+                ? BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(12),
+                  )
+                : null,
             child: Center(
               child: Text(
                 "Lorem ipsum dolor sit amet",
@@ -243,6 +249,7 @@ class _SubtitleAppearanceWidgetState
           SettingsStepperRow(
             label: context.l10n.font_size,
             controller: _fontSizeController,
+            focusNode: _fontSizeFocusNode,
             suffix: ' pt',
             keyboardType: TextInputType.number,
             onDecrement: () {
