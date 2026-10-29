@@ -6851,6 +6851,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Step {step} of {total}'**
   String onboarding_step_count(int step, int total);
+
+  /// No description provided for @global_search_results_for.
+  ///
+  /// In en, this message translates to:
+  /// **'Results for “{query}”'**
+  String global_search_results_for(String query);
+
+  /// No description provided for @global_search_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} · {count, plural, =1{1 source} other{{count} sources}}'**
+  String global_search_scope(String type, int count);
 }
 
 class _AppLocalizationsDelegate

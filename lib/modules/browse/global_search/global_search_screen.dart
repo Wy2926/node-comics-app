@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/eval/model/m_pages.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -10,6 +11,11 @@ import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/migrate_screen.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
+import 'package:mangayomi/modules/browse/browse_screen.dart';
+import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/models/source.dart';
@@ -28,6 +34,8 @@ import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/widgets/tv_pill.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_global_search.dart';
 
 class GlobalSearchScreen extends ConsumerStatefulWidget {
   final String? search;
@@ -59,19 +67,23 @@ class FetchGate {
     final completer = Completer<void>();
     _waiting.add(completer);
     await completer.future;
-    _active++;
   }
 
   void release() {
-    _active--;
-    if (_waiting.isNotEmpty) _waiting.removeAt(0).complete();
+    // Transfer the occupied slot directly. Making it available before the
+    // waiting continuation runs lets a new query exceed the concurrency cap.
+    if (_waiting.isNotEmpty) {
+      _waiting.removeAt(0).complete();
+    } else {
+      _active--;
+    }
   }
 }
 
 class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
-  String _query = "";
+  late String _query;
+  int _searchVersion = 0;
   final _textEditingController = TextEditingController();
-  late final bool _showNSFW = ref.read(showNSFWStateProvider);
   final _fetchGate = FetchGate(3);
 
   /// Every installed source for this item type, before the pinned-only and
@@ -80,16 +92,18 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   /// Kept so an empty result can say which of the three reasons it is: none
   /// installed, none pinned, or all of them hidden as NSFW. They need
   /// different things done about them.
-  late final List<Source> _installedSources = sourceRepository
-      .getAddedByItemType(widget.itemType);
+  late List<Source> _installedSources;
+  late List<Source> sourceList;
 
-  late final List<Source> sourceList = () {
+  void _readSources() {
+    _installedSources = sourceRepository.getAddedByItemType(widget.itemType);
     final sources = ref.read(onlyIncludePinnedSourceStateProvider)
         ? sourceRepository.getPinnedByItemType(widget.itemType)
-        : sourceRepository.getAddedByItemType(widget.itemType);
-    if (_showNSFW) return sources;
-    return sources.where((e) => !(e.isNsfw ?? false)).toList();
-  }();
+        : _installedSources;
+    sourceList = ref.read(showNSFWStateProvider)
+        ? sources
+        : sources.where((e) => !(e.isNsfw ?? false)).toList();
+  }
 
   /// Sources that finished with nothing to show, id to the reason.
   ///
@@ -100,21 +114,76 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _textEditingController.text = widget.search ?? "";
+    _query = widget.search ?? '';
+    _textEditingController.text = _query;
+    _readSources();
   }
 
-  void _reportNothingToShow(Source source, String reason) {
+  void _submit(String value) {
+    FocusScope.of(context).unfocus();
+    if (_query == value) return;
+    setState(() {
+      _query = value;
+      _searchVersion++;
+      _nothingToShow.clear();
+    });
+  }
+
+  void _clear() {
+    _textEditingController.clear();
+    _submit('');
+  }
+
+  void _reportNothingToShow(Source source, String reason, int version) {
     final id = source.id;
-    if (id == null || _nothingToShow[id] == reason) return;
+    if (id == null ||
+        version != _searchVersion ||
+        _nothingToShow[id] == reason) {
+      return;
+    }
     // Reported from the child's build, so defer the parent rebuild a frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _nothingToShow[id] = reason);
+      if (mounted && version == _searchVersion) {
+        setState(() => _nothingToShow[id] = reason);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final query = _query.isNotEmpty ? _query : widget.search ?? "";
+    final query = _query;
+    final version = _searchVersion;
+    final mobile = isMobile && !isTv;
+    final results = sourceList.isEmpty
+        ? _noSources(context)
+        : Column(
+            children: [
+              for (final source in sourceList)
+                SourceSearchScreen(
+                  key: ValueKey((version, source.id)),
+                  query: query,
+                  source: source,
+                  fetchGate: _fetchGate,
+                  onNothingToShow: (reason) =>
+                      _reportNothingToShow(source, reason, version),
+                ),
+              _nothingToShowGroup(context),
+            ],
+          );
+
+    if (mobile) {
+      return MobileGlobalSearchPage(
+        controller: _textEditingController,
+        onSubmit: () => _submit(_textEditingController.text),
+        onClear: _clear,
+        scope: context.l10n.global_search_scope(
+          widget.itemType.localized(context.l10n),
+          sourceList.length,
+        ),
+        query: query,
+        results: results,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -125,24 +194,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
             onPressed: () {
               Navigator.pop(context);
             },
-            onFieldSubmitted: (value) async {
-              if (!(_query == _textEditingController.text)) {
-                setState(() {
-                  _query = "";
-                });
-                // Yield a frame so the empty state is rendered before re-querying
-                await WidgetsBinding.instance.endOfFrame;
-                setState(() {
-                  _query = value;
-                });
-              }
-            },
-            onSuffixPressed: () {
-              _textEditingController.clear();
-              setState(() {
-                _query = "";
-              });
-            },
+            onFieldSubmitted: _submit,
+            onSuffixPressed: _clear,
             controller: _textEditingController,
           ),
         ],
@@ -167,22 +220,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
           // not extra work invented just for this screen.
           : SingleChildScrollView(
               padding: pageBottomInsets(context),
-              child: Column(
-                children: [
-                  for (final source in sourceList)
-                    SourceSearchScreen(
-                      // Keyed per source as well as per query. They previously
-                      // all shared one key, which is not a valid sibling key.
-                      key: ValueKey('$query#${source.id}'),
-                      query: query,
-                      source: source,
-                      fetchGate: _fetchGate,
-                      onNothingToShow: (reason) =>
-                          _reportNothingToShow(source, reason),
-                    ),
-                  _nothingToShowGroup(context),
-                ],
-              ),
+              child: results,
             ),
     );
   }
@@ -197,10 +235,11 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     final l10n = l10nLocalizations(context)!;
     final pinnedOnly = ref.read(onlyIncludePinnedSourceStateProvider);
 
-    final (String message, String hint) = switch (noSourcesReason(
+    final reason = noSourcesReason(
       installed: _installedSources.length,
       pinnedOnly: pinnedOnly,
-    )) {
+    );
+    final (String message, String hint) = switch (reason) {
       NoSourcesReason.noneInstalled => (
         l10n.global_search_no_sources(widget.itemType.localized(l10n)),
         l10n.global_search_no_sources_hint,
@@ -214,6 +253,17 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
         l10n.global_search_all_nsfw_hint,
       ),
     };
+
+    if (isMobile && !isTv) {
+      return MobileGlobalSearchEmpty(
+        message: message,
+        hint: hint,
+        actionLabel: reason == NoSourcesReason.noneInstalled
+            ? l10n.show_extensions
+            : l10n.settings,
+        onAction: () => _openEmptyTarget(reason),
+      );
+    }
 
     return Center(
       child: Padding(
@@ -247,6 +297,24 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     );
   }
 
+  Future<void> _openEmptyTarget(NoSourcesReason reason) async {
+    FocusScope.of(context).unfocus();
+    if (reason == NoSourcesReason.noneInstalled) {
+      ref
+          .read(browseInitialTabProvider.notifier)
+          .request(BrowseTab(widget.itemType, BrowseTabKind.extensions));
+      context.go('/browse');
+      return;
+    }
+    await Navigator.push(context, createRoute(page: const BrowseSScreen()));
+    if (!mounted) return;
+    setState(() {
+      _readSources();
+      _searchVersion++;
+      _nothingToShow.clear();
+    });
+  }
+
   /// Collapsed group of every source that failed or found nothing.
   ///
   /// Collapsed by default: it is the part of the screen nobody came for. The
@@ -255,6 +323,31 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   Widget _nothingToShowGroup(BuildContext context) {
     if (_nothingToShow.isEmpty) return const SizedBox.shrink();
     final byId = {for (final s in sourceList) s.id: s};
+    if (isMobile && !isTv) {
+      return MobileBrowseGroup(
+        child: ExpansionTile(
+          key: ValueKey(_searchVersion),
+          shape: const Border(),
+          collapsedShape: const Border(),
+          title: Text(
+            context.l10n.sources_with_no_results(_nothingToShow.length),
+          ),
+          children: [
+            for (final entry in _nothingToShow.entries)
+              if (byId[entry.key] case final source?)
+                ListTile(
+                  contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  title: Text(source.name ?? ''),
+                  subtitle: Text(
+                    '${completeLanguageName(source.lang ?? '')}\n${entry.value}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => _openSearchSource(context, source, _query),
+                ),
+          ],
+        ),
+      );
+    }
     final theme = Theme.of(context);
     return Theme(
       // Drop the divider lines ExpansionTile draws by default.
@@ -281,19 +374,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
             if (byId[entry.key] != null)
               ListTile(
                 dense: true,
-                onTap: () {
-                  final q = _query.isNotEmpty ? _query : widget.search ?? "";
-                  Navigator.push(
-                    context,
-                    createRoute(
-                      page: MangaHomeScreen(
-                        query: q,
-                        source: byId[entry.key]!,
-                        isSearch: q.trim().isNotEmpty,
-                      ),
-                    ),
-                  );
-                },
+                onTap: () =>
+                    _openSearchSource(context, byId[entry.key]!, _query),
                 title: Text(
                   byId[entry.key]!.name!,
                   style: const TextStyle(fontSize: 13),
@@ -359,6 +441,8 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
     // isolate call the moment it's built is what made this screen laggy.
     await widget.fetchGate.acquire();
     try {
+      // A queued row can be disposed by a newer query before it gets a slot.
+      if (!mounted) return;
       _errorMessage = "";
       // No query: same "Popular" request the source's own tab makes, so an
       // empty global search reads as a discovery feed rather than a blank
@@ -416,24 +500,24 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
       return const SizedBox.shrink();
     }
 
+    if (isMobile && !isTv) {
+      return MobileGlobalSourceSection(
+        title: widget.source.name ?? '',
+        language: completeLanguageName(widget.source.lang ?? ''),
+        onOpen: () => _openSearchSource(context, widget.source, widget.query),
+        loading: _isLoading,
+        count: pages?.list.length ?? 0,
+        itemBuilder: (context, index) => MangaGlobalImageCard(
+          key: ValueKey((pages!.list[index].link, index)),
+          manga: pages!.list[index],
+          source: widget.source,
+        ),
+      );
+    }
+
     final header = ListTile(
       dense: true,
-      onTap: () {
-        Navigator.push(
-          context,
-          createRoute(
-            page: MangaHomeScreen(
-              query: widget.query,
-              source: widget.source,
-              // MangaHomeScreen's search tab assumes a non-empty query; an
-              // empty one here means this row is showing Popular (our
-              // empty-query behavior), so open it on Popular instead of a
-              // search tab with nothing to search for.
-              isSearch: widget.query.trim().isNotEmpty,
-            ),
-          ),
-        );
-      },
+      onTap: () => _openSearchSource(context, widget.source, widget.query),
       title: Text(widget.source.name!),
       subtitle: Text(
         completeLanguageName(widget.source.lang!),
@@ -500,6 +584,73 @@ const _cardHeight = 220.0;
 class _MangaGlobalImageCardState extends ConsumerState<MangaGlobalImageCard>
     with AutomaticKeepAliveClientMixin<MangaGlobalImageCard> {
   bool _focused = false;
+  late Stream<List<Manga>> _favorites = _watchFavorites();
+
+  Stream<List<Manga>> _watchFavorites() =>
+      mangaRepository.watchFavoritesByItemTypeAndName(
+        widget.source.itemType,
+        widget.manga.name,
+      );
+
+  @override
+  void didUpdateWidget(covariant MangaGlobalImageCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.source.itemType != widget.source.itemType ||
+        oldWidget.manga.name != widget.manga.name) {
+      _favorites = _watchFavorites();
+    }
+  }
+
+  Manga? _matchedFavorite(List<Manga> favorites) {
+    final sameSource = favorites.where(
+      (m) => m.lang == widget.source.lang && m.source == widget.source.name,
+    );
+    return sameSource.isNotEmpty
+        ? sameSource.first
+        : (favorites.isNotEmpty ? favorites.first : null);
+  }
+
+  Widget _mobileCover(Manga? matched, double width) {
+    final colors = NodeLaneTokens.of(context);
+    final placeholder = Icon(
+      Icons.auto_stories_outlined,
+      size: 36,
+      color: colors.muted,
+    );
+    final bytes = matched?.customCoverImage;
+    final rawUrl = matched == null
+        ? widget.manga.imageUrl ?? ''
+        : matched.customCoverFromTracker ?? matched.imageUrl ?? '';
+    if (bytes == null && rawUrl.trim().isEmpty) return placeholder;
+    final ImageProvider image;
+    try {
+      image = bytes != null
+          ? ResizeImage.resizeIfNeeded(
+              (width * MediaQuery.devicePixelRatioOf(context)).round(),
+              null,
+              MemoryImage(bytes as Uint8List),
+            )
+          : coverProvider(
+              toImgUrl(rawUrl),
+              headers: ref.watch(
+                headersProvider(
+                  source: widget.source.name!,
+                  lang: widget.source.lang!,
+                  sourceId: widget.source.id,
+                ),
+              ),
+            );
+    } catch (_) {
+      // A source's header parser can fail before image loading even starts.
+      // Keep the candidate's title and actions available with a placeholder.
+      return placeholder;
+    }
+    return Image(
+      image: image,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => placeholder,
+    );
+  }
 
   void _open() {
     pushToMangaReaderDetail(
@@ -535,6 +686,23 @@ class _MangaGlobalImageCardState extends ConsumerState<MangaGlobalImageCard>
   Widget build(BuildContext context) {
     super.build(context);
     final getMangaDetail = widget.manga;
+    if (isMobile && !isTv) {
+      return LayoutBuilder(
+        builder: (context, constraints) => StreamBuilder(
+          stream: _favorites,
+          builder: (context, snapshot) {
+            final matched = _matchedFavorite(snapshot.data ?? const <Manga>[]);
+            return MobileGlobalResultCard(
+              title: widget.manga.name ?? '',
+              cover: _mobileCover(matched, constraints.maxWidth),
+              inLibrary: matched?.favorite == true,
+              onOpen: _open,
+              onQuickAdd: _quickAddToLibrary,
+            );
+          },
+        ),
+      );
+    }
     // A bare GestureDetector never takes focus, so on a remote these covers
     // were unreachable: the only focusable things on the screen were the source
     // headers, and the d-pad could never get down into the results. Focus also
@@ -589,20 +757,10 @@ class _MangaGlobalImageCardState extends ConsumerState<MangaGlobalImageCard>
             onTap: _open,
             onLongPress: _quickAddToLibrary,
             child: StreamBuilder(
-              stream: mangaRepository.watchFavoritesByItemTypeAndName(
-                widget.source.itemType,
-                getMangaDetail.name,
-              ),
+              stream: _favorites,
               builder: (context, snapshot) {
                 final favorites = snapshot.data ?? const <Manga>[];
-                final sameSource = favorites.where(
-                  (m) =>
-                      m.lang == widget.source.lang &&
-                      m.source == widget.source.name,
-                );
-                final matched = sameSource.isNotEmpty
-                    ? sameSource.first
-                    : (favorites.isNotEmpty ? favorites.first : null);
+                final matched = _matchedFavorite(favorites);
                 final hasData = matched != null;
                 return Stack(
                   children: [
@@ -684,7 +842,20 @@ class _MangaGlobalImageCardState extends ConsumerState<MangaGlobalImageCard>
   }
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => !(isMobile && !isTv);
+}
+
+void _openSearchSource(BuildContext context, Source source, String query) {
+  Navigator.push(
+    context,
+    createRoute(
+      page: MangaHomeScreen(
+        query: query,
+        source: source,
+        isSearch: query.trim().isNotEmpty,
+      ),
+    ),
+  );
 }
 
 /// Why a global search has nothing to search.

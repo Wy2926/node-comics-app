@@ -3678,4 +3678,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String onboarding_step_count(int step, int total) {
     return '第 $step 步，共 $total 步';
   }
+
+  @override
+  String global_search_results_for(String query) {
+    return '“$query”的搜索结果';
+  }
+
+  @override
+  String global_search_scope(String type, int count) {
+    return '$type · $count 个来源';
+  }
 }

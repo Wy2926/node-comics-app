@@ -3882,6 +3882,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String onboarding_step_count(int step, int total) {
     return 'Step $step of $total';
   }
+
+  @override
+  String global_search_results_for(String query) {
+    return 'Results for “$query”';
+  }
+
+  @override
+  String global_search_scope(String type, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sources',
+      one: '1 source',
+    );
+    return '$type · $_temp0';
+  }
 }
 
 /// The translations for Spanish Castilian, as used in Latin America and the Caribbean (`es_419`).

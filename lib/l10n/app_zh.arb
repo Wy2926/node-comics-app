@@ -1495,5 +1495,7 @@
   "onboarding_mobile_libraries_body": "至少选择一种内容，在书架顶部切换类型。之后可在设置中调整。",
   "onboarding_content_title": "添加阅读内容",
   "onboarding_mobile_sources_body": "添加扩展库或自己的本地文件夹，也可以跳过，稍后再添加。",
-  "onboarding_step_count": "第 {step} 步，共 {total} 步"
+  "onboarding_step_count": "第 {step} 步，共 {total} 步",
+  "global_search_results_for": "“{query}”的搜索结果",
+  "global_search_scope": "{type} · {count} 个来源"
 }

@@ -1546,6 +1546,10 @@
   "onboarding_content_title": "Add reading content",
   "onboarding_mobile_sources_body": "Add an extension repository or a folder of your own files. You can also skip this and add them later.",
   "onboarding_step_count": "Step {step} of {total}",
+  "global_search_results_for": "Results for “{query}”",
+  "@global_search_results_for": {"placeholders": {"query": {"type": "String"}}},
+  "global_search_scope": "{type} · {count, plural, =1{1 source} other{{count} sources}}",
+  "@global_search_scope": {"placeholders": {"type": {"type": "String"}, "count": {"type": "int"}}},
   "@onboarding_step_count": {
     "placeholders": {
       "step": {
