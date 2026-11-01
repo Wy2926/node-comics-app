@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -81,7 +82,12 @@ class TranslationControlsContent extends StatelessWidget {
               ListTile(
                 title: const Text('登录后开启翻译'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => _settings(context),
+                onTap: () => _openPage(
+                  context,
+                  mobile
+                      ? const MobileNodeLaneAccountPage()
+                      : const TranslationSettings(),
+                ),
               ),
             SwitchListTile.adaptive(
               title: const Text('翻译当前阅读范围'),
@@ -155,7 +161,7 @@ class TranslationControlsContent extends StatelessWidget {
               ListTile(
                 title: const Text('翻译设置'),
                 trailing: const Icon(Icons.settings_outlined),
-                onTap: () => _settings(context),
+                onTap: () => _openPage(context, const TranslationSettings()),
               ),
           ],
         ),
@@ -163,11 +169,9 @@ class TranslationControlsContent extends StatelessWidget {
     ),
   );
 
-  void _settings(BuildContext context) {
+  void _openPage(BuildContext context, Widget page) {
     final navigator = Navigator.of(context);
     navigator.pop();
-    navigator.push(
-      MaterialPageRoute(builder: (_) => const TranslationSettings()),
-    );
+    navigator.push(MaterialPageRoute<void>(builder: (_) => page));
   }
 }

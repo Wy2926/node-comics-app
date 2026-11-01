@@ -5,6 +5,25 @@ import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
+/// Opens the shared account entry without leaving the reader or browser route.
+class MobileNodeLaneAccountPage extends StatelessWidget {
+  const MobileNodeLaneAccountPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => NodeLaneSurface(
+    child: Scaffold(
+      appBar: AppBar(title: const Text('NodeLane 账号')),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: NodeLaneTokens.pagePadding,
+          children: const [MobileNodeLaneAccount()],
+        ),
+      ),
+    ),
+  );
+}
+
 /// Application account entry. The existing service owns the native session
 /// and notifies reader/browser runtimes when the account changes.
 class MobileNodeLaneAccount extends ConsumerStatefulWidget {
