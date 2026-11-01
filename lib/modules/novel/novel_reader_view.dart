@@ -8,6 +8,7 @@ import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -1321,7 +1322,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
           isScrollControlled: true,
           showDragHandle: true,
           backgroundColor: NodeLaneTokens.of(context).surface,
-          builder: (context) => NodeLaneSurface(
+          builder: (context) => NodeLaneModalScope(
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.sizeOf(context).height * .7,

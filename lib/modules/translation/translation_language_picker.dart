@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 // The same choices as the original settings menu. This is display data;
@@ -19,7 +20,7 @@ Future<String?> showTranslationLanguagePicker(
   useSafeArea: true,
   showDragHandle: true,
   backgroundColor: NodeLaneTokens.of(context).surface,
-  builder: (context) => NodeLaneSurface(
+  builder: (context) => NodeLaneModalScope(
     child: SafeArea(
       top: false,
       child: ConstrainedBox(
@@ -38,10 +39,7 @@ Future<String?> showTranslationLanguagePicker(
                       header: true,
                       child: const Text(
                         '目标语言',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: NodeLaneTokens.modalTitleStyle,
                       ),
                     ),
                   ),

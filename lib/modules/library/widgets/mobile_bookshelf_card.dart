@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// No database or navigation dependencies; all existing entry actions are slots.
@@ -41,7 +42,7 @@ class MobileBookshelfCard extends StatelessWidget {
               fit: BoxFit.cover,
               excludeFromSemantics: true,
               errorBuilder: (_, _, _) => Icon(
-                Icons.auto_stories_outlined,
+                NodeLaneIcons.of(context).manga,
                 size: 36,
                 color: colors.muted,
               ),
@@ -55,7 +56,7 @@ class MobileBookshelfCard extends StatelessWidget {
               right: 8,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.topLeft,
+                alignment: selected ? Alignment.topLeft : Alignment.topRight,
                 child: badges,
               ),
             ),
@@ -71,7 +72,7 @@ class MobileBookshelfCard extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Icon(
-                    Icons.check_rounded,
+                    NodeLaneIcons.of(context).check,
                     size: 18,
                     color: colors.onAccent,
                   ),
@@ -91,12 +92,7 @@ class MobileBookshelfCard extends StatelessWidget {
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: colors.ink,
-            fontSize: 15,
-            height: 1.25,
-            fontWeight: FontWeight.w600,
-          ),
+          style: colors.label,
         ),
         if (subtitle?.isNotEmpty == true) ...[
           const SizedBox(height: 4),
@@ -104,7 +100,7 @@ class MobileBookshelfCard extends StatelessWidget {
             subtitle!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: colors.muted, fontSize: 12),
+            style: colors.caption,
           ),
         ],
       ],
@@ -129,7 +125,10 @@ class MobileBookshelfCard extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(child: description),
                       const SizedBox(width: 8),
-                      Icon(Icons.chevron_right_rounded, color: colors.muted),
+                      Icon(
+                        NodeLaneIcons.of(context).forward,
+                        color: colors.muted,
+                      ),
                     ],
                   ),
                 )
@@ -139,7 +138,9 @@ class MobileBookshelfCard extends StatelessWidget {
                     Expanded(child: cover),
                     if (!coverOnly)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(1, 10, 1, 0),
+                        padding: const EdgeInsets.only(
+                          top: NodeLaneTokens.space8,
+                        ),
                         child: description,
                       ),
                   ],

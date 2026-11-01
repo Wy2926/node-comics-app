@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/detail/chapter_bulk_actions.dart';
 import 'package:mangayomi/modules/widgets/bottom_select_bar.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 enum MobileChapterAction { bookmark, read, readFollowing, download, delete }
 
@@ -59,8 +60,8 @@ class MobileChapterSelectionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final colors = NodeLaneTokens.of(context);
+    final l10n = context.l10n;
     final singleBookmark =
         selected.length == 1 && selected.first.isBookmarked == true;
     final markRead = bulkChapterTargetReadState(selected);
@@ -185,12 +186,10 @@ class _MobileChapterDeleteDialogState extends State<MobileChapterDeleteDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
     final error = Theme.of(context).colorScheme.error;
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
-        backgroundColor: colors.surface,
+      child: NodeLaneAlertDialog(
         scrollable: true,
         title: Text(
           widget.localArchive

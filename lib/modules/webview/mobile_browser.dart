@@ -1,3 +1,4 @@
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -5,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
@@ -247,7 +249,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: NodeLaneTokens.of(context).canvas,
-      builder: (sheetContext) => NodeLaneSurface(
+      builder: (sheetContext) => NodeLaneModalScope(
         child: StatefulBuilder(
           builder: (context, refreshSheet) => SafeArea(
             top: false,
@@ -262,10 +264,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                         Expanded(
                           child: Text(
                             '标签页 · ${tabs.length}',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: NodeLaneTokens.modalTitleStyle,
                           ),
                         ),
                         IconButton(

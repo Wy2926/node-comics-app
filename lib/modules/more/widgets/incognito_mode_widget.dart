@@ -1,5 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
@@ -34,7 +35,7 @@ class IncognitoModeWidget extends ConsumerWidget {
       return MobileSettingsSwitch(
         title: l10n!.incognito_mode,
         subtitle: l10n.incognito_mode_description,
-        icon: CupertinoIcons.eyeglasses,
+        icon: NodeLaneIcons.of(context).incognito,
         value: incognitoMode,
         onChanged: change,
       );

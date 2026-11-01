@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -387,35 +390,10 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
                   child: SingleChildScrollView(
                     child: MobileBrowseHeader(
                       title: l10n.browse,
-                      mediaMenu: PopupMenuButton<ItemType>(
-                        initialValue: currentTab.type,
-                        position: PopupMenuPosition.under,
-                        onSelected: (type) => select(type, currentTab.kind),
-                        itemBuilder: (_) => [
-                          for (final type in mediaTypes)
-                            CheckedPopupMenuItem(
-                              value: type,
-                              checked: type == currentTab.type,
-                              child: Text(type.localized(l10n)),
-                            ),
-                        ],
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                currentTab.type.localized(l10n),
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                size: 20,
-                              ),
-                            ],
-                          ),
-                        ),
+                      mediaMenu: MobileMediaMenu(
+                        value: currentTab.type,
+                        availableTypes: mediaTypes,
+                        onChanged: (type) => select(type, currentTab.kind),
                       ),
                       sourcesLabel: l10n.sources,
                       extensionsLabel: l10n.extensions,
@@ -447,34 +425,38 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
                         extra: currentTab.type,
                       ),
                       actions: [
-                        IconButton(
+                        NodeLaneIconButton(
+                          style: NodeLaneIconButtonStyle.plain,
                           tooltip: '打开网页',
                           onPressed: _openWebPage,
-                          icon: const Icon(Icons.public_rounded),
+                          icon: NodeLaneIcons.of(context).web,
                         ),
                         if (extensions) ...[
                           if (ref.watch(developerModeStateProvider))
-                            IconButton(
+                            NodeLaneIconButton(
+                              style: NodeLaneIconButtonStyle.plain,
                               tooltip: l10n.add,
                               onPressed: () => context.push('/createExtension'),
-                              icon: const Icon(Icons.add_rounded),
+                              icon: NodeLaneIcons.of(context).add,
                             ),
-                          IconButton(
+                          NodeLaneIconButton(
+                            style: NodeLaneIconButtonStyle.plain,
                             tooltip: repoLabel,
                             onPressed: () => context.push(
                               '/SourceRepositories',
                               extra: currentTab.type,
                             ),
-                            icon: const Icon(Icons.folder_open_rounded),
+                            icon: NodeLaneIcons.of(context).folder,
                           ),
                         ] else
-                          IconButton(
+                          NodeLaneIconButton(
+                            style: NodeLaneIconButtonStyle.plain,
                             tooltip: l10n.show_extensions,
                             onPressed: () => select(
                               currentTab.type,
                               BrowseTabKind.extensions,
                             ),
-                            icon: const Icon(Icons.extension_outlined),
+                            icon: NodeLaneIcons.of(context).extensions,
                           ),
                       ],
                     ),

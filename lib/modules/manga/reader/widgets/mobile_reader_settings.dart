@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/reader/providers/color_filter_provider.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/color_filter_widget.dart';
@@ -116,10 +117,7 @@ class _MobileReaderSettingsState extends ConsumerState<MobileReaderSettings> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final mode = ref.watch(widget.currentReaderModeProvider);
-    return Material(
-      color: NodeLaneTokens.of(context).surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      clipBehavior: Clip.antiAlias,
+    return NodeLaneSheetSurface(
       child: SafeArea(
         top: false,
         child: SizedBox(

@@ -12,6 +12,8 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class ExtensionListTileWidget extends ConsumerStatefulWidget {
   final Source source;
@@ -78,6 +80,12 @@ class _ExtensionListTileWidgetState
   }
 
   IconData _actionIcon(BuildContext context, String label) {
+    if (isMobile && !isTv) {
+      final icons = NodeLaneIcons.of(context);
+      if (label == context.l10n.install) return icons.download;
+      if (label == context.l10n.update) return icons.refresh;
+      return icons.settings;
+    }
     if (label == context.l10n.install) return Icons.download_outlined;
     if (label == context.l10n.update) return Icons.system_update_alt_outlined;
     return Icons.settings_outlined;
@@ -117,6 +125,32 @@ class _ExtensionListTileWidgetState
   }
 
   Widget _icon() {
+    if (isMobile && !isTv) {
+      final colors = NodeLaneTokens.of(context);
+      final fallback = Icon(
+        NodeLaneIcons.of(context).extensions,
+        color: colors.accent,
+      );
+      return Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: colors.soft,
+          borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: (widget.source.iconUrl ?? '').isEmpty
+            ? fallback
+            : cachedNetworkImage(
+                imageUrl: widget.source.iconUrl!,
+                fit: BoxFit.contain,
+                width: 44,
+                height: 44,
+                errorWidget: fallback,
+                useCustomNetworkImage: false,
+              ),
+      );
+    }
     return Container(
       height: 37,
       width: 37,
@@ -339,7 +373,10 @@ class _ExtensionListTileWidgetState
               onPressed: _isLoading
                   ? null
                   : () => _openUninstallDialog(context),
-              icon: const Icon(Icons.delete_outline_rounded, size: 20),
+              icon: Icon(
+                NodeLaneIcons.of(context).delete,
+                size: NodeLaneTokens.smallIconSize,
+              ),
             ),
         ],
       ),

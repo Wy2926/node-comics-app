@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
@@ -70,7 +71,7 @@ class _MobileNodeLaneAccountState extends ConsumerState<MobileNodeLaneAccount> {
         title: '软件账号',
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(NodeLaneTokens.space16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -84,7 +85,7 @@ class _MobileNodeLaneAccountState extends ConsumerState<MobileNodeLaneAccount> {
                       ? '已登录 NodeLane'
                       : '登录 NodeLane，使用漫画翻译服务。',
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: NodeLaneTokens.space20),
                 if (service.loggedIn)
                   OutlinedButton(
                     onPressed: _disabled
@@ -99,14 +100,15 @@ class _MobileNodeLaneAccountState extends ConsumerState<MobileNodeLaneAccount> {
                         : () => _perform(service.login, '正在登录…'),
                     child: const Text('前往登录'),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: NodeLaneTokens.space12),
                   Text(
                     '通过系统浏览器登录，完成后返回应用。',
-                    style: TextStyle(fontSize: 13, color: colors.muted),
+                    textAlign: TextAlign.center,
+                    style: colors.caption,
                   ),
                 ],
                 if (status != null || error != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: NodeLaneTokens.space16),
                   Semantics(
                     liveRegion: true,
                     child: Column(
@@ -114,11 +116,12 @@ class _MobileNodeLaneAccountState extends ConsumerState<MobileNodeLaneAccount> {
                       children: [
                         if (status != null) ...[
                           LinearProgressIndicator(semanticsLabel: status),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: NodeLaneTokens.space12),
                           Text(status, style: TextStyle(color: colors.muted)),
                         ],
                         if (error != null) ...[
-                          if (status != null) const SizedBox(height: 12),
+                          if (status != null)
+                            const SizedBox(height: NodeLaneTokens.space12),
                           Text(
                             error,
                             style: TextStyle(
@@ -147,41 +150,35 @@ class _AccountHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final icon = Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: colors.accentSoft,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      width: NodeLaneTokens.avatarSize,
+      height: NodeLaneTokens.avatarSize,
+      decoration: BoxDecoration(color: colors.accent, shape: BoxShape.circle),
       child: Icon(
-        Icons.account_circle_outlined,
-        color: colors.accent,
-        size: 28,
+        NodeLaneIcons.of(context).account,
+        color: colors.onAccent,
+        size: 38,
       ),
     );
     final identity = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: colors.ink,
-          ),
-        ),
+        Text(title, style: colors.title),
         const SizedBox(height: 6),
-        Text(subtitle, style: TextStyle(fontSize: 14, color: colors.muted)),
+        Text(subtitle, style: colors.secondary),
       ],
     );
     if (MediaQuery.textScalerOf(context).scale(20) > 28) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [icon, const SizedBox(height: 12), identity],
+        children: [
+          icon,
+          const SizedBox(height: NodeLaneTokens.space12),
+          identity,
+        ],
       );
     }
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         icon,
         const SizedBox(width: 12),

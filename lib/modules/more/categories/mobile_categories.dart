@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
@@ -513,7 +514,7 @@ class _MobileCategoryNameDialogState extends State<MobileCategoryNameDialog> {
     final l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
+      child: NodeLaneAlertDialog(
         scrollable: true,
         title: Text(
           widget.initialName == null ? l10n.add_category : l10n.rename_category,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 
 /// These values continue to dispatch through the existing library actions.
 class MobileBookshelfMenu extends StatelessWidget {
@@ -18,10 +20,7 @@ class MobileBookshelfMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
-    return Material(
-      color: colors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      clipBehavior: Clip.antiAlias,
+    return NodeLaneSheetSurface(
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -33,34 +32,37 @@ class MobileBookshelfMenu extends StatelessWidget {
                 children: [
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      l10n.bookshelf_actions,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: colors.ink,
-                      ),
+                    child: Text(l10n.bookshelf_actions, style: colors.title),
+                  ),
+                  IconButton(
+                    tooltip: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      NodeLaneIcons.of(context).close,
+                      color: colors.ink,
                     ),
                   ),
-                  CloseButton(color: colors.ink),
                 ],
               ),
               ListTile(
                 enabled: updating || hasEntries,
                 leading: Icon(
-                  updating ? Icons.stop_circle_outlined : Icons.refresh,
+                  updating
+                      ? NodeLaneIcons.of(context).stop
+                      : NodeLaneIcons.of(context).refresh,
                 ),
                 title: Text(
                   updating ? l10n.bookshelf_stop_update : l10n.update_library,
                 ),
-                minTileHeight: 56,
+                minTileHeight: NodeLaneTokens.rowHeight,
                 onTap: () => onSelected(updating ? 5 : 0),
               ),
               ListTile(
                 enabled: hasEntries,
-                leading: const Icon(Icons.shuffle_rounded),
+                leading: Icon(NodeLaneIcons.of(context).shuffle),
                 title: Text(l10n.open_random_entry),
-                minTileHeight: 56,
+                minTileHeight: NodeLaneTokens.rowHeight,
                 onTap: () => onSelected(1),
               ),
               Divider(color: colors.line),
@@ -68,7 +70,7 @@ class MobileBookshelfMenu extends StatelessWidget {
                 title: Text(l10n.bookshelf_ignore_filters),
                 subtitle: Text(
                   l10n.bookshelf_ignore_filters_hint,
-                  style: TextStyle(fontSize: 13, color: colors.muted),
+                  style: colors.secondary,
                 ),
                 value: ignoreFilters,
                 onChanged: (_) => onSelected(4),
@@ -131,11 +133,9 @@ class _MobileBookshelfRemoveDialogState
     final l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
-        backgroundColor: colors.surface,
+      child: NodeLaneAlertDialog(
         scrollable: true,
         title: Text(l10n.remove),
-        contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         content: SizedBox(
           width: 420,
           child: Column(
@@ -187,7 +187,7 @@ class _MobileBookshelfRemoveDialogState
                   ),
                   subtitle: Text(
                     l10n.bookshelf_remove_library_hint,
-                    style: TextStyle(fontSize: 13, color: colors.muted),
+                    style: colors.secondary,
                   ),
                 ),
                 CheckboxListTile.adaptive(
@@ -205,7 +205,7 @@ class _MobileBookshelfRemoveDialogState
                     widget.hasLocalArchives
                         ? l10n.bookshelf_remove_local_files_hint
                         : l10n.bookshelf_remove_downloads_hint,
-                    style: TextStyle(fontSize: 13, color: colors.muted),
+                    style: colors.secondary,
                   ),
                 ),
                 if (_busy) ...[

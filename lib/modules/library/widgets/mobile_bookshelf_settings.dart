@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/isar_providers.dart';
@@ -35,53 +38,27 @@ class MobileBookshelfSettings extends ConsumerWidget {
             .asData
             ?.value ??
         entries;
-    final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
     return NodeLaneSurface(
-      child: Material(
-        color: colors.canvas,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        clipBehavior: Clip.antiAlias,
+      child: NodeLaneSheetSurface(
+        grouped: true,
         child: SafeArea(
           top: false,
           child: DefaultTabController(
             length: 3,
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 8, 0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          l10n.bookshelf_settings,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: colors.ink,
-                          ),
-                        ),
-                      ),
-                      const CloseButton(),
-                    ],
-                  ),
+                NodeLaneSheetHeading(
+                  title: l10n.bookshelf_settings,
+                  subtitle: l10n.bookshelf_settings_live,
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      l10n.bookshelf_settings_live,
-                      style: TextStyle(fontSize: 13, color: colors.muted),
-                    ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: NodeLaneTokens.gutter,
                   ),
-                ),
-                TabBar(
-                  tabs: [
-                    Tab(text: l10n.filter),
-                    Tab(text: l10n.sort),
-                    Tab(text: l10n.display),
-                  ],
+                  child: NodeLaneTabSegments(
+                    labels: [l10n.filter, l10n.sort, l10n.display],
+                  ),
                 ),
                 Expanded(
                   child: TabBarView(
@@ -180,63 +157,42 @@ class _Filters extends ConsumerWidget {
     ];
     return ListView(
       key: const PageStorageKey('bookshelf-filters'),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(NodeLaneTokens.gutter),
       children: [
         MobileSettingsGroup(
           children: [
             for (var index = 0; index < filters.length; index++)
-              Padding(
+              NodeLaneChoiceRow<int>(
                 key: ValueKey('bookshelf-filter-$index'),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      filters[index].$1,
-                      style: const TextStyle(fontSize: 16),
+                title: filters[index].$1,
+                value: filters[index].$2,
+                segments: [
+                  ButtonSegment(
+                    value: 0,
+                    label: Text(
+                      l10n.bookshelf_filter_any,
+                      semanticsLabel:
+                          '${filters[index].$1}, ${l10n.bookshelf_filter_any}',
                     ),
-                    const SizedBox(height: 8),
-                    Semantics(
-                      container: true,
-                      explicitChildNodes: true,
-                      child: SegmentedButton<int>(
-                        showSelectedIcon: false,
-                        segments: [
-                          ButtonSegment(
-                            value: 0,
-                            label: Text(
-                              l10n.bookshelf_filter_any,
-                              semanticsLabel:
-                                  '${filters[index].$1}, ${l10n.bookshelf_filter_any}',
-                            ),
-                          ),
-                          ButtonSegment(
-                            value: 1,
-                            label: Text(
-                              l10n.bookshelf_filter_include,
-                              semanticsLabel:
-                                  '${filters[index].$1}, ${l10n.bookshelf_filter_include}',
-                            ),
-                          ),
-                          ButtonSegment(
-                            value: 2,
-                            label: Text(
-                              l10n.bookshelf_filter_exclude,
-                              semanticsLabel:
-                                  '${filters[index].$1}, ${l10n.bookshelf_filter_exclude}',
-                            ),
-                          ),
-                        ],
-                        selected: {filters[index].$2},
-                        onSelectionChanged: (values) {
-                          if (values.single != filters[index].$2) {
-                            filters[index].$3(values.single);
-                          }
-                        },
-                      ),
+                  ),
+                  ButtonSegment(
+                    value: 1,
+                    label: Text(
+                      l10n.bookshelf_filter_include,
+                      semanticsLabel:
+                          '${filters[index].$1}, ${l10n.bookshelf_filter_include}',
                     ),
-                  ],
-                ),
+                  ),
+                  ButtonSegment(
+                    value: 2,
+                    label: Text(
+                      l10n.bookshelf_filter_exclude,
+                      semanticsLabel:
+                          '${filters[index].$1}, ${l10n.bookshelf_filter_exclude}',
+                    ),
+                  ),
+                ],
+                onChanged: filters[index].$3,
               ),
           ],
         ),
@@ -248,7 +204,7 @@ class _Filters extends ConsumerWidget {
                 subtitle: sources.$2.isEmpty
                     ? l10n.bookshelf_all_sources
                     : l10n.bookshelf_sources_selected(sources.$2.length),
-                icon: Icons.public,
+                icon: NodeLaneIcons.of(context).web,
                 onTap: () async {
                   final selected = await Navigator.of(context)
                       .push<List<String>>(
@@ -317,25 +273,25 @@ class _Sort extends ConsumerWidget {
     ];
     return ListView(
       key: const PageStorageKey('bookshelf-sort'),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(NodeLaneTokens.gutter),
       children: [
-        SegmentedButton<bool>(
+        NodeLaneSegments<bool>(
           segments: [
             ButtonSegment(
               value: false,
-              icon: const Icon(Icons.arrow_upward),
+              icon: Icon(NodeLaneIcons.of(context).ascending),
               label: Text(l10n.bookshelf_sort_ascending),
             ),
             ButtonSegment(
               value: true,
-              icon: const Icon(Icons.arrow_downward),
+              icon: Icon(NodeLaneIcons.of(context).descending),
               label: Text(l10n.bookshelf_sort_descending),
             ),
           ],
-          selected: {reverse},
-          onSelectionChanged: (values) {
+          value: reverse,
+          onChanged: (value) {
             final current = ref.read(provider);
-            if (values.single != (current.reverse ?? false)) {
+            if (value != (current.reverse ?? false)) {
               ref.read(provider.notifier).set(current.index ?? 0);
             }
           },
@@ -348,7 +304,12 @@ class _Sort extends ConsumerWidget {
                 selected: index == i,
                 title: Text(names[i]),
                 minTileHeight: 56,
-                trailing: index == i ? const Icon(Icons.check_rounded) : null,
+                trailing: index == i
+                    ? Icon(
+                        NodeLaneIcons.of(context).check,
+                        color: NodeLaneTokens.of(context).accent,
+                      )
+                    : null,
                 onTap: () {
                   if ((ref.read(provider).index ?? 0) != i) {
                     ref.read(provider.notifier).set(i);
@@ -401,7 +362,7 @@ class _Display extends ConsumerWidget {
     );
     return ListView(
       key: const PageStorageKey('bookshelf-display'),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(NodeLaneTokens.gutter),
       children: [
         MobileSettingsGroup(
           title: l10n.display_mode,
@@ -471,26 +432,26 @@ class _Display extends ConsumerWidget {
           children: [
             MobileSettingsSwitch(
               title: l10n.downloaded_chapters,
-              icon: Icons.download_outlined,
+              icon: NodeLaneIcons.of(context).download,
               value: ref.watch(downloaded),
               onChanged: (value) => ref.read(downloaded.notifier).set(value),
             ),
             MobileSettingsSwitch(
               title: l10n.language,
-              icon: Icons.language,
+              icon: NodeLaneIcons.of(context).web,
               value: ref.watch(language),
               onChanged: (value) => ref.read(language.notifier).set(value),
             ),
             MobileSettingsSwitch(
               title: l10n.source,
-              icon: Icons.public,
+              icon: NodeLaneIcons.of(context).web,
               value: ref.watch(librarySourceBadgeProvider),
               onChanged: (value) =>
                   ref.read(librarySourceBadgeProvider.notifier).set(value),
             ),
             MobileSettingsSwitch(
               title: l10n.local_source,
-              icon: Icons.folder_outlined,
+              icon: NodeLaneIcons.of(context).folder,
               value: ref.watch(local),
               onChanged: (value) => ref.read(local.notifier).set(value),
             ),
@@ -501,20 +462,20 @@ class _Display extends ConsumerWidget {
           children: [
             MobileSettingsSwitch(
               title: l10n.show_continue_reading_buttons,
-              icon: Icons.play_circle_outline,
+              icon: NodeLaneIcons.of(context).anime,
               value: ref.watch(continueReading),
               onChanged: (value) =>
                   ref.read(continueReading.notifier).set(value),
             ),
             MobileSettingsSwitch(
               title: l10n.show_category_tabs,
-              icon: Icons.label_outline,
+              icon: NodeLaneIcons.of(context).categories,
               value: ref.watch(categoryTabs),
               onChanged: (value) => ref.read(categoryTabs.notifier).set(value),
             ),
             MobileSettingsSwitch(
               title: l10n.show_numbers_of_items,
-              icon: Icons.numbers,
+              icon: NodeLaneIcons.of(context).count,
               value: ref.watch(counts),
               onChanged: (value) => ref.read(counts.notifier).set(value),
             ),
@@ -576,27 +537,11 @@ class _MobileBookshelfSourceFilterState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            TextField(
+                            NodeLaneSearchField(
                               controller: _search,
+                              hint: l10n.search,
                               onChanged: (value) =>
                                   setState(() => _query = value),
-                              textInputAction: TextInputAction.search,
-                              onSubmitted: (_) =>
-                                  FocusScope.of(context).unfocus(),
-                              decoration: InputDecoration(
-                                hintText: l10n.search,
-                                prefixIcon: const Icon(Icons.search),
-                                suffixIcon: _query.isEmpty
-                                    ? null
-                                    : IconButton(
-                                        tooltip: l10n.reset,
-                                        onPressed: () {
-                                          _search.clear();
-                                          setState(() => _query = '');
-                                        },
-                                        icon: const Icon(Icons.close),
-                                      ),
-                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(l10n.bookshelf_sources_hint),

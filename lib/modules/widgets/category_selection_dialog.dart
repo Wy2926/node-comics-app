@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -41,23 +42,24 @@ void showCategorySelectionDialog({
   showDialog(
     context: context,
     builder: (context) => StatefulBuilder(
-      builder: (context, setState) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 8,
+      builder: (context, setState) => _categoryDialogSurface(
+        context,
         child: Container(
           width: context.width(0.85),
           constraints: BoxConstraints(maxHeight: context.height(0.75)),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                context.primaryColor.withValues(alpha: 0.05),
-                Colors.transparent,
-              ],
-            ),
-          ),
+          decoration: isMobile && !isTv
+              ? null
+              : BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      context.primaryColor.withValues(alpha: 0.05),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -427,3 +429,12 @@ Future<void> saveMobileMangaCategories({
     await mangaRepository.save(copies.single);
   }
 }
+
+Widget _categoryDialogSurface(BuildContext context, {required Widget child}) =>
+    isMobile && !isTv
+    ? NodeLaneDialog(child: child)
+    : Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 8,
+        child: child,
+      );

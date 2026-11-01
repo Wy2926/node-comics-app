@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
@@ -19,7 +20,7 @@ class DownloadedOnlyWidget extends ConsumerWidget {
       return MobileSettingsSwitch(
         title: l10n!.downloaded_only,
         subtitle: l10n.downloaded_only_description,
-        icon: Icons.cloud_off_outlined,
+        icon: NodeLaneIcons.of(context).download,
         value: downloadedOnly,
         onChanged: change,
       );

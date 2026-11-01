@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Source identity and extension actions are supplied by the existing tiles.
@@ -22,21 +24,20 @@ class MobileSourceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      child: Material(
-        color: colors.surface,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: colors.line),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        clipBehavior: Clip.antiAlias,
+      padding: const EdgeInsets.fromLTRB(
+        NodeLaneTokens.gutter,
+        0,
+        NodeLaneTokens.gutter,
+        NodeLaneTokens.space12,
+      ),
+      child: NodeLaneGroupSurface(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             InkWell(
               onTap: onTap,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: NodeLaneTokens.groupPadding,
                 child: Row(
                   children: [
                     ExcludeSemantics(
@@ -49,19 +50,14 @@ class MobileSourceCard extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: TextStyle(
-                              fontSize: 16,
+                            style: colors.body.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: colors.ink,
                             ),
                           ),
                           if (metadata != null) ...[
                             const SizedBox(height: 4),
                             DefaultTextStyle(
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colors.muted,
-                              ),
+                              style: colors.caption,
                               child: metadata!,
                             ),
                           ],
@@ -70,7 +66,7 @@ class MobileSourceCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Icon(
-                      Icons.chevron_right_rounded,
+                      NodeLaneIcons.of(context).forward,
                       size: 20,
                       color: colors.muted,
                     ),
@@ -102,13 +98,6 @@ class MobileBrowseSectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-    child: Text(
-      title,
-      style: TextStyle(
-        color: NodeLaneTokens.of(context).muted,
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
+    child: NodeLaneSectionHeading(title),
   );
 }

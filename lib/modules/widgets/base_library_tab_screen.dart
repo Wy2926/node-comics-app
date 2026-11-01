@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
@@ -229,52 +230,15 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
                   child: SingleChildScrollView(
                     child: MobileActivityHeader(
                       title: title,
-                      mediaMenu: visibleTabTypes.isEmpty
-                          ? const SizedBox.shrink()
-                          : PopupMenuButton<ItemType>(
-                              initialValue: selectedType,
-                              position: PopupMenuPosition.under,
-                              onSelected: (type) {
-                                FocusScope.of(context).unfocus();
-                                tabController.index = visibleTabTypes.indexOf(
-                                  type,
-                                );
-                              },
-                              itemBuilder: (_) => [
-                                for (final type in visibleTabTypes)
-                                  CheckedPopupMenuItem(
-                                    value: type,
-                                    checked: selectedType == type,
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(type.localized(l10n)),
-                                        ),
-                                        ?buildMobileMediaBadge(type),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(selectedType.localized(l10n)),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    ?buildMobileMediaBadge(selectedType),
-                                  ],
-                                ),
-                              ),
-                            ),
+                      mediaMenu: MobileMediaMenu(
+                        value: selectedType,
+                        availableTypes: visibleTabTypes,
+                        badgeBuilder: buildMobileMediaBadge,
+                        onChanged: (type) {
+                          FocusScope.of(context).unfocus();
+                          tabController.index = visibleTabTypes.indexOf(type);
+                        },
+                      ),
                       actions: visibleTabTypes.isEmpty
                           ? const []
                           : buildExtraActions(context),

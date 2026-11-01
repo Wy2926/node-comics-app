@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -231,10 +232,7 @@ class _MangaActionSheetState extends State<_MangaActionSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
-    return Material(
-      color: colors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      clipBehavior: Clip.antiAlias,
+    return NodeLaneSheetSurface(
       child: SafeArea(
         top: false,
         child: Column(

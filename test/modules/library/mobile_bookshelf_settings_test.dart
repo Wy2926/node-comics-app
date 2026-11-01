@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -124,7 +125,12 @@ void main() {
   }
 
   Future<void> tab(WidgetTester tester, String name) async {
-    await tester.tap(find.widgetWithText(Tab, name));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NodeLaneTabSegments),
+        matching: find.text(name),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -233,7 +239,7 @@ void main() {
         find.text('Show numbers of items'),
         'bookshelf-display',
       );
-      expect(find.byType(CloseButton).hitTestable(), findsOneWidget);
+      expect(find.byTooltip('Close').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

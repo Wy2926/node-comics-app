@@ -1,7 +1,9 @@
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/modules/manga/reader/reader_view.dart';
@@ -228,10 +230,7 @@ class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
       child: Padding(
         padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
         child: LayoutBuilder(
-          builder: (context, constraints) => Material(
-            color: colors.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            clipBehavior: Clip.antiAlias,
+          builder: (context, constraints) => NodeLaneSheetSurface(
             child: SafeArea(
               top: false,
               child: SizedBox(

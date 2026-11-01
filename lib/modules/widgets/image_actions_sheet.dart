@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -29,25 +32,20 @@ class ImageActionsSheet extends StatelessWidget {
     return SuperListView(
       shrinkWrap: true,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-            color: context.themeData.scaffoldBackgroundColor,
-          ),
+        _ImageActionsSurface(
           child: Column(
             children: [
               // Handle bar
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
-                  height: 7,
-                  width: 35,
+                  height: isMobile && !isTv ? 4 : 7,
+                  width: isMobile && !isTv ? 32 : 35,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
-                    color: context.secondaryColor.withValues(alpha: 0.4),
+                    color: isMobile && !isTv
+                        ? NodeLaneTokens.of(context).muted
+                        : context.secondaryColor.withValues(alpha: 0.4),
                   ),
                 ),
               ),
@@ -77,6 +75,22 @@ class ImageActionsSheet extends StatelessWidget {
       ],
     );
   }
+}
+
+class _ImageActionsSurface extends StatelessWidget {
+  const _ImageActionsSurface({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => isMobile && !isTv
+      ? NodeLaneSheetSurface(child: child)
+      : Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            color: context.themeData.scaffoldBackgroundColor,
+          ),
+          child: child,
+        );
 }
 
 class _ActionButton extends StatelessWidget {

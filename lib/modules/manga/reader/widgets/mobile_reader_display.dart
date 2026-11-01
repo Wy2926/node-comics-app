@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
@@ -120,10 +121,7 @@ class _ReaderDisplaySheetState extends ConsumerState<_ReaderDisplaySheet> {
         widget.canChangePageMode &&
         mode != null &&
         !mode.isHorizontalContinuous;
-    return Material(
-      color: colors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      clipBehavior: Clip.antiAlias,
+    return NodeLaneSheetSurface(
       child: SafeArea(
         top: false,
         child: ConstrainedBox(

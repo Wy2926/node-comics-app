@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/calendar/models/upcoming_ui_model.dart';
 import 'package:mangayomi/modules/calendar/widgets/upcoming_calendar.dart';
@@ -76,7 +77,7 @@ class _MobileCalendarState extends State<MobileCalendar> {
               icon: const Icon(Icons.info_outline_rounded),
               onPressed: () => showDialog<void>(
                 context: context,
-                builder: (context) => AlertDialog(
+                builder: (context) => NodeLaneAlertDialog(
                   scrollable: true,
                   title: Text(l10n.calendar),
                   content: Text(l10n.calendar_info),

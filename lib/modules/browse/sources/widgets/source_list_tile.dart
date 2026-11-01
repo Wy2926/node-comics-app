@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
@@ -30,24 +32,47 @@ class SourceListTile extends StatelessWidget {
     context.push('/mangaHome', extra: (source, false));
   }
 
-  Widget _icon(BuildContext context) => Container(
-    height: 37,
-    width: 37,
-    decoration: BoxDecoration(
-      color: Theme.of(context).secondaryHeaderColor.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(isMobile && !isTv ? 10 : 5),
-    ),
-    child: (source.iconUrl ?? '').isEmpty
-        ? Icon(isLocal ? Icons.folder_outlined : Icons.extension_rounded)
-        : cachedNetworkImage(
-            imageUrl: source.iconUrl!,
-            fit: BoxFit.contain,
-            width: 37,
-            height: 37,
-            errorWidget: const Icon(Icons.extension_rounded),
-            useCustomNetworkImage: false,
-          ),
-  );
+  Widget _icon(BuildContext context) {
+    if (isMobile && !isTv) {
+      final colors = NodeLaneTokens.of(context);
+      final icons = NodeLaneIcons.of(context);
+      if (isLocal) return Icon(icons.folder, color: colors.accent, size: 36);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+        child: ColoredBox(
+          color: colors.soft,
+          child: (source.iconUrl ?? '').isEmpty
+              ? Icon(icons.extensions, color: colors.accent)
+              : cachedNetworkImage(
+                  imageUrl: source.iconUrl!,
+                  fit: BoxFit.contain,
+                  width: 40,
+                  height: 40,
+                  errorWidget: Icon(icons.extensions, color: colors.muted),
+                  useCustomNetworkImage: false,
+                ),
+        ),
+      );
+    }
+    return Container(
+      height: 37,
+      width: 37,
+      decoration: BoxDecoration(
+        color: Theme.of(context).secondaryHeaderColor.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(isMobile && !isTv ? 10 : 5),
+      ),
+      child: (source.iconUrl ?? '').isEmpty
+          ? Icon(isLocal ? Icons.folder_outlined : Icons.extension_rounded)
+          : cachedNetworkImage(
+              imageUrl: source.iconUrl!,
+              fit: BoxFit.contain,
+              width: 37,
+              height: 37,
+              errorWidget: const Icon(Icons.extension_rounded),
+              useCustomNetworkImage: false,
+            ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,11 +81,11 @@ class SourceListTile extends StatelessWidget {
         : source.name ?? '';
     if (isMobile && !isTv) {
       return MobileSourceCard(
-        title: title,
+        title: isLocal ? context.l10n.local_source : title,
         icon: _icon(context),
         onTap: () => _openSource(context),
         metadata: isLocal
-            ? null
+            ? Text(source.itemType.localized(context.l10n))
             : Wrap(
                 spacing: 6,
                 runSpacing: 4,
@@ -85,7 +110,7 @@ class SourceListTile extends StatelessWidget {
                 ),
                 onPressed: () =>
                     context.push('/mangaHome', extra: (source, true)),
-                icon: const Icon(Icons.new_releases_outlined, size: 20),
+                icon: Icon(NodeLaneIcons.of(context).latest, size: 20),
                 label: Text(context.l10n.latest),
               ),
             ),
@@ -96,9 +121,9 @@ class SourceListTile extends StatelessWidget {
                 onPressed: () => sourceRepository.save(
                   source..isPinned = !(source.isPinned ?? false),
                 ),
-                icon: const Icon(Icons.push_pin_outlined, size: 20),
+                icon: Icon(NodeLaneIcons.of(context).pin, size: 20),
                 selectedIcon: Icon(
-                  Icons.push_pin_rounded,
+                  NodeLaneIcons.of(context).pinSelected,
                   size: 20,
                   color: context.primaryColor,
                 ),

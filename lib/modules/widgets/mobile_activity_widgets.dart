@@ -48,7 +48,12 @@ class MobileActivityHeader extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Expanded(child: mediaMenu),
+                        Expanded(
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: mediaMenu,
+                          ),
+                        ),
                         ...actions,
                       ],
                     ),

@@ -58,20 +58,26 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
           return LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth - NodeLaneTokens.gutter * 2;
-              final maxColumns = ((width + 14) / 104).floor().clamp(1, 12);
+              final maxColumns = ((width + NodeLaneTokens.shelfGap) / 104)
+                  .floor()
+                  .clamp(1, 12);
               final columns = (gridSize ?? 0) == 0
-                  ? ((width + 14) / 194).round().clamp(2, 6)
+                  ? ((width + NodeLaneTokens.shelfGap) / 194).round().clamp(
+                      2,
+                      6,
+                    )
                   : gridSize!.clamp(1, maxColumns);
-              final coverWidth = (width - (columns - 1) * 14) / columns;
+              final coverWidth =
+                  (width - (columns - 1) * NodeLaneTokens.shelfGap) / columns;
               final coverOnly =
                   widget.isCoverOnlyGrid && !widget.isComfortableGrid;
               final scale = MediaQuery.textScalerOf(context);
               final captionHeight = coverOnly
                   ? 0.0
-                  : 10 +
-                        scale.scale(15) * 2.5 +
+                  : NodeLaneTokens.space8 +
+                        scale.scale(NodeLaneTokens.bookTitleSize) * 2.5 +
                         ((widget.sourceBadge || widget.language)
-                            ? scale.scale(12) * 1.3 + 4
+                            ? scale.scale(NodeLaneTokens.captionSize) * 1.3 + 4
                             : 0);
               return GridView.builder(
                 key: PageStorageKey('mobile-shelf-${widget.itemType}'),
@@ -86,9 +92,11 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
                 ).add(pageBottomInsets(context)),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: columns,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 22,
-                  mainAxisExtent: coverWidth * 1.43 + captionHeight,
+                  crossAxisSpacing: NodeLaneTokens.shelfGap,
+                  mainAxisSpacing: NodeLaneTokens.space20,
+                  mainAxisExtent:
+                      coverWidth * NodeLaneTokens.coverAspectRatio +
+                      captionHeight,
                 ),
                 itemCount: widget.entriesManga.length,
                 itemBuilder: (context, index) {

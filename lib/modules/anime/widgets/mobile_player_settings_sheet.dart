@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/anime/widgets/player_settings_navigation.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -105,12 +106,8 @@ class _MobilePlayerSettingsSheetState extends State<MobilePlayerSettingsSheet> {
                   onPopInvokedWithResult: (didPop, _) {
                     if (!didPop && canGoBack) _goHome();
                   },
-                  child: Material(
-                    color: colors.canvas,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                    clipBehavior: Clip.antiAlias,
+                  child: NodeLaneSheetSurface(
+                    grouped: true,
                     child: SafeArea(
                       top: false,
                       child: Column(

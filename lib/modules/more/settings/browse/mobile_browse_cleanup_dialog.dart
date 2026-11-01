@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -53,9 +54,8 @@ class _MobileBrowseCleanupDialogState extends State<MobileBrowseCleanupDialog> {
     final colors = NodeLaneTokens.of(context);
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
+      child: NodeLaneAlertDialog(
         scrollable: true,
-        backgroundColor: colors.surface,
         title: Text(widget.title),
         content: Column(
           mainAxisSize: MainAxisSize.min,

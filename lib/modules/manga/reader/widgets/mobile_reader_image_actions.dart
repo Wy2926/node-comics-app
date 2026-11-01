@@ -1,7 +1,9 @@
+
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -125,10 +127,7 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
         : l10n.reader_image_save_android;
     return PopScope(
       canPop: !busy,
-      child: Material(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        clipBehavior: Clip.antiAlias,
+      child: NodeLaneSheetSurface(
         child: SafeArea(
           top: false,
           child: LayoutBuilder(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Password draft only. Storage and decryption remain with the existing flows.
 /// Without [onSave], returns the original input string for decryption.
@@ -62,11 +62,9 @@ class _MobileBackupPasswordDialogState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
-        backgroundColor: colors.surface,
+      child: NodeLaneAlertDialog(
         scrollable: true,
         title: Text(
           _setup ? l10n.set_backup_password : l10n.enter_backup_password,

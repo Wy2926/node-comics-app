@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 
 class MobileBookshelfEmpty extends StatelessWidget {
   const MobileBookshelfEmpty({
@@ -29,39 +30,27 @@ class MobileBookshelfEmpty extends StatelessWidget {
             minWidth: constraints.maxWidth,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(NodeLaneTokens.space24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: colors.accentSoft,
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Icon(
-                    filtered
-                        ? Icons.search_off_rounded
-                        : Icons.auto_stories_rounded,
-                    size: 40,
-                    color: colors.accent,
-                  ),
+                Icon(
+                  filtered
+                      ? NodeLaneIcons.of(context).search
+                      : NodeLaneIcons.of(context).manga,
+                  size: 52,
+                  color: colors.muted.withValues(alpha: .65),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: colors.ink,
-                  ),
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: NodeLaneTokens.space20),
+                Text(title, textAlign: TextAlign.center, style: colors.body),
+                const SizedBox(height: NodeLaneTokens.space20),
                 FilledButton.icon(
                   onPressed: onPrimary,
-                  icon: Icon(filtered ? Icons.tune_rounded : Icons.add_rounded),
+                  icon: Icon(
+                    filtered
+                        ? NodeLaneIcons.of(context).filter
+                        : NodeLaneIcons.of(context).add,
+                  ),
                   label: Text(primaryLabel),
                 ),
                 if (secondaryLabel != null && onSecondary != null)

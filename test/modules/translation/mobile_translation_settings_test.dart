@@ -153,6 +153,33 @@ void main() {
     },
   );
 
+  testWidgets(
+    'account concept card keeps loading, retry and signed-in states at normal text size',
+    (tester) async {
+      final service = _SettingsService();
+      await showSettings(tester, service, textScale: 1, account: true);
+      final login = find.widgetWithText(FilledButton, '前往登录');
+      expect(tester.widget<FilledButton>(login).onPressed, isNull);
+      service.ready.complete();
+      await tester.pumpAndSettle();
+      await tester.tap(login);
+      await tester.pump();
+      await tester.tap(login);
+      expect(service.calls, ['login']);
+      service.finish(error: '登录未完成，请重试');
+      await tester.pumpAndSettle();
+      expect(find.text('登录未完成，请重试'), findsOneWidget);
+      await tester.tap(login);
+      await tester.pump();
+      service.finish();
+      await tester.pumpAndSettle();
+      expect(find.text(service.accountName), findsOneWidget);
+      expect(find.text('已登录 NodeLane'), findsOneWidget);
+      expect(find.text('退出登录'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('initialization failure stays visible without exposing details', (
     tester,
   ) async {

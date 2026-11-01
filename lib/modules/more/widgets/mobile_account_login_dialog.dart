@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class MobileAccountField {
   const MobileAccountField({
@@ -100,8 +100,7 @@ class _MobileAccountLoginDialogState extends State<MobileAccountLoginDialog> {
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !_busy,
-    child: AlertDialog(
-      backgroundColor: NodeLaneTokens.of(context).surface,
+    child: NodeLaneAlertDialog(
       scrollable: true,
       title: Text(widget.title),
       content: AutofillGroup(

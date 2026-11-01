@@ -45,6 +45,7 @@ import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/client_id.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/url_protocol/api.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_provider.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
@@ -345,8 +346,12 @@ class _MyAppState extends ConsumerState<MyApp>
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      theme: ref.watch(lightThemeProvider),
-      darkTheme: ref.watch(darkThemeProvider),
+      theme: isMobile && !isTv
+          ? nodeLaneModalTheme(ref.watch(lightThemeProvider))
+          : ref.watch(lightThemeProvider),
+      darkTheme: isMobile && !isTv
+          ? nodeLaneModalTheme(ref.watch(darkThemeProvider))
+          : ref.watch(darkThemeProvider),
       themeMode: themeMode,
       debugShowCheckedModeBanner: false,
       locale: locale,

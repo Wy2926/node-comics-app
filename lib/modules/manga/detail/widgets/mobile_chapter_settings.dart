@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
@@ -32,10 +33,8 @@ class MobileMangaChapterSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
-    return Material(
-      color: colors.canvas,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      clipBehavior: Clip.antiAlias,
+    return NodeLaneSheetSurface(
+      grouped: true,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

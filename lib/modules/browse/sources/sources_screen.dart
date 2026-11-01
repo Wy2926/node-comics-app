@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/browse/browse_screen.dart';
 import 'package:mangayomi/modules/widgets/custom_sliver_grouped_list_view.dart';
@@ -135,7 +136,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 ),
                 children: [
                   MobileBrowseEmpty(
-                    icon: Icons.travel_explore_rounded,
+                    icon: NodeLaneIcons.of(context).web,
                     title: l10n.no_sources_installed,
                     actionLabel: l10n.show_extensions,
                     onAction: _showExtensions,

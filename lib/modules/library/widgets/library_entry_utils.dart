@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/library_filter_provider.dart';
@@ -155,6 +157,42 @@ class LibraryBadgeWidget extends ConsumerWidget {
     // If there is nothing to show (no local, no download, no unread), return empty
     if (!hasLocal && downloadCount == 0 && unreadCount == 0) {
       return const SizedBox.shrink();
+    }
+
+    if (isMobile && !isTv) {
+      final colors = NodeLaneTokens.of(context);
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasLocal) ...[
+            Badge(
+              backgroundColor: colors.surface,
+              textColor: colors.accent,
+              label: Text(context.l10n.local),
+            ),
+            const SizedBox(width: NodeLaneTokens.space4),
+          ],
+          if (downloadCount > 0) ...[
+            Badge(
+              backgroundColor: colors.surface,
+              textColor: colors.accent,
+              label: Text(
+                '$downloadCount',
+                semanticsLabel:
+                    '${context.l10n.downloaded_chapters}: $downloadCount',
+              ),
+            ),
+            const SizedBox(width: NodeLaneTokens.space4),
+          ],
+          if (unreadCount > 0)
+            Badge(
+              label: Text(
+                '$unreadCount',
+                semanticsLabel: '${context.l10n.unread}: $unreadCount',
+              ),
+            ),
+        ],
+      );
     }
 
     return Container(

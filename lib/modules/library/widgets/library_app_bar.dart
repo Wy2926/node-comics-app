@@ -1,7 +1,10 @@
 import 'dart:math';
 
+import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -177,44 +180,25 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           itemType: itemType,
           entries: entries,
         ),
-        mediaMenu: PopupMenuButton<ItemType>(
-          tooltip: l10n.library,
-          onSelected: (type) => context.go(routes[type]!),
-          itemBuilder: (_) => [
-            for (final type in ItemType.values)
-              if (!hidden.contains(routes[type]))
-                CheckedPopupMenuItem(
-                  value: type,
-                  checked: type == itemType,
-                  child: Text(type.localized(l10n)),
-                ),
-          ],
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 14),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  itemType.localized(l10n),
-                  style: const TextStyle(fontSize: 13),
-                ),
-                const Icon(Icons.expand_more_rounded, size: 18),
-              ],
-            ),
+        mediaMenu: MobileMediaMenu(
+          value: itemType,
+          availableTypes: ItemType.values.where(
+            (type) => !hidden.contains(routes[type]),
           ),
+          onChanged: (type) => context.go(routes[type]!),
         ),
         updateControl: ref.watch(libraryUpdateProvider).running
-            ? IconButton(
+            ? NodeLaneIconButton(
                 tooltip: l10n.cancel,
-                icon: const Icon(Icons.stop_circle_outlined),
+                icon: NodeLaneIcons.of(context).stop,
                 onPressed: () =>
                     ref.read(libraryUpdateProvider.notifier).requestCancel(),
               )
             : null,
         menu: itemType == ItemType.manga
-            ? IconButton(
+            ? NodeLaneIconButton(
                 tooltip: l10n.bookshelf_actions,
-                icon: const Icon(Icons.more_horiz_rounded),
+                icon: NodeLaneIcons.of(context).more,
                 onPressed: () async {
                   final action = await showModalBottomSheet<int>(
                     context: context,

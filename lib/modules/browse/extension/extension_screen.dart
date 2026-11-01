@@ -17,6 +17,7 @@ import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_empty.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 
 class ExtensionScreen extends ConsumerStatefulWidget {
   final ItemType itemType;
@@ -160,8 +161,8 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
                     SliverToBoxAdapter(
                       child: MobileBrowseEmpty(
                         icon: widget.query.isEmpty
-                            ? Icons.extension_outlined
-                            : Icons.search_off_rounded,
+                            ? NodeLaneIcons.of(context).extensions
+                            : NodeLaneIcons.of(context).search,
                         title: l10n.no_result,
                         actionLabel: widget.query.isNotEmpty
                             ? l10n.reset

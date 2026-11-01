@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'browser_url.dart';
@@ -287,7 +288,7 @@ class _BrowserAddressDialogState extends State<BrowserAddressDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => NodeLaneAlertDialog(
     scrollable: true,
     title: Text(widget.newTab ? '新标签页' : '打开网址'),
     content: TextField(

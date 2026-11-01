@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -23,7 +24,7 @@ void showTranslationControls(
         mobile: mobile,
       );
       return mobile
-          ? NodeLaneSurface(
+          ? NodeLaneModalScope(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.sizeOf(context).height * .8,
@@ -64,10 +65,7 @@ class TranslationControlsContent extends StatelessWidget {
                     const Expanded(
                       child: Text(
                         '漫画翻译',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: NodeLaneTokens.modalTitleStyle,
                       ),
                     ),
                     IconButton(

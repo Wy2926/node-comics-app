@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Waits for the existing operation; a failed operation keeps its confirmation
 /// visible. The caller owns persistence and file handling.
@@ -43,9 +43,8 @@ class _MobilePlayerActionDialogState extends State<MobilePlayerActionDialog> {
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !_busy,
-    child: AlertDialog(
+    child: NodeLaneAlertDialog(
       scrollable: true,
-      backgroundColor: NodeLaneTokens.of(context).surface,
       title: Text(widget.title),
       content: Column(
         mainAxisSize: MainAxisSize.min,

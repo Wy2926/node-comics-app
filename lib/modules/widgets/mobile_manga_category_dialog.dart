@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -105,12 +106,10 @@ class _MobileMangaCategoryDialogState extends State<MobileMangaCategoryDialog> {
         );
     return PopScope(
       canPop: !_busy,
-      child: Dialog(
-        backgroundColor: colors.surface,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: NodeLaneDialog(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: 460,
+            maxWidth: NodeLaneTokens.dialogMaxWidth,
             maxHeight: MediaQuery.sizeOf(context).height * .8,
           ),
           child: Column(

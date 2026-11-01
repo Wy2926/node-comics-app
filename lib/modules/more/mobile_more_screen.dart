@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
@@ -17,6 +19,7 @@ class MobileMoreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final icons = NodeLaneIcons.of(context);
     final hiddenItems = ref.watch(hideItemsStateProvider);
     return NodeLaneSurface(
       child: Scaffold(
@@ -24,38 +27,21 @@ class MobileMoreScreen extends ConsumerWidget {
           bottom: false,
           child: ListView(
             key: const PageStorageKey('mobile-more'),
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              24,
-            ).add(pageBottomInsets(context)),
+            padding: NodeLaneTokens.pagePadding.add(pageBottomInsets(context)),
             children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    l10n.more,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: NodeLaneTokens.of(context).ink,
-                    ),
-                  ),
-                ),
-              ),
+              NodeLanePageHeading(title: l10n.more),
+              const SizedBox(height: NodeLaneTokens.space24),
               const MobileNodeLaneAccount(),
               MobileSettingsGroup(
                 children: [
                   MobileSettingsLink(
                     title: l10n.settings,
-                    icon: Icons.settings_outlined,
+                    icon: icons.settings,
                     onTap: () => context.push('/settings'),
                   ),
                   MobileSettingsLink(
                     title: '漫画翻译',
-                    icon: Icons.translate_rounded,
+                    icon: icons.translate,
                     onTap: () =>
                         Navigator.of(context, rootNavigator: true).push(
                           MaterialPageRoute(
@@ -78,32 +64,32 @@ class MobileMoreScreen extends ConsumerWidget {
                   if (hiddenItems.contains('/history'))
                     MobileSettingsLink(
                       title: l10n.history,
-                      icon: Icons.history_rounded,
+                      icon: icons.history,
                       onTap: () => context.push('/history'),
                     ),
                   MobileSettingsLink(
                     title: l10n.download_queue,
-                    icon: Icons.download_outlined,
+                    icon: icons.download,
                     onTap: () => context.push('/downloadQueue'),
                   ),
                   MobileSettingsLink(
                     title: l10n.categories,
-                    icon: Icons.label_outline_rounded,
+                    icon: icons.categories,
                     onTap: () => context.push('/categories', extra: (false, 0)),
                   ),
                   MobileSettingsLink(
                     title: l10n.data_and_storage,
-                    icon: Icons.storage_outlined,
+                    icon: icons.storage,
                     onTap: () => context.push('/dataAndStorage'),
                   ),
                   MobileSettingsLink(
                     title: l10n.statistics,
-                    icon: Icons.query_stats_outlined,
+                    icon: icons.statistics,
                     onTap: () => context.push('/statistics'),
                   ),
                   MobileSettingsLink(
                     title: l10n.calendar,
-                    icon: Icons.calendar_month_outlined,
+                    icon: icons.calendar,
                     onTap: () => context.push('/calendarScreen'),
                   ),
                 ],
@@ -112,7 +98,7 @@ class MobileMoreScreen extends ConsumerWidget {
                 children: [
                   MobileSettingsLink(
                     title: l10n.about,
-                    icon: Icons.info_outline_rounded,
+                    icon: icons.info,
                     onTap: () => context.push('/about'),
                   ),
                 ],

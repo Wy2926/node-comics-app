@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -48,8 +49,7 @@ class _MobileMangaImportDialogState extends State<MobileMangaImportDialog> {
     final colors = NodeLaneTokens.of(context);
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
-        backgroundColor: colors.surface,
+      child: NodeLaneAlertDialog(
         scrollable: true,
         title: Text(l10n.import_local_file),
         content: Column(
