@@ -1,6 +1,6 @@
 # NodeLane Comics App
 
-`nodelane-comics-app` 是基于 [Mangayomi](https://github.com/kodjodevf/mangayomi) 开发的 NodeLane 手机漫画应用，优先支持 Android 和 iOS。
+`nodelane-comics-app` 是基于 [Mangayomi](https://github.com/kodjodevf/mangayomi) 开发的 NodeLane 手机漫画应用，当前开发与首版验收以 iOS 为主，Android 测试暂缓。
 
 产品目标是将漫画阅读、网站适配与 NodeLane 翻译结合起来，并提供内置多标签浏览器，在原网页中翻译漫画图片。
 
@@ -13,6 +13,7 @@
 | [开发约定](AGENTS.md) | 产品边界、翻译解耦、性能与验证要求 |
 | [翻译架构与实现状态](docs/TRANSLATION_ARCHITECTURE.md) | 接入方式、共享渠道、回执恢复、资源预算及尚未通过的验收门槛 |
 | [手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md) | 书架、来源、活动页、详情、阅读工具栏、浏览器、更多／设置、翻译账号、平台底栏及迭代清单 |
+| [首版范围与发布顺序](docs/MOBILE_UI_DESIGN.md#首版范围与发布顺序) | iOS 首版保留、精简与延期功能，以及发布门槛 |
 | [上游基线](UPSTREAM.md) | 来源、固定提交、许可证和摘要 |
 | [Mangayomi 原始说明](README.mangayomi.md) | 上游功能、构建说明和致谢 |
 | [Flutter 配置](pubspec.yaml) | Dart SDK 与依赖要求 |
@@ -41,7 +42,7 @@ flutter build apk --debug
 flutter build ios --debug --no-codesign
 ```
 
-这些是运行入口，不代表已完成本机编译或真机验证。应用包名、图标、更新地址和发布配置目前仍来自上游，需要在 NodeLane 发布前完成独立配置。
+这些是各平台运行入口，不代表已完成本机编译或真机验证；当前按开发约定只推进 iOS 平台验证，Android 命令暂不执行。应用包名、图标、更新地址和发布配置目前仍来自上游，需要在 NodeLane 发布前完成独立配置。
 
 ## 既有 NodeLane 能力
 
