@@ -73,6 +73,9 @@ class NodeLaneTokens {
   );
   static const modalRadius = 24.0, menuRadius = 16.0;
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
+  static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
+  static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
+  static const browserTabGap = 12.0;
   static const dialogMaxWidth = 480.0;
   static const modalInset = EdgeInsets.symmetric(horizontal: 20, vertical: 24);
   static const modalTitlePadding = EdgeInsets.fromLTRB(20, 20, 20, 12);

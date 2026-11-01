@@ -37,6 +37,13 @@ class NodeLaneIcons {
   IconData get recommend =>
       _pick(CupertinoIcons.hand_thumbsup, Icons.thumb_up_outlined);
   IconData get web => _pick(CupertinoIcons.globe, Icons.public_rounded);
+  IconData get browser =>
+      _pick(CupertinoIcons.square_on_square, Icons.tab_outlined);
+  IconData get clipboard =>
+      _pick(CupertinoIcons.doc_on_clipboard, Icons.content_paste);
+  IconData get lock => _pick(CupertinoIcons.lock_fill, Icons.lock_outline);
+  IconData get repository =>
+      _pick(CupertinoIcons.cube_box, Icons.storage_outlined);
   IconData get extensions =>
       _pick(CupertinoIcons.square_grid_2x2, Icons.extension_outlined);
   IconData get folderOutline =>

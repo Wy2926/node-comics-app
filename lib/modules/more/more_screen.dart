@@ -55,13 +55,13 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
             const DownloadedOnlyWidget(),
             const IncognitoModeWidget(),
             const Divider(),
-            if (hiddenItems.contains("/history"))
+            if (hiddenItems.contains('/browser'))
               ListTileWidget(
                 onTap: () {
-                  context.push('/history');
+                  context.go('/browser');
                 },
-                icon: Icons.history,
-                title: l10n.history,
+                icon: Icons.tab_outlined,
+                title: '浏览器',
               ),
             // Downloads are hidden on TV: no offline use case, and the download
             // buttons are hidden there too, so a queue entry would just dangle.

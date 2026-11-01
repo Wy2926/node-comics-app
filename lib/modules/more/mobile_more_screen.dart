@@ -49,6 +49,12 @@ class MobileMoreScreen extends ConsumerWidget {
                           ),
                         ),
                   ),
+                  if (hiddenItems.contains('/browser'))
+                    MobileSettingsLink(
+                      title: '浏览器',
+                      icon: icons.browser,
+                      onTap: () => context.go('/browser'),
+                    ),
                 ],
               ),
               MobileSettingsGroup(
@@ -61,12 +67,6 @@ class MobileMoreScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.library,
                 children: [
-                  if (hiddenItems.contains('/history'))
-                    MobileSettingsLink(
-                      title: l10n.history,
-                      icon: icons.history,
-                      onTap: () => context.push('/history'),
-                    ),
                   MobileSettingsLink(
                     title: l10n.download_queue,
                     icon: icons.download,

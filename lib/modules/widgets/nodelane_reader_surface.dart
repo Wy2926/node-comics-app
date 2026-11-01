@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -136,32 +137,7 @@ class NodeLaneReaderHeading extends StatelessWidget {
                   ),
                 ),
                 ...actions,
-                IconButton(
-                  tooltip: closeLabel,
-                  onPressed: onClose,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 44,
-                    height: 44,
-                  ),
-                  padding: const EdgeInsets.all(6),
-                  style: IconButton.styleFrom(
-                    minimumSize: const Size(44, 44),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  icon: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: colors.soft,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      NodeLaneIcons.of(context).close,
-                      size: 18,
-                      color: colors.muted,
-                    ),
-                  ),
-                ),
+                NodeLaneCloseButton(tooltip: closeLabel, onPressed: onClose),
               ],
             ),
           ),

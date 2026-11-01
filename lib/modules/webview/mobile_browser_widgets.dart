@@ -1,11 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'browser_url.dart';
 
-/// Address and tab controls carry only display data and callbacks. They never
-/// own WebViews, translation consumers, or navigation history.
+/// Pure presentation. WebViews, translation and persistence stay in the host.
 class MobileBrowserHeader extends StatelessWidget {
   const MobileBrowserHeader({
     super.key,
@@ -14,80 +17,100 @@ class MobileBrowserHeader extends StatelessWidget {
     required this.onAddress,
     required this.onClose,
     required this.menu,
+    this.onReload,
   });
   final String title, url;
   final VoidCallback onAddress, onClose;
+  final VoidCallback? onReload;
   final Widget menu;
-
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final host = Uri.tryParse(url)?.host ?? '';
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final uri = Uri.tryParse(url);
     return Material(
-      color: colors.surface,
+      color: t.surface,
       child: SafeArea(
         bottom: false,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * .28,
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
-            child: Row(
-              children: [
-                IconButton(
-                  tooltip: '返回应用',
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close_rounded),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            children: [
+              TextButton(
+                onPressed: onClose,
+                style: TextButton.styleFrom(
+                  foregroundColor: t.ink,
+                  minimumSize: const Size(64, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                 ),
-                Expanded(
-                  child: Material(
-                    color: colors.soft,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: onAddress,
-                      child: Semantics(
-                        button: true,
-                        label: '编辑网址',
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                child: Row(
+                  children: [
+                    Icon(icons.back, size: 20),
+                    const SizedBox(width: 4),
+                    Text('返回', style: t.readerSecondary),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Material(
+                  color: t.soft,
+                  borderRadius: BorderRadius.circular(
+                    NodeLaneTokens.controlRadius,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: onAddress,
+                          borderRadius: BorderRadius.circular(
+                            NodeLaneTokens.controlRadius,
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title.isEmpty ? '网页浏览' : title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: colors.ink,
-                                ),
+                          child: Semantics(
+                            button: true,
+                            label: '编辑网址',
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 14,
                               ),
-                              Text(
-                                host.isEmpty ? '输入网址' : host,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colors.muted,
-                                ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    uri?.scheme == 'https'
+                                        ? icons.lock
+                                        : icons.web,
+                                    size: 14,
+                                    color: t.muted,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      uri?.host.isNotEmpty == true
+                                          ? uri!.host
+                                          : '输入网址',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: t.readerSecondary.copyWith(
+                                        color: t.ink,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      IconButton(
+                        tooltip: '刷新',
+                        onPressed: onReload,
+                        icon: Icon(icons.refresh, size: 22),
+                      ),
+                    ],
                   ),
                 ),
-                menu,
-              ],
-            ),
+              ),
+              menu,
+            ],
           ),
         ),
       ),
@@ -104,55 +127,84 @@ class MobileBrowserToolbar extends StatelessWidget {
     required this.onTranslate,
     this.onBack,
     this.onForward,
+    this.showTranslation = true,
+    this.onDisplayChanged,
+    this.onControls,
   });
   final int tabCount;
-  final bool translating;
+  final bool translating, showTranslation;
   final VoidCallback onTabs, onTranslate;
-  final VoidCallback? onBack, onForward;
-
+  final VoidCallback? onBack, onForward, onControls;
+  final ValueChanged<bool>? onDisplayChanged;
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(top: BorderSide(color: colors.line)),
+        color: t.surface,
+        border: Border(top: BorderSide(color: t.line, width: .5)),
       ),
       child: SafeArea(
         top: false,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * .28,
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: SizedBox(
+          height: NodeLaneTokens.browserToolbarHeight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _action(context, '后退', const Icon(Icons.chevron_left), onBack),
-                _action(
-                  context,
-                  '前进',
-                  const Icon(Icons.chevron_right),
-                  onForward,
+                IconButton(
+                  tooltip: '后退',
+                  onPressed: onBack,
+                  icon: Icon(icons.back),
                 ),
-                _action(
-                  context,
-                  '翻译',
-                  Icon(
-                    Icons.translate_rounded,
-                    color: translating ? colors.accent : null,
-                  ),
-                  onTranslate,
+                IconButton(
+                  tooltip: '前进',
+                  onPressed: onForward,
+                  icon: Icon(icons.forward),
                 ),
-                _action(
-                  context,
-                  '标签',
-                  Badge.count(
-                    count: tabCount,
-                    child: const Icon(Icons.tab_outlined),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: translating || onDisplayChanged != null
+                      ? NodeLaneSegments<bool>(
+                          value: showTranslation,
+                          pill: true,
+                          labelStyle: t.readerSecondary,
+                          segments: const [
+                            ButtonSegment(value: false, label: Text('原图')),
+                            ButtonSegment(value: true, label: Text('译图')),
+                          ],
+                          onChanged: onDisplayChanged ?? (_) {},
+                        )
+                      : FilledButton.icon(
+                          onPressed: onTranslate,
+                          icon: Icon(icons.translate, size: 20),
+                          label: const Text('翻译'),
+                        ),
+                ),
+                if (onControls != null)
+                  IconButton(
+                    tooltip: '网页翻译',
+                    onPressed: onControls,
+                    icon: Icon(icons.down, size: 18),
                   ),
-                  onTabs,
+                Semantics(
+                  label: '标签页 · $tabCount',
+                  child: TextButton(
+                    onPressed: onTabs,
+                    style: TextButton.styleFrom(
+                      foregroundColor: t.ink,
+                      minimumSize: const Size(52, 44),
+                      padding: const EdgeInsets.all(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icons.browser, size: 24),
+                        const SizedBox(width: 4),
+                        Text('$tabCount'),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -161,35 +213,6 @@ class MobileBrowserToolbar extends StatelessWidget {
       ),
     );
   }
-
-  Widget _action(
-    BuildContext context,
-    String label,
-    Widget icon,
-    VoidCallback? callback,
-  ) => Expanded(
-    child: TextButton(
-      style: TextButton.styleFrom(
-        foregroundColor: NodeLaneTokens.of(context).ink,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        minimumSize: const Size(48, 56),
-      ),
-      onPressed: callback,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          icon,
-          const SizedBox(height: 4),
-          Text(
-            label,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12),
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 class MobileBrowserTabCard extends StatelessWidget {
@@ -200,41 +223,111 @@ class MobileBrowserTabCard extends StatelessWidget {
     required this.selected,
     required this.onSelect,
     required this.onClose,
+    this.preview,
   });
   final String title, url;
   final bool selected;
   final VoidCallback onSelect, onClose;
-
+  final Uint8List? preview;
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return Material(
-      color: selected ? colors.accentSoft : colors.surface,
+      color: t.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: selected ? colors.accent : colors.line),
+        borderRadius: BorderRadius.circular(NodeLaneTokens.groupRadius),
+        side: BorderSide(
+          color: selected ? t.accent : t.line,
+          width: selected ? 2 : .5,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        selected: selected,
-        contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-        title: Text(
-          title.isEmpty ? '网页' : title,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          Uri.tryParse(url)?.host ?? '',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 13, color: colors.muted),
-        ),
+      child: InkWell(
         onTap: onSelect,
-        trailing: IconButton(
-          tooltip: '关闭标签页',
-          onPressed: onClose,
-          icon: const Icon(Icons.close_rounded),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (preview != null)
+                    ExcludeSemantics(
+                      child: Image.memory(
+                        preview!,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                        cacheWidth: 360,
+                        errorBuilder: (_, _, _) => ColoredBox(
+                          color: t.soft,
+                          child: Icon(icons.web, size: 36, color: t.muted),
+                        ),
+                      ),
+                    )
+                  else
+                    ColoredBox(
+                      color: t.soft,
+                      child: Center(
+                        child: Icon(icons.web, size: 36, color: t.muted),
+                      ),
+                    ),
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: NodeLaneCloseButton(
+                      tooltip: '关闭标签页',
+                      backgroundColor: t.surface,
+                      onPressed: onClose,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (selected)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: t.accent,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          child: Text(
+                            '当前',
+                            style: t.caption.copyWith(
+                              color: t.onAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  Text(
+                    title.isEmpty ? '网页' : title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.readerLabel,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    Uri.tryParse(url)?.host ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.readerSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -273,8 +366,8 @@ class _BrowserAddressDialogState extends State<BrowserAddressDialog> {
   bool invalid = false;
 
   void _submit() {
-    final value = input.text.trim();
-    if (!isBrowserUrl(value)) {
+    final value = normalizeBrowserAddress(input.text);
+    if (value == null) {
       setState(() => invalid = true);
       return;
     }

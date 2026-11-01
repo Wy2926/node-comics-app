@@ -82,18 +82,13 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
           'bell',
           'bell.fill',
         ),
-        '/history' => (
-          l10n.history,
-          Icons.history_rounded,
-          'clock',
-          'clock.fill',
+        '/browser' => (
+          '浏览器',
+          Icons.tab_outlined,
+          'square.on.square',
+          'square.on.square.fill',
         ),
-        '/browse' => (
-          l10n.browse,
-          Icons.explore_outlined,
-          'safari',
-          'safari.fill',
-        ),
+        '/browse' => ('来源', Icons.public_outlined, 'globe', 'globe'),
         '/trackerLibrary' => (
           l10n.tracking,
           Icons.account_tree_outlined,

@@ -11,9 +11,6 @@ import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class ExtensionListTileWidget extends ConsumerStatefulWidget {
   final Source source;
@@ -80,12 +77,6 @@ class _ExtensionListTileWidgetState
   }
 
   IconData _actionIcon(BuildContext context, String label) {
-    if (isMobile && !isTv) {
-      final icons = NodeLaneIcons.of(context);
-      if (label == context.l10n.install) return icons.download;
-      if (label == context.l10n.update) return icons.refresh;
-      return icons.settings;
-    }
     if (label == context.l10n.install) return Icons.download_outlined;
     if (label == context.l10n.update) return Icons.system_update_alt_outlined;
     return Icons.settings_outlined;
@@ -125,32 +116,6 @@ class _ExtensionListTileWidgetState
   }
 
   Widget _icon() {
-    if (isMobile && !isTv) {
-      final colors = NodeLaneTokens.of(context);
-      final fallback = Icon(
-        NodeLaneIcons.of(context).extensions,
-        color: colors.accent,
-      );
-      return Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: colors.soft,
-          borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: (widget.source.iconUrl ?? '').isEmpty
-            ? fallback
-            : cachedNetworkImage(
-                imageUrl: widget.source.iconUrl!,
-                fit: BoxFit.contain,
-                width: 44,
-                height: 44,
-                errorWidget: fallback,
-                useCustomNetworkImage: false,
-              ),
-      );
-    }
     return Container(
       height: 37,
       width: 37,
@@ -326,63 +291,6 @@ class _ExtensionListTileWidgetState
     );
   }
 
-  Widget _buildMobileCard(BuildContext context, String label) {
-    final source = widget.source;
-    return MobileSourceCard(
-      title: source.name ?? '',
-      icon: _icon(),
-      onTap: _isLoading ? null : () => _onMainTap(context),
-      metadata: Wrap(
-        spacing: 6,
-        runSpacing: 4,
-        children: [
-          Text(completeLanguageName((source.lang ?? '').toLowerCase())),
-          if ((source.version ?? '').isNotEmpty) Text(source.version!),
-          if (source.isNsfw ?? false)
-            Text(
-              'NSFW',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          if ((source.repo?.name ?? '').isNotEmpty) Text(source.repo!.name!),
-          if (source.isObsolete ?? false)
-            Text('OBSOLETE', style: TextStyle(color: context.primaryColor)),
-        ],
-      ),
-      actions: Row(
-        children: [
-          Expanded(
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                alignment: Alignment.centerLeft,
-                minimumSize: const Size(44, 44),
-              ),
-              onPressed: _isLoading ? null : () => _onActionTap(context),
-              icon: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Icon(_actionIcon(context, label), size: 20),
-              label: Text(label),
-            ),
-          ),
-          if (_sourceNotEmpty)
-            IconButton(
-              tooltip: context.l10n.uninstall,
-              onPressed: _isLoading
-                  ? null
-                  : () => _openUninstallDialog(context),
-              icon: Icon(
-                NodeLaneIcons.of(context).delete,
-                size: NodeLaneTokens.smallIconSize,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
@@ -393,7 +301,6 @@ class _ExtensionListTileWidgetState
         : l10n.settings;
 
     if (isTv) return _buildTvRow(context, buttonLabel);
-    if (isMobile) return _buildMobileCard(context, buttonLabel);
 
     return ListTile(
       onTap: _isLoading ? null : () => _onMainTap(context),

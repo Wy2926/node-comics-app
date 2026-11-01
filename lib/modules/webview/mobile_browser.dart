@@ -1,13 +1,15 @@
-
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
-import 'package:mangayomi/services/nodelane_private_storage.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+
+import 'browser_session_store.dart';
+import 'mobile_browser_tabs_sheet.dart';
+
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/identity.dart';
@@ -93,20 +95,25 @@ class BrowserTab {
 
 /// Logical tabs outlive controllers. One active and one 30-second warm view.
 class MobileComicBrowser extends ConsumerStatefulWidget {
-  const MobileComicBrowser({super.key, required this.url, required this.title});
+  const MobileComicBrowser({
+    super.key,
+    required this.url,
+    required this.title,
+    this.tabId,
+  });
   final String url, title;
+  final String? tabId;
   @override
   ConsumerState<MobileComicBrowser> createState() => _MobileComicBrowserState();
 }
 
 class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     with WidgetsBindingObserver {
-  static const _vault = nodeLanePrivateVault,
-      _storageKey = 'nodelane.browser.tabs.v1';
   final tabs = <BrowserTab>[];
   String? active, warm;
   Timer? _warmTimer, _saveTimer;
   bool foreground = true, ready = false;
+  bool _leaving = false, _showingTabs = false;
   late final service = ref.read(translationServiceProvider);
   BrowserTab? get current => tabs.where((tab) => tab.id == active).firstOrNull;
   @override
@@ -125,14 +132,11 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
 
   Future<void> _restore() async {
     try {
-      final raw = await _vault.read(key: _storageKey);
-      if (raw != null && raw.length <= 256 * 1024) {
-        final values = jsonDecode(raw) as List;
-        for (final value in values.take(12)) {
-          final tab = BrowserTab.fromJson(value);
-          if (tab != null && !tabs.any((other) => other.id == tab.id)) {
-            tabs.add(tab);
-          }
+      await browserSessionStore.load();
+      for (final value in browserSessionStore.entries) {
+        final tab = BrowserTab.fromJson(value);
+        if (tab != null && !tabs.any((other) => other.id == tab.id)) {
+          tabs.add(tab);
         }
       }
     } catch (_) {}
@@ -142,7 +146,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       }
       return;
     }
-    final existing = tabs.where((tab) => tab.url == widget.url).firstOrNull;
+    final existing = tabs
+        .where(
+          (tab) => widget.tabId == null
+              ? tab.url == widget.url
+              : tab.id == widget.tabId,
+        )
+        .firstOrNull;
     final tab = existing ?? BrowserTab(widget.url, title: widget.title);
     if (existing == null) {
       if (tabs.length >= 12) tabs.removeAt(0).translation.dispose();
@@ -178,23 +188,71 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _saveTimer = Timer(const Duration(milliseconds: 400), () async {
       final tab = current;
       if (tab != null && foreground) {
-        tab.anchor = await tab.captureAnchor?.call() ?? tab.anchor;
+        try {
+          tab.anchor =
+              await tab.captureAnchor?.call().timeout(
+                const Duration(seconds: 2),
+              ) ??
+              tab.anchor;
+        } catch (_) {}
       }
       if (!mounted) return;
-      final text = jsonEncode(tabs.map((tab) => tab.toJson()).toList());
-      if (text.length <= 256 * 1024) {
-        _vault.write(key: _storageKey, value: text).catchError((_) {});
-      }
+      await browserSessionStore
+          .save(tabs.map((tab) => tab.toJson()).toList())
+          .catchError((_) {});
     });
+  }
+
+  Future<void> _capturePreview(BrowserTab tab) async {
+    try {
+      final bytes = await tab.controller
+          ?.takeScreenshot(
+            screenshotConfiguration: ScreenshotConfiguration(
+              snapshotWidth: 340,
+              compressFormat: CompressFormat.JPEG,
+              quality: 55,
+            ),
+          )
+          .timeout(const Duration(seconds: 2));
+      if (mounted && tabs.contains(tab) && bytes != null) {
+        browserSessionStore.setPreview(tab.id, bytes);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _leave() async {
+    if (_leaving) return;
+    _leaving = true;
+    final tab = current;
+    if (tab != null) {
+      try {
+        tab.anchor =
+            await tab.captureAnchor?.call().timeout(
+              const Duration(seconds: 2),
+            ) ??
+            tab.anchor;
+      } catch (_) {}
+      await _capturePreview(tab);
+    }
+    _saveTimer?.cancel();
+    await browserSessionStore
+        .save(tabs.map((tab) => tab.toJson()).toList())
+        .catchError((_) {});
+    if (mounted) Navigator.of(context).pop();
   }
 
   void _select(BrowserTab tab) {
     if (active == tab.id) return;
     final previous = current;
     if (previous != null) {
-      previous.captureAnchor?.call().then((value) {
-        if (value != null) previous.anchor = value;
-      });
+      unawaited(_capturePreview(previous));
+      previous.captureAnchor
+          ?.call()
+          .timeout(const Duration(seconds: 2))
+          .then((value) {
+            if (value != null) previous.anchor = value;
+          })
+          .catchError((_) {});
     }
     _warmTimer?.cancel();
     warm = active;
@@ -219,10 +277,6 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     tab.translation.dispose();
     if (warm == tab.id) warm = null;
     if (active == tab.id) active = tabs.lastOrNull?.id;
-    if (tabs.isEmpty) {
-      Navigator.of(context).pop();
-      return;
-    }
     _attach();
     setState(() {});
     _save();
@@ -243,106 +297,53 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   Future<void> _showTabs() async {
-    final action = await showModalBottomSheet<(String, BrowserTab?)>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      backgroundColor: NodeLaneTokens.of(context).canvas,
-      builder: (sheetContext) => NodeLaneModalScope(
-        child: StatefulBuilder(
-          builder: (context, refreshSheet) => SafeArea(
-            top: false,
-            child: SizedBox(
-              height: MediaQuery.sizeOf(context).height * .8,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 8, 12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '标签页 · ${tabs.length}',
-                            style: NodeLaneTokens.modalTitleStyle,
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: MaterialLocalizations.of(context)
-                              .closeButtonTooltip,
-                          onPressed: () => Navigator.pop(sheetContext),
-                          icon: const Icon(Icons.close_rounded),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: tabs.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final item = tabs[index];
-                        return MobileBrowserTabCard(
-                          key: ValueKey(item.id),
-                          title: item.title,
-                          url: item.url,
-                          selected: item.id == active,
-                          onSelect: () =>
-                              Navigator.pop(sheetContext, ('select', item)),
-                          onClose: () {
-                            if (tabs.length == 1) {
-                              Navigator.pop(sheetContext, ('close', item));
-                            } else {
-                              _close(item);
-                              refreshSheet(() {});
-                            }
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (tabs.length >= 12)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 8),
-                            child: Text('最多打开 12 个标签页，请先关闭一个。'),
-                          ),
-                        FilledButton.icon(
-                          onPressed: tabs.length < 12
-                              ? () => Navigator.pop(sheetContext, ('new', null))
-                              : null,
-                          icon: const Icon(Icons.add),
-                          label: const Text('新标签页'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+    if (_showingTabs) return;
+    _showingTabs = true;
+    try {
+      final selected = current;
+      if (selected != null) await _capturePreview(selected);
+      if (!mounted) return;
+      final action = await showNodeLaneCatalogSheet<String>(
+        context,
+        MobileBrowserTabsSheet(
+          entries: tabs.map((tab) => tab.toJson()).toList(),
+          activeId: active,
+          onClose: (id) async {
+            final tab = tabs.where((e) => e.id == id).firstOrNull;
+            if (tab != null) _close(tab);
+            await browserSessionStore.save(
+              tabs.map((tab) => tab.toJson()).toList(),
+            );
+          },
         ),
-      ),
-    );
-    if (!mounted || action == null) return;
-    switch (action.$1) {
-      case 'new':
+      );
+      if (!mounted) return;
+      if (action == '') {
         await _address(newTab: true);
-      case 'select':
-        _select(action.$2!);
-      case 'close':
-        _close(action.$2!);
+      } else if (action != null) {
+        final tab = tabs.where((e) => e.id == action).firstOrNull;
+        if (tab != null) _select(tab);
+      }
+      if (mounted && tabs.isEmpty) await _leave();
+    } finally {
+      _showingTabs = false;
     }
   }
 
+  void _translationControls(BrowserTab tab) => showTranslationControls(
+    context,
+    tab.translation,
+    title: '网页翻译',
+    subtitle: [
+      tab.title,
+      Uri.tryParse(tab.url)?.host ?? '',
+    ].where((v) => v.isNotEmpty).join(' · '),
+    browser: true,
+  );
+
   Widget _menu(BrowserTab? tab) => PopupMenuButton<String>(
     tooltip: '更多',
+    icon: Icon(NodeLaneIcons.of(context).more),
     onSelected: (action) async {
       if (action == 'reload') await tab?.controller?.reload();
       if (action == 'new') await _address(newTab: true);
@@ -393,11 +394,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _warmTimer?.cancel();
     _saveTimer?.cancel();
     if (ready) {
-      _vault
-          .write(
-            key: _storageKey,
-            value: jsonEncode(tabs.map((tab) => tab.toJson()).toList()),
-          )
+      browserSessionStore
+          .save(tabs.map((tab) => tab.toJson()).toList())
           .catchError((_) {});
     }
     for (final tab in tabs) {
@@ -422,7 +420,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                 title: tab?.title ?? '',
                 url: tab?.url ?? '',
                 onAddress: _address,
-                onClose: () => Navigator.of(context).pop(),
+                onClose: _leave,
+                onReload: () => tab?.controller?.reload(),
                 menu: _menu(tab),
               ),
               Expanded(
@@ -460,8 +459,28 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                     onForward: tab.historyIndex + 1 < tab.history.length
                         ? () => _history(1)
                         : null,
-                    onTranslate: () =>
-                        showTranslationControls(context, tab.translation),
+                    onTranslate: () {
+                      if (tab.translation.runtime == null) {
+                        _translationControls(tab);
+                        return;
+                      }
+                      tab.translation.configure(
+                        enabled: true,
+                        showTranslation: true,
+                      );
+                    },
+                    showTranslation: tab.translation.showTranslation,
+                    onDisplayChanged:
+                        tab.translation.enabled ||
+                            tab.translation.targets.any(
+                              (t) => tab.translation.state(t).result != null,
+                            )
+                        ? (value) {
+                            tab.translation.configure(showTranslation: value);
+                            _save();
+                          }
+                        : null,
+                    onControls: () => _translationControls(tab),
                     onTabs: _showTabs,
                   ),
                 ),

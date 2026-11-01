@@ -148,7 +148,7 @@ Future<void> customDraggableTabBar({
                     null => 100,
                     != '/MangaLibrary' &&
                         != '/AnimeLibrary' &&
-                        != '/history' &&
+                        != '/browser' &&
                         != '/browse' &&
                         != '/more' =>
                       0,

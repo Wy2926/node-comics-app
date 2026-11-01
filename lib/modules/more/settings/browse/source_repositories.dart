@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/browse/mobile_repository_sheets.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
@@ -15,10 +16,6 @@ import 'package:mangayomi/utils/error_toast.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_empty.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_repository_card.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class SourceRepositories extends ConsumerStatefulWidget {
   final ItemType itemType;
@@ -71,83 +68,6 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
     }
   }
 
-  Widget _mobilePage(BuildContext context, List<Repo> repositories) {
-    final l10n = context.l10n;
-    final title = switch (widget.itemType) {
-      ItemType.manga => l10n.manga_extensions_repo,
-      ItemType.anime => l10n.anime_extensions_repo,
-      ItemType.novel => l10n.novel_extensions_repo,
-    };
-    return MobileBrowsePage(
-      title: title,
-      actions: [
-        IconButton(
-          tooltip: l10n.refresh,
-          onPressed: isRefreshing ? null : _refreshRepositories,
-          icon: isRefreshing
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.refresh_rounded),
-        ),
-      ],
-      body: repositories.isEmpty
-          ? ListView(
-              children: [
-                MobileBrowseEmpty(
-                  icon: Icons.folder_open_rounded,
-                  title: l10n.empty_extensions_repo,
-                  actionLabel: l10n.add_extensions_repo,
-                  onAction: () => _showAddRepoDialog(context),
-                ),
-              ],
-            )
-          : SuperListView.builder(
-              padding: const EdgeInsets.only(top: 12, bottom: 16),
-              itemCount: repositories.length,
-              itemBuilder: (context, index) {
-                final repo = repositories[index];
-                return MobileRepositoryCard(
-                  name: _repositoryName(repo),
-                  host: Uri.tryParse(repo.jsonUrl ?? '')?.host ?? '',
-                  visible: !(repo.hidden ?? false),
-                  visibilityLabel: l10n.show_extensions,
-                  onVisibilityChanged: (visible) => ref
-                      .read(
-                        extensionsRepoStateProvider(widget.itemType).notifier,
-                      )
-                      .setVisibility(repo, !visible),
-                  copyLabel: MaterialLocalizations.of(context).copyButtonLabel,
-                  onCopy: () {
-                    if (repo.jsonUrl != null) {
-                      Clipboard.setData(ClipboardData(text: repo.jsonUrl!));
-                    }
-                  },
-                  browserLabel: l10n.open_in_browser,
-                  onOpenBrowser: repo.website == null
-                      ? null
-                      : () => _launchInBrowser(Uri.parse(repo.website!)),
-                  removeLabel: l10n.remove_extensions_repo,
-                  onRemove: () => _showRemoveRepoDialog(context, repo),
-                );
-              },
-            ),
-      bottomAction: repositories.isEmpty
-          ? null
-          : FilledButton.icon(
-              style: FilledButton.styleFrom(minimumSize: const Size(44, 48)),
-              onPressed: () => _showAddRepoDialog(context),
-              icon: const Icon(Icons.add_rounded),
-              label: Text(
-                l10n.add_extensions_repo,
-                textAlign: TextAlign.center,
-              ),
-            ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
@@ -155,7 +75,9 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
       extensionsRepoStateProvider(widget.itemType),
     );
     _entries = repositories;
-    if (isMobile && !isTv) return _mobilePage(context, repositories);
+    if (isMobile && !isTv) {
+      return MobileRepositoryManager(itemType: widget.itemType, asPage: true);
+    }
     final data = AsyncValue.data(repositories);
     return Scaffold(
       appBar: AppBar(
@@ -367,9 +289,6 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
         final l10n = context.l10n;
         return AlertDialog(
           scrollable: true,
-          backgroundColor: isMobile && !isTv
-              ? NodeLaneTokens.of(context).surface
-              : null,
           title: Text(l10n.remove_extensions_repo),
           content: Text(_repositoryName(removedRepo)),
           actions: [
@@ -412,9 +331,6 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
               final l10n = context.l10n;
               return AlertDialog(
                 scrollable: true,
-                backgroundColor: isMobile && !isTv
-                    ? NodeLaneTokens.of(context).surface
-                    : null,
                 title: Text(l10n.add_extensions_repo),
                 content: TextFormField(
                   controller: controller,
@@ -422,7 +338,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                   // full-screen leanback keyboard over the dialog before the
                   // user can even see the Cancel/Add buttons. Let them navigate
                   // to the field and open the keyboard with select instead.
-                  // Phones keep autofocus for the usual ready-to-type flow.
+                  // Desktop keeps autofocus for the usual ready-to-type flow.
                   autofocus: !isTv,
                   keyboardType: TextInputType.url,
                   onChanged: (value) => setState(() {}),
@@ -453,22 +369,9 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                     }
                   },
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  decoration: isMobile && !isTv
-                      ? InputDecoration(
-                          labelText: l10n.repo_url,
-                          hintText: l10n.url_must_end_with_dot_json_or_dot_pb,
-                          hintMaxLines: 3,
-                          errorMaxLines: 3,
-                          filled: true,
-                          fillColor: NodeLaneTokens.of(context).soft,
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        )
-                      : outlinedFieldDecoration(
-                          hintText: l10n.url_must_end_with_dot_json_or_dot_pb,
-                        ),
+                  decoration: outlinedFieldDecoration(
+                    hintText: l10n.url_must_end_with_dot_json_or_dot_pb,
+                  ),
                 ),
                 actions: [
                   TextButton(

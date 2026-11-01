@@ -180,11 +180,11 @@ void main() {
       expect(incognito.writes, [true]);
       expect(downloaded.writes, [true, false]);
 
-      container.read(hideItemsStateProvider.notifier).set(['/history']);
+      container.read(hideItemsStateProvider.notifier).set(['/browser']);
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('History'), 300);
+      await tester.scrollUntilVisible(find.text('浏览器'), -300);
       await tester.pumpAndSettle();
-      expect(find.text('History'), findsOneWidget);
+      expect(find.text('浏览器'), findsOneWidget);
       await tester.scrollUntilVisible(find.text('About'), 300);
       await tester.pumpAndSettle();
       await tester.drag(find.byType(Scrollable).first, const Offset(0, -400));

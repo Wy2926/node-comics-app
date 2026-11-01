@@ -20,8 +20,8 @@ class MobileNavigationSettings extends ConsumerWidget {
       '/AnimeLibrary': l10n.anime,
       '/NovelLibrary': l10n.novel,
       '/updates': l10n.updates,
-      '/history': l10n.history,
-      '/browse': l10n.browse,
+      '/browser': '浏览器',
+      '/browse': '来源',
       '/more': l10n.more,
       '/trackerLibrary': l10n.tracking,
     };

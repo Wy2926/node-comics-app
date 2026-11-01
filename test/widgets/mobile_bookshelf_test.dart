@@ -217,8 +217,8 @@ void main() {
         '/AnimeLibrary',
         '/NovelLibrary',
         '/updates',
-        '/history',
         '/browse',
+        '/browser',
         '/more',
         '/trackerLibrary',
       ];
@@ -246,7 +246,7 @@ void main() {
             .length,
         5,
       );
-      await tester.tap(find.text('历史'));
+      await tester.tap(find.text('浏览器'));
       await render();
       await tester.tap(find.text('书架'));
       expect(location, '/NovelLibrary');

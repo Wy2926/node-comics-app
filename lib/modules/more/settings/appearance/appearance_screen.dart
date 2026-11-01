@@ -29,7 +29,7 @@ final navigationItems = {
   "/AnimeLibrary": "Anime",
   "/NovelLibrary": "Novel",
   "/updates": "Updates",
-  "/history": "History",
+  "/browser": "Browser",
   "/browse": "Browse",
   "/more": "More",
   "/trackerLibrary": "Tracking",

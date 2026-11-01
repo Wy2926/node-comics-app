@@ -1,3 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/services/translation/translation_service.dart';
+
+import 'translation_language_picker.dart';
+
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
@@ -12,8 +17,11 @@ import 'translation_view_controller.dart';
 
 void showTranslationControls(
   BuildContext context,
-  TranslationViewController controller,
-) {
+  TranslationViewController controller, {
+  String title = '漫画翻译',
+  String? subtitle,
+  bool browser = false,
+}) {
   final mobile = isMobile && !isTv;
   showModalBottomSheet<void>(
     context: context,
@@ -26,6 +34,9 @@ void showTranslationControls(
       final content = TranslationControlsContent(
         controller: controller,
         mobile: mobile,
+        title: title,
+        subtitle: subtitle,
+        browser: browser,
       );
       return mobile
           ? ConstrainedBox(
@@ -46,9 +57,14 @@ class TranslationControlsContent extends StatelessWidget {
     super.key,
     required this.controller,
     this.mobile = false,
+    this.title = '漫画翻译',
+    this.subtitle,
+    this.browser = false,
   });
   final TranslationViewController controller;
-  final bool mobile;
+  final bool mobile, browser;
+  final String title;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) =>
@@ -136,7 +152,7 @@ class TranslationControlsContent extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 NodeLaneReaderHeading(
-                  title: '漫画翻译',
+                  title: title,
                   closeLabel: MaterialLocalizations.of(context)
                       .closeButtonTooltip,
                   onClose: () => Navigator.pop(context),
@@ -147,6 +163,10 @@ class TranslationControlsContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (subtitle != null) ...[
+                          Text(subtitle!, style: colors.readerSecondary),
+                          const SizedBox(height: 12),
+                        ],
                         if (controller.runtime == null) ...[
                           NodeLaneGroupSurface(
                             child: ListTile(
@@ -181,7 +201,7 @@ class TranslationControlsContent extends StatelessWidget {
                             ),
                             title: Text('翻译当前阅读范围', style: colors.readerLabel),
                             subtitle: Text(
-                              '按当前页和随后两页处理',
+                              browser ? '处理当前及相邻图片' : '按当前页和随后两页处理',
                               style: colors.readerSecondary,
                             ),
                             value: controller.enabled,
@@ -203,6 +223,10 @@ class TranslationControlsContent extends StatelessWidget {
                           onChanged: (value) =>
                               controller.configure(showTranslation: value),
                         ),
+                        if (browser) ...[
+                          const SizedBox(height: 12),
+                          const _BrowserTranslationLanguage(),
+                        ],
                         if (statuses.isNotEmpty) ...[
                           const SizedBox(height: 16),
                           NodeLaneGroupSurface(
@@ -321,5 +345,45 @@ class TranslationControlsContent extends StatelessWidget {
     final navigator = Navigator.of(context);
     navigator.pop();
     navigator.push(MaterialPageRoute<void>(builder: (_) => page));
+  }
+}
+
+class _BrowserTranslationLanguage extends ConsumerWidget {
+  const _BrowserTranslationLanguage();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final service = ref.watch(translationServiceProvider);
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    return ListenableBuilder(
+      listenable: service,
+      builder: (context, _) => NodeLaneGroupSurface(
+        child: ListTile(
+          leading: Icon(icons.web),
+          title: Text('目标语言', style: t.readerLabel),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                translationLanguageNames[service.language] ?? service.language,
+                style: t.readerSecondary,
+              ),
+              const SizedBox(width: 8),
+              Icon(icons.forward, size: 16),
+            ],
+          ),
+          onTap: service.busy
+              ? null
+              : () async {
+                  final value = await showTranslationLanguagePicker(
+                    context,
+                    service.language,
+                  );
+                  if (value != null && value != service.language) {
+                    await service.setLanguage(value);
+                  }
+                },
+        ),
+      ),
+    );
   }
 }

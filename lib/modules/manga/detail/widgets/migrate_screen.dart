@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/browse/global_search/mobile_global_search.dart';
-import 'package:mangayomi/modules/browse/browse_screen.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_migration.dart';

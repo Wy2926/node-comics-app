@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/browse/browse_screen.dart';
+import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/widgets/custom_sliver_grouped_list_view.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
@@ -13,8 +12,6 @@ import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_empty.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 final getSourcesStreamProvider = StreamProvider.family<List<Source>, ItemType>((
   ref,
@@ -83,18 +80,16 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
     itemType: widget.itemType,
   );
 
-  Widget _sectionTitle(String title) => isMobile && !isTv
-      ? MobileBrowseSectionTitle(title)
-      : Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-          ),
-        );
+  Widget _sectionTitle(String title) => Padding(
+    padding: const EdgeInsets.only(left: 12),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+      ),
+    ),
+  );
 
   @override
   void dispose() {
@@ -117,7 +112,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
 
     return Padding(
       padding: EdgeInsets.only(
-        top: isMobile && !isTv ? 0 : 10,
+        top: 10,
         left: tvHorizontalInset,
         right: tvHorizontalInset,
       ),
@@ -128,24 +123,6 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
               .where((e) => showNSFW || !(e.isNsfw ?? false))
               .toList();
           if (sources.isEmpty) {
-            if (isMobile && !isTv) {
-              return ListView(
-                controller: controller,
-                padding: EdgeInsets.only(
-                  bottom: pageBottomInsets(context).bottom,
-                ),
-                children: [
-                  MobileBrowseEmpty(
-                    icon: NodeLaneIcons.of(context).web,
-                    title: l10n.no_sources_installed,
-                    actionLabel: l10n.show_extensions,
-                    onAction: _showExtensions,
-                  ),
-                  _sectionTitle(l10n.other),
-                  _localSource(),
-                ],
-              );
-            }
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -178,7 +155,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
           return Scrollbar(
             interactive: true,
             controller: controller,
-            thickness: isMobile && !isTv ? 3 : 12,
+            thickness: 12,
             radius: const Radius.circular(10),
             child: CustomScrollView(
               controller: controller,

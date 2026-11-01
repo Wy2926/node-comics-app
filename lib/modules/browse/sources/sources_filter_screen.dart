@@ -11,7 +11,6 @@ import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
-import 'package:mangayomi/modules/browse/browse_screen.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_empty.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';

@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/history/providers/isar_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/main_view/main_screen.dart';
 
@@ -72,14 +69,6 @@ class _TabletLayoutState extends State<MainTabletLayout> {
     );
 
     final dest = widget.dest[newIndex];
-    if (isDoubleTap && dest == '/history') {
-      _lastNavTapIndex = null;
-      _lastNavTapTime = null;
-      final activeType = widget.ref.read(activeHistoryItemTypeStateProvider);
-      unawaited(resumeLatestHistory(context, activeType));
-      return;
-    }
-
     final itemType = itemTypeForNavDest(dest);
     if (isDoubleTap && itemType != null) {
       _lastNavTapIndex = null;
@@ -256,7 +245,7 @@ class _TabletLayoutState extends State<MainTabletLayout> {
       '/MangaLibrary',
       '/AnimeLibrary',
       '/NovelLibrary',
-      '/history',
+      '/browser',
       '/updates',
       '/browse',
       '/more',

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/repositories/source_repository.dart';
+import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -15,30 +13,17 @@ import 'package:mangayomi/modules/browse/sources/sources_screen.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
-import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/browse/widgets/tv_browse_tab_strip.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_header.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/webview/mobile_browser_widgets.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
 
   @override
   ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
-}
-
-enum BrowseTabKind { sources, extensions }
-
-class BrowseTab {
-  final ItemType type;
-  final BrowseTabKind kind;
-
-  const BrowseTab(this.type, this.kind);
 }
 
 class _BrowseScreenState extends ConsumerState<BrowseScreen>
@@ -135,12 +120,6 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
 
   bool _isSearch = false;
 
-  Future<void> _openWebPage() async {
-    final url = await showBrowserAddress(context);
-    if (!mounted || url == null) return;
-    context.push('/mangawebview', extra: {'url': url, 'title': ''});
-  }
-
   /// The top-bar action icons, which differ per tab (see #729): Sources =
   /// global-search + filter; Extensions = add + search + language filter.
   List<Widget> _actions(
@@ -223,11 +202,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
 
   void _selectTab(int index) {
     FocusScope.of(context).unfocus();
-    if (isMobile && !isTv) {
-      _tabBarController.index = index;
-    } else {
-      _tabBarController.animateTo(index);
-    }
+    _tabBarController.animateTo(index);
   }
 
   List<Widget> _tabViews() => _tabList.map((tab) {
@@ -243,7 +218,6 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
       key: PageStorageKey('browse-extensions-${tab.type.name}'),
       query: _textEditingController.text,
       itemType: tab.type,
-      onClearQuery: () => setState(_textEditingController.clear),
     );
   }).toList();
 
@@ -360,125 +334,6 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
     _isSearch = false;
   }
 
-  Widget _buildMobileLayout(BuildContext context, BrowseTab currentTab) {
-    final l10n = context.l10n;
-    final extensions = currentTab.kind == BrowseTabKind.extensions;
-    final mediaTypes = _tabList.map((tab) => tab.type).toSet();
-    void select(ItemType type, BrowseTabKind kind) {
-      final index = _tabList.indexWhere(
-        (tab) => tab.type == type && tab.kind == kind,
-      );
-      if (index >= 0) _selectTab(index);
-    }
-
-    final repoLabel = switch (currentTab.type) {
-      ItemType.manga => l10n.manga_extensions_repo,
-      ItemType.anime => l10n.anime_extensions_repo,
-      ItemType.novel => l10n.novel_extensions_repo,
-    };
-    return NodeLaneSurface(
-      child: Scaffold(
-        body: SafeArea(
-          bottom: false,
-          child: LayoutBuilder(
-            builder: (context, constraints) => Column(
-              children: [
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: constraints.maxHeight * .65,
-                  ),
-                  child: SingleChildScrollView(
-                    child: MobileBrowseHeader(
-                      title: l10n.browse,
-                      mediaMenu: MobileMediaMenu(
-                        value: currentTab.type,
-                        availableTypes: mediaTypes,
-                        onChanged: (type) => select(type, currentTab.kind),
-                      ),
-                      sourcesLabel: l10n.sources,
-                      extensionsLabel: l10n.extensions,
-                      extensionsSelected: extensions,
-                      onSectionChanged: (value) => select(
-                        currentTab.type,
-                        value
-                            ? BrowseTabKind.extensions
-                            : BrowseTabKind.sources,
-                      ),
-                      updateCount:
-                          ref
-                              .watch(
-                                extensionUpdateCountProvider(currentTab.type),
-                              )
-                              .value ??
-                          0,
-                      searchHint: extensions ? l10n.search : l10n.global_search,
-                      searchController: _textEditingController,
-                      onQueryChanged: (_) => setState(() {}),
-                      clearLabel: l10n.reset,
-                      onGlobalSearch: () => context.push(
-                        '/globalSearch',
-                        extra: (null, currentTab.type),
-                      ),
-                      filterLabel: extensions ? l10n.language : l10n.filter,
-                      onFilter: () => context.push(
-                        extensions ? '/ExtensionLang' : '/sourceFilter',
-                        extra: currentTab.type,
-                      ),
-                      actions: [
-                        NodeLaneIconButton(
-                          style: NodeLaneIconButtonStyle.plain,
-                          tooltip: '打开网页',
-                          onPressed: _openWebPage,
-                          icon: NodeLaneIcons.of(context).web,
-                        ),
-                        if (extensions) ...[
-                          if (ref.watch(developerModeStateProvider))
-                            NodeLaneIconButton(
-                              style: NodeLaneIconButtonStyle.plain,
-                              tooltip: l10n.add,
-                              onPressed: () => context.push('/createExtension'),
-                              icon: NodeLaneIcons.of(context).add,
-                            ),
-                          NodeLaneIconButton(
-                            style: NodeLaneIconButtonStyle.plain,
-                            tooltip: repoLabel,
-                            onPressed: () => context.push(
-                              '/SourceRepositories',
-                              extra: currentTab.type,
-                            ),
-                            icon: NodeLaneIcons.of(context).folder,
-                          ),
-                        ] else
-                          NodeLaneIconButton(
-                            style: NodeLaneIconButtonStyle.plain,
-                            tooltip: l10n.show_extensions,
-                            onPressed: () => select(
-                              currentTab.type,
-                              BrowseTabKind.extensions,
-                            ),
-                            icon: NodeLaneIcons.of(context).extensions,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabBarController,
-                    // Media and section changes are explicit; swiping across the
-                    // legacy six-tab sequence would jump to unrelated media.
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: _tabViews(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     _syncTabs(
@@ -511,7 +366,6 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
     if (isTv) {
       return _buildTvLayout(context, currentTab, isExtensionTab, l10n);
     }
-    if (isMobile) return _buildMobileLayout(context, currentTab);
     return DefaultTabController(
       animationDuration: Duration.zero,
       length: _tabList.length,

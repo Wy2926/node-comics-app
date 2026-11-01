@@ -127,8 +127,8 @@ class NavigationOrderState extends _$NavigationOrderState {
     '/AnimeLibrary',
     '/NovelLibrary',
     '/updates',
-    '/history',
     '/browse',
+    '/browser',
     '/more',
     '/trackerLibrary',
   ];
@@ -141,6 +141,16 @@ class NavigationOrderState extends _$NavigationOrderState {
   }
 
   List<String> _checkMissingItems(List<String> navigationOrder) {
+    navigationOrder.removeWhere(
+      (route) => route == '/history' || !items.contains(route),
+    );
+    if (!navigationOrder.contains('/browser') &&
+        navigationOrder.contains('/browse')) {
+      navigationOrder.insert(
+        navigationOrder.indexOf('/browse') + 1,
+        '/browser',
+      );
+    }
     navigationOrder.addAll(
       items.where((e) => !navigationOrder.contains(e)).toList(),
     );

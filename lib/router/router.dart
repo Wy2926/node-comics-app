@@ -48,7 +48,8 @@ import 'package:mangayomi/modules/browse/browse_screen.dart';
 import 'package:mangayomi/modules/browse/extension/extension_lang.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
 import 'package:mangayomi/modules/main_view/main_screen.dart';
-import 'package:mangayomi/modules/history/history_screen.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
+import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
 import 'package:mangayomi/modules/manga/detail/manga_detail_main.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
@@ -177,9 +178,18 @@ class RouterNotifier extends ChangeNotifier {
             builder: (id) => TrackerLibraryScreen(presetInput: id),
           ),
         ),
-        _branch(_genericRoute(name: "history", child: const HistoryScreen())),
+        _branch(
+          _genericRoute(name: "browser", child: const MobileBrowserHome()),
+        ),
         _branch(_genericRoute(name: "updates", child: const UpdatesScreen())),
-        _branch(_genericRoute(name: "browse", child: const BrowseScreen())),
+        _branch(
+          _genericRoute(
+            name: "browse",
+            child: isMobile && !isTv
+                ? const MobileSourcesScreen()
+                : const BrowseScreen(),
+          ),
+        ),
         _branch(_genericRoute(name: "more", child: const MoreScreen())),
       ],
     ),
@@ -234,7 +244,11 @@ class RouterNotifier extends ChangeNotifier {
     _genericRoute<Map<String, dynamic>>(
       name: "mangawebview",
       builder: (data) => isMobile
-          ? MobileComicBrowser(url: data['url']!, title: data['title']!)
+          ? MobileComicBrowser(
+              url: data['url']!,
+              title: data['title']!,
+              tabId: data['tabId'],
+            )
           : MangaWebView(url: data["url"]!, title: data['title']!),
     ),
     _genericRoute<(bool, int)>(

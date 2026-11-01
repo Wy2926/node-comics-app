@@ -119,6 +119,43 @@ class NodeLaneIconButton extends StatelessWidget {
   }
 }
 
+/// A neutral close target shared by sheets and webpage thumbnail cards.
+class NodeLaneCloseButton extends StatelessWidget {
+  const NodeLaneCloseButton({
+    super.key,
+    required this.tooltip,
+    required this.onPressed,
+    this.backgroundColor,
+  });
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final Color? backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+      padding: const EdgeInsets.all(6),
+      style: IconButton.styleFrom(
+        minimumSize: const Size(44, 44),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      icon: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: backgroundColor ?? t.soft,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(NodeLaneIcons.of(context).close, size: 18, color: t.muted),
+      ),
+    );
+  }
+}
+
 class NodeLaneSearchField extends StatelessWidget {
   const NodeLaneSearchField({
     super.key,

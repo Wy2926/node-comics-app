@@ -124,6 +124,9 @@ Future<void> fetchSourcesList({
     }
   }
 
+  // A failed/empty response must not erase cached catalog entries as obsolete.
+  if (sourceList.isEmpty) throw StateError('目录为空或暂时无法读取');
+
   if (id != null) {
     final matchingSource = sourceList.firstWhere(
       (source) => source.id == id,
@@ -204,8 +207,9 @@ Future<void> _updateSource(
     );
   }
 
-  final existing =
-      source.id != null ? sourceRepository.getById(source.id!) : null;
+  final existing = source.id != null
+      ? sourceRepository.getById(source.id!)
+      : null;
   final updatedSource = Source()
     ..headers = jsonEncode(headers)
     ..supportLatest = supportLatest

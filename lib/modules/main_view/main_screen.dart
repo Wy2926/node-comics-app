@@ -4,13 +4,8 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
-import 'package:mangayomi/repositories/chapter_repository.dart';
-import 'package:mangayomi/modules/history/providers/isar_providers.dart';
-import 'package:mangayomi/repositories/history_repository.dart';
 import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
 import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
@@ -44,8 +39,8 @@ bool _isNotHiddenLibOnTv(String nav) =>
     nav != "/MangaLibrary" && nav != "/NovelLibrary";
 
 /// The ItemType a nav destination maps to, or null for destinations with no
-/// single content type to scope a global search to (Updates, History,
-/// Browse, More, ...). Shared by the desktop rail and mobile bottom bar's
+/// single content type to scope a global search to (Updates, Sources,
+/// Browser, More, ...). Shared by the desktop rail and mobile bottom bar's
 /// double-tap-for-global-search handling.
 ItemType? itemTypeForNavDest(String dest) => switch (dest) {
   "/MangaLibrary" => ItemType.manga,
@@ -57,28 +52,6 @@ ItemType? itemTypeForNavDest(String dest) => switch (dest) {
 /// How close together two taps on the same nav destination need to land to
 /// count as a double-tap/double-click, rather than two separate single taps.
 const _navDoubleTapWindow = Duration(milliseconds: 450);
-
-/// Resumes the most recently read/watched entry from history (optionally filtered by [itemType]),
-/// or shows a snackbar if none found.
-Future<void> resumeLatestHistory(
-  BuildContext context, [
-  ItemType? itemType,
-]) async {
-  // When an itemType is specified (e.g. from the active tab), strictly query that itemType.
-  final history = itemType != null
-      ? historyRepository.getLatestHistory(itemType)
-      : historyRepository.getLatestHistory();
-  if (history != null && history.chapterId != null) {
-    final chapter = chapterRepository.findByIdSync(history.chapterId!);
-    if (chapter != null && chapter.manga.value != null) {
-      await pushMangaReaderView(context: context, chapter: chapter);
-      return;
-    }
-  }
-  if (context.mounted) {
-    botToast(context.l10n.no_next_chapter, second: 2);
-  }
-}
 
 /// Whether tapping [current] counts as a double-tap on [last], given when
 /// [last] landed. Shared by the desktop rail and mobile bottom bar, which
@@ -486,17 +459,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                   _lastMobileNavTapTime,
                                   now,
                                 );
-                                if (isDoubleTap && destination == '/history') {
-                                  _lastMobileNavDest = null;
-                                  _lastMobileNavTapTime = null;
-                                  final activeType = ref.read(
-                                    activeHistoryItemTypeStateProvider,
-                                  );
-                                  unawaited(
-                                    resumeLatestHistory(context, activeType),
-                                  );
-                                  return;
-                                }
                                 final itemType = itemTypeForNavDest(
                                   destination,
                                 );
@@ -647,15 +609,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ),
       );
     }
-    if (dest.contains("/history")) {
-      destinations[dest.indexOf("/history")] = NavigationRailDestination(
+    if (dest.contains("/browser")) {
+      destinations[dest.indexOf("/browser")] = NavigationRailDestination(
         // Even breathing room between tabs on TV; null off-TV.
         padding: isTv ? const EdgeInsets.symmetric(vertical: 6) : null,
-        selectedIcon: const Icon(Icons.history_rounded),
-        icon: const Icon(Icons.history_outlined),
+        selectedIcon: const Icon(Icons.tab),
+        icon: const Icon(Icons.tab_outlined),
         label: Padding(
           padding: const EdgeInsets.only(top: 5),
-          child: Text(l10n.history),
+          child: const Text('浏览器'),
         ),
       );
     }
@@ -775,11 +737,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         label: l10n.updates,
       );
     }
-    if (dest.contains("/history")) {
-      destinations[dest.indexOf("/history")] = NavigationDestination(
-        selectedIcon: const Icon(Icons.history_rounded),
-        icon: const Icon(Icons.history_outlined),
-        label: l10n.history,
+    if (dest.contains("/browser")) {
+      destinations[dest.indexOf("/browser")] = NavigationDestination(
+        selectedIcon: const Icon(Icons.tab),
+        icon: const Icon(Icons.tab_outlined),
+        label: '浏览器',
       );
     }
     if (dest.contains("/browse")) {

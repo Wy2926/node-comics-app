@@ -1,7 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/browse/browse_screen.dart';
+import 'package:mangayomi/models/manga.dart';
 
-/// A tab for [BrowseScreen] to open on, set by whoever sends the user there.
+enum BrowseTabKind { sources, extensions }
+
+class BrowseTab {
+  final ItemType type;
+  final BrowseTabKind kind;
+
+  const BrowseTab(this.type, this.kind);
+}
+
+/// A source section to open on mobile, desktop or TV.
 ///
 /// Read on the way in and [clear]ed after that frame, so a request steers only
 /// the one visit it was made for and an ordinary trip to Browse still opens
