@@ -13,9 +13,13 @@
 | 阅读器 | [reader_translation.dart](../lib/modules/manga/reader/reader_translation.dart) 根据章节原始页身份更新窗口；译图采用独立显示数据，不覆盖来源页。单页保存归一化缩放中心，双页保留外层 controller，连续阅读订阅已有页码通知 |
 | 手机网页 | [mobile_browser.dart](../lib/modules/webview/mobile_browser.dart)、[translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[nodelane_reader.js](../assets/nodelane_reader.js)：最多 12 个逻辑标签，活动 1 个＋温存 1 个／30 秒，主框架与文档代次校验，HTTP／Blob 来源、128 KiB 确认传输、非交互覆盖层、图片锚点恢复 |
 
-入口是“更多 → 漫画翻译”或“设置 → 漫画翻译”，手机设置将账号、目标语言与本机缓存分组，再从阅读器或浏览器工具栏手动开启。此视图仍调用原服务，沿用登录、计费与渠道协议；布局与交互验收见[手机界面与视觉令牌](MOBILE_UI_DESIGN.md#翻译与账号设置)。每次打开新的网页标签默认不开始翻译；标签切回前台可以恢复原先已开启的阅读窗口。原图显示与暂停任务是两个控制项，已受理任务继续由后端执行。不同官方账号、服务与语言隔离；重新进入已有页面会核对当前原图摘要，定位地址相同不直接视为同一内容。
+手机登录入口为“更多”首栏的软件账号；“更多 → 漫画翻译”或“设置 → 漫画翻译”管理目标语言与本机缓存，再从阅读器或浏览器工具栏手动开启翻译。此视图仍调用原服务，沿用登录、计费与渠道协议；布局与交互验收见[手机界面与视觉令牌](MOBILE_UI_DESIGN.md#翻译与账号设置)。每次打开新的网页标签默认不开始翻译；标签切回前台可以恢复原先已开启的阅读窗口。原图显示与暂停任务是两个控制项，已受理任务继续由后端执行。不同官方账号、服务与语言隔离；重新进入已有页面会核对当前原图摘要，定位地址相同不直接视为同一内容。
 
-默认服务为 `https://comics.nodelane.net`，构建可用 `--dart-define=NODELANE_API_BASE=https://…` 指定兼容服务。系统浏览器 OAuth 回调默认为 `mangayomi://nodelane-auth`；身份服务必须登记这一移动客户端回调，`NODELANE_AUTH_REDIRECT` 变更时也需同步原生 URL Scheme。凭据只经原生安全存储与 HTTPS 客户端使用；本轮没有验证真实登录配置或调用真实翻译服务。
+默认服务为 `https://comics.nodelane.net`，构建可用 `--dart-define=NODELANE_API_BASE=https://…` 指定兼容服务。手机账号入口位于“更多”首栏，翻译页保留语言与缓存设置；仍复用同一原生会话和渠道运行时。
+
+移动登录默认使用独立 public client `pljp89y5gk6k5x2h9gp6q`，可由 `--dart-define=NODELANE_AUTH_CLIENT_ID=…` 覆盖；`/v1/auth/config` 提供身份端点与 API resource，返回的浏览器 `client_id` 不用于移动端。授权、换码及续期使用同一移动应用 ID，不嵌入 client secret。恢复时要求服务与应用 ID 都匹配；旧浏览器应用会话需要重新登录，翻译回执不删除。
+
+系统浏览器 OAuth 回调默认为 **`mangayomi://nodelane-auth`**（无尾斜线），Android 回调 Activity 和 iOS URL Types 已接收 `mangayomi` Scheme。需在 Logto 上述应用的 Redirect URIs 中登记这一精确地址，并按[原生 Flutter 登录配置](https://docs.logto.io/quick-starts/flutter)使用 Native 应用及 Authorization Code + PKCE；`NODELANE_AUTH_REDIRECT` 变更时也需同步原生 URL Scheme。凭据只经原生安全存储与 HTTPS 客户端使用。用户已确认使用当前配置登录和翻译成功；该反馈未记录具体设备、阅读器／网页入口及测试范围，不等同于完整的真机、续期、换号或恢复验收。
 
 普通主框架图片及页面可读 Blob 已实现。Canvas 取样代码由 `NODELANE_READABLE_CANVAS` 默认关闭，尚无站点稳定重绘映射，不作为可用能力；污染 Canvas、data URL、跨域 iframe、CSS 变换／cover 图形、16-bit／ICC／动画／AVIF、超预算图片和 tiles 结果均未开放。当前像素估算保守，部分高清普通页也会在受理前被拒绝；64 MiB 是新增工作预算，不是 App 总内存的实测保证。Cookie 按目标 URL 获取且跨站受限，SameSite／分区会话、移动 CSP、站点登录仍须真机验证。
 

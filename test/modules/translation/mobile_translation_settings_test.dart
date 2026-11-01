@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/translation/mobile_translation_settings.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 
 void main() {
@@ -11,6 +12,7 @@ void main() {
     WidgetTester tester,
     _SettingsService service, {
     double textScale = 2.5,
+    bool account = false,
   }) async {
     tester.view.physicalSize = const Size(360, 700);
     tester.view.devicePixelRatio = 1;
@@ -29,7 +31,11 @@ void main() {
             ),
             child: child!,
           ),
-          home: const MobileTranslationSettings(),
+          home: account
+              ? Scaffold(
+                  body: ListView(children: const [MobileNodeLaneAccount()]),
+                )
+              : const MobileTranslationSettings(),
         ),
       ),
     );
@@ -46,6 +52,8 @@ void main() {
     final service = _SettingsService()..ready.complete();
     await showSettings(tester, service);
     await tester.pumpAndSettle();
+    expect(find.text('前往登录'), findsNothing);
+    expect(find.text('退出登录'), findsNothing);
     final language = find.widgetWithText(ListTile, '目标语言');
     await reveal(tester, language);
     await tester.tap(language);
@@ -106,10 +114,10 @@ void main() {
     'account actions wait for initialization and reject repeat taps',
     (tester) async {
       final service = _SettingsService();
-      await showSettings(tester, service, textScale: 2);
+      await showSettings(tester, service, textScale: 2, account: true);
       final login = find.widgetWithText(FilledButton, '前往登录');
       expect(tester.widget<FilledButton>(login).onPressed, isNull);
-      expect(find.text('正在读取翻译设置…'), findsOneWidget);
+      expect(find.text('正在读取账号…'), findsOneWidget);
       service.ready.complete();
       await tester.pumpAndSettle();
       await reveal(tester, login);
@@ -123,8 +131,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('登录未完成，请重试'), findsWidgets);
       expect(tester.widget<FilledButton>(login).onPressed, isNotNull);
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
       await tester.ensureVisible(login);
       await tester.pumpAndSettle();
       await tester.tap(login);
@@ -151,10 +157,10 @@ void main() {
     tester,
   ) async {
     final service = _SettingsService();
-    await showSettings(tester, service);
+    await showSettings(tester, service, account: true);
     service.ready.completeError(StateError('private storage details'));
     await tester.pumpAndSettle();
-    expect(find.text('暂时无法读取翻译设置，请重新启动应用后再试。'), findsOneWidget);
+    expect(find.text('暂时无法读取账号，请重新启动应用后再试。'), findsOneWidget);
     expect(find.textContaining('private storage'), findsNothing);
     expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(

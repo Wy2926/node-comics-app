@@ -15,6 +15,12 @@ class NodeLaneSession {
   final Uri base;
   static const _vault = nodeLanePrivateVault;
   static const _key = 'nodelane.official.session.v1';
+  // The native application has its own public client, separate from the
+  // browser client advertised by /v1/auth/config. No client secret is used.
+  static const clientId = String.fromEnvironment(
+    'NODELANE_AUTH_CLIENT_ID',
+    defaultValue: 'pljp89y5gk6k5x2h9gp6q',
+  );
   static const redirect = String.fromEnvironment(
     'NODELANE_AUTH_REDIRECT',
     defaultValue: 'mangayomi://nodelane-auth',
@@ -31,6 +37,7 @@ class NodeLaneSession {
     try {
       final value = jsonDecode(stored) as Map<String, dynamic>;
       if (value['base'] == base.toString() &&
+          value['clientId'] == clientId &&
           value['userId'] is String &&
           value['accessToken'] is String &&
           value['refreshToken'] is String &&
@@ -63,7 +70,7 @@ class NodeLaneSession {
     } finally {
       api.close();
     }
-    if (config['mode'] != 'oidc' || config['client_id'] is! String) {
+    if (config['mode'] != 'oidc' || clientId.isEmpty) {
       throw const TranslationFailure('AUTH_REQUIRED');
     }
     final authorization = _https(config['authorization_endpoint'] as String);
@@ -73,7 +80,7 @@ class NodeLaneSession {
     final started = DateTime.now();
     final resource = config['audience'] as String? ?? '';
     final query = <String, String>{
-      'client_id': config['client_id'] as String,
+      'client_id': clientId,
       'response_type': 'code',
       'redirect_uri': redirect,
       'scope': 'openid profile offline_access',
@@ -111,7 +118,7 @@ class NodeLaneSession {
     }
     final tokens = await _exchange(endpoint, {
       'grant_type': 'authorization_code',
-      'client_id': config['client_id'] as String,
+      'client_id': clientId,
       'code': params['code']!.single,
       'redirect_uri': redirect,
       'code_verifier': verifier,
@@ -120,7 +127,7 @@ class NodeLaneSession {
     final session = <String, dynamic>{
       'base': base.toString(),
       'endpoint': endpoint.toString(),
-      'clientId': config['client_id'],
+      'clientId': clientId,
       'resource': resource,
       ..._tokens(tokens),
     };

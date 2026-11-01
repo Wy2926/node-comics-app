@@ -5,6 +5,7 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/modules/more/widgets/incognito_mode_widget.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/translation/translation_settings.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -44,6 +45,7 @@ class MobileMoreScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              const MobileNodeLaneAccount(),
               MobileSettingsGroup(
                 children: [
                   MobileSettingsLink(

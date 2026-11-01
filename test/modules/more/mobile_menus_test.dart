@@ -11,6 +11,8 @@ import 'package:mangayomi/modules/more/settings/mobile_settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/services/translation/translation_service.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 
 void main() {
   void phone(WidgetTester tester) {
@@ -114,8 +116,11 @@ void main() {
     'More switches write once and its last row clears the bottom bar',
     (tester) async {
       phone(tester);
+      final account = _AccountService();
+      addTearDown(account.dispose);
       final container = ProviderContainer(
         overrides: [
+          translationServiceProvider.overrideWithValue(account),
           hideItemsStateProvider.overrideWith(_HiddenItems.new),
           downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
           incognitoModeStateProvider.overrideWith(_Incognito.new),
@@ -140,12 +145,21 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<MobileSettingsGroup>(find.byType(MobileSettingsGroup).first)
+            .title,
+        '软件账号',
+      );
+      expect(find.text('NodeLane'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Downloaded only'), 250);
+      await tester.pumpAndSettle();
+      // The account card can push this group beyond the initial viewport.
+      // Read its auto-dispose notifiers only after the switches are mounted.
       final downloaded =
           container.read(downloadedOnlyStateProvider.notifier) as _Downloaded;
       final incognito =
           container.read(incognitoModeStateProvider.notifier) as _Incognito;
-      await tester.scrollUntilVisible(find.text('Downloaded only'), 250);
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Downloaded only'));
       await tester.pumpAndSettle();
       expect(downloaded.writes, [true]);
@@ -213,4 +227,9 @@ class _Incognito extends IncognitoModeState {
 class _HideRpc extends HideDiscordRpcInIncognitoState {
   @override
   bool build() => false;
+}
+
+class _AccountService extends TranslationService {
+  @override
+  Future<void> initialize() async {}
 }

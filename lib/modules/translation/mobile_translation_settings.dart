@@ -6,7 +6,7 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'translation_language_picker.dart';
 
-/// Mobile presentation of the existing account, language and cache operations.
+/// Mobile presentation of translation language and cache operations.
 /// Credentials, persistence and runtime replacement stay in the service.
 class MobileTranslationSettings extends ConsumerStatefulWidget {
   const MobileTranslationSettings({super.key});
@@ -87,7 +87,6 @@ class _MobileTranslationSettingsState
           ? _activity ?? '正在处理…'
           : null;
       final error = _initializationError ?? service.error;
-      final accountName = service.accountName.trim();
       return NodeLaneSurface(
         child: Scaffold(
           appBar: AppBar(
@@ -141,54 +140,6 @@ class _MobileTranslationSettingsState
                       ],
                     ),
                   ),
-                ),
-                MobileSettingsGroup(
-                  key: const ValueKey('translation-account'),
-                  title: '账号',
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _AccountHeading(
-                            title: service.loggedIn
-                                ? accountName.isEmpty
-                                      ? 'NodeLane 账号'
-                                      : accountName
-                                : '登录 NodeLane',
-                            subtitle: service.loggedIn
-                                ? '已登录 · 阅读器与网页共用'
-                                : '登录后，在阅读器或网页中开启翻译。',
-                          ),
-                          const SizedBox(height: 20),
-                          if (service.loggedIn)
-                            OutlinedButton(
-                              onPressed: _disabled
-                                  ? null
-                                  : () => _perform(service.logout, '正在退出登录…'),
-                              child: const Text('退出登录'),
-                            )
-                          else ...[
-                            FilledButton(
-                              onPressed: _disabled
-                                  ? null
-                                  : () => _perform(service.login, '正在登录…'),
-                              child: const Text('前往登录'),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '通过系统浏览器登录，完成后返回此处。',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: colors.muted,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
                 MobileSettingsGroup(
                   key: const ValueKey('translation-language'),
@@ -258,56 +209,4 @@ class _MobileTranslationSettingsState
       );
     },
   );
-}
-
-class _AccountHeading extends StatelessWidget {
-  const _AccountHeading({required this.title, required this.subtitle});
-  final String title, subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final icon = Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: colors.accentSoft,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Icon(
-        Icons.account_circle_outlined,
-        color: colors.accent,
-        size: 28,
-      ),
-    );
-    final identity = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: colors.ink,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(subtitle, style: TextStyle(fontSize: 14, color: colors.muted)),
-      ],
-    );
-    if (MediaQuery.textScalerOf(context).scale(20) > 28) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [icon, const SizedBox(height: 12), identity],
-      );
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        icon,
-        const SizedBox(width: 12),
-        Expanded(child: identity),
-      ],
-    );
-  }
 }
