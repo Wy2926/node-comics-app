@@ -29,6 +29,8 @@ import 'package:mangayomi/utils/headers.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
 
@@ -267,123 +269,102 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
       chapterFilterResultStateProvider(manga: widget.manga),
     );
     final genres = widget.manga.genre ?? const <String>[];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MobileDetailHeading(
-            cover: _coverCard(),
-            title: _titles(includeMetadata: false),
-            metadata: DefaultTextStyle.merge(
-              style: TextStyle(fontSize: 13, height: 1.5, color: colors.muted),
-              child: widget.titleDescription,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            runSpacing: 8,
-            children: [
-              if (widget.readingAction != null) widget.readingAction!,
-              widget.action,
-            ],
-          ),
-          if (widget.manga.description?.trim().isNotEmpty ?? false) ...[
-            const SizedBox(height: 20),
-            ReadMoreWidget(
-              text: widget.manga.description!,
+    return MobileDetailOverview(
+      heading: MobileDetailHeading(
+        cover: _coverCard(),
+        title: _titles(includeMetadata: false),
+        metadata: DefaultTextStyle.merge(
+          style: colors.detailMetadata,
+          child: widget.titleDescription,
+        ),
+      ),
+      actions: MobileDetailPrimaryActions(
+        reading:
+            !ref.watch(isLongPressedStateProvider) &&
+                ref
+                    .watch(chaptersListttStateProvider)
+                    .any((chapter) => !(chapter.isRead ?? false))
+            ? widget.readingAction
+            : null,
+        library: widget.action,
+      ),
+      synopsis:
+          (widget.manga.description?.trim().isNotEmpty ?? false) ||
+              genres.isNotEmpty
+          ? MobileDetailSynopsis(
+              title: l10n.manga_synopsis,
+              text: widget.manga.description ?? '',
+              expanded: _expanded,
               onChanged: (value) => setState(() => _expanded = value),
-            ),
-          ],
-          if (genres.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            if (_expanded)
-              Wrap(
-                children: [
-                  for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
-                ],
-              )
-            else
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
-                  ],
-                ),
-              ),
-          ],
-          const SizedBox(height: 16),
-          ExpansionTile(
-            tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-            childrenPadding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-            backgroundColor: colors.surface,
-            collapsedBackgroundColor: colors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: colors.line),
-            ),
-            collapsedShape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: colors.line),
-            ),
-            title: Text(
-              l10n.more,
-              style: TextStyle(fontSize: 15, color: colors.ink),
-            ),
-            children: [
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    if (widget.isLocalArchive)
-                      _headerButton(
-                        icon: Icons.edit_outlined,
-                        label: l10n.edit,
-                        onPressed: _editLocalArchiveInfos,
+              genres: genres.isEmpty
+                  ? null
+                  : _expanded
+                  ? Wrap(
+                      children: [
+                        for (var i = 0; i < genres.length; i++)
+                          _genreChip(i, l10n),
+                      ],
+                    )
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < genres.length; i++)
+                            _genreChip(i, l10n),
+                        ],
                       ),
-                    if (!widget.isLocalArchive) _webviewButton(),
-                    if (!widget.isLocalArchive) _smartUpdateDays(),
-                    _action(),
-                  ],
-                ),
-              ),
-              _DetailActions(manga: widget.manga),
-            ],
-          ),
-          const SizedBox(height: 24),
+                    ),
+            )
+          : null,
+      more: MobileDetailDisclosure(
+        title: l10n.more,
+        builder: (context) => StreamBuilder(
+          stream: trackRepository.watchAllWithSyncId(),
+          builder: (context, snapshot) {
+            final entries = snapshot.data ?? <TrackPreference>[];
+            return _DetailActions(
+              manga: widget.manga,
+              leading: [
+                if (widget.isLocalArchive)
+                  _headerButton(
+                    icon: NodeLaneIcons.of(context).edit,
+                    label: l10n.edit,
+                    onPressed: _editLocalArchiveInfos,
+                  ),
+                if (!widget.isLocalArchive) _webviewButton(),
+                if (entries.isNotEmpty) _trackingAction(entries),
+                if (!widget.isLocalArchive) _smartUpdateDays(),
+              ],
+            );
+          },
+        ),
+      ),
+      chapters: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           Row(
             children: [
               Expanded(
                 child: Text(
                   widget.manga.itemType != ItemType.anime
-                      ? l10n.n_chapters(widget.chapterLength)
-                      : l10n.n_episodes(widget.chapterLength),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: colors.ink,
-                  ),
+                      ? '${l10n.chapters} · ${widget.chapterLength}'
+                      : '${l10n.episodes} · ${widget.chapterLength}',
+                  style: colors.detailSectionTitle,
                 ),
               ),
               if (widget.isLocalArchive)
-                IconButton(
+                NodeLaneIconButton(
+                  style: NodeLaneIconButtonStyle.plain,
                   tooltip: widget.manga.itemType != ItemType.anime
                       ? l10n.add_chapters
                       : l10n.add_episodes,
                   onPressed: _addChapters,
-                  icon: const Icon(Icons.add_rounded),
+                  icon: NodeLaneIcons.of(context).add,
                 ),
-              IconButton(
-                tooltip: l10n.filter,
+              MobileDetailFilterButton(
+                label: l10n.filter,
                 onPressed: widget.onShowFilterMenu,
-                style: IconButton.styleFrom(
-                  backgroundColor: filtering ? colors.accentSoft : null,
-                  foregroundColor: filtering ? colors.accent : colors.ink,
-                ),
-                icon: const Icon(Icons.tune_rounded),
+                active: filtering,
               ),
             ],
           ),
@@ -473,18 +454,23 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
             borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
             child: Image(
               image: ResizeImage.resizeIfNeeded(
-                (96 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                (NodeLaneTokens.detailCoverWidth *
+                        MediaQuery.devicePixelRatioOf(context))
+                    .ceil(),
                 null,
                 imageProvider,
               ),
-              width: 96,
-              height: 144,
+              width: NodeLaneTokens.detailCoverWidth,
+              height: NodeLaneTokens.detailCoverHeight,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) => Container(
-                width: 96,
-                height: 144,
+                width: NodeLaneTokens.detailCoverWidth,
+                height: NodeLaneTokens.detailCoverHeight,
                 color: colors.soft,
-                child: Icon(Icons.menu_book_outlined, color: colors.muted),
+                child: Icon(
+                  NodeLaneIcons.of(context).manga,
+                  color: colors.muted,
+                ),
               ),
             ),
           ),
@@ -538,13 +524,9 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
           },
           child: Text(
             widget.manga.name!,
-            style: TextStyle(
-              fontSize: isMobile && !isTv ? 24 : 20,
-              fontWeight: isMobile && !isTv
-                  ? FontWeight.w700
-                  : FontWeight.normal,
-              color: isMobile && !isTv ? NodeLaneTokens.of(context).ink : null,
-            ),
+            style: isMobile && !isTv
+                ? NodeLaneTokens.of(context).detailTitle
+                : const TextStyle(fontSize: 20),
           ),
         ),
         if (includeMetadata) widget.titleDescription,
@@ -574,11 +556,10 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     Color? color,
   }) {
     if (isMobile && !isTv) {
-      return TextButton.icon(
-        style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
+      return MobileDetailShortcut(
+        icon: icon,
+        label: label,
         onPressed: onPressed,
-        icon: Icon(icon, size: 20),
-        label: Text(label),
       );
     }
     color ??= context.secondaryColor;
@@ -603,7 +584,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   }
 
   Widget _webviewButton() => _headerButton(
-    icon: Icons.public,
+    icon: isMobile && !isTv ? NodeLaneIcons.of(context).webLink : Icons.public,
     label: context.l10n.webview,
     onPressed: _openWebview,
   );
@@ -658,7 +639,9 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   }
 
   Widget _smartUpdateDays() => _headerButton(
-    icon: Icons.hourglass_empty,
+    icon: isMobile && !isTv
+        ? NodeLaneIcons.of(context).calendar
+        : Icons.hourglass_empty,
     label: widget.manga.smartUpdateDays != null
         ? context.l10n.n_days(widget.manga.smartUpdateDays!)
         : isMobile && !isTv
@@ -673,28 +656,36 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     builder: (context, snapshot) {
       final entries = snapshot.data ?? <TrackPreference>[];
       if (entries.isEmpty) return const SizedBox.shrink();
-      final button = StreamBuilder(
-        stream: trackRepository.watchByMangaId(widget.manga.id!),
-        builder: (context, snapshot) {
-          final l10n = l10nLocalizations(context)!;
-          final tracks = snapshot.data ?? <Track>[];
-          return _headerButton(
-            icon: tracks.isNotEmpty ? Icons.done_rounded : Icons.sync_outlined,
-            label: tracks.isNotEmpty
-                ? tracks.length == 1
-                      ? l10n.one_tracker
-                      : l10n.n_tracker(tracks.length)
-                : l10n.tracking,
-            color: tracks.isNotEmpty
-                ? context.primaryColor
-                : context.secondaryColor,
-            onPressed: () => _trackingDraggableMenu(entries),
-          );
-        },
-      );
-      return isMobile && !isTv ? button : Expanded(child: button);
+      return _trackingAction(entries);
     },
   );
+
+  Widget _trackingAction(List<TrackPreference> entries) {
+    final button = StreamBuilder(
+      stream: trackRepository.watchByMangaId(widget.manga.id!),
+      builder: (context, snapshot) {
+        final l10n = l10nLocalizations(context)!;
+        final tracks = snapshot.data ?? <Track>[];
+        return _headerButton(
+          icon: isMobile && !isTv
+              ? (tracks.isNotEmpty
+                    ? NodeLaneIcons.of(context).check
+                    : NodeLaneIcons.of(context).tracking)
+              : (tracks.isNotEmpty ? Icons.done_rounded : Icons.sync_outlined),
+          label: tracks.isNotEmpty
+              ? tracks.length == 1
+                    ? l10n.one_tracker
+                    : l10n.n_tracker(tracks.length)
+              : l10n.tracking,
+          color: tracks.isNotEmpty
+              ? context.primaryColor
+              : context.secondaryColor,
+          onPressed: () => _trackingDraggableMenu(entries),
+        );
+      },
+    );
+    return isMobile && !isTv ? button : Expanded(child: button);
+  }
 
   void _openImage(ImageProvider imageProvider) {
     showMangaCoverViewer(
@@ -786,7 +777,7 @@ class DetailGenreChip extends StatelessWidget {
     if (mobile) {
       final colors = NodeLaneTokens.of(context);
       return Padding(
-        padding: const EdgeInsets.only(right: 8, bottom: 8),
+        padding: const EdgeInsets.only(right: 8),
         child: PopupMenuButton<int>(
           popUpAnimationStyle: popupAnimationStyle,
           onSelected: onSelected,
@@ -794,16 +785,22 @@ class DetailGenreChip extends StatelessWidget {
             PopupMenuItem(value: 0, child: Text(libraryLabel)),
             PopupMenuItem(value: 1, child: Text(sourceLabel)),
           ],
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              color: colors.soft,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              label,
-              style: TextStyle(fontSize: 13, color: colors.ink),
+          child: SizedBox(
+            height: NodeLaneTokens.minTapTarget,
+            child: Center(
+              child: Container(
+                height: NodeLaneTokens.detailChipHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors.detailChipSurface,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  label,
+                  style: colors.secondary.copyWith(fontSize: 15),
+                ),
+              ),
             ),
           ),
         ),
@@ -876,7 +873,9 @@ class _DetailAction {
 /// divide the width they are given, which means the strip looks deliberate at
 /// any width and with two, three or four actions in it.
 class _DetailActions extends ConsumerWidget {
-  const _DetailActions({required this.manga});
+  const _DetailActions({required this.manga, this.leading = const []});
+
+  final List<Widget> leading;
 
   final Manga manga;
 
@@ -888,7 +887,9 @@ class _DetailActions extends ConsumerWidget {
     // cannot be reached any other way from in here: its adaptation in the
     // other medium.
     final related = _DetailAction(
-      icon: Icons.account_tree_outlined,
+      icon: isMobile && !isTv
+          ? NodeLaneIcons.of(context).related
+          : Icons.account_tree_outlined,
       label: l10n.related_titles,
       onPressed: () =>
           context.push("/related", extra: (manga.name!, manga.itemType)),
@@ -947,7 +948,9 @@ class _DetailActions extends ConsumerWidget {
     MediaLookupContext media,
   ) {
     return _DetailAction(
-      icon: Icons.auto_awesome_outlined,
+      icon: isMobile && !isTv
+          ? NodeLaneIcons.of(context).recommend
+          : Icons.auto_awesome_outlined,
       label: context.l10n.recommendations,
       onPressed: () => context.push(
         "/recommendations",
@@ -958,21 +961,16 @@ class _DetailActions extends ConsumerWidget {
 
   Widget _strip(BuildContext context, List<_DetailAction> actions) {
     if (isMobile && !isTv) {
-      return Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: [
-            for (final action in actions)
-              TextButton.icon(
-                style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
-                onPressed: action.onPressed,
-                icon: Icon(action.icon, size: 20),
-                label: Text(action.label),
-              ),
-          ],
-        ),
+      return MobileDetailShortcuts(
+        children: [
+          ...leading,
+          for (final action in actions)
+            MobileDetailShortcut(
+              icon: action.icon,
+              label: action.label,
+              onPressed: action.onPressed,
+            ),
+        ],
       );
     }
     // Tinted rather than the neutral outline, so the border belongs to the

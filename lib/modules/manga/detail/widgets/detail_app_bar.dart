@@ -12,6 +12,7 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 
 /// The detail page's app bar: the normal title/actions bar, or - while a
 /// long-press has put the chapter list into multi-select - a count plus
@@ -46,7 +47,11 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+  Size get preferredSize => Size.fromHeight(
+    isMobile && !isTv && itemType == ItemType.manga
+        ? NodeLaneTokens.detailToolbarHeight
+        : kToolbarHeight,
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,6 +76,9 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ? Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: AppBar(
+              toolbarHeight: mobileManga
+                  ? NodeLaneTokens.detailToolbarHeight
+                  : null,
               title: Text(
                 mobileManga
                     ? l10n.chapter_selected_count(chapterList.length)
@@ -142,6 +150,25 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
             ),
           )
         : AppBar(
+            toolbarHeight: mobileManga
+                ? NodeLaneTokens.detailToolbarHeight
+                : null,
+            leadingWidth: mobileManga ? 44 : null,
+            centerTitle: mobileManga ? true : null,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
+            iconTheme: mobileManga
+                ? IconThemeData(color: NodeLaneTokens.of(context).ink, size: 24)
+                : null,
+            leading: mobileManga
+                ? IconButton(
+                    tooltip: MaterialLocalizations.of(context)
+                        .backButtonTooltip,
+                    onPressed: () => Navigator.maybePop(context),
+                    icon: Icon(NodeLaneIcons.of(context).back),
+                  )
+                : null,
             title: ref.watch(offsetProvider.select((val) => val > 200))
                 ? Text(
                     manga.name!,

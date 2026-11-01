@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/download.dart';
@@ -19,7 +21,13 @@ import 'package:path/path.dart' as p;
 class ChapterPageDownload extends ConsumerWidget {
   final Chapter chapter;
 
-  const ChapterPageDownload({super.key, required this.chapter});
+  const ChapterPageDownload({
+    super.key,
+    required this.chapter,
+    this.mobile = false,
+  });
+
+  final bool mobile;
 
   void _startDownload(WidgetRef ref, {bool? useWifi}) async {
     if (isDownloadScheduled(chapter.id)) return;
@@ -99,10 +107,10 @@ class ChapterPageDownload extends ConsumerWidget {
     final l10n = l10nLocalizations(context)!;
     final initialDownload = downloadRepository.getByChapterId(chapter.id);
     return SizedBox(
-      height: 41,
-      width: 35,
+      height: mobile ? NodeLaneTokens.minTapTarget : 41,
+      width: mobile ? NodeLaneTokens.minTapTarget : 35,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
+        padding: EdgeInsets.symmetric(vertical: mobile ? 0 : 3),
         child: StreamBuilder<List<Download>>(
           initialData: initialDownload != null ? [initialDownload] : const [],
           stream: downloadRepository.watchByChapterId(chapter.id),
@@ -117,9 +125,13 @@ class ChapterPageDownload extends ConsumerWidget {
                   popUpAnimationStyle: popupAnimationStyle,
                   child: Icon(
                     size: 25,
-                    Icons.check_circle,
-                    color: Theme.of(context).iconTheme.color!
-                        .withValues(alpha: 0.7),
+                    mobile
+                        ? NodeLaneIcons.of(context).downloaded
+                        : Icons.check_circle,
+                    color: mobile
+                        ? NodeLaneTokens.of(context).muted
+                        : Theme.of(context).iconTheme.color!
+                              .withValues(alpha: 0.7),
                   ),
                   onSelected: (value) {
                     if (value == 0) {
@@ -140,8 +152,10 @@ class ChapterPageDownload extends ConsumerWidget {
                   download.isStartDownload != true) {
                 return PopupMenuButton<int>(
                   popUpAnimationStyle: popupAnimationStyle,
-                  child: const Icon(
-                    Icons.error_outline_outlined,
+                  child: Icon(
+                    mobile
+                        ? NodeLaneIcons.of(context).error
+                        : Icons.error_outline_outlined,
                     color: Colors.red,
                     size: 25,
                   ),
@@ -191,7 +205,9 @@ class ChapterPageDownload extends ConsumerWidget {
                         Align(
                           alignment: Alignment.center,
                           child: Icon(
-                            Icons.arrow_downward_sharp,
+                            mobile
+                                ? NodeLaneIcons.of(context).download
+                                : Icons.arrow_downward_sharp,
                             color: progress > 0.5
                                 ? Theme.of(context).scaffoldBackgroundColor
                                 : Theme.of(context).iconTheme.color!
@@ -217,7 +233,7 @@ class ChapterPageDownload extends ConsumerWidget {
                 // Started / queued with zero progress yet
                 return PopupMenuButton<int>(
                   popUpAnimationStyle: popupAnimationStyle,
-                  child: const _DownloadProgressIcon(isLoading: true),
+                  child: _DownloadProgressIcon(isLoading: true, mobile: mobile),
                   onSelected: (value) {
                     if (value == 0) {
                       _cancelTasks(downloadId: download.id);
@@ -237,23 +253,25 @@ class ChapterPageDownload extends ConsumerWidget {
 
               // 4. Queued / paused but not started
               return IconButton(
+                tooltip: mobile ? l10n.download : null,
                 splashRadius: 5,
                 iconSize: 17,
                 onPressed: () {
                   _downloadChapter(context, ref);
                 },
-                icon: const _DownloadProgressIcon(isLoading: false),
+                icon: _DownloadProgressIcon(isLoading: false, mobile: mobile),
               );
             }
 
             // 5. Not downloaded
             return IconButton(
+              tooltip: mobile ? l10n.download : null,
               splashRadius: 5,
               iconSize: 17,
               onPressed: () {
                 _downloadChapter(context, ref);
               },
-              icon: const _DownloadProgressIcon(isLoading: false),
+              icon: _DownloadProgressIcon(isLoading: false, mobile: mobile),
             );
           },
         ),
@@ -269,26 +287,35 @@ class ChapterPageDownload extends ConsumerWidget {
 class _DownloadProgressIcon extends StatelessWidget {
   final bool isLoading;
 
-  const _DownloadProgressIcon({required this.isLoading});
+  const _DownloadProgressIcon({required this.isLoading, this.mobile = false});
+  final bool mobile;
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).iconTheme.color!.withValues(alpha: 0.7);
+    final color = mobile
+        ? NodeLaneTokens.of(context).accent
+        : Theme.of(context).iconTheme.color!.withValues(alpha: 0.7);
     return Stack(
       children: [
         Align(
           alignment: Alignment.center,
-          child: Icon(size: 18, Icons.arrow_downward_sharp, color: color),
+          child: Icon(
+            size: mobile ? 22 : 18,
+            mobile
+                ? NodeLaneIcons.of(context).download
+                : Icons.arrow_downward_sharp,
+            color: color,
+          ),
         ),
         Align(
           alignment: Alignment.center,
           child: SizedBox(
-            height: 20,
-            width: 20,
+            height: mobile ? 34 : 20,
+            width: mobile ? 34 : 20,
             child: CircularProgressIndicator(
               value: isLoading ? null : 1,
               color: color,
-              strokeWidth: 2,
+              strokeWidth: mobile ? 1.2 : 2,
             ),
           ),
         ),

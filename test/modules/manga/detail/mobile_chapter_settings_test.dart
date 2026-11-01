@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -237,16 +238,21 @@ void main() {
         container.read(chapterFilterBookmarkedStateProvider(mangaId: 1)),
         1,
       );
-      await tester.tap(find.widgetWithText(Tab, 'Sort'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NodeLaneTabSegments),
+          matching: find.text('Sort'),
+        ),
+      );
       await tester.pumpAndSettle();
       final chooseDirection = tester
-          .widget<SegmentedButton<bool>>(find.byType(SegmentedButton<bool>))
-          .onSelectionChanged!;
+          .widget<NodeLaneSegments<bool>>(find.byType(NodeLaneSegments<bool>))
+          .onChanged!;
       final chooseSort = tester
           .widget<RadioGroup<int>>(find.byType(RadioGroup<int>))
           .onChanged;
-      chooseDirection({true});
-      chooseDirection({true});
+      chooseDirection(true);
+      chooseDirection(true);
       chooseSort(3);
       chooseSort(3);
       await flush(tester);
@@ -266,19 +272,24 @@ void main() {
         saved.sortChapterList!.firstWhere((value) => value.mangaId == 2).index,
         2,
       );
-      await tester.tap(find.widgetWithText(Tab, 'Filter'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NodeLaneTabSegments),
+          matching: find.text('Filter'),
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.ensureVisible(option('Bookmarked', 'Include'));
       expect(
         tester
-            .widget<SegmentedButton<int>>(
+            .widget<NodeLaneSegments<int>>(
               find.descendant(
                 of: find.byKey(const ValueKey('chapter-filter-Bookmarked')),
-                matching: find.byType(SegmentedButton<int>),
+                matching: find.byType(NodeLaneSegments<int>),
               ),
             )
-            .selected,
-        {1},
+            .value,
+        1,
       );
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();

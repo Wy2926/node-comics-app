@@ -1,5 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
+/// Shared geometry for the overview. Slots retain their existing state and actions.
+class MobileDetailOverview extends StatelessWidget {
+  const MobileDetailOverview({
+    super.key,
+    required this.heading,
+    required this.actions,
+    this.synopsis,
+    required this.more,
+    required this.chapters,
+  });
+  final Widget heading, actions, more, chapters;
+  final Widget? synopsis;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(
+      horizontal: NodeLaneTokens.detailGutter,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        heading,
+        const SizedBox(height: 16),
+        actions,
+        if (synopsis != null) ...[const SizedBox(height: 16), synopsis!],
+        const SizedBox(height: 12),
+        more,
+        const SizedBox(height: 8),
+        chapters,
+      ],
+    ),
+  );
+}
+
+/// Builds secondary actions for each mount and releases them when collapsed.
+class MobileDetailDisclosure extends StatelessWidget {
+  const MobileDetailDisclosure({
+    super.key,
+    required this.title,
+    required this.builder,
+  });
+  final String title;
+  final WidgetBuilder builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = NodeLaneTokens.of(context);
+    return NodeLaneGroupSurface(
+      child: ExpansionTile(
+        minTileHeight: NodeLaneTokens.detailMoreHeight,
+        dense: true,
+        visualDensity: VisualDensity.standard,
+        iconColor: colors.muted,
+        collapsedIconColor: colors.muted,
+        tilePadding: const EdgeInsets.symmetric(
+          horizontal: NodeLaneTokens.space16,
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        shape: const Border(),
+        collapsedShape: const Border(),
+        title: Text(title, style: colors.detailSectionTitle),
+        // ExpansionTile disposes collapsed children but retains their widgets.
+        // Build again on mount so a single-subscription query is never reused.
+        children: [Builder(builder: builder)],
+      ),
+    );
+  }
+}
 
 /// Layout only: the detail page supplies its existing cover and title actions.
 class MobileDetailHeading extends StatelessWidget {
@@ -32,12 +102,41 @@ class MobileDetailHeading extends StatelessWidget {
           children: [
             cover,
             const SizedBox(width: 16),
-            Expanded(child: text),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: text,
+              ),
+            ),
           ],
         );
       },
     );
   }
+}
+
+/// The read and library actions share the full content width. A hidden read
+/// action leaves one full-width library action, not an empty half-column.
+class MobileDetailPrimaryActions extends StatelessWidget {
+  const MobileDetailPrimaryActions({
+    super.key,
+    this.reading,
+    required this.library,
+  });
+
+  final Widget? reading;
+  final Widget library;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      if (reading != null) ...[
+        Expanded(child: reading!),
+        const SizedBox(width: 10),
+      ],
+      Expanded(child: library),
+    ],
+  );
 }
 
 class MobileDetailButton extends StatelessWidget {
@@ -59,17 +158,29 @@ class MobileDetailButton extends StatelessWidget {
     final colors = NodeLaneTokens.of(context);
     return FilledButton.icon(
       style: FilledButton.styleFrom(
-        backgroundColor: primary ? colors.accent : colors.soft,
-        foregroundColor: primary ? colors.onAccent : colors.ink,
-        minimumSize: const Size(0, 48),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        backgroundColor: primary
+            ? colors.accent
+            : Color.alphaBlend(
+                colors.accent.withValues(alpha: .14),
+                colors.surface,
+              ),
+        foregroundColor: primary ? colors.onAccent : colors.accent,
+        minimumSize: const Size(0, NodeLaneTokens.detailActionHeight),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
         ),
       ),
       onPressed: onPressed,
-      icon: Icon(icon, size: 20),
-      label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+      icon: Icon(icon, size: 26),
+      label: Text(
+        label,
+        style: colors.label.copyWith(
+          fontSize: 16,
+          color: primary ? colors.onAccent : colors.accent,
+        ),
+      ),
     );
   }
 }
@@ -181,6 +292,7 @@ class MobileChapterTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    final icons = NodeLaneIcons.of(context);
     return Semantics(
       selected: selecting ? selected : null,
       child: Material(
@@ -189,74 +301,287 @@ class MobileChapterTile extends StatelessWidget {
           onTap: onTap,
           onLongPress: onLongPress,
           onSecondaryTap: onLongPress,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 76),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: colors.line)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ExcludeSemantics(
-                  child: Icon(
-                    selecting
-                        ? selected
-                              ? Icons.check_circle
-                              : Icons.radio_button_unchecked
-                        : bookmarked
-                        ? Icons.bookmark_rounded
-                        : read
-                        ? Icons.check_rounded
-                        : Icons.circle,
-                    size: selecting || bookmarked || read ? 20 : 8,
-                    color: read && !selected && !bookmarked
-                        ? colors.muted
-                        : colors.accent,
-                  ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: NodeLaneTokens.chapterRowHeight - 1,
                 ),
-                const SizedBox(width: 12),
-                if (thumbnail != null) ...[
-                  thumbnail!,
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  child: Row(
                     children: [
-                      Text(
-                        title,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: read ? FontWeight.w400 : FontWeight.w600,
-                          color: read ? colors.muted : colors.ink,
+                      SizedBox(
+                        width: 16,
+                        child: ExcludeSemantics(
+                          child: Icon(
+                            selecting
+                                ? selected
+                                      ? icons.selected
+                                      : icons.unselected
+                                : icons.unread,
+                            size: selecting ? 20 : 10,
+                            color: read && !selected
+                                ? colors.muted.withValues(alpha: .55)
+                                : colors.accent,
+                          ),
                         ),
                       ),
-                      if (description?.isNotEmpty ?? false) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          description!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: colors.muted),
-                        ),
+                      const SizedBox(width: 12),
+                      if (thumbnail != null) ...[
+                        thumbnail!,
+                        const SizedBox(width: 8),
                       ],
-                      if (metadata.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          metadata,
-                          style: TextStyle(fontSize: 12, color: colors.muted),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: colors.label.copyWith(
+                                fontSize: 16,
+                                fontWeight: read
+                                    ? FontWeight.w400
+                                    : FontWeight.w600,
+                                color: read ? colors.muted : colors.ink,
+                              ),
+                            ),
+                            if (description?.isNotEmpty ?? false) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                description!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: colors.secondary,
+                              ),
+                            ],
+                            if (metadata.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                metadata,
+                                style: colors.secondary.copyWith(fontSize: 14),
+                              ),
+                            ],
+                          ],
                         ),
+                      ),
+                      if (bookmarked && !selecting)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Icon(
+                            icons.bookmark,
+                            size: 22,
+                            color: colors.accent,
+                          ),
+                        ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: 4),
+                        trailing!,
                       ],
                     ],
                   ),
                 ),
-                if (trailing != null) ...[const SizedBox(width: 8), trailing!],
-              ],
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 40, end: 16),
+                child: Divider(height: 1, thickness: .5, color: colors.line),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Presentation of the existing expandable description and genre menu slots.
+class MobileDetailSynopsis extends StatelessWidget {
+  const MobileDetailSynopsis({
+    super.key,
+    required this.title,
+    required this.text,
+    required this.expanded,
+    required this.onChanged,
+    this.genres,
+  });
+  final String title, text;
+  final bool expanded;
+  final ValueChanged<bool> onChanged;
+  final Widget? genres;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = NodeLaneTokens.of(context);
+    final labels = MaterialLocalizations.of(context);
+    return NodeLaneGroupSurface(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (text.trim().isNotEmpty) ...[
+              Semantics(
+                expanded: expanded,
+                button: true,
+                child: InkWell(
+                  onTap: () => onChanged(!expanded),
+                  child: SizedBox(
+                    height: NodeLaneTokens.minTapTarget,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              title,
+                              style: colors.detailSectionTitle,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          expanded
+                              ? labels.expandedIconTapHint
+                              : labels.collapsedIconTapHint,
+                          style: colors.secondary.copyWith(
+                            color: colors.accent,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () => onChanged(!expanded),
+                child: Text(
+                  text.trim(),
+                  maxLines: expanded ? null : 3,
+                  overflow: expanded ? null : TextOverflow.ellipsis,
+                  style: colors.secondary.copyWith(fontSize: 14, height: 1.7),
+                ),
+              ),
+            ],
+            if (genres != null) ...[
+              if (text.trim().isNotEmpty) const SizedBox(height: 6),
+              genres!,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Keep conditional shortcuts on the same five-column grid, anchored left.
+class MobileDetailShortcuts extends StatelessWidget {
+  const MobileDetailShortcuts({super.key, required this.children});
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => SizedBox(
+      width: constraints.maxWidth,
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 8,
+        children: [
+          for (final child in children)
+            SizedBox(width: (constraints.maxWidth - 24) / 5, child: child),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Small secondary actions; the caller supplies availability and callbacks.
+class MobileDetailShortcut extends StatelessWidget {
+  const MobileDetailShortcut({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  @override
+  Widget build(BuildContext context) {
+    final colors = NodeLaneTokens.of(context);
+    return Semantics(
+      button: true,
+      child: SizedBox(
+        width: 62,
+        height: 80,
+        child: Material(
+          color: colors.canvas,
+          borderRadius: BorderRadius.circular(8),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onPressed,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 26, color: colors.ink),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: colors.caption,
+                  ),
+                ],
+              ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A 48 × 36 visual control inside a 48 × 44 tap target, as on the overview.
+class MobileDetailFilterButton extends StatelessWidget {
+  const MobileDetailFilterButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.active = false,
+  });
+  final String label;
+  final VoidCallback? onPressed;
+  final bool active;
+  @override
+  Widget build(BuildContext context) {
+    final colors = NodeLaneTokens.of(context);
+    return SizedBox(
+      width: 48,
+      height: 44,
+      child: Center(
+        child: IconButton(
+          tooltip: label,
+          onPressed: onPressed,
+          style: IconButton.styleFrom(
+            minimumSize: const Size(48, 36),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            tapTargetSize: MaterialTapTargetSize.padded,
+            backgroundColor: active ? colors.accentSoft : colors.surface,
+            foregroundColor: active ? colors.accent : colors.ink,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          icon: Icon(NodeLaneIcons.of(context).filter, size: 22),
         ),
       ),
     );

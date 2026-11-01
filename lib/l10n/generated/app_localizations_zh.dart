@@ -703,7 +703,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get next_week => '下周';
 
   @override
-  String get add_to_library => '添加到图书馆';
+  String get add_to_library => '加入书架';
 
   @override
   String get completed => '已完成';
@@ -738,16 +738,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get no_pages_available => '错误：无可用页面';
 
   @override
-  String get set_categories => '设置类别';
+  String get set_categories => '设置分类';
 
   @override
   String get edit => '编辑';
 
   @override
-  String get in_library => '在图书馆';
+  String get in_library => '已在书架';
 
   @override
-  String get filter_scanlator_groups => '筛选扫描翻译组';
+  String get filter_scanlator_groups => '汉化组';
 
   @override
   String get reset => '重置';
@@ -3854,13 +3854,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get manga_action_incomplete => '操作未完成。请先核对当前状态，再决定是否重新操作。';
 
   @override
-  String get chapter_settings => '目录设置';
+  String get chapter_settings => '章节设置';
 
   @override
-  String get chapter_settings_live => '筛选和排序更改即时生效。';
+  String get chapter_settings_live => '筛选与排序即时生效，仅用于当前漫画。';
 
   @override
-  String get chapter_scanlators_all => '显示所有翻译组';
+  String get chapter_scanlators_all => '全部显示';
 
   @override
   String get chapter_scanlators_hint => '勾选要隐藏的翻译组，点按“筛选”后生效。';
@@ -3967,4 +3967,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reader_auto_scroll_pause => '打开设置期间暂停滚动。';
+
+  @override
+  String get manga_synopsis => '简介';
+
+  @override
+  String manga_author(String author) {
+    return '作者：$author';
+  }
+
+  @override
+  String get manga_continue_reading => '继续阅读';
 }

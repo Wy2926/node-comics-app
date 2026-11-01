@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 /// Presents existing detail action values; dispatch remains with the owner.
 class MobileMangaDetailActionsButton extends StatelessWidget {
@@ -22,41 +24,55 @@ class MobileMangaDetailActionsButton extends StatelessWidget {
     final l10n = context.l10n;
     return _MangaMenuButton(
       tooltip: l10n.manga_actions,
-      icon: Theme.of(context).platform == TargetPlatform.iOS
-          ? Icons.more_horiz
-          : Icons.more_vert,
+      icon: NodeLaneIcons.of(context).more,
       onSelected: onSelected,
       menu: _MangaActionSheet(
         title: l10n.manga_actions,
         bookTitle: bookTitle,
         actions: (choose) => [
           if (!localArchive)
-            _action(l10n.refresh, Icons.refresh, () => choose(0)),
+            _action(
+              l10n.refresh,
+              NodeLaneIcons.of(context).refresh,
+              () => choose(0),
+            ),
           if (favorite)
             _action(
               l10n.set_categories,
-              Icons.folder_outlined,
+              NodeLaneIcons.of(context).folderOutline,
               () => choose(1),
+              disclosure: true,
             ),
           if (!localArchive)
-            _action(l10n.share, Icons.ios_share_outlined, () => choose(2)),
+            _action(
+              l10n.share,
+              NodeLaneIcons.of(context).share,
+              () => choose(2),
+            ),
           if (favorite || !localArchive) const Divider(),
-          _action(l10n.migrate, Icons.swap_horiz_rounded, () => choose(3)),
+          _action(
+            l10n.migrate,
+            NodeLaneIcons.of(context).migrate,
+            () => choose(3),
+            disclosure: true,
+          ),
           _action(
             l10n.mass_migration_title,
-            Icons.drive_file_move_outline,
+            NodeLaneIcons.of(context).categories,
             () => choose(6),
+            disclosure: true,
           ),
           if (!localArchive)
             _action(
               l10n.extension_settings,
-              Icons.extension_outlined,
+              NodeLaneIcons.of(context).extensions,
               () => choose(4),
+              disclosure: true,
             ),
           const Divider(),
           _action(
             l10n.export_metadata,
-            Icons.file_upload_outlined,
+            NodeLaneIcons.of(context).export,
             () => choose(5),
           ),
         ],
@@ -91,7 +107,7 @@ class MobileMangaDownloadActionsButton extends StatelessWidget {
     ];
     return _MangaMenuButton(
       tooltip: l10n.download,
-      icon: Icons.download_outlined,
+      icon: NodeLaneIcons.of(context).download,
       onSelected: onSelected,
       menu: _MangaActionSheet(
         title: l10n.manga_download_scope,
@@ -105,10 +121,10 @@ class MobileMangaDownloadActionsButton extends StatelessWidget {
             _action(
               labels[index],
               index < 4
-                  ? Icons.skip_next_outlined
+                  ? NodeLaneIcons.of(context).forward
                   : index == 4
-                  ? Icons.markunread_outlined
-                  : Icons.library_books_outlined,
+                  ? NodeLaneIcons.of(context).unread
+                  : NodeLaneIcons.of(context).manga,
               hasChapters ? () => choose(index) : null,
             ),
           ],
@@ -118,13 +134,34 @@ class MobileMangaDownloadActionsButton extends StatelessWidget {
   }
 }
 
-Widget _action(String label, IconData icon, VoidCallback? onTap) => ListTile(
-  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-  minTileHeight: 56,
-  enabled: onTap != null,
-  leading: Icon(icon),
-  title: Text(label),
-  onTap: onTap,
+Widget _action(
+  String label,
+  IconData icon,
+  VoidCallback? onTap, {
+  bool disclosure = false,
+}) => Builder(
+  builder: (context) => ListTile(
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: NodeLaneTokens.space16,
+    ),
+    minTileHeight: 60,
+    horizontalTitleGap: 16,
+    enabled: onTap != null,
+    leading: Icon(icon, size: 28),
+    title: Text(
+      label,
+      style: NodeLaneTokens.of(context).body
+          .copyWith(fontWeight: FontWeight.w500),
+    ),
+    trailing: disclosure
+        ? Icon(
+            NodeLaneIcons.of(context).forward,
+            size: NodeLaneTokens.smallIconSize,
+            color: NodeLaneTokens.of(context).muted,
+          )
+        : null,
+    onTap: onTap,
+  ),
 );
 
 /// Only owns presentation and in-flight UI state. The callback keeps the
@@ -162,6 +199,7 @@ class _MangaMenuButtonState extends State<_MangaMenuButton> {
         useSafeArea: true,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        shape: NodeLaneTokens.detailSheetShape,
         constraints: BoxConstraints(
           maxHeight: MediaQuery.sizeOf(context).height * .85,
         ),
@@ -232,63 +270,71 @@ class _MangaActionSheetState extends State<_MangaActionSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
-    return NodeLaneSheetSurface(
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 8, 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Semantics(
-                      namesRoute: true,
-                      header: true,
-                      child: Text(
-                        widget.title,
-                        style: TextStyle(
-                          color: colors.ink,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
+    final sections = <List<Widget>>[[]];
+    for (final action in widget.actions(_close)) {
+      if (action is Divider) {
+        if (sections.last.isNotEmpty) sections.add([]);
+      } else {
+        sections.last.add(action);
+      }
+    }
+    return NodeLaneSurface(
+      child: NodeLaneSheetSurface(
+        grouped: true,
+        radius: NodeLaneTokens.detailSheetRadius,
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NodeLaneSheetHeading(
+                title: widget.title,
+                subtitle: widget.bookTitle,
+                description: widget.hint,
+                detail: true,
+                centerTitle: true,
+                onClose: _close,
+              ),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(
+                    NodeLaneTokens.detailGutter,
+                    0,
+                    NodeLaneTokens.detailGutter,
+                    NodeLaneTokens.space12,
+                  ),
+                  children: [
+                    for (final section in sections.where(
+                      (items) => items.isNotEmpty,
+                    ))
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: NodeLaneTokens.space12,
+                        ),
+                        child: NodeLaneGroupSurface(
+                          child: Column(
+                            children: [
+                              for (var i = 0; i < section.length; i++) ...[
+                                if (i > 0)
+                                  Divider(
+                                    height: 1,
+                                    indent: 16,
+                                    endIndent: 16,
+                                    thickness: .5,
+                                    color: colors.line,
+                                  ),
+                                section[i],
+                              ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: context.l10n.close,
-                    onPressed: _close,
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.only(bottom: 12),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                    child: Text(
-                      widget.bookTitle,
-                      style: TextStyle(color: colors.muted, fontSize: 14),
-                    ),
-                  ),
-                  if (widget.hint case final hint?)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      child: Text(
-                        hint,
-                        style: TextStyle(color: colors.muted, fontSize: 13),
-                      ),
-                    ),
-                  ...widget.actions(_close),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -109,9 +109,11 @@ class NodeLaneSheetSurface extends StatelessWidget {
     super.key,
     required this.child,
     this.grouped = false,
+    this.radius = NodeLaneTokens.modalRadius,
   });
   final Widget child;
   final bool grouped;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
@@ -120,9 +122,7 @@ class NodeLaneSheetSurface extends StatelessWidget {
       child: Material(
         color: grouped ? colors.canvas : colors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(NodeLaneTokens.modalRadius),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
           side: BorderSide(color: colors.line),
         ),
         clipBehavior: Clip.antiAlias,
@@ -138,14 +138,102 @@ class NodeLaneSheetHeading extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.onClose,
+    this.detail = false,
+    this.centerTitle = false,
+    this.description,
   });
   final String title;
   final String? subtitle;
   final VoidCallback? onClose;
+  final bool detail, centerTitle;
+  final String? description;
 
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    if (detail) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 52,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: colors.muted.withValues(alpha: .35),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 44,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: centerTitle ? 44 : 0,
+                      right: 44,
+                    ),
+                    child: Align(
+                      alignment: centerTitle
+                          ? Alignment.center
+                          : AlignmentDirectional.centerStart,
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          title,
+                          style: colors.detailTitle.copyWith(
+                            fontSize: centerTitle ? 22 : 26,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: IconButton(
+                      tooltip: MaterialLocalizations.of(context)
+                          .closeButtonTooltip,
+                      onPressed: onClose ?? () => Navigator.pop(context),
+                      style: IconButton.styleFrom(
+                        backgroundColor: colors.soft,
+                        foregroundColor: colors.ink,
+                        minimumSize: const Size(36, 36),
+                        tapTargetSize: MaterialTapTargetSize.padded,
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(8),
+                      ),
+                      icon: Icon(NodeLaneIcons.of(context).close, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                textAlign: centerTitle ? TextAlign.center : TextAlign.start,
+                style: centerTitle
+                    ? colors.secondary.copyWith(fontSize: 14)
+                    : colors.body.copyWith(fontSize: 18),
+              ),
+            ],
+            if (description != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                description!,
+                style: colors.secondary.copyWith(fontSize: 14),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         NodeLaneTokens.gutter,

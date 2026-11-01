@@ -8,6 +8,7 @@ import 'pure_black_dark_mode_state_provider.dart';
 import 'app_font_family.dart';
 
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Material draws a focused InkWell's highlight from the ambient
 /// [ThemeData.focusColor], and the default is nearly invisible on a TV
@@ -42,6 +43,25 @@ ThemeData _tvFocus(ThemeData theme) {
   );
 }
 
+// The existing default blue preset uses the concept's blue on phones.
+// Other selected palettes and desktop/TV themes keep their own accent.
+ThemeData _mobileAccent(ThemeData theme, int schemeIndex) {
+  if (!isMobile ||
+      isTv ||
+      schemeIndex != 2 ||
+      theme.brightness == Brightness.dark) {
+    return theme;
+  }
+  const accent = NodeLaneTokens.defaultMobileAccent;
+  return theme.copyWith(
+    primaryColor: accent,
+    colorScheme: theme.colorScheme.copyWith(
+      primary: accent,
+      onPrimary: Colors.white,
+    ),
+  );
+}
+
 /// Provides the light theme for the app, recomputed only when
 /// flex scheme colors, blend level, or font family change.
 final lightThemeProvider = Provider<ThemeData>((ref) {
@@ -53,22 +73,25 @@ final lightThemeProvider = Provider<ThemeData>((ref) {
   final fontFamily = ref.watch(appFontFamilyProvider.select((t) => t.$2));
 
   return _tvFocus(
-    FlexThemeData.light(
-      colors: colors,
-      surfaceMode: FlexSurfaceMode.highScaffoldLevelSurface,
-      blendLevel: blendLevel,
-      appBarOpacity: 0.00,
-      subThemesData: const FlexSubThemesData(
-        blendOnLevel: 10,
-        thinBorderWidth: 2.0,
-        unselectedToggleIsColored: true,
-        inputDecoratorRadius: 24.0,
-        chipRadius: 24.0,
+    _mobileAccent(
+      FlexThemeData.light(
+        colors: colors,
+        surfaceMode: FlexSurfaceMode.highScaffoldLevelSurface,
+        blendLevel: blendLevel,
+        appBarOpacity: 0.00,
+        subThemesData: const FlexSubThemesData(
+          blendOnLevel: 10,
+          thinBorderWidth: 2.0,
+          unselectedToggleIsColored: true,
+          inputDecoratorRadius: 24.0,
+          chipRadius: 24.0,
+        ),
+        useMaterial3ErrorColors: true,
+        visualDensity: FlexColorScheme.comfortablePlatformDensity,
+        useMaterial3: true,
+        fontFamily: fontFamily,
       ),
-      useMaterial3ErrorColors: true,
-      visualDensity: FlexColorScheme.comfortablePlatformDensity,
-      useMaterial3: true,
-      fontFamily: fontFamily,
+      schemeIndex,
     ),
   );
 });

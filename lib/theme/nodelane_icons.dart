@@ -33,9 +33,14 @@ class NodeLaneIcons {
       _pick(CupertinoIcons.chevron_forward, Icons.chevron_right_rounded);
   IconData get check => _pick(CupertinoIcons.check_mark, Icons.check_rounded);
   IconData get close => _pick(CupertinoIcons.xmark, Icons.close_rounded);
+  IconData get webLink => _pick(CupertinoIcons.link, Icons.link);
+  IconData get recommend =>
+      _pick(CupertinoIcons.hand_thumbsup, Icons.thumb_up_outlined);
   IconData get web => _pick(CupertinoIcons.globe, Icons.public_rounded);
   IconData get extensions =>
       _pick(CupertinoIcons.square_grid_2x2, Icons.extension_outlined);
+  IconData get folderOutline =>
+      _pick(CupertinoIcons.folder, Icons.folder_outlined);
   IconData get folder =>
       _pick(CupertinoIcons.folder_fill, Icons.folder_outlined);
   IconData get settings => _pick(CupertinoIcons.gear, Icons.settings_outlined);
@@ -72,4 +77,27 @@ class NodeLaneIcons {
   IconData get shuffle => _pick(CupertinoIcons.shuffle, Icons.shuffle_rounded);
   IconData get delete =>
       _pick(CupertinoIcons.trash, Icons.delete_outline_rounded);
+  IconData get back => _pick(CupertinoIcons.chevron_back, Icons.arrow_back);
+  IconData get share => _pick(CupertinoIcons.share, Icons.ios_share_outlined);
+  IconData get migrate =>
+      _pick(CupertinoIcons.arrow_right_arrow_left, Icons.swap_horiz_rounded);
+  IconData get export =>
+      _pick(CupertinoIcons.arrow_up_doc, Icons.file_upload_outlined);
+  IconData get groups => _pick(CupertinoIcons.person_2, Icons.groups_outlined);
+  IconData get bookmark =>
+      _pick(CupertinoIcons.bookmark_fill, Icons.bookmark_rounded);
+  IconData get selected =>
+      _pick(CupertinoIcons.checkmark_circle_fill, Icons.check_circle);
+  IconData get unselected =>
+      _pick(CupertinoIcons.circle, Icons.radio_button_unchecked);
+  IconData get unread => _pick(CupertinoIcons.circle_fill, Icons.circle);
+  IconData get downloaded =>
+      _pick(CupertinoIcons.checkmark_circle, Icons.check_circle_outline);
+  IconData get error =>
+      _pick(CupertinoIcons.exclamationmark_circle, Icons.error_outline);
+  IconData get edit => _pick(CupertinoIcons.pencil, Icons.edit_outlined);
+  IconData get tracking =>
+      _pick(CupertinoIcons.arrow_2_circlepath, Icons.sync_outlined);
+  IconData get related =>
+      _pick(CupertinoIcons.book, Icons.account_tree_outlined);
 }

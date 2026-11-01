@@ -9,8 +9,8 @@ import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-
-import 'mobile_detail_widgets.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 List<String> _groups(Iterable<Chapter> chapters) => chapters
     .map((chapter) => chapter.scanlator)
@@ -31,43 +31,66 @@ class MobileMangaChapterSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
-    return NodeLaneSheetSurface(
-      grouped: true,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                l10n.chapter_settings,
-                style: TextStyle(
-                  color: colors.ink,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
+    return NodeLaneSurface(
+      child: NodeLaneSheetSurface(
+        grouped: true,
+        radius: NodeLaneTokens.detailSheetRadius,
+        child: DefaultTabController(
+          length: 2,
+          child: Builder(
+            builder: (context) {
+              final controller = DefaultTabController.of(context);
+              return AnimatedBuilder(
+                animation: controller,
+                builder: (context, _) => SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      NodeLaneSheetHeading(
+                        title: l10n.chapter_settings,
+                        detail: true,
+                        subtitle: manga.name ?? '',
+                        description: l10n.chapter_settings_live,
+                        onClose: () {
+                          if (ModalRoute.of(context)?.isCurrent == true) {
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: NodeLaneTokens.detailGutter,
+                        ),
+                        child: NodeLaneTabSegments(
+                          prominent: true,
+                          labels: [l10n.filter, l10n.sort],
+                        ),
+                      ),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          key: PageStorageKey(
+                            'chapter-settings-${controller.index}',
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: NodeLaneTokens.space16,
+                          ),
+                          child: controller.index == 0
+                              ? _ChapterFilters(
+                                  manga: manga,
+                                  localArchive: localArchive,
+                                )
+                              : _ChapterSort(manga: manga),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
-          Flexible(
-            child: MobileChapterFilterSheet(
-              labels: [l10n.filter, l10n.sort],
-              closeLabel: l10n.close,
-              onClose: () {
-                if (ModalRoute.of(context)?.isCurrent == true) {
-                  Navigator.pop(context);
-                }
-              },
-              children: [
-                _ChapterFilters(manga: manga, localArchive: localArchive),
-                _ChapterSort(manga: manga),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -109,62 +132,51 @@ class _ChapterFilters extends ConsumerWidget {
       ),
     ];
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NodeLaneTokens.detailGutter,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(manga.name ?? ''),
-          const SizedBox(height: 8),
-          Text(l10n.chapter_settings_live),
-          const SizedBox(height: 16),
           MobileSettingsGroup(
+            spacing: 12,
+            dividerIndent: 16,
             children: [
               for (final filter in filters)
-                Padding(
+                NodeLaneChoiceRow<int>(
+                  compact: true,
                   key: ValueKey('chapter-filter-${filter.$1}'),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(filter.$1, style: const TextStyle(fontSize: 16)),
-                      const SizedBox(height: 8),
-                      SegmentedButton<int>(
-                        showSelectedIcon: false,
-                        segments: [
-                          for (final option in [
-                            (0, l10n.bookshelf_filter_any),
-                            (1, l10n.bookshelf_filter_include),
-                            (2, l10n.bookshelf_filter_exclude),
-                          ])
-                            ButtonSegment(
-                              value: option.$1,
-                              label: Text(
-                                option.$2,
-                                semanticsLabel: '${filter.$1}, ${option.$2}',
-                              ),
-                            ),
-                        ],
-                        selected: {filter.$2},
-                        onSelectionChanged: (values) {
-                          if (values.single != filter.$2) {
-                            filter.$3(values.single);
-                          }
-                        },
+                  title: filter.$1,
+                  value: filter.$2,
+                  segments: [
+                    for (final option in [
+                      (0, l10n.bookshelf_filter_any),
+                      (1, l10n.bookshelf_filter_include),
+                      (2, l10n.bookshelf_filter_exclude),
+                    ])
+                      ButtonSegment(
+                        value: option.$1,
+                        label: Text(
+                          option.$2,
+                          semanticsLabel: '${filter.$1}, ${option.$2}',
+                        ),
                       ),
-                    ],
-                  ),
+                  ],
+                  onChanged: filter.$3,
                 ),
             ],
           ),
           if (names.isNotEmpty || excluded.isNotEmpty)
             MobileSettingsGroup(
+              spacing: 0,
               children: [
                 MobileSettingsLink(
+                  inlineSubtitle: true,
                   title: l10n.filter_scanlator_groups,
                   subtitle: excluded.isEmpty
                       ? l10n.chapter_scanlators_all
                       : l10n.chapter_scanlators_hidden(excluded.length),
-                  icon: Icons.groups_outlined,
+                  icon: NodeLaneIcons.of(context).groups,
                   onTap: () async {
                     final chosen =
                         await Navigator.of(
@@ -228,29 +240,29 @@ class _ChapterSort extends ConsumerWidget {
     ];
     // The existing chapter comparator uses reverse=true for ascending order.
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NodeLaneTokens.detailGutter,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(manga.name ?? ''),
-          const SizedBox(height: 16),
-          SegmentedButton<bool>(
+          NodeLaneSegments<bool>(
             segments: [
               ButtonSegment(
                 value: true,
                 label: Text(l10n.bookshelf_sort_ascending),
-                icon: const Icon(Icons.arrow_upward),
+                icon: Icon(NodeLaneIcons.of(context).ascending),
               ),
               ButtonSegment(
                 value: false,
                 label: Text(l10n.bookshelf_sort_descending),
-                icon: const Icon(Icons.arrow_downward),
+                icon: Icon(NodeLaneIcons.of(context).descending),
               ),
             ],
-            selected: {sort.reverse ?? false},
-            onSelectionChanged: (values) {
+            value: sort.reverse ?? false,
+            onChanged: (value) {
               final current = ref.read(provider);
-              if (values.single != current.reverse) {
+              if (value != current.reverse) {
                 ref.read(provider.notifier).set(current.index!);
               }
             },
@@ -345,27 +357,11 @@ class _MobileScanlatorFilterPageState extends State<MobileScanlatorFilterPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            TextField(
+                            NodeLaneSearchField(
                               controller: _search,
+                              hint: l10n.search,
                               onChanged: (value) =>
                                   setState(() => _query = value),
-                              textInputAction: TextInputAction.search,
-                              onSubmitted: (_) =>
-                                  FocusScope.of(context).unfocus(),
-                              decoration: InputDecoration(
-                                hintText: l10n.search,
-                                prefixIcon: const Icon(Icons.search),
-                                suffixIcon: _query.isEmpty
-                                    ? null
-                                    : IconButton(
-                                        tooltip: l10n.reset,
-                                        onPressed: () {
-                                          _search.clear();
-                                          setState(() => _query = '');
-                                        },
-                                        icon: const Icon(Icons.close),
-                                      ),
-                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(l10n.chapter_scanlators_hint),

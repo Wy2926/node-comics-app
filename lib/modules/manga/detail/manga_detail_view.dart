@@ -207,7 +207,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
           ),
           body: SafeArea(
             top: false,
-            bottom: false,
+            bottom: true,
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
@@ -225,17 +225,17 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                 ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: NodeLaneTokens.gutter,
+                    horizontal: NodeLaneTokens.detailGutter,
                   ),
                   sliver: SuperSliverList.builder(
                     itemCount: chapters.length,
                     itemBuilder: (context, index) => ClipRRect(
                       borderRadius: BorderRadius.vertical(
                         top: index == 0
-                            ? const Radius.circular(20)
+                            ? const Radius.circular(NodeLaneTokens.groupRadius)
                             : Radius.zero,
                         bottom: index == chapters.length - 1
-                            ? const Radius.circular(20)
+                            ? const Radius.circular(NodeLaneTokens.groupRadius)
                             : Radius.zero,
                       ),
                       child: ChapterListTileWidget(
@@ -262,11 +262,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                       ),
                     ),
                   ),
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: MediaQuery.paddingOf(context).bottom + 24,
-                  ),
-                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
               ],
             ),
           ),
@@ -868,6 +864,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         isScrollControlled: true,
         useSafeArea: true,
         backgroundColor: Colors.transparent,
+        shape: NodeLaneTokens.detailSheetShape,
         builder: (sheetContext) => ConstrainedBox(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.sizeOf(sheetContext).height * .75,

@@ -15,6 +15,7 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
 import 'package:mangayomi/modules/manga/detail/manga_detail_view.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
@@ -164,53 +165,90 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
       floatingActionButton: mobile ? null : _readingAction(false),
       body: MangaDetailView(
         readingAction: mobile ? _readingAction(true) : null,
-        titleDescription: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Icon(Icons.person_outline, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  (widget.manga.author?.isEmpty ?? false)
-                      ? l10n.unknown
-                      : widget.manga.author!,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Icon(getMangaStatusIcon(widget.manga.status), size: 14),
-                const SizedBox(width: 4),
-                Text(getMangaStatusName(widget.manga.status, context)),
-                if (!isLocalArchive) const Text(' • '),
-                if (!isLocalArchive) Text(widget.manga.source!),
-                if (!isLocalArchive)
-                  Text(' (${widget.manga.lang!.toUpperCase()})'),
-                if (!isLocalArchive && !widget.sourceExist)
-                  const Padding(
-                    padding: EdgeInsets.all(3),
-                    child: Icon(
-                      Icons.warning_amber,
-                      color: Colors.deepOrangeAccent,
-                      size: 14,
+        titleDescription: mobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.manga_author(
+                      (widget.manga.author?.trim().isNotEmpty ?? false)
+                          ? widget.manga.author!
+                          : l10n.unknown,
                     ),
                   ),
-              ],
-            ),
-          ],
-        ),
+                  Text(getMangaStatusName(widget.manga.status, context)),
+                  if (!isLocalArchive)
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          '${widget.manga.source} · ${widget.manga.lang!.toUpperCase()}',
+                        ),
+                        if (!widget.sourceExist)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(
+                              Icons.warning_amber,
+                              color: Colors.deepOrangeAccent,
+                              size: 14,
+                            ),
+                          ),
+                      ],
+                    ),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Icon(
+                        mobile
+                            ? NodeLaneIcons.of(context).account
+                            : Icons.person_outline,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        (widget.manga.author?.isEmpty ?? false)
+                            ? l10n.unknown
+                            : widget.manga.author!,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Icon(getMangaStatusIcon(widget.manga.status), size: 14),
+                      const SizedBox(width: 4),
+                      Text(getMangaStatusName(widget.manga.status, context)),
+                      if (!isLocalArchive) const Text(' • '),
+                      if (!isLocalArchive) Text(widget.manga.source!),
+                      if (!isLocalArchive)
+                        Text(' (${widget.manga.lang!.toUpperCase()})'),
+                      if (!isLocalArchive && !widget.sourceExist)
+                        const Padding(
+                          padding: EdgeInsets.all(3),
+                          child: Icon(
+                            Icons.warning_amber,
+                            color: Colors.deepOrangeAccent,
+                            size: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
         action: mobile
             ? MobileDetailButton(
                 label: widget.manga.favorite!
                     ? l10n.in_library
                     : l10n.add_to_library,
                 icon: widget.manga.favorite!
-                    ? Icons.check_rounded
-                    : Icons.add_rounded,
+                    ? NodeLaneIcons.of(context).check
+                    : NodeLaneIcons.of(context).add,
                 onPressed: _onFavoritePressed,
               )
             : widget.manga.favorite!
@@ -314,7 +352,9 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
                       return _readingButton(
                         mobile: mobile,
                         isExtended: !isExtended,
-                        label: l10n.resume,
+                        label: mobile && widget.manga.itemType != ItemType.anime
+                            ? l10n.manga_continue_reading
+                            : l10n.resume,
                         onPressed: () {
                           chap.pushToReaderView(context);
                         },
@@ -344,14 +384,13 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     required String label,
     required VoidCallback onPressed,
   }) => mobile
-      ? Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: MobileDetailButton(
-            label: label,
-            icon: Icons.play_arrow_rounded,
-            onPressed: onPressed,
-            primary: true,
-          ),
+      ? MobileDetailButton(
+          label: label,
+          icon: widget.manga.itemType == ItemType.anime
+              ? NodeLaneIcons.of(context).anime
+              : NodeLaneIcons.of(context).manga,
+          onPressed: onPressed,
+          primary: true,
         )
       : CustomFloatingActionBtn(
           isExtended: isExtended,

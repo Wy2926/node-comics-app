@@ -4180,4 +4180,15 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get reader_auto_scroll_pause =>
       'Scrolling pauses while settings are open.';
+
+  @override
+  String get manga_synopsis => 'Synopsis';
+
+  @override
+  String manga_author(String author) {
+    return 'Author: $author';
+  }
+
+  @override
+  String get manga_continue_reading => 'Continue reading';
 }

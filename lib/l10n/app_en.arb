@@ -1666,5 +1666,9 @@
   "reader_settings_global_scope": "These settings apply to all comics and save immediately.",
   "reader_filters": "Image filters",
   "reader_filter_scope": "Applies to all comics. Changes the reading display without modifying original images.",
-  "reader_auto_scroll_pause": "Scrolling pauses while settings are open."
+  "reader_auto_scroll_pause": "Scrolling pauses while settings are open.",
+  "manga_synopsis": "Synopsis",
+  "manga_author": "Author: {author}",
+  "@manga_author": {"placeholders": {"author": {"type": "String"}}},
+  "manga_continue_reading": "Continue reading"
 }

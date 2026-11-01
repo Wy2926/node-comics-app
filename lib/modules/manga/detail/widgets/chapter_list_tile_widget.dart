@@ -306,7 +306,10 @@ class ChapterListTileWidget extends ConsumerWidget {
           ? null
           : _thumbnailPreview(context, chapter.thumbnailUrl),
       trailing: !selecting && sourceExist && !(manga.isLocalArchive ?? false)
-          ? ChapterPageDownload(chapter: chapter)
+          ? ChapterPageDownload(
+              chapter: chapter,
+              mobile: manga.itemType == ItemType.manga,
+            )
           : null,
       onTap: () => _handleInteraction(ref, context),
       onLongPress: () => _handleInteraction(ref),

@@ -7397,6 +7397,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scrolling pauses while settings are open.'**
   String get reader_auto_scroll_pause;
+
+  /// No description provided for @manga_synopsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Synopsis'**
+  String get manga_synopsis;
+
+  /// No description provided for @manga_author.
+  ///
+  /// In en, this message translates to:
+  /// **'Author: {author}'**
+  String manga_author(String author);
+
+  /// No description provided for @manga_continue_reading.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get manga_continue_reading;
 }
 
 class _AppLocalizationsDelegate

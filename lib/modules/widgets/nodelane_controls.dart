@@ -225,8 +225,11 @@ class NodeLaneSegments<T> extends StatelessWidget {
     required this.value,
     required this.segments,
     required this.onChanged,
+    this.compact = false,
+    this.prominent = false,
   });
   final T value;
+  final bool compact, prominent;
   final List<ButtonSegment<T>> segments;
   final ValueChanged<T>? onChanged;
 
@@ -235,11 +238,19 @@ class NodeLaneSegments<T> extends StatelessWidget {
     final colors = NodeLaneTokens.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.soft,
-        borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+        color: prominent
+            ? colors.accentSoft
+            : compact
+            ? colors.detailChipSurface
+            : colors.soft,
+        borderRadius: BorderRadius.circular(
+          prominent ? 22 : NodeLaneTokens.controlRadius,
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(NodeLaneTokens.segmentInset),
+        padding: EdgeInsets.all(
+          compact || prominent ? 0 : NodeLaneTokens.segmentInset,
+        ),
         child: Row(
           children: [
             for (final segment in segments)
@@ -254,7 +265,7 @@ class NodeLaneSegments<T> extends StatelessWidget {
                         ? colors.accent
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(
-                      NodeLaneTokens.segmentRadius,
+                      prominent ? 20 : NodeLaneTokens.segmentRadius,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
@@ -266,8 +277,10 @@ class NodeLaneSegments<T> extends StatelessWidget {
                               }
                             },
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minHeight: NodeLaneTokens.minTapTarget,
+                        constraints: BoxConstraints(
+                          minHeight: prominent
+                              ? 48
+                              : NodeLaneTokens.minTapTarget,
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -279,13 +292,19 @@ class NodeLaneSegments<T> extends StatelessWidget {
                               size: 18,
                               color: segment.value == value
                                   ? colors.onAccent
+                                  : prominent
+                                  ? colors.accent
                                   : colors.muted,
                             ),
                             child: DefaultTextStyle(
                               style: colors.label.copyWith(
-                                fontWeight: FontWeight.w500,
+                                fontWeight: prominent
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
                                 color: segment.value == value
                                     ? colors.onAccent
+                                    : prominent
+                                    ? colors.accent
                                     : colors.muted,
                               ),
                               textAlign: TextAlign.center,
@@ -319,8 +338,13 @@ class NodeLaneSegments<T> extends StatelessWidget {
 
 /// Keeps the existing TabController and TabBarView/page storage intact.
 class NodeLaneTabSegments extends StatelessWidget {
-  const NodeLaneTabSegments({super.key, required this.labels});
+  const NodeLaneTabSegments({
+    super.key,
+    required this.labels,
+    this.prominent = false,
+  });
   final List<String> labels;
+  final bool prominent;
   @override
   Widget build(BuildContext context) {
     final controller = DefaultTabController.of(context);
@@ -328,6 +352,7 @@ class NodeLaneTabSegments extends StatelessWidget {
       animation: controller,
       builder: (context, _) => NodeLaneSegments<int>(
         value: controller.index,
+        prominent: prominent,
         segments: [
           for (var i = 0; i < labels.length; i++)
             ButtonSegment(value: i, label: Text(labels[i])),
@@ -346,22 +371,31 @@ class NodeLaneChoiceRow<T> extends StatelessWidget {
     required this.value,
     required this.segments,
     required this.onChanged,
+    this.compact = false,
   });
   final String title;
+  final bool compact;
   final T value;
   final List<ButtonSegment<T>> segments;
   final ValueChanged<T> onChanged;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: NodeLaneTokens.rowPadding,
+    padding: compact
+        ? const EdgeInsets.symmetric(horizontal: 16, vertical: 12)
+        : NodeLaneTokens.rowPadding,
     child: LayoutBuilder(
       builder: (context, constraints) {
         final controls = NodeLaneSegments(
           value: value,
+          compact: compact,
           segments: segments,
           onChanged: onChanged,
         );
-        final label = Text(title, style: NodeLaneTokens.of(context).body);
+        final label = Text(
+          title,
+          style: NodeLaneTokens.of(context).body
+              .copyWith(fontWeight: compact ? FontWeight.w600 : null),
+        );
         if (constraints.maxWidth < 290 ||
             MediaQuery.textScalerOf(context).scale(16) > 20) {
           return Column(

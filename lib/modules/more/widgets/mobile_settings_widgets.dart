@@ -6,16 +6,23 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 /// Small presentation pieces shared by the mobile More and Settings menus.
 /// Routes, preferences, and side effects stay with their existing owners.
 class MobileSettingsGroup extends StatelessWidget {
-  const MobileSettingsGroup({super.key, this.title, required this.children});
+  const MobileSettingsGroup({
+    super.key,
+    this.title,
+    required this.children,
+    this.spacing = NodeLaneTokens.space24,
+    this.dividerIndent = 56,
+  });
 
   final String? title;
   final List<Widget> children;
+  final double spacing, dividerIndent;
 
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: NodeLaneTokens.space24),
+      padding: EdgeInsets.only(bottom: spacing),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -31,7 +38,12 @@ class MobileSettingsGroup extends StatelessWidget {
             child: Column(
               children: [
                 for (var i = 0; i < children.length; i++) ...[
-                  if (i > 0) Divider(height: 1, indent: 56, color: colors.line),
+                  if (i > 0)
+                    Divider(
+                      height: 1,
+                      indent: dividerIndent,
+                      color: colors.line,
+                    ),
                   children[i],
                 ],
               ],
@@ -51,11 +63,13 @@ class MobileSettingsLink extends StatelessWidget {
     required this.onTap,
     this.subtitle,
     this.subtitleMaxLines,
+    this.inlineSubtitle = false,
   });
 
   final String title;
   final String? subtitle;
   final int? subtitleMaxLines;
+  final bool inlineSubtitle;
   final IconData icon;
   final VoidCallback onTap;
 
@@ -70,12 +84,14 @@ class MobileSettingsLink extends StatelessWidget {
       ),
       minTileHeight: NodeLaneTokens.rowHeight,
       horizontalTitleGap: NodeLaneTokens.space12,
-      leading: _SettingIcon(icon),
+      leading: inlineSubtitle
+          ? Icon(icon, size: 28, color: colors.muted)
+          : _SettingIcon(icon),
       title: Text(
         title,
         style: colors.body.copyWith(fontWeight: FontWeight.w500),
       ),
-      subtitle: subtitle == null
+      subtitle: inlineSubtitle || subtitle == null
           ? null
           : Text(
               subtitle!,
@@ -83,10 +99,22 @@ class MobileSettingsLink extends StatelessWidget {
               overflow: subtitleMaxLines == null ? null : TextOverflow.ellipsis,
               style: colors.secondary,
             ),
-      trailing: Icon(
-        NodeLaneIcons.of(context).forward,
-        size: NodeLaneTokens.smallIconSize,
-        color: colors.muted,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (inlineSubtitle && subtitle != null) ...[
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 132),
+              child: Text(subtitle!, maxLines: 2, style: colors.secondary),
+            ),
+            const SizedBox(width: 12),
+          ],
+          Icon(
+            NodeLaneIcons.of(context).forward,
+            size: inlineSubtitle ? 18 : NodeLaneTokens.smallIconSize,
+            color: colors.muted,
+          ),
+        ],
       ),
     );
   }

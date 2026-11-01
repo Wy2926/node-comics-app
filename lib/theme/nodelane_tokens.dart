@@ -23,6 +23,18 @@ class NodeLaneTokens {
   static const avatarSize = 64.0, searchHeight = 48.0;
   static const coverAspectRatio = 1.43, shelfGap = 14.0;
   static const bookTitleSize = 15.0, captionSize = 12.0;
+  // Measured against the 390-point detail overview in the iOS concept.
+  static const detailGutter = 16.0, detailToolbarHeight = 44.0;
+  static const detailCoverWidth = 132.0, detailCoverHeight = 188.0;
+  static const detailActionHeight = 56.0, detailMoreHeight = 48.0;
+  static const detailChipHeight = 32.0, chapterRowHeight = 72.0;
+  static const detailSheetRadius = 32.0;
+  static const detailSheetShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(
+      top: Radius.circular(detailSheetRadius),
+    ),
+  );
+  static const defaultMobileAccent = Color(0xff006eff);
   static const segmentInset = 3.0, segmentRadius = 10.0;
   static const pagePadding = EdgeInsets.fromLTRB(
     gutter,
@@ -90,15 +102,34 @@ class NodeLaneTokens {
     color: ink,
   );
   TextStyle get title => modalTitleStyle.copyWith(color: ink, height: 1.25);
+  TextStyle get detailTitle => TextStyle(
+    fontSize: 26,
+    letterSpacing: 0,
+    height: 1.25,
+    fontWeight: FontWeight.w700,
+    color: ink,
+  );
+  TextStyle get detailMetadata =>
+      TextStyle(fontSize: 15, height: 1.6, color: muted);
+  TextStyle get detailSectionTitle => TextStyle(
+    fontSize: 18,
+    letterSpacing: 0,
+    height: 1.3,
+    fontWeight: FontWeight.w600,
+    color: ink,
+  );
+  Color get detailChipSurface =>
+      Color.alphaBlend(soft.withValues(alpha: .55), surface);
   TextStyle get body => TextStyle(fontSize: 16, height: 1.3, color: ink);
   TextStyle get label => TextStyle(
     fontSize: bookTitleSize,
+    letterSpacing: 0,
     height: 1.25,
     fontWeight: FontWeight.w600,
     color: ink,
   );
   TextStyle get secondary =>
-      TextStyle(fontSize: 13, height: 1.35, color: muted);
+      TextStyle(fontSize: 13, letterSpacing: 0, height: 1.35, color: muted);
   TextStyle get caption =>
       TextStyle(fontSize: captionSize, height: 1.3, color: muted);
   TextStyle get sectionTitle => secondary.copyWith(fontWeight: FontWeight.w600);
