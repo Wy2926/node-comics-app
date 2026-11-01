@@ -4180,4 +4180,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get manga_continue_reading => 'Continue reading';
+
+  @override
+  String get reader_settings_title => 'Reader settings';
+
+  @override
+  String get reader_picker_book_scope => 'Only for this comic';
+
+  @override
+  String get reader_picker_global_scope => 'Applies to all comics';
+
+  @override
+  String get reader_picker_apply_hint =>
+      'Tap to save and return to the previous level.';
+
+  @override
+  String get reader_scale_fit_screen_hint => 'Fit the whole page on screen';
+
+  @override
+  String get reader_scale_stretch_hint => 'Fill the reading area';
+
+  @override
+  String get reader_scale_fit_width_hint => 'Fit the page to the width';
+
+  @override
+  String get reader_scale_fit_height_hint => 'Fit the page to the height';
 }

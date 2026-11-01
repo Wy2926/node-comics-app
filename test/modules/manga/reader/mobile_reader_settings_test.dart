@@ -1,4 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -47,6 +49,7 @@ void main() {
         readerBrightnessStateProvider.overrideWith(_Brightness.new),
         enableCustomColorFilterStateProvider.overrideWith(_EnableFilter.new),
         customColorFilterStateProvider.overrideWith(_Rgba.new),
+        colorFilterBlendModeStateProvider.overrideWith(_BlendMode.new),
       ],
     );
     addTearDown(container.dispose);
@@ -141,9 +144,19 @@ void main() {
   }
 
   Future<void> tab(WidgetTester tester, String name) async {
-    await tester.ensureVisible(find.widgetWithText(Tab, name));
+    await tester.ensureVisible(
+      find.descendant(
+        of: find.byType(NodeLaneTabSegments),
+        matching: find.text(name),
+      ),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(Tab, name));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NodeLaneTabSegments),
+        matching: find.text(name),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -338,6 +351,16 @@ void main() {
       );
       await tester.tap(row('Color filter blend mode'));
       await tester.pumpAndSettle();
+      // The current value can be at the end of a long list. It must remain
+      // reachable after the nested route and sheet-height transitions finish.
+      expect(
+        find
+            .byWidgetPredicate(
+              (widget) => widget is ListTile && widget.selected,
+            )
+            .hitTestable(),
+        findsOneWidget,
+      );
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(container.read(customColorFilterStateProvider)!.r, 100);
@@ -346,6 +369,69 @@ void main() {
       expect(close().hitTestable(), findsOneWidget);
       await tester.tap(close());
       await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'nested choices keep the settings tab and scroll while close dismisses the whole sheet once',
+    (tester) async {
+      final container = preferences();
+      final mode = StateProvider<ReaderMode?>(() => ReaderMode.webtoon);
+      final running = ValueNotifier(true);
+      var resumed = 0;
+      await mount(
+        tester,
+        container,
+        mode: mode,
+        enabled: ValueNotifier(true),
+        running: running,
+        speed: ValueNotifier(10.0),
+        save: (_, _) {},
+        resume: () => resumed++,
+      );
+      await tab(tester, 'General');
+      final navigation = find.byKey(
+        const PageStorageKey('reader-details-navigation'),
+      );
+      await reveal(tester, navigation, 'reader-settings-general');
+      await tester.tap(navigation);
+      await tester.pumpAndSettle();
+      final choice = find.descendant(
+        of: find.byType(MobileReaderSettingsChoice<int>),
+        matching: row('Navigation layout'),
+      );
+      await reveal(tester, choice, 'reader-settings-general');
+      final scrollable = find
+          .descendant(
+            of: find.byKey(const PageStorageKey('reader-settings-general')),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      final position = tester.state<ScrollableState>(scrollable).position;
+      final offset = position.pixels;
+      await tester.tap(choice);
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Back'), findsOneWidget);
+      expect(running.value, isFalse);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Back'), findsNothing);
+      expect(position.pixels, offset);
+      expect(choice.hitTestable(), findsOneWidget);
+      expect(resumed, 0);
+      expect(_writes, isEmpty);
+      await tester.tap(choice);
+      await tester.pumpAndSettle();
+      final dismiss = tester.widget<IconButton>(close()).onPressed!;
+      dismiss();
+      dismiss();
+      await tester.pumpAndSettle();
+      expect(find.byType(MobileReaderSettings), findsNothing);
+      expect(find.text('Open'), findsOneWidget);
+      expect(resumed, 1);
+      expect(running.value, isTrue);
+      expect(_writes, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
@@ -384,6 +470,11 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+class _BlendMode extends ColorFilterBlendModeState {
+  @override
+  ColorFilterBlendMode build() => ColorFilterBlendMode.values.last;
 }
 
 class _Crop extends CropBordersState {

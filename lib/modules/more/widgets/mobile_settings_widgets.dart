@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 
 /// Small presentation pieces shared by the mobile More and Settings menus.
 /// Routes, preferences, and side effects stay with their existing owners.
@@ -10,19 +11,23 @@ class MobileSettingsGroup extends StatelessWidget {
     super.key,
     this.title,
     required this.children,
-    this.spacing = NodeLaneTokens.space24,
+    this.spacing,
     this.dividerIndent = 56,
   });
 
   final String? title;
   final List<Widget> children;
-  final double spacing, dividerIndent;
+  final double? spacing;
+  final double dividerIndent;
 
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    final reader = NodeLaneReaderScope.activeOf(context);
     return Padding(
-      padding: EdgeInsets.only(bottom: spacing),
+      padding: EdgeInsets.only(
+        bottom: spacing ?? (reader ? 16 : NodeLaneTokens.space24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -35,6 +40,7 @@ class MobileSettingsGroup extends StatelessWidget {
               child: NodeLaneSectionHeading(title!),
             ),
           NodeLaneGroupSurface(
+            outlined: reader,
             child: Column(
               children: [
                 for (var i = 0; i < children.length; i++) ...[
@@ -64,34 +70,44 @@ class MobileSettingsLink extends StatelessWidget {
     this.subtitle,
     this.subtitleMaxLines,
     this.inlineSubtitle = false,
+    this.valueLeading,
   });
 
   final String title;
   final String? subtitle;
   final int? subtitleMaxLines;
   final bool inlineSubtitle;
+  final Widget? valueLeading;
   final IconData icon;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    final reader = NodeLaneReaderScope.activeOf(context);
+    final inline = inlineSubtitle || reader;
     return ListTile(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(
+      contentPadding: EdgeInsets.symmetric(
         horizontal: NodeLaneTokens.space16,
-        vertical: NodeLaneTokens.space4,
+        vertical: reader ? 0 : NodeLaneTokens.space4,
       ),
-      minTileHeight: NodeLaneTokens.rowHeight,
+      minTileHeight: reader
+          ? NodeLaneTokens.readerRowHeight
+          : NodeLaneTokens.rowHeight,
       horizontalTitleGap: NodeLaneTokens.space12,
-      leading: inlineSubtitle
+      leading: reader
+          ? _SettingIcon(icon)
+          : inlineSubtitle
           ? Icon(icon, size: 28, color: colors.muted)
           : _SettingIcon(icon),
       title: Text(
         title,
-        style: colors.body.copyWith(fontWeight: FontWeight.w500),
+        style: reader
+            ? colors.readerLabel
+            : colors.body.copyWith(fontWeight: FontWeight.w500),
       ),
-      subtitle: inlineSubtitle || subtitle == null
+      subtitle: inline || subtitle == null
           ? null
           : Text(
               subtitle!,
@@ -102,16 +118,24 @@ class MobileSettingsLink extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (inlineSubtitle && subtitle != null) ...[
+          if (inline && subtitle != null) ...[
+            if (valueLeading != null) ...[
+              valueLeading!,
+              const SizedBox(width: 8),
+            ],
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 132),
-              child: Text(subtitle!, maxLines: 2, style: colors.secondary),
+              child: Text(
+                subtitle!,
+                maxLines: 2,
+                style: reader ? colors.readerValue : colors.secondary,
+              ),
             ),
             const SizedBox(width: 12),
           ],
           Icon(
             NodeLaneIcons.of(context).forward,
-            size: inlineSubtitle ? 18 : NodeLaneTokens.smallIconSize,
+            size: inline ? 16 : NodeLaneTokens.smallIconSize,
             color: colors.muted,
           ),
         ],
@@ -139,21 +163,28 @@ class MobileSettingsSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    final reader = NodeLaneReaderScope.activeOf(context);
     return SwitchListTile.adaptive(
+      minTileHeight: reader && subtitle != null ? 84 : null,
       value: value,
       onChanged: onChanged,
-      contentPadding: const EdgeInsets.symmetric(
+      contentPadding: EdgeInsets.symmetric(
         horizontal: NodeLaneTokens.space16,
-        vertical: NodeLaneTokens.space4,
+        vertical: reader && subtitle == null ? 0 : NodeLaneTokens.space4,
       ),
       secondary: _SettingIcon(icon),
       title: Text(
         title,
-        style: colors.body.copyWith(fontWeight: FontWeight.w500),
+        style: reader
+            ? colors.readerLabel
+            : colors.body.copyWith(fontWeight: FontWeight.w500),
       ),
       subtitle: subtitle == null
           ? null
-          : Text(subtitle!, style: colors.secondary),
+          : Text(
+              subtitle!,
+              style: reader ? colors.readerSecondary : colors.secondary,
+            ),
     );
   }
 }
@@ -165,10 +196,15 @@ class _SettingIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    final reader = NodeLaneReaderScope.activeOf(context);
     return SizedBox(
       width: 28,
       height: 36,
-      child: Icon(icon, size: NodeLaneTokens.iconSize, color: colors.accent),
+      child: Icon(
+        reader ? NodeLaneIcons.of(context).readerSetting(icon) : icon,
+        size: NodeLaneTokens.iconSize,
+        color: reader ? colors.ink : colors.accent,
+      ),
     );
   }
 }

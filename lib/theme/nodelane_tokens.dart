@@ -35,6 +35,24 @@ class NodeLaneTokens {
     ),
   );
   static const defaultMobileAccent = Color(0xff006eff);
+  // Reader concept: all overlays use the same geometry, type and controls.
+  static const readerSheetFraction = .78, readerDisplayFraction = .86;
+  static const readerRowHeight = 62.0, readerModeRowHeight = 48.0;
+  static const readerChapterHeight = 68.0, readerActionHeight = 64.0;
+  static const readerImageActionHeight = 72.0;
+  static const readerFilterRowHeight = 56.0;
+  static const readerPickerFraction = .70, readerModePickerFraction = .74;
+  static const readerPickerRowHeight = 56.0;
+  static const readerPickerPreviewRowHeight = 88.0;
+  static const readerPickerColorRowHeight = 80.0;
+  static const readerPickerLeadingWidth = 44.0, readerPickerSwatchSize = 40.0;
+  static const readerValueSwatchSize = 28.0;
+  static const readerPickerIconSize = 28.0;
+  static const readerPickerPreviewSize = Size(42, 48);
+  static const readerIconSize = 24.0, readerSliderTrack = 3.0;
+  static const readerSheetShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(modalRadius)),
+  );
   static const segmentInset = 3.0, segmentRadius = 10.0;
   static const pagePadding = EdgeInsets.fromLTRB(
     gutter,
@@ -130,6 +148,12 @@ class NodeLaneTokens {
   );
   TextStyle get secondary =>
       TextStyle(fontSize: 13, letterSpacing: 0, height: 1.35, color: muted);
+  TextStyle get readerTitle =>
+      title.copyWith(fontSize: 22, fontWeight: FontWeight.w700);
+  TextStyle get readerLabel =>
+      body.copyWith(fontSize: 17, fontWeight: FontWeight.w500);
+  TextStyle get readerSecondary => secondary.copyWith(fontSize: 14);
+  TextStyle get readerValue => body.copyWith(fontSize: 15, color: muted);
   TextStyle get caption =>
       TextStyle(fontSize: captionSize, height: 1.3, color: muted);
   TextStyle get sectionTitle => secondary.copyWith(fontWeight: FontWeight.w600);

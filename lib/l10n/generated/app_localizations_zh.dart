@@ -3978,4 +3978,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get manga_continue_reading => '继续阅读';
+
+  @override
+  String get reader_settings_title => '阅读设置';
+
+  @override
+  String get reader_picker_book_scope => '仅用于当前漫画';
+
+  @override
+  String get reader_picker_global_scope => '应用于所有漫画';
+
+  @override
+  String get reader_picker_apply_hint => '点选即保存并返回上一层。';
+
+  @override
+  String get reader_scale_fit_screen_hint => '整页适配屏幕';
+
+  @override
+  String get reader_scale_stretch_hint => '铺满阅读区域';
+
+  @override
+  String get reader_scale_fit_width_hint => '以页面宽度适配';
+
+  @override
+  String get reader_scale_fit_height_hint => '以页面高度适配';
 }

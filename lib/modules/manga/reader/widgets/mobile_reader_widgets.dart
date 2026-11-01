@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 
 /// Chrome is an overlay: opening it never changes the page viewport. Hidden
 /// controls yield pointer events and semantics to the reader beneath them.
@@ -40,7 +43,9 @@ class MobileReaderPanel extends StatelessWidget {
                   color: colors.surface,
                   borderRadius: top
                       ? null
-                      : const BorderRadius.vertical(top: Radius.circular(20)),
+                      : const BorderRadius.vertical(
+                          top: Radius.circular(NodeLaneTokens.modalRadius),
+                        ),
                   clipBehavior: Clip.antiAlias,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -55,9 +60,9 @@ class MobileReaderPanel extends StatelessWidget {
                         // scroll-to-hide handler.
                         onNotification: (_) => true,
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: top ? 4 : 12,
+                            vertical: top ? 4 : 8,
                           ),
                           child: child,
                         ),
@@ -92,7 +97,11 @@ class MobileReaderHeading extends StatelessWidget {
     final colors = NodeLaneTokens.of(context);
     return Row(
       children: [
-        BackButton(onPressed: onBack, color: colors.ink),
+        IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: onBack,
+          icon: Icon(NodeLaneIcons.of(context).back, color: colors.ink),
+        ),
         const SizedBox(width: 4),
         Expanded(
           child: Column(
@@ -146,12 +155,14 @@ class MobileReaderAction extends StatelessWidget {
     final color = active ? colors.accent : colors.ink;
     final content = Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 56),
+      constraints: const BoxConstraints(
+        minHeight: NodeLaneTokens.readerActionHeight,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 22),
+          Icon(icon, color: color, size: NodeLaneTokens.readerIconSize),
           const SizedBox(height: 4),
           Text(
             label,
@@ -202,51 +213,52 @@ class MobileReaderProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final maximum = (totalPages - 1).clamp(0, double.maxFinite).toDouble();
     final colors = NodeLaneTokens.of(context);
-    return Directionality(
-      textDirection: reverse ? TextDirection.rtl : TextDirection.ltr,
-      child: Row(
+    final icons = NodeLaneIcons.of(context);
+    return SliderTheme(
+      data: readerSliderTheme(context),
+      child: Column(
         children: [
-          IconButton(
-            tooltip: previousLabel,
-            onPressed: onPrevious,
-            icon: Icon(
-              reverse ? Icons.skip_next_rounded : Icons.skip_previous_rounded,
-            ),
+          Text(
+            '$label / $totalPages',
+            textDirection: TextDirection.ltr,
+            style: colors.secondary.copyWith(fontWeight: FontWeight.w500),
           ),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          Directionality(
+            textDirection: reverse ? TextDirection.rtl : TextDirection.ltr,
+            child: Row(
               children: [
-                Text(
-                  '$label / $totalPages',
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colors.muted,
-                    fontWeight: FontWeight.w600,
+                IconButton(
+                  tooltip: previousLabel,
+                  onPressed: onPrevious,
+                  icon: Icon(
+                    reverse ? icons.nextChapter : icons.previousChapter,
+                    size: 20,
                   ),
                 ),
-                Slider(
-                  min: 0,
-                  max: maximum,
-                  value: currentIndex.toDouble().clamp(0, maximum),
-                  divisions: totalPages > 1 ? totalPages - 1 : null,
-                  label: label,
-                  onChanged: totalPages > 1
-                      ? (value) => onChanged(value.toInt())
-                      : null,
-                  onChangeEnd: totalPages > 1
-                      ? (value) => onChangeEnd(value.toInt())
-                      : null,
+                Expanded(
+                  child: Slider(
+                    min: 0,
+                    max: maximum,
+                    value: currentIndex.toDouble().clamp(0, maximum),
+                    divisions: totalPages > 1 ? totalPages - 1 : null,
+                    label: label,
+                    onChanged: totalPages > 1
+                        ? (value) => onChanged(value.toInt())
+                        : null,
+                    onChangeEnd: totalPages > 1
+                        ? (value) => onChangeEnd(value.toInt())
+                        : null,
+                  ),
+                ),
+                IconButton(
+                  tooltip: nextLabel,
+                  onPressed: onNext,
+                  icon: Icon(
+                    reverse ? icons.previousChapter : icons.nextChapter,
+                    size: 20,
+                  ),
                 ),
               ],
-            ),
-          ),
-          IconButton(
-            tooltip: nextLabel,
-            onPressed: onNext,
-            icon: Icon(
-              reverse ? Icons.skip_previous_rounded : Icons.skip_next_rounded,
             ),
           ),
         ],
@@ -261,12 +273,13 @@ class MobileReaderSettingsTabs extends StatelessWidget {
   const MobileReaderSettingsTabs({
     super.key,
     required this.labels,
+    this.title = 'Reader settings',
     required this.closeLabel,
     required this.onClose,
     required this.children,
   });
   final List<String> labels;
-  final String closeLabel;
+  final String title, closeLabel;
   final VoidCallback onClose;
   final List<Widget> children;
 
@@ -275,32 +288,17 @@ class MobileReaderSettingsTabs extends StatelessWidget {
     length: labels.length,
     child: Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: TabBar(
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                tabs: [
-                  for (final label in labels)
-                    Tab(
-                      text: label,
-                      height: (MediaQuery.textScalerOf(context).scale(14) + 24)
-                          .clamp(48.0, double.infinity),
-                    ),
-                ],
-              ),
-            ),
-            IconButton(
-              tooltip: closeLabel,
-              onPressed: onClose,
-              icon: const Icon(Icons.close),
-            ),
-          ],
+        NodeLaneReaderHeading(
+          title: title,
+          closeLabel: closeLabel,
+          onClose: onClose,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+          child: NodeLaneTabSegments(
+            labels: labels,
+            labelStyle: NodeLaneTokens.of(context).readerLabel,
+          ),
         ),
         Expanded(child: TabBarView(children: children)),
       ],

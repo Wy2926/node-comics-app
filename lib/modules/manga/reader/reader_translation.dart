@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -126,7 +127,7 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
       return MobileReaderAction(
         label: '翻译',
         active: scope.notifier!.enabled,
-        icon: Icons.translate,
+        icon: NodeLaneIcons.of(context).translate,
         onPressed: () => showTranslationControls(context, scope.notifier!),
       );
     }

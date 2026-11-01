@@ -182,4 +182,25 @@ void main() {
     expect(readingPosition.offset, 320);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('translation settings are directly available before login', (
+    tester,
+  ) async {
+    await mount(tester);
+    final reader = readerKey.currentState;
+    await tester.tap(find.byTooltip('Translation'));
+    await tester.pumpAndSettle();
+    expect(find.text('登录后开启翻译'), findsOneWidget);
+    await tester.tap(find.text('翻译设置'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TranslationSettings), findsOneWidget);
+    expect(find.byType(MobileNodeLaneAccount), findsNothing);
+    expect(service.loginCalls, 0);
+    expect(controller.enabled, isFalse);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(readerKey.currentState, same(reader));
+    expect(readingPosition.offset, 320);
+    expect(tester.takeException(), isNull);
+  });
 }

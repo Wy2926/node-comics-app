@@ -43,6 +43,7 @@ class MobileReaderScreen extends ConsumerWidget {
                 children: [
                   MobileReaderSettingsChoice<ReaderMode>(
                     title: l10n.default_reading_mode,
+                    scopeDescription: l10n.reader_default_mode_hint,
                     icon: Icons.chrome_reader_mode_outlined,
                     value: ref.watch(defaultReadingModeStateProvider),
                     values: ReaderMode.values,

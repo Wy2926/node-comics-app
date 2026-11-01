@@ -1,9 +1,10 @@
-
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -127,7 +128,7 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
         : l10n.reader_image_save_android;
     return PopScope(
       canPop: !busy,
-      child: NodeLaneSheetSurface(
+      child: NodeLaneReaderSurface(
         child: SafeArea(
           top: false,
           child: LayoutBuilder(
@@ -141,29 +142,12 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _confirmCover
-                                ? l10n.set_as_cover
-                                : l10n.reader_image_actions,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: colors.ink,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: l10n.close,
-                          onPressed: busy ? null : _close,
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
+                  NodeLaneReaderHeading(
+                    title: _confirmCover
+                        ? l10n.set_as_cover
+                        : l10n.reader_image_actions,
+                    closeLabel: l10n.close,
+                    onClose: busy ? null : _close,
                   ),
                   Flexible(
                     child: SingleChildScrollView(
@@ -173,28 +157,23 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
                         children: [
                           Text(
                             widget.bookTitle,
-                            style: TextStyle(
-                              color: colors.ink,
+                            style: colors.readerLabel.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            widget.chapterTitle,
-                            style: TextStyle(color: colors.muted, fontSize: 13),
+                            [
+                              widget.chapterTitle,
+                              if (widget.pageNumber != null)
+                                l10n.page('${widget.pageNumber}'),
+                            ].join(' · '),
+                            style: colors.readerSecondary,
                           ),
-                          if (widget.pageNumber != null)
-                            Text(
-                              l10n.page('${widget.pageNumber}'),
-                              style: TextStyle(
-                                color: colors.muted,
-                                fontSize: 13,
-                              ),
-                            ),
                           const SizedBox(height: 12),
                           Text(
                             l10n.reader_image_original,
-                            style: TextStyle(color: colors.muted, fontSize: 13),
+                            style: colors.readerSecondary,
                           ),
                           const SizedBox(height: 12),
                           if (_loading)
@@ -208,57 +187,77 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
                               alignment: Alignment.centerLeft,
                               child: TextButton.icon(
                                 onPressed: _load,
-                                icon: const Icon(Icons.refresh),
+                                icon: Icon(NodeLaneIcons.of(context).refresh),
                                 label: Text(l10n.retry),
                               ),
                             ),
                           ] else if (_confirmCover)
                             Text(l10n.use_this_as_cover_art)
-                          else ...[
-                            _action(
-                              context,
-                              action: _ImageAction.save,
-                              title: _saved ? l10n.picture_saved : l10n.save,
-                              subtitle: saveHint,
-                              icon: _saved
-                                  ? Icons.check_circle_outline
-                                  : Icons.save_alt,
-                              onTap: available && !_saved
-                                  ? () => _run(_ImageAction.save)
-                                  : null,
+                          else
+                            NodeLaneGroupSurface(
+                              child: Column(
+                                children: [
+                                  _action(
+                                    context,
+                                    action: _ImageAction.save,
+                                    title: _saved
+                                        ? l10n.picture_saved
+                                        : l10n.save,
+                                    subtitle: saveHint,
+                                    icon: _saved
+                                        ? NodeLaneIcons.of(context).downloaded
+                                        : NodeLaneIcons.of(context).saveImage,
+                                    onTap: available && !_saved
+                                        ? () => _run(_ImageAction.save)
+                                        : null,
+                                  ),
+                                  Divider(
+                                    height: 1,
+                                    indent: 56,
+                                    color: colors.line,
+                                  ),
+                                  _action(
+                                    context,
+                                    action: _ImageAction.share,
+                                    title: l10n.share,
+                                    subtitle: l10n.reader_image_share,
+                                    icon: NodeLaneIcons.of(context).share,
+                                    onTap: available
+                                        ? () => _run(_ImageAction.share)
+                                        : null,
+                                  ),
+                                  Divider(
+                                    height: 1,
+                                    indent: 56,
+                                    color: colors.line,
+                                  ),
+                                  _action(
+                                    context,
+                                    action: _ImageAction.cover,
+                                    title: l10n.set_as_cover,
+                                    subtitle: canCover
+                                        ? l10n.reader_image_cover
+                                        : l10n.reader_image_cover_limit,
+                                    icon: NodeLaneIcons.of(context).image,
+                                    onTap: available && canCover
+                                        ? () {
+                                            if (_working == null &&
+                                                !_leaving &&
+                                                !_actionFailed &&
+                                                mounted &&
+                                                ModalRoute.of(context)
+                                                        ?.isCurrent ==
+                                                    true) {
+                                              setState(
+                                                () => _confirmCover = true,
+                                              );
+                                            }
+                                          }
+                                        : null,
+                                  ),
+                                ],
+                              ),
                             ),
-                            _action(
-                              context,
-                              action: _ImageAction.share,
-                              title: l10n.share,
-                              subtitle: l10n.reader_image_share,
-                              icon: Icons.ios_share,
-                              onTap: available
-                                  ? () => _run(_ImageAction.share)
-                                  : null,
-                            ),
-                            _action(
-                              context,
-                              action: _ImageAction.cover,
-                              title: l10n.set_as_cover,
-                              subtitle: canCover
-                                  ? l10n.reader_image_cover
-                                  : l10n.reader_image_cover_limit,
-                              icon: Icons.image_outlined,
-                              onTap: available && canCover
-                                  ? () {
-                                      if (_working == null &&
-                                          !_leaving &&
-                                          !_actionFailed &&
-                                          mounted &&
-                                          ModalRoute.of(context)?.isCurrent ==
-                                              true) {
-                                        setState(() => _confirmCover = true);
-                                      }
-                                    }
-                                  : null,
-                            ),
-                          ],
                           if (_actionFailed)
                             Padding(
                               padding: const EdgeInsets.only(top: 12),
@@ -322,18 +321,23 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
     required IconData icon,
     required VoidCallback? onTap,
   }) => ListTile(
-    contentPadding: EdgeInsets.zero,
+    minTileHeight: NodeLaneTokens.readerImageActionHeight,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
     leading: _working == action
         ? const SizedBox.square(
             dimension: 24,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
-        : Icon(icon),
-    title: Text(title, style: const TextStyle(fontSize: 15)),
-    subtitle: Text(
-      subtitle,
-      style: TextStyle(fontSize: 13, color: NodeLaneTokens.of(context).muted),
-    ),
+        : Icon(icon, size: 24, color: NodeLaneTokens.of(context).accent),
+    title: Text(title, style: NodeLaneTokens.of(context).readerLabel),
+    trailing: action == _ImageAction.cover
+        ? Icon(
+            NodeLaneIcons.of(context).forward,
+            size: 16,
+            color: NodeLaneTokens.of(context).muted,
+          )
+        : null,
+    subtitle: Text(subtitle, style: NodeLaneTokens.of(context).readerSecondary),
     onTap: onTap,
   );
 }

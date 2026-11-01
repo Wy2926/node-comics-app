@@ -1,9 +1,10 @@
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/modules/manga/reader/reader_view.dart';
@@ -60,6 +61,8 @@ class _MobileReaderChaptersButtonState
         useSafeArea: true,
         enableDrag: false,
         backgroundColor: Colors.transparent,
+        showDragHandle: false,
+        shape: NodeLaneTokens.readerSheetShape,
         builder: (_) => MobileReaderChaptersSheet(
           chapter: owner,
           chapters: chapters,
@@ -93,7 +96,7 @@ class _MobileReaderChaptersButtonState
   @override
   Widget build(BuildContext context) => MobileReaderAction(
     label: context.l10n.chapters,
-    icon: Icons.format_list_bulleted_rounded,
+    icon: NodeLaneIcons.of(context).chapters,
     onPressed: _show,
   );
 }
@@ -230,68 +233,42 @@ class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
       child: Padding(
         padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
         child: LayoutBuilder(
-          builder: (context, constraints) => NodeLaneSheetSurface(
+          builder: (context, constraints) => NodeLaneReaderSurface(
             child: SafeArea(
               top: false,
               child: SizedBox(
                 height: math.min(
-                  media.size.height * .82,
+                  media.size.height * NodeLaneTokens.readerSheetFraction -
+                      media.padding.bottom,
                   constraints.maxHeight - media.padding.bottom,
                 ),
                 child: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '${l10n.chapters} · ${_visible.length}',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: colors.ink,
-                              ),
-                            ),
+                    NodeLaneReaderHeading(
+                      title: '${l10n.chapters} · ${_visible.length}',
+                      closeLabel: l10n.close,
+                      onClose: _busy ? null : () => _close(),
+                      actions: [
+                        IconButton(
+                          tooltip: l10n.reader_chapter_locate,
+                          onPressed: _currentIndex >= 0 && !_busy
+                              ? _locate
+                              : null,
+                          icon: Icon(
+                            NodeLaneIcons.of(context).locate,
+                            size: 24,
                           ),
-                          IconButton(
-                            tooltip: l10n.reader_chapter_locate,
-                            onPressed: _currentIndex >= 0 && !_busy
-                                ? _locate
-                                : null,
-                            icon: const Icon(Icons.my_location_outlined),
-                          ),
-                          IconButton(
-                            tooltip: l10n.close,
-                            onPressed: _busy ? null : () => _close(),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-                      child: TextField(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      child: NodeLaneSearchField(
                         controller: _search,
                         enabled: !_busy,
+                        hint: l10n.reader_chapter_search,
+                        clearLabel: l10n.error_reports_clear,
                         onChanged: _filter,
-                        textInputAction: TextInputAction.search,
-                        onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          hintText: l10n.reader_chapter_search,
-                          prefixIcon: const Icon(Icons.search),
-                          suffixIcon: _search.text.isEmpty
-                              ? null
-                              : IconButton(
-                                  tooltip: l10n.error_reports_clear,
-                                  onPressed: () {
-                                    _search.clear();
-                                    _filter('');
-                                  },
-                                  icon: const Icon(Icons.clear),
-                                ),
-                        ),
                       ),
                     ),
                     if (_failed)
@@ -329,28 +306,21 @@ class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
                                   children: [
                                     Text(
                                       widget.chapter.manga.value?.name ?? '',
-                                      style: TextStyle(
-                                        color: colors.ink,
+                                      style: colors.readerLabel.copyWith(
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
                                       l10n.reader_chapter_scope,
-                                      style: TextStyle(
-                                        color: colors.muted,
-                                        fontSize: 13,
-                                      ),
+                                      style: colors.readerSecondary,
                                     ),
                                     if (_currentIndex < 0)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 6),
                                         child: Text(
                                           l10n.reader_chapter_current_hidden,
-                                          style: TextStyle(
-                                            color: colors.muted,
-                                            fontSize: 13,
-                                          ),
+                                          style: colors.readerSecondary,
                                         ),
                                       ),
                                   ],
@@ -380,8 +350,10 @@ class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
                                       false;
                                   return Padding(
                                     key: ValueKey(chapter.id),
-                                    padding: const EdgeInsets.only(bottom: 8),
+                                    padding: EdgeInsets.zero,
                                     child: _ReaderChapterRow(
+                                      first: index == 0,
+                                      last: index == _visible.length - 1,
                                       chapter: chapter,
                                       current: _isCurrent(chapter),
                                       bookmarked: bookmarked,
@@ -415,6 +387,8 @@ class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
 class _ReaderChapterRow extends ConsumerWidget {
   const _ReaderChapterRow({
     required this.chapter,
+    required this.first,
+    required this.last,
     required this.current,
     required this.bookmarked,
     required this.saving,
@@ -422,7 +396,7 @@ class _ReaderChapterRow extends ConsumerWidget {
     this.onBookmark,
   });
   final Chapter chapter;
-  final bool current, bookmarked, saving;
+  final bool current, bookmarked, saving, first, last;
   final VoidCallback? onSelect, onBookmark;
 
   @override
@@ -454,50 +428,56 @@ class _ReaderChapterRow extends ConsumerWidget {
     return Semantics(
       selected: current,
       child: Material(
-        color: current ? colors.accentSoft : colors.soft,
-        borderRadius: BorderRadius.circular(12),
+        color: current ? colors.accentSoft : colors.surface,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(first ? NodeLaneTokens.groupRadius : 0),
+          bottom: Radius.circular(last ? NodeLaneTokens.groupRadius : 0),
+        ),
         clipBehavior: Clip.antiAlias,
-        child: ListTile(
-          contentPadding: const EdgeInsets.fromLTRB(12, 6, 4, 6),
-          title: Text(
-            chapter.name ?? '',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: current ? FontWeight.w600 : FontWeight.w400,
-              color: current
-                  ? colors.accent
-                  : (chapter.isRead ?? false)
-                  ? colors.muted
-                  : colors.ink,
-            ),
-          ),
-          subtitle: Text(
-            details.join(' · '),
-            style: TextStyle(fontSize: 12, color: colors.muted),
-          ),
-          onTap: onSelect,
-          trailing: saving
-              ? const SizedBox(
-                  width: 48,
-                  child: Center(
-                    child: SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                )
-              : IconButton(
-                  tooltip: bookmarked
-                      ? l10n.chapter_remove_bookmark
-                      : l10n.chapter_add_bookmark,
-                  onPressed: onBookmark,
-                  icon: Icon(
-                    bookmarked
-                        ? Icons.bookmark_rounded
-                        : Icons.bookmark_border_rounded,
-                    color: bookmarked ? colors.accent : colors.muted,
-                  ),
+        child: Column(
+          children: [
+            ListTile(
+              minTileHeight: NodeLaneTokens.readerChapterHeight,
+              contentPadding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+              title: Text(
+                chapter.name ?? '',
+                style: colors.readerLabel.copyWith(
+                  fontWeight: current ? FontWeight.w600 : FontWeight.w400,
+                  color: current ? colors.accent : colors.ink,
                 ),
+              ),
+              subtitle: Text(
+                details.join(' · '),
+                style: colors.readerSecondary.copyWith(
+                  color: current ? colors.accent : colors.muted,
+                ),
+              ),
+              onTap: onSelect,
+              trailing: saving
+                  ? const SizedBox(
+                      width: 48,
+                      child: Center(
+                        child: SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    )
+                  : IconButton(
+                      tooltip: bookmarked
+                          ? l10n.chapter_remove_bookmark
+                          : l10n.chapter_add_bookmark,
+                      onPressed: onBookmark,
+                      icon: Icon(
+                        bookmarked
+                            ? NodeLaneIcons.of(context).bookmark
+                            : NodeLaneIcons.of(context).bookmarkOutline,
+                        color: bookmarked ? colors.accent : colors.ink,
+                      ),
+                    ),
+            ),
+            if (!last) Divider(height: 1, indent: 16, color: colors.line),
+          ],
         ),
       ),
     );

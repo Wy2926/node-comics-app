@@ -7415,6 +7415,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue reading'**
   String get manga_continue_reading;
+
+  /// No description provided for @reader_settings_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Reader settings'**
+  String get reader_settings_title;
+
+  /// No description provided for @reader_picker_book_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Only for this comic'**
+  String get reader_picker_book_scope;
+
+  /// No description provided for @reader_picker_global_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to all comics'**
+  String get reader_picker_global_scope;
+
+  /// No description provided for @reader_picker_apply_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to save and return to the previous level.'**
+  String get reader_picker_apply_hint;
+
+  /// No description provided for @reader_scale_fit_screen_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit the whole page on screen'**
+  String get reader_scale_fit_screen_hint;
+
+  /// No description provided for @reader_scale_stretch_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill the reading area'**
+  String get reader_scale_stretch_hint;
+
+  /// No description provided for @reader_scale_fit_width_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit the page to the width'**
+  String get reader_scale_fit_width_hint;
+
+  /// No description provided for @reader_scale_fit_height_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit the page to the height'**
+  String get reader_scale_fit_height_hint;
 }
 
 class _AppLocalizationsDelegate

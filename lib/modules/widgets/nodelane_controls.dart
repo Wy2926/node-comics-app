@@ -38,12 +38,22 @@ class NodeLanePageHeading extends StatelessWidget {
 }
 
 class NodeLaneGroupSurface extends StatelessWidget {
-  const NodeLaneGroupSurface({super.key, required this.child});
+  const NodeLaneGroupSurface({
+    super.key,
+    required this.child,
+    this.outlined = false,
+  });
   final Widget child;
+  final bool outlined;
   @override
   Widget build(BuildContext context) => Material(
     color: NodeLaneTokens.of(context).surface,
-    borderRadius: BorderRadius.circular(NodeLaneTokens.groupRadius),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(NodeLaneTokens.groupRadius),
+      side: outlined
+          ? BorderSide(color: NodeLaneTokens.of(context).line)
+          : BorderSide.none,
+    ),
     clipBehavior: Clip.antiAlias,
     child: child,
   );
@@ -117,18 +127,21 @@ class NodeLaneSearchField extends StatelessWidget {
     required this.onChanged,
     this.clearLabel,
     this.onSubmitted,
+    this.enabled = true,
   });
   final TextEditingController controller;
   final String hint;
   final String? clearLabel;
   final ValueChanged<String> onChanged;
   final ValueChanged<String>? onSubmitted;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final icons = NodeLaneIcons.of(context);
     return TextField(
+      enabled: enabled,
       controller: controller,
       onChanged: onChanged,
       onSubmitted: onSubmitted ?? (_) => FocusScope.of(context).unfocus(),
@@ -227,9 +240,12 @@ class NodeLaneSegments<T> extends StatelessWidget {
     required this.onChanged,
     this.compact = false,
     this.prominent = false,
+    this.pill = false,
+    this.labelStyle,
   });
   final T value;
-  final bool compact, prominent;
+  final bool compact, prominent, pill;
+  final TextStyle? labelStyle;
   final List<ButtonSegment<T>> segments;
   final ValueChanged<T>? onChanged;
 
@@ -244,12 +260,12 @@ class NodeLaneSegments<T> extends StatelessWidget {
             ? colors.detailChipSurface
             : colors.soft,
         borderRadius: BorderRadius.circular(
-          prominent ? 22 : NodeLaneTokens.controlRadius,
+          prominent || pill ? 22 : NodeLaneTokens.controlRadius,
         ),
       ),
       child: Padding(
         padding: EdgeInsets.all(
-          compact || prominent ? 0 : NodeLaneTokens.segmentInset,
+          compact || prominent || pill ? 0 : NodeLaneTokens.segmentInset,
         ),
         child: Row(
           children: [
@@ -265,7 +281,7 @@ class NodeLaneSegments<T> extends StatelessWidget {
                         ? colors.accent
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(
-                      prominent ? 20 : NodeLaneTokens.segmentRadius,
+                      prominent || pill ? 20 : NodeLaneTokens.segmentRadius,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
@@ -297,7 +313,7 @@ class NodeLaneSegments<T> extends StatelessWidget {
                                   : colors.muted,
                             ),
                             child: DefaultTextStyle(
-                              style: colors.label.copyWith(
+                              style: (labelStyle ?? colors.label).copyWith(
                                 fontWeight: prominent
                                     ? FontWeight.w600
                                     : FontWeight.w500,
@@ -342,9 +358,11 @@ class NodeLaneTabSegments extends StatelessWidget {
     super.key,
     required this.labels,
     this.prominent = false,
+    this.labelStyle,
   });
   final List<String> labels;
   final bool prominent;
+  final TextStyle? labelStyle;
   @override
   Widget build(BuildContext context) {
     final controller = DefaultTabController.of(context);
@@ -353,6 +371,7 @@ class NodeLaneTabSegments extends StatelessWidget {
       builder: (context, _) => NodeLaneSegments<int>(
         value: controller.index,
         prominent: prominent,
+        labelStyle: labelStyle,
         segments: [
           for (var i = 0; i < labels.length; i++)
             ButtonSegment(value: i, label: Text(labels[i])),

@@ -12,6 +12,7 @@ import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 
 /// The app bar for the manga reader.
 ///
@@ -91,15 +92,15 @@ class ReaderAppBar extends ConsumerWidget {
                 onPressed: onBookmarkPressed,
                 icon: Icon(
                   isBookmarked
-                      ? Icons.bookmark_rounded
-                      : Icons.bookmark_border_rounded,
+                      ? NodeLaneIcons.of(context).bookmark
+                      : NodeLaneIcons.of(context).bookmarkOutline,
                 ),
               ),
               if (!isLocalArchive &&
                   (onRefreshPressed != null || onWebViewPressed != null))
                 PopupMenuButton<int>(
                   tooltip: l10n.more,
-                  icon: Icon(isApple ? Icons.more_horiz : Icons.more_vert),
+                  icon: Icon(NodeLaneIcons.of(context).more),
                   onSelected: (value) {
                     if (value == 0) onRefreshPressed?.call();
                     if (value == 1) onWebViewPressed?.call();

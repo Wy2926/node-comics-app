@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
@@ -57,6 +58,8 @@ class ImageActionsDialog {
         useSafeArea: true,
         enableDrag: false,
         backgroundColor: Colors.transparent,
+        showDragHandle: false,
+        shape: NodeLaneTokens.readerSheetShape,
         builder: (_) => MobileReaderImageActions(
           bookTitle: manga.name ?? '',
           chapterTitle: actualChapter,

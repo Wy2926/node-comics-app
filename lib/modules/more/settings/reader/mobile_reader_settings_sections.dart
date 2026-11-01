@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 
 import 'providers/reader_state_provider.dart';
 import 'reader_settings_labels.dart';
+import 'mobile_reader_picker.dart';
 
 class MobileReaderSettingsExpansion extends StatelessWidget {
   const MobileReaderSettingsExpansion({
@@ -26,10 +28,27 @@ class MobileReaderSettingsExpansion extends StatelessWidget {
     key: PageStorageKey(storageKey),
     title: Text(
       title,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      style: NodeLaneReaderScope.activeOf(context)
+          ? NodeLaneTokens.of(context).readerLabel
+          : NodeLaneTokens.of(context).body
+                .copyWith(fontWeight: FontWeight.w500),
     ),
-    leading: Icon(icon, color: NodeLaneTokens.of(context).accent),
-    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    leading: Icon(
+      NodeLaneReaderScope.activeOf(context)
+          ? NodeLaneIcons.of(context).readerSetting(icon)
+          : icon,
+      color: NodeLaneReaderScope.activeOf(context)
+          ? NodeLaneTokens.of(context).ink
+          : NodeLaneTokens.of(context).accent,
+      size: NodeLaneTokens.iconSize,
+    ),
+    minTileHeight: NodeLaneReaderScope.activeOf(context)
+        ? NodeLaneTokens.readerRowHeight
+        : null,
+    tilePadding: EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: NodeLaneReaderScope.activeOf(context) ? 0 : 8,
+    ),
     shape: const Border(),
     collapsedShape: const Border(),
     children: [child],
@@ -396,6 +415,8 @@ class MobileReaderSettingsChoice<T> extends StatelessWidget {
     required this.values,
     required this.label,
     required this.onChanged,
+    this.valueLeading,
+    this.scopeDescription,
   });
   final String title;
   final IconData icon;
@@ -403,20 +424,25 @@ class MobileReaderSettingsChoice<T> extends StatelessWidget {
   final List<T> values;
   final String Function(T) label;
   final ValueChanged<T> onChanged;
+  final Widget? valueLeading;
+  final String? scopeDescription;
   @override
   Widget build(BuildContext context) => MobileSettingsLink(
     title: title,
     subtitle: label(value),
+    valueLeading: valueLeading,
     icon: icon,
     onTap: () async {
       if (!context.mounted || ModalRoute.of(context)?.isCurrent != true) return;
-      final selected = await showMobileSettingsPicker<T>(
+      final selected = await showMobileReaderPicker<T>(
         context,
         title: title,
         current: value,
+        description:
+            scopeDescription ?? context.l10n.reader_picker_global_scope,
         options: [
           for (final option in values)
-            MobileSettingOption(option, label(option)),
+            readerSettingOption(context, option, label(option)),
         ],
       );
       if (context.mounted && selected != null && selected.value != value) {
@@ -464,7 +490,10 @@ class _MobileReaderSettingsSliderState
       children: [
         Text(
           widget.title(_draft),
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: NodeLaneReaderScope.activeOf(context)
+              ? NodeLaneTokens.of(context).readerLabel
+              : NodeLaneTokens.of(context).body
+                    .copyWith(fontWeight: FontWeight.w500),
         ),
         Slider.adaptive(
           min: widget.min.toDouble(),

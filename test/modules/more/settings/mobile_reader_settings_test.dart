@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/reader/mobile_reader_screen.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_reader_picker.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 
@@ -194,7 +195,7 @@ void main() {
     await tester.scrollUntilVisible(
       target,
       delta,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: find.byType(Scrollable).last,
     );
     await Scrollable.ensureVisible(tester.element(target), alignment: 0.5);
     await tester.pumpAndSettle();
@@ -238,7 +239,10 @@ void main() {
 
   Future<void> choose(WidgetTester tester, String title, String option) async {
     await openChoice(tester, title);
-    final target = find.widgetWithText(ListTile, option);
+    final target = find.descendant(
+      of: find.byWidgetPredicate((widget) => widget is MobileReaderPicker),
+      matching: find.widgetWithText(ListTile, option),
+    );
     await reveal(tester, target);
     await tester.tap(target);
     await tester.pumpAndSettle();
@@ -282,6 +286,40 @@ void main() {
         container.read(showNavigationOverlayOnStartStateProvider),
         isFalse,
       );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'scale and background choices preserve existing values and dismiss without writing',
+    (tester) async {
+      final container = preferences(tester);
+      await tester.pumpWidget(app(container));
+      await tester.pumpAndSettle();
+      await openChoice(tester, 'Scale type');
+      expect(find.widgetWithText(ListTile, 'Original size'), findsNothing);
+      expect(find.widgetWithText(ListTile, 'Smart fit'), findsNothing);
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
+      expect(_writes, isEmpty);
+      await choose(tester, 'Scale type', 'Fit height');
+      await choose(tester, 'Scale type', 'Fit height');
+      expect(_writes, [('scaleType', ScaleType.fitHeight)]);
+      await choose(tester, 'Background color', 'Automatic');
+      expect(container.read(scaleTypeStateProvider), ScaleType.fitHeight);
+      expect(
+        container.read(backgroundColorStateProvider),
+        BackgroundColor.automatic,
+      );
+      expect(_writes, [
+        ('scaleType', ScaleType.fitHeight),
+        ('backgroundColor', BackgroundColor.automatic),
+      ]);
+      await openChoice(tester, 'Background color');
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(_writes, hasLength(2));
+      expect(find.byType(MobileReaderScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

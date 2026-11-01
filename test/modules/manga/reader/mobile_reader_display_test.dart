@@ -1,4 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -264,22 +266,22 @@ void main() {
       expect(settingsRepository.current.cropBorders, isTrue);
       expect(settingsRepository.current.doublePageAuto, isTrue);
       await open(tester);
-      final segment = find.byType(SegmentedButton<PageMode>);
+      final segment = find.byType(NodeLaneSegments<PageMode>);
       await tester.ensureVisible(segment);
       final staleChoose = tester
-          .widget<SegmentedButton<PageMode>>(segment)
-          .onSelectionChanged!;
+          .widget<NodeLaneSegments<PageMode>>(segment)
+          .onChanged!;
       container.read(mode.notifier).state = ReaderMode.horizontalContinuous;
       await tester.pumpAndSettle();
       expect(
-        tester.widget<SegmentedButton<PageMode>>(segment).onSelectionChanged,
+        tester.widget<NodeLaneSegments<PageMode>>(segment).onChanged,
         isNull,
       );
       expect(
         find.text('Horizontal continuous reading uses single pages.'),
         findsOneWidget,
       );
-      staleChoose({PageMode.doublePage});
+      staleChoose(PageMode.doublePage);
       await tester.pumpAndSettle();
       expect(toggles, 0);
       container.read(mode.notifier).state = ReaderMode.rtl;
@@ -287,16 +289,17 @@ void main() {
       page = PageMode.doublePage;
       tester.view.physicalSize = const Size(740, 360);
       await tester.pumpAndSettle();
-      expect(tester.widget<SegmentedButton<PageMode>>(segment).selected, {
+      expect(
+        tester.widget<NodeLaneSegments<PageMode>>(segment).value,
         PageMode.doublePage,
-      });
+      );
       await tester.ensureVisible(segment);
       await tester.pumpAndSettle();
       final choose = tester
-          .widget<SegmentedButton<PageMode>>(segment)
-          .onSelectionChanged!;
-      choose({PageMode.onePage});
-      choose({PageMode.onePage});
+          .widget<NodeLaneSegments<PageMode>>(segment)
+          .onChanged!;
+      choose(PageMode.onePage);
+      choose(PageMode.onePage);
       await tester.pumpAndSettle();
       expect(toggles, 1);
       expect(page, PageMode.onePage);

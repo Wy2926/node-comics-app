@@ -1114,33 +1114,6 @@ class _CustomFilterTab extends ConsumerWidget {
     required BuildContext context,
   }) {
     final isDefault = (value - defaultValue).abs() < 0.01;
-    if (isMobile && !isTv) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: Text(label)),
-                const SizedBox(width: 12),
-                Text(value.toStringAsFixed(1)),
-                IconButton(
-                  tooltip: l10nLocalizations(context)!.reset,
-                  icon: const Icon(Icons.replay),
-                  onPressed: isDefault ? null : () => onChanged(defaultValue),
-                ),
-              ],
-            ),
-            Slider(
-              min: min,
-              max: max,
-              value: value.clamp(min, max),
-              onChanged: onChanged,
-            ),
-          ],
-        ),
-      );
-    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(

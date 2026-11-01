@@ -1670,5 +1670,13 @@
   "manga_synopsis": "Synopsis",
   "manga_author": "Author: {author}",
   "@manga_author": {"placeholders": {"author": {"type": "String"}}},
-  "manga_continue_reading": "Continue reading"
+  "manga_continue_reading": "Continue reading",
+  "reader_settings_title": "Reader settings",
+  "reader_picker_book_scope": "Only for this comic",
+  "reader_picker_global_scope": "Applies to all comics",
+  "reader_picker_apply_hint": "Tap to save and return to the previous level.",
+  "reader_scale_fit_screen_hint": "Fit the whole page on screen",
+  "reader_scale_stretch_hint": "Fill the reading area",
+  "reader_scale_fit_width_hint": "Fit the page to the width",
+  "reader_scale_fit_height_hint": "Fit the page to the height"
 }

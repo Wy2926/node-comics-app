@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:mangayomi/models/chapter.dart';
@@ -176,7 +177,7 @@ class ReaderBottomBar extends ConsumerWidget {
                 Expanded(
                   child: MobileReaderAction(
                     label: context.l10n.settings,
-                    icon: Icons.tune_rounded,
+                    icon: NodeLaneIcons.of(context).adjustments,
                     onPressed: onSettingsPressed,
                   ),
                 ),
@@ -489,72 +490,5 @@ class ReaderBottomBar extends ConsumerWidget {
         ],
       ),
     );
-  }
-}
-
-/// Widget to display the current page number when UI is hidden.
-class PageNumberOverlay extends StatelessWidget {
-  final int currentIndex;
-  final int totalPages;
-  final bool isVisible;
-  final bool showPageNumbers;
-  final PageMode pageMode;
-  final bool singleFirstPage;
-
-  const PageNumberOverlay({
-    super.key,
-    required this.currentIndex,
-    required this.totalPages,
-    required this.isVisible,
-    required this.showPageNumbers,
-    required this.pageMode,
-    this.singleFirstPage = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (isVisible || !showPageNumbers) {
-      return const SizedBox.shrink();
-    }
-
-    final label = pageMode == PageMode.doublePage
-        ? _getDoublePageLabel()
-        : '${currentIndex + 1}';
-
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(
-          '$label / $totalPages',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20.0,
-            shadows: [
-              Shadow(offset: Offset(-1, -1), blurRadius: 1),
-              Shadow(offset: Offset(1, -1), blurRadius: 1),
-              Shadow(offset: Offset(1, 1), blurRadius: 1),
-              Shadow(offset: Offset(-1, 1), blurRadius: 1),
-            ],
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-
-  String _getDoublePageLabel() {
-    if (singleFirstPage) {
-      if (currentIndex == 0) return '1';
-      final pv = (currentIndex + 1) ~/ 2;
-      final p1 = pv * 2;
-      final p2 = p1 + 1;
-      return p2 > totalPages ? '$p1' : '$p1-$p2';
-    } else {
-      final pv = currentIndex ~/ 2;
-      final p1 = pv * 2 + 1;
-      final p2 = p1 + 1;
-      return p2 > totalPages ? '$p1' : '$p1-$p2';
-    }
   }
 }

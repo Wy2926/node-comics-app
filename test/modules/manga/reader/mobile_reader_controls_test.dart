@@ -256,6 +256,73 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('status rows expose only the available recovery action', (
+    tester,
+  ) async {
+    final runtime = _ProgressRuntime();
+    final controller = TranslationViewController()..attach(runtime);
+    addTearDown(controller.dispose);
+    controller.window([
+      TranslationTarget(
+        const TranslationPage('preview/1', 'v1'),
+        _NoImageRead(),
+      ),
+      TranslationTarget(
+        const TranslationPage('preview/2', 'v1'),
+        _NoImageRead(),
+      ),
+    ]);
+    await mount(
+      tester,
+      TranslationControlsContent(controller: controller, mobile: true),
+      height: 900,
+    );
+    final running = find.ancestor(
+      of: find.text('第 1 张 · 正在翻译…'),
+      matching: find.byType(ListTile),
+    );
+    expect(tester.widget<ListTile>(running).onTap, isNull);
+    expect(tester.widget<ListTile>(running).trailing, isNull);
+    expect(find.byTooltip('本页翻译操作'), findsOneWidget);
+    await tester.ensureVisible(find.byTooltip('本页翻译操作'));
+    await tester.tap(find.byTooltip('本页翻译操作'));
+    // A running page keeps its spinner alive, so do not wait for all animations.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('核实状态'), findsOneWidget);
+    expect(find.text('重试本页翻译'), findsNothing);
+    await tester.tap(find.text('核实状态'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(runtime.actions, [TranslationAction.verify]);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+class _ProgressRuntime extends Fake implements ChannelRuntime {
+  final actions = <TranslationAction>[];
+  @override
+  Stream<void> get changes => const Stream.empty();
+  @override
+  void pause(String consumer) {}
+  @override
+  PageTranslationState stateFor(TranslationPage page) => page.key == 'preview/1'
+      ? const PageTranslationState(
+          phase: TranslationPhase.running,
+          message: '正在翻译…',
+        )
+      : const PageTranslationState(
+          phase: TranslationPhase.uncertain,
+          message: '结果待核实',
+          actions: {TranslationAction.verify},
+        );
+  @override
+  Future<void> perform(
+    TranslationTarget target,
+    TranslationAction action,
+  ) async {
+    actions.add(action);
+  }
 }
 
 class _NoImageRead implements SourceImageReader {
