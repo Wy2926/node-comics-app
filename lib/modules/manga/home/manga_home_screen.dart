@@ -75,7 +75,6 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   bool _receivedFirstPage = false;
   Object? _pageError;
   bool get _usesSearch => _query.isNotEmpty || _isFiltering;
-  List<dynamic> get _searchFilters => _isFiltering ? filters : const [];
   bool get _hasMore => source.isFullData == true
       ? _fullDataLength < _mangaList.length
       : _hasNextPage;
@@ -89,7 +88,10 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       : 0;
   late Source source = widget.source;
   late bool isLocal = source.name == "local" && source.lang == "";
-  late List<dynamic> filters = isLocal ? [] : getFilterList(source: source);
+  late final List<dynamic> _defaultFilters = isLocal
+      ? []
+      : getFilterList(source: source);
+  late List<dynamic> filters = copySourceFilters(_defaultFilters);
   final List<MManga> _mangaList = [];
   late StreamSubscription<List<Manga>> _mangaStreamSub;
   Map<String, Manga> _libraryIndex = {};
@@ -128,7 +130,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     if (query == _query && (_usesSearch || _selectedIndex == 0)) return;
     setState(() {
       _query = query;
-      _isSearch = true;
+      _showSearchField = true;
       _selectedIndex = _usesSearch ? 2 : 0;
       _resetResults();
     });
@@ -145,30 +147,30 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     if (_selectedIndex == index && !_usesSearch) return;
     setState(() {
       _selectedIndex = index;
-      _isSearch = false;
+      _showSearchField = false;
       _isFiltering = false;
       _query = '';
-      filters = copySourceFilters(filterList);
+      filters = copySourceFilters(_defaultFilters);
       _resetResults();
     });
   }
 
   void _invalidatePage(int page) {
     if (_usesSearch) {
-      ref.invalidate(
-        searchProvider(
-          source: source,
-          query: _query,
-          page: page,
-          filterList: _searchFilters,
-        ),
-      );
+      ref.invalidate(_searchRequest(page));
     } else if (_selectedIndex == 1) {
       ref.invalidate(getLatestUpdatesProvider(source: source, page: page));
     } else {
       ref.invalidate(getPopularProvider(source: source, page: page));
     }
   }
+
+  SearchProvider _searchRequest(int page) => searchProvider(
+    source: source,
+    query: _query,
+    page: page,
+    filterList: _isFiltering ? filters : const [],
+  );
 
   void _refresh() {
     setState(_resetResults);
@@ -199,14 +201,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     try {
       final MPages? result;
       if (_usesSearch) {
-        result = await ref.read(
-          searchProvider(
-            source: source,
-            query: _query,
-            page: nextPage,
-            filterList: _searchFilters,
-          ).future,
-        );
+        result = await ref.read(_searchRequest(nextPage).future);
       } else if (_selectedIndex == 1) {
         result = await ref.read(
           getLatestUpdatesProvider(source: source, page: nextPage).future,
@@ -376,14 +371,12 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   final _searchFieldFocus = FocusNode();
   final _postSearchFocus = FocusNode();
   late String _query = widget.query.trim();
-  late bool _isSearch = _query.isNotEmpty;
+  late bool _showSearchField = _query.isNotEmpty;
   AsyncValue<MPages?>? _getManga;
-  int _length = 0;
   bool _isFiltering = false;
   late final supportsLatest = isLocal
       ? true
       : ref.watch(supportsLatestProvider(source: source));
-  late final filterList = isLocal ? [] : getFilterList(source: source);
   Future<void> _onSourceOverflow(int value) async {
     if (value == 0) {
       final baseUrl = ref.read(sourceBaseUrlProvider(source: source));
@@ -468,7 +461,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       supportsLatest: supportsLatest,
       filtering: _isFiltering,
       onSelect: _select,
-      onFilter: filterList.isEmpty ? null : _mobileFilters,
+      onFilter: _defaultFilters.isEmpty ? null : _mobileFilters,
       onOptions: () => _mobileOptions(display),
       onSavedSearches: _showSavedSearches,
       results: MobileSourceResults(
@@ -526,14 +519,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (_usesSearch) {
-      _getManga = ref.watch(
-        searchProvider(
-          source: source,
-          query: _query,
-          page: 1,
-          filterList: _searchFilters,
-        ),
-      );
+      _getManga = ref.watch(_searchRequest(1));
     } else if (_selectedIndex == 1) {
       _getManga = ref.watch(getLatestUpdatesProvider(source: source, page: 1));
     } else {
@@ -566,7 +552,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     };
     return Scaffold(
       appBar: AppBar(
-        title: _isSearch
+        title: _showSearchField
             ? null
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -592,9 +578,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                       : Container(),
                 ],
               ),
-        leading: !_isSearch ? null : Container(),
+        leading: !_showSearchField ? null : Container(),
         actions: [
-          _isSearch
+          _showSearchField
               ? SeachFormTextField(
                   onFieldSubmitted: (submit) {
                     _submit(submit);
@@ -611,7 +597,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                   onPressed: () {
                     if (_textEditingController.text.isEmpty) {
                       _select(0);
-                      setState(() => _isSearch = false);
+                      setState(() => _showSearchField = false);
                     } else {
                       Navigator.pop(context);
                     }
@@ -623,7 +609,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                   splashRadius: 20,
                   onPressed: () {
                     setState(() {
-                      _isSearch = true;
+                      _showSearchField = true;
                     });
                     // Force focus onto the field so it doesn't revert to the
                     // previously focused pill while the search button unmounts.
@@ -724,28 +710,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                   ),
                 ];
               },
-              onSelected: (value) async {
-                if (value == 0) {
-                  final baseUrl = ref.watch(
-                    sourceBaseUrlProvider(source: source),
-                  );
-                  Map<String, dynamic> data = {
-                    'url': baseUrl,
-                    'sourceId': source.id.toString(),
-                    'title': '',
-                  };
-                  context.push("/mangawebview", extra: data);
-                } else if (value == 1) {
-                  final res = await context.push(
-                    '/extension_detail',
-                    extra: source,
-                  );
-                  if (res != null && mounted) {
-                    setState(() {
-                      source = res as Source;
-                    });
-                  }
-                } else if (value == 2) {
+              onSelected: (value) {
+                if (value == 2) {
                   _promptSaveSearch();
                 } else if (value == 3) {
                   _showSavedSearches();
@@ -799,7 +765,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                   shrinkWrap: true,
                   itemCount: 3,
                   itemBuilder: (context, index) {
-                    if (filterList.isEmpty && index == 2) {
+                    if (_defaultFilters.isEmpty && index == 2) {
                       return const SizedBox.shrink();
                     }
                     if (!supportsLatest && index == 1) {
@@ -810,9 +776,6 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                       selected: _selectedIndex == index,
                       text: _types(context)[index].title,
                       onPressed: () async {
-                        if (filters.isEmpty) {
-                          filters = filterList;
-                        }
                         if (index == 2) {
                           var draft = copySourceFilters(filters);
                           final result = await showModalBottomSheet(
@@ -928,7 +891,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                 if (_mangaList.isEmpty) {
                   return Center(child: Text(l10n.no_result));
                 }
-                _length = _visibleCount;
+                final length = _visibleCount;
                 final isComfortableGrid =
                     displayType == DisplayType.comfortableGrid;
                 return Padding(
@@ -939,9 +902,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                         child: displayType == DisplayType.list
                             ? SuperListViewWidget(
                                 controller: _scrollController,
-                                itemCount: _length + 1,
+                                itemCount: length + 1,
                                 itemBuilder: (context, index) {
-                                  if (index == _length) {
+                                  if (index == length) {
                                     return buildProgressIndicator();
                                   }
                                   return MangaHomeImageCardListTile(
@@ -964,17 +927,19 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                                   return GridViewWidget(
                                     gridSize: gridSize,
                                     controller: _scrollController,
-                                    itemCount: _length + 1,
+                                    itemCount: length + 1,
                                     childAspectRatio: isComfortableGrid
                                         ? 0.642
                                         : 0.69,
                                     itemBuilder: (context, index) {
-                                      if (index == _length) {
+                                      if (index == length) {
                                         return buildProgressIndicator();
                                       }
                                       return MangaHomeImageCard(
                                         autofocus:
-                                            isTv && index == 0 && !_isSearch,
+                                            isTv &&
+                                            index == 0 &&
+                                            !_showSearchField,
                                         itemType: source.itemType,
                                         manga: _mangaList[index],
                                         source: source,

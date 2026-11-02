@@ -16,6 +16,7 @@ import 'package:mangayomi/modules/browse/global_search/mobile_global_search.dart
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/services/get_popular.dart';
 import 'package:mangayomi/services/search.dart';
+import 'package:mangayomi/utils/source_fetch_gate.dart';
 
 void main() {
   Future<void> mount(

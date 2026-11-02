@@ -40,8 +40,6 @@ import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_global_search.dart';
 
-export 'package:mangayomi/utils/source_fetch_gate.dart' show FetchGate;
-
 class GlobalSearchScreen extends ConsumerStatefulWidget {
   final String? search;
   final ItemType itemType;
@@ -57,12 +55,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   final _textEditingController = TextEditingController();
   final _fetchGate = FetchGate(3);
 
-  /// Every installed source for this item type, before the pinned-only and
-  /// NSFW settings are applied.
-  ///
-  /// Kept so an empty result can say which of the three reasons it is: none
-  /// installed, none pinned, or all of them hidden as NSFW. They need
-  /// different things done about them.
+  /// Installed sources before scope, pinned-only and NSFW filtering.
   late List<Source> _installedSources;
   late List<Source> sourceList;
   Set<int>? _scopeIds;
@@ -216,12 +209,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     );
   }
 
-  /// Why a search over no sources found nothing.
-  ///
-  /// Three different situations reach here and only one of them is "install
-  /// something": the other two are settings that filtered every source out,
-  /// and saying "no sources installed" to someone who has ten of them is
-  /// worse than saying nothing.
+  /// Distinguish missing installations from a scope or preference exclusion.
   Widget _noSources(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     final pinnedOnly = ref.read(onlyIncludePinnedSourceStateProvider);
@@ -853,11 +841,7 @@ void _openSearchSource(BuildContext context, Source source, String query) {
   );
 }
 
-/// Why a global search has nothing to search.
-///
-/// Only one of these means "install something". The other two are settings
-/// that filtered every source out, and telling someone with ten sources that
-/// they have none is worse than saying nothing at all.
+/// Why no installed source is available under the current preferences.
 enum NoSourcesReason {
   /// Nothing installed for this item type. The novel library on a device that
   /// only ever installed manga extensions, for instance.
@@ -872,10 +856,7 @@ enum NoSourcesReason {
   allNsfw,
 }
 
-/// Decides which of the three it is.
-///
-/// Called only once the searchable list is already known to be empty, so
-/// something removed every source and this works out what.
+/// Called only after the searchable list is known to be empty.
 NoSourcesReason noSourcesReason({
   required int installed,
   required bool pinnedOnly,
