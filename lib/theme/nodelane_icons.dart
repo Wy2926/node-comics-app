@@ -39,6 +39,8 @@ class NodeLaneIcons {
   IconData get web => _pick(CupertinoIcons.globe, Icons.public_rounded);
   IconData get browser =>
       _pick(CupertinoIcons.square_on_square, Icons.tab_outlined);
+  IconData get browserStart =>
+      _pick(CupertinoIcons.macwindow, Icons.web_asset_outlined);
   IconData get external =>
       _pick(CupertinoIcons.arrow_up_right_square, Icons.open_in_new);
   IconData get code =>

@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangayomi/modules/webview/browser_navigation.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_widgets.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
+import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_tabs_sheet.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
@@ -95,15 +97,17 @@ void main() {
   testWidgets('small-screen browser controls keep independent action targets', (
     tester,
   ) async {
-    var addresses = 0, closes = 0, tabs = 0, translations = 0, pages = 0;
+    var closes = 0, tabs = 0, translations = 0, pages = 0, newTabs = 0;
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
     await mount(
       tester,
       Column(
         children: [
           MobileBrowserHeader(
-            title: 'A very long webpage title with chapter information',
             url: 'https://preview.example/chapter?private=value',
-            onAddress: () => addresses++,
+            onSubmitted: (_) {},
+            addressFocus: focus,
             onClose: () => closes++,
             menu: IconButton(
               onPressed: () {},
@@ -122,17 +126,26 @@ void main() {
             tabCount: 12,
             translating: false,
             onTabs: () => tabs++,
+            onNew: () => newTabs++,
             onTranslate: () => translations++,
           ),
         ],
       ),
     );
     expect(find.textContaining('private'), findsNothing);
-    await tester.tap(find.text('preview.example'));
+    await tester.tap(find.byType(TextField));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('https://preview.example/chapter?private=value'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('返回'));
     await tester.tap(find.text('12'));
     await tester.tap(find.text('翻译'));
-    expect([addresses, closes, tabs, translations, pages], [1, 1, 1, 1, 0]);
+    await tester.tap(find.byTooltip('新建标签页'));
+    expect([closes, tabs, translations, pages, newTabs], [1, 1, 1, 0, 1]);
     expect(
       tester
           .widget<IconButton>(
@@ -192,6 +205,7 @@ void main() {
             onTranslate: () => starts++,
             onControls: () => controls++,
             onTabs: () => tabs++,
+            onNew: () {},
           ),
         ),
       );
@@ -213,7 +227,7 @@ void main() {
     'tab close is not repeated while saving and can retry a failed save',
     (tester) async {
       var attempts = 0;
-      final first = Completer<void>();
+      final first = Completer<List<Map<String, dynamic>>>();
       await mount(
         tester,
         Builder(
@@ -226,7 +240,11 @@ void main() {
                 ],
                 onClose: (_) {
                   attempts++;
-                  return attempts == 1 ? first.future : Future.value();
+                  return attempts == 1
+                      ? first.future
+                      : Future.value([
+                          {'id': 'blank', 'url': '', 'title': ''},
+                        ]);
                 },
               ),
             ),
@@ -245,57 +263,107 @@ void main() {
       await tester.tap(find.byTooltip('关闭标签页'));
       await tester.pumpAndSettle();
       expect(attempts, 2);
-      expect(find.text('标签页 · 0'), findsOneWidget);
+      expect(find.text('标签页 · 1'), findsOneWidget);
+      expect(find.text('新标签页'), findsOneWidget);
+      expect(find.text('尚未打开网页'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
 
+  testWidgets('inline address validates and cancels without navigation', (
+    tester,
+  ) async {
+    final results = <String>[];
+    await mount(
+      tester,
+      MobileBrowserAddressField(
+        url: 'https://preview.example/first',
+        compact: true,
+        onSubmitted: results.add,
+      ),
+    );
+    await tester.enterText(find.byType(TextField), 'file:///not-a-webpage');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('请输入有效的网址'), findsOneWidget);
+    expect(results, isEmpty);
+    await tester.enterText(
+      find.byType(TextField),
+      'https://user:secret@preview.example',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(results, isEmpty);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+    expect(results, isEmpty);
+    expect(find.text('preview.example'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), ' preview.example/next ');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(results, ['https://preview.example/next']);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
-    'address form validates, cancels and submits without a disposed controller',
+    'start page is unfocused and shortcuts expand without duplicate tab lists',
     (tester) async {
-      final results = <String?>[];
+      final opened = <String>[];
       await mount(
         tester,
-        Builder(
-          builder: (context) => TextButton(
-            onPressed: () async => results.add(
-              await showBrowserAddress(
-                context,
-                initialUrl: 'https://preview.example/first',
-              ),
-            ),
-            child: const Text('Address'),
-          ),
+        MobileBrowserStartPage(
+          sources: [
+            for (var i = 0; i < 6; i++)
+              Source(name: 'Site $i', baseUrl: 'https://example.org/$i'),
+          ],
+          tabCount: 2,
+          onOpen: (url, _) => opened.add(url),
+          onNew: () {},
+          onTabs: () {},
         ),
       );
-      await tester.tap(find.text('Address'));
+      expect(tester.testTextInput.isVisible, isFalse);
+      expect(find.text('Site 4'), findsNothing);
+      expect(find.textContaining('已打开'), findsNothing);
+      await tester.tap(find.text('展开'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), 'file:///not-a-webpage');
+      expect(find.text('Site 4'), findsOneWidget);
+      await tester.tap(find.text('Site 4'));
+      expect(opened, ['https://example.org/4']);
+      await tester.enterText(find.byType(TextField), 'example.org/typed');
       await tester.testTextInput.receiveAction(TextInputAction.go);
       await tester.pumpAndSettle();
-      expect(find.text('请输入有效的 http 或 https 网址'), findsOneWidget);
-      expect(results, isEmpty);
-      await tester.enterText(
-        find.byType(TextField),
-        'https://user:secret@preview.example',
-      );
-      await tester.testTextInput.receiveAction(TextInputAction.go);
-      await tester.pumpAndSettle();
-      expect(results, isEmpty);
-      await tester.ensureVisible(find.text('取消'));
-      await tester.tap(find.text('取消'));
-      await tester.pumpAndSettle();
-      expect(results, [null]);
-      await tester.tap(find.text('Address'));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byType(TextField),
-        '  https://preview.example/next  ',
-      );
-      await tester.testTextInput.receiveAction(TextInputAction.go);
-      await tester.pumpAndSettle();
-      expect(results, [null, 'https://preview.example/next']);
+      expect(opened.last, 'https://example.org/typed');
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('website login clearing requires an explicit confirmation', (
+    tester,
+  ) async {
+    final decisions = <bool?>[];
+    await mount(
+      tester,
+      Builder(
+        builder: (context) => TextButton(
+          onPressed: () async =>
+              decisions.add(await confirmClearBrowserLogins(context)),
+          child: const Text('Clear'),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Clear'));
+    await tester.pumpAndSettle();
+    expect(decisions, isEmpty);
+    expect(find.text('所有标签页中的网站可能需要重新登录。'), findsOneWidget);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+    expect(decisions, [false]);
+    await tester.tap(find.text('Clear'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('清除登录状态'));
+    await tester.pumpAndSettle();
+    expect(decisions, [false, true]);
+    expect(tester.takeException(), isNull);
+  });
 }

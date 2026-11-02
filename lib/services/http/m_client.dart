@@ -204,10 +204,11 @@ class MClient {
         .toList();
   }
 
-  static Future<void> deleteAllCookies(String url) async {
+  static Future<void> deleteAllCookies([String? url]) async {
     final oldCookies = settingsRepository.current.cookiesList ?? [];
-    final host = Uri.parse(url).host;
-    final newCookies = removeCookiesForHost(oldCookies, host);
+    final newCookies = url == null
+        ? <MCookie>[]
+        : removeCookiesForHost(oldCookies, Uri.parse(url).host);
     await settingsRepository.update((s) => s.cookiesList = newCookies);
   }
 }

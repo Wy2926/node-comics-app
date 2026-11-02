@@ -15,7 +15,7 @@ void main() {
     'title': id,
   };
   test(
-    'closing the last tab persists an empty session and releases its preview',
+    'closing the last tab restores one blank tab and releases its preview',
     () async {
       final store = BrowserSessionStore();
       await store.load();
@@ -25,7 +25,10 @@ void main() {
       expect(store.preview('a'), isNull);
       final restored = BrowserSessionStore();
       await restored.load();
-      expect(restored.entries, isEmpty);
+      expect(restored.entries.single['url'], '');
+      final blankId = restored.entries.single['id'];
+      await restored.close('a');
+      expect(restored.entries.single['id'], blankId);
       store.dispose();
       restored.dispose();
     },
@@ -56,12 +59,14 @@ void main() {
         entry('a'),
         entry('a'),
         {'id': 'unsafe', 'url': 'file:///private/data'},
+        {'id': 'about', 'url': 'about:blank'},
+        {'id': 'blank', 'url': '', 'y': 800},
         {'id': '', 'url': 'https://example.org'},
       ]),
     });
     final store = BrowserSessionStore();
     await store.load();
-    expect(store.entries.length, 1);
+    expect(store.entries.length, 2);
     for (var i = 0; i < 13; i++) {
       store.setPreview('$i', Uint8List(20));
     }

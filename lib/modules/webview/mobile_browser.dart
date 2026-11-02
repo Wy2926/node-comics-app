@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 
 import 'browser_session_store.dart';
+import 'browser_pinned_sources_provider.dart';
+import 'mobile_browser_start_page.dart';
 import 'mobile_browser_tabs_sheet.dart';
 
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -32,19 +34,24 @@ class BrowserTab {
     List<String>? history,
     this.historyIndex = 0,
   }) : id = id ?? translationUuid(),
-       history = history ?? [url];
+       history = history ?? (url.isEmpty ? [] : [url]);
   final String id;
   String url, title;
   int x, y, historyIndex;
   final List<String> history;
+  bool get isBlank => url.isEmpty;
+  bool pageReady = false;
   final translation = TranslationViewController();
   InAppWebViewController? controller;
   Future<Map<String, dynamic>?> Function()? captureAnchor;
   Map<String, dynamic>? anchor;
   void visited(String value) {
+    if (!isBrowserUrl(value)) return;
     url = value;
-    if (history[historyIndex] == value) return;
-    history.removeRange(historyIndex + 1, history.length);
+    if (history.isNotEmpty && history[historyIndex] == value) return;
+    if (history.isNotEmpty) {
+      history.removeRange(historyIndex + 1, history.length);
+    }
     history.add(value);
     if (history.length > 20) history.removeAt(0);
     historyIndex = history.length - 1;
@@ -63,8 +70,15 @@ class BrowserTab {
   };
   static BrowserTab? fromJson(dynamic value) {
     try {
-      if (value is! Map || !isBrowserUrl(value['url'])) return null;
-      final history = (value['history'] as List)
+      if (value is! Map ||
+          (value['url'] != '' && !isBrowserUrl(value['url']))) {
+        return null;
+      }
+      if (value['id'] is! String || (value['id'] as String).isEmpty) {
+        return null;
+      }
+      if (value['url'] == '') return BrowserTab('', id: value['id'] as String);
+      final history = (value['history'] as List? ?? [])
           .whereType<String>()
           .where(isBrowserUrl)
           .take(20)
@@ -73,11 +87,11 @@ class BrowserTab {
       final tab = BrowserTab(
         value['url'] as String,
         id: value['id'] as String,
-        title: value['title'] as String,
-        x: (value['x'] as int).clamp(0, 1000000),
-        y: (value['y'] as int).clamp(0, 10000000),
+        title: value['title'] as String? ?? '',
+        x: (value['x'] as int? ?? 0).clamp(0, 1000000),
+        y: (value['y'] as int? ?? 0).clamp(0, 10000000),
         history: history,
-        historyIndex: (value['historyIndex'] as int).clamp(
+        historyIndex: (value['historyIndex'] as int? ?? 0).clamp(
           0,
           history.length - 1,
         ),
@@ -100,9 +114,11 @@ class MobileComicBrowser extends ConsumerStatefulWidget {
     required this.url,
     required this.title,
     this.tabId,
+    this.newTab = false,
   });
   final String url, title;
   final String? tabId;
+  final bool newTab;
   @override
   ConsumerState<MobileComicBrowser> createState() => _MobileComicBrowserState();
 }
@@ -110,12 +126,16 @@ class MobileComicBrowser extends ConsumerStatefulWidget {
 class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     with WidgetsBindingObserver {
   final tabs = <BrowserTab>[];
+  final _addressFocus = FocusNode();
   String? active, warm;
   Timer? _warmTimer, _saveTimer;
   bool foreground = true, ready = false;
-  bool _leaving = false, _showingTabs = false;
+  bool _leaving = false, _showingTabs = false, _clearingLogins = false;
   late final service = ref.read(translationServiceProvider);
   BrowserTab? get current => tabs.where((tab) => tab.id == active).firstOrNull;
+  List<Map<String, dynamic>> get _entries => [
+    for (final tab in tabs) {...tab.toJson(), 'active': tab.id == active},
+  ];
   @override
   void initState() {
     super.initState();
@@ -146,28 +166,51 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       }
       return;
     }
-    final existing = tabs
-        .where(
-          (tab) => widget.tabId == null
-              ? tab.url == widget.url
-              : tab.id == widget.tabId,
-        )
-        .firstOrNull;
-    final tab = existing ?? BrowserTab(widget.url, title: widget.title);
-    if (existing == null) {
-      if (tabs.length >= 12) tabs.removeAt(0).translation.dispose();
+    final existing = widget.newTab
+        ? null
+        : tabs
+              .where(
+                (tab) => widget.tabId == null
+                    ? tab.url == widget.url
+                    : tab.id == widget.tabId,
+              )
+              .firstOrNull;
+    var tab = existing;
+    // A URL from the start page or a source can fill a blank tab in place.
+    if (tab == null && !widget.newTab && isBrowserUrl(widget.url)) {
+      tab = tabs.where((item) => item.isBlank).firstOrNull;
+      if (tab != null) {
+        tab.visited(widget.url);
+        tab.title = widget.title;
+      }
+    }
+    if (tab == null && tabs.length < BrowserSessionStore.maxTabs) {
+      tab = BrowserTab(
+        isBrowserUrl(widget.url) ? widget.url : '',
+        title: widget.title,
+      );
       tabs.add(tab);
+    }
+    final atLimit = tab == null;
+    tab ??= tabs.last;
+    if (atLimit) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _tabLimit();
+      });
     }
     active = tab.id;
     ready = true;
     _attach();
     setState(() {});
+    _save();
   }
 
   void _attach() {
     for (final tab in tabs) {
       tab.translation.attach(service.runtime);
-      tab.translation.configure(foreground: foreground && tab.id == active);
+      tab.translation.configure(
+        foreground: foreground && tab.id == active && !tab.isBlank,
+      );
     }
   }
 
@@ -187,23 +230,36 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 400), () async {
       final tab = current;
-      if (tab != null && foreground) {
-        try {
-          tab.anchor =
-              await tab.captureAnchor?.call().timeout(
-                const Duration(seconds: 2),
-              ) ??
-              tab.anchor;
-        } catch (_) {}
-      }
+      if (tab != null && foreground) await _captureAnchor(tab);
       if (!mounted) return;
-      await browserSessionStore
-          .save(tabs.map((tab) => tab.toJson()).toList())
-          .catchError((_) {});
+      await browserSessionStore.save(_entries).catchError((_) {});
     });
   }
 
+  Future<void> _captureAnchor(BrowserTab tab) async {
+    final x = tab.x, y = tab.y, url = tab.url;
+    try {
+      final anchor = await tab.captureAnchor?.call().timeout(
+        const Duration(seconds: 2),
+      );
+      // Hiding a page can resize its viewport. A late capture must not replace
+      // the reading position with the hidden view's clamped scroll offset.
+      if (anchor != null &&
+          tabs.contains(tab) &&
+          tab.url == url &&
+          tab.x == x &&
+          tab.y == y &&
+          anchor['x'] is num &&
+          anchor['y'] is num &&
+          ((anchor['x'] as num) - x).abs() < 2 &&
+          ((anchor['y'] as num) - y).abs() < 2) {
+        tab.anchor = anchor;
+      }
+    } catch (_) {}
+  }
+
   Future<void> _capturePreview(BrowserTab tab) async {
+    if (tab.isBlank || !tab.pageReady) return;
     try {
       final bytes = await tab.controller
           ?.takeScreenshot(
@@ -222,40 +278,28 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
 
   Future<void> _leave() async {
     if (_leaving) return;
-    _leaving = true;
+    setState(() => _leaving = true);
     final tab = current;
     if (tab != null) {
-      try {
-        tab.anchor =
-            await tab.captureAnchor?.call().timeout(
-              const Duration(seconds: 2),
-            ) ??
-            tab.anchor;
-      } catch (_) {}
+      await _captureAnchor(tab);
       await _capturePreview(tab);
     }
     _saveTimer?.cancel();
-    await browserSessionStore
-        .save(tabs.map((tab) => tab.toJson()).toList())
-        .catchError((_) {});
+    await browserSessionStore.save(_entries).catchError((_) {});
+    await WidgetsBinding.instance.endOfFrame;
     if (mounted) Navigator.of(context).pop();
   }
 
   void _select(BrowserTab tab) {
     if (active == tab.id) return;
+    _addressFocus.unfocus();
     final previous = current;
     if (previous != null) {
       unawaited(_capturePreview(previous));
-      previous.captureAnchor
-          ?.call()
-          .timeout(const Duration(seconds: 2))
-          .then((value) {
-            if (value != null) previous.anchor = value;
-          })
-          .catchError((_) {});
+      unawaited(_captureAnchor(previous));
     }
     _warmTimer?.cancel();
-    warm = active;
+    warm = previous?.isBlank == false ? active : null;
     active = tab.id;
     _attach();
     setState(() {});
@@ -266,7 +310,11 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   void _new(String url) {
-    if (!isBrowserUrl(url) || tabs.length >= 12) return;
+    if (url.isNotEmpty && !isBrowserUrl(url)) return;
+    if (tabs.length >= BrowserSessionStore.maxTabs) {
+      _tabLimit();
+      return;
+    }
     final tab = BrowserTab(url);
     tabs.add(tab);
     _select(tab);
@@ -276,23 +324,29 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     tabs.remove(tab);
     tab.translation.dispose();
     if (warm == tab.id) warm = null;
-    if (active == tab.id) active = tabs.lastOrNull?.id;
+    if (tabs.isEmpty) tabs.add(BrowserTab(''));
+    if (active == tab.id) active = tabs.last.id;
     _attach();
     setState(() {});
     _save();
   }
 
-  Future<void> _address({bool newTab = false}) async {
-    final value = await showBrowserAddress(
-      context,
-      initialUrl: newTab ? '' : current?.url ?? '',
-      newTab: newTab,
-    );
-    if (!mounted || !isBrowserUrl(value)) return;
-    if (newTab) {
-      _new(value!);
+  void _tabLimit() {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('最多保留 12 个标签页，请先关闭一个。')));
+    _showTabs();
+  }
+
+  void _openAddress(String url, [String title = '']) {
+    final tab = current;
+    if (tab == null || !isBrowserUrl(url)) return;
+    if (tab.isBlank) {
+      tab.visited(url);
+      tab.title = title;
+      setState(() {});
+      _save();
     } else {
-      current?.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(value!)));
+      tab.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
     }
   }
 
@@ -306,25 +360,22 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       final action = await showNodeLaneCatalogSheet<String>(
         context,
         MobileBrowserTabsSheet(
-          entries: tabs.map((tab) => tab.toJson()).toList(),
-          activeId: active,
+          entries: _entries,
           onClose: (id) async {
             final tab = tabs.where((e) => e.id == id).firstOrNull;
             if (tab != null) _close(tab);
-            await browserSessionStore.save(
-              tabs.map((tab) => tab.toJson()).toList(),
-            );
+            await browserSessionStore.save(_entries);
+            return _entries;
           },
         ),
       );
       if (!mounted) return;
       if (action == '') {
-        await _address(newTab: true);
+        _new('');
       } else if (action != null) {
         final tab = tabs.where((e) => e.id == action).firstOrNull;
         if (tab != null) _select(tab);
       }
-      if (mounted && tabs.isEmpty) await _leave();
     } finally {
       _showingTabs = false;
     }
@@ -343,35 +394,50 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
 
   Widget _menu(BrowserTab? tab) => PopupMenuButton<String>(
     tooltip: '更多',
-    icon: Icon(NodeLaneIcons.of(context).more),
+    icon: Icon(
+      NodeLaneIcons.of(context).more,
+      size: NodeLaneTokens.iconSize,
+      color: NodeLaneTokens.of(context).accent,
+    ),
     onSelected: (action) async {
-      if (action == 'reload') await tab?.controller?.reload();
-      if (action == 'new') await _address(newTab: true);
-      if (action == 'cookies') {
-        for (final item in tabs) {
-          item.translation.configure(enabled: false);
-        }
-        await CookieManager.instance().deleteAllCookies();
-        for (final item in tabs) {
-          await MClient.deleteAllCookies(item.url);
-        }
-        await tab?.controller?.reload();
-      }
+      if (action == 'forward') await _history(1);
+      if (action == 'cookies') await _clearLogins();
     },
     itemBuilder: (_) => [
       PopupMenuItem(
-        value: 'reload',
-        enabled: tab != null,
-        child: const Text('刷新'),
+        value: 'forward',
+        enabled: tab != null && tab.historyIndex + 1 < tab.history.length,
+        child: const Text('前进'),
       ),
       PopupMenuItem(
-        value: 'new',
-        enabled: ready && tabs.length < 12,
-        child: const Text('新标签页'),
+        value: 'cookies',
+        enabled: !_clearingLogins,
+        child: const Text('清除所有网站登录状态'),
       ),
-      const PopupMenuItem(value: 'cookies', child: Text('清除网站登录状态')),
     ],
   );
+
+  Future<void> _clearLogins() async {
+    if (_clearingLogins) return;
+    _clearingLogins = true;
+    try {
+      final confirmed = await confirmClearBrowserLogins(context);
+      if (!mounted || confirmed != true) return;
+      for (final item in tabs) {
+        item.translation.configure(enabled: false);
+      }
+      await CookieManager.instance().deleteAllCookies();
+      await MClient.deleteAllCookies();
+      if (mounted) await current?.controller?.reload();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('清除失败，请重试。')));
+      }
+    } finally {
+      if (mounted) setState(() => _clearingLogins = false);
+    }
+  }
 
   Future<void> _history(int delta) async {
     final tab = current;
@@ -393,10 +459,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     service.removeListener(_attach);
     _warmTimer?.cancel();
     _saveTimer?.cancel();
+    _addressFocus.dispose();
     if (ready) {
-      browserSessionStore
-          .save(tabs.map((tab) => tab.toJson()).toList())
-          .catchError((_) {});
+      browserSessionStore.save(_entries).catchError((_) {});
     }
     for (final tab in tabs) {
       tab.translation.dispose();
@@ -408,7 +473,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   Widget build(BuildContext context) {
     final tab = current;
     return PopScope(
-      canPop: tab == null || tab.historyIndex == 0,
+      canPop: _leaving || tab == null || tab.historyIndex == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _history(-1);
       },
@@ -416,21 +481,27 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         child: Scaffold(
           body: Column(
             children: [
-              MobileBrowserHeader(
-                title: tab?.title ?? '',
-                url: tab?.url ?? '',
-                onAddress: _address,
-                onClose: _leave,
-                onReload: () => tab?.controller?.reload(),
-                menu: _menu(tab),
-              ),
+              if (tab != null && !tab.isBlank)
+                MobileBrowserHeader(
+                  key: ValueKey(tab.id),
+                  url: tab.url,
+                  addressFocus: _addressFocus,
+                  onSubmitted: _openAddress,
+                  onClose: _leave,
+                  onReload: () => tab.controller?.reload(),
+                  menu: _menu(tab),
+                ),
               Expanded(
+                key: const ValueKey('browser-content'),
                 child: !ready
                     ? const Center(child: CircularProgressIndicator())
                     : Stack(
+                        fit: StackFit.expand,
                         children: [
                           for (final item in tabs.where(
-                            (item) => item.id == active || item.id == warm,
+                            (item) =>
+                                !item.isBlank &&
+                                (item.id == active || item.id == warm),
                           ))
                             Offstage(
                               key: ValueKey(item.id),
@@ -444,43 +515,66 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                 },
                                 save: _save,
                                 newTab: _new,
+                                editAddress: _addressFocus.requestFocus,
+                              ),
+                            ),
+                          if (tab?.isBlank == true)
+                            Positioned.fill(
+                              child: MobileBrowserStartPage(
+                                key: ValueKey(tab!.id),
+                                sources: ref.watch(
+                                  browserPinnedSourcesProvider,
+                                ),
+                                tabCount: tabs.length,
+                                onOpen: _openAddress,
+                                onNew: () => _new(''),
+                                onTabs: _showTabs,
+                                onClose: _leave,
+                                bottomInset: MediaQuery.paddingOf(context)
+                                    .bottom,
                               ),
                             ),
                         ],
                       ),
               ),
-              if (tab != null)
+              if (tab != null &&
+                  !tab.isBlank &&
+                  MediaQuery.viewInsetsOf(context).bottom == 0)
                 ListenableBuilder(
                   listenable: tab.translation,
                   builder: (context, _) => MobileBrowserToolbar(
                     tabCount: tabs.length,
-                    translating: tab.translation.enabled,
+                    translating: tab.pageReady && tab.translation.enabled,
                     onBack: tab.historyIndex > 0 ? () => _history(-1) : null,
-                    onForward: tab.historyIndex + 1 < tab.history.length
-                        ? () => _history(1)
-                        : null,
-                    onTranslate: () {
-                      if (tab.translation.runtime == null) {
-                        _translationControls(tab);
-                        return;
-                      }
-                      tab.translation.configure(
-                        enabled: true,
-                        showTranslation: true,
-                      );
-                    },
+                    onNew: () => _new(''),
+                    onTranslate: !tab.pageReady
+                        ? null
+                        : () {
+                            if (tab.translation.runtime == null) {
+                              _translationControls(tab);
+                              return;
+                            }
+                            tab.translation.configure(
+                              enabled: true,
+                              showTranslation: true,
+                            );
+                          },
                     showTranslation: tab.translation.showTranslation,
                     onDisplayChanged:
-                        tab.translation.enabled ||
-                            tab.translation.targets.any(
-                              (t) => tab.translation.state(t).result != null,
-                            )
+                        tab.pageReady &&
+                            (tab.translation.enabled ||
+                                tab.translation.targets.any(
+                                  (t) =>
+                                      tab.translation.state(t).result != null,
+                                ))
                         ? (value) {
                             tab.translation.configure(showTranslation: value);
                             _save();
                           }
                         : null,
-                    onControls: () => _translationControls(tab),
+                    onControls: !tab.pageReady
+                        ? null
+                        : () => _translationControls(tab),
                     onTabs: _showTabs,
                   ),
                 ),
@@ -499,12 +593,14 @@ class _BrowserTabView extends StatefulWidget {
     required this.changed,
     required this.save,
     required this.newTab,
+    required this.editAddress,
   });
   final BrowserTab tab;
   final bool active;
   final VoidCallback changed;
   final VoidCallback save;
   final void Function(String) newTab;
+  final VoidCallback editAddress;
   @override
   State<_BrowserTabView> createState() => _BrowserTabViewState();
 }
@@ -513,6 +609,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   WebTranslationBridge? bridge;
   late int restoreX = widget.tab.x, restoreY = widget.tab.y;
   bool loading = true, loadError = false;
+  bool restoringPosition = false;
   double progress = 0;
   String? loadingUrl;
   int navigation = 0;
@@ -536,7 +633,23 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   @override
   void didUpdateWidget(_BrowserTabView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.active != widget.active) _visibility();
+    if (oldWidget.active != widget.active) {
+      _visibility();
+      if (widget.active && !loading) {
+        restoringPosition = true;
+        final x = widget.tab.x, y = widget.tab.y;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          try {
+            if (!mounted || !widget.active) return;
+            await widget.tab.controller?.scrollTo(x: x, y: y);
+            await bridge?.restoreAnchor(widget.tab.anchor);
+          } catch (_) {
+          } finally {
+            restoringPosition = false;
+          }
+        });
+      }
+    }
   }
 
   @override
@@ -544,6 +657,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     bridge?.dispose();
     widget.tab.controller = null;
     widget.tab.captureAnchor = null;
+    widget.tab.pageReady = false;
     super.dispose();
   }
 
@@ -611,10 +725,15 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
             restoreX = 0;
             restoreY = 0;
             widget.tab.anchor = null;
+            widget.tab.x = widget.tab.y = 0;
+            widget.tab.title = '';
           }
+          widget.tab.pageReady = false;
+          if (url != null) widget.tab.visited(url.toString());
+          widget.changed();
         },
         onLoadStop: (controller, url) async {
-          if (url == null || !mounted) return;
+          if (url == null || !mounted || loadError) return;
           final epoch = navigation;
           widget.tab.visited(url.toString());
           widget.tab.title = await controller.getTitle() ?? '';
@@ -632,6 +751,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
           } catch (_) {}
           if (!mounted || epoch != navigation) return;
           setState(() => loading = false);
+          widget.tab.pageReady = true;
           widget.changed();
         },
         onUpdateVisitedHistory: (controller, url, isReload) async {
@@ -647,7 +767,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
           if (mounted) widget.changed();
         },
         onScrollChanged: (controller, x, y) {
-          if (!loading) {
+          if (widget.active && !loading && !restoringPosition) {
             widget.tab.anchor = null;
             widget.tab.x = restoreX = x;
             widget.tab.y = restoreY = y;
@@ -674,6 +794,8 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
             loading = false;
             loadError = true;
           });
+          widget.tab.pageReady = false;
+          widget.changed();
         },
       ),
       if (loading)
@@ -689,6 +811,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       if (loadError)
         Positioned.fill(
           child: MobileBrowserLoadError(
+            onEditAddress: widget.editAddress,
             onRetry: () => widget.tab.controller?.loadUrl(
               urlRequest: URLRequest(url: WebUri(loadingUrl ?? widget.tab.url)),
             ),

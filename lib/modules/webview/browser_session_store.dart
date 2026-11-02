@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
+import 'package:mangayomi/services/translation/identity.dart';
 
 import 'browser_url.dart';
 
@@ -11,6 +12,7 @@ final browserSessionStore = BrowserSessionStore();
 /// capturing them does not read cookies, bridge credentials or site storage.
 class BrowserSessionStore extends ChangeNotifier {
   static const storageKey = 'nodelane.browser.tabs.v1';
+  static const maxTabs = 12;
   List<Map<String, dynamic>> entries = [];
   final _previews = <String, Uint8List>{};
   Future<void>? _loading;
@@ -32,10 +34,10 @@ class BrowserSessionStore extends ChangeNotifier {
                 (e) =>
                     e['id'] is String &&
                     (e['id'] as String).isNotEmpty &&
-                    isBrowserUrl(e['url']) &&
+                    (e['url'] == '' || isBrowserUrl(e['url'])) &&
                     seen.add(e['id'] as String),
               )
-              .take(12)
+              .take(maxTabs)
               .map(
                 (e) => {
                   ...Map<String, dynamic>.from(e),
@@ -54,14 +56,17 @@ class BrowserSessionStore extends ChangeNotifier {
     if (bytes.length > 384 * 1024) return;
     _previews.remove(id);
     _previews[id] = bytes;
-    while (_previews.length > 12) {
+    while (_previews.length > maxTabs) {
       _previews.remove(_previews.keys.first);
     }
     notifyListeners();
   }
 
   Future<void> save(List<Map<String, dynamic>> values) {
-    entries = values.take(12).map((e) => Map<String, dynamic>.from(e)).toList();
+    entries = values
+        .take(maxTabs)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
     _loaded = true;
     _previews.removeWhere((id, _) => !entries.any((e) => e['id'] == id));
     notifyListeners();
@@ -74,6 +79,18 @@ class BrowserSessionStore extends ChangeNotifier {
     return _writes;
   }
 
-  Future<void> close(String id) =>
-      save(entries.where((e) => e['id'] != id).toList());
+  Future<void> close(String id) {
+    final remaining = entries.where((e) => e['id'] != id).toList();
+    if (remaining.isEmpty) {
+      remaining.add({
+        'id': translationUuid(),
+        'url': '',
+        'title': '',
+        'active': true,
+      });
+    } else if (!remaining.any((e) => e['active'] == true)) {
+      remaining.last = {...remaining.last, 'active': true};
+    }
+    return save(remaining);
+  }
 }

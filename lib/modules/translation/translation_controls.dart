@@ -148,6 +148,29 @@ class TranslationControlsContent extends StatelessWidget {
                   state.noText ||
                   state.actions.isNotEmpty;
             }).toList();
+            final scopeControl = SwitchListTile.adaptive(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: Text('翻译当前阅读范围', style: colors.readerLabel),
+              subtitle: Text(
+                browser ? '处理当前及相邻图片' : '按当前页和随后两页处理',
+                style: colors.readerSecondary,
+              ),
+              value: controller.enabled,
+              onChanged: controller.runtime == null
+                  ? null
+                  : (value) => controller.configure(enabled: value),
+            );
+            final displayControl = NodeLaneSegments<bool>(
+              pill: true,
+              labelStyle: colors.readerLabel,
+              value: controller.showTranslation,
+              segments: const [
+                ButtonSegment(value: false, label: Text('原图')),
+                ButtonSegment(value: true, label: Text('译图')),
+              ],
+              onChanged: (value) =>
+                  controller.configure(showTranslation: value),
+            );
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -192,58 +215,69 @@ class TranslationControlsContent extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          if (!browser) const SizedBox(height: 16),
                         ],
-                        NodeLaneGroupSurface(
-                          child: SwitchListTile.adaptive(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                            ),
-                            title: Text('翻译当前阅读范围', style: colors.readerLabel),
-                            subtitle: Text(
-                              browser ? '处理当前及相邻图片' : '按当前页和随后两页处理',
-                              style: colors.readerSecondary,
-                            ),
-                            value: controller.enabled,
-                            onChanged: controller.runtime == null
-                                ? null
-                                : (value) =>
-                                      controller.configure(enabled: value),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        NodeLaneSegments<bool>(
-                          pill: true,
-                          labelStyle: colors.readerLabel,
-                          value: controller.showTranslation,
-                          segments: const [
-                            ButtonSegment(value: false, label: Text('原图')),
-                            ButtonSegment(value: true, label: Text('译图')),
-                          ],
-                          onChanged: (value) =>
-                              controller.configure(showTranslation: value),
-                        ),
-                        if (browser) ...[
-                          const SizedBox(height: 12),
-                          const _BrowserTranslationLanguage(),
-                        ],
-                        if (statuses.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          NodeLaneGroupSurface(
-                            child: Column(
-                              children: [
-                                for (var i = 0; i < statuses.length; i++) ...[
-                                  if (i > 0)
-                                    Divider(
-                                      height: 1,
-                                      indent: 56,
-                                      color: colors.line,
+                        if (!browser || controller.runtime != null) ...[
+                          if (browser)
+                            NodeLaneGroupSurface(
+                              child: Column(
+                                children: [
+                                  scopeControl,
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      12,
+                                      0,
+                                      12,
+                                      12,
                                     ),
-                                  _statusRow(context, statuses[i]),
+                                    child: displayControl,
+                                  ),
                                 ],
-                              ],
+                              ),
+                            )
+                          else ...[
+                            NodeLaneGroupSurface(child: scopeControl),
+                            const SizedBox(height: 16),
+                            displayControl,
+                          ],
+                          if (browser) ...[
+                            const SizedBox(height: 16),
+                            NodeLaneGroupSurface(
+                              child: Column(
+                                children: [
+                                  const _BrowserTranslationLanguage(),
+                                  Divider(
+                                    height: 1,
+                                    indent: 56,
+                                    color: colors.line,
+                                  ),
+                                  _BrowserTranslationProgress(
+                                    controller: controller,
+                                    statuses: statuses,
+                                    rowBuilder: (target) =>
+                                        _statusRow(context, target),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                          ] else if (statuses.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            NodeLaneGroupSurface(
+                              child: Column(
+                                children: [
+                                  for (var i = 0; i < statuses.length; i++) ...[
+                                    if (i > 0)
+                                      Divider(
+                                        height: 1,
+                                        indent: 56,
+                                        color: colors.line,
+                                      ),
+                                    _statusRow(context, statuses[i]),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                         if (controller.error != null) ...[
                           const SizedBox(height: 16),
@@ -315,7 +349,7 @@ class TranslationControlsContent extends StatelessWidget {
             ),
       title: Text(
         '第 ${controller.targets.indexOf(target) + 1} 张 · ${state.noText ? '无可译文字' : state.message}',
-        style: colors.readerLabel.copyWith(fontSize: 16),
+        style: colors.readerLabel,
       ),
       trailing: state.actions.isEmpty
           ? null
@@ -348,6 +382,88 @@ class TranslationControlsContent extends StatelessWidget {
   }
 }
 
+/// A summary by default; existing per-image recovery actions stay one tap away.
+class _BrowserTranslationProgress extends StatefulWidget {
+  const _BrowserTranslationProgress({
+    required this.controller,
+    required this.statuses,
+    required this.rowBuilder,
+  });
+  final TranslationViewController controller;
+  final List<TranslationTarget> statuses;
+  final Widget Function(TranslationTarget) rowBuilder;
+
+  @override
+  State<_BrowserTranslationProgress> createState() =>
+      _BrowserTranslationProgressState();
+}
+
+class _BrowserTranslationProgressState
+    extends State<_BrowserTranslationProgress> {
+  bool expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final states = widget.controller.targets
+        .map(widget.controller.state)
+        .toList();
+    final completed = states
+        .where((state) => state.phase == TranslationPhase.succeeded)
+        .length;
+    final issues = states
+        .where(
+          (state) =>
+              state.phase == TranslationPhase.failed ||
+              state.phase == TranslationPhase.uncertain,
+        )
+        .length;
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: NodeLaneTokens.rowPadding,
+          leading: Icon(
+            issues > 0 ? icons.error : icons.translate,
+            size: NodeLaneTokens.iconSize,
+            color: t.accent,
+          ),
+          title: Text(
+            states.isEmpty
+                ? '当前页面暂未发现可翻译图片'
+                : '已完成 $completed / ${states.length} 张',
+            style: t.readerLabel,
+          ),
+          subtitle: states.isEmpty
+              ? null
+              : Text(
+                  issues > 0
+                      ? '$issues 张需要处理 · 点击查看'
+                      : widget.controller.enabled
+                      ? '当前阅读范围 · 点击查看进度'
+                      : '开启后处理当前及相邻图片',
+                  style: t.readerSecondary,
+                ),
+          trailing: widget.statuses.isEmpty
+              ? null
+              : Icon(
+                  expanded ? icons.down : icons.forward,
+                  size: NodeLaneTokens.smallIconSize,
+                  color: t.muted,
+                ),
+          onTap: widget.statuses.isEmpty
+              ? null
+              : () => setState(() => expanded = !expanded),
+        ),
+        if (expanded)
+          for (final target in widget.statuses) ...[
+            Divider(height: 1, indent: 56, color: t.line),
+            widget.rowBuilder(target),
+          ],
+      ],
+    );
+  }
+}
+
 class _BrowserTranslationLanguage extends ConsumerWidget {
   const _BrowserTranslationLanguage();
   @override
@@ -356,33 +472,31 @@ class _BrowserTranslationLanguage extends ConsumerWidget {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return ListenableBuilder(
       listenable: service,
-      builder: (context, _) => NodeLaneGroupSurface(
-        child: ListTile(
-          leading: Icon(icons.web),
-          title: Text('目标语言', style: t.readerLabel),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                translationLanguageNames[service.language] ?? service.language,
-                style: t.readerSecondary,
-              ),
-              const SizedBox(width: 8),
-              Icon(icons.forward, size: 16),
-            ],
-          ),
-          onTap: service.busy
-              ? null
-              : () async {
-                  final value = await showTranslationLanguagePicker(
-                    context,
-                    service.language,
-                  );
-                  if (value != null && value != service.language) {
-                    await service.setLanguage(value);
-                  }
-                },
+      builder: (context, _) => ListTile(
+        leading: Icon(icons.web),
+        title: Text('目标语言', style: t.readerLabel),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              translationLanguageNames[service.language] ?? service.language,
+              style: t.readerSecondary,
+            ),
+            const SizedBox(width: 8),
+            Icon(icons.forward, size: 16),
+          ],
         ),
+        onTap: service.busy
+            ? null
+            : () async {
+                final value = await showTranslationLanguagePicker(
+                  context,
+                  service.language,
+                );
+                if (value != null && value != service.language) {
+                  await service.setLanguage(value);
+                }
+              },
       ),
     );
   }

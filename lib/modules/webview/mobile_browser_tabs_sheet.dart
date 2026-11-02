@@ -12,19 +12,32 @@ class MobileBrowserTabsSheet extends StatefulWidget {
     super.key,
     required this.entries,
     required this.onClose,
-    this.activeId,
   });
   final List<Map<String, dynamic>> entries;
-  final Future<void> Function(String) onClose;
-  final String? activeId;
+  final Future<List<Map<String, dynamic>>> Function(String) onClose;
   @override
   State<MobileBrowserTabsSheet> createState() => _MobileBrowserTabsSheetState();
 }
 
 class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
   late final entries = widget.entries.toList();
+  late final scroll = ScrollController(
+    initialScrollOffset:
+        (entries
+                .indexWhere((e) => e['active'] == true)
+                .clamp(0, entries.length) ~/
+            2) *
+        (NodeLaneTokens.browserTabHeight + NodeLaneTokens.browserTabGap),
+  );
   final closing = <String>{};
   String? error;
+
+  @override
+  void dispose() {
+    scroll.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => NodeLaneCatalogSheet(
     title: '标签页 · ${entries.length}',
@@ -43,7 +56,8 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
           ),
         FilledButton.icon(
           style: FilledButton.styleFrom(minimumSize: const Size(44, 48)),
-          onPressed: entries.length < 12
+          onPressed:
+              entries.length < BrowserSessionStore.maxTabs && closing.isEmpty
               ? () => Navigator.pop(context, '')
               : null,
           icon: Icon(NodeLaneIcons.of(context).add),
@@ -54,6 +68,7 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
     child: entries.isEmpty
         ? const Center(child: Text('还没有打开的标签页'))
         : GridView.builder(
+            controller: scroll,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
@@ -68,18 +83,21 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
                 key: ValueKey(id),
                 title: entry['title'] as String? ?? '',
                 url: entry['url'] as String,
-                selected: id == widget.activeId,
+                selected: entry['active'] == true,
                 preview: browserSessionStore.preview(id),
                 onSelect: () {
                   if (!closing.contains(id)) Navigator.pop(context, id);
                 },
                 onClose: () async {
-                  if (!closing.add(id)) return;
+                  if (closing.isNotEmpty) return;
+                  setState(() => closing.add(id));
                   try {
-                    await widget.onClose(id);
+                    final updated = await widget.onClose(id);
                     if (mounted) {
                       setState(() {
-                        entries.removeWhere((e) => e['id'] == id);
+                        entries
+                          ..clear()
+                          ..addAll(updated);
                         error = null;
                       });
                     }
@@ -88,7 +106,7 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
                       setState(() => error = '标签状态保存失败，请再次点击关闭重试。');
                     }
                   } finally {
-                    closing.remove(id);
+                    if (mounted) setState(() => closing.remove(id));
                   }
                 },
               );

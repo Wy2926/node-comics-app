@@ -13,7 +13,7 @@
 | 持久化与图片工作 | [translation_repository.dart](../lib/repositories/translation_repository.dart) 使用独立、私有的 Isar 库；输入与结果预算、文件发布与缓存代次、租约释放分别执行。[image_work.dart](../lib/services/translation/image_work.dart) 串行 isolate 准备／合成，校验摘要、尺寸、bbox 与 alpha |
 | 原生会话与组合入口 | [translation_service.dart](../lib/services/translation/translation_service.dart) 是具体渠道的组合入口；OIDC PKCE／续期在渠道内部。[nodelane_private_storage.dart](../lib/services/nodelane_private_storage.dart) 使用独立安全存储空间；[NodeLane.entitlements](../ios/Runner/NodeLane.entitlements) 在三种 iOS 构建配置中声明钥匙串能力，另有设备绑定钥匙串、私有目录备份排除及 Android 备份／迁移排除规则 |
 | 阅读器 | [reader_translation.dart](../lib/modules/manga/reader/reader_translation.dart) 根据章节原始页身份更新窗口；译图采用独立显示数据，不覆盖来源页。单页保存归一化缩放中心，双页保留外层 controller，连续阅读订阅已有页码通知 |
-| 手机网页 | [mobile_browser.dart](../lib/modules/webview/mobile_browser.dart)、[translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[nodelane_reader.js](../assets/nodelane_reader.js)：最多 12 个逻辑标签，活动 1 个＋温存 1 个／30 秒，主框架与文档代次校验，HTTP／Blob 来源、128 KiB 确认传输、非交互覆盖层、图片锚点恢复 |
+| 手机网页 | [mobile_browser.dart](../lib/modules/webview/mobile_browser.dart)、[translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[nodelane_reader.js](../assets/nodelane_reader.js)：最多 12 个逻辑标签；新建为空标签、共用开始页并原位输入，空标签不创建 WebView；网页活动 1 个＋温存 1 个／30 秒，主框架与文档代次校验，HTTP／Blob 来源、128 KiB 确认传输、非交互覆盖层、图片锚点恢复 |
 
 手机登录入口为“更多”首栏的软件账号；“更多 → 漫画翻译”或“设置 → 漫画翻译”管理目标语言与本机缓存，再从阅读器或浏览器工具栏手动开启翻译。此视图仍调用原服务，沿用登录、计费与渠道协议；布局与交互验收见[手机界面与视觉令牌](MOBILE_UI_DESIGN.md#翻译与账号设置)。每次打开新的网页标签默认不开始翻译；标签切回前台可以恢复原先已开启的阅读窗口。原图显示与暂停任务是两个控制项，已受理任务继续由后端执行。不同官方账号、服务与语言隔离；重新进入已有页面会核对当前原图摘要，定位地址相同不直接视为同一内容。
 
