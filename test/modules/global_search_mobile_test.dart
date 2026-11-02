@@ -73,10 +73,8 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Draft');
       await tester.pump();
       expect(submitted, isEmpty);
-      expect(find.text('Results for “Original”'), findsOneWidget);
-      final submit = find.byWidgetPredicate(
-        (w) => w is IconButton && w.tooltip == 'Global search',
-      );
+      expect(find.byKey(const ValueKey('Original')), findsOneWidget);
+      final submit = find.byTooltip('Global search');
       expect(submit.hitTestable(), findsOneWidget);
       await tester.tap(submit);
       expect(submitted, ['Draft']);

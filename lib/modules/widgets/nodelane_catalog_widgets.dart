@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -50,7 +52,7 @@ class NodeLaneCatalogRow extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
+                    horizontal: 16,
                     vertical: 10,
                   ),
                   child: Row(
@@ -200,34 +202,51 @@ class NodeLaneCatalogSheet extends StatelessWidget {
   final double heightFactor;
   final VoidCallback? onClose;
   @override
-  Widget build(BuildContext context) => NodeLaneReaderSurface(
-    child: SafeArea(
-      top: false,
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * heightFactor,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            NodeLaneReaderHeading(
-              title: title,
-              onClose: onClose ?? () => Navigator.pop(context),
-              closeLabel: MaterialLocalizations.of(context).closeButtonTooltip,
-            ),
-            if (subtitle != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Text(
-                  subtitle!,
-                  style: NodeLaneTokens.of(context).readerSecondary,
-                ),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+      final safeBottom = MediaQuery.paddingOf(context).bottom;
+      final available = math.max(
+        0.0,
+        constraints.maxHeight - keyboard - safeBottom,
+      );
+      return Padding(
+        padding: EdgeInsets.only(bottom: keyboard),
+        child: NodeLaneReaderSurface(
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: math.min(
+                MediaQuery.sizeOf(context).height * heightFactor,
+                available,
               ),
-            Expanded(child: child),
-            if (bottom != null)
-              Padding(padding: const EdgeInsets.all(20), child: bottom!),
-          ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  NodeLaneReaderHeading(
+                    title: title,
+                    onClose: onClose ?? () => Navigator.pop(context),
+                    closeLabel: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                  ),
+                  if (subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: Text(
+                        subtitle!,
+                        style: NodeLaneTokens.of(context).readerSecondary,
+                      ),
+                    ),
+                  Expanded(child: child),
+                  if (bottom != null)
+                    Padding(padding: const EdgeInsets.all(20), child: bottom!),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 

@@ -355,6 +355,7 @@ class _MobileSourceImageCard extends ConsumerWidget {
       );
       return MobileSourceMangaCard(
         title: manga.name ?? '',
+        author: manga.author,
         cover: cover,
         inLibrary: libraryManga?.favorite ?? false,
         list: list,

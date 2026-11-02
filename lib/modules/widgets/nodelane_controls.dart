@@ -59,6 +59,56 @@ class NodeLaneGroupSurface extends StatelessWidget {
   );
 }
 
+/// A small cover annotation, shared by source and cross-source results.
+class NodeLaneCoverBadge extends StatelessWidget {
+  const NodeLaneCoverBadge(this.label, {super.key});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: NodeLaneTokens.of(context).ink.withValues(alpha: .78),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: NodeLaneTokens.captionSize,
+          height: 1.2,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  );
+}
+
+class NodeLaneSecondaryButton extends StatelessWidget {
+  const NodeLaneSecondaryButton({
+    super.key,
+    required this.child,
+    this.onPressed,
+  });
+  final Widget child;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        backgroundColor: t.soft,
+        foregroundColor: t.ink,
+        iconColor: t.accent,
+      ),
+      onPressed: onPressed,
+      child: child,
+    );
+  }
+}
+
 class NodeLaneSectionHeading extends StatelessWidget {
   const NodeLaneSectionHeading(this.title, {super.key});
   final String title;

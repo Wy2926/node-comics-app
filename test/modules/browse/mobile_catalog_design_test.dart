@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
 
 import 'dart:async';
@@ -10,7 +11,6 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
 import 'package:mangayomi/modules/browse/mobile_repository_sheets.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
@@ -85,7 +85,7 @@ void main() {
             reFresh: false,
             itemType: ItemType.manga,
           ).overrideWith((ref) async {}),
-          getExtensionsStreamProvider(ItemType.manga).overrideWith(
+          mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
             (ref) => Stream.value([
               Source(
                 id: 1,
@@ -141,6 +141,63 @@ void main() {
     await tester.tap(find.text('Website'));
     expect([opened, installed], [1, 1]);
   });
+  testWidgets(
+    'language choices only filter their directory and never change installation flags',
+    (tester) async {
+      final english = Source(
+        id: 1,
+        name: 'English site',
+        lang: 'en',
+        repo: repo,
+        isAdded: true,
+      );
+      final japanese = Source(
+        id: 2,
+        name: 'Japanese site',
+        lang: 'ja',
+        repo: repo,
+        isActive: false,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          extensionsRepoStateProvider(ItemType.manga).overrideWith(_Repos.new),
+          hideItemsStateProvider.overrideWith(_Hidden.new),
+          showNSFWStateProvider.overrideWith(_Nsfw.new),
+          temporaryCatalogRepositoryProvider(ItemType.manga)
+              .overrideWithValue(repo),
+          temporaryCatalogLoadProvider(ItemType.manga)
+              .overrideWith((ref) async {}),
+          fetchItemSourcesListProvider(
+            reFresh: false,
+            itemType: ItemType.manga,
+          ).overrideWith((ref) async {}),
+          mobileCatalogEntriesProvider(ItemType.manga)
+              .overrideWith((ref) => Stream.value([english, japanese])),
+        ],
+      );
+      addTearDown(container.dispose);
+      await mount(tester, const MobileSourcesScreen(), container);
+      await tester.tap(find.byTooltip('来源操作'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('语言筛选'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('English'));
+      await tester.tap(find.text('日本語'));
+      await tester.tap(find.text('应用'));
+      await tester.pumpAndSettle();
+      expect(find.text('Japanese site'), findsOneWidget);
+      expect(find.text('English site'), findsNothing);
+      expect(english.isAdded, isTrue);
+      expect(english.isActive, isTrue);
+      expect(japanese.isAdded, isFalse);
+      expect(japanese.isActive, isFalse);
+      await tester.tap(find.text('第三方'));
+      await tester.pumpAndSettle();
+      expect(find.text('English site'), findsOneWidget);
+      expect(find.text('Japanese site'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'browser common sites include uninstalled pinned sources and respect NSFW preference',
     (tester) async {

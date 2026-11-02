@@ -1,3 +1,7 @@
+import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -134,6 +138,19 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
   List<dynamic> filters = [];
 
   Future<String?> filterDialog(BuildContext context) async {
+    if (isMobile && !isTv) {
+      final result = await showNodeLaneCatalogSheet<List<dynamic>>(
+        context,
+        MobileSourceFilterSheet(
+          filters: filters,
+          sourceName: source?.name,
+          defaults: () => getFilterList(source: source!),
+        ),
+      );
+      if (result == null || !mounted) return null;
+      filters = result;
+      return 'filter';
+    }
     return await showModalBottomSheet(
       context: context,
       builder: (context) => StatefulBuilder(

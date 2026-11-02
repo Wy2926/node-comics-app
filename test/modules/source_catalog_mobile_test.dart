@@ -19,6 +19,7 @@ import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/services/get_popular.dart';
 import 'package:mangayomi/services/local_source_page.dart';
 import 'package:mangayomi/services/search.dart';
@@ -159,19 +160,18 @@ void main() {
             body: Center(
               child: TextButton(
                 onPressed: () async {
-                  applied = await Navigator.of(context).push<List<dynamic>>(
-                    MaterialPageRoute(
-                      builder: (_) => MobileSourceFilterPage(
-                        filters: initial,
-                        defaults: () => [
-                          TextFilter(
-                            'author',
-                            'Author with a long label',
-                            'TextFilter',
-                            state: 'Default',
-                          ),
-                        ],
-                      ),
+                  applied = await showNodeLaneCatalogSheet<List<dynamic>>(
+                    context,
+                    MobileSourceFilterSheet(
+                      filters: initial,
+                      defaults: () => [
+                        TextFilter(
+                          'author',
+                          'Author with a long label',
+                          'TextFilter',
+                          state: 'Default',
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -184,17 +184,15 @@ void main() {
       await tester.tap(find.text('Open filters'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Draft');
-      await tester.tap(find.text('Genres'));
-      await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Adventure'));
-      await tester.tap(find.text('Adventure'));
+      await tester.tap(find.byType(Switch));
       await tester.pump();
       expect((initial[0] as TextFilter).state, 'Initial');
       expect(
         ((initial[1] as GroupFilter).state[0] as CheckBoxFilter).state,
         false,
       );
-      await tester.tap(find.byTooltip('Back'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(applied, isNull);
       await tester.tap(find.text('Open filters'));
@@ -210,22 +208,52 @@ void main() {
         find.text('A long alternate order that must wrap completely'),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Filter'));
+      await tester.tap(find.widgetWithText(FilledButton, '应用筛选'));
       await tester.pumpAndSettle();
       expect((applied![2] as SelectFilter).state, 1);
       expect((applied![3] as HeaderFilter).type, 'preserve-header');
       expect((initial[2] as SelectFilter).state, 0);
       await tester.tap(find.text('Open filters'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Reset'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Reset'));
       await tester.pumpAndSettle();
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         'Default',
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Filter'));
+      await tester.tap(find.widgetWithText(FilledButton, '应用筛选'));
       await tester.pumpAndSettle();
       expect((applied!.single as TextFilter).state, 'Default');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'sort selection preserves direction and tri-state is explicit in an isolated draft',
+    (tester) async {
+      final original = [
+        SortFilter('sort', '排序', SortState(0, false, 'SortState'), [
+          SelectFilterOption('最近更新', 'updated', 'SelectOption'),
+          SelectFilterOption('人气', 'popular', 'SelectOption'),
+        ], 'SortFilter'),
+        TriStateFilter('genre', '冒险', 'adventure', 'TriState', state: 0),
+      ];
+      final draft = copySourceFilters(original);
+      await mount(tester, Scaffold(body: SourceFilterFields(filters: draft)));
+      await tester.tap(find.text('排序'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('人气'));
+      await tester.pumpAndSettle();
+      expect((draft[0] as SortFilter).state.index, 1);
+      expect((draft[0] as SortFilter).state.ascending, isFalse);
+      await tester.tap(find.text('升序'));
+      await tester.tap(find.text('排除'));
+      await tester.pumpAndSettle();
+      expect((draft[0] as SortFilter).state.ascending, isTrue);
+      expect((draft[1] as TriStateFilter).state, 2);
+      expect((original[0] as SortFilter).state.index, 0);
+      expect((original[0] as SortFilter).state.ascending, isFalse);
+      expect((original[1] as TriStateFilter).state, 0);
       expect(tester.takeException(), isNull);
     },
   );
@@ -347,6 +375,9 @@ void main() {
           expect(find.text('Old late result'), findsNothing);
           expect(find.text('Popular'), findsWidgets);
           await tester.tap(find.widgetWithText(FilledButton, 'Load More'));
+          await tester.pumpAndSettle();
+          expect(find.text('暂时无法加载'), findsOneWidget);
+          await tester.tap(find.text('查看错误详情'));
           await tester.pumpAndSettle();
           expect(find.textContaining('Page two failed'), findsOneWidget);
           expect(find.byType(MangaHomeImageCardListTile), findsOneWidget);

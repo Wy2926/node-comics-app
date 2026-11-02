@@ -10,15 +10,18 @@ import 'package:mangayomi/services/get_source_preference.dart';
 import 'package:mangayomi/eval/aidoku/aidoku_ext_dart.dart' as aidoku;
 
 void setPreferenceSetting(SourcePreference sourcePreference, Source source) {
+  unawaited(savePreferenceSetting(sourcePreference, source).catchError((_) {}));
+}
+
+Future<void> savePreferenceSetting(
+  SourcePreference sourcePreference,
+  Source source,
+) async {
   final sourcePref = sourcePreferenceRepository.findByKey(
     source.id,
     sourcePreference.key,
   );
-  unawaited(
-    sourcePreferenceRepository
-        .save(sourcePreference, source, sourcePref)
-        .catchError((_) {}),
-  );
+  await sourcePreferenceRepository.save(sourcePreference, source, sourcePref);
 
   if ((source.sourceCodeLanguage == SourceCodeLanguage.aidoku ||
           source.sourceCodeLanguage == SourceCodeLanguage.lnreader) &&
@@ -52,10 +55,11 @@ void setPreferenceSetting(SourcePreference sourcePreference, Source source) {
           source.id,
           key,
         );
-        unawaited(
-          sourcePreferenceRepository
-              .saveStringValue(source.id!, key, str, existing)
-              .catchError((_) {}),
+        await sourcePreferenceRepository.saveStringValue(
+          source.id!,
+          key,
+          str,
+          existing,
         );
       }
     }

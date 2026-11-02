@@ -1,5 +1,9 @@
 import 'dart:convert';
 
+import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -70,14 +74,25 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     if (res != null && mounted) setState(() => source = res as Source);
   }
 
-  void _clearCookies() {
-    MClient.deleteAllCookies(source.baseUrl ?? '');
-    botToast(context.l10n.cookies_deleted);
+  bool _busy = false;
+
+  Future<void> _clearCookies() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await MClient.deleteAllCookies(source.baseUrl ?? '');
+      if (mounted) botToast(context.l10n.cookies_deleted);
+    } catch (_) {
+      if (mounted) botToast('清理未完成，请重试。');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
-  void _confirmUninstall() {
+  Future<void> _confirmUninstall() async {
+    if (_busy) return;
     final l10n = context.l10n;
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         scrollable: true,
@@ -85,167 +100,136 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
         content: Text(l10n.uninstall_extension(source.name ?? '')),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () {
-              sourceRepository.uninstall(ref, source);
-              Navigator.pop(dialogContext);
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.ok),
           ),
         ],
       ),
     );
+    if (!mounted || confirmed != true || _busy) return;
+    setState(() => _busy = true);
+    try {
+      await sourceRepository.uninstall(ref, source);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) botToast('卸载未完成，请重试。');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
-  Widget _sectionLabel(String label) => Padding(
-    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-    child: Text(
-      label,
-      style: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: NodeLaneTokens.of(context).muted,
-      ),
-    ),
-  );
-
   Widget _mobileView(BuildContext context) {
-    final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final developerMode = ref.watch(developerModeStateProvider);
     return MobileBrowsePage(
-      title: l10n.extension_detail,
-      leading: BackButton(onPressed: () => Navigator.pop(context, source)),
+      title: '来源详情',
+      leading: IconButton(
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        onPressed: () => Navigator.pop(context, source),
+        icon: Icon(icons.back),
+      ),
       body: ListView(
-        padding: const EdgeInsets.only(top: 12, bottom: 24),
+        padding: NodeLaneTokens.pagePadding,
         children: [
           if (source.sourceCodeLanguage == SourceCodeLanguage.mihon)
             const ExtensionServerWarningBanner(),
-          MobileBrowseGroup(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          color: colors.soft,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: (source.iconUrl ?? '').isEmpty
-                            ? Icon(
-                                Icons.extension_outlined,
-                                color: colors.muted,
-                              )
-                            : cachedNetworkImage(
-                                imageUrl: source.iconUrl!,
-                                width: 56,
-                                height: 56,
-                                fit: BoxFit.contain,
-                                useCustomNetworkImage: false,
-                                errorWidget: Center(
-                                  child: Icon(
-                                    Icons.extension_outlined,
-                                    color: colors.muted,
-                                  ),
-                                ),
-                                headers: const {},
-                              ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          source.name ?? '',
-                          style: TextStyle(
-                            color: colors.ink,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
+          SourceGroup(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox.square(
+                      dimension: NodeLaneTokens.websiteIconSize,
+                      child: NodeLaneWebsiteIcon(url: source.iconUrl),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            source.name ?? '',
+                            style: t.readerLabel.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '${l10n.version} ${source.version ?? ''} · ${completeLanguageName(source.lang ?? '')}',
-                    style: TextStyle(fontSize: 14, color: colors.muted),
-                  ),
-                  if (source.isNsfw ?? false) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      'NSFW (18+)',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                  if (source.repo?.website != null) ...[
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: TextButton.icon(
-                        onPressed: () =>
-                            _launchInBrowser(Uri.parse(source.repo!.website!)),
-                        icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                        label: Text(l10n.open_in_browser),
+                          const SizedBox(height: 4),
+                          Text(
+                            '第三方 · ${source.repo?.name ?? (source.isLocal == true ? '本地扩展' : '来源适配器')}',
+                            style: t.readerSecondary,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '版本 ${source.version ?? ''} · ${completeLanguageName(source.lang ?? '')}',
+                            style: t.readerSecondary,
+                          ),
+                          if (source.isNsfw == true)
+                            Text(
+                              'NSFW (18+)',
+                              style: t.readerSecondary.copyWith(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
+              if (source.repo?.website?.isNotEmpty == true)
+                SourceRow(
+                  title: '仓库网站',
+                  icon: icons.external,
+                  onTap: () =>
+                      _launchInBrowser(Uri.parse(source.repo!.website!)),
+                ),
+            ],
           ),
-          if (sourcePreference?.isNotEmpty ?? false) ...[
-            _sectionLabel(l10n.settings),
-            MobileBrowseGroup(
-              child: SourcePreferenceWidget(
-                sourcePreference: sourcePreference!,
-                source: source,
-              ),
+          if (sourcePreference?.isNotEmpty == true) ...[
+            const NodeLaneCatalogHeading('来源提供的设置'),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text('选项由当前来源提供', style: t.readerSecondary),
+            ),
+            SourcePreferenceWidget(
+              sourcePreference: sourcePreference!,
+              source: source,
             ),
           ],
-          _sectionLabel(l10n.advanced),
-          MobileBrowseGroup(
-            child: Column(
-              children: [
-                if (developerMode)
-                  ListTile(
-                    leading: const Icon(Icons.code_rounded),
-                    title: Text(l10n.edit_code),
-                    onTap: _editCode,
-                  ),
-                if (developerMode && (source.isLocal ?? false))
-                  ListTile(
-                    leading: const Icon(Icons.edit_outlined),
-                    title: const Text('Edit metadata'),
-                    onTap: _editMetadata,
-                  ),
-                ListTile(
-                  leading: const Icon(Icons.cookie_outlined),
-                  title: Text(l10n.delete_all_cookies),
-                  onTap: _clearCookies,
+          const NodeLaneCatalogHeading('高级操作'),
+          SourceGroup(
+            children: [
+              if (developerMode)
+                SourceRow(
+                  title: context.l10n.edit_code,
+                  icon: icons.code,
+                  onTap: _editCode,
                 ),
-                Divider(height: 1, color: colors.line),
-                ListTile(
-                  leading: const Icon(Icons.delete_outline_rounded),
-                  iconColor: Theme.of(context).colorScheme.error,
-                  textColor: Theme.of(context).colorScheme.error,
-                  title: Text(l10n.uninstall),
-                  onTap: _confirmUninstall,
+              if (developerMode && source.isLocal == true)
+                SourceRow(
+                  title: '编辑来源信息',
+                  icon: icons.edit,
+                  onTap: _editMetadata,
                 ),
-              ],
-            ),
+              SourceRow(
+                title: '清除此网站 Cookie',
+                subtitle: '下次访问可能需要重新登录',
+                icon: icons.cookies,
+                onTap: _busy ? null : _clearCookies,
+              ),
+              SourceRow(
+                title: '卸载来源',
+                icon: icons.delete,
+                destructive: true,
+                onTap: _busy ? null : _confirmUninstall,
+              ),
+            ],
           ),
         ],
       ),

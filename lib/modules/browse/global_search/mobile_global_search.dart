@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_search_field.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -14,19 +17,20 @@ class MobileGlobalSearchPage extends StatelessWidget {
     required this.scope,
     required this.query,
     required this.results,
+    this.onScope,
   });
 
   final TextEditingController controller;
   final VoidCallback onSubmit, onClear;
+  final VoidCallback? onScope;
   final String scope, query;
   final Widget results;
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
     return MobileBrowsePage(
-      title: l10n.global_search,
+      title: '跨来源搜索',
       body: LayoutBuilder(
         builder: (context, constraints) => Column(
           children: [
@@ -47,6 +51,19 @@ class MobileGlobalSearchPage extends StatelessWidget {
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: SourceGroup(
+                children: [
+                  SourceRow(
+                    title: '搜索范围',
+                    value: scope,
+                    icon: NodeLaneIcons.of(context).adjustments,
+                    onTap: onScope,
+                  ),
+                ],
+              ),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 key: ValueKey(query),
@@ -54,29 +71,8 @@ class MobileGlobalSearchPage extends StatelessWidget {
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.only(bottom: 24),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(scope, style: TextStyle(color: colors.muted)),
-                          const SizedBox(height: 8),
-                          Semantics(
-                            header: true,
-                            child: Text(
-                              query.trim().isEmpty
-                                  ? l10n.popular
-                                  : l10n.global_search_results_for(query),
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    results,
-                  ],
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [results],
                 ),
               ),
             ),
@@ -108,106 +104,93 @@ class MobileGlobalSourceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Semantics(
-              button: onOpen != null,
-              child: Material(
-                color: colors.surface,
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: onOpen,
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Semantics(
-                                header: true,
-                                child: Text(
-                                  title,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: colors.ink,
-                                  ),
-                                ),
-                              ),
-                              if (language.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  language,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: colors.muted,
-                                  ),
-                                ),
-                              ],
-                            ],
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      child: NodeLaneGroupSurface(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: onOpen,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: t.readerLabel.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        if (onOpen != null) ...[
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            color: colors.muted,
-                          ),
+                          if (language.isNotEmpty)
+                            Text(language, style: t.readerSecondary),
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                  if (onOpen != null && !loading && count > 0)
+                    TextButton(
+                      onPressed: onOpen,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('查看全部'),
+                          Icon(icons.forward, size: 16),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (loading)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: LinearProgressIndicator(),
-            )
-          else if (status != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: status,
-            )
-          else
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = ((constraints.maxWidth - 52) / 2).clamp(
-                  120.0,
-                  180.0,
-                );
-                final height =
-                    width * 1.42 +
-                    10 +
-                    MediaQuery.textScalerOf(context).scale(15) * 1.3 * 2;
-                return SizedBox(
-                  height: height,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: count,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) => SizedBox(
-                      width: width,
-                      child: itemBuilder(context, index),
+              const SizedBox(height: 12),
+              if (loading)
+                Row(
+                  children: [
+                    SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: t.accent,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-        ],
+                    const SizedBox(width: 12),
+                    Text('正在搜索…', style: t.readerSecondary),
+                  ],
+                )
+              else if (status != null)
+                status!
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = ((constraints.maxWidth - 12) / 2).clamp(
+                      100.0,
+                      180.0,
+                    );
+                    final height =
+                        width * 1.42 +
+                        10 +
+                        MediaQuery.textScalerOf(context).scale(15) * 1.3 * 2;
+                    return SizedBox(
+                      height: height,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: count,
+                        separatorBuilder: (_, _) => const SizedBox(width: 12),
+                        itemBuilder: (context, i) => SizedBox(
+                          width: width,
+                          child: itemBuilder(context, i),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -232,14 +215,14 @@ class MobileGlobalSearchEmpty extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Icon(
-            Icons.extension_off_outlined,
+            NodeLaneIcons.of(context).extensions,
             size: 36,
             color: NodeLaneTokens.of(context).muted,
           ),
           const SizedBox(height: 16),
-          Text(message, style: Theme.of(context).textTheme.titleMedium),
+          Text(message, style: NodeLaneTokens.of(context).readerLabel),
           const SizedBox(height: 8),
-          Text(hint),
+          Text(hint, style: NodeLaneTokens.of(context).readerSecondary),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: onAction,
@@ -296,23 +279,7 @@ class MobileGlobalResultCard extends StatelessWidget {
                         PositionedDirectional(
                           top: 8,
                           start: 8,
-                          child: Semantics(
-                            label: context.l10n.in_library,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: colors.surface,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: Icon(
-                                  Icons.collections_bookmark_rounded,
-                                  size: 20,
-                                  color: colors.accent,
-                                ),
-                              ),
-                            ),
-                          ),
+                          child: NodeLaneCoverBadge(context.l10n.in_library),
                         ),
                     ],
                   ),

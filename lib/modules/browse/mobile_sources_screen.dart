@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
+import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
@@ -35,6 +35,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   ItemType type = ItemType.manga;
   bool thirdParty = false, managing = false;
   final busy = <int>{};
+  final languages = <(ItemType, bool), Set<String>>{};
   String? error;
   @override
   void initState() {
@@ -56,6 +57,36 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   void dispose() {
     query.dispose();
     super.dispose();
+  }
+
+  Future<void> _languageFilter(List<Source> catalog) async {
+    final key = (type, thirdParty);
+    final available = catalog.map((s) => s.lang ?? '').toSet().toList()..sort();
+    final initial =
+        languages[key] ??
+        catalog
+            .where((s) => s.isActive == true)
+            .map((s) => s.lang ?? '')
+            .toSet();
+    final result = await showSourceMultiChoice<String>(
+      context,
+      title: '语言筛选',
+      subtitle: '仅筛选当前目录，不影响已安装来源',
+      current: initial,
+      options: [
+        for (final language in available)
+          SourceOption(
+            language,
+            language.toLowerCase() == 'all'
+                ? '多语言'
+                : completeLanguageName(language.toLowerCase()),
+          ),
+      ],
+      allLabel: '全部语言',
+      saveLabel: '应用',
+      reset: true,
+    );
+    if (mounted && result != null) setState(() => languages[key] = result);
   }
 
   Future<void> _fetch(
@@ -108,52 +139,56 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           children: [
-            NodeLaneCatalogRow(
-              title: source.isPinned == true ? '取消常用' : '固定到常用',
-              leading: Icon(NodeLaneIcons.of(context).pin),
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                _pin(source);
-              },
+            SourceGroup(
+              children: [
+                SourceRow(
+                  title: source.isPinned == true ? '取消常用' : '固定到常用',
+                  icon: NodeLaneIcons.of(context).pin,
+                  onTap: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    _pin(source);
+                  },
+                ),
+                SourceRow(
+                  title: '最新内容',
+                  icon: NodeLaneIcons.of(context).latest,
+                  onTap: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    if (source.isAdded == true) {
+                      _open(source, latest: true);
+                    } else {
+                      _fetch(source, open: true, latest: true);
+                    }
+                  },
+                ),
+                if ((source.baseUrl ?? '').isNotEmpty) ...[
+                  SourceRow(
+                    title: '在浏览器打开',
+                    icon: NodeLaneIcons.of(context).navigation,
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                      context.push(
+                        '/mangawebview',
+                        extra: {
+                          'url': source.baseUrl!,
+                          'title': source.name ?? '',
+                        },
+                      );
+                    },
+                  ),
+                ],
+                if (source.isAdded == true) ...[
+                  SourceRow(
+                    title: '来源设置',
+                    icon: NodeLaneIcons.of(context).settings,
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                      context.push('/extension_detail', extra: source);
+                    },
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 12),
-            NodeLaneCatalogRow(
-              title: '最新内容',
-              leading: Icon(NodeLaneIcons.of(context).latest),
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                if (source.isAdded == true) {
-                  _open(source, latest: true);
-                } else {
-                  _fetch(source, open: true, latest: true);
-                }
-              },
-            ),
-            if ((source.baseUrl ?? '').isNotEmpty) ...[
-              const SizedBox(height: 12),
-              NodeLaneCatalogRow(
-                title: '在浏览器打开',
-                leading: Icon(NodeLaneIcons.of(context).browser),
-                onTap: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  context.push(
-                    '/mangawebview',
-                    extra: {'url': source.baseUrl!, 'title': source.name ?? ''},
-                  );
-                },
-              ),
-            ],
-            if (source.isAdded == true) ...[
-              const SizedBox(height: 12),
-              NodeLaneCatalogRow(
-                title: '来源设置',
-                leading: Icon(NodeLaneIcons.of(context).settings),
-                onTap: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  context.push('/extension_detail', extra: source);
-                },
-              ),
-            ],
           ],
         ),
       ),
@@ -267,19 +302,28 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     final temporary = ref.watch(temporaryCatalogRepositoryProvider(type));
     final loading = ref.watch(temporaryCatalogLoadProvider(type));
     ref.watch(fetchItemSourcesListProvider(reFresh: false, itemType: type));
-    final sources = ref.watch(getExtensionsStreamProvider(type));
+    final sources = ref.watch(mobileCatalogEntriesProvider(type));
     final repositories = ref.watch(extensionsRepoStateProvider(type));
     final showNsfw = ref.watch(showNSFWStateProvider);
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final catalog = (sources.value ?? <Source>[])
+        .where(
+          (s) =>
+              (showNsfw || s.isNsfw != true) &&
+              !repositories.any(
+                (r) => r.jsonUrl == s.repo?.jsonUrl && r.hidden == true,
+              ) &&
+              (thirdParty || s.repo?.jsonUrl == temporary?.jsonUrl),
+        )
+        .toList();
+    final selectedLanguages = languages[(type, thirdParty)];
     final all =
-        (sources.value ?? <Source>[])
+        catalog
             .where(
               (s) =>
-                  (showNsfw || s.isNsfw != true) &&
-                  !repositories.any(
-                    (r) => r.jsonUrl == s.repo?.jsonUrl && r.hidden == true,
-                  ) &&
-                  (thirdParty || s.repo?.jsonUrl == temporary?.jsonUrl) &&
+                  (selectedLanguages == null
+                      ? s.isActive == true
+                      : selectedLanguages.contains(s.lang ?? '')) &&
                   (s.name ?? '').toLowerCase().contains(
                     query.text.toLowerCase(),
                   ),
@@ -352,10 +396,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                               );
                             }
                             if (value == 'filter') {
-                              context.push(
-                                thirdParty ? '/ExtensionLang' : '/sourceFilter',
-                                extra: type,
-                              );
+                              _languageFilter(catalog);
                             }
                             if (value == 'update') _updateInstalled();
                             if (value == 'create') {
@@ -372,10 +413,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                               value: 'search',
                               child: Text('搜索漫画或作品'),
                             ),
-                            PopupMenuItem(
-                              value: 'filter',
-                              child: Text('语言与来源筛选'),
-                            ),
+                            PopupMenuItem(value: 'filter', child: Text('语言筛选')),
                             if (thirdParty)
                               const PopupMenuItem(
                                 value: 'update',

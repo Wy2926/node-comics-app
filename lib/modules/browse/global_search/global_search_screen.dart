@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:mangayomi/modules/browse/global_search/source_search_scope.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/webview/browser_url.dart';
+
 import 'package:mangayomi/utils/source_fetch_gate.dart';
 
 import 'package:flutter/material.dart';
@@ -14,7 +18,6 @@ import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/migrate_screen.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -63,21 +66,55 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   /// different things done about them.
   late List<Source> _installedSources;
   late List<Source> sourceList;
+  Set<int>? _scopeIds;
 
   void _readSources() {
     _installedSources = sourceRepository.getAddedByItemType(widget.itemType);
-    final sources = ref.read(onlyIncludePinnedSourceStateProvider)
-        ? sourceRepository.getPinnedByItemType(widget.itemType)
-        : _installedSources;
+    final sources = _installedSources
+        .where(
+          (s) =>
+              (_scopeIds == null || _scopeIds!.contains(s.id)) &&
+              (!ref.read(onlyIncludePinnedSourceStateProvider) ||
+                  s.isPinned == true),
+        )
+        .toList();
     sourceList = ref.read(showNSFWStateProvider)
         ? sources
         : sources.where((e) => !(e.isNsfw ?? false)).toList();
   }
 
+  Future<void> _editScope() async {
+    final candidates = sourceRepository
+        .getAddedByItemType(widget.itemType)
+        .where((s) => ref.read(showNSFWStateProvider) || s.isNsfw != true)
+        .toList();
+    final result = await Navigator.of(context).push<SourceSearchScope>(
+      MaterialPageRoute(
+        builder: (_) => SourceSearchScopePage(
+          sources: candidates,
+          media: widget.itemType.localized(context.l10n),
+          current: SourceSearchScope(
+            _scopeIds ?? candidates.map((s) => s.id).whereType<int>().toSet(),
+            ref.read(onlyIncludePinnedSourceStateProvider),
+          ),
+        ),
+      ),
+    );
+    if (!mounted || result == null) return;
+    ref
+        .read(onlyIncludePinnedSourceStateProvider.notifier)
+        .set(result.pinnedOnly);
+    setState(() {
+      _scopeIds = result.ids;
+      _readSources();
+      _searchVersion++;
+      _nothingToShow.clear();
+    });
+  }
+
   /// Sources that finished with nothing to show, id to the reason.
   ///
-  /// They are hidden from the list and gathered into one group at the bottom,
-  /// so the results are not interleaved with a dozen dead extensions.
+  /// Desktop gathers empty sources into one group; mobile keeps inline status.
   final Map<int, String> _nothingToShow = {};
 
   @override
@@ -145,10 +182,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
         controller: _textEditingController,
         onSubmit: () => _submit(_textEditingController.text),
         onClear: _clear,
-        scope: context.l10n.global_search_scope(
-          widget.itemType.localized(context.l10n),
-          sourceList.length,
-        ),
+        scope: '${sourceList.length} 个来源',
+        onScope: _editScope,
         query: query,
         results: results,
       );
@@ -204,6 +239,19 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     final l10n = l10nLocalizations(context)!;
     final pinnedOnly = ref.read(onlyIncludePinnedSourceStateProvider);
 
+    if (isMobile &&
+        !isTv &&
+        (_scopeIds != null || pinnedOnly) &&
+        _installedSources.any(
+          (s) => ref.read(showNSFWStateProvider) || s.isNsfw != true,
+        )) {
+      return MobileGlobalSearchEmpty(
+        message: '当前范围没有可搜索的来源',
+        hint: '选择参与搜索的来源，或调整仅常用选项。',
+        actionLabel: '搜索范围',
+        onAction: _editScope,
+      );
+    }
     final reason = noSourcesReason(
       installed: _installedSources.length,
       pinnedOnly: pinnedOnly,
@@ -292,31 +340,6 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   Widget _nothingToShowGroup(BuildContext context) {
     if (_nothingToShow.isEmpty) return const SizedBox.shrink();
     final byId = {for (final s in sourceList) s.id: s};
-    if (isMobile && !isTv) {
-      return MobileBrowseGroup(
-        child: ExpansionTile(
-          key: ValueKey(_searchVersion),
-          shape: const Border(),
-          collapsedShape: const Border(),
-          title: Text(
-            context.l10n.sources_with_no_results(_nothingToShow.length),
-          ),
-          children: [
-            for (final entry in _nothingToShow.entries)
-              if (byId[entry.key] case final source?)
-                ListTile(
-                  contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  title: Text(source.name ?? ''),
-                  subtitle: Text(
-                    '${completeLanguageName(source.lang ?? '')}\n${entry.value}',
-                  ),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _openSearchSource(context, source, _query),
-                ),
-          ],
-        ),
-      );
-    }
     final theme = Theme.of(context);
     return Theme(
       // Drop the divider lines ExpansionTile draws by default.
@@ -449,18 +472,12 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
 
-    // A source with nothing to show should not hold a full height slot. Failed
-    // and empty sources collapse to a single line, so the sources that did
-    // return results stay on screen instead of being pushed off by errors.
     final hasResults =
         _errorMessage.isEmpty && (pages?.list.isNotEmpty ?? false);
     final collapsed = !_isLoading && !hasResults;
 
-    // Nothing to show is nothing to show. A source that errored and a source
-    // that returned no match are the same non-event to someone scanning
-    // results, so both are handed to the parent and drawn once, together, at
-    // the bottom rather than each taking a slot in the middle of the results.
-    if (collapsed) {
+    // Preserve the desktop summary; mobile shows retry on each source.
+    if (collapsed && !(isMobile && !isTv)) {
       widget.onNothingToShow?.call(
         _errorMessage.isNotEmpty
             ? "${l10n.failed} ${_errorMessage.replaceAll(RegExp(r'\s+'), ' ').trim()}"
@@ -472,9 +489,57 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
     if (isMobile && !isTv) {
       return MobileGlobalSourceSection(
         title: widget.source.name ?? '',
-        language: completeLanguageName(widget.source.lang ?? ''),
+        language:
+            '${completeLanguageName(widget.source.lang ?? '')}${hasResults ? ' · ${pages!.list.length} 个结果' : ''}',
         onOpen: () => _openSearchSource(context, widget.source, widget.query),
         loading: _isLoading,
+        status: collapsed
+            ? Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _errorMessage.isEmpty ? l10n.no_result : '暂时无法连接',
+                      style: NodeLaneTokens.of(context).readerSecondary,
+                    ),
+                  ),
+                  if (isBrowserUrl(widget.source.baseUrl))
+                    TextButton.icon(
+                      label: const Text('网站'),
+                      icon: Icon(NodeLaneIcons.of(context).browser, size: 20),
+                      onPressed: () => context.push(
+                        '/mangawebview',
+                        extra: {
+                          'url': widget.source.baseUrl!,
+                          'title': widget.source.name ?? '',
+                        },
+                      ),
+                    ),
+                  if (_errorMessage.isNotEmpty)
+                    TextButton(
+                      onPressed: () {
+                        if (_isLoading) return;
+                        if (widget.query.trim().isEmpty) {
+                          ref.invalidate(
+                            getPopularProvider(source: widget.source, page: 1),
+                          );
+                        } else {
+                          ref.invalidate(
+                            searchProvider(
+                              source: widget.source,
+                              page: 1,
+                              query: widget.query,
+                              filterList: const [],
+                            ),
+                          );
+                        }
+                        setState(() => _isLoading = true);
+                        _init();
+                      },
+                      child: Text(l10n.retry),
+                    ),
+                ],
+              )
+            : null,
         count: pages?.list.length ?? 0,
         itemBuilder: (context, index) => MangaGlobalImageCard(
           key: ValueKey((pages!.list[index].link, index)),

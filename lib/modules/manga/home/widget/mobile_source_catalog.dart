@@ -1,5 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:mangayomi/modules/browse/widgets/mobile_search_field.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
@@ -21,28 +25,33 @@ class MobileSourceCatalog extends StatelessWidget {
     required this.onOptions,
     required this.results,
     this.onFilter,
+    this.onSavedSearches,
   });
 
   final String title;
   final TextEditingController search;
   final VoidCallback onSubmit, onClear, onOptions;
   final ValueChanged<int> onSelect;
-  final VoidCallback? onFilter;
+  final VoidCallback? onFilter, onSavedSearches;
   final int selected;
   final bool supportsLatest, filtering;
   final Widget results;
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context), l10n = context.l10n;
+    final t = NodeLaneTokens.of(context),
+        icons = NodeLaneIcons.of(context),
+        l10n = context.l10n;
     return MobileBrowsePage(
       title: title,
       actions: [
-        IconButton(
+        NodeLaneIconButton(
+          icon: icons.more,
           tooltip: l10n.more,
+          style: NodeLaneIconButtonStyle.field,
           onPressed: onOptions,
-          icon: const Icon(Icons.more_horiz_rounded),
         ),
+        const SizedBox(width: 12),
       ],
       body: LayoutBuilder(
         builder: (context, constraints) => Column(
@@ -52,77 +61,60 @@ class MobileSourceCatalog extends StatelessWidget {
                 maxHeight: constraints.maxHeight * .5,
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    MobileSearchField(
+                      controller: search,
+                      onSubmit: onSubmit,
+                      onClear: onClear,
+                      submitLabel: l10n.search,
+                      hint: '搜索本站作品',
+                      onSavedSearches: onSavedSearches,
+                    ),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
-                          child: Semantics(
-                            label: l10n.search,
-                            child: ValueListenableBuilder(
-                              valueListenable: search,
-                              builder: (context, value, _) => TextField(
-                                controller: search,
-                                textInputAction: TextInputAction.search,
-                                onSubmitted: (_) => onSubmit(),
-                                style: const TextStyle(fontSize: 16),
-                                decoration: InputDecoration(
-                                  hintText: l10n.search,
-                                  filled: true,
-                                  fillColor: colors.soft,
-                                  contentPadding: const EdgeInsets.all(14),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  suffixIcon: value.text.isEmpty
-                                      ? null
-                                      : IconButton(
-                                          tooltip: l10n.reset,
-                                          onPressed: onClear,
-                                          icon: const Icon(Icons.close_rounded),
-                                        ),
-                                ),
+                          child: NodeLaneSegments<int>(
+                            value: selected,
+                            labelStyle: t.readerSecondary,
+                            segments: [
+                              ButtonSegment(value: 0, label: Text('热门')),
+                              if (supportsLatest)
+                                ButtonSegment(value: 1, label: Text('最新')),
+                            ],
+                            onChanged: onSelect,
+                          ),
+                        ),
+                        if (onFilter != null) ...[
+                          const SizedBox(width: 12),
+                          Stack(
+                            children: [
+                              NodeLaneIconButton(
+                                icon: icons.adjustments,
+                                tooltip: l10n.filter,
+                                style: NodeLaneIconButtonStyle.field,
+                                onPressed: onFilter,
                               ),
-                            ),
+                              if (filtering)
+                                Positioned(
+                                  right: 3,
+                                  top: 3,
+                                  child: IgnorePointer(
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: t.accent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton.filled(
-                          tooltip: l10n.search,
-                          constraints: const BoxConstraints(
-                            minWidth: 48,
-                            minHeight: 48,
-                          ),
-                          onPressed: onSubmit,
-                          icon: const Icon(Icons.search_rounded),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        ChoiceChip(
-                          label: Text(l10n.popular),
-                          selected: selected == 0,
-                          onSelected: (_) => onSelect(0),
-                        ),
-                        if (supportsLatest)
-                          ChoiceChip(
-                            label: Text(l10n.latest),
-                            selected: selected == 1,
-                            onSelected: (_) => onSelect(1),
-                          ),
-                        if (onFilter != null)
-                          FilterChip(
-                            label: Text(l10n.filter),
-                            selected: filtering,
-                            onSelected: (_) => onFilter!(),
-                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -217,15 +209,7 @@ class MobileSourceResults extends StatelessWidget {
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 20,
                       mainAxisExtent:
-                          math.max(
-                            width * 1.42,
-                            compact
-                                ? MediaQuery.textScalerOf(context).scale(15) *
-                                          1.3 *
-                                          2 +
-                                      56
-                                : 0,
-                          ) +
+                          width * NodeLaneTokens.coverAspectRatio +
                           (compact
                               ? 0
                               : 10 +
@@ -255,10 +239,12 @@ class MobileSourceMangaCard extends StatelessWidget {
     required this.onOpen,
     required this.onQuickAdd,
     required this.inLibrary,
+    this.author,
     this.list = false,
     this.compact = false,
   });
   final String title;
+  final String? author;
   final Widget cover;
   final VoidCallback onOpen, onQuickAdd;
   final bool inLibrary, list, compact;
@@ -266,63 +252,46 @@ class MobileSourceMangaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    final hasAuthor = author?.trim().isNotEmpty == true;
     final titleWidget = Text(
       title,
-      maxLines: 2,
+      maxLines: hasAuthor ? 1 : 2,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         fontSize: 15,
         height: 1.3,
         fontWeight: FontWeight.w600,
-        color: compact && !list ? Colors.white : colors.ink,
+        color: colors.ink,
       ),
     );
+    final caption = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        titleWidget,
+        if (hasAuthor) ...[
+          const SizedBox(height: 4),
+          Text(
+            author!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: colors.readerSecondary,
+          ),
+        ],
+      ],
+    );
     final image = ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
       child: ColoredBox(
         color: colors.soft,
         child: Stack(
           fit: StackFit.expand,
           children: [
             ExcludeSemantics(child: cover),
-            if (compact && !list)
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: .8),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             if (inLibrary)
               Positioned(
                 top: 8,
                 left: 8,
-                child: Tooltip(
-                  message: context.l10n.in_library,
-                  child: CircleAvatar(
-                    radius: 15,
-                    backgroundColor: colors.accent,
-                    child: Icon(
-                      Icons.bookmark_rounded,
-                      size: 18,
-                      color: colors.onAccent,
-                    ),
-                  ),
-                ),
-              ),
-            if (compact && !list)
-              Positioned(
-                left: 10,
-                right: 10,
-                bottom: 12,
-                child: ExcludeSemantics(child: titleWidget),
+                child: NodeLaneCoverBadge(context.l10n.in_library),
               ),
           ],
         ),
@@ -334,7 +303,7 @@ class MobileSourceMangaCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
           onTap: onOpen,
           onLongPress: onQuickAdd,
           child: list
@@ -344,9 +313,12 @@ class MobileSourceMangaCard extends StatelessWidget {
                     children: [
                       SizedBox(width: 78, height: 110, child: image),
                       const SizedBox(width: 16),
-                      Expanded(child: ExcludeSemantics(child: titleWidget)),
+                      Expanded(child: ExcludeSemantics(child: caption)),
                       const SizedBox(width: 8),
-                      Icon(Icons.chevron_right_rounded, color: colors.muted),
+                      Icon(
+                        NodeLaneIcons.of(context).forward,
+                        color: colors.muted,
+                      ),
                     ],
                   ),
                 )
@@ -357,7 +329,7 @@ class MobileSourceMangaCard extends StatelessWidget {
                     if (!compact)
                       Padding(
                         padding: const EdgeInsets.only(top: 10),
-                        child: ExcludeSemantics(child: titleWidget),
+                        child: ExcludeSemantics(child: caption),
                       ),
                   ],
                 ),
@@ -382,28 +354,119 @@ class MobileSourceStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final t = NodeLaneTokens.of(context),
+        icons = NodeLaneIcons.of(context),
+        l10n = context.l10n;
+    if (loading) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (onRetry != null) {
+      return NodeLaneGroupSurface(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(icons.webLink, size: 48, color: t.muted),
+              const SizedBox(height: 20),
+              Text('暂时无法加载', textAlign: TextAlign.center, style: t.readerTitle),
+              const SizedBox(height: 12),
+              Text(
+                onBrowser == null ? '已保留当前内容，请重试。' : '可以重试，或在浏览器中打开网站。',
+                textAlign: TextAlign.center,
+                style: t.readerSecondary,
+              ),
+              const SizedBox(height: 24),
+              FilledButton(onPressed: onRetry, child: Text(l10n.retry)),
+              if (onBrowser != null) ...[
+                const SizedBox(height: 12),
+                NodeLaneSecondaryButton(
+                  onPressed: onBrowser,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(icons.navigation, color: t.accent),
+                      const SizedBox(width: 8),
+                      const Flexible(child: Text('在浏览器打开')),
+                    ],
+                  ),
+                ),
+              ],
+              if (message?.isNotEmpty == true) _SourceErrorDetails(message!),
+              if (onBrowser != null)
+                Text(
+                  '浏览器内可使用漫画图片翻译。',
+                  textAlign: TextAlign.center,
+                  style: t.readerSecondary,
+                ),
+            ],
+          ),
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (loading)
-          const Padding(
-            padding: EdgeInsets.all(20),
-            child: Center(child: CircularProgressIndicator()),
-          ),
         if (message != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Text(message!, textAlign: TextAlign.center),
+            child: Text(
+              message!,
+              textAlign: TextAlign.center,
+              style: t.readerSecondary,
+            ),
           ),
-        if (onRetry != null)
-          FilledButton.tonal(onPressed: onRetry, child: Text(l10n.retry)),
-        if (onBrowser != null)
-          TextButton(onPressed: onBrowser, child: Text(l10n.open_in_browser)),
-        if (onLoadMore != null && !loading)
+        if (onLoadMore != null)
           FilledButton.tonal(
             onPressed: onLoadMore,
             child: Text(l10n.load_more),
+          ),
+      ],
+    );
+  }
+}
+
+class _SourceErrorDetails extends StatefulWidget {
+  const _SourceErrorDetails(this.message);
+  final String message;
+  @override
+  State<_SourceErrorDetails> createState() => _SourceErrorDetailsState();
+}
+
+class _SourceErrorDetailsState extends State<_SourceErrorDetails> {
+  bool expanded = false;
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextButton(
+          style: TextButton.styleFrom(padding: EdgeInsets.zero),
+          onPressed: () => setState(() => expanded = !expanded),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '查看错误详情',
+                  style: t.readerSecondary.copyWith(color: t.accent),
+                ),
+              ),
+              Icon(
+                expanded ? icons.down : icons.forward,
+                size: 16,
+                color: t.muted,
+              ),
+            ],
+          ),
+        ),
+        if (expanded)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: SelectableText(widget.message, style: t.readerSecondary),
           ),
       ],
     );

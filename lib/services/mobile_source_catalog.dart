@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
@@ -36,3 +38,10 @@ final temporaryCatalogLoadProvider = FutureProvider.family<void, ItemType>((
     repo: repo,
   );
 });
+
+/// Read all entries so directory language choices can reveal inactive languages
+/// without changing installation flags or the preferences used by other pages.
+final mobileCatalogEntriesProvider =
+    StreamProvider.family<List<Source>, ItemType>(
+      (ref, type) => sourceRepository.watchByItemType(type),
+    );

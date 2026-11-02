@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 
 class FilterWidget extends StatelessWidget {
   final List<dynamic> filterList;
-  final bool mobile;
   final Function(List<dynamic>) onChanged;
   const FilterWidget({
     super.key,
     required this.onChanged,
     required this.filterList,
-    this.mobile = false,
   });
 
   @override
@@ -27,7 +24,6 @@ class FilterWidget extends StatelessWidget {
         Widget? widget;
         if (filterState is TextFilter) {
           widget = SeachFormTextFieldWidget(
-            mobile: mobile,
             text: filterState.state,
             onChanged: (val) {
               filterList[idx] = filterState..state = val;
@@ -36,13 +32,13 @@ class FilterWidget extends StatelessWidget {
             labelText: filterState.name,
           );
         } else if (filterState is HeaderFilter) {
-          widget = ListTile(dense: !mobile, title: Text(filterState.name));
+          widget = ListTile(dense: true, title: Text(filterState.name));
         } else if (filterState is SeparatorFilter) {
           widget = const Divider();
         } else if (filterState is TriStateFilter) {
           final state = filterState.state;
           widget = CheckboxListTile(
-            dense: !mobile,
+            dense: true,
             value: switch (state) {
               0 => false,
               1 => true,
@@ -63,7 +59,7 @@ class FilterWidget extends StatelessWidget {
           );
         } else if (filterState is CheckBoxFilter) {
           widget = CheckboxListTile(
-            dense: !mobile,
+            dense: true,
             value: filterState.state,
             onChanged: (value) {
               filterList[idx] = filterState..state = value!;
@@ -74,13 +70,9 @@ class FilterWidget extends StatelessWidget {
           );
         } else if (filterState is GroupFilter) {
           widget = ExpansionTile(
-            title: Text(
-              filterState.name,
-              style: TextStyle(fontSize: mobile ? 16 : 13),
-            ),
+            title: Text(filterState.name, style: TextStyle(fontSize: 13)),
             children: [
               FilterWidget(
-                mobile: mobile,
                 filterList: filterState.state,
                 onChanged: (values) {
                   filterState.state = values;
@@ -92,15 +84,12 @@ class FilterWidget extends StatelessWidget {
         } else if (filterState is SortFilter) {
           final ascending = filterState.state.ascending;
           widget = ExpansionTile(
-            title: Text(
-              filterState.name,
-              style: TextStyle(fontSize: mobile ? 16 : 13),
-            ),
+            title: Text(filterState.name, style: TextStyle(fontSize: 13)),
             children: filterState.values.map((e) {
               final selected =
                   filterState.values.indexOf(e) == filterState.state.index;
               return ListTile(
-                dense: !mobile,
+                dense: true,
                 leading: Icon(
                   ascending
                       ? Icons.arrow_upward_rounded
@@ -123,49 +112,13 @@ class FilterWidget extends StatelessWidget {
             }).toList(),
           );
         } else if (filterState is SelectFilter) {
-          if (mobile) {
-            final values = filterState.values;
-            final valid =
-                filterState.state >= 0 && filterState.state < values.length;
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 8,
-                horizontal: 12,
-              ),
-              title: Text(filterState.name),
-              subtitle: valid ? Text(values[filterState.state].name) : null,
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: values.isEmpty
-                  ? null
-                  : () async {
-                      final selected = await showMobileSettingsPicker<int>(
-                        context,
-                        title: filterState.name,
-                        current: filterState.state,
-                        options: [
-                          for (var i = 0; i < values.length; i++)
-                            MobileSettingOption(i, values[i].name),
-                        ],
-                      );
-                      if (selected != null &&
-                          context.mounted &&
-                          selected.value != filterState.state) {
-                        filterState.state = selected.value;
-                        onChanged(filterList);
-                      }
-                    },
-            );
-          }
           widget = SizedBox(
             width: context.width(1),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
-                  child: ListTile(
-                    dense: !mobile,
-                    title: Text(filterState.name),
-                  ),
+                  child: ListTile(dense: true, title: Text(filterState.name)),
                 ),
                 Expanded(
                   child: DropdownButtonHideUnderline(
@@ -215,7 +168,6 @@ class FilterWidget extends StatelessWidget {
 
 class SeachFormTextFieldWidget extends StatefulWidget {
   final String labelText;
-  final bool mobile;
   final String text;
   final Function(String) onChanged;
   const SeachFormTextFieldWidget({
@@ -223,7 +175,6 @@ class SeachFormTextFieldWidget extends StatefulWidget {
     required this.text,
     required this.onChanged,
     required this.labelText,
-    this.mobile = false,
   });
 
   @override
@@ -247,29 +198,6 @@ class _SeachFormTextFieldWidgetState extends State<SeachFormTextFieldWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.mobile) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(widget.labelText),
-            const SizedBox(height: 8),
-            Semantics(
-              label: widget.labelText,
-              child: TextField(
-                controller: _controller,
-                onChanged: widget.onChanged,
-                decoration: const InputDecoration(
-                  filled: true,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextField(

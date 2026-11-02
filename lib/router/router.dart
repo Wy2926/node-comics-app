@@ -218,10 +218,11 @@ class RouterNotifier extends ChangeNotifier {
       builder: (id) =>
           NovelReaderView(key: ValueKey('novelReader-$id'), chapterId: id),
     ),
-    _genericRoute<ItemType>(
-      name: "ExtensionLang",
-      builder: (itemType) => ExtensionsLang(itemType: itemType),
-    ),
+    if (!(isMobile && !isTv))
+      _genericRoute<ItemType>(
+        name: "ExtensionLang",
+        builder: (itemType) => ExtensionsLang(itemType: itemType),
+      ),
     _genericRoute(name: "settings", child: const SettingsScreen()),
     _genericRoute(name: "appearance", child: const AppearanceScreen()),
     _genericRoute<Source>(
@@ -236,10 +237,11 @@ class RouterNotifier extends ChangeNotifier {
     _genericRoute(name: "errorReports", child: const ErrorReportsScreen()),
     _genericRoute(name: "track", child: const TrackScreen()),
     _genericRoute(name: "sync", child: const SyncScreen()),
-    _genericRoute<ItemType>(
-      name: "sourceFilter",
-      builder: (itemType) => SourcesFilterScreen(itemType: itemType),
-    ),
+    if (!(isMobile && !isTv))
+      _genericRoute<ItemType>(
+        name: "sourceFilter",
+        builder: (itemType) => SourcesFilterScreen(itemType: itemType),
+      ),
     _genericRoute(name: "downloadQueue", child: const DownloadQueueScreen()),
     _genericRoute<Map<String, dynamic>>(
       name: "mangawebview",

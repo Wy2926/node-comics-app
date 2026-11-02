@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 
 import 'package:flutter/material.dart';
@@ -286,15 +287,23 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       );
       return;
     }
-    final name = await showDialog<String>(
-      context: context,
-      builder: (_) => MobileSettingsTextDialog(
-        title: context.l10n.save_search,
-        initialValue: query,
-        hint: context.l10n.name,
-        isValid: (value) => value.trim().isNotEmpty,
-      ),
-    );
+    final name = isMobile && !isTv
+        ? await showSourceTextEditor(
+            context,
+            title: context.l10n.save_search,
+            subtitle: source.name,
+            initialValue: query,
+            allowEmpty: false,
+          )
+        : await showDialog<String>(
+            context: context,
+            builder: (_) => MobileSettingsTextDialog(
+              title: context.l10n.save_search,
+              initialValue: query,
+              hint: context.l10n.name,
+              isValid: (value) => value.trim().isNotEmpty,
+            ),
+          );
     if (name != null && mounted) {
       ref.read(savedSearchesProvider.notifier).add(source.id!, name, query);
     }
@@ -302,42 +311,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
 
   Future<void> _showSavedSearches() async {
     if (isMobile && !isTv) {
-      final query = await Navigator.of(context).push<String>(
-        MaterialPageRoute(
-          builder: (_) => Consumer(
-            builder: (context, ref, _) {
-              final saved =
-                  ref.watch(savedSearchesProvider)[source.id] ??
-                  const <SavedSearch>[];
-              return MobileBrowsePage(
-                title: context.l10n.saved_searches,
-                body: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                  itemCount: math.max(1, saved.length),
-                  itemBuilder: (context, index) {
-                    if (saved.isEmpty) {
-                      return Text(context.l10n.no_saved_searches);
-                    }
-                    final entry = saved[index];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                      title: Text(entry.name),
-                      subtitle: Text(entry.query),
-                      trailing: IconButton(
-                        tooltip: context.l10n.delete,
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => ref
-                            .read(savedSearchesProvider.notifier)
-                            .remove(source.id!, entry.name),
-                      ),
-                      onTap: () => Navigator.pop(context, entry.query),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ),
+      final query = await showNodeLaneCatalogSheet<String>(
+        context,
+        MobileSavedSearches(sourceId: source.id!, title: source.name ?? ''),
       );
       if (query != null && mounted) _runSavedSearch(query);
       return;
@@ -425,54 +401,45 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   }
 
   Future<void> _mobileOptions(DisplayType display) async {
-    final l10n = context.l10n;
-    final choice = await showMobileSettingsPicker<String>(
+    final choice = await showNodeLaneCatalogSheet<Object>(
       context,
-      title: l10n.more,
-      current: display.name,
-      options: [
-        MobileSettingOption(
-          DisplayType.comfortableGrid.name,
-          l10n.comfortable_grid,
-        ),
-        MobileSettingOption(DisplayType.compactGrid.name, l10n.compact_grid),
-        MobileSettingOption(DisplayType.list.name, l10n.list),
-        MobileSettingOption('save', l10n.save_search),
-        MobileSettingOption('saved', l10n.saved_searches),
-        if (!isLocal) ...[
-          MobileSettingOption('browser', l10n.open_in_browser),
-          MobileSettingOption('settings', l10n.settings),
-        ],
-      ],
+      MobileSourceActions(
+        title: source.name ?? '',
+        host: isLocal ? null : Uri.tryParse(source.baseUrl ?? '')?.host,
+        display: display,
+        canSave: _query.trim().isNotEmpty,
+        local: isLocal,
+      ),
     );
     if (choice == null || !mounted) return;
-    switch (choice.value) {
-      case 'save':
-        _promptSaveSearch();
-      case 'saved':
-        _showSavedSearches();
-      case 'browser':
-        _onSourceOverflow(0);
-      case 'settings':
-        _onSourceOverflow(1);
-      default:
-        final next = DisplayType.values.byName(choice.value);
-        if (next != display) {
-          ref
-              .read(mangaHomeDisplayTypeStateProvider.notifier)
-              .setMangaHomeDisplayType(next);
-        }
+    if (choice is DisplayType) {
+      if (choice != display) {
+        ref
+            .read(mangaHomeDisplayTypeStateProvider.notifier)
+            .setMangaHomeDisplayType(choice);
+      }
+      return;
+    }
+    switch (choice) {
+      case SourceCatalogAction.save:
+        await _promptSaveSearch();
+      case SourceCatalogAction.saved:
+        await _showSavedSearches();
+      case SourceCatalogAction.browser:
+        await _onSourceOverflow(0);
+      case SourceCatalogAction.settings:
+        await _onSourceOverflow(1);
     }
   }
 
   Future<void> _mobileFilters() async {
     FocusScope.of(context).unfocus();
-    final selected = await Navigator.of(context).push<List<dynamic>>(
-      MaterialPageRoute(
-        builder: (_) => MobileSourceFilterPage(
-          filters: filters,
-          defaults: () => getFilterList(source: source),
-        ),
+    final selected = await showNodeLaneCatalogSheet<List<dynamic>>(
+      context,
+      MobileSourceFilterSheet(
+        filters: filters,
+        defaults: () => getFilterList(source: source),
+        sourceName: source.name,
       ),
     );
     if (selected == null || !mounted) return;
@@ -503,6 +470,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       onSelect: _select,
       onFilter: filterList.isEmpty ? null : _mobileFilters,
       onOptions: () => _mobileOptions(display),
+      onSavedSearches: _showSavedSearches,
       results: MobileSourceResults(
         controller: _scrollController,
         display: display,
@@ -515,8 +483,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
             : _isFiltering
             ? l10n.filter
             : _selectedIndex == 1
-            ? l10n.latest
-            : l10n.popular,
+            ? '最新作品'
+            : '热门作品',
         notes: source.notes,
         itemBuilder: (context, index) => display == DisplayType.list
             ? MangaHomeImageCardListTile(

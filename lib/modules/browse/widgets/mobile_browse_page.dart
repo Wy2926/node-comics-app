@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Shared presentation for the source, language and repository settings pages.
@@ -24,7 +26,13 @@ class MobileBrowsePage extends StatelessWidget {
     return NodeLaneSurface(
       child: Scaffold(
         appBar: AppBar(
-          leading: leading,
+          leading:
+              leading ??
+              IconButton(
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: () => Navigator.maybePop(context),
+                icon: Icon(NodeLaneIcons.of(context).back),
+              ),
           // AppBar caps title scaling; reserve two lines without applying
           // the much larger accessibility body-text scale to the whole bar.
           toolbarHeight:
@@ -36,7 +44,7 @@ class MobileBrowsePage extends StatelessWidget {
             maxLines: 2,
             softWrap: true,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            style: colors.readerTitle,
           ),
           actions: actions,
         ),
@@ -67,18 +75,9 @@ class MobileBrowseGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      child: Material(
-        color: colors.surface,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: colors.line),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: child,
-      ),
+      child: NodeLaneGroupSurface(child: child),
     );
   }
 }
