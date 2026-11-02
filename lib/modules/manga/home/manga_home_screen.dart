@@ -45,13 +45,11 @@ import 'package:mangayomi/utils/platform_utils.dart';
 
 class MangaHomeScreen extends ConsumerStatefulWidget {
   final Source source;
-  final bool isSearch;
   final bool isLatest;
   final String query;
   const MangaHomeScreen({
     required this.source,
     this.query = "",
-    this.isSearch = false,
     this.isLatest = false,
     super.key,
   });
@@ -77,16 +75,17 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   bool _receivedFirstPage = false;
   Object? _pageError;
   bool get _usesSearch => _query.isNotEmpty || _isFiltering;
+  List<dynamic> get _searchFilters => _isFiltering ? filters : const [];
   bool get _hasMore => source.isFullData == true
       ? _fullDataLength < _mangaList.length
       : _hasNextPage;
   int get _visibleCount => source.isFullData == true
       ? math.min(_fullDataLength, _mangaList.length)
       : _mangaList.length;
-  late int _selectedIndex = widget.isLatest
-      ? 1
-      : widget.isSearch
+  late int _selectedIndex = _query.isNotEmpty
       ? 2
+      : widget.isLatest
+      ? 1
       : 0;
   late Source source = widget.source;
   late bool isLocal = source.name == "local" && source.lang == "";
@@ -161,7 +160,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           source: source,
           query: _query,
           page: page,
-          filterList: filters,
+          filterList: _searchFilters,
         ),
       );
     } else if (_selectedIndex == 1) {
@@ -205,7 +204,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
             source: source,
             query: _query,
             page: nextPage,
-            filterList: filters,
+            filterList: _searchFilters,
           ).future,
         );
       } else if (_selectedIndex == 1) {
@@ -221,7 +220,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       setState(() {
         _mangaList.addAll(result?.list ?? []);
         _page = nextPage;
-        _hasNextPage = result?.hasNextPage ?? false;
+        _hasNextPage =
+            result != null && result.list.isNotEmpty && result.hasNextPage;
       });
     } catch (error) {
       if (mounted && version == _requestVersion) {
@@ -369,14 +369,14 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     _submit(query);
   }
 
-  late final _textEditingController = TextEditingController(text: widget.query);
+  late final _textEditingController = TextEditingController(text: _query);
   // TV search focus flow: opening search puts focus on the field; submitting
   // hands focus to the next button in the row, so it never reverts to Popular /
   // Latest (which, on revert, would re-select and close the search field).
   final _searchFieldFocus = FocusNode();
   final _postSearchFocus = FocusNode();
-  late String _query = widget.query;
-  late bool _isSearch = widget.isSearch;
+  late String _query = widget.query.trim();
+  late bool _isSearch = _query.isNotEmpty;
   AsyncValue<MPages?>? _getManga;
   int _length = 0;
   bool _isFiltering = false;
@@ -531,7 +531,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           source: source,
           query: _query,
           page: 1,
-          filterList: filters,
+          filterList: _searchFilters,
         ),
       );
     } else if (_selectedIndex == 1) {
@@ -551,7 +551,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
         ..clear()
         ..addAll(_firstPage?.list ?? []);
       _page = 1;
-      _hasNextPage = _firstPage?.hasNextPage ?? false;
+      _hasNextPage =
+          _mangaList.isNotEmpty && (_firstPage?.hasNextPage ?? false);
       _isLoading = false;
       _pageError = null;
     }

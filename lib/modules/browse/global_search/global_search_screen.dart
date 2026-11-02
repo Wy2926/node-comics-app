@@ -23,7 +23,6 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/services/get_popular.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
@@ -120,16 +119,18 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _query = widget.search ?? '';
+    _query = widget.search?.trim() ?? '';
     _textEditingController.text = _query;
     _readSources();
   }
 
   void _submit(String value) {
     FocusScope.of(context).unfocus();
-    if (_query == value) return;
+    final query = value.trim();
+    _textEditingController.text = query;
+    if (_query == query) return;
     setState(() {
-      _query = value;
+      _query = query;
       _searchVersion++;
       _nothingToShow.clear();
     });
@@ -162,6 +163,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     final mobile = isMobile && !isTv;
     final results = sourceList.isEmpty
         ? _noSources(context)
+        : query.isEmpty
+        ? const GlobalSearchPrompt()
         : Column(
             children: [
               for (final source in sourceList)
@@ -204,28 +207,12 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
           ),
         ],
       ),
-      body: sourceList.isEmpty
-          // Without this the screen is a search field over a blank page, which
-          // reads as "nothing matched" when the truth is that nothing was
-          // searched.
-          ? _noSources(context)
-          // Every row is built rather than lazily. A source that fails or finds
-          // nothing collapses to zero height, and a lazy list that estimates
-          // extents cannot cope with that: scrolling up builds more rows, they
-          // resolve, they collapse, and the content shrinks under the scroll
-          // position, so the view fights the finger and never reaches the top.
-          // Building all of them keeps the extent stable. There is one row per
-          // installed source, and a global search queries all of them anyway.
-          //
-          // No query yet (fresh open, or cleared) shows each source's normal
-          // Popular page instead of nothing — SourceSearchScreen picks
-          // getPopular vs search based on whether query is empty, so this is
-          // the same per-source request every source's own Popular tab makes,
-          // not extra work invented just for this screen.
-          : SingleChildScrollView(
-              padding: pageBottomInsets(context),
-              child: results,
-            ),
+      // Keep each source mounted so completed results and scroll position
+      // survive opening a title or viewing all matches from one source.
+      body: SingleChildScrollView(
+        padding: pageBottomInsets(context),
+        child: results,
+      ),
     );
   }
 
@@ -419,68 +406,65 @@ class SourceSearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
+  late final _request = searchProvider(
+    source: widget.source,
+    page: 1,
+    query: widget.query,
+    filterList: const [],
+  );
+  ProviderSubscription<AsyncValue<MPages?>>? _subscription;
+  AsyncValue<MPages?> _result = const AsyncLoading();
+
   @override
   void initState() {
     super.initState();
     _init();
   }
 
-  String _errorMessage = "";
-  bool _isLoading = true;
-  MPages? pages;
-  Future<void> _init() async {
-    // Throttled: with many sources installed, letting every row fire its
-    // isolate call the moment it's built is what made this screen laggy.
+  Future<void> _init({bool refresh = false}) async {
+    // Share the page's bounded request queue across sources and retries.
     await widget.fetchGate.acquire();
     try {
       // A queued row can be disposed by a newer query before it gets a slot.
       if (!mounted) return;
-      _errorMessage = "";
-      // No query: same "Popular" request the source's own tab makes, so an
-      // empty global search reads as a discovery feed rather than a blank
-      // page, without inventing a heavier request just for this screen.
-      pages = widget.query.trim().isEmpty
-          ? await ref.read(
-              getPopularProvider(source: widget.source, page: 1).future,
-            )
-          : await ref.read(
-              searchProvider(
-                source: widget.source,
-                page: 1,
-                query: widget.query,
-                filterList: const [],
-              ).future,
-            );
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = e.toString();
-          _isLoading = false;
-        });
-      }
+      if (refresh) ref.invalidate(_request);
+      // Retain the existing provider only while this section is mounted.
+      // "View all" watches the same request, including its loaded first page.
+      _subscription ??= ref.listenManual(
+        _request,
+        (_, result) => setState(() => _result = result),
+        fireImmediately: true,
+      );
+      await ref.read(_request.future);
+    } catch (_) {
+      // The provider subscription delivers both results and errors to the UI.
     } finally {
       widget.fetchGate.release();
     }
   }
 
   @override
+  void dispose() {
+    _subscription?.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
+    final pages = _result.value;
+    final isLoading = _result.isLoading;
+    final errorMessage = _result.error?.toString() ?? '';
 
     final hasResults =
-        _errorMessage.isEmpty && (pages?.list.isNotEmpty ?? false);
-    final collapsed = !_isLoading && !hasResults;
+        errorMessage.isEmpty && (pages?.list.isNotEmpty ?? false);
+    final collapsed = !isLoading && !hasResults;
 
     // Preserve the desktop summary; mobile shows retry on each source.
     if (collapsed && !(isMobile && !isTv)) {
       widget.onNothingToShow?.call(
-        _errorMessage.isNotEmpty
-            ? "${l10n.failed} ${_errorMessage.replaceAll(RegExp(r'\s+'), ' ').trim()}"
+        errorMessage.isNotEmpty
+            ? "${l10n.failed} ${errorMessage.replaceAll(RegExp(r'\s+'), ' ').trim()}"
             : l10n.no_result,
       );
       return const SizedBox.shrink();
@@ -492,13 +476,13 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
         language:
             '${completeLanguageName(widget.source.lang ?? '')}${hasResults ? ' · ${pages!.list.length} 个结果' : ''}',
         onOpen: () => _openSearchSource(context, widget.source, widget.query),
-        loading: _isLoading,
+        loading: isLoading,
         status: collapsed
             ? Row(
                 children: [
                   Expanded(
                     child: Text(
-                      _errorMessage.isEmpty ? l10n.no_result : '暂时无法连接',
+                      errorMessage.isEmpty ? l10n.no_result : '暂时无法连接',
                       style: NodeLaneTokens.of(context).readerSecondary,
                     ),
                   ),
@@ -514,26 +498,12 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
                         },
                       ),
                     ),
-                  if (_errorMessage.isNotEmpty)
+                  if (errorMessage.isNotEmpty)
                     TextButton(
                       onPressed: () {
-                        if (_isLoading) return;
-                        if (widget.query.trim().isEmpty) {
-                          ref.invalidate(
-                            getPopularProvider(source: widget.source, page: 1),
-                          );
-                        } else {
-                          ref.invalidate(
-                            searchProvider(
-                              source: widget.source,
-                              page: 1,
-                              query: widget.query,
-                              filterList: const [],
-                            ),
-                          );
-                        }
-                        setState(() => _isLoading = true);
-                        _init();
+                        if (_result.isLoading) return;
+                        setState(() => _result = const AsyncLoading());
+                        _init(refresh: true);
                       },
                       child: Text(l10n.retry),
                     ),
@@ -543,7 +513,7 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
         count: pages?.list.length ?? 0,
         itemBuilder: (context, index) => MangaGlobalImageCard(
           key: ValueKey((pages!.list[index].link, index)),
-          manga: pages!.list[index],
+          manga: pages.list[index],
           source: widget.source,
         ),
       );
@@ -560,20 +530,15 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
       trailing: const Icon(Icons.arrow_forward_sharp),
     );
 
-    // A Scaffold per list row was never needed; it also forces the row to
-    // expand, which would defeat the collapse.
     return SizedBox(
       height: 340,
       child: ClipRect(
         child: Column(
           children: [
             header,
-            // Only loading or results reach here; failures and empty results
-            // returned above as a single header row. No retry: these are almost
-            // always a broken extension returning the same error every time, not
-            // a transient blip, and the header still opens the source.
+            // Desktop failures and empty results are grouped by the parent.
             Flexible(
-              child: _isLoading
+              child: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : SuperListView.builder(
                       extentPrecalculationPolicy: SuperPrecalculationPolicy(),
@@ -584,7 +549,7 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
                       itemCount: pages!.list.length,
                       itemBuilder: (context, index) {
                         return MangaGlobalImageCard(
-                          manga: pages!.list[index],
+                          manga: pages.list[index],
                           source: widget.source,
                         );
                       },
@@ -883,11 +848,7 @@ void _openSearchSource(BuildContext context, Source source, String query) {
   Navigator.push(
     context,
     createRoute(
-      page: MangaHomeScreen(
-        query: query,
-        source: source,
-        isSearch: query.trim().isNotEmpty,
-      ),
+      page: MangaHomeScreen(query: query, source: source),
     ),
   );
 }

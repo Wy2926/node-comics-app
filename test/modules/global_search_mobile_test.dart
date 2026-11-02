@@ -177,14 +177,14 @@ void main() {
         tester,
         ProviderScope(
           overrides: [
-            getPopularProvider.overrideWith((ref, args) async {
+            searchProvider.overrideWith((ref, args) async {
               requests++;
               return MPages(list: []);
             }),
           ],
           child: Scaffold(
             body: SourceSearchScreen(
-              query: '',
+              query: 'Queued',
               source: Source(id: 1, name: 'Sample', lang: 'en'),
               fetchGate: gate,
             ),
@@ -240,12 +240,10 @@ void main() {
     });
 
     testWidgets(
-      'seed clear selects popular and new submission discards old failures without an intermediate request',
+      'clear waits for a query and a new submission discards old failures without fetching popular',
       (tester) async {
         final calls = <String>[];
-        final seed = Completer<MPages?>(),
-            popular = Completer<MPages?>(),
-            next = Completer<MPages?>();
+        final seed = Completer<MPages?>(), next = Completer<MPages?>();
         await mount(
           tester,
           ProviderScope(
@@ -254,9 +252,9 @@ void main() {
                 calls.add(args.query);
                 return args.query == 'Seed' ? seed.future : next.future;
               }),
-              getPopularProvider.overrideWith((ref, args) {
+              getPopularProvider.overrideWith((ref, args) async {
                 calls.add('popular');
-                return popular.future;
+                return MPages(list: []);
               }),
             ],
             child: const GlobalSearchScreen(
@@ -268,9 +266,6 @@ void main() {
         );
         await tester.pump();
         expect(calls, ['Seed']);
-        seed.complete(MPages(list: []));
-        await tester.pumpAndSettle();
-        expect(find.text('1 source with no results'), findsOneWidget);
         final field = tester.widget<SeachFormTextField>(
           find.byType(SeachFormTextField),
         );
@@ -278,27 +273,58 @@ void main() {
         await tester.pump();
         await tester.pump();
         expect(field.controller.text, isEmpty);
-        expect(calls, ['Seed', 'popular']);
+        expect(calls, ['Seed']);
+        expect(find.byType(GlobalSearchPrompt), findsOneWidget);
         expect(find.text('1 source with no results'), findsNothing);
-        await tester.enterText(find.byType(TextFormField), 'Next');
+        await tester.enterText(find.byType(TextFormField), '  Next  ');
         await tester.pump();
-        expect(calls, ['Seed', 'popular']);
+        expect(calls, ['Seed']);
         await tester.testTextInput.receiveAction(TextInputAction.search);
         await tester.pump();
         await tester.pump();
-        expect(calls, ['Seed', 'popular', 'Next']);
-        popular.completeError(StateError('old query failure'));
+        expect(calls, ['Seed', 'Next']);
+        expect(field.controller.text, 'Next');
+        seed.completeError(StateError('old query failure'));
         await tester.pump();
         expect(find.text('1 source with no results'), findsNothing);
         next.complete(MPages(list: []));
         await tester.pumpAndSettle();
         expect(find.text('1 source with no results'), findsOneWidget);
-        field.onFieldSubmitted!('Next');
+        field.onFieldSubmitted!(' Next ');
         await tester.pump();
-        expect(calls, ['Seed', 'popular', 'Next']);
+        expect(calls, ['Seed', 'Next']);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       },
     );
+
+    testWidgets('an empty query never starts source requests', (tester) async {
+      var requests = 0;
+      await mount(
+        tester,
+        ProviderScope(
+          overrides: [
+            searchProvider.overrideWith((ref, args) async {
+              requests++;
+              return MPages(list: []);
+            }),
+            getPopularProvider.overrideWith((ref, args) async {
+              requests++;
+              return MPages(list: []);
+            }),
+          ],
+          child: const GlobalSearchScreen(
+            search: '   ',
+            itemType: ItemType.manga,
+          ),
+        ),
+        owner: true,
+      );
+      await tester.pumpAndSettle();
+      expect(requests, 0);
+      expect(find.byType(GlobalSearchPrompt), findsOneWidget);
+      expect(find.byType(SourceSearchScreen), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    });
   });
 }

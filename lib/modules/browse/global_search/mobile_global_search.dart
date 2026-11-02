@@ -196,6 +196,27 @@ class MobileGlobalSourceSection extends StatelessWidget {
   }
 }
 
+class GlobalSearchPrompt extends StatelessWidget {
+  const GlobalSearchPrompt({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Icon(NodeLaneIcons.of(context).search, size: 28, color: t.muted),
+          const SizedBox(height: 12),
+          Text('输入关键词搜索作品', style: t.readerLabel),
+          const SizedBox(height: 8),
+          Text('在当前分类的已安装来源中搜索', style: t.readerSecondary),
+        ],
+      ),
+    );
+  }
+}
+
 class MobileGlobalSearchEmpty extends StatelessWidget {
   const MobileGlobalSearchEmpty({
     super.key,

@@ -128,6 +128,11 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     context.push('/mangaHome', extra: (source, latest));
   }
 
+  void _searchContents() {
+    FocusScope.of(context).unfocus();
+    context.push('/globalSearch', extra: (query.text.trim(), type));
+  }
+
   Future<void> _pin(Source source) =>
       sourceRepository.save(source..isPinned = !(source.isPinned ?? false));
   void _sourceActions(Source source) {
@@ -317,6 +322,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         )
         .toList();
     final selectedLanguages = languages[(type, thirdParty)];
+    final keyword = query.text.trim();
     final all =
         catalog
             .where(
@@ -324,9 +330,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                   (selectedLanguages == null
                       ? s.isActive == true
                       : selectedLanguages.contains(s.lang ?? '')) &&
-                  (s.name ?? '').toLowerCase().contains(
-                    query.text.toLowerCase(),
-                  ),
+                  (s.name ?? '').toLowerCase().contains(keyword.toLowerCase()),
             )
             .toList()
           ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
@@ -380,8 +384,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                         Expanded(
                           child: NodeLaneSearchField(
                             controller: query,
-                            hint: '搜索网站',
+                            hint: '网站名或作品名',
                             clearLabel: '清除',
+                            onSubmitted: (_) => _searchContents(),
                             onChanged: (_) => setState(() {}),
                           ),
                         ),
@@ -389,12 +394,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                           tooltip: '来源操作',
                           icon: Icon(icons.more),
                           onSelected: (value) {
-                            if (value == 'search') {
-                              context.push(
-                                '/globalSearch',
-                                extra: (null, type),
-                              );
-                            }
+                            if (value == 'search') _searchContents();
                             if (value == 'filter') {
                               _languageFilter(catalog);
                             }
@@ -409,9 +409,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                             }
                           },
                           itemBuilder: (_) => [
-                            PopupMenuItem(
+                            const PopupMenuItem(
                               value: 'search',
-                              child: Text('搜索漫画或作品'),
+                              child: Text('搜作品'),
                             ),
                             PopupMenuItem(value: 'filter', child: Text('语言筛选')),
                             if (thirdParty)
@@ -506,20 +506,36 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                                 : Column(
                                     children: [
                                       Text(
-                                        query.text.isEmpty
-                                            ? '暂无可用网站'
-                                            : '没有匹配的网站',
+                                        keyword.isEmpty ? '暂无可用网站' : '没有匹配的网站',
                                         style: t.readerLabel,
                                       ),
                                       const SizedBox(height: 12),
-                                      TextButton(
-                                        onPressed: () =>
-                                            showMobileAddRepository(
-                                              context,
-                                              type,
-                                            ),
-                                        child: const Text('添加第三方仓库'),
-                                      ),
+                                      if (keyword.isNotEmpty) ...[
+                                        Text(
+                                          '在已安装来源中搜索作品',
+                                          textAlign: TextAlign.center,
+                                          style: t.readerSecondary,
+                                        ),
+                                        const SizedBox(
+                                          height: NodeLaneTokens.space16,
+                                        ),
+                                        FilledButton.icon(
+                                          onPressed: _searchContents,
+                                          icon: Icon(
+                                            icons.search,
+                                            size: NodeLaneTokens.smallIconSize,
+                                          ),
+                                          label: const Text('跨来源搜索'),
+                                        ),
+                                      ] else
+                                        TextButton(
+                                          onPressed: () =>
+                                              showMobileAddRepository(
+                                                context,
+                                                type,
+                                              ),
+                                          child: const Text('添加第三方仓库'),
+                                        ),
                                     ],
                                   ),
                           ),

@@ -344,16 +344,12 @@ void main() {
                     }
                     return MPages(
                       list: args.page == 1 ? [_book('Popular')] : [],
-                      hasNextPage: args.page == 1,
+                      hasNextPage: true,
                     );
                   }),
                 ],
                 retry: (_, _) => null,
-                child: MangaHomeScreen(
-                  source: source,
-                  isSearch: true,
-                  query: 'Seed',
-                ),
+                child: MangaHomeScreen(source: source, query: 'Seed'),
               ),
               scale: 1,
             ),
@@ -398,6 +394,43 @@ void main() {
           await tester.pumpWidget(const SizedBox());
           await tester.runAsync(() => database.mangas.count());
           await tester.pump();
+        },
+      );
+
+      testWidgets(
+        'an empty search has no next page even if the source claims one',
+        (tester) async {
+          final calls = <String>[];
+          await tester.runAsync(() async {
+            await mount(
+              tester,
+              ProviderScope(
+                overrides: [
+                  searchProvider.overrideWith((ref, args) async {
+                    calls.add('${args.query}:${args.page}');
+                    return MPages(list: [], hasNextPage: true);
+                  }),
+                  getPopularProvider.overrideWith((ref, args) async {
+                    calls.add('popular');
+                    return MPages(list: []);
+                  }),
+                ],
+                child: MangaHomeScreen(source: source, query: 'Missing'),
+              ),
+              scale: 1,
+            );
+            await tester.pumpAndSettle();
+            expect(calls, ['Missing:1']);
+            expect(
+              find.widgetWithText(FilledButton, 'Load More'),
+              findsNothing,
+            );
+            expect(tester.takeException(), isNull);
+            await database.mangas.count();
+            await tester.pumpWidget(const SizedBox());
+            await database.mangas.count();
+            await tester.pump();
+          });
         },
       );
 
