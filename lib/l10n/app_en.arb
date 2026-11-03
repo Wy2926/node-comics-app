@@ -1802,7 +1802,6 @@
   "nodelane_login_action": "Continue to sign in",
   "nodelane_login_browser": "Sign in through the system browser, then return to the app",
   "nodelane_account_id": "Account ID",
-  "nodelane_account_reading": "Loading account…",
   "nodelane_account_init_error": "Account storage is unavailable. Restart the app and try again.",
   "nodelane_account_refresh_error": "Could not refresh account information",
   "nodelane_account_auth_error": "Your session has expired. Sign in again",
@@ -1838,15 +1837,6 @@
   "nodelane_quota_expiry": "Next expiry",
   "nodelane_quota_no_expiry": "No expiry date",
   "nodelane_quota_reservation_note": "Pages in progress are already deducted from the available quota",
-  "nodelane_quota_purchase_note": "Purchased quota is separate from your subscription",
-  "nodelane_account_updated": "Updated {time}",
-  "@nodelane_account_updated": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "nodelane_quota_available": "{count} pages remaining",
   "@nodelane_quota_available": {
     "placeholders": {

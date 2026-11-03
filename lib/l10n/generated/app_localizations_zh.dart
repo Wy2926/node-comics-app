@@ -4156,9 +4156,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nodelane_account_id => '账号 ID';
 
   @override
-  String get nodelane_account_reading => '正在读取账号…';
-
-  @override
   String get nodelane_account_init_error => '暂时无法读取账号，请重新启动应用后再试。';
 
   @override
@@ -4262,14 +4259,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get nodelane_quota_reservation_note => '处理中页数已从可用额度扣除';
-
-  @override
-  String get nodelane_quota_purchase_note => '购买额度与订阅分别计算';
-
-  @override
-  String nodelane_account_updated(String time) {
-    return '更新于 $time';
-  }
 
   @override
   String nodelane_quota_available(int count) {

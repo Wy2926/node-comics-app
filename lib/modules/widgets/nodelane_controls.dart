@@ -1001,6 +1001,7 @@ class NodeLaneTextField extends StatelessWidget {
                 .inputDecoration(
                   hint,
                   formRow: formRow,
+                  search: _search,
                   prefixIcon: formRow
                       ? Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
@@ -1029,10 +1030,16 @@ class NodeLaneTextField extends StatelessWidget {
                           ),
                         )
                       : _search
-                      ? Icon(
-                          icons.search,
-                          size: NodeLaneTokens.smallIconSize,
-                          color: t.muted,
+                      ? Padding(
+                          padding: const EdgeInsetsDirectional.only(
+                            start: NodeLaneTokens.space16,
+                            end: NodeLaneTokens.space12,
+                          ),
+                          child: Icon(
+                            icons.search,
+                            size: NodeLaneTokens.smallIconSize,
+                            color: t.muted,
+                          ),
                         )
                       : null,
                   suffixIcon:
@@ -1073,7 +1080,13 @@ class NodeLaneTextField extends StatelessWidget {
                             : t.surface
                       : glass
                       ? Colors.transparent
+                      : _search
+                      ? t.searchSurface
                       : t.soft,
+                  border: glass ? InputBorder.none : null,
+                  enabledBorder: glass ? InputBorder.none : null,
+                  focusedBorder: glass ? InputBorder.none : null,
+                  disabledBorder: glass ? InputBorder.none : null,
                 ),
           );
           if (formRow) {
@@ -1082,7 +1095,7 @@ class NodeLaneTextField extends StatelessWidget {
           return glass
               ? NodeLaneGlassSurface(
                   borderRadius: t.inputRadius,
-                  fillColor: t.soft,
+                  input: true,
                   elevated: true,
                   child: field,
                 )

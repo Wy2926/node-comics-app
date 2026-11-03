@@ -107,6 +107,9 @@ void main() {
       await mount(tester, service, scale: 2.5);
       await tester.pumpAndSettle();
       await reveal(tester, find.text('免费账户'));
+      expect(find.text('暂无有效订阅'), findsOneWidget);
+      expect(find.text('购买额度与订阅分别计算'), findsNothing);
+      expect(find.textContaining('更新于'), findsNothing);
       await reveal(tester, find.text('查看额度明细'));
       final reads = service.reads;
       await tester.tap(find.text('查看额度明细'));
@@ -140,8 +143,7 @@ void main() {
       expect(find.text('暂时无法更新账号信息'), findsOneWidget);
       expect(find.text('PLUS'), findsOneWidget);
       expect(find.text('手动续费'), findsOneWidget);
-      await reveal(tester, find.textContaining('更新于'));
-      expect(find.textContaining('更新于'), findsOneWidget);
+      expect(find.textContaining('更新于'), findsNothing);
       await reveal(tester, find.text('重试'), delta: -250);
       final before = service.reads;
       await tester.tap(find.text('重试'));
@@ -150,6 +152,76 @@ void main() {
       expect(service.runtime, isNull);
       expect(service.calls, isEmpty);
       expect(find.text('暂时无法更新账号信息'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'summary shows one tier and keeps it during refresh without loading copy',
+    (tester) async {
+      final service = _Service()
+        ..ready.complete()
+        ..signedIn = true;
+      service.account = _account(free: true);
+      await mount(
+        tester,
+        service,
+        scale: 2.5,
+        child: const Scaffold(
+          body: SafeArea(
+            child: SingleChildScrollView(child: MobileNodeLaneAccountSummary()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Free'), findsOneWidget);
+      expect(find.text('免费账户'), findsNothing);
+      final initialSize = tester.getSize(find.byType(NodeLaneGroupSurface));
+      service.accountLoading = true;
+      service.notifyListeners();
+      await tester.pump();
+      expect(find.text('Free'), findsOneWidget);
+      expect(find.textContaining('正在读取账号'), findsNothing);
+      expect(tester.getSize(find.byType(NodeLaneGroupSurface)), initialSize);
+      service.account = _account();
+      service.accountLoading = false;
+      service.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(find.text('Free'), findsNothing);
+      expect(find.text('PLUS'), findsOneWidget);
+      service.account = _account(plan: 'pro');
+      service.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(find.text('PLUS'), findsNothing);
+      expect(find.text('Pro'), findsOneWidget);
+      expect(service.calls, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'account refresh retains visible details without adding loading or footer copy',
+    (tester) async {
+      final service = _Service()
+        ..ready.complete()
+        ..signedIn = true;
+      service.account = _account();
+      await mount(tester, service);
+      await tester.pumpAndSettle();
+      final initialTierPosition = tester.getTopLeft(find.text('PLUS'));
+      service.accountLoading = true;
+      service.notifyListeners();
+      await tester.pump();
+      expect(find.text('PLUS'), findsOneWidget);
+      expect(tester.getTopLeft(find.text('PLUS')), initialTierPosition);
+      expect(find.textContaining('正在读取账号'), findsNothing);
+      service.accountLoading = false;
+      service.notifyListeners();
+      await tester.pumpAndSettle();
+      await reveal(tester, find.text('退出登录'));
+      expect(find.text('购买额度与订阅分别计算'), findsNothing);
+      expect(find.textContaining('更新于'), findsNothing);
+      expect(service.runtime, isNull);
       expect(tester.takeException(), isNull);
     },
   );
@@ -212,27 +284,33 @@ void main() {
   );
 }
 
-NodeLaneAccount _account({bool free = false}) => NodeLaneAccount(
-  id: 'account-a',
-  name: '很长的测试账号名称 NodeLane Reader',
-  updatedAt: DateTime.utc(2026, 11, 3),
-  plan: free ? 'free' : 'plus',
-  planName: free ? '免费账户' : 'PLUS',
-  renewal: NodeLaneRenewal.manual,
-  free: const NodeLaneQuota(available: 24, used: 6, reserved: 0, granted: 30),
-  subscription: NodeLaneQuota(
-    available: free ? 0 : 820,
-    used: free ? 0 : 172,
-    reserved: free ? 0 : 8,
-    granted: free ? 0 : 1000,
-  ),
-  purchase: const NodeLaneQuota(
-    available: 150,
-    used: 50,
-    reserved: 0,
-    granted: 200,
-  ),
-);
+NodeLaneAccount _account({bool free = false, String plan = 'plus'}) =>
+    NodeLaneAccount(
+      id: 'account-a',
+      name: '很长的测试账号名称 NodeLane Reader',
+      updatedAt: DateTime.utc(2026, 11, 3),
+      plan: free ? 'free' : plan,
+      planName: free ? '免费账户' : 'PLUS',
+      renewal: NodeLaneRenewal.manual,
+      free: const NodeLaneQuota(
+        available: 24,
+        used: 6,
+        reserved: 0,
+        granted: 30,
+      ),
+      subscription: NodeLaneQuota(
+        available: free ? 0 : 820,
+        used: free ? 0 : 172,
+        reserved: free ? 0 : 8,
+        granted: free ? 0 : 1000,
+      ),
+      purchase: const NodeLaneQuota(
+        available: 150,
+        used: 50,
+        reserved: 0,
+        granted: 200,
+      ),
+    );
 
 class _Service extends TranslationService {
   final ready = Completer<void>();

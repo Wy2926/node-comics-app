@@ -1,5 +1,5 @@
 Mode: built-in image_gen (ui-mockup)
-Status: design proposal, not yet applied to the shared search field.
+Status: approved and applied to the existing shared search field and glass surface.
 
 Use case: ui-mockup
 Asset type: high-fidelity NodeLane iOS settings search component redesign board.

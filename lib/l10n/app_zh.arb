@@ -1664,7 +1664,6 @@
   "nodelane_login_action": "前往登录",
   "nodelane_login_browser": "通过系统浏览器登录后返回应用",
   "nodelane_account_id": "账号 ID",
-  "nodelane_account_reading": "正在读取账号…",
   "nodelane_account_init_error": "暂时无法读取账号，请重新启动应用后再试。",
   "nodelane_account_refresh_error": "暂时无法更新账号信息",
   "nodelane_account_auth_error": "登录已过期，请重新登录",
@@ -1700,15 +1699,6 @@
   "nodelane_quota_expiry": "最近到期",
   "nodelane_quota_no_expiry": "无到期时间",
   "nodelane_quota_reservation_note": "处理中页数已从可用额度扣除",
-  "nodelane_quota_purchase_note": "购买额度与订阅分别计算",
-  "nodelane_account_updated": "更新于 {time}",
-  "@nodelane_account_updated": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "nodelane_quota_available": "剩余 {count} 页",
   "@nodelane_quota_available": {
     "placeholders": {

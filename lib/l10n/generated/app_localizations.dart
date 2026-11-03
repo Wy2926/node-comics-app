@@ -7674,12 +7674,6 @@ abstract class AppLocalizations {
   /// **'Account ID'**
   String get nodelane_account_id;
 
-  /// No description provided for @nodelane_account_reading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading account…'**
-  String get nodelane_account_reading;
-
   /// No description provided for @nodelane_account_init_error.
   ///
   /// In en, this message translates to:
@@ -7889,18 +7883,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pages in progress are already deducted from the available quota'**
   String get nodelane_quota_reservation_note;
-
-  /// No description provided for @nodelane_quota_purchase_note.
-  ///
-  /// In en, this message translates to:
-  /// **'Purchased quota is separate from your subscription'**
-  String get nodelane_quota_purchase_note;
-
-  /// No description provided for @nodelane_account_updated.
-  ///
-  /// In en, this message translates to:
-  /// **'Updated {time}'**
-  String nodelane_account_updated(String time);
 
   /// No description provided for @nodelane_quota_available.
   ///

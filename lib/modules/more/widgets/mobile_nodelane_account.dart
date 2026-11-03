@@ -125,11 +125,13 @@ class _AccountViewState extends ConsumerState<_AccountView>
     return '$dateText${time ? ' ${material.formatTimeOfDay(TimeOfDay.fromDateTime(local), alwaysUse24HourFormat: true)}' : ''}';
   }
 
-  String _plan(NodeLaneAccount account) => account.isFree
-      ? context.l10n.nodelane_account_free
-      : account.planName ??
-            account.plan ??
-            context.l10n.nodelane_account_unknown;
+  String _plan(NodeLaneAccount account) => switch (account.plan) {
+    'free' => 'Free',
+    'plus' => 'PLUS',
+    'pro' => 'Pro',
+    _ =>
+      account.planName ?? account.plan ?? context.l10n.nodelane_account_unknown,
+  };
 
   Widget _avatar({bool hero = false}) {
     final t = NodeLaneTokens.of(context);
@@ -157,23 +159,19 @@ class _AccountViewState extends ConsumerState<_AccountView>
     final name = account?.name.trim().isNotEmpty == true
         ? account!.name
         : service.accountName.trim();
-    final subtitle = _initializing
-        ? l.nodelane_account_reading
-        : _initFailed
+    final notice = _initFailed
         ? l.nodelane_account_init_error
-        : !service.loggedIn
-        ? l.nodelane_account_intro
         : service.accountAuthRequired
         ? l.nodelane_account_auth_error
         : service.accountLoadFailed
         ? l.nodelane_account_refresh_error
-        : account?.expiresAt != null
-        ? '${l.nodelane_account_expiry} ${_date(account!.expiresAt!)}'
-        : account != null
-        ? _plan(account)
-        : service.accountLoading
-        ? l.nodelane_account_reading
-        : l.nodelane_account_unknown;
+        : _initializing || service.accountLoading
+        ? null
+        : !service.loggedIn
+        ? l.nodelane_account_intro
+        : account?.plan == null
+        ? l.nodelane_account_unknown
+        : null;
     return Semantics(
       button: compact,
       child: NodeLaneGroupSurface(
@@ -195,34 +193,28 @@ class _AccountViewState extends ConsumerState<_AccountView>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
-                        spacing: NodeLaneTokens.space8,
-                        runSpacing: NodeLaneTokens.space4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            !service.loggedIn
-                                ? l.nodelane_sign_in
-                                : name.isEmpty
-                                ? l.nodelane_account
-                                : name,
-                            style: t.readerLabel.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (compact &&
-                              account != null &&
-                              account.plan != null)
-                            NodeLaneCoverBadge(
-                              _plan(account),
-                              tone: NodeLaneBadgeTone.softAccent,
-                            ),
-                        ],
+                      Text(
+                        !service.loggedIn
+                            ? l.nodelane_sign_in
+                            : name.isEmpty
+                            ? l.nodelane_account
+                            : name,
+                        style: t.readerLabel.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      const SizedBox(height: NodeLaneTokens.space4),
-                      if (compact)
-                        Text(subtitle, style: t.readerSecondary)
-                      else if (service.accountId != null || account != null)
+                      if (compact) ...[
+                        if (service.loggedIn && account?.plan != null) ...[
+                          const SizedBox(height: NodeLaneTokens.space4),
+                          Text(_plan(account!), style: t.readerSecondary),
+                        ],
+                        if (notice != null) ...[
+                          const SizedBox(height: NodeLaneTokens.space4),
+                          Text(notice, style: t.readerSecondary),
+                        ],
+                      ] else if (service.accountId != null ||
+                          account != null) ...[
+                        const SizedBox(height: NodeLaneTokens.space4),
                         Row(
                           children: [
                             Expanded(
@@ -253,6 +245,7 @@ class _AccountViewState extends ConsumerState<_AccountView>
                             ),
                           ],
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -317,7 +310,9 @@ class _AccountViewState extends ConsumerState<_AccountView>
         NodeLaneRow(
           compact: true,
           prominent: true,
-          title: _plan(account),
+          title: account.isFree
+              ? l.nodelane_account_free
+              : account.planName ?? _plan(account),
           subtitle: account.isFree ? l.nodelane_account_no_subscription : null,
           trailing: account.hasMembership
               ? NodeLaneCoverBadge(
@@ -458,7 +453,9 @@ class _AccountViewState extends ConsumerState<_AccountView>
       if (account != null && account.plan != null)
         _subscription(account)
       else
-        NodeLaneRow.card(title: l.nodelane_account_unknown),
+        MobileSettingsGroup(
+          children: [NodeLaneRow(title: l.nodelane_account_unknown)],
+        ),
       if (account != null) ...[
         MobileSettingsGroup(
           title: l.nodelane_translation_quota,
@@ -514,16 +511,7 @@ class _AccountViewState extends ConsumerState<_AccountView>
             ),
           ],
         ),
-        if (account.isFree) ...[
-          Text(l.nodelane_quota_purchase_note, style: t.caption),
-          const SizedBox(height: NodeLaneTokens.space8),
-        ],
-        Text(
-          l.nodelane_account_updated(_date(account.updatedAt, time: true)),
-          style: t.caption,
-        ),
       ],
-      const SizedBox(height: NodeLaneTokens.space24),
       NodeLaneGroupSurface(
         children: [
           NodeLaneRow(
@@ -568,10 +556,6 @@ class _AccountViewState extends ConsumerState<_AccountView>
               child: ListView(
                 padding: NodeLaneTokens.pagePadding,
                 children: [
-                  if (_initializing || service.accountLoading) ...[
-                    Text(l.nodelane_account_reading, style: t.readerSecondary),
-                    const SizedBox(height: NodeLaneTokens.space12),
-                  ],
                   if (_initFailed ||
                       service.error != null ||
                       service.accountLoadFailed) ...[

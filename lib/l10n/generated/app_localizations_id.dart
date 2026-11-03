@@ -4377,9 +4377,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get nodelane_account_id => 'Account ID';
 
   @override
-  String get nodelane_account_reading => 'Loading account…';
-
-  @override
   String get nodelane_account_init_error =>
       'Account storage is unavailable. Restart the app and try again.';
 
@@ -4490,15 +4487,6 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get nodelane_quota_reservation_note =>
       'Pages in progress are already deducted from the available quota';
-
-  @override
-  String get nodelane_quota_purchase_note =>
-      'Purchased quota is separate from your subscription';
-
-  @override
-  String nodelane_account_updated(String time) {
-    return 'Updated $time';
-  }
 
   @override
   String nodelane_quota_available(int count) {

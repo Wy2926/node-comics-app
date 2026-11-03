@@ -11,12 +11,15 @@ class NodeLaneTokens {
     required this.ink,
     required this.muted,
     required this.line,
+    required this.searchSurface,
+    required this.searchLine,
     required this.accent,
     required this.onAccent,
     this.usesGlass = false,
   });
 
   final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
+  final Color searchSurface, searchLine;
   final bool usesGlass;
   static const disclosureDuration = Duration(milliseconds: 200);
   static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
@@ -24,6 +27,8 @@ class NodeLaneTokens {
   static const gutter = space20, coverRadius = 10.0, controlRadius = 12.0;
   static const groupRadius = 18.0, capsuleRadius = 24.0;
   static const glassBlur = 16.0, glassStroke = .75;
+  static const searchOpacity = .92, searchBlur = 8.0;
+  static const searchShadowBlur = 4.0, searchShadowOffset = 2.0;
   static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
   static const emptyStateIconSize = 48.0, progressTrackHeight = 3.0;
   static const formLabelWidth = 88.0;
@@ -125,6 +130,8 @@ class NodeLaneTokens {
       ink: dark ? const Color(0xfff0f3f8) : const Color(0xff171a21),
       muted: dark ? const Color(0xffa9b4c4) : const Color(0xff697180),
       line: dark ? const Color(0xff353e4a) : const Color(0xffe7eaf0),
+      searchSurface: dark ? const Color(0xff303844) : Colors.white,
+      searchLine: dark ? const Color(0xff46505f) : const Color(0xffdde2e9),
       accent: theme.colorScheme.primary,
       onAccent: theme.colorScheme.onPrimary,
       usesGlass: theme.platform == TargetPlatform.iOS,
@@ -194,13 +201,18 @@ class NodeLaneTokens {
     Widget? suffixIcon,
     Widget? prefixIcon,
     bool formRow = false,
+    bool search = false,
   }) => InputDecoration(
     hintText: hint,
     hintStyle: body.copyWith(color: muted),
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: formRow ? surface : soft,
+    fillColor: formRow
+        ? surface
+        : search
+        ? searchSurface
+        : soft,
     isDense: true,
     constraints: BoxConstraints(minHeight: formRow ? rowHeight : searchHeight),
     prefixIconConstraints: BoxConstraints(
@@ -219,19 +231,25 @@ class NodeLaneTokens {
         ? InputBorder.none
         : OutlineInputBorder(
             borderRadius: inputRadius,
-            borderSide: BorderSide.none,
+            borderSide: search
+                ? BorderSide(color: searchLine, width: glassStroke)
+                : BorderSide.none,
           ),
     enabledBorder: formRow
         ? InputBorder.none
         : OutlineInputBorder(
             borderRadius: inputRadius,
-            borderSide: BorderSide.none,
+            borderSide: search
+                ? BorderSide(color: searchLine, width: glassStroke)
+                : BorderSide.none,
           ),
     focusedBorder: formRow
         ? InputBorder.none
         : OutlineInputBorder(
             borderRadius: inputRadius,
-            borderSide: BorderSide(color: accent, width: 1.5),
+            borderSide: search
+                ? BorderSide(color: searchLine, width: glassStroke)
+                : BorderSide(color: accent, width: 1.5),
           ),
   );
 }
