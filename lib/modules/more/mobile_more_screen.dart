@@ -224,24 +224,29 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                   },
                 ),
               ),
+              const SliverPadding(
+                padding: EdgeInsets.fromLTRB(20, 8, 20, 8),
+                sliver: SliverToBoxAdapter(
+                  child: MobileNodeLaneAccountSummary(),
+                ),
+              ),
+              NodeLanePinnedHeader(
+                child: NodeLaneTextField.search(
+                  key: const ValueKey('more-settings-search'),
+                  controller: _search,
+                  hint: l.settings_search_hint,
+                  onChanged: (v) => setState(() => _query = v),
+                  onClear: _clear,
+                  clearLabel: l.reset,
+                  onSubmitted: (_) => FocusScope.of(context).unfocus(),
+                ),
+              ),
               SliverPadding(
                 padding: NodeLaneTokens.pagePadding.add(
                   pageBottomInsets(context),
                 ),
                 sliver: SliverList.list(
                   children: [
-                    const MobileNodeLaneAccountSummary(),
-                    const SizedBox(height: NodeLaneTokens.space16),
-                    NodeLaneTextField.search(
-                      key: const ValueKey('more-settings-search'),
-                      controller: _search,
-                      hint: l.settings_search_hint,
-                      onChanged: (v) => setState(() => _query = v),
-                      onClear: _clear,
-                      clearLabel: l.reset,
-                      onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                    ),
-                    const SizedBox(height: NodeLaneTokens.space24),
                     for (final section in filtered)
                       MobileSettingsGroup(
                         title: section.title,

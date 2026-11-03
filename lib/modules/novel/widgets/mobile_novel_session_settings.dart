@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,9 +65,9 @@ class _MobileNovelSessionSettingsState
         MobileSettingsGroup(
           title: l10n.reading_mode,
           children: [
-            MobileSettingsLink(
+            NodeLaneRow(
               title: l10n.reading_mode,
-              icon: Icons.auto_stories_outlined,
+              icon: NodeLaneIcons.of(context).manga,
               subtitle: _readerMode.isContinuous
                   ? l10n.reading_mode_vertical_continuous
                   : l10n.reading_mode_left_to_right,
@@ -95,7 +97,7 @@ class _MobileNovelSessionSettingsState
               },
             ),
             if (!_readerMode.isContinuous) ...[
-              MobileSettingsLink(
+              NodeLaneRow(
                 title: l10n.page_mode,
                 icon: Icons.view_carousel_outlined,
                 subtitle: effectivePage == PageMode.onePage
@@ -126,9 +128,9 @@ class _MobileNovelSessionSettingsState
                   setState(() => _pageMode = picked.value);
                 },
               ),
-              MobileSettingsSwitch(
+              NodeLaneSwitchRow(
                 title: l10n.double_page_auto,
-                icon: Icons.screen_rotation_outlined,
+                icon: NodeLaneIcons.of(context).rotate,
                 value: automatic,
                 onChanged: ref.read(doublePageAutoStateProvider.notifier).set,
               ),
@@ -140,9 +142,9 @@ class _MobileNovelSessionSettingsState
             valueListenable: widget.autoScroll,
             builder: (context, enabled, _) => MobileSettingsGroup(
               children: [
-                MobileSettingsSwitch(
+                NodeLaneSwitchRow(
                   title: l10n.auto_scroll,
-                  icon: Icons.timer_outlined,
+                  icon: NodeLaneIcons.of(context).timer,
                   value: enabled,
                   onChanged: widget.onAutoScrollChanged,
                 ),

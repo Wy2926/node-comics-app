@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -109,7 +111,7 @@ void main() {
   }
 
   Future<void> openLanguage(WidgetTester tester) async {
-    final tile = find.byType(ListTile);
+    final tile = find.byType(NodeLaneRow);
     await reveal(tester, tile);
     await tester.tap(tile);
     await tester.pumpAndSettle();
@@ -129,7 +131,10 @@ void main() {
         tester.widget<Slider>(find.byType(Slider).first).onChanged,
         isNull,
       );
-      expect(tester.widget<ListTile>(find.byType(ListTile)).onTap, isNull);
+      expect(
+        tester.widget<NodeLaneRow>(find.byType(NodeLaneRow)).onTap,
+        isNull,
+      );
       expect(writes, isEmpty);
       pending.complete(['en-US', 'zh-CN', 'en-US', null, 42, '']);
       await tester.pumpAndSettle();
@@ -140,7 +145,7 @@ void main() {
       await openLanguage(tester);
       await tester.enterText(find.byType(TextField), 'en-US');
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(ListTile, 'en-US'), findsOneWidget);
+      expect(find.widgetWithText(NodeLaneRow, 'en-US'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'not-a-language');
       keyboard = 180;
       await tester.pumpWidget(app());
@@ -156,7 +161,7 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
       await openLanguage(tester);
-      await tester.tap(find.widgetWithText(ListTile, 'Default'));
+      await tester.tap(find.widgetWithText(NodeLaneRow, 'Default'));
       await tester.pumpAndSettle();
       expect(language, isNull);
       expect(writes, [('language', null)]);
@@ -164,7 +169,7 @@ void main() {
       await openLanguage(tester);
       await tester.enterText(find.byType(TextField), 'zh-CN');
       await tester.pumpAndSettle();
-      final chinese = find.widgetWithText(ListTile, '中文 (简体)');
+      final chinese = find.widgetWithText(NodeLaneRow, '中文 (简体)');
       await reveal(tester, chinese);
       await tester.tap(chinese);
       await tester.pumpAndSettle();
@@ -276,7 +281,7 @@ void main() {
       expect(writes, isEmpty);
       expect(calls, isEmpty);
       await openLanguage(tester);
-      final saved = find.widgetWithText(ListTile, 'en-NZ');
+      final saved = find.widgetWithText(NodeLaneRow, 'en-NZ');
       await reveal(tester, saved);
       await tester.tap(saved);
       await tester.pumpAndSettle();

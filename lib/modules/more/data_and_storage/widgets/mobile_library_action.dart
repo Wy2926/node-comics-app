@@ -1,5 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 /// Keep one maintenance flow open per entry, including while a confirmed
@@ -43,7 +43,7 @@ class _MobileLibraryActionState extends State<MobileLibraryAction> {
     canPop: !_busy,
     child: AbsorbPointer(
       absorbing: _busy,
-      child: MobileSettingsLink(
+      child: NodeLaneRow(
         title: widget.title,
         subtitle: widget.subtitle,
         subtitleMaxLines: 2,

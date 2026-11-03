@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -58,42 +60,36 @@ class MobileDownloadsScreen extends ConsumerWidget {
     final folders = ref.watch(localFoldersStateProvider);
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.downloads,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: l10n.downloads),
         body: SafeArea(
           top: false,
           child: ListView(
             key: const PageStorageKey('mobile-download-settings'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
               MobileSettingsGroup(
                 title: l10n.network_settings,
                 children: [
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.only_on_wifi,
-                    icon: Icons.wifi_rounded,
+                    icon: NodeLaneIcons.of(context).wifi,
                     value: ref.watch(onlyOnWifiStateProvider),
                     onChanged: ref.read(onlyOnWifiStateProvider.notifier).set,
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.allow_concurrent_downloads,
                     subtitle: l10n.allow_concurrent_downloads_subtitle,
-                    icon: Icons.downloading_rounded,
+                    icon: NodeLaneIcons.of(context).download,
                     value: concurrent,
                     onChanged: ref
                         .read(allowConcurrentDownloadsStateProvider.notifier)
                         .set,
                   ),
                   if (concurrent)
-                    MobileSettingsLink(
+                    NodeLaneRow(
                       title: l10n.concurrent_downloads,
                       subtitle: '$count',
-                      icon: Icons.format_list_numbered_rounded,
+                      icon: NodeLaneIcons.of(context).pageNumber,
                       onTap: () async {
                         final selected = await _number(
                           context,
@@ -111,12 +107,12 @@ class MobileDownloadsScreen extends ConsumerWidget {
                         }
                       },
                     ),
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.download_delay,
                     subtitle: delay == 0
                         ? l10n.off
                         : l10n.download_delay_value(delay),
-                    icon: Icons.timer_outlined,
+                    icon: NodeLaneIcons.of(context).timer,
                     onTap: () async {
                       final selected = await _number(
                         context,
@@ -140,24 +136,24 @@ class MobileDownloadsScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.data_and_storage,
                 children: [
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.download_location,
                     subtitle: location.$2.isEmpty ? location.$1 : location.$2,
                     subtitleMaxLines: 2,
-                    icon: Icons.folder_open_rounded,
+                    icon: NodeLaneIcons.of(context).folderOutline,
                     onTap: onPickLocation,
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.save_as_cbz_archive,
-                    icon: Icons.folder_zip_outlined,
+                    icon: NodeLaneIcons.of(context).storage,
                     value: ref.watch(saveAsCBZArchiveStateProvider),
                     onChanged: ref
                         .read(saveAsCBZArchiveStateProvider.notifier)
                         .set,
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.delete_download_after_reading,
-                    icon: Icons.auto_delete_outlined,
+                    icon: NodeLaneIcons.of(context).delete,
                     value: ref.watch(deleteDownloadAfterReadingStateProvider),
                     onChanged: ref
                         .read(deleteDownloadAfterReadingStateProvider.notifier)
@@ -179,19 +175,19 @@ class MobileDownloadsScreen extends ConsumerWidget {
                         isDefault: false,
                         onRemove: () => onRemoveFolder(folder),
                       ),
-                    MobileSettingsLink(
+                    NodeLaneRow(
                       title: l10n.add_local_folder,
-                      icon: Icons.create_new_folder_outlined,
+                      icon: NodeLaneIcons.of(context).add,
                       onTap: onAddFolder,
                     ),
-                    MobileSettingsLink(
+                    NodeLaneRow(
                       title: l10n.rescan_local_folder,
-                      icon: Icons.refresh_rounded,
+                      icon: NodeLaneIcons.of(context).refresh,
                       onTap: onRescan,
                     ),
-                    MobileSettingsLink(
+                    NodeLaneRow(
                       title: l10n.local_folder_structure,
-                      icon: Icons.help_outline_rounded,
+                      icon: NodeLaneIcons.of(context).info,
                       onTap: onHelp,
                     ),
                   ],
@@ -220,48 +216,43 @@ class _FolderRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = NodeLaneTokens.of(context);
-    return ExpansionTile(
+    return NodeLaneDisclosure(
       key: PageStorageKey((
         'download-folder',
         isDefault,
         folder.name,
         folder.path,
       )),
-      shape: const Border(),
-      collapsedShape: const Border(),
-      tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Icon(
-        isDefault ? Icons.home_outlined : Icons.folder_outlined,
-        color: colors.accent,
-      ),
-      title: Text(
-        folder.name ?? '',
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-      ),
-      subtitle: Text(
-        isDefault ? l10n.default0 : l10n.custom,
-        style: TextStyle(fontSize: 13, color: colors.muted),
-      ),
-      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      children: [
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: SelectableText(
-            folder.path ?? '',
-            key: const PageStorageKey('download-folder-path'),
-            style: TextStyle(fontSize: 13, color: colors.muted),
-          ),
-        ),
-        if (onRemove != null)
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: TextButton.icon(
-              onPressed: onRemove,
-              icon: const Icon(Icons.delete_outline),
-              label: Text(l10n.delete),
+      title: folder.name ?? '',
+      subtitle: isDefault ? l10n.default0 : l10n.custom,
+      icon: isDefault
+          ? NodeLaneIcons.of(context).browserStart
+          : NodeLaneIcons.of(context).folderOutline,
+      child: Padding(
+        padding: NodeLaneTokens.groupPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: SelectableText(
+                folder.path ?? '',
+                key: const PageStorageKey('download-folder-path'),
+                style: colors.readerSecondary,
+              ),
             ),
-          ),
-      ],
+            if (onRemove != null)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton.icon(
+                  onPressed: onRemove,
+                  icon: Icon(NodeLaneIcons.of(context).delete),
+                  label: Text(l10n.delete),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

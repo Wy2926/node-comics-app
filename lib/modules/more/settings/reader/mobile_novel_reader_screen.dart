@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -27,18 +29,12 @@ class MobileNovelReaderScreen extends ConsumerWidget {
     final font = ref.watch(novelFontFamilyStateProvider);
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            '${l10n.novel} ${l10n.reader}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: '${l10n.novel} ${l10n.reader}'),
         body: SafeArea(
           top: false,
           child: ListView(
             key: const PageStorageKey('mobile-novel-reader-settings'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
               ?sessionControls,
               MobileSettingsGroup(
@@ -46,7 +42,7 @@ class MobileNovelReaderScreen extends ConsumerWidget {
                 children: [
                   _NovelChoice<String?>(
                     title: l10n.font,
-                    icon: Icons.font_download_outlined,
+                    icon: NodeLaneIcons.of(context).font,
                     value: font,
                     subtitle:
                         novelReaderFontOptions
@@ -70,7 +66,7 @@ class MobileNovelReaderScreen extends ConsumerWidget {
                         .read(novelFontFamilyStateProvider.notifier)
                         .set,
                   ),
-                  _NovelSlider(
+                  NodeLaneSliderRow(
                     title: l10n.font_size,
                     value: ref.watch(novelFontSizeStateProvider).toDouble(),
                     min: 8,
@@ -87,46 +83,40 @@ class MobileNovelReaderScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.general,
                 children: [
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.keep_screen_on,
-                    icon: Icons.light_mode_outlined,
+                    icon: NodeLaneIcons.of(context).brightness,
                     value: ref.watch(keepScreenOnReaderStateProvider),
                     onChanged: ref
                         .read(keepScreenOnReaderStateProvider.notifier)
                         .set,
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.show_scroll_percentage,
-                    icon: Icons.percent_rounded,
+                    icon: NodeLaneIcons.of(context).percent,
                     value: ref.watch(novelShowScrollPercentageStateProvider),
                     onChanged: ref
                         .read(novelShowScrollPercentageStateProvider.notifier)
                         .set,
                   ),
                   if (onOpenTts != null)
-                    MobileSettingsLink(
+                    NodeLaneRow(
                       title: l10n.tts,
-                      icon: Icons.record_voice_over_outlined,
+                      icon: NodeLaneIcons.of(context).speech,
                       onTap: onOpenTts!,
                     ),
                 ],
               ),
               MobileSettingsGroup(
                 children: [
-                  ExpansionTile(
+                  NodeLaneDisclosure(
                     key: const PageStorageKey('novel-reader-page-layout'),
-                    title: Text(l10n.reader_page_layout),
-                    leading: Icon(
-                      Icons.auto_stories_outlined,
-                      color: NodeLaneTokens.of(context).accent,
+                    title: l10n.reader_page_layout,
+                    icon: NodeLaneIcons.of(context).manga,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: const [_NovelPageLayout()],
                     ),
-                    tilePadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    shape: const Border(),
-                    collapsedShape: const Border(),
-                    children: const [_NovelPageLayout()],
                   ),
                 ],
               ),
@@ -155,7 +145,7 @@ class _NovelColors extends ConsumerWidget {
       children: [
         _NovelChoice<NovelReaderThemePreset?>(
           title: l10n.theme,
-          icon: Icons.palette_outlined,
+          icon: NodeLaneIcons.of(context).palette,
           value: preset,
           subtitle: preset?.label(context) ?? l10n.custom,
           options: [
@@ -180,32 +170,29 @@ class _NovelColors extends ConsumerWidget {
             }
           },
         ),
-        ExpansionTile(
+        NodeLaneDisclosure(
           key: const PageStorageKey('novel-reader-custom-colors'),
-          title: Text(l10n.custom),
-          leading: Icon(
-            Icons.color_lens_outlined,
-            color: NodeLaneTokens.of(context).accent,
+          title: l10n.custom,
+          icon: NodeLaneIcons.of(context).palette,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _colorChoice(
+                context,
+                title: l10n.background,
+                value: background,
+                onChanged: ref.read(novelReaderThemeStateProvider.notifier).set,
+              ),
+              _colorChoice(
+                context,
+                title: l10n.text,
+                value: text,
+                onChanged: ref
+                    .read(novelReaderTextColorStateProvider.notifier)
+                    .set,
+              ),
+            ],
           ),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: const Border(),
-          collapsedShape: const Border(),
-          children: [
-            _colorChoice(
-              context,
-              title: l10n.background,
-              value: background,
-              onChanged: ref.read(novelReaderThemeStateProvider.notifier).set,
-            ),
-            _colorChoice(
-              context,
-              title: l10n.text,
-              value: text,
-              onChanged: ref
-                  .read(novelReaderTextColorStateProvider.notifier)
-                  .set,
-            ),
-          ],
         ),
       ],
     );
@@ -218,7 +205,7 @@ class _NovelColors extends ConsumerWidget {
     required ValueChanged<String> onChanged,
   }) => _NovelChoice<String>(
     title: title,
-    icon: Icons.color_lens_outlined,
+    icon: NodeLaneIcons.of(context).palette,
     value: value,
     subtitle: value,
     options: [
@@ -260,7 +247,8 @@ class _ColorSample extends StatelessWidget {
           : Text(
               'Aa',
               textScaler: TextScaler.noScaling,
-              style: TextStyle(color: _parse(text!), fontSize: 16),
+              style: NodeLaneTokens.of(context).body
+                  .copyWith(color: _parse(text!)),
             ),
     ),
   );
@@ -283,7 +271,7 @@ class _NovelPageLayout extends ConsumerWidget {
       children: [
         _NovelChoice<NovelTextAlign>(
           title: l10n.text_align,
-          icon: Icons.format_align_left,
+          icon: NodeLaneIcons.of(context).alignLeft,
           value: alignment,
           subtitle: alignLabel(alignment),
           options: [
@@ -292,7 +280,7 @@ class _NovelPageLayout extends ConsumerWidget {
           ],
           onChanged: ref.read(novelTextAlignStateProvider.notifier).set,
         ),
-        _NovelSlider(
+        NodeLaneSliderRow(
           title: l10n.padding,
           value: ref.watch(novelReaderPaddingStateProvider).toDouble(),
           min: 0,
@@ -303,7 +291,7 @@ class _NovelPageLayout extends ConsumerWidget {
               .read(novelReaderPaddingStateProvider.notifier)
               .set(value.round()),
         ),
-        _NovelSlider(
+        NodeLaneSliderRow(
           title: l10n.line_height,
           value: ref.watch(novelReaderLineHeightStateProvider),
           min: 1,
@@ -312,24 +300,24 @@ class _NovelPageLayout extends ConsumerWidget {
           label: (value) => value.toStringAsFixed(1),
           onChanged: ref.read(novelReaderLineHeightStateProvider.notifier).set,
         ),
-        MobileSettingsSwitch(
+        NodeLaneSwitchRow(
           title: l10n.remove_extra_paragraph_spacing,
-          icon: Icons.format_line_spacing_rounded,
+          icon: NodeLaneIcons.of(context).lineSpacing,
           value: ref.watch(novelRemoveExtraParagraphSpacingStateProvider),
           onChanged: ref
               .read(novelRemoveExtraParagraphSpacingStateProvider.notifier)
               .set,
         ),
-        MobileSettingsSwitch(
+        NodeLaneSwitchRow(
           title: l10n.use_page_tap_zones,
-          icon: Icons.touch_app_outlined,
+          icon: NodeLaneIcons.of(context).navigation,
           value: ref.watch(novelTapToScrollStateProvider),
           onChanged: ref.read(novelTapToScrollStateProvider.notifier).set,
         ),
-        MobileSettingsSwitch(
+        NodeLaneSwitchRow(
           title: l10n.double_page_auto,
           subtitle: l10n.double_page_auto_subtitle,
-          icon: Icons.screen_rotation_outlined,
+          icon: NodeLaneIcons.of(context).rotate,
           value: ref.watch(doublePageAutoStateProvider),
           onChanged: ref.read(doublePageAutoStateProvider.notifier).set,
         ),
@@ -337,7 +325,7 @@ class _NovelPageLayout extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
           child: Text(
             l10n.novel_session_modes_hint,
-            style: TextStyle(color: NodeLaneTokens.of(context).muted),
+            style: NodeLaneTokens.of(context).readerSecondary,
           ),
         ),
       ],
@@ -360,7 +348,7 @@ class _NovelChoice<T> extends StatelessWidget {
   final List<MobileSettingOption<T>> options;
   final ValueChanged<T> onChanged;
   @override
-  Widget build(BuildContext context) => MobileSettingsLink(
+  Widget build(BuildContext context) => NodeLaneRow(
     title: title,
     subtitle: subtitle,
     icon: icon,
@@ -375,60 +363,5 @@ class _NovelChoice<T> extends StatelessWidget {
         onChanged(selected.value);
       }
     },
-  );
-}
-
-class _NovelSlider extends StatefulWidget {
-  const _NovelSlider({
-    required this.title,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.label,
-    required this.onChanged,
-  });
-  final String title;
-  final double value, min, max;
-  final int divisions;
-  final String Function(double) label;
-  final ValueChanged<double> onChanged;
-  @override
-  State<_NovelSlider> createState() => _NovelSliderState();
-}
-
-class _NovelSliderState extends State<_NovelSlider> {
-  late double _draft = widget.value.clamp(widget.min, widget.max);
-  @override
-  void didUpdateWidget(covariant _NovelSlider oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      _draft = widget.value.clamp(widget.min, widget.max);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          '${widget.title}: ${widget.label(_draft)}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        Slider.adaptive(
-          value: _draft,
-          min: widget.min,
-          max: widget.max,
-          divisions: widget.divisions,
-          label: widget.label(_draft),
-          onChanged: (value) => setState(() => _draft = value),
-          onChangeEnd: (value) {
-            if (value != widget.value) widget.onChanged(value);
-          },
-        ),
-      ],
-    ),
   );
 }

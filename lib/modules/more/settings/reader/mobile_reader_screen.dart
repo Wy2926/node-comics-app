@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -18,24 +20,18 @@ class MobileReaderScreen extends ConsumerWidget {
     final scaleNames = getScaleTypeNames(context);
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.reader,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: l10n.reader),
         body: SafeArea(
           top: false,
           child: ListView(
             key: const PageStorageKey('mobile-reader-settings'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 0, 4, 16),
                 child: Text(
                   l10n.reader_default_mode_hint,
-                  style: TextStyle(color: colors.muted),
+                  style: colors.readerSecondary,
                 ),
               ),
               MobileSettingsGroup(
@@ -44,7 +40,7 @@ class MobileReaderScreen extends ConsumerWidget {
                   MobileReaderSettingsChoice<ReaderMode>(
                     title: l10n.default_reading_mode,
                     scopeDescription: l10n.reader_default_mode_hint,
-                    icon: Icons.chrome_reader_mode_outlined,
+                    icon: NodeLaneIcons.of(context).manga,
                     value: ref.watch(defaultReadingModeStateProvider),
                     values: ReaderMode.values,
                     label: (value) => getReaderModeName(value, context),
@@ -54,7 +50,7 @@ class MobileReaderScreen extends ConsumerWidget {
                   ),
                   MobileReaderSettingsChoice<ScaleType>(
                     title: l10n.scale_type,
-                    icon: Icons.fit_screen_rounded,
+                    icon: NodeLaneIcons.of(context).search,
                     value: ref.watch(scaleTypeStateProvider),
                     values: ScaleType.values.take(scaleNames.length).toList(),
                     label: (value) => value.index < scaleNames.length
@@ -64,7 +60,7 @@ class MobileReaderScreen extends ConsumerWidget {
                   ),
                   MobileReaderSettingsChoice<BackgroundColor>(
                     title: l10n.background_color,
-                    icon: Icons.palette_outlined,
+                    icon: NodeLaneIcons.of(context).palette,
                     value: ref.watch(backgroundColorStateProvider),
                     values: BackgroundColor.values,
                     label: (value) => getBackgroundColorName(value, context),
@@ -77,9 +73,9 @@ class MobileReaderScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.display,
                 children: [
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.show_page_number,
-                    icon: Icons.format_list_numbered_rounded,
+                    icon: NodeLaneIcons.of(context).pageNumber,
                     value: ref.watch<dynamic>(
                       showPagesNumberStateProvider,
                     ) as bool,
@@ -87,17 +83,17 @@ class MobileReaderScreen extends ConsumerWidget {
                         .read(showPagesNumberStateProvider.notifier)
                         .set,
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.keep_screen_on,
-                    icon: Icons.light_mode_outlined,
+                    icon: NodeLaneIcons.of(context).brightness,
                     value: ref.watch(keepScreenOnReaderStateProvider),
                     onChanged: ref
                         .read(keepScreenOnReaderStateProvider.notifier)
                         .set,
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.crop_borders,
-                    icon: Icons.crop_rounded,
+                    icon: NodeLaneIcons.of(context).crop,
                     value: ref.watch(cropBordersStateProvider),
                     onChanged: ref.read(cropBordersStateProvider.notifier).set,
                   ),
@@ -105,28 +101,28 @@ class MobileReaderScreen extends ConsumerWidget {
               ),
               MobileSettingsGroup(
                 children: [
-                  MobileReaderSettingsExpansion(
-                    storageKey: 'reader-page-layout',
+                  NodeLaneDisclosure(
                     title: l10n.reader_page_layout,
-                    icon: Icons.auto_stories_outlined,
+                    icon: NodeLaneIcons.of(context).manga,
+                    key: PageStorageKey('reader-page-layout'),
                     child: const MobileReaderPageLayoutSettings(),
                   ),
-                  MobileReaderSettingsExpansion(
-                    storageKey: 'reader-continuous',
+                  NodeLaneDisclosure(
                     title: l10n.reader_continuous_options,
-                    icon: Icons.view_day_outlined,
+                    icon: NodeLaneIcons.of(context).categories,
+                    key: PageStorageKey('reader-continuous'),
                     child: const MobileReaderContinuousSettings(),
                   ),
-                  MobileReaderSettingsExpansion(
-                    storageKey: 'reader-navigation',
+                  NodeLaneDisclosure(
                     title: l10n.navigation_layout,
-                    icon: Icons.touch_app_outlined,
+                    icon: NodeLaneIcons.of(context).navigation,
+                    key: PageStorageKey('reader-navigation'),
                     child: const MobileReaderNavigationSettings(),
                   ),
-                  MobileReaderSettingsExpansion(
-                    storageKey: 'reader-advanced',
+                  NodeLaneDisclosure(
                     title: l10n.advanced,
-                    icon: Icons.tune_rounded,
+                    icon: NodeLaneIcons.of(context).adjustments,
+                    key: PageStorageKey('reader-advanced'),
                     child: const MobileReaderAdvancedSettings(),
                   ),
                 ],

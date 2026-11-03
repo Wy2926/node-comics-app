@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -138,8 +140,8 @@ void main() {
       );
       await start(tester, home);
       expect(refreshes, 1);
-      await tap(tester, find.widgetWithText(ListTile, 'Status'));
-      await tap(tester, find.widgetWithText(ListTile, 'Completed'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Status'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Completed'));
       await tester.pumpAndSettle();
       expect(writes.single.status, TrackStatus.completed);
       expect(original.status, TrackStatus.reading);
@@ -148,7 +150,7 @@ void main() {
       expect(writes.single.mediaId, original.mediaId);
       expect(writes.single.syncId, original.syncId);
       expect(writes.single.mangaId, original.mangaId);
-      await tap(tester, find.widgetWithText(ListTile, 'Chapters'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Chapters'));
       keyboard = 280;
       await tester.pumpWidget(app(home));
       await tester.enterText(find.byType(TextField), '13');
@@ -163,7 +165,7 @@ void main() {
       expect(writes.length, 1);
       keyboard = 0;
       await tester.pumpWidget(app(home));
-      await tap(tester, find.widgetWithText(ListTile, 'Chapters'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Chapters'));
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '4',
@@ -172,12 +174,12 @@ void main() {
       await tap(tester, find.byType(FilledButton));
       await tester.pumpAndSettle();
       expect(writes.last.lastChapterRead, 0);
-      await tap(tester, find.widgetWithText(ListTile, 'Score'));
-      await tap(tester, find.widgetWithText(ListTile, 'Score 60'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Score'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Score 60'));
       await tester.pumpAndSettle();
       expect(writes.last.score, 60);
       expect(tester.takeException(), isNull, reason: 'Before date picker');
-      await tap(tester, find.widgetWithText(ListTile, 'Start date'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Start date'));
       expect(tester.takeException(), isNull, reason: 'Date picker layout');
       expect(
         tester
@@ -188,8 +190,9 @@ void main() {
       await tap(tester, find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(writes.length, 3);
-      await tap(tester, find.widgetWithText(ListTile, 'Start date'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Start date'));
       await tap(tester, find.widgetWithText(TextButton, 'Switch to input'));
+      expect(tester.takeException(), isNull, reason: 'Input mode');
       keyboard = 280;
       await tester.pumpWidget(app(home));
       await reveal(tester, find.byType(TextFormField));
@@ -203,6 +206,7 @@ void main() {
       expect(writes.last.finishedReadingDate, 0);
       keyboard = 0;
       await tester.pumpWidget(app(home));
+      expect(tester.takeException(), isNull, reason: 'After date picker');
       final remove = find.widgetWithText(TextButton, 'Remove tracking');
       await tap(tester, remove);
       await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
@@ -264,12 +268,12 @@ void main() {
       await start(tester, home);
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      final status = find.widgetWithText(ListTile, 'Status');
+      final status = find.widgetWithText(NodeLaneRow, 'Status');
       await tap(tester, status);
-      await tap(tester, find.widgetWithText(ListTile, 'Completed'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Completed'));
       await tester.pump(const Duration(milliseconds: 500));
       expect(writes, 1);
-      expect(tester.widget<ListTile>(status).onTap, isNull);
+      expect(tester.widget<NodeLaneRow>(status).onTap, isNull);
       await Navigator.of(tester.element(find.byType(MobileTrackerEditor)))
           .maybePop();
       await tester.pump();
@@ -278,7 +282,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(original.status, TrackStatus.reading);
       expect(find.textContaining('private service error'), findsNothing);
-      expect(tester.widget<ListTile>(status).onTap, isNull);
+      expect(tester.widget<NodeLaneRow>(status).onTap, isNull);
       final refresh = find.widgetWithText(TextButton, 'Refresh');
       await reveal(tester, refresh, delta: -250);
       final action = tester.widget<TextButton>(refresh).onPressed!;
@@ -289,7 +293,7 @@ void main() {
       expect(writes, 1);
       recheck.complete();
       await tester.pumpAndSettle();
-      expect(tester.widget<ListTile>(status).onTap, isNotNull);
+      expect(tester.widget<NodeLaneRow>(status).onTap, isNotNull);
       await Navigator.of(tester.element(find.byType(MobileTrackerEditor)))
           .maybePop();
       await tester.pumpAndSettle();

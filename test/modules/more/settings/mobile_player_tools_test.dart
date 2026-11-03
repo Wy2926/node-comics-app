@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,7 +12,6 @@ import 'package:mangayomi/modules/more/settings/player/mobile_custom_button_scre
 import 'package:mangayomi/modules/more/settings/player/mobile_player_action_dialog.dart';
 import 'package:mangayomi/modules/more/settings/player/mobile_player_advanced_screen.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/custom_buttons_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/repositories/custom_button_repository.dart';
 
 void main() {
@@ -157,7 +158,9 @@ void main() {
       final wait = Completer<void>();
       repository.saveWait = wait.future;
       final save = tester
-          .widget<IconButton>(find.byKey(const ValueKey('save-custom-button')))
+          .widget<NodeLaneIconButton>(
+            find.byKey(const ValueKey('save-custom-button')),
+          )
           .onPressed!;
       save();
       save();
@@ -174,7 +177,7 @@ void main() {
       wait.completeError(StateError('unavailable'));
       await tester.pumpAndSettle();
       expect(
-        tester.widget<TextField>(field('startup')).controller!.text,
+        tester.widget<NodeLaneTextField>(field('startup')).controller!.text,
         'start(\$isPrimary)\n',
       );
       expect(find.byType(MobileCustomButtonEditor), findsOneWidget);
@@ -266,20 +269,23 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('add-custom-button')));
       await tester.pumpAndSettle();
       final saveKey = find.byKey(const ValueKey('save-custom-button'));
-      expect(tester.widget<IconButton>(saveKey).onPressed, isNull);
+      expect(tester.widget<NodeLaneIconButton>(saveKey).onPressed, isNull);
       await tester.enterText(field('title'), 'Temporary');
-      expect(tester.widget<IconButton>(saveKey).onPressed, isNull);
+      expect(tester.widget<NodeLaneIconButton>(saveKey).onPressed, isNull);
       await reveal(tester, field('press'));
       await tester.enterText(field('press'), 'draft()');
       await tester.pump();
-      expect(tester.widget<IconButton>(saveKey).onPressed, isNotNull);
-      await tester.tap(find.byTooltip('Cancel'));
+      expect(tester.widget<NodeLaneIconButton>(saveKey).onPressed, isNotNull);
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(repository.saves, 0);
       await tester.tap(find.byKey(const ValueKey('add-custom-button')));
       await tester.pumpAndSettle();
-      expect(tester.widget<TextField>(field('title')).controller!.text, '');
-      expect(tester.widget<IconButton>(saveKey).onPressed, isNull);
+      expect(
+        tester.widget<NodeLaneTextField>(field('title')).controller!.text,
+        '',
+      );
+      expect(tester.widget<NodeLaneIconButton>(saveKey).onPressed, isNull);
       expect(tester.takeException(), isNull);
     },
   );
@@ -311,13 +317,13 @@ void main() {
           },
         ),
       );
-      final control = find.byType(MobileSettingsSwitch);
-      final toggle = tester.widget<MobileSettingsSwitch>(control).onChanged!;
+      final control = find.byType(NodeLaneSwitchRow);
+      final toggle = tester.widget<NodeLaneSwitchRow>(control).onChanged!;
       toggle(true);
       toggle(true);
       await tester.pump();
       expect(writes, 1);
-      expect(tester.widget<MobileSettingsSwitch>(control).onChanged, isNull);
+      expect(tester.widget<NodeLaneSwitchRow>(control).onChanged, isNull);
       result.complete(null);
       await tester.pumpAndSettle();
       expect(enabled, false);
@@ -329,7 +335,7 @@ void main() {
         findsNothing,
       );
       result = Completer<bool?>();
-      tester.widget<MobileSettingsSwitch>(control).onChanged!(true);
+      tester.widget<NodeLaneSwitchRow>(control).onChanged!(true);
       result.complete(false);
       await tester.pumpAndSettle();
       expect(enabled, false);
@@ -354,7 +360,7 @@ void main() {
       expect(enabled, false);
       await reveal(tester, control, delta: -250);
       result = Completer<bool?>();
-      tester.widget<MobileSettingsSwitch>(control).onChanged!(true);
+      tester.widget<NodeLaneSwitchRow>(control).onChanged!(true);
       result.complete(true);
       await tester.pumpAndSettle();
       expect(enabled, true);

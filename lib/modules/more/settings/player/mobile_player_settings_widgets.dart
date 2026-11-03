@@ -1,6 +1,6 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Presentation only: callers retain the original routes and preference writes.
@@ -17,46 +17,16 @@ class MobilePlayerSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NodeLaneSurface(
     child: Scaffold(
-      appBar: AppBar(
-        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
+      appBar: nodeLaneAppBar(context, title: title),
       body: SafeArea(
         top: false,
         child: ListView(
           key: PageStorageKey(storageKey),
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          padding: NodeLaneTokens.pagePadding,
           children: children,
         ),
       ),
     ),
-  );
-}
-
-class MobilePlayerSettingsSection extends StatelessWidget {
-  const MobilePlayerSettingsSection({
-    super.key,
-    required this.storageKey,
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
-  final String storageKey, title;
-  final IconData icon;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => MobileSettingsGroup(
-    children: [
-      ExpansionTile(
-        key: PageStorageKey(storageKey),
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        shape: const Border(),
-        collapsedShape: const Border(),
-        leading: Icon(icon, color: NodeLaneTokens.of(context).accent),
-        title: Text(title),
-        children: [child],
-      ),
-    ],
   );
 }
 
@@ -80,7 +50,7 @@ class MobilePlayerSettingChoice<T> extends StatelessWidget {
   final bool searchable;
 
   @override
-  Widget build(BuildContext context) => MobileSettingsLink(
+  Widget build(BuildContext context) => NodeLaneRow(
     title: title,
     subtitle: label(value),
     icon: icon,

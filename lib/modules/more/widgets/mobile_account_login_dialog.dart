@@ -1,3 +1,6 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
@@ -111,11 +114,14 @@ class _MobileAccountLoginDialogState extends State<MobileAccountLoginDialog> {
           children: [
             for (var index = 0; index < widget.fields.length; index++) ...[
               if (index > 0) const SizedBox(height: 16),
-              Text(widget.fields[index].label),
+              Text(
+                widget.fields[index].label,
+                style: NodeLaneTokens.of(context).readerLabel,
+              ),
               const SizedBox(height: 8),
               Semantics(
                 label: widget.fields[index].label,
-                child: TextField(
+                child: NodeLaneTextField(
                   key: ValueKey('account-${widget.fields[index].id}'),
                   controller: _controllers[widget.fields[index].id],
                   focusNode: _focus[widget.fields[index].id],
@@ -127,8 +133,6 @@ class _MobileAccountLoginDialogState extends State<MobileAccountLoginDialog> {
                       !_revealed.contains(widget.fields[index].id),
                   autocorrect: false,
                   enableSuggestions: false,
-                  smartDashesType: SmartDashesType.disabled,
-                  smartQuotesType: SmartQuotesType.disabled,
                   textInputAction: index == widget.fields.length - 1
                       ? TextInputAction.done
                       : TextInputAction.next,
@@ -140,29 +144,25 @@ class _MobileAccountLoginDialogState extends State<MobileAccountLoginDialog> {
                       _focus[widget.fields[index + 1].id]!.requestFocus();
                     }
                   },
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    suffixIcon: !widget.fields[index].secret
-                        ? null
-                        : IconButton(
-                            tooltip: _revealed.contains(widget.fields[index].id)
-                                ? context.l10n.hide_password
-                                : context.l10n.show_password,
-                            onPressed: _busy
-                                ? null
-                                : () => setState(() {
-                                    final id = widget.fields[index].id;
-                                    if (!_revealed.add(id)) {
-                                      _revealed.remove(id);
-                                    }
-                                  }),
-                            icon: Icon(
-                              _revealed.contains(widget.fields[index].id)
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                            ),
-                          ),
-                  ),
+                  trailing: !widget.fields[index].secret
+                      ? null
+                      : NodeLaneIconButton(
+                          tooltip: _revealed.contains(widget.fields[index].id)
+                              ? context.l10n.hide_password
+                              : context.l10n.show_password,
+                          onPressed: _busy
+                              ? null
+                              : () => setState(() {
+                                  final id = widget.fields[index].id;
+                                  if (!_revealed.add(id)) {
+                                    _revealed.remove(id);
+                                  }
+                                }),
+                          icon: _revealed.contains(widget.fields[index].id)
+                              ? NodeLaneIcons.of(context).incognito
+                              : NodeLaneIcons.of(context).visible,
+                          style: NodeLaneIconButtonStyle.field,
+                        ),
                 ),
               ),
             ],

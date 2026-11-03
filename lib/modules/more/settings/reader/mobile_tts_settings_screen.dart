@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/novel/tts/mobile_tts_settings.dart';
@@ -14,13 +15,7 @@ class MobileTtsSettingsScreen extends ConsumerWidget {
     final tts = NovelTtsService.instance;
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            context.l10n.tts,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: context.l10n.tts),
         body: SafeArea(
           top: false,
           child: SingleChildScrollView(

@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -184,24 +186,18 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
       canPop: !_busy,
       child: NodeLaneSurface(
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              l10n.tracking,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          appBar: nodeLaneAppBar(context, title: l10n.tracking),
           body: SafeArea(
             top: false,
             child: ListView(
               key: const PageStorageKey('mobile-tracking-settings'),
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              padding: NodeLaneTokens.pagePadding,
               children: [
                 MobileSettingsGroup(
                   children: [
-                    MobileSettingsSwitch(
+                    NodeLaneSwitchRow(
                       title: l10n.updateProgressAfterReading,
-                      icon: Icons.auto_stories_outlined,
+                      icon: NodeLaneIcons.of(context).manga,
                       value: widget.updateProgress,
                       onChanged: _busy ? null : widget.onUpdateProgress,
                     ),
@@ -255,25 +251,17 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
                   ),
                   MobileSettingsGroup(
                     children: [
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        title: Text(l10n.manage_trackers),
-                        leading: Icon(
-                          Icons.manage_accounts_outlined,
-                          color: colors.accent,
-                        ),
-                        trailing: const Icon(Icons.chevron_right_rounded),
+                      NodeLaneRow(
+                        title: l10n.manage_trackers,
                         enabled: !_busy,
                         onTap: _busy ? null : widget.onManage,
+                        icon: NodeLaneIcons.of(context).accountOutline,
                       ),
                     ],
                   ),
                   Text(
                     l10n.tracking_warning_info,
-                    style: TextStyle(color: colors.muted),
+                    style: colors.readerSecondary,
                   ),
                 ],
               ],

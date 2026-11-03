@@ -169,12 +169,8 @@ class _ChapterFilters extends ConsumerWidget {
             MobileSettingsGroup(
               spacing: 0,
               children: [
-                MobileSettingsLink(
-                  inlineSubtitle: true,
+                NodeLaneRow(
                   title: l10n.filter_scanlator_groups,
-                  subtitle: excluded.isEmpty
-                      ? l10n.chapter_scanlators_all
-                      : l10n.chapter_scanlators_hidden(excluded.length),
                   icon: NodeLaneIcons.of(context).groups,
                   onTap: () async {
                     final chosen =
@@ -206,6 +202,9 @@ class _ChapterFilters extends ConsumerWidget {
                     }
                     ref.read(scanlatorProvider.notifier).set(next);
                   },
+                  value: excluded.isEmpty
+                      ? l10n.chapter_scanlators_all
+                      : l10n.chapter_scanlators_hidden(excluded.length),
                 ),
               ],
             ),

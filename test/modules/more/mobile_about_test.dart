@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -215,7 +217,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(retries, 1);
       expect(find.text('NodeLane Preview'), findsOneWidget);
-      final auto = find.byType(SwitchListTile).first;
+      final auto = find.byType(NodeLaneSwitchRow).first;
       await reveal(tester, auto);
       await tester.tap(auto);
       await tester.pumpAndSettle();
@@ -237,7 +239,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.widget<TextButton>(share).onPressed, isNotNull);
       expect(find.textContaining('private path'), findsNothing);
-      final logging = find.widgetWithText(SwitchListTile, 'Enable logging');
+      final logging = find.widgetWithText(NodeLaneSwitchRow, 'Enable logging');
       await reveal(tester, logging, delta: -150);
       await tester.tap(logging);
       await tester.pumpAndSettle();

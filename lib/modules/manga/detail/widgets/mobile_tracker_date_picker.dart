@@ -1,3 +1,6 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -23,14 +26,26 @@ class MobileTrackerDatePicker extends StatefulWidget {
 
 class _MobileTrackerDatePickerState extends State<MobileTrackerDatePicker> {
   late DateTime _selected = widget.initial;
+  // The editable draft is independent of localization/theme rebuilds.
+  final _dateInput = TextEditingController();
   final _form = GlobalKey<FormState>();
   bool _input = false;
 
+  @override
+  void dispose() {
+    _dateInput.dispose();
+    super.dispose();
+  }
+
+  bool _readInput() {
+    if (!_form.currentState!.validate()) return false;
+    _selected = MaterialLocalizations.of(context)
+        .parseCompactDate(_dateInput.text)!;
+    return true;
+  }
+
   void _confirm() {
-    if (_input) {
-      if (!_form.currentState!.validate()) return;
-      _form.currentState!.save();
-    }
+    if (_input && !_readInput()) return;
     Navigator.pop(context, _selected);
   }
 
@@ -40,13 +55,7 @@ class _MobileTrackerDatePickerState extends State<MobileTrackerDatePicker> {
     final material = MaterialLocalizations.of(context);
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: widget.title),
         body: SafeArea(
           top: false,
           child: ListView(
@@ -59,14 +68,18 @@ class _MobileTrackerDatePickerState extends State<MobileTrackerDatePicker> {
               const SizedBox(height: 16),
               TextButton.icon(
                 onPressed: () {
-                  if (_input && _form.currentState!.validate()) {
-                    _form.currentState!.save();
+                  if (_input) {
+                    _readInput();
+                  } else {
+                    _dateInput.text = material.formatCompactDate(_selected);
                   }
                   FocusScope.of(context).unfocus();
                   setState(() => _input = !_input);
                 },
                 icon: Icon(
-                  _input ? Icons.calendar_today_outlined : Icons.edit_outlined,
+                  _input
+                      ? NodeLaneIcons.of(context).calendar
+                      : NodeLaneIcons.of(context).edit,
                 ),
                 label: Text(
                   _input
@@ -78,12 +91,21 @@ class _MobileTrackerDatePickerState extends State<MobileTrackerDatePicker> {
               if (_input)
                 Form(
                   key: _form,
-                  child: InputDatePickerFormField(
-                    initialDate: _selected,
-                    firstDate: widget.first,
-                    lastDate: widget.last,
+                  child: NodeLaneTextField(
+                    controller: _dateInput,
+                    label: material.dateInputLabel,
+                    hint: material.dateHelpText,
+                    keyboardType: TextInputType.datetime,
                     autofocus: true,
-                    onDateSaved: (value) => _selected = value,
+                    validator: (text) {
+                      final date = material.parseCompactDate(text ?? '');
+                      if (date == null) return material.invalidDateFormatLabel;
+                      if (date.isBefore(widget.first) ||
+                          date.isAfter(widget.last)) {
+                        return material.dateOutOfRangeLabel;
+                      }
+                      return null;
+                    },
                   ),
                 )
               else

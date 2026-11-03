@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,7 +6,6 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/reader/mobile_novel_reader_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 
 final _writes = <(String, Object?)>[];
 
@@ -123,7 +123,7 @@ void main() {
     String title, {
     double delta = 280,
   }) async {
-    final target = find.widgetWithText(MobileSettingsLink, title);
+    final target = find.widgetWithText(NodeLaneRow, title);
     await reveal(tester, target, delta: delta);
     await tester.tap(target);
     await tester.pumpAndSettle();
@@ -136,7 +136,7 @@ void main() {
     double delta = 280,
   }) async {
     await open(tester, title, delta: delta);
-    final target = find.widgetWithText(ListTile, option);
+    final target = find.widgetWithText(NodeLaneRow, option);
     await reveal(tester, target);
     await tester.tap(target);
     await tester.pumpAndSettle();
@@ -158,7 +158,7 @@ void main() {
     String title, {
     double delta = 280,
   }) async {
-    final target = find.widgetWithText(MobileSettingsSwitch, title);
+    final target = find.widgetWithText(NodeLaneSwitchRow, title);
     await reveal(tester, target, delta: delta);
     await tester.tap(target);
     await tester.pumpAndSettle();
@@ -277,10 +277,7 @@ void main() {
       ttsSupported = false;
       await tester.pumpWidget(app(container));
       await tester.pumpAndSettle();
-      expect(
-        find.widgetWithText(MobileSettingsLink, 'Text-to-Speech'),
-        findsNothing,
-      );
+      expect(find.widgetWithText(NodeLaneRow, 'Text-to-Speech'), findsNothing);
       expect(ttsOpens, 1);
       expect(tester.takeException(), isNull);
     },

@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/custom_button.dart';
@@ -125,18 +127,15 @@ class _MobileCustomButtonScreenState
       canPop: !_busy,
       child: NodeLaneSurface(
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              l10n.custom_buttons,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          appBar: nodeLaneAppBar(
+            context,
+            title: l10n.custom_buttons,
             actions: [
-              IconButton(
+              NodeLaneIconButton(
                 key: const ValueKey('add-custom-button'),
                 tooltip: l10n.add,
                 onPressed: _locked ? null : () => _edit(null),
-                icon: const Icon(Icons.add_rounded),
+                icon: NodeLaneIcons.of(context).add,
               ),
             ],
           ),
@@ -168,7 +167,7 @@ class _MobileCustomButtonScreenState
                               : () => ref.invalidate(
                                   getCustomButtonsStreamProvider,
                                 ),
-                          icon: const Icon(Icons.refresh_rounded),
+                          icon: Icon(NodeLaneIcons.of(context).refresh),
                           label: Text(l10n.retry),
                         ),
                       ],
@@ -186,9 +185,9 @@ class _MobileCustomButtonScreenState
                                           CrossAxisAlignment.stretch,
                                       children: [
                                         Icon(
-                                          Icons.touch_app_outlined,
+                                          NodeLaneIcons.of(context).navigation,
                                           size: 32,
-                                          color: colors.accent,
+                                          color: colors.ink,
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
@@ -200,7 +199,9 @@ class _MobileCustomButtonScreenState
                                           onPressed: _locked
                                               ? null
                                               : () => _edit(null),
-                                          icon: const Icon(Icons.add_rounded),
+                                          icon: Icon(
+                                            NodeLaneIcons.of(context).add,
+                                          ),
                                           label: Text(l10n.custom_buttons_add),
                                         ),
                                       ],
@@ -212,7 +213,7 @@ class _MobileCustomButtonScreenState
                           )
                         : ReorderableListView.builder(
                             key: const PageStorageKey('mobile-custom-buttons'),
-                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                            padding: NodeLaneTokens.pagePadding,
                             buildDefaultDragHandles: false,
                             itemCount: data.length,
                             onReorderItem: (from, to) =>
@@ -238,19 +239,18 @@ class _MobileCustomButtonScreenState
                                             Expanded(
                                               child: Text(
                                                 button.title ?? '',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleMedium,
+                                                style: colors.readerLabel,
                                               ),
                                             ),
                                             ReorderableDragStartListener(
                                               index: index,
                                               enabled: !_locked,
-                                              child: const SizedBox(
+                                              child: SizedBox(
                                                 width: 48,
                                                 height: 48,
                                                 child: Icon(
-                                                  Icons.drag_handle_rounded,
+                                                  NodeLaneIcons.of(context)
+                                                      .reorder,
                                                 ),
                                               ),
                                             ),
@@ -260,11 +260,10 @@ class _MobileCustomButtonScreenState
                                           button.codePress ?? '',
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontFamily: 'monospace',
-                                            color: colors.muted,
-                                            fontSize: 13,
-                                          ),
+                                          style: colors.readerSecondary
+                                              .copyWith(
+                                                fontFamily: 'monospace',
+                                              ),
                                         ),
                                         const SizedBox(height: 8),
                                         Wrap(
@@ -292,32 +291,34 @@ class _MobileCustomButtonScreenState
                                                       ),
                                                 icon: Icon(
                                                   button.isFavourite == true
-                                                      ? Icons.star_rounded
-                                                      : Icons
-                                                            .star_outline_rounded,
+                                                      ? NodeLaneIcons.of(
+                                                          context,
+                                                        ).favorite
+                                                      : NodeLaneIcons.of(
+                                                          context,
+                                                        ).favorite,
                                                 ),
                                                 label: Text(
                                                   l10n.custom_button_primary,
                                                 ),
                                               ),
                                             ),
-                                            IconButton(
+                                            NodeLaneIconButton(
                                               tooltip: l10n.edit,
                                               onPressed: _locked
                                                   ? null
                                                   : () => _edit(button),
-                                              icon: const Icon(
-                                                Icons.edit_outlined,
-                                              ),
+                                              icon: NodeLaneIcons.of(context)
+                                                  .edit,
                                             ),
-                                            IconButton(
+                                            NodeLaneIconButton(
                                               tooltip: l10n.delete,
                                               onPressed: _locked
                                                   ? null
                                                   : () => _delete(button),
-                                              icon: const Icon(
-                                                Icons.delete_outline_rounded,
-                                              ),
+                                              icon: NodeLaneIcons.of(context)
+                                                  .delete,
+                                              destructive: true,
                                             ),
                                           ],
                                         ),

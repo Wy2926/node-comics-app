@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -47,25 +48,17 @@ class _MobileSettingsTextDialogState extends State<MobileSettingsTextDialog> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (widget.helper != null) ...[
-            Text(widget.helper!, style: TextStyle(color: colors.muted)),
+            Text(widget.helper!, style: colors.readerSecondary),
             const SizedBox(height: 16),
           ],
-          TextField(
+          NodeLaneTextField(
             controller: _input,
             autofocus: true,
             keyboardType: widget.keyboardType,
             autocorrect: false,
             enableSuggestions: false,
             onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: widget.hint,
-              filled: true,
-              fillColor: colors.soft,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
+            hint: widget.hint ?? '',
           ),
         ],
       ),

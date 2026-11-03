@@ -38,7 +38,7 @@ class _AccountView extends ConsumerStatefulWidget {
 class _AccountViewState extends ConsumerState<_AccountView>
     with WidgetsBindingObserver {
   late final service = ref.read(translationServiceProvider);
-  bool _initializing = true, _initFailed = false, _details = false;
+  bool _initializing = true, _initFailed = false;
   bool _websiteOpen = false, _confirming = false;
 
   @override
@@ -112,7 +112,6 @@ class _AccountViewState extends ConsumerState<_AccountView>
     );
     _confirming = false;
     if (mounted && confirmed) {
-      setState(() => _details = false);
       await service.logout();
     }
   }
@@ -482,36 +481,39 @@ class _AccountViewState extends ConsumerState<_AccountView>
               title: l.nodelane_quota_purchase,
               value: _available(account.purchase),
             ),
-            Semantics(
-              expanded: _details,
-              child: NodeLaneRow(
-                compact: true,
-                title: _details
-                    ? l.nodelane_quota_expanded
-                    : l.nodelane_quota_details,
-                onTap: () => setState(() => _details = !_details),
-                trailing: Icon(
-                  _details
-                      ? NodeLaneIcons.of(context).up
-                      : NodeLaneIcons.of(context).down,
-                  size: NodeLaneTokens.smallIconSize,
-                  color: t.muted,
+            NodeLaneDisclosure(
+              key: ValueKey(('quota-details', account.id)),
+              compact: true,
+              title: l.nodelane_quota_details,
+              expandedTitle: l.nodelane_quota_expanded,
+              child: Padding(
+                padding: const EdgeInsets.only(top: NodeLaneTokens.space16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _quotaDetail(l.nodelane_quota_free, account.free),
+                    _quotaDetail(
+                      l.nodelane_quota_subscription,
+                      account.subscription,
+                    ),
+                    _quotaDetail(
+                      l.nodelane_quota_purchase,
+                      account.purchase,
+                      purchase: true,
+                    ),
+                    Padding(
+                      padding: NodeLaneTokens.groupPadding,
+                      child: Text(
+                        l.nodelane_quota_reservation_note,
+                        style: t.caption,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
-        if (_details) ...[
-          _quotaDetail(l.nodelane_quota_free, account.free),
-          _quotaDetail(l.nodelane_quota_subscription, account.subscription),
-          _quotaDetail(
-            l.nodelane_quota_purchase,
-            account.purchase,
-            purchase: true,
-          ),
-          Text(l.nodelane_quota_reservation_note, style: t.caption),
-          const SizedBox(height: NodeLaneTokens.space16),
-        ],
         if (account.isFree) ...[
           Text(l.nodelane_quota_purchase_note, style: t.caption),
           const SizedBox(height: NodeLaneTokens.space8),

@@ -18,6 +18,7 @@ class NodeLaneTokens {
 
   final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
   final bool usesGlass;
+  static const disclosureDuration = Duration(milliseconds: 200);
   static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
   static const space16 = 16.0, space20 = 20.0, space24 = 24.0;
   static const gutter = space20, coverRadius = 10.0, controlRadius = 12.0;

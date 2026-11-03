@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +12,6 @@ import 'package:mangayomi/modules/more/settings/player/player_overview_screen.da
 import 'package:mangayomi/modules/more/settings/player/providers/player_audio_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_decoder_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 
 final _writes = <(String, Object)>[];
 // Models persisted values when collapsed sections release their consumers.
@@ -105,7 +105,7 @@ void main() {
     String title, {
     double delta = 250,
   }) async {
-    final target = find.widgetWithText(MobileSettingsLink, title);
+    final target = find.widgetWithText(NodeLaneRow, title);
     await reveal(tester, target, delta: delta);
     await tester.tap(target);
     await tester.pumpAndSettle();
@@ -113,7 +113,7 @@ void main() {
 
   Future<void> choose(WidgetTester tester, String title, String label) async {
     await open(tester, title);
-    final option = find.widgetWithText(ListTile, label);
+    final option = find.widgetWithText(NodeLaneRow, label);
     await reveal(tester, option);
     await tester.tap(option);
     await tester.pumpAndSettle();
@@ -135,7 +135,7 @@ void main() {
     String title, {
     double delta = 250,
   }) async {
-    final control = find.widgetWithText(MobileSettingsSwitch, title);
+    final control = find.widgetWithText(NodeLaneSwitchRow, title);
     await reveal(tester, control, delta: delta);
     await tester.tap(control);
     await tester.pumpAndSettle();
@@ -158,7 +158,7 @@ void main() {
       keyboard = 180;
       await tester.pumpWidget(app(container, const MobilePlayerScreen()));
       await tester.pumpAndSettle();
-      final chinese = find.widgetWithText(ListTile, 'zh');
+      final chinese = find.widgetWithText(NodeLaneRow, 'zh');
       await reveal(tester, chinese);
       await tester.tap(chinese);
       await tester.pumpAndSettle();
@@ -230,7 +230,7 @@ void main() {
       await choose(tester, 'Button timeout', '10s');
       await toggle(tester, 'Enable AniSkip', delta: -250);
       expect(
-        find.widgetWithText(MobileSettingsSwitch, 'Enable auto skip'),
+        find.widgetWithText(NodeLaneSwitchRow, 'Enable auto skip'),
         findsNothing,
       );
       await expand(tester, 'AniSkip', delta: -250);
@@ -322,7 +322,7 @@ void main() {
       expect(_writes, isEmpty);
       await toggle(tester, 'Hardware Acceleration');
       expect(
-        find.widgetWithText(MobileSettingsLink, 'Hardware Decoder'),
+        find.widgetWithText(NodeLaneRow, 'Hardware Decoder'),
         findsNothing,
       );
       await toggle(tester, 'Hardware Acceleration');

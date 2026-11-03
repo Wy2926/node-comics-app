@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -26,7 +28,7 @@ class MobilePlayerScreen extends ConsumerWidget {
           children: [
             MobilePlayerSettingChoice<double>(
               title: l10n.default_playback_speed_length,
-              icon: Icons.speed_rounded,
+              icon: NodeLaneIcons.of(context).speed,
               value: ref.watch(defaultPlayBackSpeedStateProvider),
               label: l10n.playback_speed_multiplier,
               options: [
@@ -51,7 +53,7 @@ class MobilePlayerScreen extends ConsumerWidget {
             ),
             MobilePlayerSettingChoice<int>(
               title: l10n.markEpisodeAsSeenSetting,
-              icon: Icons.task_alt_rounded,
+              icon: NodeLaneIcons.of(context).check,
               value: ref.watch(markEpisodeAsSeenTypeStateProvider),
               label: (value) => '$value%',
               options: [
@@ -69,7 +71,7 @@ class MobilePlayerScreen extends ConsumerWidget {
           children: [
             MobilePlayerSettingChoice<Locale>(
               title: l10n.default_subtitle_language,
-              icon: Icons.translate_rounded,
+              icon: NodeLaneIcons.of(context).translate,
               value: ref.watch(defaultSubtitleLangStateProvider),
               label: (value) => completeLanguageName(value.toLanguageTag()),
               searchable: true,
@@ -85,32 +87,41 @@ class MobilePlayerScreen extends ConsumerWidget {
                   .read(defaultSubtitleLangStateProvider.notifier)
                   .setLocale,
             ),
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.use_libass,
               subtitle: l10n.use_libass_info,
-              icon: Icons.subtitles_outlined,
+              icon: NodeLaneIcons.of(context).subtitles,
               value: ref.watch(useLibassStateProvider),
               onChanged: ref.read(useLibassStateProvider.notifier).set,
             ),
           ],
         ),
-        MobilePlayerSettingsSection(
-          storageKey: 'player-controls',
-          title: l10n.player_controls,
-          icon: Icons.touch_app_outlined,
-          child: const _Controls(),
+        Padding(
+          padding: const EdgeInsets.only(bottom: NodeLaneTokens.space24),
+          child: NodeLaneDisclosure(
+            title: l10n.player_controls,
+            icon: NodeLaneIcons.of(context).navigation,
+            key: PageStorageKey('player-controls'),
+            child: const _Controls(),
+          ),
         ),
-        MobilePlayerSettingsSection(
-          storageKey: 'player-display',
-          title: l10n.display,
-          icon: Icons.screen_rotation_outlined,
-          child: const _Display(),
+        Padding(
+          padding: const EdgeInsets.only(bottom: NodeLaneTokens.space24),
+          child: NodeLaneDisclosure(
+            title: l10n.display,
+            icon: NodeLaneIcons.of(context).rotate,
+            key: PageStorageKey('player-display'),
+            child: const _Display(),
+          ),
         ),
-        const MobilePlayerSettingsSection(
-          storageKey: 'player-aniskip',
-          title: 'AniSkip',
-          icon: Icons.skip_next_rounded,
-          child: _AniSkip(),
+        Padding(
+          padding: const EdgeInsets.only(bottom: NodeLaneTokens.space24),
+          child: NodeLaneDisclosure(
+            title: 'AniSkip',
+            icon: NodeLaneIcons.of(context).nextChapter,
+            key: PageStorageKey('player-aniskip'),
+            child: _AniSkip(),
+          ),
         ),
       ],
     );
@@ -125,10 +136,10 @@ class _Controls extends ConsumerWidget {
     final intro = ref.watch(defaultSkipIntroLengthStateProvider);
     return Column(
       children: [
-        MobileSettingsLink(
+        NodeLaneRow(
           title: l10n.default_skip_intro_length,
           subtitle: '${intro}s',
-          icon: Icons.skip_next_outlined,
+          icon: NodeLaneIcons.of(context).nextChapter,
           onTap: () async {
             final result = await showDialog<String>(
               context: context,
@@ -152,7 +163,7 @@ class _Controls extends ConsumerWidget {
         ),
         MobilePlayerSettingChoice<int>(
           title: l10n.default_skip_forward_skip_length,
-          icon: Icons.fast_forward_outlined,
+          icon: NodeLaneIcons.of(context).fastForward,
           value: ref.watch(defaultDoubleTapToSkipLengthStateProvider),
           label: (value) => '${value}s',
           options: [
@@ -175,17 +186,17 @@ class _Display extends ConsumerWidget {
     final l10n = context.l10n;
     return Column(
       children: [
-        MobileSettingsSwitch(
+        NodeLaneSwitchRow(
           title: l10n.full_screen_player,
           subtitle: l10n.full_screen_player_info,
-          icon: Icons.fullscreen_rounded,
+          icon: NodeLaneIcons.of(context).fullscreen,
           value: ref.watch(fullScreenPlayerStateProvider),
           onChanged: ref.read(fullScreenPlayerStateProvider.notifier).set,
         ),
-        MobileSettingsSwitch(
+        NodeLaneSwitchRow(
           title: l10n.forceLandscapeMode,
           subtitle: l10n.forceLandscapeModeSubtitle,
-          icon: Icons.stay_current_landscape_rounded,
+          icon: NodeLaneIcons.of(context).rotate,
           value: ref.watch(forceLandscapePlayerStateProvider),
           onChanged: ref.read(forceLandscapePlayerStateProvider.notifier).set,
         ),
@@ -207,25 +218,25 @@ class _AniSkip extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: Text(
             l10n.aniskip_requires_info,
-            style: TextStyle(color: NodeLaneTokens.of(context).muted),
+            style: NodeLaneTokens.of(context).readerSecondary,
           ),
         ),
-        MobileSettingsSwitch(
+        NodeLaneSwitchRow(
           title: l10n.enable_aniskip,
-          icon: Icons.skip_next_rounded,
+          icon: NodeLaneIcons.of(context).nextChapter,
           value: enabled,
           onChanged: ref.read(enableAniSkipStateProvider.notifier).set,
         ),
         if (enabled) ...[
-          MobileSettingsSwitch(
+          NodeLaneSwitchRow(
             title: l10n.enable_auto_skip,
-            icon: Icons.fast_forward_rounded,
+            icon: NodeLaneIcons.of(context).fastForward,
             value: ref.watch(enableAutoSkipStateProvider),
             onChanged: ref.read(enableAutoSkipStateProvider.notifier).set,
           ),
           MobilePlayerSettingChoice<int>(
             title: l10n.aniskip_button_timeout,
-            icon: Icons.timer_outlined,
+            icon: NodeLaneIcons.of(context).timer,
             value: ref.watch(aniSkipTimeoutLengthStateProvider),
             label: (value) => '${value}s',
             options: [

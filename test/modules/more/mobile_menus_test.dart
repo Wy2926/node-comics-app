@@ -79,8 +79,25 @@ void main() {
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byType(TextField), 250);
     await tester.pumpAndSettle();
+    final list = find.byType(CustomScrollView);
+    await tester.drag(list, const Offset(0, -650));
+    await tester.pumpAndSettle();
+    final pinnedTop = tester.getTopLeft(find.byType(TextField)).dy;
+    expect(pinnedTop, greaterThanOrEqualTo(24 + kToolbarHeight));
+    await tester.drag(list, const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.byType(TextField)).dy,
+      closeTo(pinnedTop, .5),
+    );
+    expect(find.byType(TextField), findsOneWidget);
+    await tester.tap(find.byType(TextField));
     await tester.enterText(find.byType(TextField), 'reader');
     await tester.pumpAndSettle();
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus,
+      isTrue,
+    );
     expect(find.text('Manga Reader'), findsOneWidget);
     expect(find.text('Novel Reader'), findsOneWidget);
     container.read(hideItemsStateProvider.notifier).set([
@@ -189,7 +206,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(downloaded.writes, [true, false]);
       expect(incognito.writes, isEmpty);
-      await tester.scrollUntilVisible(find.text('Incognito Mode'), 250);
+      await tester.scrollUntilVisible(
+        find.text('Incognito Mode'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Incognito Mode'));
       await tester.pumpAndSettle();
@@ -198,10 +219,18 @@ void main() {
 
       container.read(hideItemsStateProvider.notifier).set(['/browser']);
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('浏览器'), -300);
+      await tester.scrollUntilVisible(
+        find.text('浏览器'),
+        -300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(find.text('浏览器'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('About and help'), 300);
+      await tester.scrollUntilVisible(
+        find.text('About and help'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       await tester.drag(find.byType(Scrollable).first, const Offset(0, -400));
       await tester.pumpAndSettle();

@@ -61,7 +61,7 @@ class _MobileBrowseCleanupDialogState extends State<MobileBrowseCleanupDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.message, style: TextStyle(color: colors.muted)),
+            Text(widget.message, style: colors.readerSecondary),
             if (widget.chooseTypes) ...[
               const SizedBox(height: 16),
               for (final type in ItemType.values)

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
@@ -22,7 +23,7 @@ class MobileRestoreMode extends StatelessWidget {
           _Explanation(l10n.import_mode_message),
           MobileSettingsGroup(
             children: [
-              MobileSettingsLink(
+              NodeLaneRow(
                 title: l10n.import_mode_keep_existing,
                 subtitle: l10n.import_mode_keep_existing_subtitle,
                 icon: Icons.merge_type_rounded,
@@ -186,7 +187,7 @@ class _MobileRestoreSourcesState extends State<MobileRestoreSources> {
           };
           return MobileSettingsGroup(
             children: [
-              MobileSettingsLink(
+              NodeLaneRow(
                 title: entry.key,
                 subtitle: '$typeLabel · $selectedLabel',
                 icon: Icons.extension_outlined,

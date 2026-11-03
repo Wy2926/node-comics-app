@@ -138,7 +138,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                           const SizedBox(height: 4),
                           Text(
                             '${l10n.version} · ${l10n.beta_version(info.version)}',
-                            style: TextStyle(color: colors.muted),
+                            style: colors.readerSecondary,
                           ),
                         ],
                       ),
@@ -149,7 +149,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                           Text(l10n.failed),
                           TextButton.icon(
                             onPressed: widget.onRetryPackageInfo,
-                            icon: const Icon(Icons.refresh_rounded),
+                            icon: Icon(NodeLaneIcons.of(context).refresh),
                             label: Text(l10n.retry),
                           ),
                         ],
@@ -161,9 +161,9 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
               MobileSettingsGroup(
                 title: l10n.update,
                 children: [
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.check_for_app_updates,
-                    icon: Icons.update_rounded,
+                    icon: NodeLaneIcons.of(context).refresh,
                     value: widget.checkForUpdates,
                     onChanged: widget.onAutoCheckChanged,
                   ),
@@ -174,7 +174,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                       children: [
                         FilledButton.tonalIcon(
                           onPressed: _checking ? null : _check,
-                          icon: const Icon(Icons.refresh_rounded),
+                          icon: Icon(NodeLaneIcons.of(context).refresh),
                           label: Text(l10n.check_for_update),
                         ),
                         if (_checking || _result != _CheckResult.none) ...[
@@ -202,16 +202,16 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
               ),
               MobileSettingsGroup(
                 children: [
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.error_reports,
                     subtitle:
                         '${l10n.error_reports_subtitle}${count == 0 ? '' : ' · $count'}',
-                    icon: Icons.error_outline_rounded,
+                    icon: NodeLaneIcons.of(context).error,
                     onTap: () => _run(widget.onReports),
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.logs_on,
-                    icon: Icons.description_outlined,
+                    icon: NodeLaneIcons.of(context).novel,
                     value: widget.logsEnabled,
                     onChanged: _logging ? null : _changeLogs,
                   ),
@@ -220,7 +220,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                       padding: const EdgeInsets.all(16),
                       child: TextButton.icon(
                         onPressed: _sharing || _logging ? null : _shareLogs,
-                        icon: const Icon(Icons.ios_share_rounded),
+                        icon: Icon(NodeLaneIcons.of(context).share),
                         label: Text(l10n.share_app_logs),
                       ),
                     ),
@@ -242,12 +242,12 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                 children: [
                   OutlinedButton.icon(
                     onPressed: () => _run(widget.onGitHub),
-                    icon: const Icon(Icons.code_rounded),
+                    icon: Icon(NodeLaneIcons.of(context).code),
                     label: const Text('GitHub'),
                   ),
                   OutlinedButton.icon(
                     onPressed: () => _run(widget.onDiscord),
-                    icon: const Icon(Icons.forum_outlined),
+                    icon: Icon(NodeLaneIcons.of(context).chat),
                     label: const Text('Discord'),
                   ),
                 ],

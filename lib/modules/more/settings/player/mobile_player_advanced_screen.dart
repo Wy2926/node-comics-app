@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -51,10 +53,10 @@ class _MobilePlayerAdvancedScreenState
         children: [
           MobileSettingsGroup(
             children: [
-              MobileSettingsSwitch(
+              NodeLaneSwitchRow(
                 title: l10n.enable_mpv,
                 subtitle: l10n.mpv_info,
-                icon: Icons.code_rounded,
+                icon: NodeLaneIcons.of(context).code,
                 value: widget.enabled,
                 onChanged: _busy
                     ? null
@@ -73,7 +75,7 @@ class _MobilePlayerAdvancedScreenState
                     const SizedBox(height: 16),
                     OutlinedButton.icon(
                       onPressed: _busy ? null : () => _run(widget.onRestore),
-                      icon: const Icon(Icons.restore_rounded),
+                      icon: Icon(NodeLaneIcons.of(context).reset),
                       label: Text(l10n.mpv_restore_bundled),
                     ),
                   ],

@@ -128,7 +128,7 @@ void main() {
 
   Finder close() =>
       find.byWidgetPredicate((w) => w is IconButton && w.tooltip == 'Close');
-  Finder row(String title) => find.widgetWithText(ListTile, title);
+  Finder row(String title) => find.widgetWithText(NodeLaneRow, title);
   Future<void> reveal(WidgetTester tester, Finder target, String list) async {
     await tester.scrollUntilVisible(
       target,
@@ -193,7 +193,7 @@ void main() {
       final slider = tester.widget<Slider>(
         find
             .descendant(
-              of: find.byType(MobileReaderSettingsSlider),
+              of: find.byType(NodeLaneSliderRow),
               matching: find.byType(Slider),
             )
             .first,
@@ -213,7 +213,7 @@ void main() {
       expect(modes, isEmpty);
       await tester.tap(row('Reading mode'));
       await tester.pumpAndSettle();
-      final select = tester.widget<ListTile>(row('Vertical')).onTap!;
+      final select = tester.widget<NodeLaneRow>(row('Vertical')).onTap!;
       select();
       select();
       await tester.pumpAndSettle();
@@ -236,8 +236,8 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       final toggle = tester
-          .widget<SwitchListTile>(
-            find.widgetWithText(SwitchListTile, 'Auto scroll'),
+          .widget<NodeLaneSwitchRow>(
+            find.widgetWithText(NodeLaneSwitchRow, 'Auto scroll'),
           )
           .onChanged!;
       toggle(false);
@@ -272,26 +272,26 @@ void main() {
       expect(find.text(title), findsOneWidget);
       await reveal(
         tester,
-        find.widgetWithText(SwitchListTile, 'Crop borders'),
+        find.widgetWithText(NodeLaneSwitchRow, 'Crop borders'),
         'reader-settings-mode',
       );
       expect(
         find.text('These settings apply to all comics and save immediately.'),
         findsOneWidget,
       );
-      await tester.tap(find.widgetWithText(SwitchListTile, 'Crop borders'));
+      await tester.tap(find.widgetWithText(NodeLaneSwitchRow, 'Crop borders'));
       await tester.pumpAndSettle();
       expect(_writes, [('crop', true)]);
       final layout = find.byWidgetPredicate(
         (w) =>
-            w is ExpansionTile &&
+            w is NodeLaneDisclosure &&
             w.key == const PageStorageKey('reader-details-page-layout'),
       );
       await reveal(tester, layout, 'reader-settings-mode');
       await tester.tap(layout);
       await tester.pumpAndSettle();
       expect(
-        find.widgetWithText(SwitchListTile, 'Split wide pages'),
+        find.widgetWithText(NodeLaneSwitchRow, 'Split wide pages'),
         findsOneWidget,
       );
       expect(find.text('Automatic landscape zoom'), findsNothing);
@@ -299,7 +299,7 @@ void main() {
       await tab(tester, 'General');
       final nav = find.byWidgetPredicate(
         (w) =>
-            w is ExpansionTile &&
+            w is NodeLaneDisclosure &&
             w.key == const PageStorageKey('reader-details-navigation'),
       );
       await reveal(tester, nav, 'reader-settings-general');
@@ -325,11 +325,11 @@ void main() {
       expect(container.read(readerSaturationStateProvider), 1);
       await reveal(
         tester,
-        find.widgetWithText(SwitchListTile, 'Custom color filter'),
+        find.widgetWithText(NodeLaneSwitchRow, 'Custom color filter'),
         'reader-settings-filter',
       );
       await tester.tap(
-        find.widgetWithText(SwitchListTile, 'Custom color filter'),
+        find.widgetWithText(NodeLaneSwitchRow, 'Custom color filter'),
       );
       await tester.pumpAndSettle();
       final channels = find.byWidgetPredicate(
@@ -356,7 +356,7 @@ void main() {
       expect(
         find
             .byWidgetPredicate(
-              (widget) => widget is ListTile && widget.selected,
+              (widget) => widget is NodeLaneRow && widget.selected == true,
             )
             .hitTestable(),
         findsOneWidget,

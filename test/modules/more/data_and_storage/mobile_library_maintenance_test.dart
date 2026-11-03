@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -150,20 +152,21 @@ void main() {
         }),
       );
       await tap(tester, find.text('Open'));
-      Finder option(String name) => find.widgetWithText(SwitchListTile, name);
+      Finder option(String name) =>
+          find.widgetWithText(NodeLaneSwitchRow, name);
       await tester.scrollUntilVisible(option('Keep reading history'), 230);
       await tester.pumpAndSettle();
       expect(
-        tester.widget<SwitchListTile>(option('Keep reading history')).value,
+        tester.widget<NodeLaneSwitchRow>(option('Keep reading history')).value,
         isFalse,
       );
       expect(
-        tester.widget<SwitchListTile>(option('Keep download records')).value,
+        tester.widget<NodeLaneSwitchRow>(option('Keep download records')).value,
         isFalse,
       );
       expect(
         tester
-            .widget<SwitchListTile>(
+            .widget<NodeLaneSwitchRow>(
               option('Also remove the installed extension'),
             )
             .value,
@@ -178,12 +181,12 @@ void main() {
       await tester.scrollUntilVisible(option('Keep reading history'), 230);
       await tester.pumpAndSettle();
       expect(
-        tester.widget<SwitchListTile>(option('Keep reading history')).value,
+        tester.widget<NodeLaneSwitchRow>(option('Keep reading history')).value,
         isFalse,
       );
       expect(
         tester
-            .widget<SwitchListTile>(
+            .widget<NodeLaneSwitchRow>(
               option('Also remove the installed extension'),
             )
             .value,

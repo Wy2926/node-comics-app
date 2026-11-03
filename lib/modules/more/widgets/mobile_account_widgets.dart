@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -21,32 +23,13 @@ class MobileServiceAccount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: NodeLaneTokens.space8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(width: 36, height: 36, child: icon),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleMedium),
-                    if (subtitle != null && subtitle!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(subtitle!, style: TextStyle(color: colors.muted)),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
+          NodeLaneRow(title: title, subtitle: subtitle, leading: icon),
           const SizedBox(height: 8),
           Align(
             alignment: AlignmentDirectional.centerStart,
@@ -59,7 +42,9 @@ class MobileServiceAccount extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onAction,
                 icon: Icon(
-                  connected ? Icons.logout_rounded : Icons.login_rounded,
+                  connected
+                      ? NodeLaneIcons.of(context).signOut
+                      : NodeLaneIcons.of(context).signIn,
                 ),
                 label: Text(connected ? l10n.log_out : l10n.login),
               ),

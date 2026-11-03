@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
@@ -21,17 +23,11 @@ class MobileManageTrackers extends StatelessWidget {
     final colors = NodeLaneTokens.of(context);
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.manage_trackers,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: l10n.manage_trackers),
         body: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: preferences.isEmpty
                 ? [
                     Padding(
@@ -39,9 +35,9 @@ class MobileManageTrackers extends StatelessWidget {
                       child: Column(
                         children: [
                           Icon(
-                            Icons.manage_accounts_outlined,
+                            NodeLaneIcons.of(context).accountOutline,
                             size: 36,
-                            color: colors.accent,
+                            color: colors.ink,
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -56,36 +52,15 @@ class MobileManageTrackers extends StatelessWidget {
                     MobileSettingsGroup(
                       children: [
                         for (final preference in preferences)
-                          ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                          NodeLaneRow(
+                            leading: TrackerAccountAvatar(
+                              preference: preference,
+                              radius: NodeLaneTokens.smallIconSize,
                             ),
-                            leading: preference.syncId == -1
-                                ? const Icon(Icons.local_library_outlined)
-                                : SizedBox(
-                                    width: 36,
-                                    height: 36,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: ColoredBox(
-                                        color: trackInfos(preference.syncId!)
-                                            .$3,
-                                        child: Image.asset(
-                                          trackInfos(preference.syncId!).$1,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                            title: Text(
-                              preference.syncId == -1
-                                  ? l10n.local
-                                  : trackInfos(preference.syncId!).$2,
-                            ),
-                            subtitle: preference.accountLabel == null
-                                ? null
-                                : Text(preference.accountLabel!),
-                            trailing: const Icon(Icons.chevron_right_rounded),
+                            title: preference.syncId == -1
+                                ? l10n.local
+                                : trackInfos(preference.syncId!).$2,
+                            subtitle: preference.accountLabel,
                             onTap: () => onOpen(preference),
                           ),
                       ],

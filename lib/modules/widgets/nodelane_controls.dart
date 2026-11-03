@@ -113,9 +113,13 @@ class NodeLaneRow extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.subtitleMaxLines,
     this.value,
+    this.valueLeading,
     this.icon,
     this.leading,
+    this.leadingSize = const Size.square(NodeLaneTokens.websiteIconSize),
+    this.minHeight,
     this.trailing,
     this.onTap,
     this.onLongPress,
@@ -135,9 +139,13 @@ class NodeLaneRow extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.subtitleMaxLines,
     this.value,
+    this.valueLeading,
     this.icon,
     this.leading,
+    this.leadingSize = const Size.square(NodeLaneTokens.websiteIconSize),
+    this.minHeight,
     this.trailing,
     this.onTap,
     this.onLongPress,
@@ -155,8 +163,11 @@ class NodeLaneRow extends StatelessWidget {
 
   final String title;
   final String? subtitle, value;
+  final int? subtitleMaxLines;
   final IconData? icon;
-  final Widget? leading, trailing;
+  final Size leadingSize;
+  final double? minHeight;
+  final Widget? leading, trailing, valueLeading;
   final VoidCallback? onTap, onLongPress;
   final bool? selected;
   final bool destructive, checkable, enabled, first, last, _card;
@@ -179,11 +190,13 @@ class NodeLaneRow extends StatelessWidget {
         children: [
           ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: compact
-                  ? NodeLaneTokens.minTapTarget
-                  : _card
-                  ? NodeLaneTokens.catalogRowHeight
-                  : NodeLaneTokens.rowHeight,
+              minHeight:
+                  minHeight ??
+                  (compact
+                      ? NodeLaneTokens.minTapTarget
+                      : _card
+                      ? NodeLaneTokens.catalogRowHeight
+                      : NodeLaneTokens.rowHeight),
             ),
             child: Padding(
               padding: NodeLaneTokens.rowPadding,
@@ -191,9 +204,17 @@ class NodeLaneRow extends StatelessWidget {
                 children: [
                   if (leading != null || icon != null) ...[
                     if (leading != null)
-                      SizedBox.square(
-                        dimension: NodeLaneTokens.websiteIconSize,
-                        child: ExcludeSemantics(child: leading!),
+                      SizedBox.fromSize(
+                        size: leadingSize,
+                        child: ExcludeSemantics(
+                          child: IconTheme(
+                            data: IconThemeData(
+                              size: NodeLaneTokens.iconSize,
+                              color: color,
+                            ),
+                            child: Center(child: leading!),
+                          ),
+                        ),
                       )
                     else
                       Icon(icon, size: NodeLaneTokens.iconSize, color: color),
@@ -210,11 +231,22 @@ class NodeLaneRow extends StatelessWidget {
                         ),
                         if (subtitle?.isNotEmpty == true) ...[
                           const SizedBox(height: NodeLaneTokens.space4),
-                          Text(subtitle!, style: t.readerSecondary),
+                          Text(
+                            subtitle!,
+                            style: t.readerSecondary,
+                            maxLines: subtitleMaxLines,
+                            overflow: subtitleMaxLines == null
+                                ? null
+                                : TextOverflow.ellipsis,
+                          ),
                         ],
                       ],
                     ),
                   ),
+                  if (valueLeading != null) ...[
+                    const SizedBox(width: NodeLaneTokens.space12),
+                    valueLeading!,
+                  ],
                   if (value != null) ...[
                     const SizedBox(width: NodeLaneTokens.space12),
                     Flexible(
@@ -484,61 +516,177 @@ class NodeLaneDisclosure extends StatefulWidget {
     required this.title,
     required this.child,
     this.subtitle,
+    this.expandedTitle,
     this.icon,
+    this.compact = false,
     this.initiallyExpanded = false,
   });
   final String title;
   final String? subtitle;
+  final String? expandedTitle;
   final IconData? icon;
   final Widget child;
   final bool initiallyExpanded;
+  final bool compact;
   @override
   State<NodeLaneDisclosure> createState() => _NodeLaneDisclosureState();
 }
 
 class _NodeLaneDisclosureState extends State<NodeLaneDisclosure> {
-  late bool _expanded = widget.initiallyExpanded;
+  late final _controller = ExpansibleController();
+  // Descendant scrollables must not read Expansible's boolean as an offset.
+  final _bodyStorage = PageStorageBucket();
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _expanded =
-        PageStorage.maybeOf(context)
-                ?.readState(context, identifier: widget.key ?? widget.title)
-            as bool? ??
-        _expanded;
+  void initState() {
+    super.initState();
+    if (widget.initiallyExpanded) _controller.expand();
   }
 
-  void _toggle() {
-    setState(() => _expanded = !_expanded);
-    PageStorage.maybeOf(
-      context,
-    )?.writeState(context, _expanded, identifier: widget.key ?? widget.title);
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => NodeLaneGroupSurface(
-    child: Column(
-      children: [
-        Semantics(
-          expanded: _expanded,
-          child: NodeLaneRow(
-            title: widget.title,
-            subtitle: widget.subtitle,
-            icon: widget.icon,
-            onTap: _toggle,
-            trailing: Icon(
-              _expanded
-                  ? NodeLaneIcons.of(context).up
-                  : NodeLaneIcons.of(context).down,
+    child: Expansible(
+      key: PageStorageKey(widget.key ?? widget.title),
+      controller: _controller,
+      maintainState: false,
+      animationStyle: MediaQuery.disableAnimationsOf(context)
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: NodeLaneTokens.disclosureDuration,
+              curve: Curves.easeInOut,
+            ),
+      headerBuilder: (context, animation) => Semantics(
+        expanded: _controller.isExpanded,
+        child: NodeLaneRow(
+          title: _controller.isExpanded
+              ? widget.expandedTitle ?? widget.title
+              : widget.title,
+          subtitle: widget.subtitle,
+          compact: widget.compact,
+          icon: widget.icon,
+          onTap: () => _controller.isExpanded
+              ? _controller.collapse()
+              : _controller.expand(),
+          trailing: RotationTransition(
+            turns: animation.drive(Tween(begin: 0.0, end: .5)),
+            child: Icon(
+              NodeLaneIcons.of(context).down,
               size: NodeLaneTokens.smallIconSize,
               color: NodeLaneTokens.of(context).muted,
             ),
           ),
         ),
-        if (_expanded) ...[const NodeLaneGroupDivider(), widget.child],
-      ],
+      ),
+      bodyBuilder: (context, animation) => PageStorage(
+        bucket: _bodyStorage,
+        child: Column(children: [const NodeLaneGroupDivider(), widget.child]),
+      ),
     ),
   );
+}
+
+/// Pins existing content without duplicating its controller, focus or layout.
+/// PinnedHeaderSliver measures the child, including accessibility text scaling.
+class NodeLanePinnedHeader extends StatelessWidget {
+  const NodeLanePinnedHeader({super.key, required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => PinnedHeaderSliver(
+    child: ColoredBox(
+      color: NodeLaneTokens.of(context).canvas,
+      child: Padding(padding: NodeLaneTokens.headerPadding, child: child),
+    ),
+  );
+}
+
+/// Shared slider presentation and local drag draft. A gesture commits once;
+/// callers may opt into live preview without moving persistence into the view.
+class NodeLaneSliderRow extends StatefulWidget {
+  const NodeLaneSliderRow({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    this.label,
+    this.subtitle,
+    this.divisions,
+    this.onPreview,
+    this.enabled = true,
+  });
+  final String title;
+  final bool enabled;
+  final String? subtitle;
+  final double value, min, max;
+  final int? divisions;
+  final String Function(double)? label;
+  final ValueChanged<double> onChanged;
+  final ValueChanged<double>? onPreview;
+  @override
+  State<NodeLaneSliderRow> createState() => _NodeLaneSliderRowState();
+}
+
+class _NodeLaneSliderRowState extends State<NodeLaneSliderRow> {
+  late double _draft = widget.value.clamp(widget.min, widget.max);
+  @override
+  void didUpdateWidget(covariant NodeLaneSliderRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value ||
+        oldWidget.min != widget.min ||
+        oldWidget.max != widget.max) {
+      _draft = widget.value.clamp(widget.min, widget.max);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    final valueLabel = widget.label?.call(_draft) ?? _draft.round().toString();
+    return Padding(
+      padding: NodeLaneTokens.groupPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            widget.title.isEmpty ? valueLabel : '${widget.title} · $valueLabel',
+            style: t.readerLabel,
+          ),
+          if (widget.subtitle != null) ...[
+            const SizedBox(height: NodeLaneTokens.space4),
+            Text(widget.subtitle!, style: t.readerSecondary),
+          ],
+          Slider.adaptive(
+            value: _draft,
+            min: widget.min,
+            max: widget.max,
+            divisions: widget.divisions,
+            label: valueLabel,
+            semanticFormatterCallback: (_) => valueLabel,
+            onChanged: !widget.enabled
+                ? null
+                : (value) {
+                    setState(() => _draft = value);
+                    widget.onPreview?.call(value);
+                  },
+            onChangeEnd: !widget.enabled
+                ? null
+                : (value) {
+                    if (value != widget.value || widget.onPreview != null) {
+                      widget.onChanged(value);
+                    }
+                  },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 AppBar nodeLaneAppBar(
@@ -759,6 +907,12 @@ class NodeLaneTextField extends StatelessWidget {
     this.textInputAction,
     this.minLines = 1,
     this.maxLines = 1,
+    this.code = false,
+    this.focusNode,
+    this.autofillHints,
+    this.obscureText = false,
+    this.trailing,
+    this.validator,
   }) : assert(controller == null || initialValue == null),
        _search = false;
 
@@ -772,7 +926,13 @@ class NodeLaneTextField extends StatelessWidget {
     this.onSubmitted,
     this.enabled = true,
     this.autofocus = false,
-  }) : initialValue = null,
+  }) : validator = null,
+       focusNode = null,
+       autofillHints = null,
+       obscureText = false,
+       trailing = null,
+       code = false,
+       initialValue = null,
        label = null,
        inGroup = false,
        autocorrect = true,
@@ -792,7 +952,13 @@ class NodeLaneTextField extends StatelessWidget {
   final bool enabled, autofocus, autocorrect, enableSuggestions, _search;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
-  final int minLines, maxLines;
+  final int minLines;
+  final int? maxLines;
+  final bool code, obscureText;
+  final FocusNode? focusNode;
+  final Iterable<String>? autofillHints;
+  final Widget? trailing;
+  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -807,18 +973,33 @@ class NodeLaneTextField extends StatelessWidget {
           final field = TextFormField(
             controller: controller,
             initialValue: initialValue,
+            focusNode: focusNode,
+            obscureText: obscureText,
+            autofillHints: autofillHints,
             enabled: enabled,
             autofocus: autofocus,
-            autocorrect: autocorrect,
-            enableSuggestions: enableSuggestions,
+            autocorrect: !code && autocorrect,
+            enableSuggestions: !code && enableSuggestions,
+            smartDashesType: code || !autocorrect
+                ? SmartDashesType.disabled
+                : null,
+            smartQuotesType: code || !autocorrect
+                ? SmartQuotesType.disabled
+                : null,
             keyboardType: keyboardType,
             textInputAction: textInputAction,
             minLines: minLines,
             maxLines: maxLines,
             textAlignVertical: TextAlignVertical.center,
             onChanged: onChanged,
+            validator: validator,
             onFieldSubmitted: onSubmitted,
-            style: t.body,
+            style: code
+                ? t.readerSecondary.copyWith(
+                    fontFamily: 'monospace',
+                    color: t.ink,
+                  )
+                : t.body,
             decoration: t
                 .inputDecoration(
                   hint,
@@ -857,34 +1038,36 @@ class NodeLaneTextField extends StatelessWidget {
                           color: t.muted,
                         )
                       : null,
-                  suffixIcon: controller == null
-                      ? null
-                      : ValueListenableBuilder<TextEditingValue>(
-                          valueListenable: controller!,
-                          builder: (context, value, _) => value.text.isEmpty
-                              ? const SizedBox.shrink()
-                              : IconButton(
-                                  tooltip:
-                                      clearLabel ??
-                                      MaterialLocalizations.of(context)
-                                          .deleteButtonTooltip,
-                                  icon: Icon(
-                                    icons.clear,
-                                    size: NodeLaneTokens.smallIconSize,
-                                    color: t.muted,
-                                  ),
-                                  onPressed: !enabled
-                                      ? null
-                                      : () {
-                                          if (onClear != null) {
-                                            onClear!();
-                                          } else {
-                                            controller!.clear();
-                                            onChanged?.call('');
-                                          }
-                                        },
-                                ),
-                        ),
+                  suffixIcon:
+                      trailing ??
+                      (controller == null
+                          ? null
+                          : ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: controller!,
+                              builder: (context, value, _) => value.text.isEmpty
+                                  ? const SizedBox.shrink()
+                                  : IconButton(
+                                      tooltip:
+                                          clearLabel ??
+                                          MaterialLocalizations.of(context)
+                                              .deleteButtonTooltip,
+                                      icon: Icon(
+                                        icons.clear,
+                                        size: NodeLaneTokens.smallIconSize,
+                                        color: t.muted,
+                                      ),
+                                      onPressed: !enabled
+                                          ? null
+                                          : () {
+                                              if (onClear != null) {
+                                                onClear!();
+                                              } else {
+                                                controller!.clear();
+                                                onChanged?.call('');
+                                              }
+                                            },
+                                    ),
+                            )),
                 )
                 .copyWith(
                   fillColor: formRow

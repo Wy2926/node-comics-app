@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,26 +38,20 @@ class MobileGeneralScreen extends ConsumerWidget {
 
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.general,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: l10n.general),
         body: SafeArea(
           top: false,
           child: ListView(
             key: const PageStorageKey('mobile-general'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
               MobileSettingsGroup(
                 title: l10n.library,
                 children: [
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.auto_library_update,
                     subtitle: updateLabel(interval),
-                    icon: Icons.update_rounded,
+                    icon: NodeLaneIcons.of(context).refresh,
                     onTap: () async {
                       final selected = await showMobileSettingsPicker<int>(
                         context,
@@ -78,10 +74,10 @@ class MobileGeneralScreen extends ConsumerWidget {
                     },
                   ),
                   if (interval > 0)
-                    MobileSettingsSwitch(
+                    NodeLaneSwitchRow(
                       title: l10n.auto_library_update_wifi_only,
                       subtitle: l10n.auto_library_update_wifi_only_subtitle,
-                      icon: Icons.wifi_rounded,
+                      icon: NodeLaneIcons.of(context).wifi,
                       value: ref.watch(autoLibraryUpdateWifiOnlyStateProvider),
                       onChanged: ref
                           .read(autoLibraryUpdateWifiOnlyStateProvider.notifier)
@@ -92,10 +88,10 @@ class MobileGeneralScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.app_settings,
                 children: [
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.show_nav_double_tap_tooltip,
                     subtitle: l10n.show_nav_double_tap_tooltip_subtitle,
-                    icon: Icons.touch_app_outlined,
+                    icon: NodeLaneIcons.of(context).navigation,
                     value: ref.watch(showNavDoubleTapTooltipStateProvider),
                     onChanged: ref
                         .read(showNavDoubleTapTooltipStateProvider.notifier)
@@ -106,25 +102,25 @@ class MobileGeneralScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.advanced,
                 children: [
-                  _SettingsExpansion(
+                  NodeLaneDisclosure(
                     title: l10n.network_settings,
-                    icon: Icons.public_rounded,
+                    icon: NodeLaneIcons.of(context).web,
                     child: const _NetworkSettings(),
                   ),
-                  _SettingsExpansion(
+                  NodeLaneDisclosure(
                     title: l10n.recommendations_weights,
-                    icon: Icons.tune_rounded,
+                    icon: NodeLaneIcons.of(context).adjustments,
                     child: const _RecommendationWeights(),
                   ),
-                  const _SettingsExpansion(
+                  NodeLaneDisclosure(
                     title: 'Discord',
-                    icon: Icons.chat_bubble_outline_rounded,
+                    icon: NodeLaneIcons.of(context).chat,
                     child: _DiscordSettings(),
                   ),
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.memory_overlay,
                     subtitle: l10n.memory_overlay_subtitle,
-                    icon: Icons.memory_rounded,
+                    icon: NodeLaneIcons.of(context).memory,
                     value: ref.watch(memoryOverlayVisibleProvider),
                     onChanged: ref
                         .read(memoryOverlayVisibleProvider.notifier)
@@ -138,31 +134,6 @@ class MobileGeneralScreen extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _SettingsExpansion extends StatelessWidget {
-  const _SettingsExpansion({
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
-  final String title;
-  final IconData icon;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => ExpansionTile(
-    key: PageStorageKey(title),
-    title: Text(
-      title,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    ),
-    leading: Icon(icon, color: NodeLaneTokens.of(context).accent),
-    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    shape: const Border(),
-    collapsedShape: const Border(),
-    children: [child],
-  );
 }
 
 class _NetworkSettings extends ConsumerStatefulWidget {
@@ -234,28 +205,28 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
     final userAgent = ref.watch(userAgentStateProvider);
     return Column(
       children: [
-        SwitchListTile.adaptive(
+        NodeLaneSwitchRow(
           value: doh.enabled,
-          title: Text(l10n.dns_over_https),
+          title: l10n.dns_over_https,
           onChanged: ref.read(doHProviderStateProvider.notifier).setDoHEnabled,
         ),
         if (doh.enabled)
-          MobileSettingsLink(
+          NodeLaneRow(
             title: l10n.dns_provider,
             subtitle: doh.providerId == DoHProviders.customId
                 ? '${l10n.custom} · ${DohCustomStore.url}'
                 : (DoHProviders.byId[doh.providerId ?? 0]?.name ??
                       DoHProviders.cloudflare.name),
             subtitleMaxLines: 2,
-            icon: Icons.dns_outlined,
+            icon: NodeLaneIcons.of(context).repository,
             onTap: () => _chooseDoh(doh.providerId ?? 0),
           )
         else
-          MobileSettingsLink(
+          NodeLaneRow(
             title: l10n.custom_dns,
             subtitle: dns.isEmpty ? null : dns,
             subtitleMaxLines: 2,
-            icon: Icons.dns_outlined,
+            icon: NodeLaneIcons.of(context).repository,
             onTap: () async {
               final value = await _edit(
                 title: l10n.custom_dns,
@@ -267,11 +238,11 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
               }
             },
           ),
-        MobileSettingsLink(
+        NodeLaneRow(
           title: l10n.default_user_agent,
           subtitle: userAgent,
           subtitleMaxLines: 2,
-          icon: Icons.web_rounded,
+          icon: NodeLaneIcons.of(context).web,
           onTap: () async {
             final value = await _edit(
               title: l10n.default_user_agent,
@@ -282,11 +253,11 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
             }
           },
         ),
-        MobileSettingsLink(
+        NodeLaneRow(
           title: l10n.cloudflare_bypass_proxy,
           subtitle: _proxyUrl.isEmpty ? l10n.cf_proxy_helper : _proxyUrl,
           subtitleMaxLines: 2,
-          icon: Icons.router_outlined,
+          icon: NodeLaneIcons.of(context).repository,
           onTap: () async {
             final value = await _edit(
               title: l10n.cloudflare_bypass_proxy,
@@ -340,25 +311,17 @@ class _RecommendationWeightsState
     int value,
     ValueChanged<int> onChanged,
     ValueChanged<int> onEnd,
-  ) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text('$label · ${(value / 100).toStringAsFixed(2)}'),
-        Slider.adaptive(
-          min: 0,
-          max: 100,
-          value: value.toDouble(),
-          label: (value / 100).toStringAsFixed(2),
-          onChanged: (value) {
-            HapticFeedback.vibrate();
-            setState(() => onChanged(value.toInt()));
-          },
-          onChangeEnd: (value) => onEnd(value.toInt()),
-        ),
-      ],
-    ),
+  ) => NodeLaneSliderRow(
+    title: label,
+    value: value.toDouble(),
+    min: 0,
+    max: 100,
+    label: (value) => (value / 100).toStringAsFixed(2),
+    onPreview: (value) {
+      HapticFeedback.vibrate();
+      setState(() => onChanged(value.toInt()));
+    },
+    onChanged: (value) => onEnd(value.toInt()),
   );
 
   @override
@@ -378,7 +341,7 @@ class _RecommendationWeightsState
                 setState(() => _load(defaults));
                 notifier.set(defaults);
               },
-              icon: const Icon(Icons.restore_rounded),
+              icon: Icon(NodeLaneIcons.of(context).reset),
               label: Text(l10n.reset),
             ),
           ),
@@ -419,15 +382,7 @@ class _DiscordSettings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     Widget toggle(String title, bool value, ValueChanged<bool> onChanged) =>
-        SwitchListTile.adaptive(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
-          title: Text(title),
-          value: value,
-          onChanged: onChanged,
-        );
+        NodeLaneSwitchRow(title: title, value: value, onChanged: onChanged);
     return Column(
       children: [
         toggle(

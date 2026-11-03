@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -106,7 +107,7 @@ class _MobileLibrarySnapshotsState
                       for (final snapshot in items)
                         MobileSettingsGroup(
                           children: [
-                            MobileSettingsLink(
+                            NodeLaneRow(
                               key: ValueKey(snapshot.backupPath),
                               title: snapshot.description,
                               subtitle: librarySnapshotTime(context, snapshot),

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -77,7 +78,7 @@ void main() {
 
       final mangaSwitch = find.descendant(
         of: row('/MangaLibrary'),
-        matching: find.byType(SwitchListTile),
+        matching: find.byType(NodeLaneSwitchRow),
       );
       await tester.tap(mangaSwitch);
       await tester.pumpAndSettle();
@@ -93,10 +94,10 @@ void main() {
       for (final route in ['/browse', '/more']) {
         await tester.scrollUntilVisible(row(route), 250);
         await tester.pumpAndSettle();
-        final toggle = tester.widget<SwitchListTile>(
+        final toggle = tester.widget<NodeLaneSwitchRow>(
           find.descendant(
             of: row(route),
-            matching: find.byType(SwitchListTile),
+            matching: find.byType(NodeLaneSwitchRow),
           ),
         );
         expect(toggle.onChanged, isNull);

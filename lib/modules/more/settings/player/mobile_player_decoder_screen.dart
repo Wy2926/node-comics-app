@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -25,10 +27,10 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
       children: [
         MobileSettingsGroup(
           children: [
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.enable_hardware_accel,
               subtitle: l10n.enable_hardware_accel_info,
-              icon: Icons.memory_rounded,
+              icon: NodeLaneIcons.of(context).memory,
               value: hardware,
               onChanged: ref
                   .read(enableHardwareAccelStateProvider.notifier)
@@ -37,7 +39,7 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
             if (hardware)
               MobilePlayerSettingChoice<String>(
                 title: l10n.hwdec,
-                icon: Icons.developer_board_outlined,
+                icon: NodeLaneIcons.of(context).memory,
                 value: ref.watch(hwdecModeStateProvider(rawValue: true)),
                 label: (value) => value,
                 options: const [
@@ -92,7 +94,7 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
           children: [
             MobilePlayerSettingChoice<DebandingType>(
               title: l10n.debanding,
-              icon: Icons.gradient_rounded,
+              icon: NodeLaneIcons.of(context).palette,
               value: ref.watch(debandingStateProvider),
               label: (value) => debanding[value]!,
               options: [
@@ -101,17 +103,17 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
               ],
               onChanged: ref.read(debandingStateProvider.notifier).set,
             ),
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.use_yuv420p,
               subtitle: l10n.use_yuv420p_info,
-              icon: Icons.palette_outlined,
+              icon: NodeLaneIcons.of(context).palette,
               value: ref.watch(useYUV420PStateProvider),
               onChanged: ref.read(useYUV420PStateProvider.notifier).set,
             ),
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.enable_gpu_next,
               subtitle: l10n.enable_gpu_next_info,
-              icon: Icons.layers_outlined,
+              icon: NodeLaneIcons.of(context).categories,
               value: ref.watch(useGpuNextStateProvider),
               onChanged: ref.read(useGpuNextStateProvider.notifier).set,
             ),

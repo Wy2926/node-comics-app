@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -29,29 +29,11 @@ class MobileTrackingDetail extends StatelessWidget {
     final types = [if (!moviesOnly) ItemType.manga, ItemType.anime];
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            preference.syncId == -1
-                ? l10n.local
-                : trackInfos(preference.syncId!).$2,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          bottom: TabBar(
-            controller: controller,
-            isScrollable: true,
-            tabAlignment: TabAlignment.center,
-            tabs: [
-              for (final type in types)
-                Tab(
-                  height: math.max(
-                    48,
-                    MediaQuery.textScalerOf(context).scale(16) * 1.4 + 24,
-                  ),
-                  text: type == ItemType.manga ? l10n.manga : l10n.anime,
-                ),
-            ],
-          ),
+        appBar: nodeLaneAppBar(
+          context,
+          title: preference.syncId == -1
+              ? l10n.local
+              : trackInfos(preference.syncId!).$2,
         ),
         body: SafeArea(
           top: false,
@@ -173,36 +155,18 @@ class _MobileTrackingEntriesState extends State<MobileTrackingEntries>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (widget.accountName != null) ...[
-                      Text(
-                        widget.accountName!,
-                        style: TextStyle(color: colors.muted),
-                      ),
+                      Text(widget.accountName!, style: colors.readerSecondary),
                       const SizedBox(height: 12),
                     ],
                     Semantics(
                       label: l10n.search,
-                      child: TextField(
+                      child: NodeLaneTextField.search(
                         controller: _search,
                         onChanged: (value) => setState(() => _query = value),
-                        textInputAction: TextInputAction.search,
                         onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                        decoration: InputDecoration(
-                          hintText: l10n.search,
-                          prefixIcon: const Icon(Icons.search_rounded),
-                          suffixIcon: _query.isEmpty
-                              ? null
-                              : IconButton(
-                                  tooltip: l10n.reset,
-                                  onPressed: _clear,
-                                  icon: const Icon(Icons.close_rounded),
-                                ),
-                          filled: true,
-                          fillColor: colors.soft,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
+                        hint: l10n.search,
+                        onClear: _clear,
+                        clearLabel: l10n.reset,
                       ),
                     ),
                   ],
@@ -253,41 +217,37 @@ class _MobileTrackingEntriesState extends State<MobileTrackingEntries>
                     final track = records[index];
                     return MobileSettingsGroup(
                       children: [
-                        ExpansionTile(
+                        NodeLaneDisclosure(
                           key: PageStorageKey((
                             'tracked-entry',
                             widget.syncId,
                             widget.itemType,
                             track.mediaId,
                           )),
-                          shape: const Border(),
-                          collapsedShape: const Border(),
-                          title: Text(track.title ?? l10n.unknown),
-                          subtitle: Text(
-                            getTrackStatus(
-                              toTrackStatus(
-                                track.status,
-                                widget.itemType,
-                                widget.syncId,
-                              ),
-                              context,
+                          title: track.title ?? l10n.unknown,
+                          subtitle: getTrackStatus(
+                            toTrackStatus(
+                              track.status,
+                              widget.itemType,
+                              widget.syncId,
+                            ),
+                            context,
+                          ),
+                          child: Padding(
+                            padding: NodeLaneTokens.groupPadding,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (track.mangaId == null)
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Text(l10n.tracking_entry_unlinked),
+                                  )
+                                else
+                                  widget.editorBuilder(context, track),
+                              ],
                             ),
                           ),
-                          childrenPadding: const EdgeInsets.fromLTRB(
-                            12,
-                            0,
-                            12,
-                            0,
-                          ),
-                          children: [
-                            if (track.mangaId == null)
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Text(l10n.tracking_entry_unlinked),
-                              )
-                            else
-                              widget.editorBuilder(context, track),
-                          ],
                         ),
                       ],
                     );

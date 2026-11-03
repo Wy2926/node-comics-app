@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,7 +10,6 @@ import 'package:mangayomi/modules/more/settings/general/mobile_general_screen.da
 import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/memory_probe_provider.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 
 void main() {
   Widget app(Widget child) => MaterialApp(
@@ -57,7 +57,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       final update = find.widgetWithText(
-        MobileSettingsLink,
+        NodeLaneRow,
         'Automatic library updates',
       );
       expect(
@@ -81,7 +81,7 @@ void main() {
       Future<void> choose(int value) async {
         await openUpdate();
         final tiles = tester
-            .widgetList<ListTile>(find.byType(ListTile))
+            .widgetList<NodeLaneRow>(find.byType(NodeLaneRow))
             .toList();
         final index = [0, 12, 24, 48, 168].indexOf(value);
         final tile = find.byWidget(tiles[index]);
@@ -92,7 +92,7 @@ void main() {
       }
 
       await choose(24);
-      final wifi = find.byType(MobileSettingsSwitch).first;
+      final wifi = find.byType(NodeLaneSwitchRow).first;
       await tester.ensureVisible(wifi);
       await tester.pumpAndSettle();
       await tester.tap(wifi);
@@ -104,7 +104,7 @@ void main() {
       expect(interval.writes, [24, 0, 24]);
 
       final weightsSection = find.widgetWithText(
-        ExpansionTile,
+        NodeLaneDisclosure,
         'Recommendation Weights',
       );
       await tester.scrollUntilVisible(weightsSection, 250);

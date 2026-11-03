@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/sync_preference.dart';
@@ -222,40 +224,34 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
     ];
     final (statusIcon, statusLabel) = switch (widget.connection) {
       SyncConnectionStatus.notConfigured => (
-        Icons.link_off_rounded,
+        NodeLaneIcons.of(context).tracking,
         l10n.sync_status_not_configured,
       ),
       SyncConnectionStatus.checking => (
-        Icons.sync_rounded,
+        NodeLaneIcons.of(context).tracking,
         l10n.sync_status_checking,
       ),
       SyncConnectionStatus.connected => (
-        Icons.check_circle_outline,
+        NodeLaneIcons.of(context).downloaded,
         l10n.sync_status_connected,
       ),
       SyncConnectionStatus.unauthorized => (
-        Icons.error_outline,
+        NodeLaneIcons.of(context).error,
         l10n.sync_status_unauthorized,
       ),
       SyncConnectionStatus.unreachable => (
-        Icons.link_off_rounded,
+        NodeLaneIcons.of(context).tracking,
         l10n.sync_status_unreachable,
       ),
     };
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.syncing,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: l10n.syncing),
         body: SafeArea(
           top: false,
           child: ListView(
             key: const PageStorageKey('mobile-sync-settings'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
               if (widget.loading)
                 const LinearProgressIndicator()
@@ -271,7 +267,10 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                   children: [
                     MobileServiceAccount(
                       title: 'SyncServer',
-                      icon: Icon(Icons.dns_outlined, color: colors.accent),
+                      icon: Icon(
+                        NodeLaneIcons.of(context).repository,
+                        color: colors.ink,
+                      ),
                       connected: _logged,
                       subtitle:
                           [preference.server, if (_logged) preference.email]
@@ -281,14 +280,9 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                       onAction: _locked ? null : _account,
                     ),
                     if (_logged)
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        leading: Icon(statusIcon, color: colors.accent),
-                        title: Text(statusLabel),
-                        trailing: IconButton(
+                      NodeLaneRow(
+                        title: statusLabel,
+                        trailing: NodeLaneIconButton(
                           tooltip: l10n.refresh,
                           onPressed:
                               _locked ||
@@ -296,44 +290,35 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                                       SyncConnectionStatus.checking
                               ? null
                               : widget.onRecheck,
-                          icon: const Icon(Icons.refresh_rounded),
+                          icon: NodeLaneIcons.of(context).refresh,
                         ),
+                        icon: statusIcon,
                       ),
                   ],
                 ),
                 MobileSettingsGroup(
                   children: [
-                    MobileSettingsSwitch(
+                    NodeLaneSwitchRow(
                       title: l10n.sync_on,
-                      icon: Icons.sync_rounded,
+                      icon: NodeLaneIcons.of(context).tracking,
                       value: preference.syncOn,
                       onChanged: !_logged || _locked
                           ? null
                           : widget.onEnabledChanged,
                     ),
                     if (preference.syncOn && _logged)
-                      ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        leading: Icon(
-                          Icons.schedule_rounded,
-                          color: colors.accent,
-                        ),
-                        title: Text(l10n.sync_auto),
-                        subtitle: Text(
-                          options
-                                  .where(
-                                    (option) =>
-                                        option.value ==
-                                        preference.autoSyncFrequency,
-                                  )
-                                  .firstOrNull
-                                  ?.label ??
-                              l10n.unknown,
-                        ),
-                        trailing: const Icon(Icons.chevron_right_rounded),
+                      NodeLaneRow(
+                        title: l10n.sync_auto,
+                        subtitle:
+                            options
+                                .where(
+                                  (option) =>
+                                      option.value ==
+                                      preference.autoSyncFrequency,
+                                )
+                                .firstOrNull
+                                ?.label ??
+                            l10n.unknown,
                         enabled: !_locked,
                         onTap: _locked
                             ? null
@@ -354,6 +339,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                                   widget.onFrequencyChanged(selected.value);
                                 }
                               }),
+                        icon: NodeLaneIcons.of(context).history,
                       ),
                   ],
                 ),
@@ -362,14 +348,14 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       l10n.sync_auto_warning,
-                      style: TextStyle(color: colors.muted),
+                      style: colors.readerSecondary,
                     ),
                   ),
                 FilledButton.icon(
                   onPressed: _available && !_busy
                       ? () => _sync(MobileSyncAction.sync)
                       : null,
-                  icon: const Icon(Icons.sync_rounded),
+                  icon: Icon(NodeLaneIcons.of(context).tracking),
                   label: Text(l10n.sync_button_sync),
                 ),
                 if (widget.progress.active) ...[
@@ -393,66 +379,72 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                     padding: const EdgeInsets.only(top: 12),
                     child: Text(
                       '${l10n.last_sync}\n${widget.lastSyncLabel}',
-                      style: TextStyle(color: colors.muted),
+                      style: colors.readerSecondary,
                     ),
                   ),
                 const SizedBox(height: 24),
                 MobileSettingsGroup(
                   children: [
-                    ExpansionTile(
+                    NodeLaneDisclosure(
                       key: const PageStorageKey('mobile-sync-advanced'),
-                      title: Text(l10n.advanced),
-                      shape: const Border(),
-                      collapsedShape: const Border(),
-                      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: _available && !_busy
-                                ? () => _sync(MobileSyncAction.upload)
-                                : null,
-                            icon: const Icon(Icons.file_upload_outlined),
-                            label: Text(l10n.sync_button_upload),
-                          ),
+                      title: l10n.advanced,
+                      child: Padding(
+                        padding: NodeLaneTokens.groupPadding,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _available && !_busy
+                                    ? () => _sync(MobileSyncAction.upload)
+                                    : null,
+                                icon: Icon(NodeLaneIcons.of(context).backup),
+                                label: Text(l10n.sync_button_upload),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _available && !_busy
+                                    ? () => _sync(MobileSyncAction.download)
+                                    : null,
+                                icon: Icon(NodeLaneIcons.of(context).download),
+                                label: Text(l10n.sync_button_download),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: _available && !_busy
-                                ? () => _sync(MobileSyncAction.download)
-                                : null,
-                            icon: const Icon(Icons.file_download_outlined),
-                            label: Text(l10n.sync_button_download),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
                 MobileSettingsGroup(
                   children: [
-                    ExpansionTile(
+                    NodeLaneDisclosure(
                       key: const PageStorageKey('mobile-sync-about'),
-                      title: Text(l10n.about),
-                      shape: const Border(),
-                      collapsedShape: const Border(),
-                      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      children: [
-                        Text(
-                          l10n.syncing_subtitle,
-                          style: TextStyle(color: colors.muted),
+                      title: l10n.about,
+                      child: Padding(
+                        padding: NodeLaneTokens.groupPadding,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              l10n.syncing_subtitle,
+                              style: colors.readerSecondary,
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: _locked
+                                  ? null
+                                  : () => _run(widget.onServerInfo),
+                              icon: Icon(NodeLaneIcons.of(context).external),
+                              label: Text(l10n.get_sync_server),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: _locked
-                              ? null
-                              : () => _run(widget.onServerInfo),
-                          icon: const Icon(Icons.open_in_new_rounded),
-                          label: Text(l10n.get_sync_server),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),

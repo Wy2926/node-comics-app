@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/delete_source.dart';
@@ -106,20 +107,20 @@ class _MobileDeleteSourceChoicesState extends State<MobileDeleteSourceChoices> {
           const SizedBox(height: 20),
           MobileSettingsGroup(
             children: [
-              MobileSettingsSwitch(
+              NodeLaneSwitchRow(
                 title: l10n.delete_source_keep_history,
                 icon: Icons.history_rounded,
                 value: _keepHistory,
                 onChanged: (value) => setState(() => _keepHistory = value),
               ),
-              MobileSettingsSwitch(
+              NodeLaneSwitchRow(
                 title: l10n.delete_source_keep_downloads,
                 icon: Icons.download_outlined,
                 value: _keepDownloads,
                 onChanged: (value) => setState(() => _keepDownloads = value),
               ),
               if (widget.group.sourceId != null)
-                MobileSettingsSwitch(
+                NodeLaneSwitchRow(
                   title: l10n.delete_source_also_remove_extension,
                   icon: Icons.extension_off_outlined,
                   value: _removeExtension,

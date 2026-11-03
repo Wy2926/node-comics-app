@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -90,10 +92,10 @@ void main() {
       expect(checks, hasLength(2));
       expect(
         tester
-            .widget<ListTile>(
+            .widget<NodeLaneRow>(
               find.ancestor(
                 of: find.text('Set proxy address'),
-                matching: find.byType(ListTile),
+                matching: find.byType(NodeLaneRow),
               ),
             )
             .onTap,

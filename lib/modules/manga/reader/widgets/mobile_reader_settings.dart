@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
@@ -146,7 +147,7 @@ class _MobileReaderSettingsState extends ConsumerState<MobileReaderSettings> {
                       MobileReaderSettingsChoice<ReaderMode>(
                         title: l10n.reading_mode,
                         scopeDescription: l10n.reader_picker_book_scope,
-                        icon: Icons.chrome_reader_mode_outlined,
+                        icon: NodeLaneIcons.of(context).manga,
                         value: mode,
                         values: ReaderMode.values,
                         label: (value) => getReaderModeName(value, context),
@@ -164,10 +165,10 @@ class _MobileReaderSettingsState extends ConsumerState<MobileReaderSettings> {
                           valueListenable: widget.autoScrollPage,
                           builder: (context, enabled, _) => Column(
                             children: [
-                              MobileSettingsSwitch(
+                              NodeLaneSwitchRow(
                                 title: l10n.auto_scroll,
                                 subtitle: l10n.reader_auto_scroll_pause,
-                                icon: Icons.timer_outlined,
+                                icon: NodeLaneIcons.of(context).timer,
                                 value: enabled,
                                 onChanged: widget.onAutoScrollChanged,
                               ),
@@ -175,15 +176,21 @@ class _MobileReaderSettingsState extends ConsumerState<MobileReaderSettings> {
                                 ValueListenableBuilder<double>(
                                   valueListenable: widget.pageOffset,
                                   builder: (context, speed, _) =>
-                                      MobileReaderSettingsSlider(
-                                        title: (value) =>
-                                            '${l10n.speed}: $value',
-                                        value: speed.round(),
+                                      NodeLaneSliderRow(
+                                        title: '',
+                                        value: speed.round().toDouble(),
                                         min: 2,
                                         max: 30,
                                         divisions: 28,
-                                        onChanged: (value) => widget
-                                            .onSpeedChanged(value.toDouble()),
+                                        onChanged: (value) => ((value) =>
+                                            widget.onSpeedChanged(
+                                              value.toDouble(),
+                                            ))(value.round()),
+                                        label: (draft) =>
+                                            ((value) =>
+                                                '${l10n.speed}: $value')(
+                                              draft.round(),
+                                            ),
                                       ),
                                 ),
                             ],
@@ -194,25 +201,25 @@ class _MobileReaderSettingsState extends ConsumerState<MobileReaderSettings> {
                 _Scope(l10n.reader_settings_global_scope),
                 MobileSettingsGroup(
                   children: [
-                    MobileSettingsSwitch(
+                    NodeLaneSwitchRow(
                       title: l10n.crop_borders,
-                      icon: Icons.crop_rounded,
+                      icon: NodeLaneIcons.of(context).crop,
                       value: ref.watch(cropBordersStateProvider),
                       onChanged: ref
                           .read(cropBordersStateProvider.notifier)
                           .set,
                     ),
-                    MobileReaderSettingsExpansion(
-                      storageKey: 'reader-details-page-layout',
+                    NodeLaneDisclosure(
                       title: l10n.reader_page_layout,
-                      icon: Icons.auto_stories_outlined,
+                      icon: NodeLaneIcons.of(context).manga,
+                      key: PageStorageKey('reader-details-page-layout'),
                       child: MobileReaderPageLayoutSettings(readerMode: mode),
                     ),
                     if (mode?.isContinuous == true)
-                      MobileReaderSettingsExpansion(
-                        storageKey: 'reader-details-continuous',
+                      NodeLaneDisclosure(
                         title: l10n.reader_continuous_options,
-                        icon: Icons.view_day_outlined,
+                        icon: NodeLaneIcons.of(context).categories,
+                        key: PageStorageKey('reader-details-continuous'),
                         child: const MobileReaderContinuousSettings(),
                       ),
                   ],
@@ -265,7 +272,7 @@ class _GeneralSettings extends ConsumerWidget {
           children: [
             MobileReaderSettingsChoice<ScaleType>(
               title: l10n.scale_type,
-              icon: Icons.fit_screen_rounded,
+              icon: NodeLaneIcons.of(context).search,
               value: ref.watch(scaleTypeStateProvider),
               values: ScaleType.values.take(scaleNames.length).toList(),
               label: (value) => value.index < scaleNames.length
@@ -275,7 +282,7 @@ class _GeneralSettings extends ConsumerWidget {
             ),
             MobileReaderSettingsChoice<BackgroundColor>(
               title: l10n.background_color,
-              icon: Icons.palette_outlined,
+              icon: NodeLaneIcons.of(context).palette,
               value: ref.watch(backgroundColorStateProvider),
               valueLeading: ReaderBackgroundSwatch(
                 value: ref.watch(backgroundColorStateProvider),
@@ -285,21 +292,21 @@ class _GeneralSettings extends ConsumerWidget {
               label: (value) => getBackgroundColorName(value, context),
               onChanged: ref.read(backgroundColorStateProvider.notifier).set,
             ),
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.show_page_number,
-              icon: Icons.format_list_numbered_rounded,
+              icon: NodeLaneIcons.of(context).pageNumber,
               value: ref.watch(showPagesNumberStateProvider) as bool,
               onChanged: ref.read(showPagesNumberStateProvider.notifier).set,
             ),
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.keep_screen_on,
-              icon: Icons.light_mode_outlined,
+              icon: NodeLaneIcons.of(context).brightness,
               value: ref.watch(keepScreenOnReaderStateProvider),
               onChanged: ref.read(keepScreenOnReaderStateProvider.notifier).set,
             ),
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.animate_page_transitions,
-              icon: Icons.animation_rounded,
+              icon: NodeLaneIcons.of(context).animation,
               value: ref.watch(animatePageTransitionsStateProvider),
               onChanged: ref
                   .read(animatePageTransitionsStateProvider.notifier)
@@ -309,19 +316,19 @@ class _GeneralSettings extends ConsumerWidget {
         ),
         MobileSettingsGroup(
           children: [
-            MobileReaderSettingsExpansion(
-              storageKey: 'reader-details-navigation',
+            NodeLaneDisclosure(
               title: l10n.navigation_layout,
-              icon: Icons.touch_app_outlined,
+              icon: NodeLaneIcons.of(context).navigation,
+              key: PageStorageKey('reader-details-navigation'),
               child: MobileReaderNavigationSettings(
                 readerMode: readerMode,
                 includeChapterActions: false,
               ),
             ),
-            MobileReaderSettingsExpansion(
-              storageKey: 'reader-details-flash',
+            NodeLaneDisclosure(
               title: l10n.flash_on_page_change,
-              icon: Icons.flash_on_outlined,
+              icon: NodeLaneIcons.of(context).flash,
+              key: PageStorageKey('reader-details-flash'),
               child: const MobileReaderFlashSettings(),
             ),
           ],
@@ -350,13 +357,13 @@ class _FilterSettings extends ConsumerWidget {
           _Scope(l10n.reader_filter_scope),
           MobileSettingsGroup(
             children: [
-              MobileSettingsSwitch(
+              NodeLaneSwitchRow(
                 title: l10n.invert_colors,
                 icon: Icons.invert_colors_rounded,
                 value: ref.watch(invertColorsStateProvider),
                 onChanged: ref.read(invertColorsStateProvider.notifier).set,
               ),
-              MobileSettingsSwitch(
+              NodeLaneSwitchRow(
                 title: l10n.grayscale,
                 icon: Icons.tonality_rounded,
                 value: ref.watch(grayscaleStateProvider),
@@ -399,9 +406,9 @@ class _FilterSettings extends ConsumerWidget {
           ),
           MobileSettingsGroup(
             children: [
-              MobileSettingsSwitch(
+              NodeLaneSwitchRow(
                 title: l10n.custom_color_filter,
-                icon: Icons.color_lens_outlined,
+                icon: NodeLaneIcons.of(context).palette,
                 value: enabled,
                 onChanged: ref
                     .read(enableCustomColorFilterStateProvider.notifier)
@@ -423,7 +430,7 @@ class _FilterSettings extends ConsumerWidget {
                 }, context),
                 MobileReaderSettingsChoice<ColorFilterBlendMode>(
                   title: l10n.color_filter_blend_mode,
-                  icon: Icons.layers_outlined,
+                  icon: NodeLaneIcons.of(context).categories,
                   value: ref.watch(colorFilterBlendModeStateProvider),
                   values: ColorFilterBlendMode.values,
                   label: (value) => getColorFilterBlendModeName(value, context),

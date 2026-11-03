@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,17 +37,17 @@ class MobileAppearanceScreen extends ConsumerWidget {
       MobileSettingOption(
         ThemeMode.system,
         l10n.follow_system_theme,
-        leading: const Icon(Icons.brightness_auto_outlined),
+        leading: Icon(NodeLaneIcons.of(context).brightness),
       ),
       MobileSettingOption(
         ThemeMode.light,
         l10n.theme_light,
-        leading: const Icon(Icons.light_mode_outlined),
+        leading: Icon(NodeLaneIcons.of(context).brightness),
       ),
       MobileSettingOption(
         ThemeMode.dark,
         l10n.theme_dark,
-        leading: const Icon(Icons.dark_mode_outlined),
+        leading: Icon(NodeLaneIcons.of(context).night),
       ),
     ];
     final schemeIndex = ref.watch(
@@ -88,29 +90,23 @@ class MobileAppearanceScreen extends ConsumerWidget {
 
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.appearance,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: l10n.appearance),
         body: SafeArea(
           top: false,
           child: ListView(
             key: const PageStorageKey('mobile-appearance'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
               MobileSettingsGroup(
                 key: const ValueKey('appearance-theme'),
                 title: l10n.theme,
                 children: [
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.theme,
                     subtitle: modeOptions
                         .firstWhere((option) => option.value == mode)
                         .label,
-                    icon: Icons.brightness_6_outlined,
+                    icon: NodeLaneIcons.of(context).brightness,
                     onTap: () => select(
                       title: l10n.theme,
                       current: mode,
@@ -137,10 +133,10 @@ class MobileAppearanceScreen extends ConsumerWidget {
                       },
                     ),
                   ),
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.color,
                     subtitle: ThemeAA.schemes[schemeIndex].name,
-                    icon: Icons.palette_outlined,
+                    icon: NodeLaneIcons.of(context).palette,
                     onTap: () => select(
                       title: l10n.color,
                       current: schemeIndex,
@@ -167,29 +163,25 @@ class MobileAppearanceScreen extends ConsumerWidget {
                     ),
                   ),
                   if (dark)
-                    SwitchListTile.adaptive(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      title: Text(l10n.pure_black_dark_mode),
+                    NodeLaneSwitchRow(
+                      title: l10n.pure_black_dark_mode,
                       value: pureBlack,
                       onChanged: (value) => ref
                           .read(pureBlackDarkModeStateProvider.notifier)
                           .set(value),
                     ),
                   if (!pureBlack || !dark)
-                    _AppearanceSlider(
+                    NodeLaneSliderRow(
                       title: l10n.color_blend_level,
-                      valueLabel: '${blend.round()}',
                       value: blend,
                       min: 0,
                       max: 40,
                       divisions: 39,
-                      onChanged: (value) => ref
+                      label: (value) => '${value.round()}',
+                      onPreview: (value) => ref
                           .read(blendLevelStateProvider.notifier)
                           .setBlendLevel(value),
-                      onChangeEnd: (value) => ref
+                      onChanged: (value) => ref
                           .read(blendLevelStateProvider.notifier)
                           .setBlendLevel(value, end: true),
                     ),
@@ -199,24 +191,24 @@ class MobileAppearanceScreen extends ConsumerWidget {
                 key: const ValueKey('appearance-interface'),
                 title: l10n.appearance,
                 children: [
-                  _AppearanceSlider(
+                  NodeLaneSliderRow(
                     title: l10n.app_ui_scale,
                     subtitle: l10n.app_ui_scale_subtitle,
-                    valueLabel: '${(scale * 100).round()}%',
                     value: scale,
                     min: .85,
                     max: 1.25,
                     divisions: 8,
-                    onChanged: (value) =>
+                    label: (value) => '${(value * 100).round()}%',
+                    onPreview: (value) =>
                         ref.read(appUiScaleStateProvider.notifier).set(value),
-                    onChangeEnd: (value) => ref
+                    onChanged: (value) => ref
                         .read(appUiScaleStateProvider.notifier)
                         .set(value, end: true),
                   ),
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.app_language,
                     subtitle: completeLanguageName(locale.toLanguageTag()),
-                    icon: Icons.language_rounded,
+                    icon: NodeLaneIcons.of(context).web,
                     onTap: () => select(
                       title: l10n.app_language,
                       current: locale,
@@ -233,10 +225,10 @@ class MobileAppearanceScreen extends ConsumerWidget {
                           .setLocale,
                     ),
                   ),
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.font,
                     subtitle: font ?? l10n.default0,
-                    icon: Icons.text_fields_rounded,
+                    icon: NodeLaneIcons.of(context).font,
                     onTap: () => select<String?>(
                       title: l10n.font,
                       current: font,
@@ -249,10 +241,10 @@ class MobileAppearanceScreen extends ConsumerWidget {
                       apply: ref.read(appFontFamilyProvider.notifier).set,
                     ),
                   ),
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.reorder_navigation,
                     subtitle: l10n.reorder_navigation_description,
-                    icon: Icons.view_column_outlined,
+                    icon: NodeLaneIcons.of(context).pageLayout,
                     onTap: () => context.push('/customNavigationSettings'),
                   ),
                 ],
@@ -261,10 +253,10 @@ class MobileAppearanceScreen extends ConsumerWidget {
                 key: const ValueKey('appearance-time'),
                 title: l10n.timestamp,
                 children: [
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.relative_timestamp,
                     subtitle: relativeLabels[relative],
-                    icon: Icons.schedule_rounded,
+                    icon: NodeLaneIcons.of(context).history,
                     onTap: () => select(
                       title: l10n.relative_timestamp,
                       current: relative,
@@ -277,10 +269,10 @@ class MobileAppearanceScreen extends ConsumerWidget {
                           .set,
                     ),
                   ),
-                  MobileSettingsLink(
+                  NodeLaneRow(
                     title: l10n.date_format,
                     subtitle: '$datePattern · ${dateExample(datePattern)}',
-                    icon: Icons.calendar_today_outlined,
+                    icon: NodeLaneIcons.of(context).calendar,
                     onTap: () => select(
                       title: l10n.date_format,
                       current: datePattern,
@@ -323,57 +315,4 @@ class _ColorSample extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AppearanceSlider extends StatelessWidget {
-  const _AppearanceSlider({
-    required this.title,
-    this.subtitle,
-    required this.valueLabel,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.onChanged,
-    required this.onChangeEnd,
-  });
-  final String title, valueLabel;
-  final String? subtitle;
-  final double value, min, max;
-  final int divisions;
-  final ValueChanged<double> onChanged, onChangeEnd;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          '$title · $valueLabel',
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            subtitle!,
-            style: TextStyle(
-              fontSize: 13,
-              color: NodeLaneTokens.of(context).muted,
-            ),
-          ),
-        ],
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: divisions,
-          label: valueLabel,
-          semanticFormatterCallback: (_) => valueLabel,
-          onChanged: onChanged,
-          onChangeEnd: onChangeEnd,
-        ),
-      ],
-    ),
-  );
 }

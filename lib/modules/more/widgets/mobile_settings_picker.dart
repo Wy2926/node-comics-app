@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -97,13 +99,7 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
         .toList();
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: widget.title),
         body: SafeArea(
           top: false,
           child: CustomScrollView(
@@ -115,37 +111,19 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
                     child: Text(
                       widget.description!,
-                      style: TextStyle(color: colors.muted),
+                      style: colors.readerSecondary,
                     ),
                   ),
                 ),
               if (widget.searchable)
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  sliver: SliverToBoxAdapter(
-                    child: TextField(
-                      controller: _search,
-                      onChanged: (value) => setState(() => _query = value),
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                      decoration: InputDecoration(
-                        hintText: l10n.search,
-                        prefixIcon: const Icon(Icons.search_rounded),
-                        suffixIcon: _query.isEmpty
-                            ? null
-                            : IconButton(
-                                tooltip: l10n.reset,
-                                onPressed: _clear,
-                                icon: const Icon(Icons.close_rounded),
-                              ),
-                        filled: true,
-                        fillColor: colors.soft,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
+                NodeLanePinnedHeader(
+                  child: NodeLaneTextField.search(
+                    controller: _search,
+                    hint: l10n.search,
+                    onChanged: (value) => setState(() => _query = value),
+                    onClear: _clear,
+                    clearLabel: l10n.reset,
+                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   ),
                 ),
               if (options.isEmpty)
@@ -180,26 +158,24 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                     return Semantics(
                       selected: selected,
                       inMutuallyExclusiveGroup: true,
-                      child: ListTile(
-                        minTileHeight: 64,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        tileColor: selected
-                            ? colors.accentSoft
-                            : colors.surface,
+                      child: NodeLaneRow.card(
+                        title: option.label,
+                        subtitle: option.subtitle,
                         leading: option.leading,
-                        title: Text(option.label),
-                        subtitle: option.subtitle == null
-                            ? null
-                            : Text(option.subtitle!),
-                        trailing: selected
-                            ? Icon(Icons.check_rounded, color: colors.accent)
-                            : null,
+                        selected: selected,
+                        first: index == 0,
+                        last: index == options.length - 1,
+                        minHeight: NodeLaneTokens.rowHeight,
+                        trailing: SizedBox(
+                          width: NodeLaneTokens.iconSize,
+                          child: selected
+                              ? Icon(
+                                  NodeLaneIcons.of(context).check,
+                                  color: colors.accent,
+                                  size: NodeLaneTokens.iconSize,
+                                )
+                              : null,
+                        ),
                         onTap: () => _choose(option),
                       ),
                     );

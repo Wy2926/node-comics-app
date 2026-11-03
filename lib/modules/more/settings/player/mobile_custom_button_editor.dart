@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/custom_button.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
@@ -85,15 +87,15 @@ class _MobileCustomButtonEditorState extends State<MobileCustomButtonEditor> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label, style: Theme.of(context).textTheme.titleSmall),
+        Text(label, style: NodeLaneTokens.of(context).readerLabel),
         if (hint != null) ...[
           const SizedBox(height: 4),
-          Text(hint, style: TextStyle(color: NodeLaneTokens.of(context).muted)),
+          Text(hint, style: NodeLaneTokens.of(context).readerSecondary),
         ],
         const SizedBox(height: 12),
         Semantics(
           label: label,
-          child: TextField(
+          child: NodeLaneTextField(
             key: ValueKey(key),
             controller: controller,
             enabled: !_busy,
@@ -102,16 +104,9 @@ class _MobileCustomButtonEditorState extends State<MobileCustomButtonEditor> {
             keyboardType: code ? TextInputType.multiline : TextInputType.text,
             autocorrect: !code,
             enableSuggestions: !code,
-            smartDashesType: code ? SmartDashesType.disabled : null,
-            smartQuotesType: code ? SmartQuotesType.disabled : null,
-            style: code
-                ? const TextStyle(fontFamily: 'monospace', fontSize: 14)
-                : null,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: code ? null : label,
-            ),
             onChanged: (_) => setState(() {}),
+            code: code,
+            hint: code ? '' : label,
           ),
         ),
       ],
@@ -125,33 +120,25 @@ class _MobileCustomButtonEditorState extends State<MobileCustomButtonEditor> {
       canPop: !_busy,
       child: NodeLaneSurface(
         child: Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              tooltip: l10n.cancel,
-              onPressed: _busy ? null : () => Navigator.pop(context),
-              icon: const Icon(Icons.close_rounded),
-            ),
-            title: Text(
-              widget.button == null ? l10n.custom_buttons_add : l10n.edit,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          appBar: nodeLaneAppBar(
+            context,
+            title: widget.button == null ? l10n.custom_buttons_add : l10n.edit,
             actions: [
-              IconButton(
+              NodeLaneIconButton(
                 key: const ValueKey('save-custom-button'),
                 tooltip: l10n.save,
                 onPressed: _busy || !_valid ? null : _save,
-                icon: const Icon(Icons.check_rounded),
+                icon: NodeLaneIcons.of(context).check,
               ),
             ],
+            busy: _busy,
           ),
           body: SafeArea(
             top: false,
             child: ListView(
               key: const PageStorageKey('custom-button-editor'),
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              padding: NodeLaneTokens.pagePadding,
               children: [
-                if (_busy) const LinearProgressIndicator(),
                 if (_failed)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
@@ -179,34 +166,35 @@ class _MobileCustomButtonEditorState extends State<MobileCustomButtonEditor> {
                 ),
                 MobileSettingsGroup(
                   children: [
-                    ExpansionTile(
+                    NodeLaneDisclosure(
                       key: const PageStorageKey('custom-button-extra'),
                       initiallyExpanded:
                           _longPress.text.isNotEmpty ||
                           _startup.text.isNotEmpty,
-                      shape: const Border(),
-                      collapsedShape: const Border(),
-                      title: Text(l10n.advanced),
-                      children: [
-                        _field(
-                          l10n.custom_buttons_js_code_long,
-                          _longPress,
-                          'custom-button-long-press',
-                          code: true,
-                        ),
-                        _field(
-                          l10n.custom_buttons_startup,
-                          _startup,
-                          'custom-button-startup',
-                          code: true,
-                        ),
-                      ],
+                      title: l10n.advanced,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _field(
+                            l10n.custom_buttons_js_code_long,
+                            _longPress,
+                            'custom-button-long-press',
+                            code: true,
+                          ),
+                          _field(
+                            l10n.custom_buttons_startup,
+                            _startup,
+                            'custom-button-startup',
+                            code: true,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
                 FilledButton.icon(
                   onPressed: _busy || !_valid ? null : _save,
-                  icon: const Icon(Icons.check_rounded),
+                  icon: Icon(NodeLaneIcons.of(context).check),
                   label: Text(l10n.save),
                 ),
               ],

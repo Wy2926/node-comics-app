@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -11,7 +13,6 @@ import 'package:mangayomi/modules/more/settings/sync/providers/sync_progress_pro
 import 'package:mangayomi/modules/more/settings/track/mobile_track_screen.dart';
 import 'package:mangayomi/modules/more/settings/track/manage_trackers/mobile_manage_trackers.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_account_login_dialog.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 
 void main() {
   var keyboard = 0.0;
@@ -104,7 +105,7 @@ void main() {
       await tester.pumpAndSettle();
       final field = find.byKey(const ValueKey('account-server'));
       expect(
-        tester.widget<TextField>(field).controller!.text,
+        tester.widget<NodeLaneTextField>(field).controller!.text,
         'https://example.test/',
       );
       keyboard = 300;
@@ -124,7 +125,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       expect(
-        tester.widget<TextField>(field).controller!.text,
+        tester.widget<NodeLaneTextField>(field).controller!.text,
         'https://example.test/',
       );
       await tester.enterText(field, ' https://exact.test/path/ ');
@@ -185,9 +186,9 @@ void main() {
       await reveal(tester, password);
       await tester.enterText(password, ' pass phrase ');
       await tap(tester, find.byTooltip('Show password'));
-      expect(tester.widget<TextField>(password).obscureText, false);
+      expect(tester.widget<NodeLaneTextField>(password).obscureText, false);
       await tap(tester, find.byTooltip('Hide password'));
-      expect(tester.widget<TextField>(password).obscureText, true);
+      expect(tester.widget<NodeLaneTextField>(password).obscureText, true);
       final submit = tester
           .widget<FilledButton>(find.byType(FilledButton))
           .onPressed!;
@@ -197,7 +198,7 @@ void main() {
       expect(submitted, [
         {'email': ' name@example.test ', 'password': ' pass phrase '},
       ]);
-      expect(tester.widget<TextField>(password).enabled, false);
+      expect(tester.widget<NodeLaneTextField>(password).enabled, false);
       expect(
         tester
             .widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'))
@@ -212,7 +213,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Login rejected'), findsOneWidget);
       expect(
-        tester.widget<TextField>(password).controller!.text,
+        tester.widget<NodeLaneTextField>(password).controller!.text,
         ' pass phrase ',
       );
       result = Completer<(bool, String)>();
@@ -283,7 +284,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(retries, 1);
       expect(find.text('fixture-token'), findsNothing);
-      final frequency = find.widgetWithText(ListTile, 'Auto Sync');
+      final frequency = find.widgetWithText(NodeLaneRow, 'Auto Sync');
       await tap(tester, frequency);
       await tester.pumpAndSettle();
       final choices = [
@@ -297,24 +298,24 @@ void main() {
         'Every 12 hours',
       ];
       for (final label in choices) {
-        await reveal(tester, find.widgetWithText(ListTile, label));
+        await reveal(tester, find.widgetWithText(NodeLaneRow, label));
       }
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(frequencies, isEmpty);
       await tap(tester, frequency, delta: -250);
       await tester.pumpAndSettle();
-      await tap(tester, find.widgetWithText(ListTile, 'Every 12 hours'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Every 12 hours'));
       await tester.pumpAndSettle();
       expect(frequencies, [43200]);
       await tap(tester, find.text('Advanced'));
       await tap(tester, find.text('About'));
       expect(syncs, 0);
       expect(enabled, isEmpty);
-      await tap(tester, find.byType(MobileSettingsSwitch), delta: -250);
+      await tap(tester, find.byType(NodeLaneSwitchRow), delta: -250);
       await tester.pumpAndSettle();
       expect(enabled, [false]);
-      expect(find.widgetWithText(ListTile, 'Auto Sync'), findsNothing);
+      expect(find.widgetWithText(NodeLaneRow, 'Auto Sync'), findsNothing);
       expect(
         preference.autoSyncFrequency,
         43200,
@@ -445,7 +446,7 @@ void main() {
       await start(tester, home);
       expect(find.text('987654321'), findsNothing);
       expect(find.text('fixture-token'), findsNothing);
-      await tap(tester, find.byType(MobileSettingsSwitch));
+      await tap(tester, find.byType(NodeLaneSwitchRow));
       expect(updates, [false]);
       final connected = find.byKey(const ValueKey('tracker-account-2'));
       final logout = find.descendant(
@@ -477,14 +478,14 @@ void main() {
       for (final id in [2, 3, 1, 4, 5]) {
         await reveal(tester, find.byKey(ValueKey('tracker-account-$id')));
       }
-      await tap(tester, find.widgetWithText(ListTile, 'Manage trackers'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Manage trackers'));
       expect(manages, 1);
       final opened = <TrackPreference>[];
       await tester.pumpWidget(
         app(MobileManageTrackers(preferences: [account], onOpen: opened.add)),
       );
       await tester.pumpAndSettle();
-      await tap(tester, find.widgetWithText(ListTile, 'Anilist'));
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Anilist'));
       expect(opened.single, same(account));
       await tester.pumpWidget(
         app(MobileManageTrackers(preferences: const [], onOpen: opened.add)),

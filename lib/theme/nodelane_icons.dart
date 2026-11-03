@@ -169,33 +169,47 @@ class NodeLaneIcons {
   IconData get horizontalPages =>
       _pick(CupertinoIcons.square_split_2x1, Icons.view_week_outlined);
 
-  IconData readerSetting(IconData icon) => switch (icon) {
-    Icons.chrome_reader_mode_outlined => manga,
-    Icons.auto_stories_outlined => pageLayout,
-    Icons.timer_outlined => timer,
-    Icons.crop_rounded => crop,
-    Icons.view_day_outlined || Icons.layers_outlined => categories,
-    Icons.fit_screen_rounded || Icons.zoom_in_rounded => search,
-    Icons.palette_outlined => palette,
-    Icons.color_lens_outlined => image,
-    Icons.format_list_numbered_rounded => pageNumber,
-    Icons.light_mode_outlined => brightness,
-    Icons.animation_rounded => animation,
-    Icons.touch_app_outlined || Icons.pan_tool_alt_outlined => navigation,
-    Icons.flash_on_outlined => flash,
-    Icons.invert_colors_rounded || Icons.contrast_rounded => contrast,
-    Icons.tonality_rounded => grayscale,
-    Icons.vertical_split_outlined || Icons.view_week_outlined => pageLayout,
-    Icons.swap_horiz_rounded || Icons.horizontal_distribute_rounded => migrate,
-    Icons.screen_rotation_outlined => _pick(CupertinoIcons.rotate_right, icon),
-    Icons.rotate_left_rounded => _pick(CupertinoIcons.rotate_left, icon),
-    Icons.first_page_rounded => _pick(CupertinoIcons.doc, icon),
-    Icons.zoom_out_rounded => _pick(CupertinoIcons.zoom_out, icon),
-    Icons.format_line_spacing_rounded || Icons.swipe_vertical_rounded => _pick(
-      CupertinoIcons.arrow_up_arrow_down,
-      icon,
-    ),
-    Icons.view_quilt_outlined || Icons.grid_view_outlined => extensions,
-    _ => icon,
-  };
+  IconData get memory => _pick(CupertinoIcons.cube, Icons.memory_outlined);
+  IconData get headphones =>
+      _pick(CupertinoIcons.headphones, Icons.headphones_outlined);
+  IconData get audio =>
+      _pick(CupertinoIcons.speaker_2, Icons.audiotrack_outlined);
+  IconData get subtitles =>
+      _pick(CupertinoIcons.captions_bubble, Icons.subtitles_outlined);
+  IconData get font =>
+      _pick(CupertinoIcons.textformat_size, Icons.text_fields_rounded);
+  IconData get alignLeft =>
+      _pick(CupertinoIcons.text_alignleft, Icons.format_align_left);
+  IconData get lineSpacing => _pick(
+    CupertinoIcons.arrow_up_arrow_down,
+    Icons.format_line_spacing_rounded,
+  );
+  IconData get percent => _pick(CupertinoIcons.percent, Icons.percent_rounded);
+  IconData get speech => _pick(
+    CupertinoIcons.person_crop_rectangle,
+    Icons.record_voice_over_outlined,
+  );
+  IconData get chat =>
+      _pick(CupertinoIcons.chat_bubble, Icons.chat_bubble_outline_rounded);
+  IconData get night => _pick(CupertinoIcons.moon, Icons.dark_mode_outlined);
+  IconData get unlock =>
+      _pick(CupertinoIcons.lock_open, Icons.lock_open_rounded);
+  IconData get wifi => _pick(CupertinoIcons.wifi, Icons.wifi_rounded);
+  IconData get rotate =>
+      _pick(CupertinoIcons.rotate_right, Icons.screen_rotation_outlined);
+  IconData get zoomOut =>
+      _pick(CupertinoIcons.zoom_out, Icons.zoom_out_rounded);
+  IconData get speed => _pick(CupertinoIcons.speedometer, Icons.speed_rounded);
+  IconData get fastForward =>
+      _pick(CupertinoIcons.forward, Icons.fast_forward_outlined);
+  IconData get fullscreen => _pick(
+    CupertinoIcons.arrow_up_left_arrow_down_right,
+    Icons.fullscreen_rounded,
+  );
+  IconData get favorite =>
+      _pick(CupertinoIcons.star, Icons.star_border_rounded);
+  IconData get signIn =>
+      _pick(CupertinoIcons.square_arrow_right, Icons.login_rounded);
+  IconData get signOut =>
+      _pick(CupertinoIcons.square_arrow_left, Icons.logout_rounded);
 }

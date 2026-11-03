@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -228,7 +230,9 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Checking device authentication…'), findsOneWidget);
         expect(
-          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
+          tester
+              .widget<NodeLaneSwitchRow>(find.byType(NodeLaneSwitchRow))
+              .onChanged,
           isNull,
         );
         await tester.pumpWidget(

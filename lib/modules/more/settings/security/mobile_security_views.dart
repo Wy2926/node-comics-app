@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -33,24 +35,18 @@ class MobileSecuritySettingsView extends StatelessWidget {
         : l10n.biometric_or_device_credential_not_available;
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.security,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        appBar: nodeLaneAppBar(context, title: l10n.security),
         body: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
               MobileSettingsGroup(
                 children: [
-                  MobileSettingsSwitch(
+                  NodeLaneSwitchRow(
                     title: l10n.app_lock,
                     subtitle: subtitle,
-                    icon: Icons.lock_outline_rounded,
+                    icon: NodeLaneIcons.of(context).security,
                     value: enabled,
                     onChanged: onChanged,
                   ),
@@ -63,7 +59,7 @@ class MobileSecuritySettingsView extends StatelessWidget {
                     liveRegion: true,
                     child: Text(
                       l10n.device_authentication_incomplete,
-                      style: TextStyle(fontSize: 14, color: colors.ink),
+                      style: colors.readerSecondary.copyWith(color: colors.ink),
                     ),
                   ),
                 ),
@@ -73,7 +69,7 @@ class MobileSecuritySettingsView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.info_outline_rounded,
+                      NodeLaneIcons.of(context).info,
                       size: 20,
                       color: colors.muted,
                     ),
@@ -81,7 +77,7 @@ class MobileSecuritySettingsView extends StatelessWidget {
                     Expanded(
                       child: Text(
                         l10n.app_lock_description,
-                        style: TextStyle(fontSize: 14, color: colors.muted),
+                        style: colors.readerSecondary,
                       ),
                     ),
                   ],
@@ -135,16 +131,18 @@ class MobileAppLockView extends StatelessWidget {
                         children: [
                           Center(
                             child: Container(
-                              width: 72,
-                              height: 72,
+                              width: NodeLaneTokens.accountHeroAvatarSize,
+                              height: NodeLaneTokens.accountHeroAvatarSize,
                               decoration: BoxDecoration(
-                                color: colors.accentSoft,
-                                borderRadius: BorderRadius.circular(20),
+                                color: colors.soft,
+                                borderRadius: BorderRadius.circular(
+                                  NodeLaneTokens.groupRadius,
+                                ),
                               ),
                               child: Icon(
-                                Icons.lock_outline_rounded,
-                                size: 36,
-                                color: colors.accent,
+                                NodeLaneIcons.of(context).security,
+                                size: NodeLaneTokens.accountHeroIconSize,
+                                color: colors.ink,
                               ),
                             ),
                           ),
@@ -152,36 +150,18 @@ class MobileAppLockView extends StatelessWidget {
                           Text(
                             l10n.app_locked,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: colors.ink,
-                            ),
+                            style: colors.readerTitle,
                           ),
                           const SizedBox(height: 12),
                           Text(
                             l10n.auth_unlock_msg,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16, color: colors.muted),
+                            style: colors.readerSecondary,
                           ),
                           const SizedBox(height: 32),
                           FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: colors.accent,
-                              foregroundColor: colors.onAccent,
-                              disabledBackgroundColor: colors.soft,
-                              disabledForegroundColor: colors.muted,
-                              minimumSize: const Size(0, 48),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
                             onPressed: isAuthenticating ? null : onUnlock,
-                            icon: const Icon(Icons.lock_open_rounded),
+                            icon: Icon(NodeLaneIcons.of(context).unlock),
                             label: Text(
                               isAuthenticating
                                   ? l10n.authenticating

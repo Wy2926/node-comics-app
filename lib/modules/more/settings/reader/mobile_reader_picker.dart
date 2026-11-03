@@ -310,12 +310,7 @@ class _MobileReaderPickerState<T> extends State<MobileReaderPicker<T>> {
                                 i < widget.options.length;
                                 i++
                               ) ...[
-                                if (i > 0)
-                                  Divider(
-                                    height: 1,
-                                    indent: 16,
-                                    color: colors.line,
-                                  ),
+                                if (i > 0) const NodeLaneGroupDivider(),
                                 _row(context, widget.options[i]),
                               ],
                             ],
@@ -347,60 +342,28 @@ class _MobileReaderPickerState<T> extends State<MobileReaderPicker<T>> {
   }
 
   Widget _row(BuildContext context, MobileSettingOption<T> option) {
-    final colors = NodeLaneTokens.of(context);
     final selected = option.value == widget.current;
     return Semantics(
-      selected: selected,
       inMutuallyExclusiveGroup: true,
-      child: ListTile(
-        key: selected ? _selected : null,
-        minTileHeight: switch (option.value) {
-          ScaleType _ => NodeLaneTokens.readerPickerPreviewRowHeight,
-          BackgroundColor _ => NodeLaneTokens.readerPickerColorRowHeight,
-          _ => NodeLaneTokens.readerPickerRowHeight,
-        },
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        minLeadingWidth: NodeLaneTokens.readerPickerLeadingWidth,
-        horizontalTitleGap: 12,
+      child: NodeLaneGroupSurface(
         selected: selected,
-        selectedColor: colors.ink,
-        tileColor: colors.surface,
-        selectedTileColor: colors.accentSoft,
-        leading: option.leading == null
-            ? null
-            : ExcludeSemantics(
-                child: SizedBox(
-                  width: NodeLaneTokens.readerPickerLeadingWidth,
-                  child: Center(
-                    child: IconTheme(
-                      data: IconThemeData(
-                        color: colors.ink,
-                        size: NodeLaneTokens.readerPickerIconSize,
-                      ),
-                      child: option.leading!,
-                    ),
-                  ),
-                ),
-              ),
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(option.label, style: colors.readerLabel),
-            if (option.subtitle != null) ...[
-              const SizedBox(height: NodeLaneTokens.space4),
-              Text(option.subtitle!, style: colors.readerSecondary),
-            ],
-          ],
+        child: NodeLaneRow(
+          key: selected ? _selected : null,
+          title: option.label,
+          subtitle: option.subtitle,
+          selected: selected,
+          leading: option.leading,
+          leadingSize: Size(
+            NodeLaneTokens.readerPickerLeadingWidth,
+            NodeLaneTokens.readerPickerPreviewSize.height,
+          ),
+          minHeight: switch (option.value) {
+            ScaleType _ => NodeLaneTokens.readerPickerPreviewRowHeight,
+            BackgroundColor _ => NodeLaneTokens.readerPickerColorRowHeight,
+            _ => NodeLaneTokens.readerPickerRowHeight,
+          },
+          onTap: () => _finish(option: option),
         ),
-        trailing: selected
-            ? Icon(
-                NodeLaneIcons.of(context).check,
-                color: colors.accent,
-                size: 24,
-              )
-            : const SizedBox(width: 24),
-        onTap: () => _finish(option: option),
       ),
     );
   }

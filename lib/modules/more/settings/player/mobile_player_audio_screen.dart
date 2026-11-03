@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -28,10 +30,10 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
       children: [
         MobileSettingsGroup(
           children: [
-            MobileSettingsLink(
+            NodeLaneRow(
               title: l10n.audio_preferred_languages,
               subtitle: languages.isEmpty ? l10n.default0 : languages,
-              icon: Icons.translate_rounded,
+              icon: NodeLaneIcons.of(context).translate,
               onTap: () async {
                 final result = await showDialog<String>(
                   context: context,
@@ -55,7 +57,7 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
             ),
             MobilePlayerSettingChoice<AudioChannel>(
               title: l10n.audio_channels,
-              icon: Icons.speaker_group_outlined,
+              icon: NodeLaneIcons.of(context).audio,
               value: ref.watch(audioChannelStateProvider),
               label: (value) => channels[value]!,
               options: [
@@ -68,65 +70,27 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
         ),
         MobileSettingsGroup(
           children: [
-            MobileSettingsSwitch(
+            NodeLaneSwitchRow(
               title: l10n.enable_audio_pitch_correction,
               subtitle: l10n.enable_audio_pitch_correction_info,
-              icon: Icons.graphic_eq_rounded,
+              icon: NodeLaneIcons.of(context).audio,
               value: ref.watch(enableAudioPitchCorrectionStateProvider),
               onChanged: ref
                   .read(enableAudioPitchCorrectionStateProvider.notifier)
                   .set,
             ),
-            _VolumeBoost(
-              value: ref.watch(volumeBoostCapStateProvider),
-              onChanged: ref.read(volumeBoostCapStateProvider.notifier).set,
+            NodeLaneSliderRow(
+              value: ref.watch(volumeBoostCapStateProvider).toDouble(),
+              onChanged: (value) => (ref
+                  .read(volumeBoostCapStateProvider.notifier)
+                  .set)(value.toInt()),
+              title: l10n.volume_boost_cap,
+              min: 0,
+              max: 200,
             ),
           ],
         ),
       ],
     );
   }
-}
-
-class _VolumeBoost extends StatefulWidget {
-  const _VolumeBoost({required this.value, required this.onChanged});
-  final int value;
-  final ValueChanged<int> onChanged;
-  @override
-  State<_VolumeBoost> createState() => _VolumeBoostState();
-}
-
-class _VolumeBoostState extends State<_VolumeBoost> {
-  late double _draft = widget.value.clamp(0, 200).toDouble();
-  @override
-  void didUpdateWidget(covariant _VolumeBoost oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      _draft = widget.value.clamp(0, 200).toDouble();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          '${context.l10n.volume_boost_cap}: ${_draft.toInt()}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        Slider.adaptive(
-          value: _draft,
-          min: 0,
-          max: 200,
-          label: '${_draft.toInt()}',
-          onChanged: (value) => setState(() => _draft = value),
-          onChangeEnd: (value) {
-            if (value.toInt() != widget.value) widget.onChanged(value.toInt());
-          },
-        ),
-      ],
-    ),
-  );
 }

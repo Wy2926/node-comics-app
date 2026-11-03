@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +12,6 @@ import 'package:mangayomi/modules/more/settings/appearance/providers/date_format
 import 'package:mangayomi/modules/more/settings/appearance/providers/flex_scheme_color_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/pure_black_dark_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 void main() {
@@ -58,7 +58,7 @@ void main() {
     return container;
   }
 
-  Finder link(String title) => find.widgetWithText(MobileSettingsLink, title);
+  Finder link(String title) => find.widgetWithText(NodeLaneRow, title);
   Future<void> open(WidgetTester tester, String title) async {
     await tester.scrollUntilVisible(link(title), 300);
     await tester.pumpAndSettle();
@@ -81,7 +81,7 @@ void main() {
     await choose(tester, 'Dark');
     expect(container.read(followSystemThemeStateProvider), isFalse);
     expect(container.read(themeModeStateProvider), isTrue);
-    final pure = find.widgetWithText(SwitchListTile, 'Pure black dark mode');
+    final pure = find.widgetWithText(NodeLaneSwitchRow, 'Pure black dark mode');
     await tester.scrollUntilVisible(pure, 200);
     await tester.pumpAndSettle();
     await tester.tap(pure);

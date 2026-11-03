@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,7 +7,6 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/reader/mobile_reader_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/mobile_reader_picker.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 
 final _writes = <(String, Object)>[];
 
@@ -207,7 +207,7 @@ void main() {
     String label, {
     double delta = 260,
   }) async {
-    final target = find.widgetWithText(ExpansionTile, label);
+    final target = find.widgetWithText(NodeLaneDisclosure, label);
     await reveal(tester, target, delta: delta);
     await tester.tap(
       find.descendant(of: target, matching: find.text(label)).first,
@@ -220,7 +220,7 @@ void main() {
     String label, {
     double delta = 260,
   }) async {
-    final target = find.widgetWithText(MobileSettingsSwitch, label);
+    final target = find.widgetWithText(NodeLaneSwitchRow, label);
     await reveal(tester, target, delta: delta);
     await tester.tap(target);
     await tester.pumpAndSettle();
@@ -231,7 +231,9 @@ void main() {
     String title, {
     double delta = 260,
   }) async {
-    final target = find.widgetWithText(MobileSettingsLink, title);
+    final target = find.byWidgetPredicate(
+      (w) => w is NodeLaneRow && w.title == title && w.value != null,
+    );
     await reveal(tester, target, delta: delta);
     await tester.tap(target);
     await tester.pumpAndSettle();
@@ -241,7 +243,7 @@ void main() {
     await openChoice(tester, title);
     final target = find.descendant(
       of: find.byWidgetPredicate((widget) => widget is MobileReaderPicker),
-      matching: find.widgetWithText(ListTile, option),
+      matching: find.widgetWithText(NodeLaneRow, option),
     );
     await reveal(tester, target);
     await tester.tap(target);
@@ -297,8 +299,8 @@ void main() {
       await tester.pumpWidget(app(container));
       await tester.pumpAndSettle();
       await openChoice(tester, 'Scale type');
-      expect(find.widgetWithText(ListTile, 'Original size'), findsNothing);
-      expect(find.widgetWithText(ListTile, 'Smart fit'), findsNothing);
+      expect(find.widgetWithText(NodeLaneRow, 'Original size'), findsNothing);
+      expect(find.widgetWithText(NodeLaneRow, 'Smart fit'), findsNothing);
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(_writes, isEmpty);

@@ -1,3 +1,6 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -125,7 +128,6 @@ class _MobileTtsSettingsState extends State<MobileTtsSettings> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
     final language = widget.language;
     final enabled = !_busy && !_picking;
     final retryApply = _retryApply;
@@ -136,7 +138,7 @@ class _MobileTtsSettingsState extends State<MobileTtsSettings> {
         children: [
           MobileSettingsGroup(
             children: [
-              _TtsSlider(
+              NodeLaneSliderRow(
                 key: const ValueKey('tts-speed'),
                 title: l10n.tts_speed,
                 value: widget.speed,
@@ -148,7 +150,7 @@ class _MobileTtsSettingsState extends State<MobileTtsSettings> {
                 onChanged: (value) =>
                     _apply(() => widget.onSpeedChanged(value)),
               ),
-              _TtsSlider(
+              NodeLaneSliderRow(
                 key: const ValueKey('tts-pitch'),
                 title: l10n.tts_pitch,
                 value: widget.pitch,
@@ -165,24 +167,16 @@ class _MobileTtsSettingsState extends State<MobileTtsSettings> {
           MobileSettingsGroup(
             title: l10n.tts_language,
             children: [
-              ListTile(
+              NodeLaneRow(
                 enabled: enabled && !_loadFailed,
-                minTileHeight: 64,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                leading: Icon(Icons.language_rounded, color: colors.accent),
-                title: Text(
-                  language == null
-                      ? l10n.tts_default
-                      : _languageLabel(language),
-                ),
+                icon: NodeLaneIcons.of(context).web,
+                title: language == null
+                    ? l10n.tts_default
+                    : _languageLabel(language),
                 subtitle:
                     language != null && ttsLocaleNames.containsKey(language)
-                    ? Text(language)
+                    ? language
                     : null,
-                trailing: const Icon(Icons.chevron_right, size: 20),
                 onTap: enabled && !_loadFailed ? _selectLanguage : null,
               ),
               if (!_busy && _loadFailed)
@@ -235,7 +229,7 @@ class _Feedback extends StatelessWidget {
           liveRegion: true,
           child: Text(
             message,
-            style: TextStyle(color: NodeLaneTokens.of(context).muted),
+            style: NodeLaneTokens.of(context).readerSecondary,
           ),
         ),
         if (onRetry != null) ...[
@@ -246,68 +240,6 @@ class _Feedback extends StatelessWidget {
             child: Text(context.l10n.retry),
           ),
         ],
-      ],
-    ),
-  );
-}
-
-class _TtsSlider extends StatefulWidget {
-  const _TtsSlider({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.label,
-    required this.enabled,
-    required this.onChanged,
-  });
-  final String title;
-  final double value, min, max;
-  final int divisions;
-  final String Function(double) label;
-  final bool enabled;
-  final ValueChanged<double> onChanged;
-  @override
-  State<_TtsSlider> createState() => _TtsSliderState();
-}
-
-class _TtsSliderState extends State<_TtsSlider> {
-  late double _draft = widget.value.clamp(widget.min, widget.max);
-  @override
-  void didUpdateWidget(covariant _TtsSlider oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      _draft = widget.value.clamp(widget.min, widget.max);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          '${widget.title}: ${widget.label(_draft)}',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        Slider.adaptive(
-          value: _draft,
-          min: widget.min,
-          max: widget.max,
-          divisions: widget.divisions,
-          label: widget.label(_draft),
-          onChanged: widget.enabled
-              ? (value) => setState(() => _draft = value)
-              : null,
-          onChangeEnd: widget.enabled
-              ? (value) {
-                  if (value != widget.value) widget.onChanged(value);
-                }
-              : null,
-        ),
       ],
     ),
   );

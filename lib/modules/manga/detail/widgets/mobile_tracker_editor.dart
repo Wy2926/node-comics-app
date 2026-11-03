@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
@@ -222,12 +224,10 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
       String text,
       IconData icon,
       VoidCallback action,
-    ) => ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Icon(icon, color: colors.accent),
-      title: Text(title),
-      subtitle: Text(text),
-      trailing: const Icon(Icons.chevron_right_rounded),
+    ) => NodeLaneRow(
+      title: title,
+      subtitle: text,
+      icon: icon,
       enabled: !locked,
       onTap: locked ? null : action,
     );
@@ -241,10 +241,7 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  track.title ?? l10n.unknown,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text(track.title ?? l10n.unknown, style: colors.readerLabel),
                 if (_working) ...[
                   const SizedBox(height: 12),
                   const LinearProgressIndicator(),
@@ -263,7 +260,7 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
                   children: [
                     TextButton.icon(
                       onPressed: _busy ? null : _refresh,
-                      icon: const Icon(Icons.refresh_rounded),
+                      icon: Icon(NodeLaneIcons.of(context).refresh),
                       label: Text(l10n.refresh),
                     ),
                     if (widget.onChangeMatch != null)
@@ -297,7 +294,7 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
           value(
             l10n.score,
             widget.scoreLabel(track.score ?? 0),
-            Icons.star_outline_rounded,
+            NodeLaneIcons.of(context).favorite,
             _score,
           ),
           value(
@@ -309,7 +306,7 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
           value(
             l10n.finish_date,
             widget.finishLabel,
-            Icons.event_available_outlined,
+            NodeLaneIcons.of(context).calendar,
             () => _date(false),
           ),
           Padding(

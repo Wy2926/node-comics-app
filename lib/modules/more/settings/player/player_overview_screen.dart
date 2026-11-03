@@ -1,3 +1,6 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,44 +91,47 @@ class MobilePlayerOverviewScreen extends StatelessWidget {
       children: [
         MobileSettingsGroup(
           children: [
-            MobileSettingsLink(
+            NodeLaneRow(
               title: l10n.internal_player,
               subtitle: l10n.internal_player_info,
-              icon: Icons.play_circle_outline_rounded,
+              icon: NodeLaneIcons.of(context).anime,
               onTap: () => context.push('/playerMode'),
             ),
-            MobileSettingsLink(
+            NodeLaneRow(
               title: l10n.video_audio,
               subtitle: l10n.video_audio_info,
-              icon: Icons.headphones_outlined,
+              icon: NodeLaneIcons.of(context).headphones,
               onTap: () => context.push('/playerAudioScreen'),
             ),
           ],
         ),
-        MobilePlayerSettingsSection(
-          storageKey: 'player-overview-advanced',
-          title: l10n.advanced,
-          icon: Icons.tune_rounded,
-          child: Column(
-            children: [
-              MobileSettingsLink(
-                title: l10n.decoder,
-                subtitle: l10n.decoder_info,
-                icon: Icons.memory_rounded,
-                onTap: () => context.push('/playerDecoderScreen'),
-              ),
-              MobileSettingsLink(
-                title: l10n.custom_buttons,
-                subtitle: l10n.custom_buttons_info,
-                icon: Icons.terminal_rounded,
-                onTap: () => context.push('/customButtonScreen'),
-              ),
-              MobileSettingsLink(
-                title: l10n.advanced_info,
-                icon: Icons.code_rounded,
-                onTap: () => context.push('/playerAdvancedScreen'),
-              ),
-            ],
+        Padding(
+          padding: const EdgeInsets.only(bottom: NodeLaneTokens.space24),
+          child: NodeLaneDisclosure(
+            title: l10n.advanced,
+            icon: NodeLaneIcons.of(context).adjustments,
+            key: PageStorageKey('player-overview-advanced'),
+            child: Column(
+              children: [
+                NodeLaneRow(
+                  title: l10n.decoder,
+                  subtitle: l10n.decoder_info,
+                  icon: NodeLaneIcons.of(context).memory,
+                  onTap: () => context.push('/playerDecoderScreen'),
+                ),
+                NodeLaneRow(
+                  title: l10n.custom_buttons,
+                  subtitle: l10n.custom_buttons_info,
+                  icon: NodeLaneIcons.of(context).code,
+                  onTap: () => context.push('/customButtonScreen'),
+                ),
+                NodeLaneRow(
+                  title: l10n.advanced_info,
+                  icon: NodeLaneIcons.of(context).code,
+                  onTap: () => context.push('/playerAdvancedScreen'),
+                ),
+              ],
+            ),
           ),
         ),
       ],
