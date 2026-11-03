@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/extensions/manga_extensions.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -51,22 +53,14 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
-        final gridSize = ref.watch(
-          libraryGridSizeStateProvider(itemType: widget.itemType),
-        );
         if (isMobile && !isTv) {
           return LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth - NodeLaneTokens.gutter * 2;
-              final maxColumns = ((width + NodeLaneTokens.shelfGap) / 104)
-                  .floor()
-                  .clamp(1, 12);
-              final columns = (gridSize ?? 0) == 0
-                  ? ((width + NodeLaneTokens.shelfGap) / 194).round().clamp(
-                      2,
-                      6,
-                    )
-                  : gridSize!.clamp(1, maxColumns);
+              final columns = mobileBookshelfColumns(
+                width,
+                comfortable: widget.isComfortableGrid,
+              );
               final coverWidth =
                   (width - (columns - 1) * NodeLaneTokens.shelfGap) / columns;
               final coverOnly =
@@ -104,7 +98,9 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
                   final subtitle = [
                     if (widget.sourceBadge &&
                         (entry.source?.isNotEmpty ?? false))
-                      entry.source!,
+                      (entry.isLocalArchive ?? false)
+                          ? context.l10n.local
+                          : entry.source!,
                     if (widget.language && (entry.lang?.isNotEmpty ?? false))
                       entry.lang!.toUpperCase(),
                   ].join(' · ');
@@ -125,12 +121,18 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
                       ref,
                       entry,
                     ),
-                    badges: LibraryBadgeWidget(
-                      entry: entry,
-                      showLocal: widget.localSource,
-                      showDownloaded: widget.downloadedChapter,
-                      settings: widget.settings,
+                    selectionMode: ref.watch(isLongPressedStateProvider),
+                    unreadCount: entry.unreadChaptersCount(widget.settings),
+                    unreadLabel: entry.itemType == ItemType.anime
+                        ? context.l10n.unwatched
+                        : context.l10n.unread,
+                    downloadCount: libraryDownloadedCount(
+                      entry,
+                      ref,
+                      enabled: widget.downloadedChapter,
                     ),
+                    local:
+                        widget.localSource && (entry.isLocalArchive ?? false),
                     continueButton:
                         widget.continueReaderBtn && entry.chapters.isNotEmpty
                         ? ContinueReaderButton(entry: entry, large: true)
@@ -141,6 +143,9 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
             },
           );
         }
+        final gridSize = ref.watch(
+          libraryGridSizeStateProvider(itemType: widget.itemType),
+        );
         return GridViewWidget(
           gridSize: gridSize,
           childAspectRatio: widget.isComfortableGrid ? 0.642 : 0.69,

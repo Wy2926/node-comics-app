@@ -6933,7 +6933,7 @@ abstract class AppLocalizations {
   /// No description provided for @bookshelf_ignore_filters_hint.
   ///
   /// In en, this message translates to:
-  /// **'Search all comics in this category, including those hidden by filters.'**
+  /// **'Search all works in this category, including those hidden by filters.'**
   String get bookshelf_ignore_filters_hint;
 
   /// No description provided for @bookshelf_stop_update.
@@ -6945,7 +6945,7 @@ abstract class AppLocalizations {
   /// No description provided for @bookshelf_selected_count.
   ///
   /// In en, this message translates to:
-  /// **'{count} comics selected'**
+  /// **'{count} works selected'**
   String bookshelf_selected_count(int count);
 
   /// No description provided for @bookshelf_remove_library.
@@ -6957,7 +6957,7 @@ abstract class AppLocalizations {
   /// No description provided for @bookshelf_remove_library_hint.
   ///
   /// In en, this message translates to:
-  /// **'Online comics are removed from favorites. Local imports also lose their library and reading records.'**
+  /// **'Removes favorites. Local imports also lose their library and reading records.'**
   String get bookshelf_remove_library_hint;
 
   /// No description provided for @bookshelf_remove_downloads.
@@ -6969,19 +6969,19 @@ abstract class AppLocalizations {
   /// No description provided for @bookshelf_remove_downloads_hint.
   ///
   /// In en, this message translates to:
-  /// **'Removes downloaded files while keeping comic and chapter information.'**
+  /// **'Removes downloaded files while keeping work information.'**
   String get bookshelf_remove_downloads_hint;
 
   /// No description provided for @bookshelf_remove_local_files_hint.
   ///
   /// In en, this message translates to:
-  /// **'Also deletes selected local archive files and removes their library records. These files cannot be recovered here.'**
+  /// **'Also deletes selected local imported files and removes their library records. These files cannot be recovered here.'**
   String get bookshelf_remove_local_files_hint;
 
   /// No description provided for @bookshelf_remove_incomplete.
   ///
   /// In en, this message translates to:
-  /// **'The operation did not finish. Some comics or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.'**
+  /// **'The operation did not finish. Some works or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.'**
   String get bookshelf_remove_incomplete;
 
   /// No description provided for @bookshelf_processing.
@@ -7068,12 +7068,6 @@ abstract class AppLocalizations {
   /// **'Descending'**
   String get bookshelf_sort_descending;
 
-  /// No description provided for @bookshelf_grid_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Columns adapt to the screen width. Default arranges them automatically.'**
-  String get bookshelf_grid_hint;
-
   /// No description provided for @bookshelf_layout.
   ///
   /// In en, this message translates to:
@@ -7085,12 +7079,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select none to show all sources. Changes apply when you tap Filter.'**
   String get bookshelf_sources_hint;
-
-  /// No description provided for @bookshelf_import_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a local comic archive to add it to your bookshelf.'**
-  String get bookshelf_import_hint;
 
   /// No description provided for @bookshelf_choose_files.
   ///
@@ -7113,7 +7101,7 @@ abstract class AppLocalizations {
   /// No description provided for @bookshelf_categories_replace.
   ///
   /// In en, this message translates to:
-  /// **'Existing visible categories are initially selected. Saving assigns the selected categories to every chosen comic, replacing their previous categories.'**
+  /// **'Saving assigns these categories to every selected work, replacing their previous categories.'**
   String get bookshelf_categories_replace;
 
   /// No description provided for @bookshelf_categories_hint.
@@ -7125,7 +7113,7 @@ abstract class AppLocalizations {
   /// No description provided for @bookshelf_categories_hidden.
   ///
   /// In en, this message translates to:
-  /// **'Existing hidden categories are kept for this comic.'**
+  /// **'Existing hidden categories are kept for this work.'**
   String get bookshelf_categories_hidden;
 
   /// No description provided for @bookshelf_categories_incomplete.
@@ -7493,6 +7481,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{term, select, genres{Genres} author{Author} artist{Artist} title{Title} year{Year} tags{Tags} format{Format} publisher{Publisher} relevance{Relevance} rating{Rating} views{Views} random{Random} all{All} none{None} action{Action} adventure{Adventure} comedy{Comedy} drama{Drama} fantasy{Fantasy} romance{Romance} science_fiction{Science fiction} slice_of_life{Slice of life} mystery{Mystery} horror{Horror} psychological{Psychological} historical{Historical} sports{Sports} supernatural{Supernatural} school_life{School life} tragedy{Tragedy} shounen{Shounen} shoujo{Shoujo} seinen{Seinen} josei{Josei} isekai{Isekai} martial_arts{Martial arts} mecha{Mecha} music{Music} doujinshi{Doujinshi} trending{Trending} new{New} adult_content{Adult content} only{Only} other{{term}}}'**
   String source_filter_term(String term);
+
+  /// No description provided for @bookshelf_more_display.
+  ///
+  /// In en, this message translates to:
+  /// **'More display options'**
+  String get bookshelf_more_display;
+
+  /// No description provided for @bookshelf_more_display_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges, sources and categories'**
+  String get bookshelf_more_display_hint;
+
+  /// No description provided for @bookshelf_download_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Download count'**
+  String get bookshelf_download_count;
+
+  /// No description provided for @bookshelf_source_global_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Source visibility uses the shared display preference.'**
+  String get bookshelf_source_global_hint;
+
+  /// No description provided for @bookshelf_select_entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Select works'**
+  String get bookshelf_select_entries;
+
+  /// No description provided for @bookshelf_search_options.
+  ///
+  /// In en, this message translates to:
+  /// **'Search options'**
+  String get bookshelf_search_options;
+
+  /// No description provided for @bookshelf_empty_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect works from sources or import local files.'**
+  String get bookshelf_empty_hint;
+
+  /// No description provided for @bookshelf_no_match_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try other keywords or adjust the current filters.'**
+  String get bookshelf_no_match_hint;
+
+  /// No description provided for @bookshelf_clear_query.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear keywords'**
+  String get bookshelf_clear_query;
+
+  /// No description provided for @bookshelf_view_selection.
+  ///
+  /// In en, this message translates to:
+  /// **'View selected works'**
+  String get bookshelf_view_selection;
+
+  /// No description provided for @bookshelf_import_formats.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a local file to add it to your bookshelf.'**
+  String get bookshelf_import_formats;
+
+  /// No description provided for @bookshelf_import_canceled_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can choose again after cancelling the file picker.'**
+  String get bookshelf_import_canceled_hint;
+
+  /// No description provided for @bookshelf_browse_sources.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse sources'**
+  String get bookshelf_browse_sources;
+
+  /// No description provided for @bookshelf_empty_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your bookshelf is empty'**
+  String get bookshelf_empty_title;
+
+  /// No description provided for @bookshelf_no_match_title.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching works'**
+  String get bookshelf_no_match_title;
+
+  /// No description provided for @bookshelf_mark_watched.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark watched'**
+  String get bookshelf_mark_watched;
+
+  /// No description provided for @bookshelf_mark_unwatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark unwatched'**
+  String get bookshelf_mark_unwatched;
 }
 
 class _AppLocalizationsDelegate

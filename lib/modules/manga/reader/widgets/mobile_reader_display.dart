@@ -5,7 +5,6 @@ import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -76,7 +75,7 @@ class _MobileReaderDisplayButtonState
   }
 
   @override
-  Widget build(BuildContext context) => MobileReaderAction(
+  Widget build(BuildContext context) => NodeLaneToolbarAction(
     label: context.l10n.display,
     icon: NodeLaneIcons.of(context).manga,
     onPressed: _show,

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/foundation.dart';
 
 import 'dart:math';
@@ -175,7 +176,7 @@ class ReaderBottomBar extends ConsumerWidget {
                   ),
                 ),
                 Expanded(
-                  child: MobileReaderAction(
+                  child: NodeLaneToolbarAction(
                     label: context.l10n.settings,
                     icon: NodeLaneIcons.of(context).adjustments,
                     onPressed: onSettingsPressed,

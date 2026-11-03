@@ -8,7 +8,6 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/modules/manga/reader/reader_view.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -94,7 +93,7 @@ class _MobileReaderChaptersButtonState
   }
 
   @override
-  Widget build(BuildContext context) => MobileReaderAction(
+  Widget build(BuildContext context) => NodeLaneToolbarAction(
     label: context.l10n.chapters,
     icon: NodeLaneIcons.of(context).chapters,
     onPressed: _show,

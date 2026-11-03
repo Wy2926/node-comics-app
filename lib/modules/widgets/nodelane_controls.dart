@@ -71,7 +71,11 @@ class NodeLaneGroupSurface extends StatelessWidget {
               : Radius.zero,
         ),
         side: outlined
-            ? BorderSide(color: NodeLaneTokens.of(context).line)
+            ? BorderSide(
+                color: selected
+                    ? NodeLaneTokens.of(context).accent
+                    : NodeLaneTokens.of(context).line,
+              )
             : BorderSide.none,
       ),
       clipBehavior: Clip.antiAlias,
@@ -80,7 +84,7 @@ class NodeLaneGroupSurface extends StatelessWidget {
           Column(
             children: [
               for (var i = 0; i < children!.length; i++) ...[
-                if (i > 0) _groupDivider(context),
+                if (i > 0) const NodeLaneGroupDivider(),
                 children![i],
               ],
             ],
@@ -89,14 +93,18 @@ class NodeLaneGroupSurface extends StatelessWidget {
   );
 }
 
-Widget _groupDivider(BuildContext context) => Padding(
-  padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space16),
-  child: Divider(
-    height: 1,
-    thickness: .5,
-    color: NodeLaneTokens.of(context).line,
-  ),
-);
+class NodeLaneGroupDivider extends StatelessWidget {
+  const NodeLaneGroupDivider({super.key});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space16),
+    child: Divider(
+      height: 1,
+      thickness: .5,
+      color: NodeLaneTokens.of(context).line,
+    ),
+  );
+}
 
 /// One row for settings, choices and card actions. Card edges are supplied by
 /// lazy list callers; the content and tap behavior are shared with grouped rows.
@@ -113,6 +121,8 @@ class NodeLaneRow extends StatelessWidget {
     this.onLongPress,
     this.selected,
     this.destructive = false,
+    this.checkable = false,
+    this.enabled = true,
   }) : assert(icon == null || leading == null),
        _card = false,
        first = true,
@@ -130,6 +140,8 @@ class NodeLaneRow extends StatelessWidget {
     this.onLongPress,
     this.selected,
     this.destructive = false,
+    this.checkable = false,
+    this.enabled = true,
     this.first = true,
     this.last = true,
   }) : assert(icon == null || leading == null),
@@ -141,15 +153,19 @@ class NodeLaneRow extends StatelessWidget {
   final Widget? leading, trailing;
   final VoidCallback? onTap, onLongPress;
   final bool? selected;
-  final bool destructive, first, last, _card;
+  final bool destructive, checkable, enabled, first, last, _card;
 
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    final color = destructive ? Theme.of(context).colorScheme.error : t.ink;
+    final color = !enabled
+        ? t.muted.withValues(alpha: .5)
+        : destructive
+        ? Theme.of(context).colorScheme.error
+        : t.ink;
     final content = InkWell(
-      onTap: onTap,
-      onLongPress: onLongPress,
+      onTap: enabled ? onTap : null,
+      onLongPress: enabled ? onLongPress : null,
       child: Column(
         children: [
           ConstrainedBox(
@@ -203,6 +219,13 @@ class NodeLaneRow extends StatelessWidget {
                   if (trailing != null) ...[
                     const SizedBox(width: NodeLaneTokens.space12),
                     trailing!,
+                  ] else if (checkable) ...[
+                    const SizedBox(width: NodeLaneTokens.space12),
+                    Icon(
+                      selected == true ? icons.selected : icons.unselected,
+                      color: selected == true ? t.accent : t.muted,
+                      size: NodeLaneTokens.iconSize,
+                    ),
                   ] else if (!_card && selected != null) ...[
                     const SizedBox(width: NodeLaneTokens.space12),
                     SizedBox(
@@ -227,13 +250,15 @@ class NodeLaneRow extends StatelessWidget {
               ),
             ),
           ),
-          if (_card && !last) _groupDivider(context),
+          if (_card && !last) const NodeLaneGroupDivider(),
         ],
       ),
     );
     return Semantics(
-      selected: selected,
-      button: onTap != null,
+      selected: checkable ? null : selected,
+      checked: checkable ? selected == true : null,
+      button: onTap != null || !enabled,
+      enabled: onTap != null || !enabled || checkable ? enabled : null,
       child: _card
           ? NodeLaneGroupSurface(
               first: first,
@@ -246,26 +271,122 @@ class NodeLaneRow extends StatelessWidget {
   }
 }
 
-/// A small cover annotation, shared by source and cross-source results.
+enum NodeLaneBadgeTone { overlay, accent, neutral }
+
+/// One annotation geometry for covers and compact status information.
 class NodeLaneCoverBadge extends StatelessWidget {
-  const NodeLaneCoverBadge(this.label, {super.key});
+  const NodeLaneCoverBadge(
+    this.label, {
+    super.key,
+    this.icon,
+    this.semanticsLabel,
+    this.tone = NodeLaneBadgeTone.overlay,
+  });
   final String label;
+  final IconData? icon;
+  final String? semanticsLabel;
+  final NodeLaneBadgeTone tone;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: NodeLaneTokens.of(context).ink.withValues(alpha: .78),
-      borderRadius: BorderRadius.circular(6),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: NodeLaneTokens.captionSize,
-          height: 1.2,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    final foreground = switch (tone) {
+      NodeLaneBadgeTone.overlay => Colors.white,
+      NodeLaneBadgeTone.accent => t.onAccent,
+      NodeLaneBadgeTone.neutral => t.ink,
+    };
+    return Semantics(
+      label: semanticsLabel,
+      excludeSemantics: semanticsLabel != null,
+      child: Container(
+        constraints: const BoxConstraints(
+          minHeight: NodeLaneTokens.badgeHeight,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space8),
+        decoration: BoxDecoration(
+          color: switch (tone) {
+            NodeLaneBadgeTone.overlay => t.ink.withValues(alpha: .78),
+            NodeLaneBadgeTone.accent => t.accent,
+            NodeLaneBadgeTone.neutral => t.surface,
+          },
+          borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: NodeLaneTokens.badgeIconSize, color: foreground),
+              if (label.isNotEmpty)
+                const SizedBox(width: NodeLaneTokens.space4),
+            ],
+            if (label.isNotEmpty)
+              Text(
+                label,
+                style: t.caption.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A visual choice uses the same grouped surface and selection roles as rows.
+class NodeLaneChoiceCard extends StatelessWidget {
+  const NodeLaneChoiceCard({
+    super.key,
+    required this.title,
+    required this.preview,
+    required this.selected,
+    required this.onTap,
+  });
+  final String title;
+  final Widget preview;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    selected: selected,
+    button: true,
+    child: NodeLaneGroupSurface(
+      outlined: true,
+      selected: selected,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: NodeLaneTokens.groupPadding,
+          child: Column(
+            children: [
+              ExcludeSemantics(
+                child: SizedBox(
+                  height: NodeLaneTokens.choicePreviewHeight,
+                  child: preview,
+                ),
+              ),
+              const SizedBox(height: NodeLaneTokens.space8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(title, style: NodeLaneTokens.of(context).label),
+                  ),
+                  const SizedBox(width: NodeLaneTokens.space4),
+                  SizedBox.square(
+                    dimension: NodeLaneTokens.smallIconSize,
+                    child: selected
+                        ? Icon(
+                            NodeLaneIcons.of(context).selected,
+                            size: NodeLaneTokens.smallIconSize,
+                            color: NodeLaneTokens.of(context).accent,
+                          )
+                        : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -854,4 +975,66 @@ class NodeLaneChoiceRow<T> extends StatelessWidget {
       },
     ),
   );
+}
+
+/// May be used as the child of a popup; without a callback it adds no competing
+/// tap handler or disabled semantics to the popup's own target.
+class NodeLaneToolbarAction extends StatelessWidget {
+  const NodeLaneToolbarAction({
+    super.key,
+    required this.label,
+    required this.icon,
+    this.onPressed,
+    this.active = false,
+    this.enabled = true,
+  });
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool active, enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = NodeLaneTokens.of(context);
+    final color = !enabled
+        ? colors.muted.withValues(alpha: .5)
+        : active
+        ? colors.accent
+        : colors.ink;
+    final content = Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(
+        minHeight: NodeLaneTokens.readerActionHeight,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NodeLaneTokens.space4,
+        vertical: NodeLaneTokens.space8,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: NodeLaneTokens.readerIconSize),
+          const SizedBox(height: NodeLaneTokens.space4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: NodeLaneTokens.captionSize,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+    return onPressed == null
+        ? Semantics(enabled: enabled, child: content)
+        : TextButton(
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+            onPressed: enabled ? onPressed : null,
+            child: content,
+          );
+  }
 }

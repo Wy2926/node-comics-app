@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
@@ -15,7 +16,6 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
-import 'mobile_reader_widgets.dart';
 import 'mobile_reader_chapters.dart';
 
 Widget btnToShowChapterListDialog(
@@ -156,7 +156,7 @@ Widget btnToShowChapterListDialog(
   }
 
   if (labeled) {
-    return MobileReaderAction(
+    return NodeLaneToolbarAction(
       label: title,
       icon: Icons.format_list_bulleted_rounded,
       onPressed: open,

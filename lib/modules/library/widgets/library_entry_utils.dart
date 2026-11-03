@@ -1,8 +1,8 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/library_filter_provider.dart';
@@ -15,7 +15,6 @@ import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/headers.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
 
 /// Resolves the correct [ImageProvider] for a manga entry, preferring a custom
 /// local cover over the remote URL. Remote covers are wrapped in
@@ -139,17 +138,11 @@ class LibraryBadgeWidget extends ConsumerWidget {
     final isLocalArchive = entry.isLocalArchive ?? false;
     final hasLocal = showLocal && isLocalArchive;
 
-    int downloadCount = 0;
-    if (showDownloaded) {
-      final downloadedIds =
-          ref.watch(downloadedChapterIdsProvider).asData?.value ??
-          const <int>{};
-      for (final c in entry.chapters) {
-        if (c.id != null && downloadedIds.contains(c.id)) {
-          downloadCount++;
-        }
-      }
-    }
+    final downloadCount = libraryDownloadedCount(
+      entry,
+      ref,
+      enabled: showDownloaded,
+    );
 
     // Scanlator-aware: the badge count respects the per-manga scanlator filter.
     final unreadCount = entry.unreadChaptersCount(settings);
@@ -157,42 +150,6 @@ class LibraryBadgeWidget extends ConsumerWidget {
     // If there is nothing to show (no local, no download, no unread), return empty
     if (!hasLocal && downloadCount == 0 && unreadCount == 0) {
       return const SizedBox.shrink();
-    }
-
-    if (isMobile && !isTv) {
-      final colors = NodeLaneTokens.of(context);
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (hasLocal) ...[
-            Badge(
-              backgroundColor: colors.surface,
-              textColor: colors.accent,
-              label: Text(context.l10n.local),
-            ),
-            const SizedBox(width: NodeLaneTokens.space4),
-          ],
-          if (downloadCount > 0) ...[
-            Badge(
-              backgroundColor: colors.surface,
-              textColor: colors.accent,
-              label: Text(
-                '$downloadCount',
-                semanticsLabel:
-                    '${context.l10n.downloaded_chapters}: $downloadCount',
-              ),
-            ),
-            const SizedBox(width: NodeLaneTokens.space4),
-          ],
-          if (unreadCount > 0)
-            Badge(
-              label: Text(
-                '$unreadCount',
-                semanticsLabel: '${context.l10n.unread}: $unreadCount',
-              ),
-            ),
-        ],
-      );
     }
 
     return Container(
@@ -219,4 +176,16 @@ class LibraryBadgeWidget extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Counts only the visible entry against the already shared download snapshot.
+int libraryDownloadedCount(
+  Manga entry,
+  WidgetRef ref, {
+  required bool enabled,
+}) {
+  if (!enabled) return 0;
+  final ids =
+      ref.watch(downloadedChapterIdsProvider).asData?.value ?? const <int>{};
+  return entry.chapters.where((c) => c.id != null && ids.contains(c.id)).length;
 }

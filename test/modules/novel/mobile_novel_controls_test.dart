@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -93,7 +95,7 @@ void main() {
                     controls: MobileNovelControls(
                       progress: .42,
                       progressLabel: '41–42 / 160',
-                      chapterAction: MobileReaderAction(
+                      chapterAction: NodeLaneToolbarAction(
                         label: 'Chapters',
                         icon: Icons.list,
                         onPressed: () => actions.add('chapters'),

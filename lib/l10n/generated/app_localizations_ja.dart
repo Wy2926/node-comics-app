@@ -3810,14 +3810,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get bookshelf_ignore_filters_hint =>
-      'Search all comics in this category, including those hidden by filters.';
+      'Search all works in this category, including those hidden by filters.';
 
   @override
   String get bookshelf_stop_update => 'Stop library update';
 
   @override
   String bookshelf_selected_count(int count) {
-    return '$count comics selected';
+    return '$count works selected';
   }
 
   @override
@@ -3825,22 +3825,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get bookshelf_remove_library_hint =>
-      'Online comics are removed from favorites. Local imports also lose their library and reading records.';
+      'Removes favorites. Local imports also lose their library and reading records.';
 
   @override
   String get bookshelf_remove_downloads => 'Delete downloaded files';
 
   @override
   String get bookshelf_remove_downloads_hint =>
-      'Removes downloaded files while keeping comic and chapter information.';
+      'Removes downloaded files while keeping work information.';
 
   @override
   String get bookshelf_remove_local_files_hint =>
-      'Also deletes selected local archive files and removes their library records. These files cannot be recovered here.';
+      'Also deletes selected local imported files and removes their library records. These files cannot be recovered here.';
 
   @override
   String get bookshelf_remove_incomplete =>
-      'The operation did not finish. Some comics or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.';
+      'The operation did not finish. Some works or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.';
 
   @override
   String get bookshelf_processing => 'Processing…';
@@ -3888,19 +3888,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get bookshelf_sort_descending => 'Descending';
 
   @override
-  String get bookshelf_grid_hint =>
-      'Columns adapt to the screen width. Default arranges them automatically.';
-
-  @override
   String get bookshelf_layout => 'Bookshelf layout';
 
   @override
   String get bookshelf_sources_hint =>
       'Select none to show all sources. Changes apply when you tap Filter.';
-
-  @override
-  String get bookshelf_import_hint =>
-      'Choose a local comic archive to add it to your bookshelf.';
 
   @override
   String get bookshelf_choose_files => 'Choose files';
@@ -3915,7 +3907,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get bookshelf_categories_replace =>
-      'Existing visible categories are initially selected. Saving assigns the selected categories to every chosen comic, replacing their previous categories.';
+      'Saving assigns these categories to every selected work, replacing their previous categories.';
 
   @override
   String get bookshelf_categories_hint =>
@@ -3923,7 +3915,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get bookshelf_categories_hidden =>
-      'Existing hidden categories are kept for this comic.';
+      'Existing hidden categories are kept for this work.';
 
   @override
   String get bookshelf_categories_incomplete =>
@@ -4189,4 +4181,60 @@ class AppLocalizationsJa extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get bookshelf_more_display => 'More display options';
+
+  @override
+  String get bookshelf_more_display_hint => 'Badges, sources and categories';
+
+  @override
+  String get bookshelf_download_count => 'Download count';
+
+  @override
+  String get bookshelf_source_global_hint =>
+      'Source visibility uses the shared display preference.';
+
+  @override
+  String get bookshelf_select_entries => 'Select works';
+
+  @override
+  String get bookshelf_search_options => 'Search options';
+
+  @override
+  String get bookshelf_empty_hint =>
+      'Collect works from sources or import local files.';
+
+  @override
+  String get bookshelf_no_match_hint =>
+      'Try other keywords or adjust the current filters.';
+
+  @override
+  String get bookshelf_clear_query => 'Clear keywords';
+
+  @override
+  String get bookshelf_view_selection => 'View selected works';
+
+  @override
+  String get bookshelf_import_formats =>
+      'Choose a local file to add it to your bookshelf.';
+
+  @override
+  String get bookshelf_import_canceled_hint =>
+      'You can choose again after cancelling the file picker.';
+
+  @override
+  String get bookshelf_browse_sources => 'Browse sources';
+
+  @override
+  String get bookshelf_empty_title => 'Your bookshelf is empty';
+
+  @override
+  String get bookshelf_no_match_title => 'No matching works';
+
+  @override
+  String get bookshelf_mark_watched => 'Mark watched';
+
+  @override
+  String get bookshelf_mark_unwatched => 'Mark unwatched';
 }

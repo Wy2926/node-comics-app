@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/isar_providers.dart';
 import 'package:mangayomi/modules/library/providers/library_source_badge_provider.dart';
 import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
-/// Manga presentation only. The existing providers still own preferences and
-/// filtering; the shared streams keep the open sheet on current settings.
+/// Presentation only. All three media use their existing preference providers.
 class MobileBookshelfSettings extends ConsumerWidget {
   const MobileBookshelfSettings({
     super.key,
     required this.settings,
     required this.entries,
+    this.itemType = ItemType.manga,
   });
   final Settings settings;
   final List<Manga> entries;
-
+  final ItemType itemType;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current =
@@ -30,48 +29,42 @@ class MobileBookshelfSettings extends ConsumerWidget {
     final currentEntries =
         ref
             .watch(
-              getAllMangaStreamProvider(
-                categoryId: null,
-                itemType: ItemType.manga,
-              ),
+              getAllMangaStreamProvider(categoryId: null, itemType: itemType),
             )
             .asData
             ?.value ??
         entries;
     final l10n = context.l10n;
-    return NodeLaneSurface(
-      child: NodeLaneSheetSurface(
-        grouped: true,
-        child: SafeArea(
-          top: false,
-          child: DefaultTabController(
-            length: 3,
-            child: Column(
-              children: [
-                NodeLaneSheetHeading(
-                  title: l10n.bookshelf_settings,
-                  subtitle: l10n.bookshelf_settings_live,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: NodeLaneTokens.gutter,
-                  ),
-                  child: NodeLaneTabSegments(
-                    labels: [l10n.filter, l10n.sort, l10n.display],
-                  ),
-                ),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      _Filters(settings: current, entries: currentEntries),
-                      _Sort(settings: current),
-                      _Display(settings: current),
-                    ],
-                  ),
-                ),
-              ],
+    return NodeLaneCatalogSheet(
+      title: l10n.bookshelf_settings,
+      subtitle: l10n.bookshelf_settings_live,
+      heightFactor: .9,
+      child: DefaultTabController(
+        length: 3,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.gutter,
+              ),
+              child: NodeLaneTabSegments(
+                labels: [l10n.filter, l10n.sort, l10n.display],
+              ),
             ),
-          ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _Filters(
+                    settings: current,
+                    entries: currentEntries,
+                    itemType: itemType,
+                  ),
+                  _Sort(settings: current, itemType: itemType),
+                  _Display(settings: current, itemType: itemType),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -79,196 +72,198 @@ class MobileBookshelfSettings extends ConsumerWidget {
 }
 
 class _Filters extends ConsumerWidget {
-  const _Filters({required this.settings, required this.entries});
+  const _Filters({
+    required this.settings,
+    required this.entries,
+    required this.itemType,
+  });
   final Settings settings;
   final List<Manga> entries;
-
+  final ItemType itemType;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final downloaded = mangaFilterDownloadedStateProvider(
       mangaList: const [],
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final unread = mangaFilterUnreadStateProvider(
       mangaList: const [],
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final started = mangaFilterStartedStateProvider(
       mangaList: const [],
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final bookmarked = mangaFilterBookmarkedStateProvider(
       mangaList: const [],
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final completed = mangaFilterCompletedStateProvider(
       mangaList: const [],
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final tracked = mangaFilterTrackingStateProvider(
       mangaList: const [],
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
-    final sources = ref.watch(
-      mangaFilterSourceStateProvider(
-        mangaList: entries,
-        itemType: ItemType.manga,
-        settings: settings,
-      ),
+    final sourceProvider = mangaFilterSourceStateProvider(
+      mangaList: entries,
+      itemType: itemType,
+      settings: settings,
     );
+    final sources = ref.watch(sourceProvider);
     final filters = <(String, int, ValueChanged<int>)>[
       (
         l10n.downloaded,
         ref.watch(downloaded),
-        (value) => ref.read(downloaded.notifier).setType(value),
+        (v) => ref.read(downloaded.notifier).setType(v),
       ),
       (
-        l10n.unread,
+        itemType == ItemType.anime ? l10n.unwatched : l10n.unread,
         ref.watch(unread),
-        (value) => ref.read(unread.notifier).setType(value),
+        (v) => ref.read(unread.notifier).setType(v),
       ),
       (
         l10n.started,
         ref.watch(started),
-        (value) => ref.read(started.notifier).setType(value),
+        (v) => ref.read(started.notifier).setType(v),
       ),
       (
         l10n.bookmarked,
         ref.watch(bookmarked),
-        (value) => ref.read(bookmarked.notifier).setType(value),
+        (v) => ref.read(bookmarked.notifier).setType(v),
       ),
       (
         l10n.completed,
         ref.watch(completed),
-        (value) => ref.read(completed.notifier).setType(value),
+        (v) => ref.read(completed.notifier).setType(v),
       ),
       (
         l10n.tracked,
         ref.watch(tracked),
-        (value) => ref.read(tracked.notifier).setType(value),
+        (v) => ref.read(tracked.notifier).setType(v),
       ),
+    ];
+    final choices = [
+      l10n.bookshelf_filter_any,
+      l10n.bookshelf_filter_include,
+      l10n.bookshelf_filter_exclude,
     ];
     return ListView(
       key: const PageStorageKey('bookshelf-filters'),
       padding: const EdgeInsets.all(NodeLaneTokens.gutter),
       children: [
-        MobileSettingsGroup(
+        NodeLaneGroupSurface(
           children: [
-            for (var index = 0; index < filters.length; index++)
+            for (var i = 0; i < filters.length; i++)
               NodeLaneChoiceRow<int>(
-                key: ValueKey('bookshelf-filter-$index'),
-                title: filters[index].$1,
-                value: filters[index].$2,
+                key: ValueKey('bookshelf-filter-$i'),
+                title: filters[i].$1,
+                value: filters[i].$2,
+                onChanged: filters[i].$3,
                 segments: [
-                  ButtonSegment(
-                    value: 0,
-                    label: Text(
-                      l10n.bookshelf_filter_any,
-                      semanticsLabel:
-                          '${filters[index].$1}, ${l10n.bookshelf_filter_any}',
+                  for (var j = 0; j < 3; j++)
+                    ButtonSegment(
+                      value: j,
+                      label: Text(
+                        choices[j],
+                        semanticsLabel: '${filters[i].$1}, ${choices[j]}',
+                      ),
                     ),
-                  ),
-                  ButtonSegment(
-                    value: 1,
-                    label: Text(
-                      l10n.bookshelf_filter_include,
-                      semanticsLabel:
-                          '${filters[index].$1}, ${l10n.bookshelf_filter_include}',
-                    ),
-                  ),
-                  ButtonSegment(
-                    value: 2,
-                    label: Text(
-                      l10n.bookshelf_filter_exclude,
-                      semanticsLabel:
-                          '${filters[index].$1}, ${l10n.bookshelf_filter_exclude}',
-                    ),
-                  ),
                 ],
-                onChanged: filters[index].$3,
               ),
           ],
         ),
-        if (sources.$1.length > 1 || sources.$2.isNotEmpty)
-          MobileSettingsGroup(
-            children: [
-              MobileSettingsLink(
-                title: l10n.sources,
-                subtitle: sources.$2.isEmpty
-                    ? l10n.bookshelf_all_sources
-                    : l10n.bookshelf_sources_selected(sources.$2.length),
-                icon: NodeLaneIcons.of(context).web,
-                onTap: () async {
-                  final selected = await Navigator.of(context)
-                      .push<List<String>>(
-                        MaterialPageRoute(
-                          builder: (_) => MobileBookshelfSourceFilter(
-                            sources: sources.$1,
-                            selected: sources.$2,
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneGroupSurface(
+          children: [
+            NodeLaneRow(
+              title: l10n.sources,
+              value: sources.$2.isEmpty
+                  ? l10n.bookshelf_all_sources
+                  : l10n.bookshelf_sources_selected(sources.$2.length),
+              onTap: () async {
+                final selected = await showNodeLaneCatalogSheet<List<String>>(
+                  context,
+                  MobileBookshelfSourceFilter(
+                    sources: sources.$1,
+                    selected: sources.$2,
+                  ),
+                );
+                if (!context.mounted || selected == null) return;
+                final current =
+                    ref.read(getSettingsStreamProvider).asData?.value ??
+                    settings;
+                final currentEntries =
+                    ref
+                        .read(
+                          getAllMangaStreamProvider(
+                            categoryId: null,
+                            itemType: itemType,
                           ),
-                        ),
-                      );
-                  if (!context.mounted || selected == null) return;
-                  // The source list may change while the choice page is open.
-                  final current =
-                      ref.read(getSettingsStreamProvider).asData?.value ??
-                      settings;
-                  final currentEntries =
-                      ref
-                          .read(
-                            getAllMangaStreamProvider(
-                              categoryId: null,
-                              itemType: ItemType.manga,
-                            ),
-                          )
-                          .asData
-                          ?.value ??
-                      entries;
-                  final provider = mangaFilterSourceStateProvider(
-                    mangaList: currentEntries,
-                    itemType: ItemType.manga,
-                    settings: current,
-                  );
-                  final available = ref.read(provider).$1;
-                  ref
-                      .read(provider.notifier)
-                      .set(selected.where(available.contains).toList());
-                },
-              ),
-            ],
-          ),
+                        )
+                        .asData
+                        ?.value ??
+                    entries;
+                final provider = mangaFilterSourceStateProvider(
+                  mangaList: currentEntries,
+                  itemType: itemType,
+                  settings: current,
+                );
+                final available = ref.read(provider).$1;
+                ref
+                    .read(provider.notifier)
+                    .set(selected.where(available.contains).toList());
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: NodeLaneTokens.space8),
+        TextButton(
+          onPressed: filters.any((f) => f.$2 != 0) || sources.$2.isNotEmpty
+              ? () {
+                  for (final filter in filters) {
+                    if (filter.$2 != 0) filter.$3(0);
+                  }
+                  if (sources.$2.isNotEmpty) {
+                    ref.read(sourceProvider.notifier).set([]);
+                  }
+                }
+              : null,
+          child: Text(l10n.reset),
+        ),
       ],
     );
   }
 }
 
 class _Sort extends ConsumerWidget {
-  const _Sort({required this.settings});
+  const _Sort({required this.settings, required this.itemType});
   final Settings settings;
+  final ItemType itemType;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final provider = sortLibraryMangaStateProvider(
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final sort = ref.watch(provider);
-    final index = sort.index ?? 0;
-    final reverse = sort.reverse ?? false;
+    final anime = itemType == ItemType.anime;
     final names = [
       l10n.alphabetically,
-      l10n.last_read,
+      anime ? l10n.last_watched : l10n.last_read,
       l10n.last_update_check,
-      l10n.unread_count,
-      l10n.total_chapters,
-      l10n.latest_chapter,
+      anime ? l10n.unwatched_count : l10n.unread_count,
+      anime ? l10n.total_episodes : l10n.total_chapters,
+      anime ? l10n.latest_episode : l10n.latest_chapter,
       l10n.date_added,
     ];
     return ListView(
@@ -276,19 +271,17 @@ class _Sort extends ConsumerWidget {
       padding: const EdgeInsets.all(NodeLaneTokens.gutter),
       children: [
         NodeLaneSegments<bool>(
+          value: sort.reverse ?? false,
           segments: [
             ButtonSegment(
               value: false,
-              icon: Icon(NodeLaneIcons.of(context).ascending),
               label: Text(l10n.bookshelf_sort_ascending),
             ),
             ButtonSegment(
               value: true,
-              icon: Icon(NodeLaneIcons.of(context).descending),
               label: Text(l10n.bookshelf_sort_descending),
             ),
           ],
-          value: reverse,
           onChanged: (value) {
             final current = ref.read(provider);
             if (value != (current.reverse ?? false)) {
@@ -296,20 +289,13 @@ class _Sort extends ConsumerWidget {
             }
           },
         ),
-        const SizedBox(height: 20),
-        MobileSettingsGroup(
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneGroupSurface(
           children: [
             for (var i = 0; i < names.length; i++)
-              ListTile(
-                selected: index == i,
-                title: Text(names[i]),
-                minTileHeight: 56,
-                trailing: index == i
-                    ? Icon(
-                        NodeLaneIcons.of(context).check,
-                        color: NodeLaneTokens.of(context).accent,
-                      )
-                    : null,
+              NodeLaneRow(
+                title: names[i],
+                selected: (sort.index ?? 0) == i,
                 onTap: () {
                   if ((ref.read(provider).index ?? 0) != i) {
                     ref.read(provider.notifier).set(i);
@@ -323,171 +309,260 @@ class _Sort extends ConsumerWidget {
   }
 }
 
-class _Display extends ConsumerWidget {
-  const _Display({required this.settings});
+class _Display extends ConsumerStatefulWidget {
+  const _Display({required this.settings, required this.itemType});
   final Settings settings;
+  final ItemType itemType;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
+  ConsumerState<_Display> createState() => _DisplayState();
+}
+
+class _DisplayState extends ConsumerState<_Display> {
+  bool _expanded = false;
+  @override
+  Widget build(BuildContext context) {
+    final settings = widget.settings, itemType = widget.itemType;
+    final l10n = context.l10n, icons = NodeLaneIcons.of(context);
     final displayProvider = libraryDisplayTypeStateProvider(
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final display = ref.watch(displayProvider);
-    final gridProvider = libraryGridSizeStateProvider(itemType: ItemType.manga);
-    final grid = (ref.watch(gridProvider) ?? 0).clamp(0, 7);
     final downloaded = libraryDownloadedChaptersStateProvider(
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final language = libraryLanguageStateProvider(
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
     final local = libraryLocalSourceStateProvider(
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
     );
-    final continueReading = libraryShowContinueReadingButtonStateProvider(
-      itemType: ItemType.manga,
+    final resume = libraryShowContinueReadingButtonStateProvider(
+      itemType: itemType,
       settings: settings,
     );
-    final categoryTabs = libraryShowCategoryTabsStateProvider(
-      itemType: ItemType.manga,
+    final categories = libraryShowCategoryTabsStateProvider(
+      itemType: itemType,
       settings: settings,
     );
     final counts = libraryShowNumbersOfItemsStateProvider(
-      itemType: ItemType.manga,
+      itemType: itemType,
       settings: settings,
+    );
+    const modes = [
+      DisplayType.comfortableGrid,
+      DisplayType.compactGrid,
+      DisplayType.coverOnlyGrid,
+      DisplayType.list,
+    ];
+    Widget option(DisplayType type) => NodeLaneChoiceCard(
+      title: ref
+          .read(displayProvider.notifier)
+          .getLibraryDisplayTypeName(type, context),
+      preview: _LayoutPreview(type: type),
+      selected: display == type,
+      onTap: () {
+        if (display != type) {
+          ref.read(displayProvider.notifier).setLibraryDisplayType(type);
+        }
+      },
     );
     return ListView(
       key: const PageStorageKey('bookshelf-display'),
       padding: const EdgeInsets.all(NodeLaneTokens.gutter),
       children: [
-        MobileSettingsGroup(
-          title: l10n.display_mode,
+        for (var i = 0; i < modes.length; i += 2) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: option(modes[i])),
+              const SizedBox(width: NodeLaneTokens.space8),
+              Expanded(child: option(modes[i + 1])),
+            ],
+          ),
+          const SizedBox(height: NodeLaneTokens.space8),
+        ],
+        const SizedBox(height: NodeLaneTokens.space8),
+        NodeLaneGroupSurface(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final type in DisplayType.values)
-                    ChoiceChip(
-                      label: Text(
-                        ref
-                            .read(displayProvider.notifier)
-                            .getLibraryDisplayTypeName(type, context),
-                      ),
-                      selected: display == type,
-                      onSelected: (selected) {
-                        if (selected && type != display) {
-                          ref
-                              .read(displayProvider.notifier)
-                              .setLibraryDisplayType(type);
-                        }
-                      },
-                    ),
-                ],
-              ),
+            _switchRow(
+              context,
+              title: itemType == ItemType.anime
+                  ? l10n.show_continue_watching_buttons
+                  : l10n.show_continue_reading_buttons,
+              icon: itemType == ItemType.anime ? icons.anime : icons.manga,
+              value: ref.watch(resume),
+              onChanged: (v) => ref.read(resume.notifier).set(v),
             ),
-            if (display != DisplayType.list)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      '${l10n.grid_size} · ${grid == 0 ? l10n.default0 : l10n.n_per_row('$grid')}',
-                    ),
-                    Slider(
-                      value: grid.toDouble(),
-                      min: 0,
-                      max: 7,
-                      divisions: 7,
-                      label: grid == 0
-                          ? l10n.default0
-                          : l10n.n_per_row('$grid'),
-                      onChanged: (value) =>
-                          ref.read(gridProvider.notifier).set(value.round()),
-                      onChangeEnd: (value) => ref
-                          .read(gridProvider.notifier)
-                          .set(value.round(), end: true),
-                    ),
-                    Text(
-                      l10n.bookshelf_grid_hint,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: NodeLaneTokens.of(context).muted,
-                      ),
-                    ),
-                  ],
+          ],
+        ),
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneGroupSurface(
+          children: [
+            NodeLaneRow(
+              title: l10n.bookshelf_more_display,
+              subtitle: l10n.bookshelf_more_display_hint,
+              trailing: AnimatedRotation(
+                turns: _expanded ? .5 : 0,
+                duration: const Duration(milliseconds: 150),
+                child: Icon(
+                  icons.down,
+                  size: NodeLaneTokens.smallIconSize,
+                  color: NodeLaneTokens.of(context).muted,
                 ),
               ),
-          ],
-        ),
-        MobileSettingsGroup(
-          title: l10n.badges,
-          children: [
-            MobileSettingsSwitch(
-              title: l10n.downloaded_chapters,
-              icon: NodeLaneIcons.of(context).download,
-              value: ref.watch(downloaded),
-              onChanged: (value) => ref.read(downloaded.notifier).set(value),
-            ),
-            MobileSettingsSwitch(
-              title: l10n.language,
-              icon: NodeLaneIcons.of(context).web,
-              value: ref.watch(language),
-              onChanged: (value) => ref.read(language.notifier).set(value),
-            ),
-            MobileSettingsSwitch(
-              title: l10n.source,
-              icon: NodeLaneIcons.of(context).web,
-              value: ref.watch(librarySourceBadgeProvider),
-              onChanged: (value) =>
-                  ref.read(librarySourceBadgeProvider.notifier).set(value),
-            ),
-            MobileSettingsSwitch(
-              title: l10n.local_source,
-              icon: NodeLaneIcons.of(context).folder,
-              value: ref.watch(local),
-              onChanged: (value) => ref.read(local.notifier).set(value),
+              onTap: () => setState(() => _expanded = !_expanded),
             ),
           ],
         ),
-        MobileSettingsGroup(
-          title: l10n.bookshelf_layout,
-          children: [
-            MobileSettingsSwitch(
-              title: l10n.show_continue_reading_buttons,
-              icon: NodeLaneIcons.of(context).anime,
-              value: ref.watch(continueReading),
-              onChanged: (value) =>
-                  ref.read(continueReading.notifier).set(value),
+        if (_expanded) ...[
+          NodeLaneCatalogHeading(l10n.badges),
+          NodeLaneGroupSurface(
+            children: [
+              _switchRow(
+                context,
+                title: l10n.bookshelf_download_count,
+                icon: icons.download,
+                value: ref.watch(downloaded),
+                onChanged: (v) => ref.read(downloaded.notifier).set(v),
+              ),
+              _switchRow(
+                context,
+                title: l10n.language,
+                icon: icons.translate,
+                value: ref.watch(language),
+                onChanged: (v) => ref.read(language.notifier).set(v),
+              ),
+              _switchRow(
+                context,
+                title: l10n.source,
+                icon: icons.web,
+                value: ref.watch(librarySourceBadgeProvider),
+                onChanged: (v) =>
+                    ref.read(librarySourceBadgeProvider.notifier).set(v),
+              ),
+              _switchRow(
+                context,
+                title: l10n.local_source,
+                icon: icons.folderOutline,
+                value: ref.watch(local),
+                onChanged: (v) => ref.read(local.notifier).set(v),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: NodeLaneTokens.space8),
+            child: Text(
+              l10n.bookshelf_source_global_hint,
+              style: NodeLaneTokens.of(context).readerSecondary,
             ),
-            MobileSettingsSwitch(
-              title: l10n.show_category_tabs,
-              icon: NodeLaneIcons.of(context).categories,
-              value: ref.watch(categoryTabs),
-              onChanged: (value) => ref.read(categoryTabs.notifier).set(value),
-            ),
-            MobileSettingsSwitch(
-              title: l10n.show_numbers_of_items,
-              icon: NodeLaneIcons.of(context).count,
-              value: ref.watch(counts),
-              onChanged: (value) => ref.read(counts.notifier).set(value),
-            ),
-          ],
-        ),
+          ),
+          NodeLaneCatalogHeading(l10n.bookshelf_layout),
+          NodeLaneGroupSurface(
+            children: [
+              _switchRow(
+                context,
+                title: l10n.show_category_tabs,
+                icon: icons.categories,
+                value: ref.watch(categories),
+                onChanged: (v) => ref.read(categories.notifier).set(v),
+              ),
+              _switchRow(
+                context,
+                title: l10n.show_numbers_of_items,
+                icon: icons.count,
+                value: ref.watch(counts),
+                onChanged: (v) => ref.read(counts.notifier).set(v),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
 }
 
-/// A local draft only. Empty selection retains the existing "all sources"
-/// meaning; cancelling never changes the provider's pending or applied values.
+Widget _switchRow(
+  BuildContext context, {
+  required String title,
+  required IconData icon,
+  required bool value,
+  required ValueChanged<bool> onChanged,
+}) => NodeLaneRow(
+  title: title,
+  icon: icon,
+  onTap: () => onChanged(!value),
+  trailing: Switch.adaptive(value: value, onChanged: onChanged),
+);
+
+/// Small illustrations of the four existing modes, not another control renderer.
+class _LayoutPreview extends StatelessWidget {
+  const _LayoutPreview({required this.type});
+  final DisplayType type;
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    Widget block() => DecoratedBox(
+      decoration: BoxDecoration(
+        color: t.muted.withValues(alpha: .3),
+        borderRadius: BorderRadius.circular(NodeLaneTokens.space4),
+      ),
+      child: const SizedBox.expand(),
+    );
+    if (type == DisplayType.list) {
+      return Column(
+        children: [
+          for (var i = 0; i < 2; i++) ...[
+            if (i > 0) const SizedBox(height: NodeLaneTokens.space4),
+            Expanded(
+              child: Row(
+                children: [
+                  SizedBox(width: 12, child: block()),
+                  const SizedBox(width: NodeLaneTokens.space4),
+                  Expanded(
+                    child: Center(child: SizedBox(height: 4, child: block())),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+    return Center(
+      child: SizedBox(
+        width: type == DisplayType.comfortableGrid ? 56 : 76,
+        child: Row(
+          children: [
+            for (
+              var i = 0;
+              i < (type == DisplayType.comfortableGrid ? 2 : 3);
+              i++
+            ) ...[
+              if (i > 0) const SizedBox(width: NodeLaneTokens.space4),
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(child: block()),
+                    if (type != DisplayType.coverOnlyGrid) ...[
+                      const SizedBox(height: 4),
+                      SizedBox(height: 4, child: block()),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A local draft; hidden search results stay selected until explicit application.
 class MobileBookshelfSourceFilter extends StatefulWidget {
   const MobileBookshelfSourceFilter({
     super.key,
@@ -502,115 +577,104 @@ class MobileBookshelfSourceFilter extends StatefulWidget {
 
 class _MobileBookshelfSourceFilterState
     extends State<MobileBookshelfSourceFilter> {
-  late final Set<String> _selected = widget.selected.toSet();
-  final _search = TextEditingController();
-  String _query = '';
+  late final _selected = widget.selected.toSet();
+  final _query = TextEditingController();
   @override
   void dispose() {
-    _search.dispose();
+    _query.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final query = _query.text.trim().toLowerCase();
     final visible = widget.sources
-        .where(
-          (name) => name.toLowerCase().contains(_query.trim().toLowerCase()),
-        )
+        .where((s) => s.toLowerCase().contains(query))
         .toList();
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: AppBar(title: Text(l10n.sources)),
-        body: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                      sliver: SliverToBoxAdapter(
+    return NodeLaneCatalogSheet(
+      title: l10n.sources,
+      subtitle: l10n.bookshelf_sources_hint,
+      heightFactor: .86,
+      bottom: Row(
+        children: [
+          Expanded(
+            child: NodeLaneSecondaryButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+          ),
+          const SizedBox(width: NodeLaneTokens.space12),
+          Expanded(
+            child: FilledButton(
+              onPressed: () => Navigator.pop(
+                context,
+                _selected.where(widget.sources.contains).toList(),
+              ),
+              child: Text(l10n.filter),
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: NodeLaneTokens.gutter,
+            ),
+            child: Column(
+              children: [
+                NodeLaneTextField.search(
+                  controller: _query,
+                  hint: l10n.search,
+                  onChanged: (_) => setState(() {}),
+                ),
+                NodeLaneCatalogHeading(
+                  _selected.isEmpty
+                      ? l10n.bookshelf_all_sources
+                      : l10n.bookshelf_sources_selected(_selected.length),
+                  action: l10n.reset,
+                  onAction: _selected.isEmpty
+                      ? null
+                      : () => setState(_selected.clear),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: visible.isEmpty
+                ? Center(child: Text(l10n.no_result))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NodeLaneTokens.gutter,
+                    ),
+                    itemCount: visible.length,
+                    itemBuilder: (_, i) {
+                      final name = visible[i];
+                      return NodeLaneGroupSurface(
+                        first: i == 0,
+                        last: i == visible.length - 1,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            NodeLaneTextField.search(
-                              controller: _search,
-                              hint: l10n.search,
-                              onChanged: (value) =>
-                                  setState(() => _query = value),
+                            NodeLaneRow(
+                              title: name,
+                              checkable: true,
+                              selected: _selected.contains(name),
+                              onTap: () => setState(() {
+                                if (!_selected.add(name)) {
+                                  _selected.remove(name);
+                                }
+                              }),
                             ),
-                            const SizedBox(height: 16),
-                            Text(l10n.bookshelf_sources_hint),
-                            const SizedBox(height: 8),
-                            Text(
-                              _selected.isEmpty
-                                  ? l10n.bookshelf_all_sources
-                                  : l10n.bookshelf_sources_selected(
-                                      _selected.length,
-                                    ),
-                            ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton(
-                                onPressed: _selected.isEmpty
-                                    ? null
-                                    : () => setState(_selected.clear),
-                                child: Text(l10n.reset),
-                              ),
-                            ),
-                            if (visible.isEmpty) Text(l10n.no_result),
+                            if (i < visible.length - 1)
+                              const NodeLaneGroupDivider(),
                           ],
                         ),
-                      ),
-                    ),
-                    SliverList.builder(
-                      itemCount: visible.length,
-                      itemBuilder: (context, index) {
-                        final name = visible[index];
-                        return CheckboxListTile.adaptive(
-                          title: Text(name),
-                          value: _selected.contains(name),
-                          onChanged: (value) => setState(() {
-                            value!
-                                ? _selected.add(name)
-                                : _selected.remove(name);
-                          }),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(l10n.cancel),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () => Navigator.pop(
-                          context,
-                          widget.sources.where(_selected.contains).toList(),
-                        ),
-                        child: Text(l10n.filter),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                      );
+                    },
+                  ),
           ),
-        ),
+        ],
       ),
     );
   }

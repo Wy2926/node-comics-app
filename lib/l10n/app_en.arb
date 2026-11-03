@@ -860,29 +860,39 @@
   "@watch_order_source_community_list": {
     "description": "Source label for a community-created Trakt list.",
     "placeholders": {
-      "name": {"type": "String"},
-      "author": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
     }
   },
   "watch_order_source_official_collection": "Official Trakt collection: {name}",
   "@watch_order_source_official_collection": {
     "description": "Source label for an official Trakt collection.",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "watch_order_source_trakt_collection": "Trakt collection: {name}",
   "@watch_order_source_trakt_collection": {
     "description": "Source label for a Trakt collection when it is not marked as official.",
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "watch_order_source_seasons": "Seasons for {title}",
   "@watch_order_source_seasons": {
     "description": "Fallback source label when the watch order contains a show's seasons.",
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "watch_order_select_source": "Order source",
@@ -893,24 +903,29 @@
   "@watch_order_season": {
     "description": "Season metadata shown in a watch order.",
     "placeholders": {
-      "number": {"type": "int"}
+      "number": {
+        "type": "int"
+      }
     }
   },
   "watch_order_episode": "Episode {number}",
   "@watch_order_episode": {
     "description": "Episode metadata shown in a watch order.",
     "placeholders": {
-      "number": {"type": "int"}
+      "number": {
+        "type": "int"
+      }
     }
   },
   "sequels": "Sequels",
-  "recommendations": "Recommendations",
   "recommendations_similarity": "Similarity:",
   "recommendation_rating_accessibility": "Rating {rating}",
   "@recommendation_rating_accessibility": {
     "description": "Accessible label for a recommendation rating in the provider's display format.",
     "placeholders": {
-      "rating": {"type": "String"}
+      "rating": {
+        "type": "String"
+      }
     }
   },
   "local_folder_structure": "Structure of a local folder",
@@ -1353,11 +1368,19 @@
   "onboarding_or_local": "Or use files you already have",
   "onboarding_local_folder": "Add a folder",
   "onboarding_local_existing": "{count} folders already set up",
-  "@onboarding_local_existing": { "placeholders": { "count": {} } },
+  "@onboarding_local_existing": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_any_type": "Manga, anime and novels all work. Each title goes to the right library based on what is inside it.",
   "onboarding_local_scanning": "Scanning the folder",
   "onboarding_local_found": "{count} titles found",
-  "@onboarding_local_found": { "placeholders": { "count": {} } },
+  "@onboarding_local_found": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_remove": "Remove that folder",
   "onboarding_local_in_downloads": "That is the app's downloads folder. Adding it makes a second, local copy of a library the app already manages.",
   "onboarding_local_empty": "Nothing found. Pick the folder that holds your manga folders, not one manga.",
@@ -1381,14 +1404,22 @@
       }
     }
   },
- "global_search_no_sources": "No {itemType} sources are installed.",
+  "global_search_no_sources": "No {itemType} sources are installed.",
   "@global_search_no_sources": {
-    "placeholders": {"itemType": {"type": "String"}}
+    "placeholders": {
+      "itemType": {
+        "type": "String"
+      }
+    }
   },
   "global_search_no_sources_hint": "Add a repository under Browse, then install an extension for it.",
   "global_search_only_pinned": "You have {count, plural, =1{1 source} other{{count} sources}} for this, but only pinned ones are searched.",
   "@global_search_only_pinned": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "global_search_only_pinned_hint": "Pin one, or turn off \"Only include pinned sources\" in Browse settings.",
   "global_search_all_nsfw": "Every source you have for this is marked NSFW, and those are hidden.",
@@ -1469,9 +1500,21 @@
   "proxy_address": "Proxy address",
   "checking_runtime_status": "Checking status…",
   "download_delay_value": "{seconds} s + random delay",
-  "@download_delay_value": {"placeholders": {"seconds": {"type": "int"}}},
+  "@download_delay_value": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "download_queue_count": "{count, plural, one{1 download} other{{count} downloads}}",
-  "@download_queue_count": {"placeholders": {"count": {"type": "int"}}},
+  "@download_queue_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "download_queue_empty_hint": "Open a chapter list to add downloads.",
   "download_queue_order_hint": "Drag to change the order of waiting chapters.",
   "cf_proxy_helper": "FlareSolverr / Byparr endpoint. Leave empty to disable.",
@@ -1501,7 +1544,13 @@
   "change_tracking_match": "Change matching title",
   "remove_tracking": "Remove tracking",
   "remove_tracking_confirm": "Remove the tracking link for “{title}”? The entry in the tracking service will be kept.",
-  "@remove_tracking_confirm": {"placeholders": {"title": {"type": "String"}}},
+  "@remove_tracking_confirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "tracking_refresh_required": "The tracking state could not be confirmed. Refresh before making another change.",
   "tracking_entry_unlinked": "This record is not linked to a local title, so it cannot be edited here.",
   "backup_selection_shared": "Changes to these selections are saved immediately and also apply to automatic backups.",
@@ -1547,9 +1596,24 @@
   "onboarding_mobile_sources_body": "Add an extension repository or a folder of your own files. You can also skip this and add them later.",
   "onboarding_step_count": "Step {step} of {total}",
   "global_search_results_for": "Results for “{query}”",
-  "@global_search_results_for": {"placeholders": {"query": {"type": "String"}}},
+  "@global_search_results_for": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "global_search_scope": "{type} · {count, plural, =1{1 source} other{{count} sources}}",
-  "@global_search_scope": {"placeholders": {"type": {"type": "String"}, "count": {"type": "int"}}},
+  "@global_search_scope": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@onboarding_step_count": {
     "placeholders": {
       "step": {
@@ -1571,9 +1635,9 @@
   "mass_migration_needs_review": "Review incomplete migrations",
   "bookshelf_actions": "Bookshelf actions",
   "bookshelf_ignore_filters": "Ignore filters when searching",
-  "bookshelf_ignore_filters_hint": "Search all comics in this category, including those hidden by filters.",
+  "bookshelf_ignore_filters_hint": "Search all works in this category, including those hidden by filters.",
   "bookshelf_stop_update": "Stop library update",
-  "bookshelf_selected_count": "{count} comics selected",
+  "bookshelf_selected_count": "{count} works selected",
   "@bookshelf_selected_count": {
     "placeholders": {
       "count": {
@@ -1582,11 +1646,11 @@
     }
   },
   "bookshelf_remove_library": "Remove from bookshelf",
-  "bookshelf_remove_library_hint": "Online comics are removed from favorites. Local imports also lose their library and reading records.",
+  "bookshelf_remove_library_hint": "Removes favorites. Local imports also lose their library and reading records.",
   "bookshelf_remove_downloads": "Delete downloaded files",
-  "bookshelf_remove_downloads_hint": "Removes downloaded files while keeping comic and chapter information.",
-  "bookshelf_remove_local_files_hint": "Also deletes selected local archive files and removes their library records. These files cannot be recovered here.",
-  "bookshelf_remove_incomplete": "The operation did not finish. Some comics or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.",
+  "bookshelf_remove_downloads_hint": "Removes downloaded files while keeping work information.",
+  "bookshelf_remove_local_files_hint": "Also deletes selected local imported files and removes their library records. These files cannot be recovered here.",
+  "bookshelf_remove_incomplete": "The operation did not finish. Some works or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.",
   "bookshelf_processing": "Processing…",
   "bookshelf_mark_read": "Mark read",
   "bookshelf_mark_unread": "Mark unread",
@@ -1600,20 +1664,22 @@
   "bookshelf_all_sources": "All sources",
   "bookshelf_sources_selected": "{count} sources selected",
   "@bookshelf_sources_selected": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "bookshelf_sort_ascending": "Ascending",
   "bookshelf_sort_descending": "Descending",
-  "bookshelf_grid_hint": "Columns adapt to the screen width. Default arranges them automatically.",
   "bookshelf_layout": "Bookshelf layout",
   "bookshelf_sources_hint": "Select none to show all sources. Changes apply when you tap Filter.",
-  "bookshelf_import_hint": "Choose a local comic archive to add it to your bookshelf.",
   "bookshelf_choose_files": "Choose files",
   "bookshelf_import_wait": "Choose a file in the picker and wait for the import to finish.",
   "bookshelf_import_incomplete": "Import did not finish. Some files may already be in your bookshelf. Close this dialog and check before importing again.",
-  "bookshelf_categories_replace": "Existing visible categories are initially selected. Saving assigns the selected categories to every chosen comic, replacing their previous categories.",
+  "bookshelf_categories_replace": "Saving assigns these categories to every selected work, replacing their previous categories.",
   "bookshelf_categories_hint": "Choose one or more categories, or leave the selection empty to assign none.",
-  "bookshelf_categories_hidden": "Existing hidden categories are kept for this comic.",
+  "bookshelf_categories_hidden": "Existing hidden categories are kept for this work.",
   "bookshelf_categories_incomplete": "Categories could not be saved completely. Close this dialog and check the bookshelf before trying again.",
   "bookshelf_categories_none_visible": "No categories are available here. Open category management to review them.",
   "bookshelf_manage_categories": "Manage categories",
@@ -1627,7 +1693,13 @@
   "chapter_scanlators_all": "Show all scanlator groups",
   "chapter_scanlators_hint": "Select groups to hide their chapters. Changes apply when you tap Filter.",
   "chapter_scanlators_hidden": "{count} scanlator groups hidden",
-  "@chapter_scanlators_hidden": {"placeholders": {"count": {"type": "int"}}},
+  "@chapter_scanlators_hidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "chapter_selected_count": "{count} chapters selected",
   "@chapter_selected_count": {
     "placeholders": {
@@ -1669,7 +1741,13 @@
   "reader_auto_scroll_pause": "Scrolling pauses while settings are open.",
   "manga_synopsis": "Synopsis",
   "manga_author": "Author: {author}",
-  "@manga_author": {"placeholders": {"author": {"type": "String"}}},
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
   "manga_continue_reading": "Continue reading",
   "reader_settings_title": "Reader settings",
   "reader_picker_book_scope": "Only for this comic",
@@ -1691,5 +1769,22 @@
         "type": "String"
       }
     }
-  }
+  },
+  "bookshelf_more_display": "More display options",
+  "bookshelf_more_display_hint": "Badges, sources and categories",
+  "bookshelf_download_count": "Download count",
+  "bookshelf_source_global_hint": "Source visibility uses the shared display preference.",
+  "bookshelf_select_entries": "Select works",
+  "bookshelf_search_options": "Search options",
+  "bookshelf_empty_hint": "Collect works from sources or import local files.",
+  "bookshelf_no_match_hint": "Try other keywords or adjust the current filters.",
+  "bookshelf_clear_query": "Clear keywords",
+  "bookshelf_view_selection": "View selected works",
+  "bookshelf_import_formats": "Choose a local file to add it to your bookshelf.",
+  "bookshelf_import_canceled_hint": "You can choose again after cancelling the file picker.",
+  "bookshelf_browse_sources": "Browse sources",
+  "bookshelf_empty_title": "Your bookshelf is empty",
+  "bookshelf_no_match_title": "No matching works",
+  "bookshelf_mark_watched": "Mark watched",
+  "bookshelf_mark_unwatched": "Mark unwatched"
 }

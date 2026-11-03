@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -86,19 +87,19 @@ class MobileNovelControls extends StatelessWidget {
           builder: (context, constraints) {
             final actions = [
               chapterAction,
-              MobileReaderAction(
+              NodeLaneToolbarAction(
                 label: l10n.font_size,
                 icon: Icons.format_size_rounded,
                 onPressed: onFontSize,
               ),
               if (onListen != null)
-                MobileReaderAction(
+                NodeLaneToolbarAction(
                   label: l10n.tts,
                   icon: Icons.record_voice_over_outlined,
                   active: listening,
                   onPressed: onListen,
                 ),
-              MobileReaderAction(
+              NodeLaneToolbarAction(
                 label: l10n.settings,
                 icon: Icons.tune_rounded,
                 onPressed: onSettings,

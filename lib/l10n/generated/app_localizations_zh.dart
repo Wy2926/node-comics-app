@@ -3413,7 +3413,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get search_your_anime => 'Search your anime';
 
   @override
-  String get category => 'Category';
+  String get category => '分类';
 
   @override
   String get hidden_categories => 'Hidden categories';
@@ -3422,7 +3422,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get new_category => 'New category';
 
   @override
-  String get local => 'Local';
+  String get local => '本地';
 
   @override
   String get tv_home_rows => 'Rows';
@@ -3723,35 +3723,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookshelf_ignore_filters => '搜索时忽略筛选';
 
   @override
-  String get bookshelf_ignore_filters_hint => '搜索当前分类内的全部漫画，包括被筛选条件隐藏的漫画。';
+  String get bookshelf_ignore_filters_hint => '搜索当前分类中的全部作品，包括被筛选条件隐藏的作品。';
 
   @override
   String get bookshelf_stop_update => '停止书架更新';
 
   @override
   String bookshelf_selected_count(int count) {
-    return '已选 $count 部漫画';
+    return '已选择 $count 项';
   }
 
   @override
   String get bookshelf_remove_library => '从书架移除';
 
   @override
-  String get bookshelf_remove_library_hint => '在线漫画取消收藏；本地导入条目同时移除书架和阅读记录。';
+  String get bookshelf_remove_library_hint => '移除收藏记录。本地导入作品也会移除书架及阅读记录。';
 
   @override
   String get bookshelf_remove_downloads => '删除下载文件';
 
   @override
-  String get bookshelf_remove_downloads_hint => '仅删除下载文件，保留漫画和章节信息。';
+  String get bookshelf_remove_downloads_hint => '删除下载文件，保留作品信息。';
 
   @override
   String get bookshelf_remove_local_files_hint =>
-      '也会删除所选本地压缩包文件，并移除对应书架记录。这些文件无法在此恢复。';
+      '也会删除所选本地导入文件，并移除对应书架记录。这些文件无法在此恢复。';
 
   @override
   String get bookshelf_remove_incomplete =>
-      '操作未完成，部分漫画或文件可能已处理。请关闭后先核对书架和下载记录，再继续操作。';
+      '操作未完成，部分作品或文件可能已处理。请关闭后先核对书架和下载记录，再继续操作。';
 
   @override
   String get bookshelf_processing => '正在处理…';
@@ -3798,16 +3798,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookshelf_sort_descending => '降序';
 
   @override
-  String get bookshelf_grid_hint => '列数会按当前屏幕宽度调整，默认自动排布。';
-
-  @override
   String get bookshelf_layout => '书架布局';
 
   @override
   String get bookshelf_sources_hint => '不选表示全部来源；点按“筛选”后生效。';
-
-  @override
-  String get bookshelf_import_hint => '选择本地漫画压缩包，将漫画加入书架。';
 
   @override
   String get bookshelf_choose_files => '选择文件';
@@ -3820,14 +3814,13 @@ class AppLocalizationsZh extends AppLocalizations {
       '导入未完成，部分文件可能已加入书架。请关闭后先核对，再决定是否重新导入。';
 
   @override
-  String get bookshelf_categories_replace =>
-      '初始勾选包含已有的可见分类。保存会把勾选分类统一应用到所有所选漫画，替换原分类。';
+  String get bookshelf_categories_replace => '所选分类将统一替换这些作品原来的分类。';
 
   @override
   String get bookshelf_categories_hint => '可多选分类；留空则不分配分类。';
 
   @override
-  String get bookshelf_categories_hidden => '这部漫画已有的隐藏分类会保留。';
+  String get bookshelf_categories_hidden => '该作品已有的隐藏分类会保留。';
 
   @override
   String get bookshelf_categories_incomplete => '分类未保存完成。请关闭后先核对书架，再继续操作。';
@@ -4065,4 +4058,55 @@ class AppLocalizationsZh extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get bookshelf_more_display => '更多显示选项';
+
+  @override
+  String get bookshelf_more_display_hint => '徽章、来源与分类';
+
+  @override
+  String get bookshelf_download_count => '下载数量';
+
+  @override
+  String get bookshelf_source_global_hint => '来源显示沿用全局设置。';
+
+  @override
+  String get bookshelf_select_entries => '选择作品';
+
+  @override
+  String get bookshelf_search_options => '搜索选项';
+
+  @override
+  String get bookshelf_empty_hint => '从来源收藏作品，或导入本地文件。';
+
+  @override
+  String get bookshelf_no_match_hint => '试试其他关键词，或调整当前筛选。';
+
+  @override
+  String get bookshelf_clear_query => '清空关键词';
+
+  @override
+  String get bookshelf_view_selection => '查看所选作品';
+
+  @override
+  String get bookshelf_import_formats => '选择本地文件，将作品加入书架。';
+
+  @override
+  String get bookshelf_import_canceled_hint => '取消文件选择后，可继续重新选择。';
+
+  @override
+  String get bookshelf_browse_sources => '浏览来源';
+
+  @override
+  String get bookshelf_empty_title => '书架还是空的';
+
+  @override
+  String get bookshelf_no_match_title => '没有匹配的作品';
+
+  @override
+  String get bookshelf_mark_watched => '标为已看';
+
+  @override
+  String get bookshelf_mark_unwatched => '标为未看';
 }

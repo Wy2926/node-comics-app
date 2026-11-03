@@ -44,6 +44,8 @@
   "downloaded_chapters": "已下载章节",
   "language": "语言",
   "local_source": "本地来源",
+  "local": "本地",
+  "category": "分类",
   "tabs": "标签",
   "show_category_tabs": "显示类别标签",
   "show_numbers_of_items": "显示项目数",
@@ -1509,9 +1511,9 @@
   "mass_migration_needs_review": "部分作品需要核对",
   "bookshelf_actions": "书架操作",
   "bookshelf_ignore_filters": "搜索时忽略筛选",
-  "bookshelf_ignore_filters_hint": "搜索当前分类内的全部漫画，包括被筛选条件隐藏的漫画。",
+  "bookshelf_ignore_filters_hint": "搜索当前分类中的全部作品，包括被筛选条件隐藏的作品。",
   "bookshelf_stop_update": "停止书架更新",
-  "bookshelf_selected_count": "已选 {count} 部漫画",
+  "bookshelf_selected_count": "已选择 {count} 项",
   "@bookshelf_selected_count": {
     "placeholders": {
       "count": {
@@ -1520,11 +1522,11 @@
     }
   },
   "bookshelf_remove_library": "从书架移除",
-  "bookshelf_remove_library_hint": "在线漫画取消收藏；本地导入条目同时移除书架和阅读记录。",
+  "bookshelf_remove_library_hint": "移除收藏记录。本地导入作品也会移除书架及阅读记录。",
   "bookshelf_remove_downloads": "删除下载文件",
-  "bookshelf_remove_downloads_hint": "仅删除下载文件，保留漫画和章节信息。",
-  "bookshelf_remove_local_files_hint": "也会删除所选本地压缩包文件，并移除对应书架记录。这些文件无法在此恢复。",
-  "bookshelf_remove_incomplete": "操作未完成，部分漫画或文件可能已处理。请关闭后先核对书架和下载记录，再继续操作。",
+  "bookshelf_remove_downloads_hint": "删除下载文件，保留作品信息。",
+  "bookshelf_remove_local_files_hint": "也会删除所选本地导入文件，并移除对应书架记录。这些文件无法在此恢复。",
+  "bookshelf_remove_incomplete": "操作未完成，部分作品或文件可能已处理。请关闭后先核对书架和下载记录，再继续操作。",
   "bookshelf_processing": "正在处理…",
   "bookshelf_mark_read": "标为已读",
   "bookshelf_mark_unread": "标为未读",
@@ -1538,20 +1540,22 @@
   "bookshelf_all_sources": "全部来源",
   "bookshelf_sources_selected": "已选 {count} 个来源",
   "@bookshelf_sources_selected": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "bookshelf_sort_ascending": "升序",
   "bookshelf_sort_descending": "降序",
-  "bookshelf_grid_hint": "列数会按当前屏幕宽度调整，默认自动排布。",
   "bookshelf_layout": "书架布局",
   "bookshelf_sources_hint": "不选表示全部来源；点按“筛选”后生效。",
-  "bookshelf_import_hint": "选择本地漫画压缩包，将漫画加入书架。",
   "bookshelf_choose_files": "选择文件",
   "bookshelf_import_wait": "请在文件选择器中选择文件，并等待导入完成。",
   "bookshelf_import_incomplete": "导入未完成，部分文件可能已加入书架。请关闭后先核对，再决定是否重新导入。",
-  "bookshelf_categories_replace": "初始勾选包含已有的可见分类。保存会把勾选分类统一应用到所有所选漫画，替换原分类。",
+  "bookshelf_categories_replace": "所选分类将统一替换这些作品原来的分类。",
   "bookshelf_categories_hint": "可多选分类；留空则不分配分类。",
-  "bookshelf_categories_hidden": "这部漫画已有的隐藏分类会保留。",
+  "bookshelf_categories_hidden": "该作品已有的隐藏分类会保留。",
   "bookshelf_categories_incomplete": "分类未保存完成。请关闭后先核对书架，再继续操作。",
   "bookshelf_categories_none_visible": "没有可选分类，可前往管理分类查看。",
   "bookshelf_manage_categories": "管理分类",
@@ -1599,7 +1603,13 @@
   "reader_auto_scroll_pause": "打开设置期间暂停滚动。",
   "manga_synopsis": "简介",
   "manga_author": "作者：{author}",
-  "@manga_author": {"placeholders": {"author": {"type": "String"}}},
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
   "manga_continue_reading": "继续阅读",
   "reader_settings_title": "阅读设置",
   "reader_picker_book_scope": "仅用于当前漫画",
@@ -1621,5 +1631,22 @@
         "type": "String"
       }
     }
-  }
+  },
+  "bookshelf_more_display": "更多显示选项",
+  "bookshelf_more_display_hint": "徽章、来源与分类",
+  "bookshelf_download_count": "下载数量",
+  "bookshelf_source_global_hint": "来源显示沿用全局设置。",
+  "bookshelf_select_entries": "选择作品",
+  "bookshelf_search_options": "搜索选项",
+  "bookshelf_empty_hint": "从来源收藏作品，或导入本地文件。",
+  "bookshelf_no_match_hint": "试试其他关键词，或调整当前筛选。",
+  "bookshelf_clear_query": "清空关键词",
+  "bookshelf_view_selection": "查看所选作品",
+  "bookshelf_import_formats": "选择本地文件，将作品加入书架。",
+  "bookshelf_import_canceled_hint": "取消文件选择后，可继续重新选择。",
+  "bookshelf_browse_sources": "浏览来源",
+  "bookshelf_empty_title": "书架还是空的",
+  "bookshelf_no_match_title": "没有匹配的作品",
+  "bookshelf_mark_watched": "标为已看",
+  "bookshelf_mark_unwatched": "标为未看"
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
+import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/library/providers/isar_providers.dart';
 import 'package:mangayomi/modules/library/providers/library_filter_provider.dart';
 import 'package:mangayomi/modules/library/providers/library_source_badge_provider.dart';
@@ -12,8 +14,8 @@ import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'library_dialogs.dart';
@@ -45,7 +47,7 @@ class LibraryBody extends ConsumerWidget {
   final String searchQuery;
   final bool ignoreFiltersOnSearch;
   final List<String> sourceIds;
-  final VoidCallback? onAdjustFilters;
+  final VoidCallback? onAdjustFilters, onClearSearch;
 
   const LibraryBody({
     super.key,
@@ -70,6 +72,7 @@ class LibraryBody extends ConsumerWidget {
     required this.ignoreFiltersOnSearch,
     required this.sourceIds,
     this.onAdjustFilters,
+    this.onClearSearch,
   });
 
   @override
@@ -128,15 +131,34 @@ class LibraryBody extends ConsumerWidget {
             final filtered =
                 (allMangaStream.asData?.value.isNotEmpty ?? false) ||
                 searchQuery.isNotEmpty;
+            final searching = searchQuery.isNotEmpty;
             return MobileBookshelfEmpty(
-              title: filtered ? l10n.no_result : l10n.empty_library,
+              title: filtered
+                  ? l10n.bookshelf_no_match_title
+                  : l10n.bookshelf_empty_title,
+              subtitle: filtered
+                  ? l10n.bookshelf_no_match_hint
+                  : l10n.bookshelf_empty_hint,
               filtered: filtered,
-              primaryLabel: filtered ? l10n.filter : l10n.import,
+              primaryLabel: filtered
+                  ? (searching ? l10n.bookshelf_clear_query : l10n.filter)
+                  : l10n.bookshelf_browse_sources,
               onPrimary: filtered
-                  ? (onAdjustFilters ?? () {})
+                  ? (searching
+                        ? onClearSearch ?? () {}
+                        : onAdjustFilters ?? () {})
+                  : () {
+                      ref
+                          .read(browseInitialTabProvider.notifier)
+                          .request(BrowseTab(itemType, BrowseTabKind.sources));
+                      context.go('/browse');
+                    },
+              secondaryLabel: filtered
+                  ? (searching ? l10n.filter : null)
+                  : l10n.import_local_file,
+              onSecondary: filtered
+                  ? onAdjustFilters
                   : () => showImportLocalDialog(context, itemType),
-              secondaryLabel: l10n.browse,
-              onSecondary: () => context.go('/browse'),
             );
           }
           return Center(child: Text(l10n.empty_library));
@@ -193,89 +215,32 @@ class LibraryBody extends ConsumerWidget {
   }
 }
 
-/// Badge showing the number of items in a category tab.
-///
-/// Uses the cached filtering provider for consistent results without
-/// re-running the filter logic.
-class CategoryBadge extends ConsumerWidget {
-  final ItemType itemType;
-  final int categoryId;
-  final int downloadFilterType;
-  final int unreadFilterType;
-  final int startedFilterType;
-  final int bookmarkedFilterType;
-  final int completedFilterType;
-  final int trackingFilterType;
-  final Settings settings;
-  final bool downloadedOnly;
-  final String searchQuery;
-  final bool ignoreFiltersOnSearch;
-  final List<String> sourceIds;
-
-  const CategoryBadge({
-    super.key,
-    required this.itemType,
-    required this.categoryId,
-    required this.downloadFilterType,
-    required this.unreadFilterType,
-    required this.startedFilterType,
-    required this.bookmarkedFilterType,
-    required this.completedFilterType,
-    required this.trackingFilterType,
-    required this.settings,
-    required this.downloadedOnly,
-    required this.searchQuery,
-    required this.ignoreFiltersOnSearch,
-    required this.sourceIds,
-  });
+/// Presentation only; every category count uses the parent's filtered snapshot.
+class CategoryBadge extends StatelessWidget {
+  const CategoryBadge({super.key, required this.count});
+  final int count;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mangas = ref.watch(
-      getAllMangaStreamProvider(categoryId: null, itemType: itemType),
-    );
-    final sortType = ref
-        .watch(
-          sortLibraryMangaStateProvider(itemType: itemType, settings: settings),
-        )
-        .index;
-
-    return mangas.when(
-      data: (allMangas) {
-        final data = allMangas
-            .where((m) => m.categories?.contains(categoryId) ?? false)
-            .toList();
-        final filtered = ref.watch(
-          filteredLibraryMangaProvider(
-            data: data,
-            downloadFilterType: downloadFilterType,
-            unreadFilterType: unreadFilterType,
-            startedFilterType: startedFilterType,
-            bookmarkedFilterType: bookmarkedFilterType,
-            completedFilterType: completedFilterType,
-            trackingFilterType: trackingFilterType,
-            sortType: sortType ?? 0,
-            downloadedOnly: downloadedOnly,
-            searchQuery: searchQuery,
-            ignoreFiltersOnSearch: ignoreFiltersOnSearch,
-            sourceIds: sourceIds,
-            settings: settings,
-          ),
-        );
-        return CircleAvatar(
-          backgroundColor: Theme.of(context).focusColor,
-          radius: 8,
-          child: Text(
-            filtered.length.toString(),
-            style: TextStyle(
-              fontSize: 10,
-              color: Theme.of(context).textTheme.bodySmall!.color,
-            ),
-          ),
-        );
-      },
-      error: (error, _) => ErrorText(error),
-      loading: () => const ProgressCenter(),
+  Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      return Text(
+        '$count',
+        style: const TextStyle(
+          fontSize: NodeLaneTokens.captionSize,
+          height: 1.3,
+        ),
+      );
+    }
+    return CircleAvatar(
+      backgroundColor: Theme.of(context).focusColor,
+      radius: 8,
+      child: Text(
+        '$count',
+        style: TextStyle(
+          fontSize: 10,
+          color: Theme.of(context).textTheme.bodySmall!.color,
+        ),
+      ),
     );
   }
 }

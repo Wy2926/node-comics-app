@@ -40,22 +40,20 @@ class LibraryDisplayTypeState extends _$LibraryDisplayTypeState {
   }
 
   void setLibraryDisplayType(DisplayType displayType) {
-    Settings appSettings = Settings();
-
     state = displayType;
 
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..displayType = displayType;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeDisplayType = displayType;
-        break;
-      default:
-        appSettings = settings..novelDisplayType = displayType;
-    }
-
-    settingsRepository.save(appSettings);
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.displayType = displayType;
+          break;
+        case ItemType.anime:
+          s.animeDisplayType = displayType;
+          break;
+        default:
+          s.novelDisplayType = displayType;
+      }
+    });
   }
 }
 
@@ -303,18 +301,18 @@ class MangaFilterSourceState extends _$MangaFilterSourceState {
   }
 
   void _persist(List<String> names) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryFilterMangasSourceIds = names;
-        break;
-      case ItemType.anime:
-        appSettings = settings..libraryFilterAnimeSourceIds = names;
-        break;
-      default:
-        appSettings = settings..libraryFilterNovelSourceIds = names;
-    }
-    settingsRepository.save(appSettings);
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryFilterMangasSourceIds = names;
+          break;
+        case ItemType.anime:
+          s.libraryFilterAnimeSourceIds = names;
+          break;
+        default:
+          s.libraryFilterNovelSourceIds = names;
+      }
+    });
   }
 
   void setFilteredList(String source) {
@@ -417,19 +415,19 @@ class LibraryShowCategoryTabsState extends _$LibraryShowCategoryTabsState {
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowCategoryTabs = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowCategoryTabs = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowCategoryTabs = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowCategoryTabs = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowCategoryTabs = value;
+          break;
+        default:
+          s.novelLibraryShowCategoryTabs = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -448,19 +446,19 @@ class LibraryDownloadedChaptersState extends _$LibraryDownloadedChaptersState {
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryDownloadedChapters = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryDownloadedChapters = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryDownloadedChapters = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryDownloadedChapters = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryDownloadedChapters = value;
+          break;
+        default:
+          s.novelLibraryDownloadedChapters = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -479,19 +477,19 @@ class LibraryLanguageState extends _$LibraryLanguageState {
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowLanguage = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowLanguage = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowLanguage = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowLanguage = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowLanguage = value;
+          break;
+        default:
+          s.novelLibraryShowLanguage = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -510,19 +508,19 @@ class LibraryLocalSourceState extends _$LibraryLocalSourceState {
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryLocalSource = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryLocalSource = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryLocalSource = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryLocalSource = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryLocalSource = value;
+          break;
+        default:
+          s.novelLibraryLocalSource = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -541,19 +539,19 @@ class LibraryShowNumbersOfItemsState extends _$LibraryShowNumbersOfItemsState {
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowNumbersOfItems = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowNumbersOfItems = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowNumbersOfItems = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowNumbersOfItems = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowNumbersOfItems = value;
+          break;
+        default:
+          s.novelLibraryShowNumbersOfItems = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -573,19 +571,19 @@ class LibraryShowContinueReadingButtonState
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowContinueReadingButton = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowContinueReadingButton = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowContinueReadingButton = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowContinueReadingButton = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowContinueReadingButton = value;
+          break;
+        default:
+          s.novelLibraryShowContinueReadingButton = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -607,22 +605,22 @@ class SortLibraryMangaState extends _$SortLibraryMangaState {
   }
 
   void update(bool reverse, int index) {
-    Settings appSettings = Settings();
     var value = SortLibraryManga()
       ..index = index
       ..reverse = state.index == index ? !reverse : reverse;
 
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..sortLibraryManga = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..sortLibraryAnime = value;
-        break;
-      default:
-        appSettings = settings..sortLibraryNovel = value;
-    }
-    settingsRepository.save(appSettings);
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.sortLibraryManga = value;
+          break;
+        case ItemType.anime:
+          s.sortLibraryAnime = value;
+          break;
+        default:
+          s.sortLibraryNovel = value;
+      }
+    });
     state = value;
   }
 

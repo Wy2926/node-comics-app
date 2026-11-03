@@ -91,6 +91,7 @@ class NodeLaneCatalogSheet extends StatelessWidget {
     this.bottom,
     this.heightFactor = .68,
     this.onClose,
+    this.canClose = true,
   });
   final String title;
   final String? subtitle;
@@ -98,6 +99,7 @@ class NodeLaneCatalogSheet extends StatelessWidget {
   final Widget? bottom;
   final double heightFactor;
   final VoidCallback? onClose;
+  final bool canClose;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
@@ -122,7 +124,9 @@ class NodeLaneCatalogSheet extends StatelessWidget {
                 children: [
                   NodeLaneReaderHeading(
                     title: title,
-                    onClose: onClose ?? () => Navigator.pop(context),
+                    onClose: canClose
+                        ? onClose ?? () => Navigator.pop(context)
+                        : null,
                     closeLabel: MaterialLocalizations.of(context)
                         .closeButtonTooltip,
                   ),
@@ -147,14 +151,19 @@ class NodeLaneCatalogSheet extends StatelessWidget {
   );
 }
 
-Future<T?> showNodeLaneCatalogSheet<T>(BuildContext context, Widget child) =>
-    showModalBottomSheet<T>(
-      context: context,
-      useRootNavigator: true,
-      useSafeArea: true,
-      isScrollControlled: true,
-      showDragHandle: false,
-      backgroundColor: Colors.transparent,
-      shape: NodeLaneTokens.readerSheetShape,
-      builder: (_) => child,
-    );
+Future<T?> showNodeLaneCatalogSheet<T>(
+  BuildContext context,
+  Widget child, {
+  bool dismissible = true,
+}) => showModalBottomSheet<T>(
+  context: context,
+  useRootNavigator: true,
+  useSafeArea: true,
+  isScrollControlled: true,
+  showDragHandle: false,
+  isDismissible: dismissible,
+  enableDrag: dismissible,
+  backgroundColor: Colors.transparent,
+  shape: NodeLaneTokens.readerSheetShape,
+  builder: (_) => child,
+);

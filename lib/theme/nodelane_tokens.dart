@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 /// Presentation tokens shared by mobile screens and Android navigation.
 /// The user's existing accent and font preferences remain authoritative.
@@ -27,6 +28,10 @@ class NodeLaneTokens {
   static const avatarSize = 64.0, searchHeight = 48.0;
   static const coverAspectRatio = 1.43, shelfGap = 14.0;
   static const bookTitleSize = 15.0, captionSize = 12.0;
+  static const shelfComfortableWidth = 168.0, shelfCompactWidth = 96.0;
+  static const shelfThumbnailWidth = 64.0, shelfThumbnailHeight = 92.0;
+  static const badgeHeight = 22.0, badgeIconSize = 14.0;
+  static const choicePreviewHeight = 40.0;
   // Measured against the 390-point detail overview in the iOS concept.
   static const detailGutter = 16.0, detailToolbarHeight = 44.0;
   static const detailCoverWidth = 132.0, detailCoverHeight = 188.0;
@@ -246,6 +251,11 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
   );
   final input = colors.inputDecoration('');
   return base.copyWith(
+    cupertinoOverrideTheme:
+        (base.cupertinoOverrideTheme ?? const CupertinoThemeData()).copyWith(
+          primaryColor: colors.accent,
+          applyThemeToAll: true,
+        ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(foregroundColor: colors.accent)
           .merge(buttonStyle),

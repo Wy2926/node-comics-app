@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/widgets/continue_reader_button.dart';
-import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_bookshelf_card.dart';
@@ -47,11 +49,16 @@ class LibraryListViewWidget extends StatelessWidget {
                 child: MobileBookshelfCard(
                   title: entry.name ?? '',
                   subtitle: [
-                    if (sourceBadge) entry.source ?? '',
+                    if (sourceBadge)
+                      (entry.isLocalArchive ?? false)
+                          ? context.l10n.local
+                          : entry.source ?? '',
                     if (language) entry.lang?.toUpperCase() ?? '',
                   ].where((value) => value.isNotEmpty).join(' · '),
                   image: resolveCoverImage(entry, ref),
                   list: true,
+                  first: index == 0,
+                  last: index == entriesManga.length - 1,
                   selected: mangaIdsList.contains(entry.id),
                   onTap: () => onTapEntry(
                     isLongPressed: isLongPressed,
@@ -61,12 +68,17 @@ class LibraryListViewWidget extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       handleLongOrSecondaryTap(isLongPressed, ref, entry),
-                  badges: LibraryBadgeWidget(
-                    entry: entry,
-                    showLocal: localSource,
-                    showDownloaded: downloadedChapter,
-                    settings: settings,
+                  selectionMode: ref.watch(isLongPressedStateProvider),
+                  unreadCount: entry.unreadChaptersCount(settings),
+                  unreadLabel: entry.itemType == ItemType.anime
+                      ? context.l10n.unwatched
+                      : context.l10n.unread,
+                  downloadCount: libraryDownloadedCount(
+                    entry,
+                    ref,
+                    enabled: downloadedChapter,
                   ),
+                  local: localSource && (entry.isLocalArchive ?? false),
                   continueButton: continueReaderBtn && entry.chapters.isNotEmpty
                       ? ContinueReaderButton(entry: entry, large: true)
                       : null,

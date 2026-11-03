@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -15,7 +15,7 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
-import 'mobile_manga_category_dialog.dart';
+import 'mobile_bookshelf_category_sheet.dart';
 
 void showCategorySelectionDialog({
   required BuildContext context,
@@ -28,8 +28,14 @@ void showCategorySelectionDialog({
     (singleManga != null) ^ (bulkMangas != null),
     "Provide either singleManga or bulkMangas, not both.",
   );
-  if (isMobile && !isTv && itemType == ItemType.manga) {
-    _showMobileMangaCategories(context, ref, singleManga, bulkMangas);
+  if (isMobile && !isTv) {
+    _showMobileLibraryCategories(
+      context,
+      ref,
+      itemType,
+      singleManga,
+      bulkMangas,
+    );
     return;
   }
   final l10n = l10nLocalizations(context)!;
@@ -47,19 +53,17 @@ void showCategorySelectionDialog({
         child: Container(
           width: context.width(0.85),
           constraints: BoxConstraints(maxHeight: context.height(0.75)),
-          decoration: isMobile && !isTv
-              ? null
-              : BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      context.primaryColor.withValues(alpha: 0.05),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                context.primaryColor.withValues(alpha: 0.05),
+                Colors.transparent,
+              ],
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -327,16 +331,17 @@ void showCategorySelectionDialog({
   );
 }
 
-Future<void> _showMobileMangaCategories(
+Future<void> _showMobileLibraryCategories(
   BuildContext context,
   WidgetRef ref,
+  ItemType itemType,
   Manga? singleManga,
   List<Manga>? bulkMangas,
 ) async {
   final isBulk = bulkMangas != null;
   final isFavorite = !isBulk && (singleManga!.favorite ?? false);
   final targets = [if (isBulk) ...bulkMangas else singleManga!]
-      .where((manga) => manga.itemType == ItemType.manga)
+      .where((manga) => manga.itemType == itemType)
       .toList(growable: false);
   // Determine the entire union now, independent of lazy row construction.
   final initialIds = <int>{
@@ -344,58 +349,60 @@ Future<void> _showMobileMangaCategories(
       for (final manga in targets) ...?manga.categories,
   };
   var editRequested = false;
-  final saved = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (dialogContext) => Consumer(
-      builder: (_, sheetRef, _) {
-        final provider = getMangaCategorieStreamProvider(
-          itemType: ItemType.manga,
-        );
-        final categories = sheetRef.watch(provider);
-        return MobileMangaCategoryDialog(
-          categories: categories.asData?.value,
-          initialIds: initialIds,
-          bookCount: targets.length,
-          bookTitle: isBulk ? null : singleManga!.name,
-          isBulk: isBulk,
-          showHidden: !isBulk && !isFavorite,
-          loading: categories.isLoading,
-          readFailed: categories.hasError,
-          onRetry: () => sheetRef.invalidate(provider),
-          onEdit: () {
-            editRequested = true;
-            Navigator.pop(dialogContext, false);
-          },
-          onSave: (ids) => saveMobileMangaCategories(
-            targets: targets,
-            categoryIds: ids,
+  final saved = await showNodeLaneCatalogSheet<bool>(
+    context,
+    Builder(
+      builder: (dialogContext) => Consumer(
+        builder: (_, sheetRef, _) {
+          final provider = getMangaCategorieStreamProvider(itemType: itemType);
+          final categories = sheetRef.watch(provider);
+          return MobileBookshelfCategorySheet(
+            categories: categories.asData?.value,
+            initialIds: initialIds,
+            bookCount: targets.length,
+            bookTitle: isBulk ? null : singleManga!.name,
             isBulk: isBulk,
-            isFavorite: isFavorite,
-          ),
-        );
-      },
+            showHidden: !isBulk && !isFavorite,
+            loading: categories.isLoading,
+            readFailed: categories.hasError,
+            onRetry: () => sheetRef.invalidate(provider),
+            onEdit: () {
+              editRequested = true;
+              Navigator.pop(dialogContext, false);
+            },
+            onSave: (ids) => saveMobileLibraryCategories(
+              targets: targets,
+              itemType: itemType,
+              categoryIds: ids,
+              isBulk: isBulk,
+              isFavorite: isFavorite,
+            ),
+          );
+        },
+      ),
     ),
+    dismissible: false,
   );
   if (!context.mounted) return;
   if (saved == true && isBulk) {
     ref.read(mangasListStateProvider.notifier).clear();
     ref.read(isLongPressedStateProvider.notifier).update(false);
   }
-  if (editRequested) context.push('/categories', extra: (true, 0));
+  if (editRequested) context.push('/categories', extra: (true, itemType.index));
 }
 
 /// Keeps the existing uniform replacement and favorite rules, but awaits the
 /// existing repository operation and never mutates the caller's display model.
-Future<void> saveMobileMangaCategories({
+Future<void> saveMobileLibraryCategories({
   required List<Manga> targets,
+  ItemType itemType = ItemType.manga,
   required List<int> categoryIds,
   required bool isBulk,
   required bool isFavorite,
 }) async {
   if (targets.isEmpty) return;
   final available = categoryRepository
-      .getByItemType(ItemType.manga)
+      .getByItemType(itemType)
       .where((category) => !isBulk || !(category.hide ?? false))
       .map((category) => category.id)
       .toSet();
@@ -410,8 +417,8 @@ Future<void> saveMobileMangaCategories({
       throw StateError('Selected comic no longer exists');
     }
     final original = latest ?? target;
-    if (original.itemType != ItemType.manga) {
-      throw StateError('Manga selection required');
+    if (original.itemType != itemType) {
+      throw StateError('Selection media changed');
     }
     final copy = Manga.fromJson(original.toJson())
       ..isManga = original.isManga
@@ -431,10 +438,8 @@ Future<void> saveMobileMangaCategories({
 }
 
 Widget _categoryDialogSurface(BuildContext context, {required Widget child}) =>
-    isMobile && !isTv
-    ? NodeLaneDialog(child: child)
-    : Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 8,
-        child: child,
-      );
+    Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 8,
+      child: child,
+    );

@@ -15,7 +15,8 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart';
-import 'package:mangayomi/modules/widgets/bottom_select_bar.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
 Widget _app(Widget body) => MaterialApp(
@@ -43,14 +44,14 @@ Future<void> _dialog(
       Builder(
         builder: (context) => TextButton(
           onPressed: () async {
-            final result = await showDialog<bool>(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => MobileBookshelfRemoveDialog(
+            final result = await showNodeLaneCatalogSheet<bool>(
+              context,
+              MobileBookshelfRemoveSheet(
                 titles: titles,
                 hasLocalArchives: true,
                 onRemove: onRemove,
               ),
+              dismissible: false,
             );
             onClosed?.call(result);
           },
@@ -86,8 +87,18 @@ void main() {
           ),
         ),
       );
-      final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
-      expect(tiles.take(2).every((tile) => !tile.enabled), isTrue);
+      for (final label in [
+        'Update library',
+        'Open random entry',
+        'Select works',
+      ]) {
+        expect(
+          tester
+              .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, label))
+              .onTap,
+          isNull,
+        );
+      }
       await tester.tap(find.text('Update library'));
       await tester.tap(find.text('Open random entry'));
       expect(actions, isEmpty);
@@ -102,27 +113,24 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('Update library'));
       await tester.tap(find.text('Open random entry'));
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.text('Search options'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(Switch));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Switch));
       expect(actions, [5, 0, 1, 4]);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'named selection actions stay reachable and disappear from hit testing',
+    'selection keeps frequent actions direct and secondary actions in More',
     (tester) async {
       _phone(tester);
       tester.view.physicalSize = const Size(320, 740);
       var visible = true;
       late StateSetter change;
       final actions = <int>[];
-      const labels = [
-        'Categories',
-        'Mark read',
-        'Mark unread',
-        'Migrate',
-        'Remove',
-      ];
       await tester.pumpWidget(
         _app(
           StatefulBuilder(
@@ -133,34 +141,34 @@ void main() {
                     .copyWith(viewPadding: const EdgeInsets.only(bottom: 34)),
                 child: Align(
                   alignment: Alignment.bottomCenter,
-                  child: BottomSelectBar(
-                    isVisible: visible,
-                    respectSafeArea: true,
-                    actions: [
-                      for (var i = 0; i < labels.length; i++)
-                        BottomSelectButton(
-                          label: labels[i],
-                          icon: const Icon(Icons.book),
-                          onPressed: () => actions.add(i),
-                        ),
-                    ],
-                  ),
+                  child: visible
+                      ? MobileBookshelfSelectionBar(
+                          hasSelection: true,
+                          onCategories: () => actions.add(10),
+                          onRead: () => actions.add(11),
+                          onMore: actions.add,
+                        )
+                      : const SizedBox.shrink(),
                 ),
               );
             },
           ),
         ),
       );
-      for (final label in labels) {
-        await tester.tap(find.text(label));
-      }
-      expect(actions, [0, 1, 2, 3, 4]);
-      final position = tester.getCenter(find.text('Remove'));
+      await tester.tap(find.text('Categories'));
+      await tester.tap(find.text('Mark read'));
+      expect(find.text('Remove'), findsNothing);
+      final position = tester.getCenter(find.text('More'));
       expect(position.dy, lessThan(740 - 34));
+      await tester.tap(find.text('More'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+      expect(actions, [10, 11, 3]);
       change(() => visible = false);
       await tester.pumpAndSettle();
       await tester.tapAt(position);
-      expect(actions, [0, 1, 2, 3, 4]);
+      expect(actions, [10, 11, 3]);
       expect(tester.takeException(), isNull);
     },
   );
@@ -181,12 +189,14 @@ void main() {
         ],
       );
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Remove'))
+            .onPressed,
         isNull,
       );
-      await tester.tap(find.text('25 comics selected'));
+      await tester.tap(find.text('View selected works'));
       await tester.pumpAndSettle();
-      final list = find.byType(ListView);
+      final list = find.byType(ListView).last;
       await tester.scrollUntilVisible(
         find.text('Comic 24 with a complete edition name'),
         100,
@@ -228,7 +238,7 @@ void main() {
       await tester.tap(find.text('Delete downloaded files'));
       await tester.pumpAndSettle();
       final action = tester
-          .widget<FilledButton>(find.byType(FilledButton))
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Remove'))
           .onPressed!;
       action();
       action();
@@ -236,15 +246,17 @@ void main() {
       expect(calls, [(true, true)]);
       await tester.binding.handlePopRoute();
       await tester.pump();
-      expect(find.byType(MobileBookshelfRemoveDialog), findsOneWidget);
+      expect(find.byType(MobileBookshelfRemoveSheet), findsOneWidget);
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Remove'))
+            .onPressed,
         isNull,
       );
       pending.complete();
       await tester.pumpAndSettle();
       expect(result, true);
-      expect(find.byType(MobileBookshelfRemoveDialog), findsNothing);
+      expect(find.byType(MobileBookshelfRemoveSheet), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -263,15 +275,15 @@ void main() {
       await tester.tap(find.text('Delete downloaded files'));
       await tester.pump();
       final action = tester
-          .widget<FilledButton>(find.byType(FilledButton))
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Remove'))
           .onPressed!;
       action();
       await tester.pumpAndSettle();
       expect(
-        find.textContaining('Some comics or files may have been processed'),
+        find.textContaining('Some works or files may have been processed'),
         findsOneWidget,
       );
-      expect(find.byType(FilledButton), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Remove'), findsNothing);
       action();
       await tester.pump();
       expect(calls, 1);
@@ -349,7 +361,7 @@ void main() {
       () async {
         final (both, file) = await book('both');
         final removed = <int>[];
-        await removeMobileMangaSelection(
+        await removeMobileLibrarySelection(
           [both],
           fromLibrary: true,
           downloads: true,
@@ -365,7 +377,7 @@ void main() {
         );
         expect(removed, [both.id]);
         final (library, original) = await book('library');
-        await removeMobileMangaSelection(
+        await removeMobileLibrarySelection(
           [library],
           fromLibrary: true,
           downloads: false,
@@ -373,7 +385,7 @@ void main() {
         );
         expect(original.existsSync(), true);
         final (files, archive) = await book('files');
-        await removeMobileMangaSelection(
+        await removeMobileLibrarySelection(
           [files],
           fromLibrary: false,
           downloads: true,
@@ -390,7 +402,7 @@ void main() {
         final (next, original) = await book('next');
         var calls = 0;
         await expectLater(
-          removeMobileMangaSelection(
+          removeMobileLibrarySelection(
             [first, next],
             fromLibrary: true,
             downloads: true,

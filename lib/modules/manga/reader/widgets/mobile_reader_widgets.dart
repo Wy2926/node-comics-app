@@ -134,60 +134,6 @@ class MobileReaderHeading extends StatelessWidget {
   }
 }
 
-/// May be used as the child of a popup; without a callback it adds no competing
-/// tap handler or disabled semantics to the popup's own target.
-class MobileReaderAction extends StatelessWidget {
-  const MobileReaderAction({
-    super.key,
-    required this.label,
-    required this.icon,
-    this.onPressed,
-    this.active = false,
-  });
-  final String label;
-  final IconData icon;
-  final VoidCallback? onPressed;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final color = active ? colors.accent : colors.ink;
-    final content = Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(
-        minHeight: NodeLaneTokens.readerActionHeight,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: NodeLaneTokens.readerIconSize),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-    return onPressed == null
-        ? content
-        : TextButton(
-            style: TextButton.styleFrom(padding: EdgeInsets.zero),
-            onPressed: onPressed,
-            child: content,
-          );
-  }
-}
-
 class MobileReaderProgress extends StatelessWidget {
   const MobileReaderProgress({
     super.key,

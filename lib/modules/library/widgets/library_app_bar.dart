@@ -1,11 +1,8 @@
 import 'dart:math';
 
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
-import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
@@ -15,22 +12,25 @@ import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/library/widgets/library_settings_sheet.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
+import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
+import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
+import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
-import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
-import 'package:mangayomi/modules/widgets/tv_menu.dart';
-import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
-import 'mobile_bookshelf_header.dart';
 import 'mobile_bookshelf_actions.dart';
-
-import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'mobile_bookshelf_header.dart';
 
 /// AppBar for the library screen.
 ///
@@ -41,6 +41,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final bool showNumbersOfItems;
   final int numberOfItems;
   final List<Manga> entries;
+  final List<Manga>? selectionEntries;
   final bool isCategory;
   final int? categoryId;
   final Settings settings;
@@ -61,6 +62,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.showNumbersOfItems,
     required this.numberOfItems,
     required this.entries,
+    this.selectionEntries,
     required this.isCategory,
     required this.categoryId,
     required this.settings,
@@ -149,7 +151,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         data: (data) => _SelectionAppBar(
           itemType: itemType,
           mangaIdsList: mangaIdsList,
-          data: data,
+          data: selectionEntries ?? data,
         ),
         error: (error, _) => ErrorText(error),
         loading: () => const ProgressCenter(),
@@ -195,64 +197,39 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ref.read(libraryUpdateProvider.notifier).requestCancel(),
               )
             : null,
-        menu: itemType == ItemType.manga
-            ? NodeLaneIconButton(
-                tooltip: l10n.bookshelf_actions,
-                icon: NodeLaneIcons.of(context).more,
-                onPressed: () async {
-                  final action = await showModalBottomSheet<int>(
-                    context: context,
-                    // Cover the shell and its native tab bar, not just this
-                    // library branch's nested navigator.
-                    useRootNavigator: true,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (sheetContext) => Consumer(
-                      builder: (_, sheetRef, _) => MobileBookshelfMenu(
-                        hasEntries: manga.asData?.value.isNotEmpty == true,
-                        updating: sheetRef.watch(libraryUpdateProvider).running,
-                        ignoreFilters: ignoreFiltersOnSearch,
-                        onSelected: (value) =>
-                            Navigator.pop(sheetContext, value),
-                      ),
-                    ),
-                  );
-                  if (!context.mounted || action == null) return;
-                  if (action == 4) {
-                    onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
-                  } else if (action == 5) {
-                    ref.read(libraryUpdateProvider.notifier).requestCancel();
-                  } else {
-                    _onLibraryMenu(context, ref, action, manga);
-                  }
-                },
-              )
-            : PopupMenuButton<int>(
-                itemBuilder: (_) => [
-                  PopupMenuItem(value: 0, child: Text(l10n.update_library)),
-                  PopupMenuItem(
-                    value: 1,
-                    enabled: manga.asData?.value.isNotEmpty == true,
-                    child: Text(l10n.open_random_entry),
+        menu: NodeLaneIconButton(
+          tooltip: l10n.bookshelf_actions,
+          icon: NodeLaneIcons.of(context).more,
+          onPressed: () async {
+            final action = await showNodeLaneCatalogSheet<int>(
+              context,
+              Builder(
+                builder: (sheetContext) => Consumer(
+                  builder: (_, sheetRef, _) => MobileBookshelfMenu(
+                    hasEntries: manga.asData?.value.isNotEmpty == true,
+                    updating: sheetRef.watch(libraryUpdateProvider).running,
+                    ignoreFilters: ignoreFiltersOnSearch,
+                    anime: itemType == ItemType.anime,
+                    onSelected: (value) => Navigator.pop(sheetContext, value),
                   ),
-                  if (itemType == ItemType.anime)
-                    PopupMenuItem(value: 3, child: Text(l10n.torrent_stream)),
-                  const PopupMenuDivider(),
-                  CheckedPopupMenuItem(
-                    value: 4,
-                    checked: ignoreFiltersOnSearch,
-                    child: Text(l10n.ignore_filters),
-                  ),
-                ],
-                onSelected: (value) {
-                  if (value == 4) {
-                    onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
-                  } else {
-                    _onLibraryMenu(context, ref, value, manga);
-                  }
-                },
+                ),
               ),
+            );
+            if (!context.mounted || action == null) return;
+            if (action == 4) {
+              onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
+            } else if (action == 5) {
+              ref.read(libraryUpdateProvider.notifier).requestCancel();
+            } else if (action == 6) {
+              ref.read(mangasListStateProvider.notifier).clear();
+              ref.read(isLongPressedStateProvider.notifier).update(true);
+            } else if (action == 7) {
+              context.push('/categories', extra: (false, itemType.index));
+            } else {
+              _onLibraryMenu(context, ref, action, manga);
+            }
+          },
+        ),
       );
     }
 
@@ -418,13 +395,51 @@ class _SelectionAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLongPressed = ref.watch(isLongPressedStateProvider);
+    if (isMobile && !isTv) {
+      final t = NodeLaneTokens.of(context), l10n = context.l10n;
+      return AppBar(
+        automaticallyImplyLeading: false,
+        titleSpacing: NodeLaneTokens.gutter,
+        backgroundColor: t.canvas,
+        surfaceTintColor: Colors.transparent,
+        title: Row(
+          children: [
+            TextButton(
+              onPressed: () {
+                ref.read(mangasListStateProvider.notifier).clear();
+                ref.read(isLongPressedStateProvider.notifier).update(false);
+              },
+              child: Text(l10n.cancel),
+            ),
+            Expanded(
+              child: Text(
+                l10n.bookshelf_selected_count(mangaIdsList.length),
+                textAlign: TextAlign.center,
+                style: t.readerLabel,
+              ),
+            ),
+            TextButton(
+              onPressed: data.isEmpty
+                  ? null
+                  : () {
+                      for (final entry in data) {
+                        ref
+                            .read(mangasListStateProvider.notifier)
+                            .selectAll(entry);
+                      }
+                    },
+              child: Text(l10n.bookshelf_select_all),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: AppBar(
         title: Text(mangaIdsList.length.toString()),
-        backgroundColor: isMobile && !isTv
-            ? NodeLaneTokens.of(context).surface
-            : context.primaryColor.withValues(alpha: 0.2),
+        backgroundColor: context.primaryColor.withValues(alpha: 0.2),
         leading: IconButton(
           tooltip: context.l10n.cancel,
           onPressed: () {

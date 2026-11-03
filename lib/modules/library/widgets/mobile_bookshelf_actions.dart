@@ -1,79 +1,221 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 
-/// These values continue to dispatch through the existing library actions.
-class MobileBookshelfMenu extends StatelessWidget {
+/// Action identities stay with the existing library owner.
+class MobileBookshelfMenu extends StatefulWidget {
   const MobileBookshelfMenu({
     super.key,
     required this.hasEntries,
     required this.updating,
     required this.ignoreFilters,
     required this.onSelected,
+    this.anime = false,
   });
-  final bool hasEntries, updating, ignoreFilters;
+  final bool hasEntries, updating, ignoreFilters, anime;
   final ValueChanged<int> onSelected;
+  @override
+  State<MobileBookshelfMenu> createState() => _MobileBookshelfMenuState();
+}
 
+class _MobileBookshelfMenuState extends State<MobileBookshelfMenu> {
+  bool _searchOptions = false;
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final l10n = context.l10n;
-    return NodeLaneSheetSurface(
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+    final l10n = context.l10n, icons = NodeLaneIcons.of(context);
+    return NodeLaneCatalogSheet(
+      title: l10n.bookshelf_actions,
+      heightFactor: .66,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
+        children: [
+          NodeLaneGroupSurface(
             children: [
-              Row(
-                children: [
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(l10n.bookshelf_actions, style: colors.title),
+              NodeLaneRow(
+                enabled: widget.updating || widget.hasEntries,
+                title: widget.updating
+                    ? l10n.bookshelf_stop_update
+                    : l10n.update_library,
+                icon: widget.updating ? icons.stop : icons.refresh,
+                onTap: widget.updating || widget.hasEntries
+                    ? () => widget.onSelected(widget.updating ? 5 : 0)
+                    : null,
+              ),
+              NodeLaneRow(
+                title: l10n.bookshelf_select_entries,
+                enabled: widget.hasEntries,
+                icon: icons.selected,
+                onTap: widget.hasEntries ? () => widget.onSelected(6) : null,
+              ),
+            ],
+          ),
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneGroupSurface(
+            children: [
+              NodeLaneRow(
+                title: l10n.open_random_entry,
+                enabled: widget.hasEntries,
+                icon: icons.shuffle,
+                onTap: widget.hasEntries ? () => widget.onSelected(1) : null,
+              ),
+              NodeLaneRow(
+                title: l10n.bookshelf_manage_categories,
+                icon: icons.categories,
+                onTap: () => widget.onSelected(7),
+              ),
+              if (widget.anime)
+                NodeLaneRow(
+                  title: l10n.torrent_stream,
+                  icon: icons.webLink,
+                  onTap: () => widget.onSelected(3),
+                ),
+            ],
+          ),
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneGroupSurface(
+            children: [
+              NodeLaneRow(
+                title: l10n.bookshelf_search_options,
+                subtitle: l10n.bookshelf_ignore_filters,
+                icon: icons.search,
+                trailing: RotatedBox(
+                  quarterTurns: _searchOptions ? 2 : 0,
+                  child: Icon(icons.down, size: NodeLaneTokens.smallIconSize),
+                ),
+                onTap: () => setState(() => _searchOptions = !_searchOptions),
+              ),
+              if (_searchOptions)
+                NodeLaneRow(
+                  title: l10n.bookshelf_ignore_filters,
+                  subtitle: l10n.bookshelf_ignore_filters_hint,
+                  trailing: Switch.adaptive(
+                    value: widget.ignoreFilters,
+                    onChanged: (_) => widget.onSelected(4),
                   ),
-                  IconButton(
-                    tooltip: MaterialLocalizations.of(context)
-                        .closeButtonTooltip,
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      NodeLaneIcons.of(context).close,
-                      color: colors.ink,
+                  onTap: () => widget.onSelected(4),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Temporary contextual toolbar, using the same action control as the reader.
+class MobileBookshelfSelectionBar extends StatelessWidget {
+  const MobileBookshelfSelectionBar({
+    super.key,
+    required this.hasSelection,
+    this.anime = false,
+    required this.onCategories,
+    required this.onRead,
+    required this.onMore,
+  });
+  final bool hasSelection, anime;
+  final VoidCallback onCategories, onRead;
+  final ValueChanged<int> onMore;
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n, icons = NodeLaneIcons.of(context);
+    Widget menuLabel(String label, IconData icon, {bool destructive = false}) =>
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: NodeLaneTokens.smallIconSize,
+              color: destructive ? Theme.of(context).colorScheme.error : null,
+            ),
+            const SizedBox(width: NodeLaneTokens.space12),
+            Flexible(
+              child: Text(
+                label,
+                style: destructive
+                    ? TextStyle(color: Theme.of(context).colorScheme.error)
+                    : null,
+              ),
+            ),
+          ],
+        );
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: NodeLaneGlassSurface(
+          elevated: true,
+          borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+          child: Row(
+            children: [
+              Expanded(
+                child: NodeLaneToolbarAction(
+                  label: l10n.categories,
+                  icon: icons.folderOutline,
+                  enabled: hasSelection,
+                  onPressed: onCategories,
+                ),
+              ),
+              Expanded(
+                child: NodeLaneToolbarAction(
+                  label: anime
+                      ? l10n.bookshelf_mark_watched
+                      : l10n.bookshelf_mark_read,
+                  icon: anime ? icons.anime : icons.manga,
+                  enabled: hasSelection,
+                  onPressed: onRead,
+                ),
+              ),
+              Expanded(
+                child: PopupMenuButton<int>(
+                  useRootNavigator: true,
+                  tooltip: l10n.more,
+                  onSelected: onMore,
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 0,
+                      enabled: hasSelection,
+                      height: NodeLaneTokens.menuItemHeight,
+                      child: menuLabel(
+                        anime
+                            ? l10n.bookshelf_mark_unwatched
+                            : l10n.bookshelf_mark_unread,
+                        icons.unread,
+                      ),
                     ),
+                    PopupMenuItem(
+                      value: 1,
+                      height: NodeLaneTokens.menuItemHeight,
+                      child: menuLabel(
+                        l10n.bookshelf_invert_selection,
+                        icons.selected,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 2,
+                      enabled: hasSelection,
+                      height: NodeLaneTokens.menuItemHeight,
+                      child: menuLabel(l10n.migrate, icons.migrate),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 3,
+                      enabled: hasSelection,
+                      height: NodeLaneTokens.menuItemHeight,
+                      child: menuLabel(
+                        l10n.remove,
+                        icons.delete,
+                        destructive: true,
+                      ),
+                    ),
+                  ],
+                  child: NodeLaneToolbarAction(
+                    label: l10n.more,
+                    icon: icons.more,
                   ),
-                ],
-              ),
-              ListTile(
-                enabled: updating || hasEntries,
-                leading: Icon(
-                  updating
-                      ? NodeLaneIcons.of(context).stop
-                      : NodeLaneIcons.of(context).refresh,
                 ),
-                title: Text(
-                  updating ? l10n.bookshelf_stop_update : l10n.update_library,
-                ),
-                minTileHeight: NodeLaneTokens.rowHeight,
-                onTap: () => onSelected(updating ? 5 : 0),
-              ),
-              ListTile(
-                enabled: hasEntries,
-                leading: Icon(NodeLaneIcons.of(context).shuffle),
-                title: Text(l10n.open_random_entry),
-                minTileHeight: NodeLaneTokens.rowHeight,
-                onTap: () => onSelected(1),
-              ),
-              Divider(color: colors.line),
-              SwitchListTile.adaptive(
-                title: Text(l10n.bookshelf_ignore_filters),
-                subtitle: Text(
-                  l10n.bookshelf_ignore_filters_hint,
-                  style: colors.secondary,
-                ),
-                value: ignoreFilters,
-                onChanged: (_) => onSelected(4),
               ),
             ],
           ),
@@ -86,8 +228,8 @@ class MobileBookshelfMenu extends StatelessWidget {
 /// Only collects removal choices and presents the existing operation's state.
 /// A failed operation may have partially written, so it cannot be resubmitted
 /// from this confirmation. Cancelling keeps the owner's selection intact.
-class MobileBookshelfRemoveDialog extends StatefulWidget {
-  const MobileBookshelfRemoveDialog({
+class MobileBookshelfRemoveSheet extends StatefulWidget {
+  const MobileBookshelfRemoveSheet({
     super.key,
     required this.titles,
     required this.hasLocalArchives,
@@ -98,12 +240,12 @@ class MobileBookshelfRemoveDialog extends StatefulWidget {
   final Future<void> Function(bool fromLibrary, bool downloads) onRemove;
 
   @override
-  State<MobileBookshelfRemoveDialog> createState() =>
-      _MobileBookshelfRemoveDialogState();
+  State<MobileBookshelfRemoveSheet> createState() =>
+      _MobileBookshelfRemoveSheetState();
 }
 
-class _MobileBookshelfRemoveDialogState
-    extends State<MobileBookshelfRemoveDialog> {
+class _MobileBookshelfRemoveSheetState
+    extends State<MobileBookshelfRemoveSheet> {
   bool _fromLibrary = false, _downloads = false, _busy = false, _failed = false;
 
   Future<void> _submit() async {
@@ -127,117 +269,125 @@ class _MobileBookshelfRemoveDialogState
     }
   }
 
+  bool _showTitles = false;
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final l10n = context.l10n;
+    final t = NodeLaneTokens.of(context), l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
-      child: NodeLaneAlertDialog(
-        scrollable: true,
-        title: Text(l10n.remove),
-        content: SizedBox(
-          width: 420,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ExpansionTile(
-                tilePadding: const EdgeInsets.symmetric(horizontal: 8),
-                title: Text(
-                  l10n.bookshelf_selected_count(widget.titles.length),
-                  style: TextStyle(fontSize: 16, color: colors.ink),
+      child: NodeLaneCatalogSheet(
+        title: l10n.remove,
+        subtitle: l10n.bookshelf_selected_count(widget.titles.length),
+        heightFactor: .68,
+        canClose: !_busy,
+        onClose: () => Navigator.pop(context, false),
+        bottom: Row(
+          children: [
+            Expanded(
+              child: NodeLaneSecondaryButton(
+                onPressed: _busy ? null : () => Navigator.pop(context, false),
+                child: Text(_failed ? l10n.close : l10n.cancel),
+              ),
+            ),
+            if (!_failed) ...[
+              const SizedBox(width: NodeLaneTokens.space12),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: Theme.of(context).colorScheme.onError,
+                  ),
+                  onPressed:
+                      !_busy &&
+                          widget.titles.isNotEmpty &&
+                          (_fromLibrary || _downloads)
+                      ? _submit
+                      : null,
+                  child: Text(l10n.remove),
                 ),
-                children: [
-                  SizedBox(
-                    height: (widget.titles.length * 52.0).clamp(0, 156),
-                    child: ListView.builder(
-                      itemCount: widget.titles.length,
-                      itemBuilder: (_, index) => ListTile(
-                        title: Text(
-                          widget.titles[index],
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
+              ),
+            ],
+          ],
+        ),
+        child: ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: NodeLaneTokens.gutter,
+          ),
+          children: [
+            NodeLaneGroupSurface(
+              children: [
+                NodeLaneRow(
+                  title: l10n.bookshelf_view_selection,
+                  icon: NodeLaneIcons.of(context).chapters,
+                  onTap: () => setState(() => _showTitles = !_showTitles),
+                  trailing: RotatedBox(
+                    quarterTurns: _showTitles ? 2 : 0,
+                    child: Icon(
+                      NodeLaneIcons.of(context).down,
+                      size: NodeLaneTokens.smallIconSize,
                     ),
+                  ),
+                ),
+              ],
+            ),
+            if (_showTitles)
+              SizedBox(
+                height: (widget.titles.length * NodeLaneTokens.rowHeight).clamp(
+                  0,
+                  168,
+                ),
+                child: ListView.builder(
+                  itemCount: widget.titles.length,
+                  itemBuilder: (_, i) => NodeLaneRow(title: widget.titles[i]),
+                ),
+              ),
+            const SizedBox(height: NodeLaneTokens.space16),
+            if (_failed)
+              Text(
+                l10n.bookshelf_remove_incomplete,
+                style: t.readerSecondary.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              )
+            else ...[
+              NodeLaneGroupSurface(
+                children: [
+                  NodeLaneRow(
+                    title: l10n.bookshelf_remove_library,
+                    subtitle: l10n.bookshelf_remove_library_hint,
+                    checkable: true,
+                    selected: _fromLibrary,
+                    onTap: _busy
+                        ? null
+                        : () => setState(() => _fromLibrary = !_fromLibrary),
+                  ),
+                  NodeLaneRow(
+                    title: l10n.bookshelf_remove_downloads,
+                    subtitle: l10n.bookshelf_remove_downloads_hint,
+                    checkable: true,
+                    selected: _downloads,
+                    onTap: _busy
+                        ? null
+                        : () => setState(() => _downloads = !_downloads),
                   ),
                 ],
               ),
-              if (_failed)
+              if (widget.hasLocalArchives)
                 Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.only(top: NodeLaneTokens.space12),
                   child: Text(
-                    l10n.bookshelf_remove_incomplete,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                )
-              else ...[
-                CheckboxListTile.adaptive(
-                  value: _fromLibrary,
-                  onChanged: _busy
-                      ? null
-                      : (value) => setState(() => _fromLibrary = value!),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    l10n.bookshelf_remove_library,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  subtitle: Text(
-                    l10n.bookshelf_remove_library_hint,
-                    style: colors.secondary,
+                    l10n.bookshelf_remove_local_files_hint,
+                    style: t.readerSecondary,
                   ),
                 ),
-                CheckboxListTile.adaptive(
-                  value: _downloads,
-                  onChanged: _busy
-                      ? null
-                      : (value) => setState(() => _downloads = value!),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    l10n.bookshelf_remove_downloads,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  subtitle: Text(
-                    widget.hasLocalArchives
-                        ? l10n.bookshelf_remove_local_files_hint
-                        : l10n.bookshelf_remove_downloads_hint,
-                    style: colors.secondary,
-                  ),
-                ),
-                if (_busy) ...[
-                  const SizedBox(height: 16),
-                  const LinearProgressIndicator(),
-                  const SizedBox(height: 8),
-                  Text(l10n.bookshelf_processing),
-                ],
+              if (_busy) ...[
+                const SizedBox(height: NodeLaneTokens.space16),
+                const LinearProgressIndicator(),
+                Text(l10n.bookshelf_processing),
               ],
             ],
-          ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: _busy ? null : () => Navigator.pop(context, false),
-            child: Text(_failed ? l10n.close : l10n.cancel),
-          ),
-          if (!_failed)
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error,
-                foregroundColor: Theme.of(context).colorScheme.onError,
-              ),
-              onPressed:
-                  !_busy &&
-                      widget.titles.isNotEmpty &&
-                      (_fromLibrary || _downloads)
-                  ? _submit
-                  : null,
-              child: Text(l10n.remove),
-            ),
-        ],
       ),
     );
   }

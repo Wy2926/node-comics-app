@@ -21,6 +21,7 @@ import 'package:mangayomi/modules/manga/detail/manga_detail_view.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
+import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 
 enum _DuplicateLibraryAction { addAnyway, migrate }
 
@@ -321,59 +322,44 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
   }
 
   Widget _readingAction(bool mobile) {
-    final l10n = l10nLocalizations(context)!;
+    final l10n = context.l10n;
     return Consumer(
       builder: (context, ref, child) {
-        final chaptersList = ref.watch(chaptersListttStateProvider);
+        final chapters = ref.watch(chaptersListttStateProvider);
+        final selecting = ref.watch(isLongPressedStateProvider);
+        if (selecting || chapters.isEmpty) return const SizedBox.shrink();
         final isExtended = mobile ? false : ref.watch(isExtendedStateProvider);
-        return ref.watch(isLongPressedStateProvider)
-            ? const SizedBox.shrink()
-            : chaptersList.isNotEmpty &&
-                  chaptersList
-                      .where((element) => !element.isRead!)
-                      .toList()
-                      .isNotEmpty
-            ? StreamBuilder(
-                stream: historyRepository.watchByItemType(
-                  widget.manga.itemType,
-                ),
-                builder: (context, snapshot) {
-                  String buttonLabel = widget.manga.itemType != ItemType.anime
-                      ? l10n.read
-                      : l10n.watch;
-                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                    final incognitoMode = ref.watch(incognitoModeStateProvider);
-                    final entries = snapshot.data!
-                        .where((element) => element.mangaId == widget.manga.id)
-                        .toList();
-
-                    if (entries.isNotEmpty && !incognitoMode) {
-                      final chap = entries.last.chapter.value!;
-                      return _readingButton(
-                        mobile: mobile,
-                        isExtended: !isExtended,
-                        label: mobile && widget.manga.itemType != ItemType.anime
-                            ? l10n.manga_continue_reading
-                            : l10n.resume,
-                        onPressed: () {
-                          chap.pushToReaderView(context);
-                        },
-                      );
-                    }
-                  }
-                  return _readingButton(
-                    mobile: mobile,
-                    isExtended: !isExtended,
-                    label: buttonLabel,
-                    onPressed: () {
-                      widget.manga.chapters.toList().first.pushToReaderView(
-                        context,
-                      );
-                    },
-                  );
-                },
-              )
-            : const SizedBox.shrink();
+        final incognito = ref.watch(incognitoModeStateProvider);
+        final anime = widget.manga.itemType == ItemType.anime;
+        return StreamBuilder(
+          stream: historyRepository.watchByItemType(widget.manga.itemType),
+          builder: (context, snapshot) {
+            final historyChapter = snapshot.data
+                ?.where((entry) => entry.mangaId == widget.manga.id)
+                .lastOrNull
+                ?.chapter
+                .value;
+            final resume =
+                !incognito &&
+                historyChapter != null &&
+                chapters.any((chapter) => !(chapter.isRead ?? false));
+            return _readingButton(
+              mobile: mobile,
+              isExtended: !isExtended,
+              label: resume
+                  ? (mobile && !anime
+                        ? l10n.manga_continue_reading
+                        : l10n.resume)
+                  : (anime ? l10n.watch : l10n.read),
+              onPressed: () {
+                final chapter = resume
+                    ? historyChapter
+                    : widget.manga.getChapterListForReading().firstOrNull;
+                chapter?.pushToReaderView(context);
+              },
+            );
+          },
+        );
       },
     );
   }

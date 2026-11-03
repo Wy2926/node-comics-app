@@ -21,6 +21,70 @@ Widget app(Widget child, {double scale = 1, bool dark = false}) => MaterialApp(
 );
 
 void main() {
+  test('display mode owns density and narrow screens keep usable cards', () {
+    expect(mobileBookshelfColumns(350, comfortable: true), 2);
+    expect(mobileBookshelfColumns(350, comfortable: false), 3);
+    expect(mobileBookshelfColumns(280, comfortable: false), 2);
+    expect(mobileBookshelfColumns(700, comfortable: true), 4);
+  });
+
+  testWidgets(
+    'different title lengths keep cover sizes aligned and selection hides resume',
+    (tester) async {
+      final image = MemoryImage(
+        base64Decode(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=',
+        ),
+      );
+      var selecting = false;
+      late StateSetter change;
+      await tester.pumpWidget(
+        app(
+          StatefulBuilder(
+            builder: (context, setState) {
+              change = setState;
+              return Row(
+                children: [
+                  for (final title in ['短名', '比较长的漫画名称会占据两行空间'])
+                    SizedBox(
+                      width: 150,
+                      height: 300,
+                      child: MobileBookshelfCard(
+                        title: title,
+                        image: image,
+                        selected: false,
+                        selectionMode: selecting,
+                        unreadCount: 12,
+                        onTap: () {},
+                        onLongPress: () {},
+                        continueButton: IconButton(
+                          tooltip: '继续',
+                          onPressed: () {},
+                          icon: const Icon(Icons.book),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final sizes = tester
+          .widgetList<Image>(find.byType(Image))
+          .map((widget) => tester.getSize(find.byWidget(widget)))
+          .toList();
+      expect(sizes[0], sizes[1]);
+      expect(find.byTooltip('继续'), findsNWidgets(2));
+      change(() => selecting = true);
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('继续'), findsNothing);
+      expect(find.text('12'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'opening a detail page does not clamp the retained shelf scroll position',
     (tester) async {
@@ -199,7 +263,7 @@ void main() {
       ),
     );
     await tester.ensureVisible(find.text('导入'));
-    expect(tester.getCenter(find.byType(FilledButton)).dx, 160);
+    expect(tester.getCenter(find.widgetWithText(FilledButton, '导入')).dx, 160);
     await tester.tap(find.text('导入'));
     expect(imports, 1);
     expect(tester.takeException(), isNull);

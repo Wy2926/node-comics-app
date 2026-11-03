@@ -8,6 +8,7 @@ import 'package:mangayomi/modules/library/providers/library_state_provider.dart'
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
@@ -19,7 +20,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as p;
 
 import 'mobile_bookshelf_actions.dart';
-import 'mobile_manga_import_dialog.dart';
+import 'mobile_bookshelf_import_sheet.dart';
 
 /// Shows a dialog for deleting selected manga from library and/or device.
 void showDeleteMangaDialog({
@@ -27,7 +28,7 @@ void showDeleteMangaDialog({
   required WidgetRef ref,
   required ItemType itemType,
 }) {
-  if (isMobile && !isTv && itemType == ItemType.manga) {
+  if (isMobile && !isTv) {
     // Freeze this confirmation's scope; changing the underlying selection must
     // never add another book to an already-open removal operation.
     final mangas = ref
@@ -36,14 +37,13 @@ void showDeleteMangaDialog({
         .whereType<Manga>()
         .where((manga) => manga.itemType == itemType)
         .toList(growable: false);
-    showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => MobileBookshelfRemoveDialog(
+    showNodeLaneCatalogSheet<bool>(
+      context,
+      MobileBookshelfRemoveSheet(
         titles: [for (final manga in mangas) manga.name ?? ''],
         hasLocalArchives: mangas.any((manga) => manga.isLocalArchive ?? false),
         onRemove: (fromLibrary, downloads) async {
-          await removeMobileMangaSelection(
+          await removeMobileLibrarySelection(
             mangas,
             fromLibrary: fromLibrary,
             downloads: downloads,
@@ -55,6 +55,7 @@ void showDeleteMangaDialog({
           ref.read(isLongPressedStateProvider.notifier).update(false);
         },
       ),
+      dismissible: false,
     );
     return;
   }
@@ -206,7 +207,7 @@ Future<String> _deleteImport(
 /// Reuses the existing file/record operations. Local files have to be handled
 /// before removing their chapter records; a local book is removed only once
 /// even when both choices are selected. No retries after a partial failure.
-Future<void> removeMobileMangaSelection(
+Future<void> removeMobileLibrarySelection(
   List<Manga> mangas, {
   required bool fromLibrary,
   required bool downloads,
@@ -257,21 +258,23 @@ Future<String> _deleteDownload(Manga manga, String mangaDirectory) async {
 
 /// Shows a dialog for importing local files (zip, cbz, epub, video).
 void showImportLocalDialog(BuildContext context, ItemType itemType) {
-  if (isMobile && !isTv && itemType == ItemType.manga) {
-    showDialog<int>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Consumer(
-        builder: (_, sheetRef, _) => MobileMangaImportDialog(
-          onImport: () => sheetRef.refresh(
+  if (isMobile && !isTv) {
+    showNodeLaneCatalogSheet<int>(
+      context,
+      Consumer(
+        builder: (_, sheetRef, _) => MobileBookshelfImportSheet(
+          itemType: itemType,
+          onImport: (splitChapters) => sheetRef.refresh(
             importArchivesFromFileProvider(
               null,
-              itemType: ItemType.manga,
+              itemType: itemType,
               init: true,
+              splitChapters: splitChapters,
             ).future,
           ),
         ),
       ),
+      dismissible: false,
     );
     return;
   }

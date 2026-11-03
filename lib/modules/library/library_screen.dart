@@ -2,6 +2,10 @@
 
 import 'dart:async';
 
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_sheet.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,16 +35,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/library/widgets/library_settings_sheet.dart';
 
-/// Main library screen — refactored from 2309 lines to ~350 lines.
-///
-/// Decomposed into:
-/// - [LibraryAppBar] — search, selection, popup menu
-/// - [LibraryBody] — filtered/sorted manga grid or list per category
-/// - [CategoryBadge] — tab badge with item count
-/// - [showLibrarySettingsSheet] — filter/sort/display bottom sheet
-/// - [showDeleteMangaDialog] — bulk delete dialog
-/// - [showImportLocalDialog] — import local files dialog
-/// - [filteredLibraryMangaProvider] — cached filter+sort (S8)
+/// Coordinates the existing library state, category tabs and media-specific actions.
 class LibraryScreen extends ConsumerStatefulWidget {
   final ItemType itemType;
   final String? presetInput;
@@ -199,6 +194,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
 
     final searchQuery = _textEditingController.text;
 
+    List<Manga> selectionEntries = const [];
     final content = Scaffold(
       body: mangaAll.when(
         data: (man) {
@@ -247,6 +243,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   searchQuery: searchQuery,
                   ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
                   sourceIds: sourceFilterIds,
+                  onClearSearch: () {
+                    _searchDebounce?.cancel();
+                    setState(_textEditingController.clear);
+                  },
                   onAdjustFilters: () => showLibrarySettingsSheet(
                     context: context,
                     vsync: this,
@@ -254,24 +254,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                     itemType: widget.itemType,
                     entries: man,
                   ),
-                );
-              }
-
-              Widget badgeForCategory(int categoryId) {
-                return CategoryBadge(
-                  itemType: widget.itemType,
-                  categoryId: categoryId,
-                  downloadFilterType: downloadFilterType,
-                  unreadFilterType: unreadFilterType,
-                  startedFilterType: startedFilterType,
-                  bookmarkedFilterType: bookmarkedFilterType,
-                  completedFilterType: completedFilterType,
-                  trackingFilterType: trackingFilterType,
-                  settings: settings,
-                  downloadedOnly: downloadedOnly,
-                  searchQuery: searchQuery,
-                  ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
-                  sourceIds: sourceFilterIds,
                 );
               }
 
@@ -297,11 +279,48 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                 ),
               );
 
+              Widget badgeForCategory(int? categoryId) => CategoryBadge(
+                count: numberOfItemsList
+                    .where(
+                      (entry) => categoryId == null
+                          ? entry.categories == null ||
+                                entry.categories!.isEmpty
+                          : entry.categories?.contains(categoryId) ?? false,
+                    )
+                    .length,
+              );
+
+              selectionEntries = numberOfItemsList;
+              if (data.isNotEmpty && showCategoryTabs) {
+                final visibleCategories = [...data]
+                  ..sort((a, b) => (a.pos ?? 0).compareTo(b.pos ?? 0));
+                visibleCategories.removeWhere(
+                  (category) => category.hide ?? false,
+                );
+                final hasDefault = withoutCategory.isNotEmpty;
+                final tabCount =
+                    visibleCategories.length + (hasDefault ? 1 : 0);
+                if (tabCount > 0) {
+                  final index = _tabIndex.clamp(0, tabCount - 1);
+                  final categoryId = hasDefault && index == 0
+                      ? null
+                      : visibleCategories[index - (hasDefault ? 1 : 0)].id;
+                  selectionEntries = numberOfItemsList
+                      .where(
+                        (entry) => categoryId == null
+                            ? entry.categories?.isEmpty ?? true
+                            : entry.categories?.contains(categoryId) ?? false,
+                      )
+                      .toList();
+                }
+              }
+
               if (data.isNotEmpty && showCategoryTabs) {
                 return _buildWithCategories(
                   data: data,
                   withoutCategory: withoutCategory,
                   man: man,
+                  selectionEntries: selectionEntries,
                   settings: settings,
                   showNumbersOfItems: showNumbersOfItems,
                   isNotFiltering: isNotFiltering,
@@ -322,6 +341,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   showNumbersOfItems: showNumbersOfItems,
                   numberOfItems: numberOfItemsList.length,
                   entries: man,
+                  selectionEntries: selectionEntries,
                   isCategory: false,
                   categoryId: null,
                   settings: settings,
@@ -357,7 +377,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       bottomNavigationBar:
           isMobile && !isTv && !ref.watch(isLongPressedStateProvider)
           ? null
-          : _buildBottomBar(),
+          : _buildBottomBar(selectionEntries),
     );
     return isMobile && !isTv ? NodeLaneSurface(child: content) : content;
   }
@@ -366,13 +386,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     required List data,
     required List<Manga> withoutCategory,
     required List<Manga> man,
+    required List<Manga> selectionEntries,
     required Settings settings,
     required bool showNumbersOfItems,
     required bool isNotFiltering,
     required int numberOfItems,
     required Widget Function({int? categoryId, bool withoutCategories})
     bodyForCategory,
-    required Widget Function(int categoryId) badgeForCategory,
+    required Widget Function(int? categoryId) badgeForCategory,
     required int downloadFilterType,
     required bool downloadedOnly,
   }) {
@@ -421,6 +442,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
           showNumbersOfItems: showNumbersOfItems,
           numberOfItems: numberOfItems,
           entries: man,
+          selectionEntries: selectionEntries,
           isCategory: true,
           categoryId: withoutCategory.isNotEmpty && _tabIndex == 0
               ? null
@@ -479,7 +501,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     required List entr,
     required List<Manga> withoutCategory,
     required bool showNumbersOfItems,
-    required Widget Function(int categoryId) badgeForCategory,
+    required Widget Function(int? categoryId) badgeForCategory,
   }) {
     final l10n = l10nLocalizations(context)!;
     final mobile = isMobile && !isTv;
@@ -499,9 +521,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       indicator: mobile
           ? BoxDecoration(
               color: colors.accentSoft,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
             )
           : null,
+      labelStyle: mobile ? colors.label : null,
       labelColor: mobile ? colors.accent : null,
       unselectedLabelColor: mobile ? colors.muted : null,
       tabs: [
@@ -511,8 +534,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               Tab(text: l10n.default0),
               if (showNumbersOfItems) ...[
                 const SizedBox(width: 4),
-                // Default category doesn't have a single ID — use inline count
-                _DefaultCategoryBadge(itemType: widget.itemType),
+                badgeForCategory(null),
               ],
             ],
           ),
@@ -543,22 +565,72 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     ];
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(List<Manga> selectionEntries) {
     return Builder(
       builder: (context) {
         final mangaIds = ref.watch(mangasListStateProvider);
+        if (isMobile && !isTv) {
+          List<Manga> targets() => mangaIds
+              .map(mangaRepository.findById)
+              .whereType<Manga>()
+              .where((entry) => entry.itemType == widget.itemType)
+              .toList();
+          void mark(bool read) {
+            ref
+                .read(
+                  mangasSetIsReadStateProvider(
+                    mangaIds: mangaIds,
+                    markAsRead: read,
+                  ).notifier,
+                )
+                .set();
+            _invalidateStreams();
+          }
+
+          return MobileBookshelfSelectionBar(
+            anime: widget.itemType == ItemType.anime,
+            hasSelection: mangaIds.isNotEmpty,
+            onCategories: () => showCategorySelectionDialog(
+              context: context,
+              ref: ref,
+              itemType: widget.itemType,
+              bulkMangas: targets(),
+            ),
+            onRead: () => mark(true),
+            onMore: (action) {
+              switch (action) {
+                case 0:
+                  mark(false);
+                case 1:
+                  for (final entry in selectionEntries) {
+                    ref
+                        .read(mangasListStateProvider.notifier)
+                        .selectSome(entry);
+                  }
+                case 2:
+                  final selected = targets();
+                  ref.read(isLongPressedStateProvider.notifier).update(false);
+                  ref.read(mangasListStateProvider.notifier).clear();
+                  context.push(
+                    '/massMigration',
+                    extra: (widget.itemType, null, selected),
+                  );
+                case 3:
+                  showDeleteMangaDialog(
+                    context: context,
+                    ref: ref,
+                    itemType: widget.itemType,
+                  );
+              }
+            },
+          );
+        }
         final color = Theme.of(context).textTheme.bodyLarge!.color!;
-        final labeled = isMobile && !isTv && widget.itemType == ItemType.manga;
         return BottomSelectBar(
           isVisible: ref.watch(isLongPressedStateProvider),
-          backgroundColor: isMobile && !isTv
-              ? NodeLaneTokens.of(context).surface
-              : null,
-          respectSafeArea: isMobile && !isTv,
           actions: [
             BottomSelectButton(
               tooltip: context.l10n.categories,
-              label: labeled ? context.l10n.categories : null,
               icon: Icon(Icons.label_outline_rounded, color: color),
               onPressed: () {
                 final List<Manga> bulkMangas = mangaIds
@@ -573,7 +645,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               },
             ),
             BottomSelectButton(
-              label: labeled ? context.l10n.bookshelf_mark_read : null,
               icon: Icon(Icons.done_all_sharp, color: color),
               onPressed: () {
                 ref
@@ -588,7 +659,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               },
             ),
             BottomSelectButton(
-              label: labeled ? context.l10n.bookshelf_mark_unread : null,
               icon: Icon(Icons.remove_done_sharp, color: color),
               onPressed: () {
                 ref
@@ -604,7 +674,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             ),
             BottomSelectButton(
               tooltip: context.l10n.migrate,
-              label: labeled ? context.l10n.migrate : null,
               icon: Icon(Icons.swap_horiz_rounded, color: color),
               onPressed: () {
                 final List<Manga> bulkMangas = mangaIds
@@ -621,11 +690,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             ),
             BottomSelectButton(
               tooltip: context.l10n.remove,
-              label: labeled ? context.l10n.remove : null,
-              icon: Icon(
-                Icons.delete_outline_outlined,
-                color: labeled ? Theme.of(context).colorScheme.error : color,
-              ),
+              icon: Icon(Icons.delete_outline_outlined, color: color),
               onPressed: () => showDeleteMangaDialog(
                 context: context,
                 ref: ref,
@@ -645,41 +710,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   }
 }
 
-/// Badge for the "Default" (uncategorized) category tab.
-class _DefaultCategoryBadge extends ConsumerWidget {
-  final ItemType itemType;
-  const _DefaultCategoryBadge({required this.itemType});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mangas = ref.watch(
-      getAllMangaStreamProvider(categoryId: null, itemType: itemType),
-    );
-    return mangas.when(
-      data: (data) {
-        final count = data
-            .where((m) => m.categories == null || m.categories!.isEmpty)
-            .length;
-        return CircleAvatar(
-          backgroundColor: Theme.of(context).focusColor,
-          radius: 8,
-          child: Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 10,
-              color: Theme.of(context).textTheme.bodySmall!.color,
-            ),
-          ),
-        );
-      },
-      error: (_, _) => const SizedBox.shrink(),
-      loading: () => const SizedBox.shrink(),
-    );
-  }
-}
-
 /// Top-level utility — shows a dialog to add a torrent by URL or .torrent file.
 void addTorrent(BuildContext context, {Manga? manga}) {
+  if (isMobile && !isTv) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    showNodeLaneCatalogSheet<void>(
+      context,
+      MobileBookshelfTorrentSheet(
+        onAdd: (url) async {
+          await container.refresh(
+            addTorrentFromUrlOrFromFileProvider(
+              manga,
+              init: true,
+              url: url,
+            ).future,
+          );
+        },
+      ),
+      dismissible: false,
+    );
+    return;
+  }
   final l10n = l10nLocalizations(context)!;
   String torrentUrl = "";
   bool isLoading = false;

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
@@ -98,7 +99,7 @@ void main() {
                                 'Settings',
                               ])
                                 Expanded(
-                                  child: MobileReaderAction(
+                                  child: NodeLaneToolbarAction(
                                     label: label,
                                     icon: Icons.tune,
                                     onPressed: () {

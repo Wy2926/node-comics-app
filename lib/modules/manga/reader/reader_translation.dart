@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -15,7 +17,6 @@ import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/utils/headers.dart';
 
 import 'u_chap_data_preload.dart';
-import 'widgets/mobile_reader_widgets.dart';
 
 TranslationPage readerTranslationPage(UChapDataPreload data) {
   final manga = data.chapter?.manga.value;
@@ -124,7 +125,7 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
         .dependOnInheritedWidgetOfExactType<_ReaderTranslationScope>();
     if (scope == null) return const SizedBox.shrink();
     if (labeled) {
-      return MobileReaderAction(
+      return NodeLaneToolbarAction(
         label: '翻译',
         active: scope.notifier!.enabled,
         icon: NodeLaneIcons.of(context).translate,

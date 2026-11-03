@@ -67,6 +67,9 @@ class NodeLaneIcons {
       _pick(CupertinoIcons.arrow_down_to_line, Icons.download_outlined);
   IconData get incognito =>
       _pick(CupertinoIcons.eyeglasses, Icons.visibility_off_outlined);
+  IconData get reorder =>
+      _pick(CupertinoIcons.line_horizontal_3, Icons.drag_handle_rounded);
+  IconData get visible => _pick(CupertinoIcons.eye, Icons.visibility_outlined);
   IconData get categories =>
       _pick(CupertinoIcons.layers_alt, Icons.label_outline_rounded);
   IconData get storage =>

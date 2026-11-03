@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -187,13 +189,17 @@ void main() {
       );
       await tap(tester, find.text('Open'));
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'OK'))
+            .onPressed,
         isNull,
       );
       await tester.enterText(find.byType(TextField), 'Existing');
       await tester.pumpAndSettle();
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'OK'))
+            .onPressed,
         isNull,
       );
       await tap(tester, find.text('Cancel'));
@@ -205,8 +211,11 @@ void main() {
       );
       await tester.enterText(find.byType(TextField), ' Existing ');
       await tester.pumpAndSettle();
-      await tap(tester, find.byType(FilledButton));
-      await tester.tap(find.byType(FilledButton), warnIfMissed: false);
+      await tap(tester, find.widgetWithText(FilledButton, 'OK'));
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'OK'),
+        warnIfMissed: false,
+      );
       await tester.binding.handlePopRoute();
       await tester.pump();
       expect(find.byType(MobileCategoryNameDialog), findsOneWidget);
@@ -219,7 +228,7 @@ void main() {
         ' Existing ',
       );
       pending = Completer<void>()..complete();
-      await tap(tester, find.byType(FilledButton));
+      await tap(tester, find.widgetWithText(FilledButton, 'OK'));
       await tester.pumpAndSettle();
       expect(find.byType(MobileCategoryNameDialog), findsNothing);
       expect(writes, [' Existing ', ' Existing ']);
@@ -283,9 +292,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester
-            .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Novel'))
-            .selected,
-        isTrue,
+            .widget<NodeLaneSegments<ItemType>>(
+              find.byType(NodeLaneSegments<ItemType>),
+            )
+            .value,
+        ItemType.novel,
       );
       final row = find.byKey(const ValueKey('category-10'));
       final handle = find.descendant(
@@ -320,13 +331,20 @@ void main() {
       await tap(tester, find.byTooltip('Add Category'));
       await tester.enterText(find.byType(TextField), ' Novel draft ');
       await tester.pumpAndSettle();
-      await tap(tester, find.byType(FilledButton));
+      await tap(tester, find.widgetWithText(FilledButton, 'Add'));
       await tester.pumpAndSettle();
       expect(created.single.name, ' Novel draft ');
       expect(created.single.forItemType, ItemType.novel);
       layout.value = (2.5, 0);
       await tester.pumpAndSettle();
-      await tap(tester, find.widgetWithText(ChoiceChip, 'Manga'), delta: -250);
+      await tap(
+        tester,
+        find.descendant(
+          of: find.byType(NodeLaneSegments<ItemType>),
+          matching: find.text('Manga'),
+        ),
+        delta: -250,
+      );
       await tester.pumpAndSettle();
       expect(requests, [ItemType.novel, ItemType.manga]);
       expect(find.text('Novel first'), findsNothing);
@@ -386,16 +404,14 @@ void main() {
         container: container,
       );
       await tap(tester, find.text('Open'));
-      Finder toggle(String label) => find.widgetWithText(SwitchListTile, label);
-      await reveal(tester, toggle('Show in library'));
-      expect(
-        tester.widget<SwitchListTile>(toggle('Show in library')).value,
-        isTrue,
+      Finder toggle(String label) => find.descendant(
+        of: find.widgetWithText(NodeLaneRow, label),
+        matching: find.byType(Switch),
       );
+      await reveal(tester, toggle('Show in library'));
+      expect(tester.widget<Switch>(toggle('Show in library')).value, isTrue);
       expect(
-        tester
-            .widget<SwitchListTile>(toggle('Include in library updates'))
-            .value,
+        tester.widget<Switch>(toggle('Include in library updates')).value,
         isTrue,
       );
       await tap(tester, toggle('Show in library'));
@@ -435,7 +451,7 @@ void main() {
       ];
       events.add(records);
       await tester.pumpAndSettle();
-      await tap(tester, find.byType(FilledButton));
+      await tap(tester, find.widgetWithText(FilledButton, 'OK'));
       await tester.pumpAndSettle();
       expect(
         (

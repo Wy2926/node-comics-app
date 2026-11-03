@@ -5,8 +5,9 @@ import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_account_widgets.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_media_selector.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -72,6 +73,7 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final type = _type;
     final categories = type == null
         ? null
@@ -96,9 +98,9 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
               overflow: TextOverflow.ellipsis,
             ),
             actions: [
-              IconButton(
+              NodeLaneIconButton(
                 tooltip: l10n.add_category,
-                icon: const Icon(Icons.add_rounded),
+                icon: icons.add,
                 onPressed: !ready || type == null
                     ? null
                     : () => _run(() async {
@@ -142,21 +144,36 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
               absorbing: _busy,
               child: ReorderableListView.builder(
                 key: PageStorageKey('mobile-categories-$type'),
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space8,
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space24,
+                ),
                 buildDefaultDragHandles: false,
                 header: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    MobileMediaSelector(
-                      types: widget.types,
-                      selected: type,
-                      onChanged: _busy
-                          ? null
-                          : (value) => setState(() {
-                              _type = value;
-                              _failed = false;
-                            }),
-                    ),
+                    if (widget.types.length > 1) ...[
+                      NodeLaneSegments<ItemType>(
+                        value: type ?? widget.types.first,
+                        segments: [
+                          for (final value in widget.types)
+                            ButtonSegment(
+                              value: value,
+                              label: Text(value.localized(l10n)),
+                            ),
+                        ],
+                        onChanged: (value) {
+                          if (_busy) return;
+                          setState(() {
+                            _type = value;
+                            _failed = false;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: NodeLaneTokens.space20),
+                    ],
                     if (_failed || categories?.hasError == true) ...[
                       Text(l10n.failed),
                       TextButton(
@@ -177,9 +194,7 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
                         padding: const EdgeInsets.only(bottom: 20),
                         child: Text(
                           l10n.mobile_categories_hint,
-                          style: TextStyle(
-                            color: NodeLaneTokens.of(context).muted,
-                          ),
+                          style: t.readerSecondary,
                         ),
                       ),
                   ],
@@ -187,46 +202,33 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
                 itemCount: entries.length,
                 itemBuilder: (context, index) {
                   final category = entries[index];
-                  final colors = NodeLaneTokens.of(context);
                   return Padding(
                     key: ValueKey('category-${category.id}'),
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Material(
-                      color: colors.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(color: colors.line),
-                      ),
-                      clipBehavior: Clip.antiAlias,
+                    padding: const EdgeInsets.only(
+                      bottom: NodeLaneTokens.space8,
+                    ),
+                    child: NodeLaneGroupSurface(
                       child: Row(
                         children: [
                           ReorderableDragStartListener(
                             index: index,
                             enabled: ready,
                             child: SizedBox(
-                              width: 48,
-                              height: 64,
+                              width: NodeLaneTokens.minTapTarget,
+                              height: NodeLaneTokens.catalogRowHeight,
                               child: Icon(
-                                Icons.drag_handle_rounded,
-                                color: colors.muted,
+                                icons.reorder,
+                                color: t.muted,
+                                size: NodeLaneTokens.iconSize,
                               ),
                             ),
                           ),
                           Expanded(
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.fromLTRB(
-                                0,
-                                12,
-                                12,
-                                12,
-                              ),
-                              title: Text(category.name ?? ''),
-                              subtitle: Text(
-                                (category.hide ?? false)
-                                    ? l10n.mobile_category_hidden
-                                    : l10n.mobile_category_visible,
-                              ),
-                              trailing: const Icon(Icons.chevron_right_rounded),
+                            child: NodeLaneRow(
+                              title: category.name ?? '',
+                              subtitle: (category.hide ?? false)
+                                  ? l10n.mobile_category_hidden
+                                  : l10n.mobile_category_visible,
                               onTap: !ready
                                   ? null
                                   : () => _run(() async {
@@ -302,6 +304,7 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final provider = getMangaCategorieStreamProvider(
       itemType: widget.category.forItemType,
     );
@@ -331,7 +334,12 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
             child: AbsorbPointer(
               absorbing: _busy,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space8,
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space24,
+                ),
                 children: [
                   if (_failed || state.hasError) ...[
                     Text(l10n.failed),
@@ -349,20 +357,17 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
                   else if (category == null)
                     Text(l10n.no_result)
                   else ...[
-                    Text(
-                      category.name ?? '',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
+                    Text(category.name ?? '', style: t.readerTitle),
                     const SizedBox(height: 24),
                     AbsorbPointer(
                       absorbing: _failed || state.hasError,
                       child: Column(
                         children: [
-                          MobileSettingsGroup(
+                          NodeLaneGroupSurface(
                             children: [
-                              MobileSettingsLink(
+                              NodeLaneRow(
                                 title: l10n.rename_category,
-                                icon: Icons.edit_outlined,
+                                icon: icons.edit,
                                 onTap: () => _run(() async {
                                   await showDialog<bool>(
                                     context: context,
@@ -400,38 +405,52 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
                                   );
                                 }),
                               ),
-                              MobileSettingsSwitch(
+                              NodeLaneRow(
                                 title: l10n.mobile_category_visible,
-                                icon: Icons.visibility_outlined,
-                                value: !(category.hide ?? false),
-                                onChanged: (value) => _run(
+                                icon: icons.visible,
+                                onTap: () => _run(
                                   () => widget.onSave(
-                                    _copyCategory(category)..hide = !value,
+                                    _copyCategory(category)
+                                      ..hide = !(category.hide ?? false),
+                                  ),
+                                ),
+                                trailing: Switch.adaptive(
+                                  value: !(category.hide ?? false),
+                                  onChanged: (value) => _run(
+                                    () => widget.onSave(
+                                      _copyCategory(category)..hide = !value,
+                                    ),
                                   ),
                                 ),
                               ),
-                              MobileSettingsSwitch(
+                              NodeLaneRow(
                                 title: l10n.mobile_category_updates,
-                                icon: Icons.update_rounded,
-                                value: category.shouldUpdate ?? true,
-                                onChanged: (value) => _run(
+                                icon: icons.refresh,
+                                onTap: () => _run(
                                   () => widget.onSave(
                                     _copyCategory(category)
-                                      ..shouldUpdate = value,
+                                      ..shouldUpdate =
+                                          !(category.shouldUpdate ?? true),
+                                  ),
+                                ),
+                                trailing: Switch.adaptive(
+                                  value: category.shouldUpdate ?? true,
+                                  onChanged: (value) => _run(
+                                    () => widget.onSave(
+                                      _copyCategory(category)
+                                        ..shouldUpdate = value,
+                                    ),
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          TextButton.icon(
-                            style: TextButton.styleFrom(
-                              foregroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .error,
-                            ),
-                            icon: const Icon(Icons.delete_outline_rounded),
-                            label: Text(l10n.delete_category),
-                            onPressed: () => _run(() async {
+                          const SizedBox(height: NodeLaneTokens.space24),
+                          NodeLaneRow.card(
+                            title: l10n.delete_category,
+                            icon: icons.delete,
+                            destructive: true,
+                            onTap: () => _run(() async {
                               final confirmed =
                                   await showMobileSettingsConfirmation(
                                     context,
@@ -512,6 +531,7 @@ class _MobileCategoryNameDialogState extends State<MobileCategoryNameDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final t = NodeLaneTokens.of(context);
     return PopScope(
       canPop: !_busy,
       child: NodeLaneAlertDialog(
@@ -523,22 +543,24 @@ class _MobileCategoryNameDialogState extends State<MobileCategoryNameDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            NodeLaneTextField(
               controller: _name,
+              label: l10n.name,
               enabled: !_busy,
               autofocus: true,
               textInputAction: TextInputAction.done,
               onChanged: (_) => setState(() => _failed = false),
               onSubmitted: (_) => _save(),
-              decoration: InputDecoration(labelText: l10n.name),
             ),
             const SizedBox(height: 12),
             Text(
               _duplicate
                   ? l10n.add_category_error_exist
                   : l10n.category_name_required,
-              style: TextStyle(
-                color: _duplicate ? Theme.of(context).colorScheme.error : null,
+              style: t.readerSecondary.copyWith(
+                color: _duplicate
+                    ? Theme.of(context).colorScheme.error
+                    : t.muted,
               ),
             ),
             if (_failed) Text(l10n.failed),
@@ -546,7 +568,7 @@ class _MobileCategoryNameDialogState extends State<MobileCategoryNameDialog> {
           ],
         ),
         actions: [
-          TextButton(
+          NodeLaneSecondaryButton(
             onPressed: _busy ? null : () => Navigator.pop(context, false),
             child: Text(l10n.cancel),
           ),

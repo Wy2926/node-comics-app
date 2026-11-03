@@ -72,15 +72,12 @@ class MobileBookshelfHeader extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: NodeLaneTokens.space8),
-                  Badge(
-                    isLabelVisible: filtered,
-                    child: NodeLaneIconButton(
-                      tooltip: filterLabel,
-                      onPressed: onFilter,
-                      icon: icons.filter,
-                      style: NodeLaneIconButtonStyle.field,
-                      active: filtered,
-                    ),
+                  NodeLaneIconButton(
+                    tooltip: filterLabel,
+                    onPressed: onFilter,
+                    icon: icons.adjustments,
+                    style: NodeLaneIconButtonStyle.field,
+                    active: filtered,
                   ),
                 ],
               ),

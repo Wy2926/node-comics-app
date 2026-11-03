@@ -1,3 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_sheet.dart';
+
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:async';
 import 'dart:io';
@@ -10,9 +14,9 @@ import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/library/widgets/mobile_manga_import_dialog.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_import_sheet.dart';
 import 'package:mangayomi/modules/widgets/category_selection_dialog.dart';
-import 'package:mangayomi/modules/widgets/mobile_manga_category_dialog.dart';
+import 'package:mangayomi/modules/widgets/mobile_bookshelf_category_sheet.dart';
 
 Future<void> _open(
   WidgetTester tester,
@@ -33,10 +37,10 @@ Future<void> _open(
         body: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              final result = await showDialog<Object?>(
-                context: context,
-                barrierDismissible: false,
-                builder: (_) => body,
+              final result = await showNodeLaneCatalogSheet<Object?>(
+                context,
+                body,
+                dismissible: false,
               );
               onClosed?.call(result);
             },
@@ -65,6 +69,79 @@ Category _category(
 
 void main() {
   testWidgets(
+    'novel import forwards the split preference and cancellation keeps it',
+    (tester) async {
+      final choices = <bool>[];
+      await _open(
+        tester,
+        MobileBookshelfImportSheet(
+          itemType: ItemType.novel,
+          onImport: (split) async {
+            choices.add(split);
+            return 0;
+          },
+        ),
+      );
+      expect(find.text('EPUB'), findsOneWidget);
+      await tester.ensureVisible(find.byType(Switch));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Switch));
+      await tester.tap(find.text('Choose files'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Choose files'));
+      await tester.pumpAndSettle();
+      expect(choices, [false, false]);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(find.text('Open'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'torrent sheet rejects an empty address and blocks repeated and uncertain writes',
+    (tester) async {
+      final pending = Completer<void>();
+      final submitted = <String?>[];
+      await _open(
+        tester,
+        MobileBookshelfTorrentSheet(
+          onAdd: (url) {
+            submitted.add(url);
+            return pending.future;
+          },
+        ),
+      );
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Add'))
+            .onPressed,
+        isNull,
+      );
+      await tester.enterText(find.byType(TextField), ' magnet:?xt=test ');
+      await tester.pumpAndSettle();
+      final add = tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Add'))
+          .onPressed!;
+      add();
+      add();
+      await tester.pump();
+      await tester.binding.handlePopRoute();
+      expect(submitted, ['magnet:?xt=test']);
+      expect(find.byType(MobileBookshelfTorrentSheet), findsOneWidget);
+      pending.completeError(StateError('unknown import outcome'));
+      await tester.pumpAndSettle();
+      add();
+      expect(submitted, hasLength(1));
+      expect(find.widgetWithText(FilledButton, 'Add'), findsNothing);
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
+      expect(find.text('Open'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'import cancellation allows another choice, while pending work blocks duplicates and back',
     (tester) async {
       var pending = Completer<int>();
@@ -72,8 +149,8 @@ void main() {
       Object? result;
       await _open(
         tester,
-        MobileMangaImportDialog(
-          onImport: () {
+        MobileBookshelfImportSheet(
+          onImport: (_) {
             calls++;
             return pending.future;
           },
@@ -82,10 +159,10 @@ void main() {
       );
       expect(find.text('ZIP · CBZ'), findsOneWidget);
       final choose = tester
-          .widget<FilledButton>(find.byType(FilledButton))
-          .onPressed!;
+          .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Choose files'))
+          .onTap!;
       final cancel = tester
-          .widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'))
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Cancel'))
           .onPressed!;
       choose();
       choose();
@@ -94,11 +171,15 @@ void main() {
       await tester.binding.handlePopRoute();
       await tester.pump();
       expect(calls, 1);
-      expect(find.byType(MobileMangaImportDialog), findsOneWidget);
+      expect(find.byType(MobileBookshelfImportSheet), findsOneWidget);
       pending.complete(0);
       await tester.pumpAndSettle();
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<NodeLaneRow>(
+              find.widgetWithText(NodeLaneRow, 'Choose files'),
+            )
+            .onTap,
         isNotNull,
       );
       pending = Completer<int>();
@@ -118,20 +199,20 @@ void main() {
       var calls = 0;
       await _open(
         tester,
-        MobileMangaImportDialog(
-          onImport: () async {
+        MobileBookshelfImportSheet(
+          onImport: (_) async {
             calls++;
             throw StateError('fixture failure');
           },
         ),
       );
       final choose = tester
-          .widget<FilledButton>(find.byType(FilledButton))
-          .onPressed!;
+          .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Choose files'))
+          .onTap!;
       choose();
       await tester.pumpAndSettle();
       expect(find.textContaining('Import did not finish'), findsOneWidget);
-      expect(find.byType(FilledButton), findsNothing);
+      expect(find.text('Choose files'), findsNothing);
       choose();
       expect(calls, 1);
       await tester.tap(find.text('Close'));
@@ -147,7 +228,7 @@ void main() {
       final writes = <List<int>>[];
       await _open(
         tester,
-        MobileMangaCategoryDialog(
+        MobileBookshelfCategorySheet(
           categories: [
             for (var i = 1; i <= 40; i++) _category(i),
             _category(99, hidden: true),
@@ -168,7 +249,7 @@ void main() {
       );
       expect(find.text('Category 40 with its full name'), findsNothing);
       final save = tester
-          .widget<FilledButton>(find.byType(FilledButton))
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Save'))
           .onPressed!;
       save();
       save();
@@ -178,10 +259,10 @@ void main() {
       expect(writes, [
         [1, 40],
       ]);
-      expect(find.byType(MobileMangaCategoryDialog), findsOneWidget);
+      expect(find.byType(MobileBookshelfCategorySheet), findsOneWidget);
       expect(
         tester
-            .widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'))
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Cancel'))
             .onPressed,
         isNull,
       );
@@ -213,7 +294,7 @@ void main() {
         StatefulBuilder(
           builder: (_, setState) {
             change = setState;
-            return MobileMangaCategoryDialog(
+            return MobileBookshelfCategorySheet(
               categories: categories,
               initialIds: initial,
               bookCount: 1,
@@ -238,7 +319,9 @@ void main() {
         ),
       );
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Save'))
+            .onPressed,
         isNull,
       );
       change(() {
@@ -246,10 +329,7 @@ void main() {
         categories = [];
       });
       await tester.pumpAndSettle();
-      expect(
-        tester.getSize(find.byType(CustomScrollView)).height,
-        lessThan(300),
-      );
+      expect(find.text('Manage categories').hitTestable(), findsOneWidget);
       change(() {
         categories = null;
         failed = true;
@@ -275,7 +355,7 @@ void main() {
         List<int>? selected;
         await _open(
           tester,
-          MobileMangaCategoryDialog(
+          MobileBookshelfCategorySheet(
             categories: [_category(1), _category(2, hidden: true)],
             initialIds: adding ? [] : [1, 2, 404],
             bookCount: 1,
@@ -355,7 +435,7 @@ void main() {
           database.mangas.getSync(1)!..name = 'Updated elsewhere',
         );
       });
-      await saveMobileMangaCategories(
+      await saveMobileLibraryCategories(
         targets: [first, second],
         categoryIds: [1, 2, 3, 404],
         isBulk: true,
@@ -369,14 +449,14 @@ void main() {
       expect(saved.isManga, true);
       expect(saved.dateAdded, 100);
       expect(first.categories, [2]);
-      await saveMobileMangaCategories(
+      await saveMobileLibraryCategories(
         targets: [first],
         categoryIds: [2],
         isBulk: false,
         isFavorite: true,
       );
       expect(database.mangas.getSync(1)!.categories, [2]);
-      await saveMobileMangaCategories(
+      await saveMobileLibraryCategories(
         targets: [adding],
         categoryIds: [],
         isBulk: false,

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -30,12 +29,6 @@ class NodeLaneReaderSurface extends StatelessWidget {
           return NodeLaneReaderScope(
             child: Theme(
               data: base.copyWith(
-                cupertinoOverrideTheme:
-                    (base.cupertinoOverrideTheme ?? const CupertinoThemeData())
-                        .copyWith(
-                          primaryColor: colors.accent,
-                          applyThemeToAll: true,
-                        ),
                 iconTheme: IconThemeData(
                   color: colors.ink,
                   size: NodeLaneTokens.readerIconSize,

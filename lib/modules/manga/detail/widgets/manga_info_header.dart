@@ -280,10 +280,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
       ),
       actions: MobileDetailPrimaryActions(
         reading:
-            !ref.watch(isLongPressedStateProvider) &&
-                ref
-                    .watch(chaptersListttStateProvider)
-                    .any((chapter) => !(chapter.isRead ?? false))
+            !ref.watch(isLongPressedStateProvider) && widget.chapterLength > 0
             ? widget.readingAction
             : null,
         library: widget.action,

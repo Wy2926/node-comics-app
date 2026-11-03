@@ -13,6 +13,8 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/library/providers/isar_providers.dart';
+import 'package:mangayomi/modules/library/providers/library_source_badge_provider.dart';
+import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_settings.dart';
 import 'package:mangayomi/repositories/db_write_queue.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
@@ -73,7 +75,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> start(WidgetTester tester) async {
+  Future<void> start(
+    WidgetTester tester, {
+    ItemType type = ItemType.manga,
+  }) async {
     tester.view.physicalSize = const Size(360, 740);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -83,7 +88,7 @@ void main() {
         getSettingsStreamProvider.overrideWith((_) => settingsEvents.stream),
         getAllMangaStreamProvider(
           categoryId: null,
-          itemType: ItemType.manga,
+          itemType: type,
         ).overrideWith((_) => Stream.value(entries)),
       ],
     );
@@ -102,6 +107,7 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: MobileBookshelfSettings(
+              itemType: type,
               settings: settingsRepository.current,
               entries: entries,
             ),
@@ -133,6 +139,188 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  for (final type in ItemType.values) {
+    test('cached ${type.name} settings callbacks preserve other writes', () async {
+      final container = ProviderContainer();
+      final original = settingsRepository.current;
+      addTearDown(container.dispose);
+      // A covered route can retain distinct settings snapshots until its native
+      // stream resumes. Capture every callback before any write is delivered.
+      final display = container.read(
+        libraryDisplayTypeStateProvider(
+          itemType: type,
+          settings: settingsRepository.current,
+        ).notifier,
+      );
+      final toggles = [
+        container
+            .read(
+              libraryDownloadedChaptersStateProvider(
+                itemType: type,
+                settings: settingsRepository.current,
+              ).notifier,
+            )
+            .set,
+        container
+            .read(
+              libraryLanguageStateProvider(
+                itemType: type,
+                settings: settingsRepository.current,
+              ).notifier,
+            )
+            .set,
+        container
+            .read(
+              libraryLocalSourceStateProvider(
+                itemType: type,
+                settings: settingsRepository.current,
+              ).notifier,
+            )
+            .set,
+        container
+            .read(
+              libraryShowCategoryTabsStateProvider(
+                itemType: type,
+                settings: settingsRepository.current,
+              ).notifier,
+            )
+            .set,
+        container
+            .read(
+              libraryShowNumbersOfItemsStateProvider(
+                itemType: type,
+                settings: settingsRepository.current,
+              ).notifier,
+            )
+            .set,
+        container
+            .read(
+              libraryShowContinueReadingButtonStateProvider(
+                itemType: type,
+                settings: settingsRepository.current,
+              ).notifier,
+            )
+            .set,
+      ];
+      final unread = container.read(
+        mangaFilterUnreadStateProvider(
+          mangaList: const [],
+          itemType: type,
+          settings: settingsRepository.current,
+        ).notifier,
+      );
+      final sources = container.read(
+        mangaFilterSourceStateProvider(
+          mangaList: entries,
+          itemType: type,
+          settings: settingsRepository.current,
+        ).notifier,
+      );
+      final sort = container.read(
+        sortLibraryMangaStateProvider(
+          itemType: type,
+          settings: settingsRepository.current,
+        ).notifier,
+      );
+
+      display.setLibraryDisplayType(DisplayType.coverOnlyGrid);
+      container.read(librarySourceBadgeProvider.notifier).set(true);
+      for (final toggle in toggles) {
+        toggle(false);
+      }
+      unread.setType(1);
+      sources.set(['Source 01']);
+      sort.update(false, 4);
+      await dbWriteQueue.run(() {});
+
+      final saved = settingsRepository.current;
+      expect(saved.showSourceBadge, isTrue);
+      final values = switch (type) {
+        ItemType.manga => (
+          saved.displayType,
+          saved.libraryDownloadedChapters,
+          saved.libraryShowLanguage,
+          saved.libraryLocalSource,
+          saved.libraryShowCategoryTabs,
+          saved.libraryShowNumbersOfItems,
+          saved.libraryShowContinueReadingButton,
+          saved.libraryFilterMangasUnreadType,
+          saved.libraryFilterMangasSourceIds,
+          saved.sortLibraryManga,
+        ),
+        ItemType.anime => (
+          saved.animeDisplayType,
+          saved.animeLibraryDownloadedChapters,
+          saved.animeLibraryShowLanguage,
+          saved.animeLibraryLocalSource,
+          saved.animeLibraryShowCategoryTabs,
+          saved.animeLibraryShowNumbersOfItems,
+          saved.animeLibraryShowContinueReadingButton,
+          saved.libraryFilterAnimeUnreadType,
+          saved.libraryFilterAnimeSourceIds,
+          saved.sortLibraryAnime,
+        ),
+        ItemType.novel => (
+          saved.novelDisplayType,
+          saved.novelLibraryDownloadedChapters,
+          saved.novelLibraryShowLanguage,
+          saved.novelLibraryLocalSource,
+          saved.novelLibraryShowCategoryTabs,
+          saved.novelLibraryShowNumbersOfItems,
+          saved.novelLibraryShowContinueReadingButton,
+          saved.libraryFilterNovelUnreadType,
+          saved.libraryFilterNovelSourceIds,
+          saved.sortLibraryNovel,
+        ),
+      };
+      expect(values.$1, DisplayType.coverOnlyGrid);
+      expect([
+        values.$2,
+        values.$3,
+        values.$4,
+        values.$5,
+        values.$6,
+        values.$7,
+      ], everyElement(isFalse));
+      expect(values.$8, 1);
+      expect(values.$9, ['Source 01']);
+      expect(values.$10?.index, 4);
+      for (final other in ItemType.values.where((value) => value != type)) {
+        expect(
+          container.read(
+            libraryDisplayTypeStateProvider(itemType: other, settings: saved),
+          ),
+          container.read(
+            libraryDisplayTypeStateProvider(
+              itemType: other,
+              settings: original,
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  testWidgets('anime filters keep manga and novel preferences isolated', (
+    tester,
+  ) async {
+    await start(tester, type: ItemType.anime);
+    expect(find.text('Unwatched'), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('bookshelf-filter-1')),
+        matching: find.text('Include'),
+      ),
+    );
+    await settle(tester);
+    expect(settingsRepository.current.libraryFilterAnimeUnreadType, 1);
+    expect(settingsRepository.current.libraryFilterMangasUnreadType, 0);
+    expect(settingsRepository.current.libraryFilterNovelStartedType, 1);
+    await tab(tester, 'Display');
+    expect(find.text('Show continue watching buttons'), findsOneWidget);
+    expect(find.byType(Slider), findsNothing);
+  });
 
   testWidgets(
     'explicit filter states persist only manga settings and retain tab position',
@@ -185,7 +373,7 @@ void main() {
       );
       await reveal(tester, find.text('Date added'), 'bookshelf-sort');
       final chooseDate = tester
-          .widget<ListTile>(find.widgetWithText(ListTile, 'Date added'))
+          .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Date added'))
           .onTap!;
       chooseDate();
       chooseDate();
@@ -197,7 +385,7 @@ void main() {
       );
       expect(
         tester
-            .widget<ListTile>(find.widgetWithText(ListTile, 'Date added'))
+            .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Date added'))
             .selected,
         true,
       );
@@ -206,20 +394,23 @@ void main() {
       expect(settingsRepository.current.sortLibraryManga?.index, 6);
       expect(settingsRepository.current.sortLibraryManga?.reverse, true);
       await tab(tester, 'Display');
-      await tester.tap(find.widgetWithText(ChoiceChip, 'List'));
+      await tester.tap(find.widgetWithText(NodeLaneChoiceCard, 'List'));
       await settle(tester);
       expect(settingsRepository.current.displayType, DisplayType.list);
       expect(find.byType(Slider), findsNothing);
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Comfortable grid'));
+      await tester.tap(
+        find.widgetWithText(NodeLaneChoiceCard, 'Comfortable grid'),
+      );
       await settle(tester);
-      var slider = tester.widget<Slider>(find.byType(Slider));
-      slider.onChanged!(4);
-      await tester.pump();
+      expect(find.byType(Slider), findsNothing);
       expect(settingsRepository.current.mangaGridSize, 2);
-      slider = tester.widget<Slider>(find.byType(Slider));
-      slider.onChangeEnd!(4);
-      await settle(tester);
-      expect(settingsRepository.current.mangaGridSize, 4);
+      await reveal(
+        tester,
+        find.text('More display options'),
+        'bookshelf-display',
+      );
+      await tester.tap(find.text('More display options'));
+      await tester.pumpAndSettle();
       await reveal(tester, find.text('Source'), 'bookshelf-display');
       await tester.tap(find.text('Source'));
       await settle(tester);
@@ -229,7 +420,7 @@ void main() {
       await settle(tester);
       expect(settingsRepository.current.showSourceBadge, true);
       expect(settingsRepository.current.libraryShowLanguage, true);
-      expect(settingsRepository.current.mangaGridSize, 4);
+      expect(settingsRepository.current.mangaGridSize, 2);
       expect(settingsRepository.current.sortLibraryManga?.reverse, true);
       expect(settingsRepository.current.libraryFilterMangasSourceIds, [
         'Source 00',
@@ -264,16 +455,14 @@ void main() {
       await open();
       expect(
         tester
-            .widget<CheckboxListTile>(
-              find.widgetWithText(CheckboxListTile, 'Source 01'),
-            )
-            .value,
+            .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Source 01'))
+            .selected,
         false,
       );
       tester.view.viewInsets = const FakeViewPadding(bottom: 280);
       await tester.enterText(find.byType(TextField), 'Source 39');
       await tester.pumpAndSettle();
-      final lastSource = find.widgetWithText(CheckboxListTile, 'Source 39');
+      final lastSource = find.widgetWithText(NodeLaneRow, 'Source 39');
       await tester.ensureVisible(lastSource);
       await tester.tap(lastSource);
       await tester.pump();
@@ -287,7 +476,12 @@ void main() {
         'Source 39',
       ]);
       await open();
-      await tester.tap(find.widgetWithText(TextButton, 'Reset'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(MobileBookshelfSourceFilter),
+          matching: find.widgetWithText(TextButton, 'Reset'),
+        ),
+      );
       await tester.pump();
       expect(find.text('All sources'), findsOneWidget);
       expect(settingsRepository.current.libraryFilterMangasSourceIds, [
