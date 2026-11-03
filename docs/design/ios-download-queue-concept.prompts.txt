@@ -1,0 +1,35 @@
+Mode: built-in image_gen (ui-mockup)
+Status: design proposal; download queue implementation pending.
+
+Use case: ui-mockup
+Asset type: high fidelity iOS mobile UI design board for the existing NodeLane comics app.
+Primary request: Generate ONE polished landscape design board with FOUR complete iPhone screens side by side, showing a unified redesign of the existing download queue and its states. Make it production-credible, calm and extremely consistent with a refined iOS liquid glass settings design. This is a concrete app interface, not a marketing landing page.
+
+Composition: wide 16:9 board, pale cool background, small board title top left "NodeLane · 下载队列". Four equally sized front-on black iPhones with thin bezels and Dynamic Islands, same scale and exact aligned top and bottom. Show full screen and home indicator, no cropped devices. Under each phone put a small caption: "01 下载队列", "02 任务操作", "03 失败重试", "04 空队列". Tiny bottom board note "设计示例 · 基于现有下载功能". No token specification annotations on the actual UI.
+
+Shared exact design system: logical iPhone viewport about 390 × 844 pt; background #F5F6FA, surfaces white, soft fill #EBEEF4, main text #171A21, secondary #697180, separator #E7EAF0, primary blue #006EFF. Simplified Chinese native PingFang/SF typography. Navigation title 20 pt semibold, drawer title 22 pt bold, regular text 16 pt, secondary 13–14 pt, section caption 13 pt semibold. Page gutters 20 pt; card padding 16 pt; section gaps 24 pt; element gaps 8/12 pt; rounded group radius 18 pt; drawer top corners 24 pt. Icons use consistent thin SF Symbols-style line weight, ordinary icons dark neutral, auxiliary icons muted; only primary action/progress blue and destructive actions red. Buttons minimum 44 pt touch area. Circular navigation/menu icon buttons use subtle translucent liquid glass, hairline white rim and very soft shadow, restrained and readable, not heavy gradients or exaggerated chrome. White content cards are calm grouped settings surfaces, not heavy floating glass slabs. No colored square icon backgrounds. Back and gear buttons at consistent height and exact edge insets on every full page. No bottom tab bar, these are pushed settings pages. Identical iOS status bars and home indicator.
+
+Actual existing functionality, mandatory constraint: queue supports progress percentages, drag to reorder, whole-queue Start or Retry, per-chapter cancel and per-series cancel, navigation to existing download settings via gear. Do not add pause, resume, speed, ETA, megabytes, page counts, concurrency controls, task selection checkboxes, completed history tabs, search, filters, individual retry, or new download buttons. Do not fabricate error causes or extra features. Use text-only chapter cards, no covers or decorative illustrations.
+
+SCREEN 1: queue overview.
+Top bar circular chevron-left, centered "下载队列", circular gear.
+Below at page gutter small semibold "3 个章节", and helper "拖动把手调整顺序".
+Three white rounded chapter cards, each same exact layout: book title 16 pt semibold, chapter subtitle 14 pt gray, right side circular ellipsis action target at top. Bottom status line with label left and percent right, 3 pt progress line underneath. Small drag handle at right of status row with independent tap area, never crowd text or menu. Card data:
+1 "海岸来信" / "第12话 海风的回信" / "下载中" / "48%" with blue progress to 48%.
+2 "海岸来信" / "第13话 灯塔之后" / "等待下载" / "0%" neutral empty progress.
+3 "雨后的森林" / "第8话 归途" / "等待下载" / "0%".
+At the bottom above safe area a single full width blue capsule primary action with small downward-download icon and "开始下载". This existing action enqueues pending entries while already active work is skipped. Leave calm open space between short queue and footer.
+
+SCREEN 2: compact content-sized task action drawer over a dimmed same queue.
+Keep exact same underlying top bar/cards composition as screen 1, darken backdrop.
+Drawer anchored to bottom, only tall enough for its contents (~295–325 pt total including safe area). Top handle centered 44×4, then title "下载操作" at left and circular glass x close at right. Subtitle directly BELOW title and ABOVE actions, aligned at 20 pt: "海岸来信 · 第12话 海风的回信". White group contains two 56 pt rows, red outlined icons and red text: "取消本章下载" and "取消本作品全部下载". No separate cancel button; close x dismisses. Exactly normal 24 pt padding plus home safe area below final row, NO large empty drawer bottom, no hint at the bottom.
+
+SCREEN 3: failure retry.
+Same full-page top bar, count and drag hint, exact same card measurements and spacing as screen 1.
+First card "海岸来信" / "第12话 海风的回信" shows red small outlined exclamation and "下载失败" with partial red progress, no invented error cause. Other 2 cards use same pending data and 0% as screen 1.
+The single fixed blue primary capsule at bottom reads "重试下载" with circular arrow icon. It operates on the existing queue, no per-row retry buttons. Preserve menu and drag controls.
+
+SCREEN 4: empty queue.
+Same full-page top bar and gear settings entry. No chapter count/header/cards/action footer. True horizontally centered empty state in full content area, vertically around 45% of available page height: a muted SF Symbol download tray 48 pt, 16 pt gap, centered 20 pt semibold "暂无下载任务", 8 pt gap, centered 14 pt secondary "从作品的章节列表添加下载". Calm generous page whitespace. Home indicator at bottom.
+
+Quality: crisp UI text, all Chinese perfectly readable, identical type hierarchy/colors/corner radii/margins between screens, aligned icon centers, no overlapping controls, restrained realistic iOS glass materials. No generic Material Design controls, no decorative scene, no extra labels or unsupported interactions.

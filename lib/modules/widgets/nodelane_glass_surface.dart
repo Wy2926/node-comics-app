@@ -12,18 +12,20 @@ class NodeLaneGlassSurface extends StatelessWidget {
     required this.borderRadius,
     this.elevated = false,
     this.grouped = false,
+    this.fillColor,
   });
 
   final Widget child;
   final BorderRadius borderRadius;
   final bool elevated, grouped;
+  final Color? fillColor;
 
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
     final glass = t.usesGlass && !MediaQuery.highContrastOf(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final fill = grouped ? t.canvas : t.surface;
+    final fill = fillColor ?? (grouped ? t.canvas : t.surface);
     final content = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,

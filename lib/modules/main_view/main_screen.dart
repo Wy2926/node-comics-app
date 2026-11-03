@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
-import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/floating_navigation_bar_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
@@ -25,8 +24,6 @@ import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/services/sync_server.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
-import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
-import 'package:mangayomi/modules/main_view/widgets/mode_bars.dart';
 import 'package:mangayomi/modules/main_view/widgets/tablet_layout.dart';
 import 'package:mangayomi/modules/main_view/widgets/mobile_bottom_navigation.dart';
 import 'package:mangayomi/modules/main_view/widgets/nav_badges.dart';
@@ -331,7 +328,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 useFloatingNav: useFloatingNav,
               );
               final useMobileUi = isMobile && !isTv && !prefersNavRail;
-              final isReadingScreen = _isReadingScreen(location);
               bool uniqueSwitch = false;
               List<String> dest = !prefersNavRail && isLibSwitch
                   ? [
@@ -387,97 +383,85 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 }
               }
 
-              final incognitoMode = ref.watch(incognitoModeStateProvider);
-              final downloadedOnly = ref.watch(downloadedOnlyStateProvider);
               final isLongPressed = ref.watch(isLongPressedStateProvider);
 
               return FloatingNavigationScope(
                 enabled: useMobileUi || useFloatingNav,
-                child: ModeBarsLayout(
-                  mobile: isMobile && !isTv,
-                  downloadedOnly: !isReadingScreen && downloadedOnly,
-                  incognitoMode: !isReadingScreen && incognitoMode,
-                  l10n: l10n,
-                  child: Scaffold(
-                    extendBody: useMobileUi || useFloatingNav,
-                    body: NotificationListener<ScrollNotification>(
-                      onNotification: (notification) => _onPageScroll(
-                        notification,
-                        useFloatingNav: !useMobileUi && useFloatingNav,
-                      ),
-                      child: prefersNavRail
-                          ? MainTabletLayout(
-                              isLongPressed: isLongPressed,
-                              location: location,
-                              dest: dest,
-                              currentIndex: currentIndex,
-                              route: route,
-                              ref: ref,
-                              buildNavigationWidgetsDesktop:
-                                  _buildNavigationWidgetsDesktop,
-                              child: widget.child,
-                            )
-                          : widget.child,
+                child: Scaffold(
+                  extendBody: useMobileUi || useFloatingNav,
+                  body: NotificationListener<ScrollNotification>(
+                    onNotification: (notification) => _onPageScroll(
+                      notification,
+                      useFloatingNav: !useMobileUi && useFloatingNav,
                     ),
-                    bottomNavigationBar: prefersNavRail
-                        ? null
-                        : MainMobileBottomNavigation(
+                    child: prefersNavRail
+                        ? MainTabletLayout(
                             isLongPressed: isLongPressed,
                             location: location,
-                            currentIndex: currentIndex,
                             dest: dest,
-                            mobileRoutes: navigationOrder
-                                .where((nav) => !hideItems.contains(nav))
-                                .toList(),
+                            currentIndex: currentIndex,
                             route: route,
                             ref: ref,
-                            useFloatingNav: useFloatingNav,
-                            shrink: _navShrink.shrunk ? 1.0 : 0.0,
-                            onWake: _wakeNav,
-                            buildNavigationWidgetsMobile:
-                                _buildNavigationWidgetsMobile,
-                            onDestinationSelected: (destination) {
-                              if (destination == "_enableLibSwitch") {
-                                setState(() {
-                                  isLibSwitch = true;
-                                });
-                                if (!libLocationRegex.hasMatch(
-                                  location ?? "",
-                                )) {
-                                  final target = _firstVisibleLibrary();
-                                  if (target != null) route.go(target);
-                                }
-                              } else if (destination == "_disableLibSwitch") {
-                                setState(() {
-                                  isLibSwitch = false;
-                                });
-                              } else {
-                                final now = DateTime.now();
-                                final isDoubleTap = isNavDoubleTap(
-                                  destination,
-                                  _lastMobileNavDest,
-                                  _lastMobileNavTapTime,
-                                  now,
-                                );
-                                final itemType = itemTypeForNavDest(
-                                  destination,
-                                );
-                                if (isDoubleTap && itemType != null) {
-                                  _lastMobileNavDest = null;
-                                  _lastMobileNavTapTime = null;
-                                  context.push(
-                                    '/globalSearch',
-                                    extra: (null, itemType),
-                                  );
-                                  return;
-                                }
-                                _lastMobileNavDest = destination;
-                                _lastMobileNavTapTime = now;
-                                route.go(destination);
-                              }
-                            },
-                          ),
+                            buildNavigationWidgetsDesktop:
+                                _buildNavigationWidgetsDesktop,
+                            child: widget.child,
+                          )
+                        : widget.child,
                   ),
+                  bottomNavigationBar: prefersNavRail
+                      ? null
+                      : MainMobileBottomNavigation(
+                          isLongPressed: isLongPressed,
+                          location: location,
+                          currentIndex: currentIndex,
+                          dest: dest,
+                          mobileRoutes: navigationOrder
+                              .where((nav) => !hideItems.contains(nav))
+                              .toList(),
+                          route: route,
+                          ref: ref,
+                          useFloatingNav: useFloatingNav,
+                          shrink: _navShrink.shrunk ? 1.0 : 0.0,
+                          onWake: _wakeNav,
+                          buildNavigationWidgetsMobile:
+                              _buildNavigationWidgetsMobile,
+                          onDestinationSelected: (destination) {
+                            if (destination == "_enableLibSwitch") {
+                              setState(() {
+                                isLibSwitch = true;
+                              });
+                              if (!libLocationRegex.hasMatch(location ?? "")) {
+                                final target = _firstVisibleLibrary();
+                                if (target != null) route.go(target);
+                              }
+                            } else if (destination == "_disableLibSwitch") {
+                              setState(() {
+                                isLibSwitch = false;
+                              });
+                            } else {
+                              final now = DateTime.now();
+                              final isDoubleTap = isNavDoubleTap(
+                                destination,
+                                _lastMobileNavDest,
+                                _lastMobileNavTapTime,
+                                now,
+                              );
+                              final itemType = itemTypeForNavDest(destination);
+                              if (isDoubleTap && itemType != null) {
+                                _lastMobileNavDest = null;
+                                _lastMobileNavTapTime = null;
+                                context.push(
+                                  '/globalSearch',
+                                  extra: (null, itemType),
+                                );
+                                return;
+                              }
+                              _lastMobileNavDest = destination;
+                              _lastMobileNavTapTime = now;
+                              route.go(destination);
+                            }
+                          },
+                        ),
                 ),
               );
             },
@@ -494,12 +478,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
           loading: () => const LoadingIcon(),
         );
-  }
-
-  static bool _isReadingScreen(String? location) {
-    return location == '/mangaReaderView' ||
-        location == '/animePlayerView' ||
-        location == '/novelReaderView';
   }
 
   /// Wraps [icon] in a [Tooltip] with [message] unless the user turned the

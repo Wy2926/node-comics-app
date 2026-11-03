@@ -82,7 +82,7 @@ class NodeLaneCatalogHeading extends StatelessWidget {
 }
 
 /// Shared sheet shell: a single handle, title, close target and safe area.
-class NodeLaneCatalogSheet extends StatelessWidget {
+class NodeLaneCatalogSheet extends StatefulWidget {
   const NodeLaneCatalogSheet({
     super.key,
     required this.title,
@@ -92,6 +92,9 @@ class NodeLaneCatalogSheet extends StatelessWidget {
     this.heightFactor = .68,
     this.onClose,
     this.canClose = true,
+    this.fitContent = false,
+    this.onBack,
+    this.onHeightChanged,
   });
   final String title;
   final String? subtitle;
@@ -100,52 +103,113 @@ class NodeLaneCatalogSheet extends StatelessWidget {
   final double heightFactor;
   final VoidCallback? onClose;
   final bool canClose;
+
+  /// Use a shrink-wrapped scroll view as [child] for content-sized choices.
+  final bool fitContent;
+  final VoidCallback? onBack;
+
+  /// Lets an existing nested reader navigator resize without replacing routes.
+  final ValueChanged<double>? onHeightChanged;
+
+  @override
+  State<NodeLaneCatalogSheet> createState() => _NodeLaneCatalogSheetState();
+}
+
+class _NodeLaneCatalogSheetState extends State<NodeLaneCatalogSheet> {
+  final _surfaceKey = GlobalKey();
+  bool _measurementQueued = false;
+  double? _lastHeight;
+
+  void _measure() {
+    if (widget.onHeightChanged == null || _measurementQueued) return;
+    _measurementQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _measurementQueued = false;
+      if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      final box = _surfaceKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) return;
+      final height = box.size.height;
+      if (_lastHeight != null && (height - _lastHeight!).abs() < .5) return;
+      _lastHeight = height;
+      widget.onHeightChanged?.call(height);
+    });
+  }
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      _measure();
       final keyboard = MediaQuery.viewInsetsOf(context).bottom;
       final safeBottom = MediaQuery.paddingOf(context).bottom;
       final available = math.max(
         0.0,
         constraints.maxHeight - keyboard - safeBottom,
       );
-      return Padding(
-        padding: EdgeInsets.only(bottom: keyboard),
-        child: NodeLaneReaderSurface(
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: math.min(
-                MediaQuery.sizeOf(context).height * heightFactor,
-                available,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  NodeLaneReaderHeading(
-                    title: title,
-                    onClose: canClose
-                        ? onClose ?? () => Navigator.pop(context)
-                        : null,
-                    closeLabel: MaterialLocalizations.of(context)
-                        .closeButtonTooltip,
-                  ),
-                  if (subtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      child: Text(
-                        subtitle!,
-                        style: NodeLaneTokens.of(context).readerSecondary,
-                      ),
+      final maxHeight = math.min(
+        MediaQuery.sizeOf(context).height * widget.heightFactor,
+        available,
+      );
+      final content = NotificationListener<SizeChangedLayoutNotification>(
+        onNotification: (_) {
+          _measure();
+          return false;
+        },
+        child: SizeChangedLayoutNotifier(
+          child: NodeLaneReaderSurface(
+            key: _surfaceKey,
+            child: SafeArea(
+              top: false,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: widget.fitContent ? 0 : maxHeight,
+                  maxHeight: maxHeight,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    NodeLaneReaderHeading(
+                      title: widget.title,
+                      onBack: widget.onBack,
+                      onClose: widget.canClose
+                          ? widget.onClose ?? () => Navigator.pop(context)
+                          : null,
+                      closeLabel: MaterialLocalizations.of(context)
+                          .closeButtonTooltip,
                     ),
-                  Expanded(child: child),
-                  if (bottom != null)
-                    Padding(padding: const EdgeInsets.all(20), child: bottom!),
-                ],
+                    if (widget.subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        child: Text(
+                          widget.subtitle!,
+                          style: NodeLaneTokens.of(context).readerSecondary,
+                        ),
+                      ),
+                    Flexible(
+                      fit: widget.fitContent ? FlexFit.loose : FlexFit.tight,
+                      child: widget.child,
+                    ),
+                    if (widget.bottom != null)
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: widget.bottom!,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
+      );
+      return Padding(
+        padding: EdgeInsets.only(bottom: keyboard),
+        child: widget.fitContent
+            ? Align(
+                alignment: Alignment.bottomCenter,
+                heightFactor: 1,
+                child: content,
+              )
+            : content,
       );
     },
   );

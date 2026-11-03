@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -33,14 +33,24 @@ class MobileReaderPickerHost extends StatefulWidget {
 class _MobileReaderPickerHostState extends State<MobileReaderPickerHost> {
   final _navigator = GlobalKey<NavigatorState>();
   late final _observer = _PickerObserver(_topChanged);
-  double? _pickerFraction;
+  bool _showingPicker = false;
+  double? _pickerHeight;
 
-  void _topChanged(double? fraction) {
+  void _topChanged(bool showingPicker) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _pickerFraction != fraction) {
-        setState(() => _pickerFraction = fraction);
+      if (mounted && _showingPicker != showingPicker) {
+        setState(() {
+          _showingPicker = showingPicker;
+          if (!showingPicker) _pickerHeight = null;
+        });
       }
     });
+  }
+
+  void _updateHeight(double height) {
+    final next = height + MediaQuery.paddingOf(context).bottom;
+    if (!mounted || !_showingPicker || _pickerHeight == next) return;
+    setState(() => _pickerHeight = next);
   }
 
   @override
@@ -50,13 +60,14 @@ class _MobileReaderPickerHostState extends State<MobileReaderPickerHost> {
         : const Duration(milliseconds: 180),
     curve: Curves.easeOut,
     height:
-        MediaQuery.sizeOf(context).height *
-        (_pickerFraction ?? NodeLaneTokens.readerSheetFraction),
+        _pickerHeight ??
+        MediaQuery.sizeOf(context).height * NodeLaneTokens.readerSheetFraction,
     child: SafeArea(
       top: false,
       child: _ReaderPickerScope(
         bookTitle: widget.bookTitle,
         onClose: widget.onClose,
+        onPickerHeight: _updateHeight,
         child: NavigatorPopHandler<Object?>(
           onPopWithResult: (result) => _navigator.currentState?.pop(result),
           child: Navigator(
@@ -81,27 +92,25 @@ class _MobileReaderPickerHostState extends State<MobileReaderPickerHost> {
 
 class _PickerObserver extends NavigatorObserver {
   _PickerObserver(this.onChanged);
-  final ValueChanged<double?> onChanged;
+  final ValueChanged<bool> onChanged;
 
   @override
   void didChangeTop(
     Route<dynamic> topRoute,
     Route<dynamic>? previousTopRoute,
-  ) => onChanged(
-    topRoute.settings.name == _pickerRoute
-        ? topRoute.settings.arguments as double
-        : null,
-  );
+  ) => onChanged(topRoute.settings.name == _pickerRoute);
 }
 
 class _ReaderPickerScope extends InheritedWidget {
   const _ReaderPickerScope({
     required this.bookTitle,
     required this.onClose,
+    required this.onPickerHeight,
     required super.child,
   });
   final String bookTitle;
   final VoidCallback onClose;
+  final ValueChanged<double> onPickerHeight;
 
   static _ReaderPickerScope? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_ReaderPickerScope>();
@@ -121,9 +130,6 @@ Future<MobileSettingOption<T>?> showMobileReaderPicker<T>(
   required String description,
 }) {
   final host = _ReaderPickerScope.maybeOf(context);
-  final fraction = options.firstOrNull?.value is ReaderMode
-      ? NodeLaneTokens.readerModePickerFraction
-      : NodeLaneTokens.readerPickerFraction;
   final picker = MobileReaderPicker<T>(
     title: title,
     current: current,
@@ -135,26 +141,12 @@ Future<MobileSettingOption<T>?> showMobileReaderPicker<T>(
   if (host != null) {
     return Navigator.of(context).push<MobileSettingOption<T>>(
       MaterialPageRoute(
-        settings: RouteSettings(name: _pickerRoute, arguments: fraction),
+        settings: const RouteSettings(name: _pickerRoute),
         builder: (_) => picker,
       ),
     );
   }
-  return showModalBottomSheet<MobileSettingOption<T>>(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
-    showDragHandle: false,
-    shape: NodeLaneTokens.readerSheetShape,
-    builder: (context) => NodeLaneReaderSurface(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * fraction,
-        child: SafeArea(top: false, child: picker),
-      ),
-    ),
-  );
+  return showNodeLaneCatalogSheet<MobileSettingOption<T>>(context, picker);
 }
 
 MobileSettingOption<T> readerSettingOption<T>(
@@ -269,74 +261,32 @@ class _MobileReaderPickerState<T> extends State<MobileReaderPicker<T>> {
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
-    return ColoredBox(
-      color: colors.canvas,
-      child: Column(
-        children: [
-          NodeLaneReaderHeading(
-            title: widget.title,
-            closeLabel: l10n.close,
-            onBack: () => _finish(),
-            onClose: () => _finish(closeSettings: true),
-          ),
-          Expanded(
-            child: CustomScrollView(
-              controller: _scroll,
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (widget.bookTitle?.isNotEmpty == true) ...[
-                          Text(
-                            widget.bookTitle!,
-                            style: colors.readerLabel.copyWith(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
-                        Text(widget.description, style: colors.readerSecondary),
-                        const SizedBox(height: 12),
-                        NodeLaneGroupSurface(
-                          outlined: true,
-                          child: Column(
-                            children: [
-                              for (
-                                var i = 0;
-                                i < widget.options.length;
-                                i++
-                              ) ...[
-                                if (i > 0) const NodeLaneGroupDivider(),
-                                _row(context, widget.options[i]),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-                    child: Align(
-                      alignment: AlignmentDirectional.bottomStart,
-                      child: Text(
-                        l10n.reader_picker_apply_hint,
-                        style: colors.readerSecondary,
-                      ),
-                    ),
-                  ),
-                ),
+    final host = _ReaderPickerScope.maybeOf(context);
+    return NodeLaneCatalogSheet(
+      title: widget.title,
+      subtitle: '${widget.description}\n${l10n.reader_picker_apply_hint}',
+      fitContent: true,
+      heightFactor: .9,
+      onBack: host == null ? null : () => _finish(),
+      onClose: () => _finish(closeSettings: true),
+      onHeightChanged: host?.onPickerHeight,
+      child: SingleChildScrollView(
+        controller: _scroll,
+        padding: NodeLaneTokens.pagePadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.bookTitle?.isNotEmpty == true) ...[
+              Text(widget.bookTitle!, style: colors.readerLabel),
+              const SizedBox(height: NodeLaneTokens.space12),
+            ],
+            NodeLaneGroupSurface(
+              children: [
+                for (final option in widget.options) _row(context, option),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

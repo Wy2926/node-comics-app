@@ -598,10 +598,7 @@ class NodeLanePinnedHeader extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => PinnedHeaderSliver(
-    child: ColoredBox(
-      color: NodeLaneTokens.of(context).canvas,
-      child: Padding(padding: NodeLaneTokens.headerPadding, child: child),
-    ),
+    child: Padding(padding: NodeLaneTokens.headerPadding, child: child),
   );
 }
 
@@ -1085,7 +1082,8 @@ class NodeLaneTextField extends StatelessWidget {
           return glass
               ? NodeLaneGlassSurface(
                   borderRadius: t.inputRadius,
-                  grouped: true,
+                  fillColor: t.soft,
+                  elevated: true,
                   child: field,
                 )
               : field;

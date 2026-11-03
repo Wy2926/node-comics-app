@@ -25,9 +25,12 @@ Future<String?> showTranslationLanguagePicker(
     Builder(
       builder: (context) => NodeLaneCatalogSheet(
         title: l.settings_translation_language,
-        subtitle: l.settings_translation_scope,
-        heightFactor: .56,
+        subtitle:
+            '${l.settings_translation_scope}\n${l.settings_immediate_choice}',
+        fitContent: true,
+        heightFactor: .9,
         child: ListView(
+          shrinkWrap: true,
           padding: NodeLaneTokens.pagePadding,
           children: [
             NodeLaneGroupSurface(
@@ -46,11 +49,6 @@ Future<String?> showTranslationLanguagePicker(
                     },
                   ),
               ],
-            ),
-            const SizedBox(height: NodeLaneTokens.space16),
-            Text(
-              l.settings_immediate_choice,
-              style: NodeLaneTokens.of(context).readerSecondary,
             ),
           ],
         ),

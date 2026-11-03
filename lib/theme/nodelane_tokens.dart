@@ -53,7 +53,6 @@ class NodeLaneTokens {
   static const readerChapterHeight = 68.0, readerActionHeight = 64.0;
   static const readerImageActionHeight = 72.0;
   static const readerFilterRowHeight = 56.0;
-  static const readerPickerFraction = .70, readerModePickerFraction = .74;
   static const readerPickerRowHeight = 56.0;
   static const readerPickerPreviewRowHeight = 88.0;
   static const readerPickerColorRowHeight = 80.0;

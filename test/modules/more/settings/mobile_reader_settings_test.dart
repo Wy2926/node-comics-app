@@ -257,7 +257,7 @@ void main() {
       await tester.pumpWidget(app(container));
       await tester.pumpAndSettle();
       await openChoice(tester, 'Default reading mode');
-      await tester.tap(find.byTooltip('Back'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(_writes, isEmpty);
       await choose(tester, 'Default reading mode', 'Webtoon');
