@@ -1,28 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
-import 'package:mangayomi/utils/platform_utils.dart';
 
-import 'mobile_translation_settings.dart';
 import 'translation_language_picker.dart';
 
-class TranslationSettings extends StatelessWidget {
+class TranslationSettings extends ConsumerStatefulWidget {
   const TranslationSettings({super.key});
   @override
-  Widget build(BuildContext context) => isMobile && !isTv
-      ? const MobileTranslationSettings()
-      : const _LegacyTranslationSettings();
+  ConsumerState<TranslationSettings> createState() =>
+      TranslationSettingsState();
 }
 
-class _LegacyTranslationSettings extends ConsumerStatefulWidget {
-  const _LegacyTranslationSettings();
-  @override
-  ConsumerState<_LegacyTranslationSettings> createState() =>
-      _LegacyTranslationSettingsState();
-}
-
-class _LegacyTranslationSettingsState
-    extends ConsumerState<_LegacyTranslationSettings> {
+class TranslationSettingsState extends ConsumerState<TranslationSettings> {
   late final service = ref.read(translationServiceProvider);
   @override
   void initState() {

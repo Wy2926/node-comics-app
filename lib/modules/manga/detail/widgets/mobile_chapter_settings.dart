@@ -140,7 +140,6 @@ class _ChapterFilters extends ConsumerWidget {
         children: [
           MobileSettingsGroup(
             spacing: 12,
-            dividerIndent: 16,
             children: [
               for (final filter in filters)
                 NodeLaneChoiceRow<int>(

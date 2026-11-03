@@ -15,9 +15,11 @@
 | 阅读器 | [reader_translation.dart](../lib/modules/manga/reader/reader_translation.dart) 根据章节原始页身份更新窗口；译图采用独立显示数据，不覆盖来源页。单页保存归一化缩放中心，双页保留外层 controller，连续阅读订阅已有页码通知 |
 | 手机网页 | [mobile_browser.dart](../lib/modules/webview/mobile_browser.dart)、[translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[nodelane_reader.js](../assets/nodelane_reader.js)：最多 12 个逻辑标签；新建为空标签、共用开始页并原位输入，空标签不创建 WebView；网页活动 1 个＋温存 1 个／30 秒，主框架与文档代次校验，HTTP／Blob 来源、128 KiB 确认传输、非交互覆盖层、图片锚点恢复 |
 
-手机登录入口为“更多”首栏的软件账号；“更多 → 漫画翻译”或“设置 → 漫画翻译”管理目标语言与本机缓存，再从阅读器或浏览器工具栏手动开启翻译。此视图仍调用原服务，沿用登录、计费与渠道协议；布局与交互验收见[手机界面与视觉令牌](MOBILE_UI_DESIGN.md#翻译与账号设置)。每次打开新的网页标签默认不开始翻译；标签切回前台可以恢复原先已开启的阅读窗口。原图显示与暂停任务是两个控制项，已受理任务继续由后端执行。不同官方账号、服务与语言隔离；重新进入已有页面会核对当前原图摘要，定位地址相同不直接视为同一内容。
+手机登录入口为“更多”首栏的 NodeLane 账号；目标语言从更多首页、阅读器或网页面板直接弹层选择，本机译图缓存位于“更多 → 存储与备份”。阅读器或浏览器工具栏仍手动开启翻译。此视图仍调用原服务，沿用登录、计费与渠道协议；布局与交互验收见[手机界面与视觉令牌](MOBILE_UI_DESIGN.md#翻译与账号设置)。每次打开新的网页标签默认不开始翻译；标签切回前台可以恢复原先已开启的阅读窗口。原图显示与暂停任务是两个控制项，已受理任务继续由后端执行。不同官方账号、服务与语言隔离；重新进入已有页面会核对当前原图摘要，定位地址相同不直接视为同一内容。
 
-默认服务为 `https://comics.nodelane.net`，构建可用 `--dart-define=NODELANE_API_BASE=https://…` 指定兼容服务。手机账号入口位于“更多”首栏，翻译页保留语言与缓存设置；仍复用同一原生会话和渠道运行时。
+默认服务为 `https://comics.nodelane.net`，构建可用 `--dart-define=NODELANE_API_BASE=https://…` 指定兼容服务。账号页集中显示身份、订阅与分别计算的三类额度，复用同一原生会话和渠道运行时；手机独立翻译设置页已移除。
+
+账号展示通过渠道内 [account.dart](../lib/services/translation/channels/nodelane/account.dart) 解析既有 `/v1/me` 与 `/v1/billing/status` 只读响应，不扩充翻译公共契约。缺失字段保留未知，失败保留同账号快照；一次在途刷新合并，退出／换号／释放取消并丢弃迟到数据。官网管理链接不带凭据，无客户端支付写入或轮询；账号查询不替换阅读运行时。
 
 移动登录默认使用独立 public client `pljp89y5gk6k5x2h9gp6q`，可由 `--dart-define=NODELANE_AUTH_CLIENT_ID=…` 覆盖；`/v1/auth/config` 提供身份端点与 API resource，返回的浏览器 `client_id` 不用于移动端。授权、换码及续期使用同一移动应用 ID，不嵌入 client secret。恢复时要求服务与应用 ID 都匹配；旧浏览器应用会话需要重新登录，翻译回执不删除。
 

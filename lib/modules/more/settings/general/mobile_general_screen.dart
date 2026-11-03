@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangayomi/main.dart' show discordRpc;
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/providers/algorithm_weights_state_provider.dart';
@@ -9,7 +8,6 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
-import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/http/cf_proxy_store.dart';
 import 'package:mangayomi/services/http/doh/doh_custom_store.dart';
@@ -94,11 +92,6 @@ class MobileGeneralScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.app_settings,
                 children: [
-                  MobileSettingsLink(
-                    title: l10n.reorder_navigation,
-                    icon: Icons.view_column_outlined,
-                    onTap: () => context.push('/customNavigationSettings'),
-                  ),
                   MobileSettingsSwitch(
                     title: l10n.show_nav_double_tap_tooltip,
                     subtitle: l10n.show_nav_double_tap_tooltip_subtitle,
@@ -107,14 +100,6 @@ class MobileGeneralScreen extends ConsumerWidget {
                     onChanged: ref
                         .read(showNavDoubleTapTooltipStateProvider.notifier)
                         .set,
-                  ),
-                  MobileSettingsLink(
-                    title: l10n.onboarding_replay,
-                    subtitle: l10n.onboarding_replay_subtitle,
-                    icon: Icons.waving_hand_outlined,
-                    onTap: () => ref
-                        .read(onboardingCompletedStateProvider.notifier)
-                        .showAgain(),
                   ),
                 ],
               ),

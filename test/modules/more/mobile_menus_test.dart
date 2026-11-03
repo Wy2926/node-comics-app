@@ -7,12 +7,12 @@ import 'package:mangayomi/modules/more/mobile_more_screen.dart';
 import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
-import 'package:mangayomi/modules/more/settings/mobile_settings_screen.dart';
+import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 
 void main() {
   void phone(WidgetTester tester) {
@@ -36,12 +36,25 @@ void main() {
   ) async {
     phone(tester);
     final container = ProviderContainer(
-      overrides: [hideItemsStateProvider.overrideWith(_HiddenItems.new)],
+      overrides: [
+        hideItemsStateProvider.overrideWith(_HiddenItems.new),
+        translationServiceProvider.overrideWith((ref) {
+          final service = _AccountService();
+          ref.onDispose(service.dispose);
+          return service;
+        }),
+        followSystemThemeStateProvider.overrideWith(_FollowSystem.new),
+        themeModeStateProvider.overrideWith(_DarkTheme.new),
+        morePendingDownloadsProvider.overrideWith((ref) => Stream.value(0)),
+        downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
+        incognitoModeStateProvider.overrideWith(_Incognito.new),
+        hideDiscordRpcInIncognitoStateProvider.overrideWith(_HideRpc.new),
+      ],
     );
     addTearDown(container.dispose);
     final router = GoRouter(
       routes: [
-        GoRoute(path: '/', builder: (_, _) => const MobileSettingsScreen()),
+        GoRoute(path: '/', builder: (_, _) => const MobileMoreScreen()),
         GoRoute(
           path: '/appearance',
           builder: (_, _) => Scaffold(
@@ -64,18 +77,20 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byType(TextField), 250);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'reader');
     await tester.pumpAndSettle();
-    expect(find.text('Reader'), findsOneWidget);
+    expect(find.text('Manga Reader'), findsOneWidget);
     expect(find.text('Novel Reader'), findsOneWidget);
     container.read(hideItemsStateProvider.notifier).set([
       '/MangaLibrary',
       '/NovelLibrary',
     ]);
     await tester.pumpAndSettle();
-    expect(find.text('Reader'), findsNothing);
+    expect(find.text('Manga Reader'), findsNothing);
     expect(find.text('Novel Reader'), findsNothing);
-    expect(find.text('No result'), findsOneWidget);
+    expect(find.text('Translation language'), findsOneWidget);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       'reader',
@@ -83,8 +98,8 @@ void main() {
 
     await tester.enterText(find.byType(TextField), 'theme');
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Appearance'));
-    await tester.tap(find.text('Appearance'));
+    await tester.ensureVisible(find.text('Appearance and interface'));
+    await tester.tap(find.text('Appearance and interface'));
     await tester.pumpAndSettle();
     expect(find.text('Appearance destination'), findsOneWidget);
     router.pop();
@@ -93,7 +108,7 @@ void main() {
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       'theme',
     );
-    expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Appearance and interface'), findsOneWidget);
 
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.enterText(find.byType(TextField), 'missing setting');
@@ -102,7 +117,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(TextButton, 'Reset'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.byType(TextField), -250);
+    await tester.scrollUntilVisible(
+      find.byType(TextField),
+      -250,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
@@ -121,6 +140,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           translationServiceProvider.overrideWithValue(account),
+          followSystemThemeStateProvider.overrideWith(_FollowSystem.new),
+          themeModeStateProvider.overrideWith(_DarkTheme.new),
+          morePendingDownloadsProvider.overrideWith((ref) => Stream.value(0)),
           hideItemsStateProvider.overrideWith(_HiddenItems.new),
           downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
           incognitoModeStateProvider.overrideWith(_Incognito.new),
@@ -145,13 +167,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<MobileSettingsGroup>(find.byType(MobileSettingsGroup).first)
-            .title,
-        '软件账号',
-      );
-      expect(find.text('NodeLane'), findsOneWidget);
+      expect(find.byType(MobileNodeLaneAccountSummary), findsOneWidget);
       await tester.scrollUntilVisible(find.text('Downloaded only'), 250);
       await tester.pumpAndSettle();
       // The account card can push this group beyond the initial viewport.
@@ -185,11 +201,14 @@ void main() {
       await tester.scrollUntilVisible(find.text('浏览器'), -300);
       await tester.pumpAndSettle();
       expect(find.text('浏览器'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('About'), 300);
+      await tester.scrollUntilVisible(find.text('About and help'), 300);
       await tester.pumpAndSettle();
       await tester.drag(find.byType(Scrollable).first, const Offset(0, -400));
       await tester.pumpAndSettle();
-      expect(tester.getBottomLeft(find.text('About')).dy, lessThan(640));
+      expect(
+        tester.getBottomLeft(find.text('About and help')).dy,
+        lessThan(640),
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -232,4 +251,14 @@ class _HideRpc extends HideDiscordRpcInIncognitoState {
 class _AccountService extends TranslationService {
   @override
   Future<void> initialize() async {}
+}
+
+class _FollowSystem extends FollowSystemThemeState {
+  @override
+  bool build() => true;
+}
+
+class _DarkTheme extends ThemeModeState {
+  @override
+  bool build() => false;
 }

@@ -87,3 +87,10 @@ class ClearChapterCacheOnAppLaunchState
     settingsRepository.update((s) => s.clearChapterCacheOnAppLaunch = value);
   }
 }
+
+/// Covers live in their own existing cache directory. Do not touch reader
+/// images, downloaded chapters, imported files or translation receipts.
+Future<void> clearCoverImageCache() async {
+  final directory = await StorageProvider().getCacheDirectory(null);
+  if (await directory.exists()) await directory.delete(recursive: true);
+}

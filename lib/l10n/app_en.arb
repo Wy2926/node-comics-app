@@ -1786,5 +1786,117 @@
   "bookshelf_empty_title": "Your bookshelf is empty",
   "bookshelf_no_match_title": "No matching works",
   "bookshelf_mark_watched": "Mark watched",
-  "bookshelf_mark_unwatched": "Mark unwatched"
+  "bookshelf_mark_unwatched": "Mark unwatched",
+  "nodelane_account": "NodeLane account",
+  "nodelane_sign_in": "Sign in to NodeLane",
+  "nodelane_account_intro": "View your account, subscription and translation quota",
+  "nodelane_login_action": "Continue to sign in",
+  "nodelane_login_browser": "Sign in through the system browser, then return to the app",
+  "nodelane_account_id": "Account ID",
+  "nodelane_account_reading": "Loading account…",
+  "nodelane_account_init_error": "Account storage is unavailable. Restart the app and try again.",
+  "nodelane_account_refresh_error": "Could not refresh account information",
+  "nodelane_account_auth_error": "Your session has expired. Sign in again",
+  "nodelane_account_unknown": "Subscription information is unavailable",
+  "nodelane_account_current": "Current subscription",
+  "nodelane_account_free": "Free account",
+  "nodelane_account_no_subscription": "No active subscription",
+  "nodelane_account_active": "Active",
+  "nodelane_account_expired": "Expired",
+  "nodelane_account_expiry": "Valid until",
+  "nodelane_account_renewal": "Renewal",
+  "nodelane_renewal_auto": "Automatic renewal",
+  "nodelane_renewal_manual": "Manual renewal",
+  "nodelane_renewal_stopped": "Automatic renewal stopped",
+  "nodelane_renewal_gift": "Gift membership",
+  "nodelane_renewal_attention": "Check your renewal status on the website",
+  "nodelane_next_billing": "Next billing date",
+  "nodelane_billing_unavailable": "Renewal information is unavailable",
+  "nodelane_manage_account": "Manage on website",
+  "nodelane_view_plans": "View subscription plans",
+  "nodelane_translation_quota": "Translation quota",
+  "nodelane_quota_free": "Free quota",
+  "nodelane_quota_subscription": "Subscription quota",
+  "nodelane_quota_purchase": "Purchased quota",
+  "nodelane_quota_details": "View quota details",
+  "nodelane_quota_expanded": "Quota details",
+  "nodelane_quota_unlimited": "Unlimited",
+  "nodelane_quota_not_subscribed": "Not subscribed",
+  "nodelane_quota_unknown": "Unavailable",
+  "nodelane_quota_used": "Used",
+  "nodelane_quota_reserved": "In progress",
+  "nodelane_quota_reset": "Next reset",
+  "nodelane_quota_expiry": "Next expiry",
+  "nodelane_quota_no_expiry": "No expiry date",
+  "nodelane_quota_reservation_note": "Pages in progress are already deducted from the available quota",
+  "nodelane_quota_purchase_note": "Purchased quota is separate from your subscription",
+  "nodelane_account_updated": "Updated {time}",
+  "@nodelane_account_updated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "nodelane_quota_available": "{count} pages remaining",
+  "@nodelane_quota_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_quota_pages": "{count} pages",
+  "@nodelane_quota_pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_sign_out": "Sign out",
+  "nodelane_sign_out_confirm": "Signing out pauses official translation on this device. Your library and reading progress are kept.",
+  "settings_search_hint": "Search settings",
+  "settings_frequent": "Frequently used",
+  "settings_reading_translation": "Reading and translation",
+  "settings_app_preferences": "App preferences",
+  "settings_data_management": "Data and management",
+  "settings_more_tools": "More tools",
+  "settings_more_tools_hint": "Categories, statistics and calendar",
+  "settings_appearance_interface": "Appearance and interface",
+  "settings_security_privacy": "Security and privacy",
+  "settings_source_preferences": "Source settings",
+  "settings_about_help": "About and help",
+  "settings_storage_backup": "Storage and backup",
+  "settings_pending_downloads": "{count} pending",
+  "@settings_pending_downloads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_translation_language": "Translation language",
+  "settings_translation_scope": "Used in the reader and web page translation",
+  "settings_immediate_choice": "Changes apply immediately",
+  "settings_translation_init_error": "Translation settings are unavailable. Restart the app and try again.",
+  "settings_local_cache": "Local cache",
+  "settings_chapter_cache": "Chapter and episode cache",
+  "settings_cover_cache": "Cover cache",
+  "settings_translation_cache": "Translated image cache",
+  "settings_translation_cache_hint": "Keep translation records and retrieve translated images again when needed",
+  "settings_cache_clear": "Clear",
+  "settings_translation_cache_done": "Translated image cache cleared; translation records kept",
+  "settings_cache_confirmation": "Clear {name}? Cached content can be retrieved again. Library entries will be kept.",
+  "@settings_cache_confirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_advanced_options": "Advanced options",
+  "settings_manga_reader": "Manga Reader",
+  "settings_novel_reader": "Novel Reader",
+  "settings_downloads": "Download settings"
 }

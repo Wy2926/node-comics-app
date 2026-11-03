@@ -29,11 +29,15 @@ class NodeLaneIcons {
       _pick(CupertinoIcons.clear_circled_solid, Icons.cancel_rounded);
   IconData get down =>
       _pick(CupertinoIcons.chevron_down, Icons.expand_more_rounded);
+  IconData get up =>
+      _pick(CupertinoIcons.chevron_up, Icons.expand_less_rounded);
   IconData get forward =>
       _pick(CupertinoIcons.chevron_forward, Icons.chevron_right_rounded);
   IconData get check => _pick(CupertinoIcons.check_mark, Icons.check_rounded);
   IconData get close => _pick(CupertinoIcons.xmark, Icons.close_rounded);
   IconData get webLink => _pick(CupertinoIcons.link, Icons.link);
+  IconData get external =>
+      _pick(CupertinoIcons.arrow_up_right_square, Icons.open_in_new);
   IconData get recommend =>
       _pick(CupertinoIcons.hand_thumbsup, Icons.thumb_up_outlined);
   IconData get web => _pick(CupertinoIcons.globe, Icons.public_rounded);
@@ -41,8 +45,6 @@ class NodeLaneIcons {
       _pick(CupertinoIcons.square_on_square, Icons.tab_outlined);
   IconData get browserStart =>
       _pick(CupertinoIcons.macwindow, Icons.web_asset_outlined);
-  IconData get external =>
-      _pick(CupertinoIcons.arrow_up_right_square, Icons.open_in_new);
   IconData get code =>
       _pick(CupertinoIcons.chevron_left_slash_chevron_right, Icons.code);
   IconData get cookies =>
@@ -63,6 +65,15 @@ class NodeLaneIcons {
       _pick(CupertinoIcons.textformat, Icons.translate_rounded);
   IconData get account =>
       _pick(CupertinoIcons.person_fill, Icons.person_rounded);
+  IconData get accountOutline =>
+      _pick(CupertinoIcons.person, Icons.person_outline);
+  IconData get copy => _pick(CupertinoIcons.doc_on_doc, Icons.copy_outlined);
+  IconData get security => _pick(CupertinoIcons.lock, Icons.lock_outline);
+  IconData get cloud => _pick(CupertinoIcons.cloud, Icons.cloud_outlined);
+  IconData get backup =>
+      _pick(CupertinoIcons.cloud_upload, Icons.cloud_upload_outlined);
+  IconData get restore =>
+      _pick(CupertinoIcons.cloud_download, Icons.cloud_download_outlined);
   IconData get download =>
       _pick(CupertinoIcons.arrow_down_to_line, Icons.download_outlined);
   IconData get incognito =>

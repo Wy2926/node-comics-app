@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/session.dart';
+import 'package:mangayomi/services/translation/channels/nodelane/account.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 
 void main() {
@@ -19,12 +20,16 @@ void main() {
   late HttpOverrides? previousOverrides;
   final exchanges = <Map<String, String>>[];
   late Uri authorization;
-  bool invalidState = false;
+  bool invalidState = false, billingFailure = false, wrongUser = false;
+  final reads = <(String, String)>[];
 
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues({});
     exchanges.clear();
     invalidState = false;
+    billingFailure = false;
+    wrongUser = false;
+    reads.clear();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       request.response.headers.contentType = ContentType.json;
@@ -54,11 +59,41 @@ void main() {
         case '/v1/me':
           expect(
             request.headers.value('authorization'),
-            'Bearer initial-access',
+            anyOf('Bearer initial-access', 'Bearer renewed-access'),
           );
+          reads.add((request.method, request.uri.path));
           body = {
-            'user': {'id': 'user-1', 'name': 'Reader'},
+            'user': {
+              'id': wrongUser ? 'other-user' : 'user-1',
+              'name': 'Reader',
+            },
+            'entitlements': {
+              'plan': 'plus',
+              'plan_name': 'PLUS',
+              'generated_at': '2026-11-03T08:00:00Z',
+              'free_quota': {
+                'available': 24,
+                'used': 6,
+                'reserved': 0,
+                'granted': 30,
+              },
+            },
           };
+        case '/v1/billing/status':
+          reads.add((request.method, request.uri.path));
+          expect(
+            request.headers.value('authorization'),
+            'Bearer renewed-access',
+          );
+          if (billingFailure) request.response.statusCode = 503;
+          body = billingFailure
+              ? {'code': 'UNAVAILABLE'}
+              : {
+                  'subscription': {
+                    'auto_renew': true,
+                    'next_billed_at': '2026-12-03T08:00:00Z',
+                  },
+                };
         default:
           fail('Unexpected request: ${request.uri.path}');
       }
@@ -129,6 +164,41 @@ void main() {
     final signedOut = NodeLaneSession(base);
     await signedOut.restore();
     expect(signedOut.userId, isNull);
+  });
+
+  test('account overview uses authenticated reads and keeps entitlement data if billing fails', () async {
+    final session = NodeLaneSession(base);
+    await session.login();
+    reads.clear();
+    final account = await session.readAccount(TranslationCancellation());
+    expect(reads, [('GET', '/v1/me'), ('GET', '/v1/billing/status')]);
+    expect(account.free!.available, 24);
+    expect(account.renewal, NodeLaneRenewal.automatic);
+    billingFailure = true;
+    final partial = await session.readAccount(TranslationCancellation());
+    expect(partial.free!.available, 24);
+    expect(partial.billingUnavailable, isTrue);
+    expect(partial.renewal, NodeLaneRenewal.unknown);
+    expect(session.userId, 'user-1');
+  });
+
+  test('account response cannot disclose another identity or continue into its billing', () async {
+    final session = NodeLaneSession(base);
+    await session.login();
+    wrongUser = true;
+    reads.clear();
+    await expectLater(
+      session.readAccount(TranslationCancellation()),
+      throwsA(
+        isA<TranslationFailure>().having(
+          (e) => e.code,
+          'code',
+          'AUTH_REQUIRED',
+        ),
+      ),
+    );
+    expect(reads, [('GET', '/v1/me')]);
+    expect(session.userId, 'user-1');
   });
 
   test(

@@ -223,7 +223,8 @@ class RouterNotifier extends ChangeNotifier {
         name: "ExtensionLang",
         builder: (itemType) => ExtensionsLang(itemType: itemType),
       ),
-    _genericRoute(name: "settings", child: const SettingsScreen()),
+    if (!(isMobile && !isTv))
+      _genericRoute(name: "settings", child: const SettingsScreen()),
     _genericRoute(name: "appearance", child: const AppearanceScreen()),
     _genericRoute<Source>(
       name: "extension_detail",

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,7 @@ import 'contracts.dart';
 import 'image_work.dart';
 import 'channels/nodelane/channel.dart';
 import 'channels/nodelane/session.dart';
+import 'channels/nodelane/account.dart';
 
 final translationServiceProvider = Provider<TranslationService>((ref) {
   final service = TranslationService();
@@ -22,14 +24,18 @@ final translationServiceProvider = Provider<TranslationService>((ref) {
 /// Composition root: source and presentation code depend only on ChannelRuntime.
 /// A separate private database keeps receipts out of library backup and sync.
 class TranslationService extends ChangeNotifier {
-  final _session = NodeLaneSession(
-    Uri.parse(
-      const String.fromEnvironment(
-        'NODELANE_API_BASE',
-        defaultValue: 'https://comics.nodelane.net',
-      ),
-    ),
-  );
+  TranslationService({NodeLaneSession? session})
+    : _session =
+          session ??
+          NodeLaneSession(
+            Uri.parse(
+              const String.fromEnvironment(
+                'NODELANE_API_BASE',
+                defaultValue: 'https://comics.nodelane.net',
+              ),
+            ),
+          );
+  final NodeLaneSession _session;
   ChannelRuntime? runtime;
   TranslationRepository? _repository;
   TranslationImageWork? _images;
@@ -39,6 +45,56 @@ class TranslationService extends ChangeNotifier {
   String? error;
   bool get loggedIn => _session.userId != null;
   String get accountName => _session.name;
+  String? get accountId => _session.userId;
+  NodeLaneAccount? account;
+  bool accountLoading = false;
+  bool accountLoadFailed = false;
+  bool accountAuthRequired = false;
+  Future<void>? _accountRequest;
+  TranslationCancellation? _accountCancellation;
+
+  /// Refreshing presentation data never replaces the reading runtime or tasks.
+  Future<void> refreshAccount() => _accountRequest ??= _readAccount();
+  Future<void> _readAccount() async {
+    final cancel = TranslationCancellation();
+    _accountCancellation = cancel;
+    accountLoading = true;
+    accountLoadFailed = false;
+    accountAuthRequired = false;
+    notifyListeners();
+    try {
+      await initialize();
+      if (!loggedIn) return;
+      final next = await _session.readAccount(cancel);
+      cancel.check();
+      account = next;
+    } on TranslationCancelled {
+      // Account replacement and disposal invalidate in-flight reads.
+    } catch (e) {
+      if (!cancel.isCancelled) {
+        accountLoadFailed = true;
+        accountAuthRequired =
+            e is TranslationFailure && e.code == 'AUTH_REQUIRED';
+      }
+    } finally {
+      if (_accountCancellation == cancel) {
+        _accountCancellation = null;
+        _accountRequest = null;
+        accountLoading = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  void _clearAccount() {
+    _accountCancellation?.cancel();
+    _accountCancellation = null;
+    _accountRequest = null;
+    account = null;
+    accountLoading = false;
+    accountLoadFailed = false;
+    accountAuthRequired = false;
+  }
 
   Future<void> initialize() => _initializing ??= _initialize();
   Future<void> _initialize() async {
@@ -94,9 +150,12 @@ class TranslationService extends ChangeNotifier {
   Future<void> login() => _act(() async {
     await initialize();
     await _session.login();
+    _clearAccount();
     await _replaceRuntime();
+    unawaited(refreshAccount());
   });
   Future<void> logout() => _act(() async {
+    _clearAccount();
     await _session.logout();
     await _replaceRuntime();
   });
@@ -134,6 +193,7 @@ class TranslationService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _clearAccount();
     runtime?.dispose();
     super.dispose();
   }

@@ -6,7 +6,7 @@ import 'package:mangayomi/main.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 class IncognitoModeWidget extends ConsumerWidget {
@@ -32,9 +32,8 @@ class IncognitoModeWidget extends ConsumerWidget {
     }
 
     if (mobile) {
-      return MobileSettingsSwitch(
+      return NodeLaneSwitchRow(
         title: l10n!.incognito_mode,
-        subtitle: l10n.incognito_mode_description,
         icon: NodeLaneIcons.of(context).incognito,
         value: incognitoMode,
         onChanged: change,

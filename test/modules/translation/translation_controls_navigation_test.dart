@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
-import 'package:mangayomi/modules/translation/translation_settings.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
@@ -28,6 +29,8 @@ class _AccountService extends TranslationService {
   String get accountName => 'Test Reader';
   @override
   Future<void> initialize() async {}
+  @override
+  Future<void> refreshAccount() async {}
   @override
   Future<void> login() async {
     loginCalls++;
@@ -77,6 +80,9 @@ void main() {
       ProviderScope(
         overrides: [translationServiceProvider.overrideWithValue(service)],
         child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: ThemeData(platform: TargetPlatform.iOS),
           home: Builder(
             builder: (context) => Scaffold(
@@ -118,8 +124,8 @@ void main() {
     await tester.tap(find.text('登录后开启翻译'));
     await tester.pumpAndSettle();
     expect(find.byType(TranslationControlsContent), findsNothing);
-    expect(find.byType(MobileNodeLaneAccount), findsOneWidget);
-    expect(find.byType(TranslationSettings), findsNothing);
+    expect(find.byType(MobileNodeLaneAccountPage), findsOneWidget);
+    expect(find.byType(NodeLaneCatalogSheet), findsNothing);
     expect(find.text('前往登录'), findsOneWidget);
   }
 
@@ -131,7 +137,7 @@ void main() {
       for (var visit = 0; visit < 2; visit++) {
         await openLogin(tester);
         expect(service.loginCalls, 0);
-        await tester.pageBack();
+        await tester.tap(find.byTooltip('返回'));
         await tester.pumpAndSettle();
         expect(readerKey.currentState, same(reader));
         expect(readingPosition.offset, 320);
@@ -142,48 +148,49 @@ void main() {
     },
   );
 
-  testWidgets('login failure can retry and settings remains a separate route', (
-    tester,
-  ) async {
-    await mount(tester);
-    await openLogin(tester);
-    final login = find.widgetWithText(FilledButton, '前往登录');
-    await tester.tap(login);
-    await tester.pump();
-    await tester.tap(login);
-    expect(service.loginCalls, 1);
-    service.finishLogin();
-    await tester.pumpAndSettle();
-    expect(find.text('登录未完成，请重试'), findsOneWidget);
-    await tester.tap(login);
-    await tester.pump();
-    service.finishLogin(success: true);
-    await tester.pumpAndSettle();
-    expect(service.loginCalls, 2);
-    expect(find.text('已登录 NodeLane'), findsOneWidget);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    expect(readingPosition.offset, 320);
-    await tester.tap(find.byTooltip('Translation'));
-    await tester.pumpAndSettle();
-    expect(find.text('登录后开启翻译'), findsNothing);
-    expect(controller.enabled, isFalse);
-    final toggle = tester.widget<SwitchListTile>(
-      find.widgetWithText(SwitchListTile, '翻译当前阅读范围'),
-    );
-    expect(toggle.onChanged, isNotNull);
-    await tester.tap(find.text('翻译设置'));
-    await tester.pumpAndSettle();
-    expect(find.byType(TranslationSettings), findsOneWidget);
-    expect(find.text('目标语言'), findsOneWidget);
-    expect(find.byType(MobileNodeLaneAccount), findsNothing);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    expect(readingPosition.offset, 320);
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'login failure retries; language selection preserves the reader and controller',
+    (tester) async {
+      await mount(tester);
+      await openLogin(tester);
+      final login = find.widgetWithText(FilledButton, '前往登录');
+      await tester.tap(login);
+      await tester.pump();
+      await tester.tap(login);
+      expect(service.loginCalls, 1);
+      service.finishLogin();
+      await tester.pumpAndSettle();
+      expect(find.text('登录未完成，请重试'), findsOneWidget);
+      await tester.tap(login);
+      await tester.pump();
+      service.finishLogin(success: true);
+      await tester.pumpAndSettle();
+      expect(service.loginCalls, 2);
+      expect(find.text('Test Reader'), findsOneWidget);
+      await tester.tap(find.byTooltip('返回'));
+      await tester.pumpAndSettle();
+      expect(readingPosition.offset, 320);
+      await tester.tap(find.byTooltip('Translation'));
+      await tester.pumpAndSettle();
+      expect(find.text('登录后开启翻译'), findsNothing);
+      expect(controller.enabled, isFalse);
+      final toggle = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, '翻译当前阅读范围'),
+      );
+      expect(toggle.onChanged, isNotNull);
+      await tester.tap(find.text('翻译目标语言'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.text('English'), findsOneWidget);
+      expect(find.byType(MobileNodeLaneAccountPage), findsNothing);
+      await tester.tap(find.byTooltip('关闭').last);
+      await tester.pumpAndSettle();
+      expect(readingPosition.offset, 320);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets('translation settings are directly available before login', (
+  testWidgets('language choice is directly available before login', (
     tester,
   ) async {
     await mount(tester);
@@ -191,13 +198,13 @@ void main() {
     await tester.tap(find.byTooltip('Translation'));
     await tester.pumpAndSettle();
     expect(find.text('登录后开启翻译'), findsOneWidget);
-    await tester.tap(find.text('翻译设置'));
+    await tester.tap(find.text('翻译目标语言'));
     await tester.pumpAndSettle();
-    expect(find.byType(TranslationSettings), findsOneWidget);
-    expect(find.byType(MobileNodeLaneAccount), findsNothing);
+    expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+    expect(find.byType(MobileNodeLaneAccountPage), findsNothing);
     expect(service.loginCalls, 0);
     expect(controller.enabled, isFalse);
-    await tester.pageBack();
+    await tester.tap(find.byTooltip('关闭').last);
     await tester.pumpAndSettle();
     expect(readerKey.currentState, same(reader));
     expect(readingPosition.offset, 320);

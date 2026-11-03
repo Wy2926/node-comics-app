@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/more/data_and_storage/mobile_create_backup.dart';
@@ -128,17 +130,18 @@ void main() {
         ],
       );
       await start(tester, home, container: container);
-      await tap(tester, find.text('Backup frequency'));
+      await tap(tester, find.text('Automatic backups'));
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(_writes, isEmpty);
-      await tap(tester, find.text('Backup frequency'));
+      await tap(tester, find.text('Automatic backups'));
       await tap(tester, find.text('Off'));
       expect(container.read(backupFrequencyStateProvider), 0);
       expect(
         container.read(autoBackupLocationStateProvider).$2,
         '/kept/backup',
       );
+      await tap(tester, find.text('Advanced options'));
       await tap(tester, find.text('Backup location'));
       expect(directoryCalls, 1);
       expect(_writes, [('frequency', 0)]);
@@ -166,14 +169,13 @@ void main() {
       await drag.up();
       await tester.pumpAndSettle();
       expect(_writes.where((e) => e.$1 == 'compression'), hasLength(1));
-      await tap(tester, find.text('Download location'));
+      await tap(tester, find.text('Download location'), delta: -300);
       await tap(tester, find.text('Default'));
       expect(container.read(downloadLocationStateProvider).$2, '');
       expect(
         container.read(autoBackupLocationStateProvider).$2,
         '/chosen/backup',
       );
-      await tap(tester, find.text('Advanced'));
       expect(maintenanceCalls, 0);
       await tap(tester, find.text('Existing tool'));
       expect(maintenanceCalls, 1);
@@ -186,6 +188,88 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('private path'), findsNothing);
       expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'cache clearing confirms, isolates each action and keeps failure retryable',
+    (tester) async {
+      final service = _CacheService();
+      final container = ProviderContainer(
+        overrides: [
+          translationServiceProvider.overrideWithValue(service),
+          backupFrequencyStateProvider.overrideWith(_Frequency.new),
+          autoBackupLocationStateProvider.overrideWith(_BackupLocation.new),
+          downloadLocationStateProvider.overrideWith(_DownloadLocation.new),
+          backupCompressionLevelProvider.overrideWith(_Compression.new),
+          backupEncryptionEnabledProvider.overrideWith(_Encryption.new),
+          totalChapterCacheSizeStateProvider.overrideWith(_Cache.new),
+          clearChapterCacheOnAppLaunchStateProvider.overrideWith(
+            _ClearOnLaunch.new,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(service.dispose);
+      var coverClears = 0;
+      await start(
+        tester,
+        MobileDataAndStorage(
+          onCreate: () {},
+          onRestore: () async {},
+          onChooseDirectory: () async => null,
+          onEncryptionChanged: (_) async {},
+          canChooseBackupLocation: false,
+          maintenance: const [],
+          onClearCovers: () async {
+            coverClears++;
+          },
+        ),
+        container: container,
+      );
+      Finder action(String name) => find.descendant(
+        of: find.widgetWithText(NodeLaneRow, name),
+        matching: find.byType(TextButton),
+      );
+      await tap(tester, action('Cover cache'));
+      expect(coverClears, 0);
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
+      expect(coverClears, 0);
+      await tap(tester, action('Cover cache'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.pumpAndSettle();
+      expect(coverClears, 1);
+      expect(service.calls, 0);
+      final clearTranslation = action('Translated image cache');
+      await tap(tester, clearTranslation);
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.pump();
+      expect(service.calls, 1);
+      await tester.tap(clearTranslation, warnIfMissed: false);
+      expect(service.calls, 1);
+      service.finish(error: 'Please retry');
+      await tester.pumpAndSettle();
+      expect(find.text('Please retry'), findsOneWidget);
+      expect(
+        find.text('Translated image cache cleared; translation records kept'),
+        findsNothing,
+      );
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      await tap(tester, clearTranslation);
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.pump();
+      service.finish();
+      await tester.pumpAndSettle();
+      expect(service.calls, 2);
+      expect(coverClears, 1);
+      expect(
+        find.text('Translated image cache cleared; translation records kept'),
+        findsOneWidget,
+      );
+      expect(_writes, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
@@ -656,5 +740,28 @@ class _ClearOnLaunch extends ClearChapterCacheOnAppLaunchState {
   void set(bool value) {
     state = value;
     _writes.add(('cache-launch', value));
+  }
+}
+
+class _CacheService extends TranslationService {
+  int calls = 0;
+  Completer<void>? pending;
+  @override
+  Future<void> initialize() async {}
+  @override
+  Future<void> clearResults() async {
+    calls++;
+    busy = true;
+    error = null;
+    pending = Completer<void>();
+    notifyListeners();
+    await pending!.future;
+    busy = false;
+    notifyListeners();
+  }
+
+  void finish({String? error}) {
+    this.error = error;
+    pending!.complete();
   }
 }

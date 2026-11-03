@@ -121,6 +121,9 @@ class NodeLaneRow extends StatelessWidget {
     this.onLongPress,
     this.selected,
     this.destructive = false,
+    this.compact = false,
+    this.prominent = false,
+    this.accented = false,
     this.checkable = false,
     this.enabled = true,
   }) : assert(icon == null || leading == null),
@@ -140,6 +143,9 @@ class NodeLaneRow extends StatelessWidget {
     this.onLongPress,
     this.selected,
     this.destructive = false,
+    this.compact = false,
+    this.prominent = false,
+    this.accented = false,
     this.checkable = false,
     this.enabled = true,
     this.first = true,
@@ -154,6 +160,7 @@ class NodeLaneRow extends StatelessWidget {
   final VoidCallback? onTap, onLongPress;
   final bool? selected;
   final bool destructive, checkable, enabled, first, last, _card;
+  final bool compact, prominent, accented;
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +169,8 @@ class NodeLaneRow extends StatelessWidget {
         ? t.muted.withValues(alpha: .5)
         : destructive
         ? Theme.of(context).colorScheme.error
+        : accented
+        ? t.accent
         : t.ink;
     final content = InkWell(
       onTap: enabled ? onTap : null,
@@ -170,7 +179,9 @@ class NodeLaneRow extends StatelessWidget {
         children: [
           ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: _card
+              minHeight: compact
+                  ? NodeLaneTokens.minTapTarget
+                  : _card
                   ? NodeLaneTokens.catalogRowHeight
                   : NodeLaneTokens.rowHeight,
             ),
@@ -194,7 +205,8 @@ class NodeLaneRow extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: t.readerLabel.copyWith(color: color),
+                          style: (prominent ? t.readerTitle : t.readerLabel)
+                              .copyWith(color: color),
                         ),
                         if (subtitle?.isNotEmpty == true) ...[
                           const SizedBox(height: NodeLaneTokens.space4),
@@ -255,6 +267,7 @@ class NodeLaneRow extends StatelessWidget {
       ),
     );
     return Semantics(
+      container: true,
       selected: checkable ? null : selected,
       checked: checkable ? selected == true : null,
       button: onTap != null || !enabled,
@@ -271,7 +284,7 @@ class NodeLaneRow extends StatelessWidget {
   }
 }
 
-enum NodeLaneBadgeTone { overlay, accent, neutral }
+enum NodeLaneBadgeTone { overlay, accent, softAccent, neutral }
 
 /// One annotation geometry for covers and compact status information.
 class NodeLaneCoverBadge extends StatelessWidget {
@@ -293,6 +306,7 @@ class NodeLaneCoverBadge extends StatelessWidget {
     final foreground = switch (tone) {
       NodeLaneBadgeTone.overlay => Colors.white,
       NodeLaneBadgeTone.accent => t.onAccent,
+      NodeLaneBadgeTone.softAccent => t.accent,
       NodeLaneBadgeTone.neutral => t.ink,
     };
     return Semantics(
@@ -307,6 +321,7 @@ class NodeLaneCoverBadge extends StatelessWidget {
           color: switch (tone) {
             NodeLaneBadgeTone.overlay => t.ink.withValues(alpha: .78),
             NodeLaneBadgeTone.accent => t.accent,
+            NodeLaneBadgeTone.softAccent => t.accentSoft,
             NodeLaneBadgeTone.neutral => t.surface,
           },
           borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
@@ -426,6 +441,142 @@ class NodeLaneSectionHeading extends StatelessWidget {
     child: Text(title, style: NodeLaneTokens.of(context).sectionTitle),
   );
 }
+
+/// A switch is the same row as other controls, including its full-row target.
+class NodeLaneSwitchRow extends StatelessWidget {
+  const NodeLaneSwitchRow({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.onChanged,
+    this.subtitle,
+    this.icon,
+  });
+  final String title;
+  final String? subtitle;
+  final IconData? icon;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) => MergeSemantics(
+    child: NodeLaneRow(
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
+      enabled: onChanged != null,
+      onTap: onChanged == null ? null : () => onChanged!(!value),
+      trailing: Switch.adaptive(
+        value: value,
+        onChanged: onChanged,
+        activeTrackColor: NodeLaneTokens.of(context).accent,
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: EdgeInsets.zero,
+      ),
+    ),
+  );
+}
+
+/// Collapsed optional settings keep their values; only presentation is owned here.
+class NodeLaneDisclosure extends StatefulWidget {
+  const NodeLaneDisclosure({
+    super.key,
+    required this.title,
+    required this.child,
+    this.subtitle,
+    this.icon,
+    this.initiallyExpanded = false,
+  });
+  final String title;
+  final String? subtitle;
+  final IconData? icon;
+  final Widget child;
+  final bool initiallyExpanded;
+  @override
+  State<NodeLaneDisclosure> createState() => _NodeLaneDisclosureState();
+}
+
+class _NodeLaneDisclosureState extends State<NodeLaneDisclosure> {
+  late bool _expanded = widget.initiallyExpanded;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _expanded =
+        PageStorage.maybeOf(context)
+                ?.readState(context, identifier: widget.key ?? widget.title)
+            as bool? ??
+        _expanded;
+  }
+
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+    PageStorage.maybeOf(
+      context,
+    )?.writeState(context, _expanded, identifier: widget.key ?? widget.title);
+  }
+
+  @override
+  Widget build(BuildContext context) => NodeLaneGroupSurface(
+    child: Column(
+      children: [
+        Semantics(
+          expanded: _expanded,
+          child: NodeLaneRow(
+            title: widget.title,
+            subtitle: widget.subtitle,
+            icon: widget.icon,
+            onTap: _toggle,
+            trailing: Icon(
+              _expanded
+                  ? NodeLaneIcons.of(context).up
+                  : NodeLaneIcons.of(context).down,
+              size: NodeLaneTokens.smallIconSize,
+              color: NodeLaneTokens.of(context).muted,
+            ),
+          ),
+        ),
+        if (_expanded) ...[const NodeLaneGroupDivider(), widget.child],
+      ],
+    ),
+  );
+}
+
+AppBar nodeLaneAppBar(
+  BuildContext context, {
+  required String title,
+  List<Widget> actions = const [],
+  bool busy = false,
+}) => AppBar(
+  title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+  titleTextStyle: NodeLaneTokens.of(context).readerTitle,
+  centerTitle: true,
+  toolbarHeight: (MediaQuery.textScalerOf(context).scale(22) * 1.3 + 16).clamp(
+    kToolbarHeight,
+    double.infinity,
+  ),
+  automaticallyImplyLeading: false,
+  leadingWidth: 64,
+  leading: Navigator.of(context).canPop()
+      ? Padding(
+          padding: const EdgeInsets.only(left: NodeLaneTokens.space20),
+          child: NodeLaneIconButton(
+            icon: NodeLaneIcons.of(context).back,
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            onPressed: busy ? null : () => Navigator.maybePop(context),
+          ),
+        )
+      : null,
+  actions: [
+    ...actions,
+    if (actions.isNotEmpty) const SizedBox(width: NodeLaneTokens.space20),
+  ],
+  bottom: busy
+      ? const PreferredSize(
+          preferredSize: Size.fromHeight(2),
+          child: LinearProgressIndicator(minHeight: 2),
+        )
+      : null,
+);
 
 enum NodeLaneIconButtonStyle { plain, tonal, field }
 

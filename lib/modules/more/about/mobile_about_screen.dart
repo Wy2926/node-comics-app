@@ -4,6 +4,8 @@ import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -26,10 +28,12 @@ class MobileAboutScreen extends StatefulWidget {
     required this.onShareLogs,
     required this.onGitHub,
     required this.onDiscord,
+    this.onOnboarding,
   });
 
   final AsyncValue<PackageInfo> packageInfo;
   final VoidCallback onRetryPackageInfo;
+  final VoidCallback? onOnboarding;
   final bool checkForUpdates, logsEnabled;
   final ValueChanged<bool> onAutoCheckChanged;
   final Future<void> Function(bool) onLogsChanged;
@@ -103,7 +107,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
     final count = widget.reportCount();
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(title: Text(l10n.about)),
+        appBar: nodeLaneAppBar(context, title: l10n.settings_about_help),
         body: SafeArea(
           top: false,
           child: ListView(
@@ -222,6 +226,16 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                     ),
                 ],
               ),
+              if (widget.onOnboarding != null)
+                MobileSettingsGroup(
+                  children: [
+                    NodeLaneRow(
+                      title: l10n.onboarding_replay,
+                      icon: NodeLaneIcons.of(context).info,
+                      onTap: widget.onOnboarding,
+                    ),
+                  ],
+                ),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

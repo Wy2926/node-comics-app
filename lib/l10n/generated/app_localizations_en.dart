@@ -4319,4 +4319,260 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookshelf_mark_unwatched => 'Mark unwatched';
+
+  @override
+  String get nodelane_account => 'NodeLane account';
+
+  @override
+  String get nodelane_sign_in => 'Sign in to NodeLane';
+
+  @override
+  String get nodelane_account_intro =>
+      'View your account, subscription and translation quota';
+
+  @override
+  String get nodelane_login_action => 'Continue to sign in';
+
+  @override
+  String get nodelane_login_browser =>
+      'Sign in through the system browser, then return to the app';
+
+  @override
+  String get nodelane_account_id => 'Account ID';
+
+  @override
+  String get nodelane_account_reading => 'Loading account…';
+
+  @override
+  String get nodelane_account_init_error =>
+      'Account storage is unavailable. Restart the app and try again.';
+
+  @override
+  String get nodelane_account_refresh_error =>
+      'Could not refresh account information';
+
+  @override
+  String get nodelane_account_auth_error =>
+      'Your session has expired. Sign in again';
+
+  @override
+  String get nodelane_account_unknown =>
+      'Subscription information is unavailable';
+
+  @override
+  String get nodelane_account_current => 'Current subscription';
+
+  @override
+  String get nodelane_account_free => 'Free account';
+
+  @override
+  String get nodelane_account_no_subscription => 'No active subscription';
+
+  @override
+  String get nodelane_account_active => 'Active';
+
+  @override
+  String get nodelane_account_expired => 'Expired';
+
+  @override
+  String get nodelane_account_expiry => 'Valid until';
+
+  @override
+  String get nodelane_account_renewal => 'Renewal';
+
+  @override
+  String get nodelane_renewal_auto => 'Automatic renewal';
+
+  @override
+  String get nodelane_renewal_manual => 'Manual renewal';
+
+  @override
+  String get nodelane_renewal_stopped => 'Automatic renewal stopped';
+
+  @override
+  String get nodelane_renewal_gift => 'Gift membership';
+
+  @override
+  String get nodelane_renewal_attention =>
+      'Check your renewal status on the website';
+
+  @override
+  String get nodelane_next_billing => 'Next billing date';
+
+  @override
+  String get nodelane_billing_unavailable =>
+      'Renewal information is unavailable';
+
+  @override
+  String get nodelane_manage_account => 'Manage on website';
+
+  @override
+  String get nodelane_view_plans => 'View subscription plans';
+
+  @override
+  String get nodelane_translation_quota => 'Translation quota';
+
+  @override
+  String get nodelane_quota_free => 'Free quota';
+
+  @override
+  String get nodelane_quota_subscription => 'Subscription quota';
+
+  @override
+  String get nodelane_quota_purchase => 'Purchased quota';
+
+  @override
+  String get nodelane_quota_details => 'View quota details';
+
+  @override
+  String get nodelane_quota_expanded => 'Quota details';
+
+  @override
+  String get nodelane_quota_unlimited => 'Unlimited';
+
+  @override
+  String get nodelane_quota_not_subscribed => 'Not subscribed';
+
+  @override
+  String get nodelane_quota_unknown => 'Unavailable';
+
+  @override
+  String get nodelane_quota_used => 'Used';
+
+  @override
+  String get nodelane_quota_reserved => 'In progress';
+
+  @override
+  String get nodelane_quota_reset => 'Next reset';
+
+  @override
+  String get nodelane_quota_expiry => 'Next expiry';
+
+  @override
+  String get nodelane_quota_no_expiry => 'No expiry date';
+
+  @override
+  String get nodelane_quota_reservation_note =>
+      'Pages in progress are already deducted from the available quota';
+
+  @override
+  String get nodelane_quota_purchase_note =>
+      'Purchased quota is separate from your subscription';
+
+  @override
+  String nodelane_account_updated(String time) {
+    return 'Updated $time';
+  }
+
+  @override
+  String nodelane_quota_available(int count) {
+    return '$count pages remaining';
+  }
+
+  @override
+  String nodelane_quota_pages(int count) {
+    return '$count pages';
+  }
+
+  @override
+  String get nodelane_sign_out => 'Sign out';
+
+  @override
+  String get nodelane_sign_out_confirm =>
+      'Signing out pauses official translation on this device. Your library and reading progress are kept.';
+
+  @override
+  String get settings_search_hint => 'Search settings';
+
+  @override
+  String get settings_frequent => 'Frequently used';
+
+  @override
+  String get settings_reading_translation => 'Reading and translation';
+
+  @override
+  String get settings_app_preferences => 'App preferences';
+
+  @override
+  String get settings_data_management => 'Data and management';
+
+  @override
+  String get settings_more_tools => 'More tools';
+
+  @override
+  String get settings_more_tools_hint => 'Categories, statistics and calendar';
+
+  @override
+  String get settings_appearance_interface => 'Appearance and interface';
+
+  @override
+  String get settings_security_privacy => 'Security and privacy';
+
+  @override
+  String get settings_source_preferences => 'Source settings';
+
+  @override
+  String get settings_about_help => 'About and help';
+
+  @override
+  String get settings_storage_backup => 'Storage and backup';
+
+  @override
+  String settings_pending_downloads(int count) {
+    return '$count pending';
+  }
+
+  @override
+  String get settings_translation_language => 'Translation language';
+
+  @override
+  String get settings_translation_scope =>
+      'Used in the reader and web page translation';
+
+  @override
+  String get settings_immediate_choice => 'Changes apply immediately';
+
+  @override
+  String get settings_translation_init_error =>
+      'Translation settings are unavailable. Restart the app and try again.';
+
+  @override
+  String get settings_local_cache => 'Local cache';
+
+  @override
+  String get settings_chapter_cache => 'Chapter and episode cache';
+
+  @override
+  String get settings_cover_cache => 'Cover cache';
+
+  @override
+  String get settings_translation_cache => 'Translated image cache';
+
+  @override
+  String get settings_translation_cache_hint =>
+      'Keep translation records and retrieve translated images again when needed';
+
+  @override
+  String get settings_cache_clear => 'Clear';
+
+  @override
+  String get settings_translation_cache_done =>
+      'Translated image cache cleared; translation records kept';
+
+  @override
+  String settings_cache_confirmation(String name) {
+    return 'Clear $name? Cached content can be retrieved again. Library entries will be kept.';
+  }
+
+  @override
+  String get settings_advanced_options => 'Advanced options';
+
+  @override
+  String get settings_manga_reader => 'Manga Reader';
+
+  @override
+  String get settings_novel_reader => 'Novel Reader';
+
+  @override
+  String get settings_downloads => 'Download settings';
 }

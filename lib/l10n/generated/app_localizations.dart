@@ -7583,6 +7583,468 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark unwatched'**
   String get bookshelf_mark_unwatched;
+
+  /// No description provided for @nodelane_account.
+  ///
+  /// In en, this message translates to:
+  /// **'NodeLane account'**
+  String get nodelane_account;
+
+  /// No description provided for @nodelane_sign_in.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to NodeLane'**
+  String get nodelane_sign_in;
+
+  /// No description provided for @nodelane_account_intro.
+  ///
+  /// In en, this message translates to:
+  /// **'View your account, subscription and translation quota'**
+  String get nodelane_account_intro;
+
+  /// No description provided for @nodelane_login_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to sign in'**
+  String get nodelane_login_action;
+
+  /// No description provided for @nodelane_login_browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in through the system browser, then return to the app'**
+  String get nodelane_login_browser;
+
+  /// No description provided for @nodelane_account_id.
+  ///
+  /// In en, this message translates to:
+  /// **'Account ID'**
+  String get nodelane_account_id;
+
+  /// No description provided for @nodelane_account_reading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading account…'**
+  String get nodelane_account_reading;
+
+  /// No description provided for @nodelane_account_init_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Account storage is unavailable. Restart the app and try again.'**
+  String get nodelane_account_init_error;
+
+  /// No description provided for @nodelane_account_refresh_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh account information'**
+  String get nodelane_account_refresh_error;
+
+  /// No description provided for @nodelane_account_auth_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Sign in again'**
+  String get nodelane_account_auth_error;
+
+  /// No description provided for @nodelane_account_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription information is unavailable'**
+  String get nodelane_account_unknown;
+
+  /// No description provided for @nodelane_account_current.
+  ///
+  /// In en, this message translates to:
+  /// **'Current subscription'**
+  String get nodelane_account_current;
+
+  /// No description provided for @nodelane_account_free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free account'**
+  String get nodelane_account_free;
+
+  /// No description provided for @nodelane_account_no_subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'No active subscription'**
+  String get nodelane_account_no_subscription;
+
+  /// No description provided for @nodelane_account_active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get nodelane_account_active;
+
+  /// No description provided for @nodelane_account_expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get nodelane_account_expired;
+
+  /// No description provided for @nodelane_account_expiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until'**
+  String get nodelane_account_expiry;
+
+  /// No description provided for @nodelane_account_renewal.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewal'**
+  String get nodelane_account_renewal;
+
+  /// No description provided for @nodelane_renewal_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic renewal'**
+  String get nodelane_renewal_auto;
+
+  /// No description provided for @nodelane_renewal_manual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual renewal'**
+  String get nodelane_renewal_manual;
+
+  /// No description provided for @nodelane_renewal_stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic renewal stopped'**
+  String get nodelane_renewal_stopped;
+
+  /// No description provided for @nodelane_renewal_gift.
+  ///
+  /// In en, this message translates to:
+  /// **'Gift membership'**
+  String get nodelane_renewal_gift;
+
+  /// No description provided for @nodelane_renewal_attention.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your renewal status on the website'**
+  String get nodelane_renewal_attention;
+
+  /// No description provided for @nodelane_next_billing.
+  ///
+  /// In en, this message translates to:
+  /// **'Next billing date'**
+  String get nodelane_next_billing;
+
+  /// No description provided for @nodelane_billing_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewal information is unavailable'**
+  String get nodelane_billing_unavailable;
+
+  /// No description provided for @nodelane_manage_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage on website'**
+  String get nodelane_manage_account;
+
+  /// No description provided for @nodelane_view_plans.
+  ///
+  /// In en, this message translates to:
+  /// **'View subscription plans'**
+  String get nodelane_view_plans;
+
+  /// No description provided for @nodelane_translation_quota.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation quota'**
+  String get nodelane_translation_quota;
+
+  /// No description provided for @nodelane_quota_free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free quota'**
+  String get nodelane_quota_free;
+
+  /// No description provided for @nodelane_quota_subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription quota'**
+  String get nodelane_quota_subscription;
+
+  /// No description provided for @nodelane_quota_purchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchased quota'**
+  String get nodelane_quota_purchase;
+
+  /// No description provided for @nodelane_quota_details.
+  ///
+  /// In en, this message translates to:
+  /// **'View quota details'**
+  String get nodelane_quota_details;
+
+  /// No description provided for @nodelane_quota_expanded.
+  ///
+  /// In en, this message translates to:
+  /// **'Quota details'**
+  String get nodelane_quota_expanded;
+
+  /// No description provided for @nodelane_quota_unlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited'**
+  String get nodelane_quota_unlimited;
+
+  /// No description provided for @nodelane_quota_not_subscribed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not subscribed'**
+  String get nodelane_quota_not_subscribed;
+
+  /// No description provided for @nodelane_quota_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get nodelane_quota_unknown;
+
+  /// No description provided for @nodelane_quota_used.
+  ///
+  /// In en, this message translates to:
+  /// **'Used'**
+  String get nodelane_quota_used;
+
+  /// No description provided for @nodelane_quota_reserved.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get nodelane_quota_reserved;
+
+  /// No description provided for @nodelane_quota_reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Next reset'**
+  String get nodelane_quota_reset;
+
+  /// No description provided for @nodelane_quota_expiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Next expiry'**
+  String get nodelane_quota_expiry;
+
+  /// No description provided for @nodelane_quota_no_expiry.
+  ///
+  /// In en, this message translates to:
+  /// **'No expiry date'**
+  String get nodelane_quota_no_expiry;
+
+  /// No description provided for @nodelane_quota_reservation_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages in progress are already deducted from the available quota'**
+  String get nodelane_quota_reservation_note;
+
+  /// No description provided for @nodelane_quota_purchase_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchased quota is separate from your subscription'**
+  String get nodelane_quota_purchase_note;
+
+  /// No description provided for @nodelane_account_updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {time}'**
+  String nodelane_account_updated(String time);
+
+  /// No description provided for @nodelane_quota_available.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pages remaining'**
+  String nodelane_quota_available(int count);
+
+  /// No description provided for @nodelane_quota_pages.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pages'**
+  String nodelane_quota_pages(int count);
+
+  /// No description provided for @nodelane_sign_out.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get nodelane_sign_out;
+
+  /// No description provided for @nodelane_sign_out_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing out pauses official translation on this device. Your library and reading progress are kept.'**
+  String get nodelane_sign_out_confirm;
+
+  /// No description provided for @settings_search_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search settings'**
+  String get settings_search_hint;
+
+  /// No description provided for @settings_frequent.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently used'**
+  String get settings_frequent;
+
+  /// No description provided for @settings_reading_translation.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading and translation'**
+  String get settings_reading_translation;
+
+  /// No description provided for @settings_app_preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'App preferences'**
+  String get settings_app_preferences;
+
+  /// No description provided for @settings_data_management.
+  ///
+  /// In en, this message translates to:
+  /// **'Data and management'**
+  String get settings_data_management;
+
+  /// No description provided for @settings_more_tools.
+  ///
+  /// In en, this message translates to:
+  /// **'More tools'**
+  String get settings_more_tools;
+
+  /// No description provided for @settings_more_tools_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories, statistics and calendar'**
+  String get settings_more_tools_hint;
+
+  /// No description provided for @settings_appearance_interface.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance and interface'**
+  String get settings_appearance_interface;
+
+  /// No description provided for @settings_security_privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Security and privacy'**
+  String get settings_security_privacy;
+
+  /// No description provided for @settings_source_preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Source settings'**
+  String get settings_source_preferences;
+
+  /// No description provided for @settings_about_help.
+  ///
+  /// In en, this message translates to:
+  /// **'About and help'**
+  String get settings_about_help;
+
+  /// No description provided for @settings_storage_backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage and backup'**
+  String get settings_storage_backup;
+
+  /// No description provided for @settings_pending_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pending'**
+  String settings_pending_downloads(int count);
+
+  /// No description provided for @settings_translation_language.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation language'**
+  String get settings_translation_language;
+
+  /// No description provided for @settings_translation_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Used in the reader and web page translation'**
+  String get settings_translation_scope;
+
+  /// No description provided for @settings_immediate_choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes apply immediately'**
+  String get settings_immediate_choice;
+
+  /// No description provided for @settings_translation_init_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation settings are unavailable. Restart the app and try again.'**
+  String get settings_translation_init_error;
+
+  /// No description provided for @settings_local_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Local cache'**
+  String get settings_local_cache;
+
+  /// No description provided for @settings_chapter_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter and episode cache'**
+  String get settings_chapter_cache;
+
+  /// No description provided for @settings_cover_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover cache'**
+  String get settings_cover_cache;
+
+  /// No description provided for @settings_translation_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated image cache'**
+  String get settings_translation_cache;
+
+  /// No description provided for @settings_translation_cache_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep translation records and retrieve translated images again when needed'**
+  String get settings_translation_cache_hint;
+
+  /// No description provided for @settings_cache_clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settings_cache_clear;
+
+  /// No description provided for @settings_translation_cache_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated image cache cleared; translation records kept'**
+  String get settings_translation_cache_done;
+
+  /// No description provided for @settings_cache_confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear {name}? Cached content can be retrieved again. Library entries will be kept.'**
+  String settings_cache_confirmation(String name);
+
+  /// No description provided for @settings_advanced_options.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced options'**
+  String get settings_advanced_options;
+
+  /// No description provided for @settings_manga_reader.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga Reader'**
+  String get settings_manga_reader;
+
+  /// No description provided for @settings_novel_reader.
+  ///
+  /// In en, this message translates to:
+  /// **'Novel Reader'**
+  String get settings_novel_reader;
+
+  /// No description provided for @settings_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Download settings'**
+  String get settings_downloads;
 }
 
 class _AppLocalizationsDelegate

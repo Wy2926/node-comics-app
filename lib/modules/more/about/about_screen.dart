@@ -24,6 +24,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'mobile_about_screen.dart';
 
+import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
+
 class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
 
@@ -34,6 +36,8 @@ class AboutScreen extends ConsumerWidget {
     final enableLogs = ref.watch(logsStateProvider);
     if (isMobile && !isTv) {
       return MobileAboutScreen(
+        onOnboarding: () =>
+            ref.read(onboardingCompletedStateProvider.notifier).showAgain(),
         packageInfo: ref.watch(getPackageInfoProvider),
         onRetryPackageInfo: () => ref.invalidate(getPackageInfoProvider),
         checkForUpdates: checkForUpdates,

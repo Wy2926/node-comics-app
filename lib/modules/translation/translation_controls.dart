@@ -1,6 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/services/translation/translation_service.dart';
-
 import 'translation_language_picker.dart';
 
 import 'package:flutter/material.dart';
@@ -245,7 +242,7 @@ class TranslationControlsContent extends StatelessWidget {
                             NodeLaneGroupSurface(
                               child: Column(
                                 children: [
-                                  const _BrowserTranslationLanguage(),
+                                  const TranslationLanguageRow(),
                                   Divider(
                                     height: 1,
                                     indent: 56,
@@ -288,24 +285,12 @@ class TranslationControlsContent extends StatelessWidget {
                             ),
                           ),
                         ],
-                        const SizedBox(height: 16),
-                        NodeLaneGroupSurface(
-                          child: ListTile(
-                            leading: Icon(
-                              icons.settings,
-                              size: 24,
-                              color: colors.ink,
-                            ),
-                            title: Text('翻译设置', style: colors.readerLabel),
-                            trailing: Icon(
-                              icons.forward,
-                              size: 16,
-                              color: colors.muted,
-                            ),
-                            onTap: () =>
-                                _openPage(context, const TranslationSettings()),
+                        if (!browser || controller.runtime == null) ...[
+                          const SizedBox(height: 16),
+                          const NodeLaneGroupSurface(
+                            child: TranslationLanguageRow(),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -460,44 +445,6 @@ class _BrowserTranslationProgressState
             widget.rowBuilder(target),
           ],
       ],
-    );
-  }
-}
-
-class _BrowserTranslationLanguage extends ConsumerWidget {
-  const _BrowserTranslationLanguage();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final service = ref.watch(translationServiceProvider);
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    return ListenableBuilder(
-      listenable: service,
-      builder: (context, _) => ListTile(
-        leading: Icon(icons.web),
-        title: Text('目标语言', style: t.readerLabel),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              translationLanguageNames[service.language] ?? service.language,
-              style: t.readerSecondary,
-            ),
-            const SizedBox(width: 8),
-            Icon(icons.forward, size: 16),
-          ],
-        ),
-        onTap: service.busy
-            ? null
-            : () async {
-                final value = await showTranslationLanguagePicker(
-                  context,
-                  service.language,
-                );
-                if (value != null && value != service.language) {
-                  await service.setLanguage(value);
-                }
-              },
-      ),
     );
   }
 }

@@ -8,6 +8,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
 import '../../contracts.dart';
 import 'http.dart';
+import 'account.dart';
 
 /// Credentials stay in the native vault. Browser pages only see display data.
 class NodeLaneSession {
@@ -30,6 +31,40 @@ class NodeLaneSession {
   int _epoch = 0;
   String? get userId => _value?['userId'] as String?;
   String get name => _value?['name'] as String? ?? '';
+
+  Future<NodeLaneAccount> readAccount(TranslationCancellation cancel) async {
+    final epoch = _epoch, id = userId;
+    if (id == null) throw const TranslationFailure('AUTH_REQUIRED');
+    final api = NodeLaneHttp(base, token: accessToken);
+    try {
+      final me = await api.json('GET', '/v1/me', cancellation: cancel);
+      if (me['user'] is! Map || me['user']['id'] != id) {
+        throw const TranslationFailure('AUTH_REQUIRED');
+      }
+      Map<String, dynamic>? billing;
+      var billingUnavailable = false;
+      try {
+        billing = await api.json(
+          'GET',
+          '/v1/billing/status',
+          cancellation: cancel,
+        );
+      } on TranslationCancelled {
+        rethrow;
+      } catch (_) {
+        billingUnavailable = true;
+      }
+      cancel.check();
+      if (epoch != _epoch || id != userId) throw const TranslationCancelled();
+      return NodeLaneAccount.fromJson(
+        me,
+        billing: billing,
+        billingUnavailable: billingUnavailable,
+      );
+    } finally {
+      api.close();
+    }
+  }
 
   Future<void> restore() async {
     final stored = await _vault.read(key: _key);

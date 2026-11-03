@@ -12,17 +12,14 @@ class MobileSettingsGroup extends StatelessWidget {
     this.title,
     required this.children,
     this.spacing,
-    this.dividerIndent = 56,
   });
 
   final String? title;
   final List<Widget> children;
   final double? spacing;
-  final double dividerIndent;
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     final reader = NodeLaneReaderScope.activeOf(context);
     return Padding(
       padding: EdgeInsets.only(
@@ -39,22 +36,7 @@ class MobileSettingsGroup extends StatelessWidget {
               ),
               child: NodeLaneSectionHeading(title!),
             ),
-          NodeLaneGroupSurface(
-            outlined: reader,
-            child: Column(
-              children: [
-                for (var i = 0; i < children.length; i++) ...[
-                  if (i > 0)
-                    Divider(
-                      height: 1,
-                      indent: dividerIndent,
-                      color: colors.line,
-                    ),
-                  children[i],
-                ],
-              ],
-            ),
-          ),
+          NodeLaneGroupSurface(outlined: reader, children: children),
         ],
       ),
     );

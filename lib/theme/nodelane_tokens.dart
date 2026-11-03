@@ -26,6 +26,8 @@ class NodeLaneTokens {
   static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
   static const formLabelWidth = 88.0;
   static const avatarSize = 64.0, searchHeight = 48.0;
+  static const accountAvatarIconSize = 38.0;
+  static const accountHeroAvatarSize = 96.0, accountHeroIconSize = 56.0;
   static const coverAspectRatio = 1.43, shelfGap = 14.0;
   static const bookTitleSize = 15.0, captionSize = 12.0;
   static const shelfComfortableWidth = 168.0, shelfCompactWidth = 96.0;

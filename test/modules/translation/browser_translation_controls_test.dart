@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
@@ -50,13 +51,16 @@ void main() {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final service = TranslationService();
+    final service = _Service();
     addTearDown(service.dispose);
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [translationServiceProvider.overrideWithValue(service)],
         child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: ThemeData(platform: TargetPlatform.iOS),
           home: Scaffold(
             body: TranslationControlsContent(
@@ -82,7 +86,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('登录后开启翻译'), findsNothing);
     expect(find.text('当前页面暂未发现可翻译图片'), findsOneWidget);
-    expect(find.text('翻译设置'), findsOneWidget);
+    expect(find.text('翻译目标语言'), findsOneWidget);
   });
 
   testWidgets(
@@ -116,4 +120,9 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+class _Service extends TranslationService {
+  @override
+  Future<void> initialize() async {}
 }

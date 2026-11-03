@@ -3,7 +3,7 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 class DownloadedOnlyWidget extends ConsumerWidget {
@@ -17,9 +17,8 @@ class DownloadedOnlyWidget extends ConsumerWidget {
     void change(bool value) =>
         ref.read(downloadedOnlyStateProvider.notifier).setDownloadedOnly(value);
     if (mobile) {
-      return MobileSettingsSwitch(
+      return NodeLaneSwitchRow(
         title: l10n!.downloaded_only,
-        subtitle: l10n.downloaded_only_description,
         icon: NodeLaneIcons.of(context).download,
         value: downloadedOnly,
         onChanged: change,

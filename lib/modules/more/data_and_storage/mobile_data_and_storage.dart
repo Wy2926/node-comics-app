@@ -1,4 +1,8 @@
 import 'package:archive/archive.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_account_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/services/translation/translation_service.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/settings/downloads/providers/downloads_state_provider.dart';
@@ -21,6 +25,7 @@ class MobileDataAndStorage extends ConsumerStatefulWidget {
     required this.onEncryptionChanged,
     required this.canChooseBackupLocation,
     required this.maintenance,
+    this.onClearCovers = clearCoverImageCache,
   });
   final VoidCallback onCreate;
   final Future<void> Function() onRestore;
@@ -28,6 +33,7 @@ class MobileDataAndStorage extends ConsumerStatefulWidget {
   final Future<void> Function(bool) onEncryptionChanged;
   final bool canChooseBackupLocation;
   final List<Widget> maintenance;
+  final Future<void> Function() onClearCovers;
 
   @override
   ConsumerState<MobileDataAndStorage> createState() =>
@@ -35,7 +41,7 @@ class MobileDataAndStorage extends ConsumerStatefulWidget {
 }
 
 class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
-  bool _busy = false;
+  bool _busy = false, _confirming = false;
 
   Future<void> _run(Future<void> Function() operation) async {
     if (_busy) return;
@@ -82,38 +88,81 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
     });
   }
 
+  Future<void> _clear(String title, Future<void> Function() operation) async {
+    if (_busy || _confirming) return;
+    _confirming = true;
+    try {
+      final confirmed = await showMobileSettingsConfirmation(
+        context,
+        title: title,
+        message: context.l10n.settings_cache_confirmation(title),
+        confirmLabel: context.l10n.settings_cache_clear,
+      );
+      if (mounted && confirmed) await _run(operation);
+    } finally {
+      _confirming = false;
+    }
+  }
+
+  Future<void> _clearTranslation() async {
+    final service = ref.read(translationServiceProvider);
+    await service.initialize();
+    if (service.busy) return;
+    await service.clearResults();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          service.error ?? context.l10n.settings_translation_cache_done,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
+    final l = context.l10n,
+        t = NodeLaneTokens.of(context),
+        icons = NodeLaneIcons.of(context);
     final frequency = ref.watch(backupFrequencyStateProvider);
     final frequencies = [
-      l10n.off,
-      l10n.every_6_hours,
-      l10n.every_12_hours,
-      l10n.daily,
-      l10n.every_2_days,
-      l10n.weekly,
+      l.off,
+      l.every_6_hours,
+      l.every_12_hours,
+      l.daily,
+      l.every_2_days,
+      l.weekly,
     ];
     final location = ref.watch(downloadLocationStateProvider);
     final backupLocation = ref.watch(autoBackupLocationStateProvider);
     final compression = ref.watch(backupCompressionLevelProvider);
+    final cacheSize = ref.watch(totalChapterCacheSizeStateProvider);
+    final translation = ref.watch(translationServiceProvider);
+
+    Widget clearRow(
+      String title,
+      IconData icon,
+      Future<void> Function() action, {
+      String? subtitle,
+      bool enabled = true,
+    }) => NodeLaneRow(
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
+      trailing: TextButton(
+        onPressed: _busy || !enabled ? null : () => _clear(title, action),
+        child: Text(l.settings_cache_clear),
+      ),
+    );
+
     return NodeLaneSurface(
       child: PopScope(
         canPop: !_busy,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              l10n.data_and_storage,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            bottom: _busy
-                ? const PreferredSize(
-                    preferredSize: Size.fromHeight(2),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  )
-                : null,
+          appBar: nodeLaneAppBar(
+            context,
+            title: l.settings_storage_backup,
+            busy: _busy,
           ),
           body: SafeArea(
             top: false,
@@ -121,46 +170,31 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
               absorbing: _busy,
               child: ListView(
                 key: const PageStorageKey('mobile-data-and-storage'),
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: NodeLaneTokens.pagePadding,
                 children: [
                   MobileSettingsGroup(
-                    title: l10n.backup_and_restore,
+                    title: l.backup_and_restore,
                     children: [
-                      MobileSettingsLink(
-                        title: l10n.create_backup,
-                        subtitle: l10n.create_backup_subtitle,
-                        icon: Icons.archive_outlined,
+                      NodeLaneRow(
+                        title: l.create_backup,
+                        icon: icons.backup,
                         onTap: widget.onCreate,
                       ),
-                      MobileSettingsLink(
-                        title: l10n.restore_backup,
-                        subtitle: l10n.restore_backup_subtitle,
-                        icon: Icons.settings_backup_restore_rounded,
+                      NodeLaneRow(
+                        title: l.restore_backup,
+                        icon: icons.restore,
                         onTap: () => _run(widget.onRestore),
                       ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 24),
-                    child: Text(
-                      l10n.backup_and_restore_warning_info,
-                      style: TextStyle(color: colors.muted),
-                    ),
-                  ),
-                  MobileSettingsGroup(
-                    title: l10n.automatic_backups,
-                    children: [
-                      MobileSettingsLink(
-                        title: l10n.backup_frequency,
-                        subtitle:
-                            frequency >= 0 && frequency < frequencies.length
+                      NodeLaneRow(
+                        title: l.automatic_backups,
+                        icon: icons.refresh,
+                        value: frequency >= 0 && frequency < frequencies.length
                             ? frequencies[frequency]
-                            : l10n.unknown,
-                        icon: Icons.schedule_rounded,
+                            : l.unknown,
                         onTap: () async {
                           final selected = await showMobileSettingsPicker<int>(
                             context,
-                            title: l10n.backup_frequency,
+                            title: l.backup_frequency,
                             current: frequency,
                             options: [
                               for (var i = 0; i < frequencies.length; i++)
@@ -176,144 +210,160 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                           }
                         },
                       ),
-                      if (widget.canChooseBackupLocation)
-                        MobileSettingsLink(
-                          title: l10n.backup_location,
-                          subtitle: backupLocation.$2.isEmpty
-                              ? backupLocation.$1
-                              : backupLocation.$2,
-                          icon: Icons.folder_copy_outlined,
-                          onTap: () => _run(() async {
-                            final path = await widget.onChooseDirectory();
-                            if (mounted &&
-                                path != null &&
-                                path != backupLocation.$2) {
-                              ref
-                                  .read(
-                                    autoBackupLocationStateProvider.notifier,
-                                  )
-                                  .set(path);
-                            }
-                          }),
-                        ),
                     ],
                   ),
                   MobileSettingsGroup(
-                    title: l10n.backup_options,
+                    title: l.settings_local_cache,
                     children: [
-                      MobileSettingsSwitch(
-                        title: l10n.encrypt_backups,
-                        subtitle: l10n.encrypt_backups_info,
-                        icon: Icons.lock_outline_rounded,
-                        value: ref.watch(backupEncryptionEnabledProvider),
-                        onChanged: _busy
-                            ? null
-                            : (value) =>
-                                  _run(() => widget.onEncryptionChanged(value)),
+                      clearRow(
+                        l.settings_chapter_cache,
+                        icons.categories,
+                        () => ref
+                            .read(totalChapterCacheSizeStateProvider.notifier)
+                            .clearCache(),
+                        subtitle: cacheSize,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text('${l10n.compression_level} · $compression'),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.compression_info(
-                                DeflateLevel.defaultCompression,
-                              ),
-                              style: TextStyle(color: colors.muted),
-                            ),
-                            Slider(
-                              min: 0,
-                              max: 9,
-                              divisions: 9,
-                              value: compression.clamp(0, 9).toDouble(),
-                              label: '$compression',
-                              semanticFormatterCallback: (value) =>
-                                  '${l10n.compression_level} ${value.round()}',
-                              onChanged: _busy
-                                  ? null
-                                  : (value) => ref
-                                        .read(
-                                          backupCompressionLevelProvider
-                                              .notifier,
-                                        )
-                                        .update(value.round()),
-                              onChangeEnd: (value) => _run(
-                                () => ref
-                                    .read(
-                                      backupCompressionLevelProvider.notifier,
-                                    )
-                                    .set(value.round()),
-                              ),
-                            ),
-                          ],
+                      clearRow(
+                        l.settings_cover_cache,
+                        icons.image,
+                        widget.onClearCovers,
+                      ),
+                      ListenableBuilder(
+                        listenable: translation,
+                        builder: (context, _) => clearRow(
+                          l.settings_translation_cache,
+                          icons.translate,
+                          _clearTranslation,
+                          subtitle: l.settings_translation_cache_hint,
+                          enabled: !translation.busy,
                         ),
                       ),
                     ],
                   ),
                   MobileSettingsGroup(
-                    title: l10n.storage,
                     children: [
-                      MobileSettingsLink(
-                        title: l10n.download_location,
-                        subtitle: location.$2.isEmpty
-                            ? location.$1
-                            : location.$2,
-                        subtitleMaxLines: 2,
-                        icon: Icons.folder_open_rounded,
+                      NodeLaneRow(
+                        title: l.download_location,
+                        icon: icons.folderOutline,
+                        value: location.$2.isEmpty
+                            ? l.default0
+                            : l.custom_location,
                         onTap: () => _downloadLocation(location),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          l10n.download_location_info,
-                          style: TextStyle(color: colors.muted),
-                        ),
-                      ),
-                      MobileSettingsLink(
-                        title: l10n.clear_chapter_and_episode_cache,
-                        subtitle: ref.watch(totalChapterCacheSizeStateProvider),
-                        icon: Icons.cleaning_services_outlined,
-                        onTap: () => _run(
-                          () => ref
-                              .read(totalChapterCacheSizeStateProvider.notifier)
-                              .clearCache(),
-                        ),
-                      ),
-                      MobileSettingsSwitch(
-                        title:
-                            l10n.clear_chapter_or_episode_cache_on_app_launch,
-                        icon: Icons.auto_delete_outlined,
-                        value: ref.watch(
-                          clearChapterCacheOnAppLaunchStateProvider,
-                        ),
-                        onChanged: _busy
-                            ? null
-                            : ref
-                                  .read(
-                                    clearChapterCacheOnAppLaunchStateProvider
-                                        .notifier,
-                                  )
-                                  .set,
-                      ),
                     ],
                   ),
-                  MobileSettingsGroup(
-                    children: [
-                      ExpansionTile(
-                        key: const PageStorageKey('storage-maintenance'),
-                        shape: const Border(),
-                        collapsedShape: const Border(),
-                        leading: Icon(
-                          Icons.build_outlined,
-                          color: colors.accent,
+                  NodeLaneDisclosure(
+                    title: l.settings_advanced_options,
+                    icon: icons.adjustments,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: NodeLaneTokens.groupPadding,
+                          child: Text(
+                            l.backup_and_restore_warning_info,
+                            style: t.readerSecondary,
+                          ),
                         ),
-                        title: Text(l10n.advanced),
-                        children: widget.maintenance,
-                      ),
-                    ],
+                        if (widget.canChooseBackupLocation)
+                          NodeLaneRow(
+                            title: l.backup_location,
+                            subtitle: backupLocation.$2.isEmpty
+                                ? backupLocation.$1
+                                : backupLocation.$2,
+                            icon: icons.folderOutline,
+                            onTap: () => _run(() async {
+                              final path = await widget.onChooseDirectory();
+                              if (mounted &&
+                                  path != null &&
+                                  path != backupLocation.$2) {
+                                ref
+                                    .read(
+                                      autoBackupLocationStateProvider.notifier,
+                                    )
+                                    .set(path);
+                              }
+                            }),
+                          ),
+                        NodeLaneSwitchRow(
+                          title: l.encrypt_backups,
+                          subtitle: l.encrypt_backups_info,
+                          icon: icons.security,
+                          value: ref.watch(backupEncryptionEnabledProvider),
+                          onChanged: _busy
+                              ? null
+                              : (value) => _run(
+                                  () => widget.onEncryptionChanged(value),
+                                ),
+                        ),
+                        Padding(
+                          padding: NodeLaneTokens.groupPadding,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                '${l.compression_level} · $compression',
+                                style: t.readerLabel,
+                              ),
+                              const SizedBox(height: NodeLaneTokens.space8),
+                              Text(
+                                l.compression_info(
+                                  DeflateLevel.defaultCompression,
+                                ),
+                                style: t.readerSecondary,
+                              ),
+                              Slider(
+                                min: 0,
+                                max: 9,
+                                divisions: 9,
+                                value: compression.clamp(0, 9).toDouble(),
+                                label: '$compression',
+                                semanticFormatterCallback: (value) =>
+                                    '${l.compression_level} ${value.round()}',
+                                onChanged: _busy
+                                    ? null
+                                    : (value) => ref
+                                          .read(
+                                            backupCompressionLevelProvider
+                                                .notifier,
+                                          )
+                                          .update(value.round()),
+                                onChangeEnd: (value) => _run(
+                                  () => ref
+                                      .read(
+                                        backupCompressionLevelProvider.notifier,
+                                      )
+                                      .set(value.round()),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        NodeLaneSwitchRow(
+                          title: l.clear_chapter_or_episode_cache_on_app_launch,
+                          icon: icons.delete,
+                          value: ref.watch(
+                            clearChapterCacheOnAppLaunchStateProvider,
+                          ),
+                          onChanged: _busy
+                              ? null
+                              : ref
+                                    .read(
+                                      clearChapterCacheOnAppLaunchStateProvider
+                                          .notifier,
+                                    )
+                                    .set,
+                        ),
+                        Padding(
+                          padding: NodeLaneTokens.groupPadding,
+                          child: Text(
+                            '${l.download_location_info}\n${location.$2.isEmpty ? location.$1 : location.$2}',
+                            style: t.readerSecondary,
+                          ),
+                        ),
+                        ...widget.maintenance,
+                      ],
+                    ),
                   ),
                 ],
               ),

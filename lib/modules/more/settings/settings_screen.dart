@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
-import 'package:mangayomi/modules/more/settings/mobile_settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -16,7 +15,6 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isMobile && !isTv) return const MobileSettingsScreen();
     final l10n = l10nLocalizations(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n!.settings)),

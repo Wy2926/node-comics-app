@@ -4109,4 +4109,245 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookshelf_mark_unwatched => '标为未看';
+
+  @override
+  String get nodelane_account => 'NodeLane 账号';
+
+  @override
+  String get nodelane_sign_in => '登录 NodeLane';
+
+  @override
+  String get nodelane_account_intro => '查看账号、订阅和翻译额度';
+
+  @override
+  String get nodelane_login_action => '前往登录';
+
+  @override
+  String get nodelane_login_browser => '通过系统浏览器登录后返回应用';
+
+  @override
+  String get nodelane_account_id => '账号 ID';
+
+  @override
+  String get nodelane_account_reading => '正在读取账号…';
+
+  @override
+  String get nodelane_account_init_error => '暂时无法读取账号，请重新启动应用后再试。';
+
+  @override
+  String get nodelane_account_refresh_error => '暂时无法更新账号信息';
+
+  @override
+  String get nodelane_account_auth_error => '登录已过期，请重新登录';
+
+  @override
+  String get nodelane_account_unknown => '暂未读取到订阅信息';
+
+  @override
+  String get nodelane_account_current => '当前订阅';
+
+  @override
+  String get nodelane_account_free => '免费账户';
+
+  @override
+  String get nodelane_account_no_subscription => '暂无有效订阅';
+
+  @override
+  String get nodelane_account_active => '生效中';
+
+  @override
+  String get nodelane_account_expired => '已到期';
+
+  @override
+  String get nodelane_account_expiry => '有效期至';
+
+  @override
+  String get nodelane_account_renewal => '续费方式';
+
+  @override
+  String get nodelane_renewal_auto => '自动续费';
+
+  @override
+  String get nodelane_renewal_manual => '手动续费';
+
+  @override
+  String get nodelane_renewal_stopped => '已停止自动续费';
+
+  @override
+  String get nodelane_renewal_gift => '赠送会员';
+
+  @override
+  String get nodelane_renewal_attention => '续费状态需要核对，请到官网查看';
+
+  @override
+  String get nodelane_next_billing => '下次扣款';
+
+  @override
+  String get nodelane_billing_unavailable => '续费信息暂时无法读取';
+
+  @override
+  String get nodelane_manage_account => '在官网管理';
+
+  @override
+  String get nodelane_view_plans => '查看订阅方案';
+
+  @override
+  String get nodelane_translation_quota => '翻译额度';
+
+  @override
+  String get nodelane_quota_free => '免费额度';
+
+  @override
+  String get nodelane_quota_subscription => '订阅额度';
+
+  @override
+  String get nodelane_quota_purchase => '购买额度';
+
+  @override
+  String get nodelane_quota_details => '查看额度明细';
+
+  @override
+  String get nodelane_quota_expanded => '额度明细';
+
+  @override
+  String get nodelane_quota_unlimited => '不限量';
+
+  @override
+  String get nodelane_quota_not_subscribed => '未开通';
+
+  @override
+  String get nodelane_quota_unknown => '暂不可用';
+
+  @override
+  String get nodelane_quota_used => '已使用';
+
+  @override
+  String get nodelane_quota_reserved => '处理中';
+
+  @override
+  String get nodelane_quota_reset => '下次重置';
+
+  @override
+  String get nodelane_quota_expiry => '最近到期';
+
+  @override
+  String get nodelane_quota_no_expiry => '无到期时间';
+
+  @override
+  String get nodelane_quota_reservation_note => '处理中页数已从可用额度扣除';
+
+  @override
+  String get nodelane_quota_purchase_note => '购买额度与订阅分别计算';
+
+  @override
+  String nodelane_account_updated(String time) {
+    return '更新于 $time';
+  }
+
+  @override
+  String nodelane_quota_available(int count) {
+    return '剩余 $count 页';
+  }
+
+  @override
+  String nodelane_quota_pages(int count) {
+    return '$count 页';
+  }
+
+  @override
+  String get nodelane_sign_out => '退出登录';
+
+  @override
+  String get nodelane_sign_out_confirm => '退出后暂停本机官方翻译，书架与阅读记录保留。';
+
+  @override
+  String get settings_search_hint => '搜索设置';
+
+  @override
+  String get settings_frequent => '常用';
+
+  @override
+  String get settings_reading_translation => '阅读与翻译';
+
+  @override
+  String get settings_app_preferences => '应用偏好';
+
+  @override
+  String get settings_data_management => '数据与管理';
+
+  @override
+  String get settings_more_tools => '更多工具';
+
+  @override
+  String get settings_more_tools_hint => '分类、统计、日历';
+
+  @override
+  String get settings_appearance_interface => '外观与界面';
+
+  @override
+  String get settings_security_privacy => '安全与隐私';
+
+  @override
+  String get settings_source_preferences => '来源设置';
+
+  @override
+  String get settings_about_help => '关于与帮助';
+
+  @override
+  String get settings_storage_backup => '存储与备份';
+
+  @override
+  String settings_pending_downloads(int count) {
+    return '$count 项待下载';
+  }
+
+  @override
+  String get settings_translation_language => '翻译目标语言';
+
+  @override
+  String get settings_translation_scope => '用于阅读器和网页翻译';
+
+  @override
+  String get settings_immediate_choice => '选择后立即生效';
+
+  @override
+  String get settings_translation_init_error => '暂时无法读取翻译设置，请重新启动应用后再试。';
+
+  @override
+  String get settings_local_cache => '本机缓存';
+
+  @override
+  String get settings_chapter_cache => '章节与剧集缓存';
+
+  @override
+  String get settings_cover_cache => '封面缓存';
+
+  @override
+  String get settings_translation_cache => '译图缓存';
+
+  @override
+  String get settings_translation_cache_hint => '保留翻译记录，需要时重新读取译图';
+
+  @override
+  String get settings_cache_clear => '清理';
+
+  @override
+  String get settings_translation_cache_done => '译图缓存已清理，翻译记录已保留';
+
+  @override
+  String settings_cache_confirmation(String name) {
+    return '清理 $name？需要时会重新读取，不会移除书架作品。';
+  }
+
+  @override
+  String get settings_advanced_options => '高级选项';
+
+  @override
+  String get settings_manga_reader => '漫画阅读';
+
+  @override
+  String get settings_novel_reader => '小说阅读';
+
+  @override
+  String get settings_downloads => '下载设置';
 }
