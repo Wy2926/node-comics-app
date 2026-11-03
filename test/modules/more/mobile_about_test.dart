@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/more/about/mobile_about_screen.dart';
-import 'package:mangayomi/modules/more/about/mobile_app_update_dialog.dart';
+import 'package:mangayomi/modules/more/about/mobile_app_update_view.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -106,7 +106,20 @@ void main() {
     reportCount: reportCount ?? () => 0,
     onReports: onReports ?? () async {},
     onCheck: onCheck,
-    onUpdate: onUpdate,
+    updateBuilder: (update, onDismiss) => MobileAppUpdateView(
+      currentVersion: '0.9.9',
+      targetVersion: update.$1,
+      notes: update.$2,
+      downloadOnDevice: false,
+      busy: false,
+      installing: false,
+      received: 0,
+      total: 0,
+      hasError: false,
+      embedded: true,
+      onContinue: () => onUpdate(update),
+      onCancel: onDismiss,
+    ),
     onShareLogs: onShare ?? () async {},
     onGitHub: () async {},
     onDiscord: () async {},
@@ -130,11 +143,11 @@ void main() {
           },
         ),
       );
-      final check = find.widgetWithText(FilledButton, 'Check for update');
+      final check = find.widgetWithText(NodeLaneRow, 'Check for update');
       await reveal(tester, check);
       await tester.tap(check);
       await tester.pump();
-      expect(tester.widget<FilledButton>(check).onPressed, isNull);
+      expect(find.textContaining('Searching for updates'), findsOneWidget);
       expect(checks, 1);
       // Manual checking still works with automatic checks disabled.
       pending.complete(null);
@@ -149,23 +162,45 @@ void main() {
       await tester.pump();
       pending.completeError(StateError('private network detail'));
       await tester.pumpAndSettle();
-      expect(find.text('Failed!'), findsOneWidget);
+      expect(
+        find.text('Unable to check for updates. Please try again.'),
+        findsOneWidget,
+      );
       expect(find.textContaining('private network'), findsNothing);
-      pending = Completer<UpdateInfo?>();
-      await tester.tap(check);
-      await tester.pump();
-      pending.complete(_update);
-      await tester.pumpAndSettle();
-      expect(opened, [_update]);
-      expect(identical(opened.single.$4, _update.$4), isTrue);
       pending = Completer<UpdateInfo?>();
       await tester.tap(check);
       await tester.pump();
       await tester.pumpWidget(const SizedBox());
       pending.complete(_update);
       await tester.pumpAndSettle();
-      expect(checks, 4);
-      expect(opened, hasLength(1));
+      expect(checks, 3);
+      expect(opened, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'available release stays inline until the user chooses its action',
+    (tester) async {
+      final opened = <UpdateInfo>[];
+      await start(
+        tester,
+        about(
+          onCheck: () async => _update,
+          onUpdate: (update) async => opened.add(update),
+        ),
+        scale: 1,
+      );
+      await tester.tap(find.text('Check for update'));
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.text('NodeLane Comics 1.0.0'), findsOneWidget);
+      expect(opened, isEmpty);
+      await reveal(tester, find.text('View update'));
+      await tester.tap(find.text('View update'));
+      await tester.pumpAndSettle();
+      expect(opened, [_update]);
+      expect(identical(opened.single.$4, _update.$4), isTrue);
       expect(tester.takeException(), isNull);
     },
   );
@@ -216,28 +251,31 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'Retry'));
       await tester.pumpAndSettle();
       expect(retries, 1);
-      expect(find.text('NodeLane Preview'), findsOneWidget);
+      expect(find.text('NodeLane Comics'), findsOneWidget);
       final auto = find.byType(NodeLaneSwitchRow).first;
       await reveal(tester, auto);
       await tester.tap(auto);
       await tester.pumpAndSettle();
       expect(autoCheck, isTrue);
       expect(logs, isTrue);
+      await reveal(tester, find.text('Diagnostics and logs'));
+      await tester.tap(find.text('Diagnostics and logs'));
+      await tester.pumpAndSettle();
       final reports = find.text('Error reports');
       await reveal(tester, reports);
       expect(find.textContaining(' · 3'), findsOneWidget);
       await tester.tap(reports);
       await tester.pumpAndSettle();
       expect(find.textContaining(' · 3'), findsNothing);
-      final share = find.widgetWithText(TextButton, 'Share app logs');
+      final share = find.widgetWithText(NodeLaneRow, 'Share app logs');
       await reveal(tester, share);
       await tester.tap(share);
       await tester.pump();
-      expect(tester.widget<TextButton>(share).onPressed, isNull);
+      expect(tester.widget<NodeLaneRow>(share).enabled, isFalse);
       expect(shares, 1);
       sharing.completeError(StateError('private path'));
       await tester.pumpAndSettle();
-      expect(tester.widget<TextButton>(share).onPressed, isNotNull);
+      expect(tester.widget<NodeLaneRow>(share).enabled, isTrue);
       expect(find.textContaining('private path'), findsNothing);
       final logging = find.widgetWithText(NodeLaneSwitchRow, 'Enable logging');
       await reveal(tester, logging, delta: -150);
@@ -246,8 +284,8 @@ void main() {
       expect(logs, isFalse);
       expect(autoCheck, isTrue);
       expect(find.text('Share app logs'), findsNothing);
-      final discord = find.text('Discord');
-      await reveal(tester, discord);
+      final discord = find.text('Mangayomi · Discord');
+      await reveal(tester, discord, delta: -200);
       expect(tester.getRect(discord).bottom, lessThan(706));
       expect(tester.takeException(), isNull);
     },
@@ -269,7 +307,7 @@ void main() {
           builder: (context, setState) {
             rebuild = setState;
             return Scaffold(
-              body: MobileAppUpdateDialog(
+              body: MobileAppUpdateView(
                 currentVersion: '0.9.9',
                 targetVersion: '1.0.0',
                 notes: notes,
@@ -287,10 +325,10 @@ void main() {
         ),
         height: 600,
       );
-      final cancel = find.widgetWithText(TextButton, 'Cancel');
+      final cancel = find.byType(TextButton);
       expect(cancel.hitTestable(), findsOneWidget);
       expect(tester.getRect(cancel).bottom, lessThan(566));
-      await tester.tap(find.widgetWithText(FilledButton, 'Open in browser'));
+      await tester.tap(find.widgetWithText(FilledButton, 'View update'));
       expect(continued, 1);
       await tester.drag(
         find.byType(SingleChildScrollView).first,
@@ -344,6 +382,9 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(find.text('Failed!'), findsOneWidget);
+      await reveal(tester, find.text('Release notes'));
+      await tester.tap(find.text('Release notes'));
+      await tester.pumpAndSettle();
       expect(find.text('No release notes provided.'), findsOneWidget);
       await tester.tap(find.widgetWithText(FilledButton, 'Download'));
       expect(continued, 2);
@@ -415,6 +456,77 @@ void main() {
       await tester.pumpAndSettle();
       expect(launcher.calls, hasLength(3));
       expect(find.text('Open sample'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'inline update owner cancels locally and retries without closing About',
+    (tester) async {
+      PackageInfo.setMockInitialValues(
+        appName: 'NodeLane Comics',
+        packageName: 'example.preview',
+        version: '0.9.9',
+        buildNumber: '1',
+        buildSignature: '',
+      );
+      final oldLauncher = UrlLauncherPlatform.instance;
+      final launcher = _Launcher();
+      UrlLauncherPlatform.instance = launcher;
+      addTearDown(() => UrlLauncherPlatform.instance = oldLauncher);
+      var visible = true;
+      late StateSetter rebuild;
+      await start(
+        tester,
+        ProviderScope(
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              rebuild = setState;
+              return Scaffold(
+                body: ListView(
+                  children: [
+                    const Text('About owner'),
+                    if (visible)
+                      DownloadFileScreen(
+                        updateAvailable: _update,
+                        embedded: true,
+                        onDismiss: () => setState(() => visible = false),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        scale: 1,
+      );
+      expect(find.byType(Dialog), findsNothing);
+      await tester.tap(find.text('View update'));
+      await tester.pump();
+      expect(launcher.calls, hasLength(1));
+      expect(find.text('View update'), findsNothing);
+      await tester.tap(find.text('Cancel'));
+      launcher.result.complete(true);
+      await tester.pumpAndSettle();
+      expect(find.text('About owner'), findsOneWidget);
+      expect(find.byType(DownloadFileScreen), findsNothing);
+      launcher.result = Completer<bool>();
+      rebuild(() => visible = true);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('View update'));
+      await tester.pump();
+      launcher.result.completeError(StateError('private launch details'));
+      await tester.pumpAndSettle();
+      expect(find.text('Failed!'), findsOneWidget);
+      expect(find.textContaining('private launch'), findsNothing);
+      launcher.result = Completer<bool>();
+      await tester.tap(find.text('View update'));
+      await tester.pump();
+      launcher.result.complete(true);
+      await tester.pumpAndSettle();
+      expect(find.text('Release page opened'), findsOneWidget);
+      expect(find.text('About owner'), findsOneWidget);
+      expect(find.byType(Dialog), findsNothing);
+      expect(launcher.calls, hasLength(3));
       expect(tester.takeException(), isNull);
     },
   );

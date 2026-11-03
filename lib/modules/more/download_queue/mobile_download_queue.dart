@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/models/download.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -124,29 +125,11 @@ class _MobileDownloadQueueState extends State<MobileDownloadQueue> {
                         minHeight: constraints.maxHeight,
                         minWidth: constraints.maxWidth,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(NodeLaneTokens.gutter),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              icons.downloadQueue,
-                              size: NodeLaneTokens.emptyStateIconSize,
-                              color: t.muted,
-                            ),
-                            const SizedBox(height: NodeLaneTokens.space16),
-                            Text(
-                              l10n.download_queue_empty,
-                              textAlign: TextAlign.center,
-                              style: t.title,
-                            ),
-                            const SizedBox(height: NodeLaneTokens.space8),
-                            Text(
-                              l10n.download_queue_empty_hint,
-                              textAlign: TextAlign.center,
-                              style: t.readerSecondary,
-                            ),
-                          ],
+                      child: Center(
+                        child: NodeLaneEmptyState(
+                          icon: icons.downloadQueue,
+                          title: l10n.download_queue_empty,
+                          message: l10n.download_queue_empty_hint,
                         ),
                       ),
                     ),

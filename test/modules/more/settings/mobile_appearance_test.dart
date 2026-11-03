@@ -129,9 +129,11 @@ void main() {
       await tester.enterText(find.byType(TextField), 'no-such-font-123');
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.widgetWithText(TextButton, 'Reset'));
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Clear search'),
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Reset'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear search'));
       await tester.pumpAndSettle();
       expect(find.text('No result'), findsNothing);
       await tester.tap(find.byTooltip('Back'));

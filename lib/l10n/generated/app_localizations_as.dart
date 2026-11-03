@@ -10,6 +10,48 @@ class AppLocalizationsAs extends AppLocalizations {
   AppLocalizationsAs([String locale = 'as']) : super(locale);
 
   @override
+  String get app_name => 'NodeLane Comics';
+
+  @override
+  String get settings_search_empty => 'No matching settings';
+
+  @override
+  String get search_empty_hint =>
+      'Try another keyword, or clear the search to see everything.';
+
+  @override
+  String get search_clear => 'Clear search';
+
+  @override
+  String get app_updates => 'App updates';
+
+  @override
+  String get app_update_auto => 'Check on launch';
+
+  @override
+  String get app_update_view => 'View update';
+
+  @override
+  String get app_update_later => 'Later';
+
+  @override
+  String get app_update_external_hint =>
+      'Opens the release page in your browser';
+
+  @override
+  String get app_update_failed =>
+      'Unable to check for updates. Please try again.';
+
+  @override
+  String get app_update_opened => 'Release page opened';
+
+  @override
+  String get app_diagnostics => 'Diagnostics and logs';
+
+  @override
+  String get app_upstream_community => 'Upstream community';
+
+  @override
   String get library => 'পুথিভঁৰাল';
 
   @override
@@ -2474,10 +2516,10 @@ class AppLocalizationsAs extends AppLocalizations {
   String get tracked => 'ট্র্যাক কৰা';
 
   @override
-  String get auth_unlock_msg => 'Mangayomi আনলক কৰিবলৈ প্রমাণ কৰক';
+  String get auth_unlock_msg => 'NodeLane Comics আনলক কৰিবলৈ প্রমাণ কৰক';
 
   @override
-  String get app_locked => 'Mangayomi লক কৰা আছে';
+  String get app_locked => 'NodeLane Comics লক কৰা আছে';
 
   @override
   String get auth_to_continue => 'অব্যাহত ৰাখিবলৈ প্রমাণ কৰক';
@@ -2965,7 +3007,7 @@ class AppLocalizationsAs extends AppLocalizations {
   String get something_went_wrong => 'কিবা ভুল হ\'ল';
 
   @override
-  String get startup_failed => 'Mangayomi আৰম্ভ হ\'ব নোৱাৰিলে';
+  String get startup_failed => 'NodeLane Comics আৰম্ভ হ\'ব নোৱাৰিলে';
 
   @override
   String sources_with_no_results(int count) {
@@ -3213,7 +3255,7 @@ class AppLocalizationsAs extends AppLocalizations {
   String get error_reports_report => 'GitHub ত ৰিপ\'ৰ্ট কৰক';
 
   @override
-  String get error_reports_banner => 'Mangayomi ত এটা ত্ৰুটি হ\'ল';
+  String get error_reports_banner => 'NodeLane Comics ত এটা ত্ৰুটি হ\'ল';
 
   @override
   String get error_reports_banner_action => 'চাওক';
@@ -3229,7 +3271,7 @@ class AppLocalizationsAs extends AppLocalizations {
 
   @override
   String get error_reports_extension_failure =>
-      'এইটো এটা এক্সটেনশনৰ পৰা আহিছে, Mangayomi-ৰ পৰা নহয়। যিটো ৰেপজিটৰিৰ পৰা আপুনি এই উৎস ইনষ্টল কৰিছিল সেই ৰেপজিটৰিৰ পৰিচালকসকলে ইয়াক পৰিচালনা কৰে, সেয়েহে সমাধান তাতেই হ\'ব লাগিব।';
+      'এইটো এটা এক্সটেনশনৰ পৰা আহিছে, NodeLane Comics-ৰ পৰা নহয়। যিটো ৰেপজিটৰিৰ পৰা আপুনি এই উৎস ইনষ্টল কৰিছিল সেই ৰেপজিটৰিৰ পৰিচালকসকলে ইয়াক পৰিচালনা কৰে, সেয়েহে সমাধান তাতেই হ\'ব লাগিব।';
 
   @override
   String get error_reports_already_reported => 'ইতিমধ্যে ৰিপৰ্ট কৰা হৈছে';
@@ -3243,7 +3285,7 @@ class AppLocalizationsAs extends AppLocalizations {
       'শ্বেয়াৰ উপলব্ধ নহয়, ক্লিপব\'ৰ্ডলৈ কপি কৰা হ\'ল।';
 
   @override
-  String get onboarding_title => 'Mangayomi লৈ স্বাগতম';
+  String get onboarding_title => 'NodeLane Comics লৈ স্বাগতম';
 
   @override
   String get onboarding_libraries_body => 'আপুনি কি পঢ়িব আৰু চাব বিচাৰে বাছক।';
@@ -3558,7 +3600,7 @@ class AppLocalizationsAs extends AppLocalizations {
   String get genre_rows => 'Genre rows';
 
   @override
-  String get share_backup_file => 'Share Mangayomi backup file';
+  String get share_backup_file => 'Share NodeLane Comics backup file';
 
   @override
   String get close => 'Close';

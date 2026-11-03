@@ -128,6 +128,84 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @app_name.
+  ///
+  /// In en, this message translates to:
+  /// **'NodeLane Comics'**
+  String get app_name;
+
+  /// No description provided for @settings_search_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching settings'**
+  String get settings_search_empty;
+
+  /// No description provided for @search_empty_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another keyword, or clear the search to see everything.'**
+  String get search_empty_hint;
+
+  /// No description provided for @search_clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get search_clear;
+
+  /// No description provided for @app_updates.
+  ///
+  /// In en, this message translates to:
+  /// **'App updates'**
+  String get app_updates;
+
+  /// No description provided for @app_update_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Check on launch'**
+  String get app_update_auto;
+
+  /// No description provided for @app_update_view.
+  ///
+  /// In en, this message translates to:
+  /// **'View update'**
+  String get app_update_view;
+
+  /// No description provided for @app_update_later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get app_update_later;
+
+  /// No description provided for @app_update_external_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the release page in your browser'**
+  String get app_update_external_hint;
+
+  /// No description provided for @app_update_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to check for updates. Please try again.'**
+  String get app_update_failed;
+
+  /// No description provided for @app_update_opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Release page opened'**
+  String get app_update_opened;
+
+  /// No description provided for @app_diagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics and logs'**
+  String get app_diagnostics;
+
+  /// No description provided for @app_upstream_community.
+  ///
+  /// In en, this message translates to:
+  /// **'Upstream community'**
+  String get app_upstream_community;
+
   /// No description provided for @library.
   ///
   /// In en, this message translates to:
@@ -5392,7 +5470,7 @@ abstract class AppLocalizations {
   /// No description provided for @startup_failed.
   ///
   /// In en, this message translates to:
-  /// **'Mangayomi could not finish starting up'**
+  /// **'NodeLane Comics could not finish starting up'**
   String get startup_failed;
 
   /// Header of the collapsed group in global search holding every source that failed or found nothing.
@@ -5770,7 +5848,7 @@ abstract class AppLocalizations {
   /// No description provided for @error_reports_banner.
   ///
   /// In en, this message translates to:
-  /// **'Mangayomi ran into an error'**
+  /// **'NodeLane Comics ran into an error'**
   String get error_reports_banner;
 
   /// No description provided for @error_reports_banner_action.
@@ -5800,7 +5878,7 @@ abstract class AppLocalizations {
   /// No description provided for @error_reports_extension_failure.
   ///
   /// In en, this message translates to:
-  /// **'This came from an extension, not from Mangayomi. Extensions are written and maintained by whoever runs the repository you installed this source from, so a fix has to go there. The source name and what you were opening are the useful details to give them.'**
+  /// **'This came from an extension, not from NodeLane Comics. Extensions are written and maintained by whoever runs the repository you installed this source from, so a fix has to go there. The source name and what you were opening are the useful details to give them.'**
   String get error_reports_extension_failure;
 
   /// No description provided for @error_reports_already_reported.
@@ -5824,7 +5902,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding_title.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Mangayomi'**
+  /// **'Welcome to NodeLane Comics'**
   String get onboarding_title;
 
   /// No description provided for @onboarding_libraries_body.
@@ -5944,7 +6022,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding_body.
   ///
   /// In en, this message translates to:
-  /// **'Mangayomi comes with no sources of its own. Add a repository and the extensions it holds become available to install and browse.'**
+  /// **'NodeLane Comics comes with no sources of its own. Add a repository and the extensions it holds become available to install and browse.'**
   String get onboarding_body;
 
   /// No description provided for @onboarding_add.
@@ -6388,7 +6466,7 @@ abstract class AppLocalizations {
   /// No description provided for @share_backup_file.
   ///
   /// In en, this message translates to:
-  /// **'Share Mangayomi backup file'**
+  /// **'Share NodeLane Comics backup file'**
   String get share_backup_file;
 
   /// No description provided for @close.

@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-enum _CheckResult { none, noResult, available, failed }
+enum _CheckResult { none, noResult, failed }
 
-/// The existing owner supplies package metadata, preferences and side effects.
+/// The owner supplies metadata, preferences and the existing update runtime.
 class MobileAboutScreen extends StatefulWidget {
   const MobileAboutScreen({
     super.key,
@@ -24,13 +25,12 @@ class MobileAboutScreen extends StatefulWidget {
     required this.reportCount,
     required this.onReports,
     required this.onCheck,
-    required this.onUpdate,
+    required this.updateBuilder,
     required this.onShareLogs,
     required this.onGitHub,
     required this.onDiscord,
     this.onOnboarding,
   });
-
   final AsyncValue<PackageInfo> packageInfo;
   final VoidCallback onRetryPackageInfo;
   final VoidCallback? onOnboarding;
@@ -40,8 +40,7 @@ class MobileAboutScreen extends StatefulWidget {
   final int Function() reportCount;
   final Future<void> Function() onReports, onShareLogs, onGitHub, onDiscord;
   final Future<UpdateInfo?> Function() onCheck;
-  final Future<void> Function(UpdateInfo) onUpdate;
-
+  final Widget Function(UpdateInfo, VoidCallback onDismiss) updateBuilder;
   @override
   State<MobileAboutScreen> createState() => _MobileAboutScreenState();
 }
@@ -49,6 +48,7 @@ class MobileAboutScreen extends StatefulWidget {
 class _MobileAboutScreenState extends State<MobileAboutScreen> {
   bool _checking = false, _logging = false, _sharing = false;
   _CheckResult _result = _CheckResult.none;
+  UpdateInfo? _update;
 
   Future<void> _check() async {
     if (_checking) return;
@@ -59,12 +59,10 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
     try {
       final update = await widget.onCheck();
       if (!mounted) return;
-      if (update == null) {
-        setState(() => _result = _CheckResult.noResult);
-      } else {
-        setState(() => _result = _CheckResult.available);
-        await widget.onUpdate(update);
-      }
+      setState(() {
+        _update = update;
+        _result = update == null ? _CheckResult.noResult : _CheckResult.none;
+      });
     } catch (_) {
       if (mounted) setState(() => _result = _CheckResult.failed);
     } finally {
@@ -81,7 +79,6 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
             .showSnackBar(SnackBar(content: Text(context.l10n.failed)));
       }
     } finally {
-      // Reports may have been cleared while the child route was open.
       if (mounted) setState(() {});
     }
   }
@@ -102,155 +99,138 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
+    final l = context.l10n, t = NodeLaneTokens.of(context);
+    final icons = NodeLaneIcons.of(context);
     final count = widget.reportCount();
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: l10n.settings_about_help),
+        appBar: nodeLaneAppBar(context, title: l.settings_about_help),
         body: SafeArea(
           top: false,
           child: ListView(
             key: const PageStorageKey('mobile-about'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: NodeLaneTokens.pagePadding,
             children: [
-              MobileSettingsGroup(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: widget.packageInfo.when(
-                      data: (info) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: Image.asset(
-                              appIconAssets[2],
-                              height: 40,
-                              color: colors.ink,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            info.appName,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${l10n.version} · ${l10n.beta_version(info.version)}',
-                            style: colors.readerSecondary,
-                          ),
-                        ],
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: NodeLaneTokens.space24,
+                ),
+                child: Column(
+                  children: [
+                    const NodeLaneBrandMark(),
+                    const SizedBox(height: NodeLaneTokens.space16),
+                    Text(
+                      l.app_name,
+                      textAlign: TextAlign.center,
+                      style: t.detailTitle,
+                    ),
+                    const SizedBox(height: NodeLaneTokens.space8),
+                    widget.packageInfo.when(
+                      data: (info) => Text(
+                        '${l.version} ${info.version}',
+                        style: t.readerSecondary,
                       ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (_, _) => Column(
-                        children: [
-                          Text(l10n.failed),
-                          TextButton.icon(
-                            onPressed: widget.onRetryPackageInfo,
-                            icon: Icon(NodeLaneIcons.of(context).refresh),
-                            label: Text(l10n.retry),
-                          ),
-                        ],
+                      loading: () => SizedBox.square(
+                        dimension: NodeLaneTokens.smallIconSize,
+                        child: CircularProgressIndicator(color: t.muted),
+                      ),
+                      error: (_, _) => TextButton.icon(
+                        onPressed: widget.onRetryPackageInfo,
+                        icon: Icon(icons.refresh),
+                        label: Text(l.retry),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               MobileSettingsGroup(
-                title: l10n.update,
+                title: l.app_updates,
                 children: [
+                  if (_update case final update?)
+                    widget.updateBuilder(update, () {
+                      if (mounted) setState(() => _update = null);
+                    })
+                  else
+                    Semantics(
+                      liveRegion: true,
+                      child: NodeLaneRow(
+                        title: _checking
+                            ? l.searching_for_updates
+                            : l.check_for_update,
+                        subtitle: switch (_result) {
+                          _CheckResult.noResult => l.update_check_no_result,
+                          _CheckResult.failed => l.app_update_failed,
+                          _CheckResult.none => null,
+                        },
+                        icon: icons.refresh,
+                        enabled: !_checking,
+                        onTap: _check,
+                        trailing: _checking
+                            ? SizedBox.square(
+                                dimension: NodeLaneTokens.smallIconSize,
+                                child: CircularProgressIndicator(
+                                  color: t.accent,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
                   NodeLaneSwitchRow(
-                    title: l10n.check_for_app_updates,
-                    icon: NodeLaneIcons.of(context).refresh,
+                    title: l.app_update_auto,
                     value: widget.checkForUpdates,
                     onChanged: widget.onAutoCheckChanged,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        FilledButton.tonalIcon(
-                          onPressed: _checking ? null : _check,
-                          icon: Icon(NodeLaneIcons.of(context).refresh),
-                          label: Text(l10n.check_for_update),
-                        ),
-                        if (_checking || _result != _CheckResult.none) ...[
-                          const SizedBox(height: 12),
-                          if (_checking && _result != _CheckResult.available)
-                            const LinearProgressIndicator(),
-                          const SizedBox(height: 8),
-                          Text(
-                            _checking && _result != _CheckResult.available
-                                ? l10n.searching_for_updates
-                                : switch (_result) {
-                                    _CheckResult.noResult =>
-                                      l10n.update_check_no_result,
-                                    _CheckResult.available =>
-                                      l10n.new_update_available,
-                                    _CheckResult.failed => l10n.failed,
-                                    _CheckResult.none => '',
-                                  },
-                          ),
-                        ],
-                      ],
-                    ),
                   ),
                 ],
               ),
               MobileSettingsGroup(
                 children: [
                   NodeLaneRow(
-                    title: l10n.error_reports,
-                    subtitle:
-                        '${l10n.error_reports_subtitle}${count == 0 ? '' : ' · $count'}',
-                    icon: NodeLaneIcons.of(context).error,
-                    onTap: () => _run(widget.onReports),
+                    title: 'GitHub',
+                    subtitle: NodeLaneBrand.repository,
+                    icon: icons.code,
+                    onTap: () => _run(widget.onGitHub),
                   ),
-                  NodeLaneSwitchRow(
-                    title: l10n.logs_on,
-                    icon: NodeLaneIcons.of(context).novel,
-                    value: widget.logsEnabled,
-                    onChanged: _logging ? null : _changeLogs,
-                  ),
-                  if (widget.logsEnabled)
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: TextButton.icon(
-                        onPressed: _sharing || _logging ? null : _shareLogs,
-                        icon: Icon(NodeLaneIcons.of(context).share),
-                        label: Text(l10n.share_app_logs),
-                      ),
-                    ),
-                ],
-              ),
-              if (widget.onOnboarding != null)
-                MobileSettingsGroup(
-                  children: [
+                  if (widget.onOnboarding != null)
                     NodeLaneRow(
-                      title: l10n.onboarding_replay,
-                      icon: NodeLaneIcons.of(context).info,
+                      title: l.onboarding_replay,
+                      icon: icons.manga,
                       onTap: widget.onOnboarding,
                     ),
-                  ],
-                ),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () => _run(widget.onGitHub),
-                    icon: Icon(NodeLaneIcons.of(context).code),
-                    label: const Text('GitHub'),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () => _run(widget.onDiscord),
-                    icon: Icon(NodeLaneIcons.of(context).chat),
-                    label: const Text('Discord'),
+                  NodeLaneRow(
+                    title: l.app_upstream_community,
+                    subtitle: 'Mangayomi · Discord',
+                    icon: icons.chat,
+                    onTap: () => _run(widget.onDiscord),
                   ),
                 ],
+              ),
+              NodeLaneDisclosure(
+                title: l.app_diagnostics,
+                icon: icons.novel,
+                child: NodeLaneGroupSurface(
+                  children: [
+                    NodeLaneRow(
+                      title: l.error_reports,
+                      subtitle:
+                          '${l.error_reports_subtitle}${count == 0 ? '' : ' · $count'}',
+                      icon: icons.error,
+                      onTap: () => _run(widget.onReports),
+                    ),
+                    NodeLaneSwitchRow(
+                      title: l.logs_on,
+                      icon: icons.novel,
+                      value: widget.logsEnabled,
+                      onChanged: _logging ? null : _changeLogs,
+                    ),
+                    if (widget.logsEnabled)
+                      NodeLaneRow(
+                        title: l.share_app_logs,
+                        icon: icons.share,
+                        enabled: !_sharing && !_logging,
+                        onTap: _shareLogs,
+                      ),
+                  ],
+                ),
               ),
             ],
           ),

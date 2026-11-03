@@ -10,6 +10,48 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String get app_name => 'NodeLane Comics';
+
+  @override
+  String get settings_search_empty => 'No matching settings';
+
+  @override
+  String get search_empty_hint =>
+      'Try another keyword, or clear the search to see everything.';
+
+  @override
+  String get search_clear => 'Clear search';
+
+  @override
+  String get app_updates => 'App updates';
+
+  @override
+  String get app_update_auto => 'Check on launch';
+
+  @override
+  String get app_update_view => 'View update';
+
+  @override
+  String get app_update_later => 'Later';
+
+  @override
+  String get app_update_external_hint =>
+      'Opens the release page in your browser';
+
+  @override
+  String get app_update_failed =>
+      'Unable to check for updates. Please try again.';
+
+  @override
+  String get app_update_opened => 'Release page opened';
+
+  @override
+  String get app_diagnostics => 'Diagnostics and logs';
+
+  @override
+  String get app_upstream_community => 'Upstream community';
+
+  @override
   String get library => 'Biblioteca';
 
   @override
@@ -2501,10 +2543,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get tracked => 'Monitorato';
 
   @override
-  String get auth_unlock_msg => 'Autenticati per sbloccare Mangayomi';
+  String get auth_unlock_msg => 'Autenticati per sbloccare NodeLane Comics';
 
   @override
-  String get app_locked => 'Mangayomi è bloccato';
+  String get app_locked => 'NodeLane Comics è bloccato';
 
   @override
   String get auth_to_continue => 'Autenticati per continuare';
@@ -2997,7 +3039,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get something_went_wrong => 'Qualcosa è andato storto';
 
   @override
-  String get startup_failed => 'Mangayomi non è riuscito ad avviarsi';
+  String get startup_failed => 'NodeLane Comics non è riuscito ad avviarsi';
 
   @override
   String sources_with_no_results(int count) {
@@ -3248,7 +3290,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get error_reports_report => 'Segnala su GitHub';
 
   @override
-  String get error_reports_banner => 'Mangayomi ha riscontrato un errore';
+  String get error_reports_banner => 'NodeLane Comics ha riscontrato un errore';
 
   @override
   String get error_reports_banner_action => 'Mostra';
@@ -3264,7 +3306,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get error_reports_extension_failure =>
-      'Questo errore proviene da un\'estensione, non da Mangayomi. Le estensioni sono sviluppate e mantenute da chi gestisce il repository da cui hai installato questa fonte, quindi la correzione deve essere fatta lì. Il nome della fonte e ciò che stavi aprendo sono dettagli utili da fornire.';
+      'Questo errore proviene da un\'estensione, non da NodeLane Comics. Le estensioni sono sviluppate e mantenute da chi gestisce il repository da cui hai installato questa fonte, quindi la correzione deve essere fatta lì. Il nome della fonte e ciò che stavi aprendo sono dettagli utili da fornire.';
 
   @override
   String get error_reports_already_reported => 'Già segnalato';
@@ -3278,7 +3320,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Condivisione non disponibile, copiato negli appunti.';
 
   @override
-  String get onboarding_title => 'Benvenuto in Mangayomi';
+  String get onboarding_title => 'Benvenuto in NodeLane Comics';
 
   @override
   String get onboarding_libraries_body => 'Scegli cosa leggere e guardare.';
@@ -3599,7 +3641,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get genre_rows => 'Genre rows';
 
   @override
-  String get share_backup_file => 'Share Mangayomi backup file';
+  String get share_backup_file => 'Share NodeLane Comics backup file';
 
   @override
   String get close => 'Close';

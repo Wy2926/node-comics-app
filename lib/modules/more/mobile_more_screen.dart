@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
@@ -241,51 +242,62 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                   onSubmitted: (_) => FocusScope.of(context).unfocus(),
                 ),
               ),
-              SliverPadding(
-                padding: NodeLaneTokens.pagePadding.add(
-                  pageBottomInsets(context),
+              if (empty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: pageBottomInsets(context),
+                    child: Center(
+                      child: NodeLaneEmptyState(
+                        icon: icons.search,
+                        title: l.settings_search_empty,
+                        message: l.search_empty_hint,
+                        action: FilledButton.tonal(
+                          onPressed: _clear,
+                          child: Text(l.search_clear),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: NodeLaneTokens.pagePadding.add(
+                    pageBottomInsets(context),
+                  ),
+                  sliver: SliverList.list(
+                    children: [
+                      for (final section in filtered)
+                        MobileSettingsGroup(
+                          title: section.title,
+                          children: section.children,
+                        ),
+                      if (query.isEmpty) ...[
+                        NodeLaneDisclosure(
+                          title: l.settings_more_tools,
+                          subtitle: l.settings_more_tools_hint,
+                          icon: icons.folderOutline,
+                          child: Column(children: matchingTools),
+                        ),
+                        const SizedBox(height: NodeLaneTokens.space24),
+                      ] else if (matchingTools.isNotEmpty)
+                        MobileSettingsGroup(
+                          title: l.settings_more_tools,
+                          children: matchingTools,
+                        ),
+                      if (showAbout)
+                        NodeLaneGroupSurface(
+                          children: [
+                            NodeLaneRow(
+                              title: l.settings_about_help,
+                              icon: icons.info,
+                              onTap: () => _open('/about'),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
-                sliver: SliverList.list(
-                  children: [
-                    for (final section in filtered)
-                      MobileSettingsGroup(
-                        title: section.title,
-                        children: section.children,
-                      ),
-                    if (query.isEmpty) ...[
-                      NodeLaneDisclosure(
-                        title: l.settings_more_tools,
-                        subtitle: l.settings_more_tools_hint,
-                        icon: icons.folderOutline,
-                        child: Column(children: matchingTools),
-                      ),
-                      const SizedBox(height: NodeLaneTokens.space24),
-                    ] else if (matchingTools.isNotEmpty)
-                      MobileSettingsGroup(
-                        title: l.settings_more_tools,
-                        children: matchingTools,
-                      ),
-                    if (showAbout)
-                      NodeLaneGroupSurface(
-                        children: [
-                          NodeLaneRow(
-                            title: l.settings_about_help,
-                            icon: icons.info,
-                            onTap: () => _open('/about'),
-                          ),
-                        ],
-                      ),
-                    if (empty)
-                      Column(
-                        children: [
-                          Text(l.no_result, style: t.readerSecondary),
-                          const SizedBox(height: NodeLaneTokens.space16),
-                          TextButton(onPressed: _clear, child: Text(l.reset)),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

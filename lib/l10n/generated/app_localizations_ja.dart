@@ -10,6 +10,48 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get app_name => 'NodeLane Comics';
+
+  @override
+  String get settings_search_empty => 'No matching settings';
+
+  @override
+  String get search_empty_hint =>
+      'Try another keyword, or clear the search to see everything.';
+
+  @override
+  String get search_clear => 'Clear search';
+
+  @override
+  String get app_updates => 'App updates';
+
+  @override
+  String get app_update_auto => 'Check on launch';
+
+  @override
+  String get app_update_view => 'View update';
+
+  @override
+  String get app_update_later => 'Later';
+
+  @override
+  String get app_update_external_hint =>
+      'Opens the release page in your browser';
+
+  @override
+  String get app_update_failed =>
+      'Unable to check for updates. Please try again.';
+
+  @override
+  String get app_update_opened => 'Release page opened';
+
+  @override
+  String get app_diagnostics => 'Diagnostics and logs';
+
+  @override
+  String get app_upstream_community => 'Upstream community';
+
+  @override
   String get library => 'ライブラリ';
 
   @override
@@ -2423,10 +2465,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tracked => '追跡中';
 
   @override
-  String get auth_unlock_msg => 'Mangayomiのロックを解除するために認証してください';
+  String get auth_unlock_msg => 'NodeLane Comicsのロックを解除するために認証してください';
 
   @override
-  String get app_locked => 'Mangayomiはロックされています';
+  String get app_locked => 'NodeLane Comicsはロックされています';
 
   @override
   String get auth_to_continue => '続行するために認証してください';
@@ -2908,7 +2950,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get something_went_wrong => '問題が発生しました';
 
   @override
-  String get startup_failed => 'Mangayomiの起動に失敗しました';
+  String get startup_failed => 'NodeLane Comicsの起動に失敗しました';
 
   @override
   String sources_with_no_results(int count) {
@@ -3159,7 +3201,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get error_reports_extension_failure =>
-      'これはMangayomiではなく拡張機能に起因するエラーです。拡張機能はインストール元のリポジトリ管理者によって作成・管理されているため、そちらで修正する必要があります。ソース名と開こうとした項目を伝えると役立ちます。';
+      'これはNodeLane Comicsではなく拡張機能に起因するエラーです。拡張機能はインストール元のリポジトリ管理者によって作成・管理されているため、そちらで修正する必要があります。ソース名と開こうとした項目を伝えると役立ちます。';
 
   @override
   String get error_reports_already_reported => '報告済み';
@@ -3172,7 +3214,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get share_unavailable_copied => '共有機能が利用できないためクリップボードにコピーしました。';
 
   @override
-  String get onboarding_title => 'Mangayomiへようこそ';
+  String get onboarding_title => 'NodeLane Comicsへようこそ';
 
   @override
   String get onboarding_libraries_body => '読みたいもの、観たいものを選択してください。';
@@ -3479,7 +3521,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get genre_rows => 'Genre rows';
 
   @override
-  String get share_backup_file => 'Share Mangayomi backup file';
+  String get share_backup_file => 'Share NodeLane Comics backup file';
 
   @override
   String get close => '閉じる';

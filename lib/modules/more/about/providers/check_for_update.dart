@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:mangayomi/utils/nodelane_brand.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/services/http/m_client.dart';
@@ -46,7 +48,7 @@ Future<UpdateInfo?> _getUpdateIfAvailable() async {
   if (kDebugMode) {
     log(info.data.toString());
   }
-  final latest = await _fetchLatestRelease();
+  final latest = await fetchLatestAppRelease();
   if (latest == null) {
     return null;
   }
@@ -105,20 +107,23 @@ bool _hasPlatformAssets(List<dynamic> assets) {
 /// Performs an update check unconditionally, ignoring the auto-update setting.
 Future<UpdateInfo?> performManualUpdateCheck() => _getUpdateIfAvailable();
 
-Future<UpdateInfo?> _fetchLatestRelease() async {
+@visibleForTesting
+Future<UpdateInfo?> fetchLatestAppRelease({http.Client? client}) async {
   try {
-    final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
-    final res = await http.get(
-      Uri.parse(
-        'https://api.github.com/repos/kodjodevf/Mangayomi/releases/latest',
-      ),
-      headers: {'Accept': 'application/vnd.github.v3+json'},
-    );
+    final request =
+        client ?? MClient.init(reqcopyWith: {'useDartHttpClient': true});
+    final res = await request
+        .get(
+          Uri.parse(NodeLaneBrand.releasesApi),
+          headers: {'Accept': 'application/vnd.github.v3+json'},
+        )
+        .timeout(const Duration(seconds: 20));
+    if (res.statusCode == 404) return null;
     if (res.statusCode != 200) {
       if (kDebugMode) {
         log('GitHub releases check failed with status: ${res.statusCode}');
       }
-      return null;
+      throw const FormatException('Release check failed');
     }
     final release = jsonDecode(res.body) as Map<String, dynamic>;
     final tagName =
@@ -128,7 +133,9 @@ Future<UpdateInfo?> _fetchLatestRelease() async {
         .replaceFirst(RegExp(r'^[vV]'), '')
         .split(RegExp(r'[-+]'))
         .first;
-    if (cleanVersion.isEmpty) return null;
+    if (cleanVersion.isEmpty) {
+      throw const FormatException('Missing release version');
+    }
 
     final body = (release['body'] as String?) ?? '';
     final htmlUrl = (release['html_url'] as String?) ?? '';
@@ -146,6 +153,6 @@ Future<UpdateInfo?> _fetchLatestRelease() async {
     if (kDebugMode) {
       log('Error fetching latest release: $e\n$st');
     }
-    return null;
+    rethrow;
   }
 }

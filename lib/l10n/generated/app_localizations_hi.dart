@@ -10,6 +10,48 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
+  String get app_name => 'NodeLane Comics';
+
+  @override
+  String get settings_search_empty => 'No matching settings';
+
+  @override
+  String get search_empty_hint =>
+      'Try another keyword, or clear the search to see everything.';
+
+  @override
+  String get search_clear => 'Clear search';
+
+  @override
+  String get app_updates => 'App updates';
+
+  @override
+  String get app_update_auto => 'Check on launch';
+
+  @override
+  String get app_update_view => 'View update';
+
+  @override
+  String get app_update_later => 'Later';
+
+  @override
+  String get app_update_external_hint =>
+      'Opens the release page in your browser';
+
+  @override
+  String get app_update_failed =>
+      'Unable to check for updates. Please try again.';
+
+  @override
+  String get app_update_opened => 'Release page opened';
+
+  @override
+  String get app_diagnostics => 'Diagnostics and logs';
+
+  @override
+  String get app_upstream_community => 'Upstream community';
+
+  @override
   String get library => 'पुस्तकालय';
 
   @override
@@ -2965,7 +3007,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get something_went_wrong => 'कुछ गलत हो गया';
 
   @override
-  String get startup_failed => 'Mangayomi प्रारंभ नहीं हो सका';
+  String get startup_failed => 'NodeLane Comics प्रारंभ नहीं हो सका';
 
   @override
   String sources_with_no_results(int count) {
@@ -3214,7 +3256,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get error_reports_report => 'GitHub पर रिपोर्ट करें';
 
   @override
-  String get error_reports_banner => 'Mangayomi में त्रुटि आई';
+  String get error_reports_banner => 'NodeLane Comics में त्रुटि आई';
 
   @override
   String get error_reports_banner_action => 'देखें';
@@ -3230,7 +3272,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get error_reports_extension_failure =>
-      'यह त्रुटि किसी एक्सटेंशन से आई है, Mangayomi से नहीं। एक्सटेंशन उस रिपॉजिटरी के प्रबंधकों द्वारा लिखे और बनाए रखे जाते हैं जहाँ से आपने यह स्रोत स्थापित किया है, इसलिए सुधार वहीं होना चाहिए।';
+      'यह त्रुटि किसी एक्सटेंशन से आई है, NodeLane Comics से नहीं। एक्सटेंशन उस रिपॉजिटरी के प्रबंधकों द्वारा लिखे और बनाए रखे जाते हैं जहाँ से आपने यह स्रोत स्थापित किया है, इसलिए सुधार वहीं होना चाहिए।';
 
   @override
   String get error_reports_already_reported =>
@@ -3245,7 +3287,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'साझाकरण उपलब्ध नहीं है, क्लिपबोर्ड पर कॉपी किया गया।';
 
   @override
-  String get onboarding_title => 'Mangayomi में आपका स्वागत है';
+  String get onboarding_title => 'NodeLane Comics में आपका स्वागत है';
 
   @override
   String get onboarding_libraries_body =>
@@ -3563,7 +3605,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get genre_rows => 'Genre rows';
 
   @override
-  String get share_backup_file => 'Share Mangayomi backup file';
+  String get share_backup_file => 'Share NodeLane Comics backup file';
 
   @override
   String get close => 'Close';

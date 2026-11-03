@@ -119,7 +119,7 @@ void main() {
       tester,
     ) async {
       await pump(tester);
-      expect(find.text('Welcome to Mangayomi'), findsOneWidget);
+      expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
       for (final label in ['Manga', 'Anime', 'Novel']) {
         expect(find.widgetWithText(FilterChip, label), findsOneWidget);
       }
@@ -381,7 +381,7 @@ void main() {
 
       await tester.tap(find.widgetWithIcon(IconButton, Icons.arrow_back));
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Mangayomi'), findsOneWidget);
+      expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
       expect(find.widgetWithIcon(IconButton, Icons.arrow_back), findsNothing);
     });
 
@@ -400,7 +400,7 @@ void main() {
       await tester.tap(find.widgetWithIcon(IconButton, Icons.arrow_back));
       await tester.pumpAndSettle();
       expect(find.text('Your libraries'), findsNothing);
-      expect(find.text('Welcome to Mangayomi'), findsOneWidget);
+      expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
     });
   });
 
@@ -505,25 +505,27 @@ void main() {
     Image logo(WidgetTester tester) =>
         tester.widget<Image>(find.byType(Image).first);
 
-    String asset(WidgetTester tester) =>
-        (logo(tester).image as AssetImage).assetName;
+    String asset(WidgetTester tester) {
+      final provider = logo(tester).image;
+      return ((provider is ResizeImage ? provider.imageProvider : provider)
+              as AssetImage)
+          .assetName;
+    }
 
-    testWidgets('is the silhouette, tinted white, on a dark theme', (
+    testWidgets('preserves the NodeLane artwork on a dark theme', (
       tester,
     ) async {
       await pump(tester, brightness: Brightness.dark);
-      expect(asset(tester), 'assets/app_icons/icon.png');
-      expect(logo(tester).color, Colors.white);
+      expect(asset(tester), 'assets/brand/app-mark.png');
+      expect(logo(tester).color, isNull);
     });
 
-    testWidgets('is the same silhouette, tinted black, on a light theme', (
+    testWidgets('preserves the same NodeLane artwork on a light theme', (
       tester,
     ) async {
-      // The mark is a silhouette, so it vanishes into one background or the
-      // other unless the tint is flipped with the theme.
       await pump(tester, brightness: Brightness.light);
-      expect(asset(tester), 'assets/app_icons/icon.png');
-      expect(logo(tester).color, Colors.black);
+      expect(asset(tester), 'assets/brand/app-mark.png');
+      expect(logo(tester).color, isNull);
     });
   });
 

@@ -4,6 +4,7 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
 
 class DiscordRPC {
   /// Id of the Discord Application
@@ -29,11 +30,11 @@ class DiscordRPC {
     assets: const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
     buttons: [
       const RPCButton(
-        label: "Get Mangayomi",
-        url: "https://github.com/kodjodevf/mangayomi",
+        label: "Get NodeLane Comics",
+        url: NodeLaneBrand.repositoryUrl,
       ),
       const RPCButton(
-        label: "Join us",
+        label: "Upstream community",
         url: "https://discord.com/invite/EjfBuYahsP",
       ),
     ],

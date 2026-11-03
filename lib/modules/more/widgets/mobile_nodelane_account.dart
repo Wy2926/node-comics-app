@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,25 +134,11 @@ class _AccountViewState extends ConsumerState<_AccountView>
       account.planName ?? account.plan ?? context.l10n.nodelane_account_unknown,
   };
 
-  Widget _avatar({bool hero = false}) {
-    final t = NodeLaneTokens.of(context);
-    return Container(
-      width: hero
-          ? NodeLaneTokens.accountHeroAvatarSize
-          : NodeLaneTokens.avatarSize,
-      height: hero
-          ? NodeLaneTokens.accountHeroAvatarSize
-          : NodeLaneTokens.avatarSize,
-      decoration: BoxDecoration(color: t.soft, shape: BoxShape.circle),
-      child: Icon(
-        NodeLaneIcons.of(context).accountOutline,
-        size: hero
-            ? NodeLaneTokens.accountHeroIconSize
-            : NodeLaneTokens.accountAvatarIconSize,
-        color: t.muted,
-      ),
-    );
-  }
+  Widget _avatar({bool hero = false}) => NodeLaneBrandMark.account(
+    size: hero
+        ? NodeLaneTokens.accountHeroAvatarSize
+        : NodeLaneTokens.avatarSize,
+  );
 
   Widget _identity({required bool compact}) {
     final l = context.l10n, t = NodeLaneTokens.of(context);

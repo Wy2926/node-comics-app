@@ -1,6 +1,7 @@
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -127,61 +128,59 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                   ),
                 ),
               if (options.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        Text(
-                          query.isEmpty
-                              ? widget.emptyMessage ?? l10n.no_result
-                              : l10n.no_result,
-                        ),
-                        if (query.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: _clear,
-                            child: Text(l10n.reset),
-                          ),
-                        ],
-                      ],
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: NodeLaneEmptyState(
+                      icon: NodeLaneIcons.of(context).search,
+                      title: query.isEmpty
+                          ? widget.emptyMessage ?? l10n.no_result
+                          : l10n.no_result,
+                      message: query.isEmpty ? null : l10n.search_empty_hint,
+                      action: query.isEmpty
+                          ? null
+                          : FilledButton.tonal(
+                              onPressed: _clear,
+                              child: Text(l10n.search_clear),
+                            ),
                     ),
                   ),
-                ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                sliver: SliverList.builder(
-                  itemCount: options.length,
-                  itemBuilder: (context, index) {
-                    final option = options[index];
-                    final selected = option.value == widget.current;
-                    return Semantics(
-                      selected: selected,
-                      inMutuallyExclusiveGroup: true,
-                      child: NodeLaneRow.card(
-                        title: option.label,
-                        subtitle: option.subtitle,
-                        leading: option.leading,
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  sliver: SliverList.builder(
+                    itemCount: options.length,
+                    itemBuilder: (context, index) {
+                      final option = options[index];
+                      final selected = option.value == widget.current;
+                      return Semantics(
                         selected: selected,
-                        first: index == 0,
-                        last: index == options.length - 1,
-                        minHeight: NodeLaneTokens.rowHeight,
-                        trailing: SizedBox(
-                          width: NodeLaneTokens.iconSize,
-                          child: selected
-                              ? Icon(
-                                  NodeLaneIcons.of(context).check,
-                                  color: colors.accent,
-                                  size: NodeLaneTokens.iconSize,
-                                )
-                              : null,
+                        inMutuallyExclusiveGroup: true,
+                        child: NodeLaneRow.card(
+                          title: option.label,
+                          subtitle: option.subtitle,
+                          leading: option.leading,
+                          selected: selected,
+                          first: index == 0,
+                          last: index == options.length - 1,
+                          minHeight: NodeLaneTokens.rowHeight,
+                          trailing: SizedBox(
+                            width: NodeLaneTokens.iconSize,
+                            child: selected
+                                ? Icon(
+                                    NodeLaneIcons.of(context).check,
+                                    color: colors.accent,
+                                    size: NodeLaneTokens.iconSize,
+                                  )
+                                : null,
+                          ),
+                          onTap: () => _choose(option),
                         ),
-                        onTap: () => _choose(option),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
         ),

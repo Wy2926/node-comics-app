@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/modules/more/about/mobile_app_update_dialog.dart';
+import 'package:mangayomi/modules/more/about/mobile_app_update_view.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,7 +18,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 class DownloadFileScreen extends ConsumerStatefulWidget {
   final (String, String, String, List<dynamic>) updateAvailable;
-  const DownloadFileScreen({required this.updateAvailable, super.key});
+  const DownloadFileScreen({
+    required this.updateAvailable,
+    super.key,
+    this.embedded = false,
+    this.onDismiss,
+  }) : assert(!embedded || onDismiss != null);
+  final bool embedded;
+  final VoidCallback? onDismiss;
 
   @override
   ConsumerState<DownloadFileScreen> createState() => _DownloadFileScreenState();
@@ -31,6 +38,7 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
   bool _isInstalling = false;
   String? _errorMessage;
   String _currentVersion = '';
+  bool _openedInBrowser = false;
 
   bool _closed = false;
   bool get _active => mounted && !_closed;
@@ -75,7 +83,24 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
   void _cancel() {
     if (!_active) return;
     _stop();
-    if (mounted) Navigator.pop(context);
+    if (widget.embedded) {
+      widget.onDismiss!();
+    } else if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  void _finish({bool browser = false}) {
+    if (!_active) return;
+    if (!widget.embedded || !browser) {
+      _cancel();
+      return;
+    }
+    setState(() {
+      _isDownloading = false;
+      _isInstalling = false;
+      _openedInBrowser = true;
+    });
   }
 
   @override
@@ -84,8 +109,10 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) _stop();
       },
-      child: isMobile && !isTv
-          ? MobileAppUpdateDialog(
+      child: widget.embedded || (isMobile && !isTv)
+          ? MobileAppUpdateView(
+              embedded: widget.embedded,
+              openedInBrowser: _openedInBrowser,
               currentVersion: _currentVersion,
               targetVersion: widget.updateAvailable.$1,
               notes: _cleanChangelog(widget.updateAvailable.$2),
@@ -398,6 +425,7 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
       _errorMessage = null;
       _received = 0;
       _total = 0;
+      _openedInBrowser = false;
     });
     try {
       if (Platform.isAndroid) {
@@ -437,11 +465,11 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
           await _downloadApk(apkUrl);
         } else {
           await _launchInBrowser(Uri.parse(updateAvailable.$3));
-          _cancel();
+          _finish(browser: true);
         }
       } else {
         await _launchInBrowser(Uri.parse(updateAvailable.$3));
-        _cancel();
+        _finish(browser: true);
       }
     } catch (_) {
       _fail('Échec du téléchargement.');
@@ -471,7 +499,7 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
     if (!hasDownloads) dir = await getExternalStorageDirectory();
     if (!_active) return;
     final file = File(
-      '${dir!.path}/${url.split("/").lastOrNull ?? "Mangayomi.apk"}',
+      '${dir!.path}/${url.split("/").lastOrNull ?? "NodeLane-Comics.apk"}',
     );
 
     // If a file already exists, verify its integrity by comparing its size

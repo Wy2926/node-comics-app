@@ -10,6 +10,45 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get app_name => 'NodeLane漫译';
+
+  @override
+  String get settings_search_empty => '未找到相关设置';
+
+  @override
+  String get search_empty_hint => '试试其他关键词，或清除搜索查看全部内容。';
+
+  @override
+  String get search_clear => '清除搜索';
+
+  @override
+  String get app_updates => '应用更新';
+
+  @override
+  String get app_update_auto => '启动时检查更新';
+
+  @override
+  String get app_update_view => '查看更新';
+
+  @override
+  String get app_update_later => '稍后';
+
+  @override
+  String get app_update_external_hint => '在浏览器中打开发布页面';
+
+  @override
+  String get app_update_failed => '暂时无法检查更新，请重试。';
+
+  @override
+  String get app_update_opened => '已打开发布页面';
+
+  @override
+  String get app_diagnostics => '诊断与日志';
+
+  @override
+  String get app_upstream_community => '上游社区';
+
+  @override
   String get library => '书架';
 
   @override
@@ -2865,7 +2904,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get something_went_wrong => '出错了';
 
   @override
-  String get startup_failed => 'Mangayomi 无法完成启动';
+  String get startup_failed => 'NodeLane漫译 无法完成启动';
 
   @override
   String sources_with_no_results(int count) {
@@ -3099,7 +3138,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get error_reports_report => '在 GitHub 上反馈';
 
   @override
-  String get error_reports_banner => 'Mangayomi 遇到了一个错误';
+  String get error_reports_banner => 'NodeLane漫译 遇到了一个错误';
 
   @override
   String get error_reports_banner_action => '查看';
@@ -3115,7 +3154,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get error_reports_extension_failure =>
-      '此错误来自扩展插件，而非 Mangayomi 本身。扩展由插件仓库的维护者编写和维护，因此需要在插件仓库中修复。请向他们提供插件名称和当时正在打开的内容。';
+      '此错误来自扩展插件，而非 NodeLane漫译 本身。扩展由插件仓库的维护者编写和维护，因此需要在插件仓库中修复。请向他们提供插件名称和当时正在打开的内容。';
 
   @override
   String get error_reports_already_reported => '已报告';
@@ -3128,7 +3167,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get share_unavailable_copied => '此平台不支持分享，已复制到剪贴板。';
 
   @override
-  String get onboarding_title => '欢迎使用 Mangayomi';
+  String get onboarding_title => '欢迎使用 NodeLane漫译';
 
   @override
   String get onboarding_libraries_body => '选择您要阅读和观看的内容类型。';
@@ -3431,7 +3470,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get genre_rows => 'Genre rows';
 
   @override
-  String get share_backup_file => 'Share Mangayomi backup file';
+  String get share_backup_file => 'Share NodeLane Comics backup file';
 
   @override
   String get close => '关闭';

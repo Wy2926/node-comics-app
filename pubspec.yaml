@@ -165,6 +165,7 @@ flutter:
       platforms: [android]
     - assets/trackers_icons/
     - assets/app_icons/
+    - assets/brand/
 
   fonts:
     - family: OpenDyslexic
@@ -188,9 +189,9 @@ inno_bundle:
   id: 6CB26FFA-E72B-42C3-91E8-594940031CA2
   publisher: kodjodevf
   name: Mangayomi
-  url: https://github.com/kodjodevf/mangayomi/
-  support_url: https://github.com/kodjodevf/mangayomi/
-  updates_url: https://github.com/kodjodevf/mangayomi/releases/
+  url: https://github.com/Wy2926/node-comics-app
+  support_url: https://github.com/Wy2926/node-comics-app/issues
+  updates_url: https://github.com/Wy2926/node-comics-app/releases
   languages:
     - english
     - french

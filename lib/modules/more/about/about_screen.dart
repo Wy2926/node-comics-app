@@ -14,7 +14,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/share.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -56,14 +57,15 @@ class AboutScreen extends ConsumerWidget {
           await context.push('/errorReports');
         },
         onCheck: performManualUpdateCheck,
-        onUpdate: (update) => showDialog<void>(
-          context: context,
-          builder: (_) => DownloadFileScreen(updateAvailable: update),
+        updateBuilder: (update, onDismiss) => DownloadFileScreen(
+          key: ValueKey(update.$1),
+          updateAvailable: update,
+          embedded: true,
+          onDismiss: onDismiss,
         ),
         onShareLogs: () => _shareLogs(context),
-        onGitHub: () => _launchInBrowser(
-          Uri.parse('https://github.com/kodjodevf/mangayomi'),
-        ),
+        onGitHub: () =>
+            _launchInBrowser(Uri.parse(NodeLaneBrand.repositoryUrl)),
         onDiscord: () => _launchInBrowser(
           Uri.parse('https://discord.com/invite/EjfBuYahsP'),
         ),
@@ -79,14 +81,7 @@ class AboutScreen extends ConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Image.asset(
-                      appIconAssets[2],
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Colors.black
-                          : Colors.white,
-                      fit: BoxFit.cover,
-                      height: 100,
-                    ),
+                    child: const NodeLaneBrandMark(),
                   ),
                   Column(
                     children: [
@@ -182,9 +177,7 @@ class AboutScreen extends ConsumerWidget {
                           IconButton(
                             onPressed: () {
                               _launchInBrowser(
-                                Uri.parse(
-                                  'https://github.com/kodjodevf/mangayomi',
-                                ),
+                                Uri.parse(NodeLaneBrand.repositoryUrl),
                               );
                             },
                             icon: const Padding(

@@ -59,7 +59,7 @@ void main() {
     expect(find.text('Your libraries'), findsOneWidget);
 
     await systemBack(tester);
-    expect(find.text('Welcome to Mangayomi'), findsOneWidget);
+    expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
   });
 
   testWidgets('Back closes an inner dialog before changing the welcome step', (
@@ -80,7 +80,7 @@ void main() {
     expect(find.text('Restore confirmation sample'), findsNothing);
     expect(find.text('Your libraries'), findsOneWidget);
     await systemBack(tester);
-    expect(find.text('Welcome to Mangayomi'), findsOneWidget);
+    expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
   });
 
   testWidgets('does nothing on the first step, where Skip is the way out', (
@@ -90,7 +90,7 @@ void main() {
     await systemBack(tester);
     // Still here, and the app has not been left from behind an unfinished
     // first run.
-    expect(find.text('Welcome to Mangayomi'), findsOneWidget);
+    expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
   });
 }
 

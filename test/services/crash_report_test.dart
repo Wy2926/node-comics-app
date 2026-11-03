@@ -591,7 +591,7 @@ void main() {
       final url = buildIssueUrl(report, appVersion: '0.8.8', device: 'Pixel 5');
 
       expect(url.host, 'github.com');
-      expect(url.path, '/kodjodevf/mangayomi/issues/new');
+      expect(url.path, '/Wy2926/node-comics-app/issues/new');
       expect(url.queryParameters['template'], 'report_issue.yml');
       expect(url.queryParameters['mangayomi-version'], '0.8.8');
       expect(url.queryParameters['device'], 'Pixel 5');

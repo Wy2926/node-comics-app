@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -585,7 +585,9 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       final first = _step == _Step.libraries;
       return MobileOnboardingFrame(
         step: first ? 1 : 2,
-        title: first ? l10n.onboarding_nav_title : l10n.onboarding_content_title,
+        title: first
+            ? l10n.onboarding_nav_title
+            : l10n.onboarding_content_title,
         description: first
             ? l10n.onboarding_mobile_libraries_body
             : l10n.onboarding_mobile_sources_body,
@@ -664,19 +666,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // The app's own mark rather than a stock glyph. icon.png is
-              // the bare silhouette, tinted against the background the same
-              // way the More and About screens tint it. The full colour
-              // icons are drawn on a white tile, which reads as a bright
-              // block on a dark theme, so they are not used here.
-              Image.asset(
-                appIconAssets[2],
-                height: isTv ? 96 : 80,
-                color: theme.brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-                fit: BoxFit.contain,
-              ),
+              NodeLaneBrandMark(size: isTv ? 96 : 80),
               const SizedBox(height: 16),
               // Above the words rather than below them, so it keeps its place
               // while the content underneath changes height. Not tappable:

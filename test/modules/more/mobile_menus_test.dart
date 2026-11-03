@@ -130,9 +130,11 @@ void main() {
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.enterText(find.byType(TextField), 'missing setting');
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.widgetWithText(TextButton, 'Reset'));
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Clear search'),
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Reset'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Clear search'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.byType(TextField),
