@@ -3624,19 +3624,46 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count downloads',
-      one: '1 download',
+      other: '$count chapters',
+      one: '1 chapter',
     );
     return '$_temp0';
   }
 
   @override
   String get download_queue_empty_hint =>
-      'Open a chapter list to add downloads.';
+      'Add downloads from a title’s chapter list.';
 
   @override
-  String get download_queue_order_hint =>
-      'Drag to change the order of waiting chapters.';
+  String get download_queue_order_hint => 'Drag handles to reorder';
+
+  @override
+  String get download_queue_empty => 'No downloads queued';
+
+  @override
+  String get download_queue_actions => 'Download actions';
+
+  @override
+  String get download_queue_cancel_chapter => 'Cancel this chapter’s download';
+
+  @override
+  String get download_queue_cancel_series =>
+      'Cancel all downloads for this title';
+
+  @override
+  String get download_queue_start => 'Start downloads';
+
+  @override
+  String get download_queue_retry => 'Retry downloads';
+
+  @override
+  String get download_queue_active => 'Downloading';
+
+  @override
+  String get download_queue_waiting => 'Waiting to download';
+
+  @override
+  String get download_queue_failed => 'Download failed';
 
   @override
   String get cf_proxy_helper =>

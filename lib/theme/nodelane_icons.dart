@@ -76,6 +76,8 @@ class NodeLaneIcons {
       _pick(CupertinoIcons.cloud_download, Icons.cloud_download_outlined);
   IconData get download =>
       _pick(CupertinoIcons.arrow_down_to_line, Icons.download_outlined);
+  IconData get downloadQueue =>
+      _pick(CupertinoIcons.tray_arrow_down, Icons.file_download_outlined);
   IconData get incognito =>
       _pick(CupertinoIcons.eyeglasses, Icons.visibility_off_outlined);
   IconData get reorder =>

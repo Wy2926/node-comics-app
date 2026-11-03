@@ -6502,20 +6502,74 @@ abstract class AppLocalizations {
   /// No description provided for @download_queue_count.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, one{1 download} other{{count} downloads}}'**
+  /// **'{count, plural, one{1 chapter} other{{count} chapters}}'**
   String download_queue_count(int count);
 
   /// No description provided for @download_queue_empty_hint.
   ///
   /// In en, this message translates to:
-  /// **'Open a chapter list to add downloads.'**
+  /// **'Add downloads from a title’s chapter list.'**
   String get download_queue_empty_hint;
 
   /// No description provided for @download_queue_order_hint.
   ///
   /// In en, this message translates to:
-  /// **'Drag to change the order of waiting chapters.'**
+  /// **'Drag handles to reorder'**
   String get download_queue_order_hint;
+
+  /// No description provided for @download_queue_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads queued'**
+  String get download_queue_empty;
+
+  /// No description provided for @download_queue_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Download actions'**
+  String get download_queue_actions;
+
+  /// No description provided for @download_queue_cancel_chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this chapter’s download'**
+  String get download_queue_cancel_chapter;
+
+  /// No description provided for @download_queue_cancel_series.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel all downloads for this title'**
+  String get download_queue_cancel_series;
+
+  /// No description provided for @download_queue_start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start downloads'**
+  String get download_queue_start;
+
+  /// No description provided for @download_queue_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry downloads'**
+  String get download_queue_retry;
+
+  /// No description provided for @download_queue_active.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get download_queue_active;
+
+  /// No description provided for @download_queue_waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to download'**
+  String get download_queue_waiting;
+
+  /// No description provided for @download_queue_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get download_queue_failed;
 
   /// No description provided for @cf_proxy_helper.
   ///

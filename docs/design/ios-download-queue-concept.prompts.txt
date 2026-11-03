@@ -1,5 +1,5 @@
 Mode: built-in image_gen (ui-mockup)
-Status: design proposal; download queue implementation pending.
+Status: approved design reference; mobile download queue implemented with shared tokens and controls.
 
 Use case: ui-mockup
 Asset type: high fidelity iOS mobile UI design board for the existing NodeLane comics app.

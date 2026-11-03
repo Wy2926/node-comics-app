@@ -3491,14 +3491,41 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String download_queue_count(int count) {
-    return '$count 项下载任务';
+    return '$count 个章节';
   }
 
   @override
-  String get download_queue_empty_hint => '在章节列表中添加要下载的内容。';
+  String get download_queue_empty_hint => '从作品的章节列表添加下载';
 
   @override
-  String get download_queue_order_hint => '拖动调整待下载章节的顺序。';
+  String get download_queue_order_hint => '拖动把手调整顺序';
+
+  @override
+  String get download_queue_empty => '暂无下载任务';
+
+  @override
+  String get download_queue_actions => '下载操作';
+
+  @override
+  String get download_queue_cancel_chapter => '取消本章下载';
+
+  @override
+  String get download_queue_cancel_series => '取消本作品全部下载';
+
+  @override
+  String get download_queue_start => '开始下载';
+
+  @override
+  String get download_queue_retry => '重试下载';
+
+  @override
+  String get download_queue_active => '下载中';
+
+  @override
+  String get download_queue_waiting => '等待下载';
+
+  @override
+  String get download_queue_failed => '下载失败';
 
   @override
   String get cf_proxy_helper => 'FlareSolverr / Byparr 服务地址，留空关闭。';

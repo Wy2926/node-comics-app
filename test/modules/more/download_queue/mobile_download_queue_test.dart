@@ -5,6 +5,9 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/download.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/download_queue/mobile_download_queue.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 
 Download entry(
   int id,
@@ -68,6 +71,7 @@ void main() {
           builder: (context, setState) {
             rebuild = setState;
             return MaterialApp(
+              theme: ThemeData(platform: TargetPlatform.iOS),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               locale: const Locale('en'),
@@ -121,13 +125,15 @@ void main() {
             .value,
         1,
       );
-      expect(find.text('Failed!'), findsOneWidget);
-      expect(find.text('Retry'), findsOneWidget);
+      expect(find.text('Download failed'), findsOneWidget);
+      expect(find.text('Retry downloads'), findsOneWidget);
 
       final handle = inside(1, ReorderableDragStartListener);
       final distance =
           tester.getSize(find.byKey(const ValueKey<int?>(1))).height + 8;
-      final drag = await tester.startGesture(tester.getCenter(handle));
+      final drag = await tester.startGesture(
+        tester.getTopLeft(handle) + const Offset(4, 4),
+      );
       await tester.pump();
       await drag.moveBy(Offset(0, distance / 2));
       await tester.pump(const Duration(milliseconds: 300));
@@ -139,15 +145,15 @@ void main() {
       expect(entries.map((entry) => entry.id), [2, 1, 3]);
       expect(cancelled, isEmpty);
 
-      await tester.tap(inside(1, PopupMenuButton<bool>));
+      await tester.tap(inside(1, NodeLaneIconButton));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.text('Cancel this chapter’s download'));
       await tester.pumpAndSettle();
       expect(cancelled.single.id, 1);
       expect(cancelledSeries, isEmpty);
-      await tester.tap(inside(2, PopupMenuButton<bool>));
+      await tester.tap(inside(2, NodeLaneIconButton));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel all for this series'));
+      await tester.tap(find.text('Cancel all downloads for this title'));
       await tester.pumpAndSettle();
       expect(cancelledSeries.single.id, 2);
       expect(starts, 0);
@@ -170,9 +176,9 @@ void main() {
       );
       expect(
         tester
-            .widget<PopupMenuButton<bool>>(inside(3, PopupMenuButton<bool>))
-            .enabled,
-        isFalse,
+            .widget<NodeLaneIconButton>(inside(3, NodeLaneIconButton))
+            .onPressed,
+        isNull,
       );
       expect(
         tester
@@ -190,11 +196,138 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(FilledButton), findsNothing);
       expect(
-        find.text('Open a chapter list to add downloads.'),
+        find.text('Add downloads from a title’s chapter list.'),
         findsOneWidget,
       );
-      await tester.tap(find.byIcon(Icons.settings_outlined));
+      expect(
+        tester.getCenter(find.text('No downloads queued')).dx,
+        closeTo(180, .01),
+      );
+      await tester.tap(find.byTooltip('Downloads'));
       expect(settings, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'action sheet is compact, dismissible and checks the live queue',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      var entries = [entry(1, 'Series', succeeded: 48)..isStartDownload = true];
+      var scale = 1.0;
+      final cancelled = <Download>[];
+      final cancelledSeries = <Download>[];
+      late StateSetter rebuild;
+      await tester.pumpWidget(
+        StatefulBuilder(
+          builder: (context, setState) {
+            rebuild = setState;
+            return MaterialApp(
+              theme: ThemeData(platform: TargetPlatform.iOS),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('en'),
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(scale),
+                  padding: const EdgeInsets.only(top: 24, bottom: 34),
+                ),
+                child: child!,
+              ),
+              home: MobileDownloadQueue(
+                entries: entries,
+                isStarting: false,
+                onStart: () {},
+                onReorder: (_, _) {},
+                onSettings: () {},
+                onCancel: cancelled.add,
+                onCancelSeries: cancelledSeries.add,
+              ),
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Downloading'), findsOneWidget);
+      final open = tester
+          .widget<NodeLaneIconButton>(
+            find.ancestor(
+              of: find.byTooltip('More'),
+              matching: find.byType(NodeLaneIconButton),
+            ),
+          )
+          .onPressed!;
+      open();
+      open();
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(
+        tester.getSize(find.byType(NodeLaneReaderSurface)).height,
+        lessThan(400),
+      );
+      final subtitle = tester.getRect(find.text('Series · Chapter 1'));
+      final firstAction = tester.getRect(
+        find.text('Cancel this chapter’s download'),
+      );
+      expect(subtitle.left, 20);
+      expect(subtitle.bottom, lessThan(firstAction.top));
+      expect(
+        844 - tester.getBottomLeft(find.byType(NodeLaneGroupSurface).last).dy,
+        closeTo(34 + 24, .01),
+      );
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
+      expect(cancelled, isEmpty);
+
+      await tester.tap(find.byTooltip('More'));
+      await tester.pumpAndSettle();
+      rebuild(() => entries = []);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel all downloads for this title'));
+      await tester.pumpAndSettle();
+      expect(cancelledSeries, isEmpty);
+
+      rebuild(() => entries = [entry(1, 'Series')]);
+      await tester.pumpAndSettle();
+      expect(find.text('Waiting to download'), findsOneWidget);
+      await tester.tap(find.byTooltip('More'));
+      await tester.pumpAndSettle();
+      final updated = entry(1, 'Series', succeeded: 80);
+      rebuild(() => entries = [updated]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel this chapter’s download'));
+      await tester.pumpAndSettle();
+      expect(cancelled.single, same(updated));
+
+      rebuild(() => scale = 2.5);
+      tester.view.physicalSize = const Size(320, 568);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byTooltip('More'), 120);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('More'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.text('Cancel all downloads for this title'),
+      );
+      await tester.pumpAndSettle();
+      // At 250% the translated action can be taller than the scroll viewport;
+      // its visible portion remains an accessible target.
+      final visibleAction = tester
+          .getRect(find.text('Cancel all downloads for this title'))
+          .intersect(
+            tester.getRect(
+              find.descendant(
+                of: find.byType(NodeLaneCatalogSheet),
+                matching: find.byType(SingleChildScrollView),
+              ),
+            ),
+          );
+      expect(visibleAction.isEmpty, isFalse);
+      await tester.tapAt(visibleAction.center);
+      await tester.pumpAndSettle();
+      expect(cancelledSeries.single, same(updated));
       expect(tester.takeException(), isNull);
     },
   );

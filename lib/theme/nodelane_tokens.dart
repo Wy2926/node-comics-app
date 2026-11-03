@@ -25,6 +25,7 @@ class NodeLaneTokens {
   static const groupRadius = 18.0, capsuleRadius = 24.0;
   static const glassBlur = 16.0, glassStroke = .75;
   static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
+  static const emptyStateIconSize = 48.0, progressTrackHeight = 3.0;
   static const formLabelWidth = 88.0;
   static const avatarSize = 64.0, searchHeight = 48.0;
   static const accountAvatarIconSize = 38.0;
