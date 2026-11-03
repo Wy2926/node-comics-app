@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
-import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -58,9 +57,9 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
         children: [
           Text('${widget.media} · 跨来源搜索', style: t.readerSecondary),
           const SizedBox(height: 20),
-          SourceGroup(
+          NodeLaneGroupSurface(
             children: [
-              SourceRow(
+              NodeLaneRow(
                 title: '仅搜索常用来源',
                 icon: icons.pin,
                 subtitle: '开启后，只搜索已勾选的常用来源',
@@ -78,14 +77,14 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
               selected.addAll(matches.map((s) => s.id).whereType<int>());
             }),
           ),
-          NodeLaneSearchField(
+          NodeLaneTextField.search(
             controller: search,
             hint: '搜索已安装来源',
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 16),
           for (var i = 0; i < matches.length; i++)
-            NodeLaneCatalogRow(
+            NodeLaneRow.card(
               title: matches[i].name ?? '',
               leading: NodeLaneWebsiteIcon(url: matches[i].iconUrl),
               subtitle: [

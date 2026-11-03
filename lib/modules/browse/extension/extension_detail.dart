@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 
 import 'package:flutter/material.dart';
@@ -127,17 +127,17 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     final developerMode = ref.watch(developerModeStateProvider);
     return MobileBrowsePage(
       title: '来源详情',
-      leading: IconButton(
+      leading: NodeLaneIconButton(
         tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         onPressed: () => Navigator.pop(context, source),
-        icon: Icon(icons.back),
+        icon: icons.back,
       ),
       body: ListView(
         padding: NodeLaneTokens.pagePadding,
         children: [
           if (source.sourceCodeLanguage == SourceCodeLanguage.mihon)
             const ExtensionServerWarningBanner(),
-          SourceGroup(
+          NodeLaneGroupSurface(
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -183,7 +183,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                 ),
               ),
               if (source.repo?.website?.isNotEmpty == true)
-                SourceRow(
+                NodeLaneRow(
                   title: '仓库网站',
                   icon: icons.external,
                   onTap: () =>
@@ -203,27 +203,27 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
             ),
           ],
           const NodeLaneCatalogHeading('高级操作'),
-          SourceGroup(
+          NodeLaneGroupSurface(
             children: [
               if (developerMode)
-                SourceRow(
+                NodeLaneRow(
                   title: context.l10n.edit_code,
                   icon: icons.code,
                   onTap: _editCode,
                 ),
               if (developerMode && source.isLocal == true)
-                SourceRow(
+                NodeLaneRow(
                   title: '编辑来源信息',
                   icon: icons.edit,
                   onTap: _editMetadata,
                 ),
-              SourceRow(
+              NodeLaneRow(
                 title: '清除此网站 Cookie',
                 subtitle: '下次访问可能需要重新登录',
                 icon: icons.cookies,
                 onTap: _busy ? null : _clearCookies,
               ),
-              SourceRow(
+              NodeLaneRow(
                 title: '卸载来源',
                 icon: icons.delete,
                 destructive: true,

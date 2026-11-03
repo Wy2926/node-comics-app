@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_header.dart';
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -117,14 +116,18 @@ void main() {
                     ),
                   ),
                 ),
-                MobileSourceCard(
-                  title: 'Local source',
-                  icon: const Icon(Icons.folder),
-                  onTap: () => opened++,
-                  actions: TextButton(
-                    onPressed: () => latest++,
-                    child: const Text('Latest'),
-                  ),
+                NodeLaneGroupSurface(
+                  children: [
+                    NodeLaneRow(
+                      title: 'Local source',
+                      leading: const Icon(Icons.folder),
+                      onTap: () => opened++,
+                    ),
+                    TextButton(
+                      onPressed: () => latest++,
+                      child: const Text('Latest'),
+                    ),
+                  ],
                 ),
               ],
             ),

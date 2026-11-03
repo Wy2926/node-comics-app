@@ -537,7 +537,7 @@ class _MobileBookshelfSourceFilterState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            NodeLaneSearchField(
+                            NodeLaneTextField.search(
                               controller: _search,
                               hint: l10n.search,
                               onChanged: (value) =>

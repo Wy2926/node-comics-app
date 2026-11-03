@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/source.dart';
@@ -11,7 +12,6 @@ import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 class MassMigrationDestinationScreen extends ConsumerWidget {
   const MassMigrationDestinationScreen({required this.sourceGroup, super.key});
@@ -50,18 +50,16 @@ class MassMigrationDestinationScreen extends ConsumerWidget {
               itemCount: sources.length,
               itemBuilder: (_, index) {
                 final source = sources[index];
-                return Semantics(
-                  button: true,
-                  child: MobileSourceCard(
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: NodeLaneRow.card(
                     title: source.name ?? l10n.mass_migration_unknown_source,
-                    icon: MassMigrationSourceIcon(source: source),
-                    metadata: Text(
-                      [
-                        if (source.lang?.isNotEmpty == true)
-                          completeLanguageName(source.lang!),
-                        l10n.mass_migration_installed,
-                      ].join(' · '),
-                    ),
+                    leading: MassMigrationSourceIcon(source: source),
+                    subtitle: [
+                      if (source.lang?.isNotEmpty == true)
+                        completeLanguageName(source.lang!),
+                      l10n.mass_migration_installed,
+                    ].join(' · '),
                     onTap: () => Navigator.push(
                       context,
                       createRoute(

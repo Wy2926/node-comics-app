@@ -278,6 +278,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Exit'));
       expect(exits, 1);
+      // The next result is a new page, not an update at the previous scroll offset.
+      await tester.pumpWidget(const SizedBox.shrink());
       await mount(
         tester,
         const MobileBrowsePage(

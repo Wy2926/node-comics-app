@@ -75,12 +75,9 @@ void main() {
       await tester.pump();
       expect(submitted, isEmpty);
       expect(find.byKey(const ValueKey('Original')), findsOneWidget);
-      final submit = find.byTooltip('Global search');
-      expect(submit.hitTestable(), findsOneWidget);
-      await tester.tap(submit);
-      expect(submitted, ['Draft']);
+      expect(find.byTooltip('Global search'), findsNothing);
       await tester.testTextInput.receiveAction(TextInputAction.search);
-      expect(submitted, ['Draft', 'Draft']);
+      expect(submitted, ['Draft']);
       await tester.tap(find.byTooltip('Reset'));
       await tester.pump();
       expect(controller.text, isEmpty);
@@ -92,7 +89,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(action.hitTestable(), findsOneWidget);
-      expect(submit.hitTestable(), findsOneWidget);
+      expect(find.byType(TextField).hitTestable(), findsOneWidget);
       await tester.tap(action);
       expect(actions, 1);
       expect(tester.takeException(), isNull);

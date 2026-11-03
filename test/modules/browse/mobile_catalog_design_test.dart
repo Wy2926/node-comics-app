@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
 
@@ -15,7 +16,6 @@ import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
 import 'package:mangayomi/modules/browse/mobile_repository_sheets.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -125,7 +125,7 @@ void main() {
     addTearDown(container.dispose);
     await mount(
       tester,
-      NodeLaneCatalogRow(
+      NodeLaneRow.card(
         title: 'Website',
         leading: const Icon(Icons.public),
         onTap: () => opened++,

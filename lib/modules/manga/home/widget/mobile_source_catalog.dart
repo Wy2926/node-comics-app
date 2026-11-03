@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:mangayomi/modules/browse/widgets/mobile_search_field.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 
@@ -20,19 +19,18 @@ class MobileSourceCatalog extends StatelessWidget {
     required this.onClear,
     required this.selected,
     required this.supportsLatest,
-    required this.filtering,
+    this.filtering = false,
     required this.onSelect,
     required this.onOptions,
     required this.results,
-    this.onFilter,
-    this.onSavedSearches,
+    this.onBrowser,
   });
 
   final String title;
   final TextEditingController search;
   final VoidCallback onSubmit, onClear, onOptions;
   final ValueChanged<int> onSelect;
-  final VoidCallback? onFilter, onSavedSearches;
+  final VoidCallback? onBrowser;
   final int selected;
   final bool supportsLatest, filtering;
   final Widget results;
@@ -45,13 +43,21 @@ class MobileSourceCatalog extends StatelessWidget {
     return MobileBrowsePage(
       title: title,
       actions: [
+        if (onBrowser != null) ...[
+          NodeLaneIconButton(
+            icon: icons.browser,
+            tooltip: '在浏览器打开',
+            onPressed: onBrowser,
+          ),
+          const SizedBox(width: NodeLaneTokens.space4),
+        ],
         NodeLaneIconButton(
           icon: icons.more,
           tooltip: l10n.more,
-          style: NodeLaneIconButtonStyle.field,
           onPressed: onOptions,
+          active: filtering,
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: NodeLaneTokens.space12),
       ],
       body: LayoutBuilder(
         builder: (context, constraints) => Column(
@@ -61,62 +67,57 @@ class MobileSourceCatalog extends StatelessWidget {
                 maxHeight: constraints.maxHeight * .5,
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                padding: const EdgeInsets.fromLTRB(
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space8,
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space16,
+                ),
                 child: Column(
                   children: [
-                    MobileSearchField(
+                    NodeLaneTextField.search(
                       controller: search,
-                      onSubmit: onSubmit,
+                      onSubmitted: (_) => onSubmit(),
                       onClear: onClear,
-                      submitLabel: l10n.search,
                       hint: '搜索本站作品',
-                      onSavedSearches: onSavedSearches,
+                      clearLabel: l10n.reset,
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: NodeLaneSegments<int>(
-                            value: selected,
-                            labelStyle: t.readerSecondary,
-                            segments: [
-                              ButtonSegment(value: 0, label: Text('热门')),
-                              if (supportsLatest)
-                                ButtonSegment(value: 1, label: Text('最新')),
-                            ],
-                            onChanged: onSelect,
+                    const SizedBox(height: NodeLaneTokens.space16),
+                    if (selected == 2)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              filtering ? '筛选结果' : '搜索结果',
+                              style: t.readerLabel,
+                            ),
                           ),
-                        ),
-                        if (onFilter != null) ...[
-                          const SizedBox(width: 12),
-                          Stack(
-                            children: [
-                              NodeLaneIconButton(
-                                icon: icons.adjustments,
-                                tooltip: l10n.filter,
-                                style: NodeLaneIconButtonStyle.field,
-                                onPressed: onFilter,
-                              ),
-                              if (filtering)
-                                Positioned(
-                                  right: 3,
-                                  top: 3,
-                                  child: IgnorePointer(
-                                    child: Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: t.accent,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
+                          TextButton(
+                            onPressed: () => onSelect(0),
+                            child: const Text('返回热门'),
                           ),
                         ],
-                      ],
-                    ),
+                      )
+                    else if (supportsLatest)
+                      NodeLaneSegments<int>(
+                        value: selected,
+                        labelStyle: t.readerLabel,
+                        segments: const [
+                          ButtonSegment(value: 0, label: Text('热门')),
+                          ButtonSegment(value: 1, label: Text('最新')),
+                        ],
+                        onChanged: onSelect,
+                      )
+                    else
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minHeight: NodeLaneTokens.minTapTarget,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text('热门作品', style: t.readerLabel),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -136,17 +137,13 @@ class MobileSourceResults extends StatelessWidget {
     required this.display,
     required this.count,
     required this.itemBuilder,
-    required this.status,
     required this.footer,
     this.gridSize,
-    this.notes,
   });
   final ScrollController controller;
   final DisplayType display;
   final int count;
   final int? gridSize;
-  final String status;
-  final String? notes;
   final IndexedWidgetBuilder itemBuilder;
   final Widget footer;
 
@@ -167,33 +164,13 @@ class MobileSourceResults extends StatelessWidget {
         controller: controller,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-              child: Text(
-                status,
-                style: TextStyle(color: NodeLaneTokens.of(context).muted),
-              ),
-            ),
-          ),
-          if (notes?.isNotEmpty == true)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  title: Text(context.l10n.extension_notes('')),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(notes!),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.fromLTRB(
+              NodeLaneTokens.gutter,
+              NodeLaneTokens.space4,
+              NodeLaneTokens.gutter,
+              0,
+            ),
             sliver: display == DisplayType.list
                 ? SliverList.builder(
                     itemCount: count,
@@ -257,12 +234,7 @@ class MobileSourceMangaCard extends StatelessWidget {
       title,
       maxLines: hasAuthor ? 1 : 2,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: 15,
-        height: 1.3,
-        fontWeight: FontWeight.w600,
-        color: colors.ink,
-      ),
+      style: colors.label.copyWith(height: 1.3),
     );
     final caption = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,8 +319,9 @@ class MobileSourceStatus extends StatelessWidget {
     this.onRetry,
     this.onBrowser,
     this.onLoadMore,
+    this.searchEmpty = false,
   });
-  final bool loading;
+  final bool loading, searchEmpty;
   final String? message;
   final VoidCallback? onRetry, onBrowser, onLoadMore;
 
@@ -407,6 +380,28 @@ class MobileSourceStatus extends StatelessWidget {
         ),
       );
     }
+    if (searchEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: NodeLaneTokens.space24),
+        child: Column(
+          children: [
+            Icon(
+              icons.search,
+              size: NodeLaneTokens.websiteIconSize,
+              color: t.muted,
+            ),
+            const SizedBox(height: NodeLaneTokens.space16),
+            Text('没有找到相关作品', style: t.title),
+            const SizedBox(height: NodeLaneTokens.space8),
+            Text(
+              '调整关键词或筛选条件，也可返回热门浏览。',
+              style: t.readerSecondary,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -420,7 +415,7 @@ class MobileSourceStatus extends StatelessWidget {
             ),
           ),
         if (onLoadMore != null)
-          FilledButton.tonal(
+          NodeLaneSecondaryButton(
             onPressed: onLoadMore,
             child: Text(l10n.load_more),
           ),
@@ -449,15 +444,10 @@ class _SourceErrorDetailsState extends State<_SourceErrorDetails> {
           onPressed: () => setState(() => expanded = !expanded),
           child: Row(
             children: [
-              Expanded(
-                child: Text(
-                  '查看错误详情',
-                  style: t.readerSecondary.copyWith(color: t.accent),
-                ),
-              ),
+              Expanded(child: const Text('查看错误详情')),
               Icon(
                 expanded ? icons.down : icons.forward,
-                size: 16,
+                size: NodeLaneTokens.smallIconSize,
                 color: t.muted,
               ),
             ],

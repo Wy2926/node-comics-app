@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_search_field.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -28,7 +26,6 @@ class MobileGlobalSearchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return MobileBrowsePage(
       title: '跨来源搜索',
       body: LayoutBuilder(
@@ -41,21 +38,22 @@ class MobileGlobalSearchPage extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                  child: MobileSearchField(
+                  child: NodeLaneTextField.search(
                     controller: controller,
-                    onSubmit: onSubmit,
+                    hint: context.l10n.search,
+                    clearLabel: context.l10n.reset,
+                    onSubmitted: (_) => onSubmit(),
                     onClear: onClear,
                     autofocus: controller.text.isEmpty,
-                    submitLabel: l10n.global_search,
                   ),
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: SourceGroup(
+              child: NodeLaneGroupSurface(
                 children: [
-                  SourceRow(
+                  NodeLaneRow(
                     title: '搜索范围',
                     value: scope,
                     icon: NodeLaneIcons.of(context).adjustments,
@@ -229,7 +227,13 @@ class MobileGlobalSearchEmpty extends StatelessWidget {
   final VoidCallback onAction;
 
   @override
-  Widget build(BuildContext context) => MobileBrowseGroup(
+  Widget build(BuildContext context) => NodeLaneGroupSurface(
+    margin: const EdgeInsets.fromLTRB(
+      NodeLaneTokens.gutter,
+      0,
+      NodeLaneTokens.gutter,
+      NodeLaneTokens.space12,
+    ),
     child: Padding(
       padding: const EdgeInsets.all(20),
       child: Column(

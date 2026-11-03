@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/mass_migration/mass_migration_preview_screen.dart';
@@ -9,7 +10,6 @@ import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
 
 class MassMigrationSourceSelectionScreen extends StatelessWidget {
   const MassMigrationSourceSelectionScreen({
@@ -49,8 +49,11 @@ class MassMigrationSourceSelectionScreen extends StatelessWidget {
         body: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: MobileBrowseSectionTitle(
-                l10n.mass_migration_select_source,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: NodeLaneSectionHeading(
+                  l10n.mass_migration_select_source,
+                ),
               ),
             ),
             if (sourceGroups.isEmpty)
@@ -64,18 +67,16 @@ class MassMigrationSourceSelectionScreen extends StatelessWidget {
               itemCount: sourceGroups.length,
               itemBuilder: (_, index) {
                 final group = sourceGroups[index];
-                return Semantics(
-                  button: true,
-                  child: MobileSourceCard(
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: NodeLaneRow.card(
                     title: group.sourceName,
-                    icon: MassMigrationSourceIcon(source: group.source),
-                    metadata: Text(
-                      [
-                        if (group.lang?.isNotEmpty == true)
-                          completeLanguageName(group.lang!),
-                        l10n.mass_migration_item_count(group.count),
-                      ].join(' · '),
-                    ),
+                    leading: MassMigrationSourceIcon(source: group.source),
+                    subtitle: [
+                      if (group.lang?.isNotEmpty == true)
+                        completeLanguageName(group.lang!),
+                      l10n.mass_migration_item_count(group.count),
+                    ].join(' · '),
                     onTap: () => open(group),
                   ),
                 );

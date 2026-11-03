@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 
-enum SourceCatalogAction { save, saved, browser, settings }
+enum SourceCatalogAction { save, saved, settings, filter }
 
-class MobileSourceActions extends StatelessWidget {
+class MobileSourceActions extends StatefulWidget {
   const MobileSourceActions({
     super.key,
     required this.title,
@@ -18,26 +18,41 @@ class MobileSourceActions extends StatelessWidget {
     required this.canSave,
     required this.local,
     this.host,
+    this.notes,
+    this.hasFilters = false,
+    this.filtering = false,
   });
   final String title;
-  final String? host;
+  final String? host, notes;
   final DisplayType display;
-  final bool canSave, local;
+  final bool canSave, local, hasFilters, filtering;
+  @override
+  State<MobileSourceActions> createState() => _MobileSourceActionsState();
+}
+
+class _MobileSourceActionsState extends State<MobileSourceActions> {
+  bool showNotes = false;
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final l10n = context.l10n;
     void choose(Object value) => Navigator.pop(context, value);
     return NodeLaneCatalogSheet(
-      title: title,
-      subtitle: host,
-      heightFactor: .67,
+      title: widget.title,
+      subtitle: widget.host,
+      heightFactor: widget.notes?.trim().isNotEmpty == true ? .70 : .58,
       child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.fromLTRB(
+          NodeLaneTokens.gutter,
+          0,
+          NodeLaneTokens.gutter,
+          NodeLaneTokens.space20,
+        ),
         children: [
           const NodeLaneCatalogHeading('显示方式'),
           NodeLaneSegments<DisplayType>(
-            value: display,
-            labelStyle: t.readerSecondary,
+            value: widget.display,
+            labelStyle: t.readerLabel,
             segments: const [
               ButtonSegment(
                 value: DisplayType.comfortableGrid,
@@ -49,35 +64,62 @@ class MobileSourceActions extends StatelessWidget {
             onChanged: choose,
           ),
           const SizedBox(height: 20),
-          SourceGroup(
+          NodeLaneGroupSurface(
             children: [
-              SourceRow(
-                title: '保存当前搜索',
-                icon: icons.bookmarkOutline,
-                subtitle: canSave ? null : '输入关键词并搜索后可保存',
-                onTap: canSave ? () => choose(SourceCatalogAction.save) : null,
-              ),
-              SourceRow(
+              if (widget.canSave)
+                NodeLaneRow(
+                  title: '保存当前搜索',
+                  icon: icons.bookmarkOutline,
+                  onTap: () => choose(SourceCatalogAction.save),
+                ),
+              NodeLaneRow(
                 title: '已保存搜索',
                 icon: icons.manga,
                 onTap: () => choose(SourceCatalogAction.saved),
               ),
             ],
           ),
-          if (!local) ...[
+          if (!widget.local) ...[
             const SizedBox(height: 20),
-            SourceGroup(
+            NodeLaneGroupSurface(
               children: [
-                SourceRow(
-                  title: '在浏览器打开',
-                  icon: icons.navigation,
-                  onTap: () => choose(SourceCatalogAction.browser),
-                ),
-                SourceRow(
+                if (widget.hasFilters)
+                  NodeLaneRow(
+                    title: l10n.filter,
+                    icon: icons.filter,
+                    value: widget.filtering ? l10n.source_filter_active : null,
+                    onTap: () => choose(SourceCatalogAction.filter),
+                  ),
+                NodeLaneRow(
                   title: '来源设置',
                   icon: icons.settings,
                   onTap: () => choose(SourceCatalogAction.settings),
                 ),
+              ],
+            ),
+          ],
+          if (widget.notes?.trim().isNotEmpty == true) ...[
+            const SizedBox(height: NodeLaneTokens.space20),
+            NodeLaneGroupSurface(
+              children: [
+                NodeLaneRow(
+                  title: '网站说明',
+                  icon: icons.info,
+                  trailing: Icon(
+                    showNotes ? icons.down : icons.forward,
+                    size: NodeLaneTokens.smallIconSize,
+                    color: t.muted,
+                  ),
+                  onTap: () => setState(() => showNotes = !showNotes),
+                ),
+                if (showNotes)
+                  Padding(
+                    padding: NodeLaneTokens.groupPadding,
+                    child: SelectableText(
+                      widget.notes!,
+                      style: t.readerSecondary,
+                    ),
+                  ),
               ],
             ),
           ],
@@ -124,7 +166,7 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
               ),
             ),
           for (var i = 0; i < entries.length; i++)
-            NodeLaneCatalogRow(
+            NodeLaneRow.card(
               title: entries[i].name,
               subtitle: '关键词：${entries[i].query}',
               leading: Icon(icons.bookmarkOutline),
@@ -134,12 +176,11 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
                   ? null
                   : () => Navigator.pop(context, entries[i].query),
               trailing: managing
-                  ? IconButton(
+                  ? NodeLaneIconButton(
                       tooltip: '移除',
-                      icon: Icon(
-                        icons.delete,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                      icon: icons.delete,
+                      style: NodeLaneIconButtonStyle.plain,
+                      destructive: true,
                       onPressed: () => ref
                           .read(savedSearchesProvider.notifier)
                           .remove(widget.sourceId, entries[i].name),
@@ -147,9 +188,9 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
                   : null,
             ),
           if (entries.isEmpty)
-            SourceGroup(
+            NodeLaneGroupSurface(
               children: [
-                SourceRow(
+                NodeLaneRow(
                   title: '还没有保存的搜索',
                   subtitle: '输入关键词搜索后，可从网站操作中保存。',
                   icon: icons.bookmarkOutline,

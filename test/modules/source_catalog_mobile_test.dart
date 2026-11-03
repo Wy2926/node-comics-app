@@ -36,6 +36,7 @@ void main() {
     Widget child, {
     double scale = 1,
     double inset = 0,
+    Locale locale = const Locale('en'),
   }) async {
     tester.view.physicalSize = const Size(360, 740);
     tester.view.devicePixelRatio = 1;
@@ -44,7 +45,7 @@ void main() {
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('en'),
+        locale: locale,
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaler: TextScaler.linear(scale),
@@ -79,13 +80,11 @@ void main() {
           supportsLatest: true,
           filtering: true,
           onSelect: (_) {},
-          onFilter: () {},
           onOptions: () {},
           results: MobileSourceResults(
             controller: scroll,
             display: DisplayType.comfortableGrid,
             count: 80,
-            status: 'Results for Seed',
             gridSize: 6,
             itemBuilder: (_, index) => MobileSourceMangaCard(
               title: 'Book $index with a long title',
@@ -102,12 +101,12 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Draft');
       await tester.pump();
       expect(submitted, isEmpty);
-      expect(find.text('Results for Seed'), findsOneWidget);
+      expect(find.text('筛选结果'), findsOneWidget);
       expect(
         find.byType(MobileSourceMangaCard).evaluate().length,
         lessThan(12),
       );
-      await tester.tap(find.byTooltip('Search...'));
+      await tester.testTextInput.receiveAction(TextInputAction.search);
       expect(submitted, ['Draft']);
       // Results have their own scroll viewport; the header never consumes it all.
       final resultScroll = find.descendant(
@@ -208,7 +207,7 @@ void main() {
         find.text('A long alternate order that must wrap completely'),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, '应用筛选'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Apply filters'));
       await tester.pumpAndSettle();
       expect((applied![2] as SelectFilter).state, 1);
       expect((applied![3] as HeaderFilter).type, 'preserve-header');
@@ -221,7 +220,7 @@ void main() {
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         'Default',
       );
-      await tester.tap(find.widgetWithText(FilledButton, '应用筛选'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Apply filters'));
       await tester.pumpAndSettle();
       expect((applied!.single as TextFilter).state, 'Default');
       expect(tester.takeException(), isNull);
@@ -239,7 +238,11 @@ void main() {
         TriStateFilter('genre', '冒险', 'adventure', 'TriState', state: 0),
       ];
       final draft = copySourceFilters(original);
-      await mount(tester, Scaffold(body: SourceFilterFields(filters: draft)));
+      await mount(
+        tester,
+        Scaffold(body: SourceFilterFields(filters: draft)),
+        locale: const Locale('zh'),
+      );
       await tester.tap(find.text('排序'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('人气'));

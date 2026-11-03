@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_source_card.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 Widget app(Widget child) => MaterialApp(
   theme: ThemeData(brightness: Brightness.dark),
@@ -23,18 +23,20 @@ void main() {
       app(
         ListView(
           children: [
-            MobileSourceCard(
-              title: 'A long source name that stays readable',
-              icon: const Icon(Icons.extension),
-              metadata: const Wrap(
-                children: [Text('English · Version 1.0 · Example repository')],
-              ),
-              onTap: () => opened++,
-              actions: TextButton.icon(
-                onPressed: () => updated++,
-                icon: const Icon(Icons.update),
-                label: const Text('Update extension'),
-              ),
+            NodeLaneGroupSurface(
+              children: [
+                NodeLaneRow(
+                  title: 'A long source name that stays readable',
+                  leading: const Icon(Icons.extension),
+                  subtitle: 'English · Version 1.0 · Example repository',
+                  onTap: () => opened++,
+                ),
+                TextButton.icon(
+                  onPressed: () => updated++,
+                  icon: const Icon(Icons.update),
+                  label: const Text('Update extension'),
+                ),
+              ],
             ),
           ],
         ),

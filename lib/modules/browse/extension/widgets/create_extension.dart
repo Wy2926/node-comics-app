@@ -1,11 +1,14 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 class CreateExtension extends StatefulWidget {
   final Source? editSource;
@@ -53,339 +56,202 @@ class _CreateExtensionState extends State<CreateExtension> {
       l10n.source_language_javascript,
       l10n.source_language_lnreader_compiled_js,
     ];
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditMode ? "Edit Extension" : l10n.create_extension),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
+    Future<void> choose(
+      String title,
+      List<String> options,
+      int current,
+      ValueChanged<int> update,
+    ) async {
+      final value = await showSourceChoice<int>(
+        context,
+        title: title,
+        current: current,
+        options: [
+          for (var i = 0; i < options.length; i++) SourceOption(i, options[i]),
+        ],
+      );
+      if (mounted && value != null) setState(() => update(value));
+    }
+
+    Widget choice(
+      String title,
+      List<String> options,
+      int current,
+      ValueChanged<int> update,
+    ) => NodeLaneRow(
+      title: title,
+      value: options[current],
+      trailing: _isEditMode
+          ? Icon(
+              NodeLaneIcons.of(context).lock,
+              size: NodeLaneTokens.smallIconSize,
+              color: NodeLaneTokens.of(context).muted,
+            )
+          : null,
+      onTap: _isEditMode ? null : () => choose(title, options, current, update),
+    );
+    return MobileBrowsePage(
+      title: _isEditMode ? '编辑来源信息' : l10n.create_extension,
+      bottomAction: FilledButton(onPressed: _save, child: Text(l10n.save)),
+      body: ListView(
+        padding: NodeLaneTokens.pagePadding,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        children: [
+          NodeLaneGroupSurface(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 17),
-                child: Row(
-                  children: [
-                    Text(l10n.choose_extension_language),
-                    if (_isEditMode) ...[
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.lock_outline,
-                        size: 14,
-                        color: Theme.of(context).hintColor,
-                      ),
-                    ],
-                    const SizedBox(width: 20),
-                    Flexible(
-                      child: DropdownButton(
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        isExpanded: true,
-                        value: _languageIndex,
-                        hint: Text(
-                          languageLabels[_languageIndex],
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        items: languageLabels
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: languageLabels.indexOf(e),
-                                child: Text(
-                                  e,
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: _isEditMode
-                            ? null
-                            : (int? v) {
-                                setState(() {
-                                  if (v == 0) {
-                                    _sourceCodeLanguage =
-                                        SourceCodeLanguage.dart;
-                                  } else if (v == 1) {
-                                    _sourceCodeLanguage =
-                                        SourceCodeLanguage.javascript;
-                                  } else {
-                                    _sourceCodeLanguage =
-                                        SourceCodeLanguage.lnreader;
-                                  }
-                                  _languageIndex = v!;
-                                });
-                              },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _textEditing(
-                l10n.name,
-                context,
-                l10n.extension_name_example,
+              choice(
+                l10n.choose_extension_language,
+                languageLabels,
+                _languageIndex,
                 (v) {
-                  setState(() {
-                    _name = v;
-                  });
+                  _languageIndex = v;
+                  _sourceCodeLanguage = switch (v) {
+                    0 => SourceCodeLanguage.dart,
+                    1 => SourceCodeLanguage.javascript,
+                    _ => SourceCodeLanguage.lnreader,
+                  };
                 },
-                initialValue: _name,
-                enabled: !_isEditMode,
               ),
-              _textEditing(
-                l10n.lang,
-                context,
-                l10n.language_code_example,
-                (v) {
-                  setState(() {
-                    _lang = v;
-                  });
-                },
-                initialValue: _lang,
-                enabled: !_isEditMode,
+              choice(
+                l10n.type,
+                sourceTypeLabels,
+                _sourceTypeIndex,
+                (v) => _sourceTypeIndex = v,
               ),
-              _textEditing(l10n.base_url, context, l10n.base_url_example, (v) {
-                setState(() {
-                  _baseUrl = v;
-                });
-              }, initialValue: _baseUrl),
-              _textEditing(
-                l10n.api_url_optional,
-                context,
-                l10n.api_url_example,
-                (v) {
-                  setState(() {
-                    _apiUrl = v;
-                  });
-                },
-                initialValue: _apiUrl,
+              choice(
+                l10n.target,
+                itemTypeLabels,
+                _itemTypeIndex,
+                (v) => _itemTypeIndex = v,
               ),
-              _textEditing(l10n.icon_url, context, l10n.source_icon_url, (v) {
-                setState(() {
-                  _iconUrl = v;
-                });
-              }, initialValue: _iconUrl),
-              _textEditing(
-                l10n.notes,
-                context,
-                l10n.extension_notes_example,
-                (v) {
-                  setState(() {
-                    _notes = v;
-                  });
-                },
-                initialValue: _notes,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 17),
-                child: Row(
-                  children: [
-                    Text(l10n.type),
-                    if (_isEditMode) ...[
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.lock_outline,
-                        size: 14,
-                        color: Theme.of(context).hintColor,
-                      ),
-                    ],
-                    const SizedBox(width: 20),
-                    Flexible(
-                      child: DropdownButton(
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        isExpanded: true,
-                        value: _sourceTypeIndex,
-                        hint: Text(
-                          sourceTypeLabels[_sourceTypeIndex],
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        items: sourceTypeLabels
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: sourceTypeLabels.indexOf(e),
-                                child: Text(
-                                  e,
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: _isEditMode
-                            ? null
-                            : (int? v) {
-                                setState(() {
-                                  _sourceTypeIndex = v!;
-                                });
-                              },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 17),
-                child: Row(
-                  children: [
-                    Text(l10n.target),
-                    if (_isEditMode) ...[
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.lock_outline,
-                        size: 14,
-                        color: Theme.of(context).hintColor,
-                      ),
-                    ],
-                    const SizedBox(width: 20),
-                    Flexible(
-                      child: DropdownButton(
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        isExpanded: true,
-                        value: _itemTypeIndex,
-                        hint: Text(
-                          itemTypeLabels[_itemTypeIndex],
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        items: itemTypeLabels
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: itemTypeLabels.indexOf(e),
-                                child: Text(
-                                  e,
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: _isEditMode
-                            ? null
-                            : (int? v) {
-                                setState(() {
-                                  _itemTypeIndex = v!;
-                                });
-                              },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SwitchListTile(
-                title: const Text("NSFW", style: TextStyle(fontSize: 13)),
-                value: _isNsfw,
-                onChanged: (value) => setState(() => _isNsfw = value),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 17),
-                dense: true,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Consumer(
-                  builder: (context, ref, child) => ElevatedButton(
-                    onPressed: () {
-                      if (_name.isNotEmpty &&
-                          _lang.isNotEmpty &&
-                          _baseUrl.isNotEmpty &&
-                          _iconUrl.isNotEmpty) {
-                        try {
-                          if (_isEditMode) {
-                            final source = widget.editSource!
-                              ..baseUrl = _baseUrl
-                              ..apiUrl = _apiUrl
-                              ..iconUrl = _iconUrl
-                              ..notes = _notes
-                              ..isNsfw = _isNsfw
-                              ..typeSource =
-                                  _sourceTypeValues[_sourceTypeIndex];
-                            sourceRepository.save(source);
-                            Navigator.pop(context, source);
-                            botToast("Source updated successfully");
-                            return;
-                          }
-                          final id =
-                              _sourceCodeLanguage == SourceCodeLanguage.dart
-                              ? 'mangayomi-$_lang.$_name'.hashCode
-                              : 'mangayomi-js-$_lang.$_name'.hashCode;
-                          final checkIfExist = sourceRepository.getById(id);
-                          if (checkIfExist == null) {
-                            Source source = Source(
-                              id: id,
-                              name: _name,
-                              lang: _lang,
-                              baseUrl: _baseUrl,
-                              apiUrl: _apiUrl,
-                              iconUrl: _iconUrl,
-                              typeSource: _sourceTypeValues[_sourceTypeIndex],
-                              itemType: ItemType.values.elementAt(
-                                _itemTypeIndex,
-                              ),
-                              isAdded: true,
-                              isActive: true,
-                              version: "0.0.1",
-                              isNsfw: _isNsfw,
-                              notes: _notes,
-                            )..sourceCodeLanguage = _sourceCodeLanguage;
-                            source = source
-                              ..isLocal = true
-                              ..sourceCode =
-                                  _sourceCodeLanguage == SourceCodeLanguage.dart
-                                  ? _dartTemplate
-                                  : _jsSample(source);
-                            sourceRepository.save(source);
-                            Navigator.pop(context);
-                            botToast(l10n.source_created_successfully);
-                          } else {
-                            botToast(l10n.source_already_exists);
-                          }
-                        } catch (e) {
-                          botToast(
-                            _isEditMode
-                                ? "Error when updating source"
-                                : l10n.error_when_creating_source,
-                          );
-                        }
-                      }
-                    },
-                    child: Text(context.l10n.save),
-                  ),
+              NodeLaneRow(
+                title: 'NSFW',
+                trailing: Switch.adaptive(
+                  value: _isNsfw,
+                  onChanged: (v) => setState(() => _isNsfw = v),
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: NodeLaneTokens.space20),
+          NodeLaneTextField(
+            label: l10n.name,
+            hint: l10n.extension_name_example,
+            initialValue: _name,
+            enabled: !_isEditMode,
+            onChanged: (v) => _name = v,
+          ),
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneTextField(
+            label: l10n.lang,
+            hint: l10n.language_code_example,
+            initialValue: _lang,
+            enabled: !_isEditMode,
+            onChanged: (v) => _lang = v,
+          ),
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneTextField(
+            label: l10n.base_url,
+            hint: l10n.base_url_example,
+            initialValue: _baseUrl,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            enableSuggestions: false,
+            onChanged: (v) => _baseUrl = v,
+          ),
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneTextField(
+            label: l10n.api_url_optional,
+            hint: l10n.api_url_example,
+            initialValue: _apiUrl,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            enableSuggestions: false,
+            onChanged: (v) => _apiUrl = v,
+          ),
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneTextField(
+            label: l10n.icon_url,
+            hint: l10n.source_icon_url,
+            initialValue: _iconUrl,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            enableSuggestions: false,
+            onChanged: (v) => _iconUrl = v,
+          ),
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneTextField(
+            label: l10n.notes,
+            hint: l10n.extension_notes_example,
+            initialValue: _notes,
+            maxLines: 3,
+            onChanged: (v) => _notes = v,
+          ),
+        ],
       ),
     );
   }
-}
 
-Widget _textEditing(
-  String label,
-  BuildContext context,
-  String hintText,
-  void Function(String)? onChanged, {
-  String? initialValue,
-  bool enabled = true,
-}) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 5),
-    child: TextFormField(
-      initialValue: initialValue,
-      enabled: enabled,
-      keyboardType: TextInputType.text,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        hintText: hintText,
-        labelText: label,
-        isDense: true,
-        filled: true,
-        fillColor: Colors.transparent,
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: context.secondaryColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: context.secondaryColor),
-        ),
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: context.secondaryColor),
-        ),
-      ),
-    ),
-  );
+  void _save() {
+    final l10n = context.l10n;
+    if (_name.isNotEmpty &&
+        _lang.isNotEmpty &&
+        _baseUrl.isNotEmpty &&
+        _iconUrl.isNotEmpty) {
+      try {
+        if (_isEditMode) {
+          final source = widget.editSource!
+            ..baseUrl = _baseUrl
+            ..apiUrl = _apiUrl
+            ..iconUrl = _iconUrl
+            ..notes = _notes
+            ..isNsfw = _isNsfw
+            ..typeSource = _sourceTypeValues[_sourceTypeIndex];
+          sourceRepository.save(source);
+          Navigator.pop(context, source);
+          botToast("Source updated successfully");
+          return;
+        }
+        final id = _sourceCodeLanguage == SourceCodeLanguage.dart
+            ? 'mangayomi-$_lang.$_name'.hashCode
+            : 'mangayomi-js-$_lang.$_name'.hashCode;
+        final checkIfExist = sourceRepository.getById(id);
+        if (checkIfExist == null) {
+          Source source = Source(
+            id: id,
+            name: _name,
+            lang: _lang,
+            baseUrl: _baseUrl,
+            apiUrl: _apiUrl,
+            iconUrl: _iconUrl,
+            typeSource: _sourceTypeValues[_sourceTypeIndex],
+            itemType: ItemType.values.elementAt(_itemTypeIndex),
+            isAdded: true,
+            isActive: true,
+            version: "0.0.1",
+            isNsfw: _isNsfw,
+            notes: _notes,
+          )..sourceCodeLanguage = _sourceCodeLanguage;
+          source = source
+            ..isLocal = true
+            ..sourceCode = _sourceCodeLanguage == SourceCodeLanguage.dart
+                ? _dartTemplate
+                : _jsSample(source);
+          sourceRepository.save(source);
+          Navigator.pop(context);
+          botToast(l10n.source_created_successfully);
+        } else {
+          botToast(l10n.source_already_exists);
+        }
+      } catch (e) {
+        botToast(
+          _isEditMode
+              ? "Error when updating source"
+              : l10n.error_when_creating_source,
+        );
+      }
+    }
+  }
 }
 
 const _dartTemplate = r'''

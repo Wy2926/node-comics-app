@@ -1,8 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_search_field.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -36,11 +36,12 @@ class MobileMigrationSearchPage extends StatelessWidget {
             constraints: BoxConstraints(maxHeight: constraints.maxHeight * .5),
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: MobileSearchField(
+              child: NodeLaneTextField.search(
                 controller: controller,
-                onSubmit: onSubmit,
+                hint: context.l10n.search,
+                clearLabel: context.l10n.reset,
+                onSubmitted: (_) => onSubmit(),
                 onClear: onClear,
-                submitLabel: context.l10n.search,
               ),
             ),
           ),
@@ -217,7 +218,13 @@ class _MobileMigrationPreviewPageState
             : CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: MobileBrowseGroup(
+                    child: NodeLaneGroupSurface(
+                      margin: const EdgeInsets.fromLTRB(
+                        NodeLaneTokens.gutter,
+                        0,
+                        NodeLaneTokens.gutter,
+                        NodeLaneTokens.space12,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(18),
                         child: Column(

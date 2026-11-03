@@ -2,122 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-
-/// Source settings and filters share geometry; callers own values and writes.
-class SourceGroup extends StatelessWidget {
-  const SourceGroup({super.key, required this.children});
-  final List<Widget> children;
-  @override
-  Widget build(BuildContext context) => NodeLaneGroupSurface(
-    child: Column(
-      children: [
-        for (var i = 0; i < children.length; i++) ...[
-          if (i > 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(
-                height: 1,
-                thickness: .5,
-                color: NodeLaneTokens.of(context).line,
-              ),
-            ),
-          children[i],
-        ],
-      ],
-    ),
-  );
-}
-
-class SourceRow extends StatelessWidget {
-  const SourceRow({
-    super.key,
-    required this.title,
-    this.subtitle,
-    this.value,
-    this.icon,
-    this.trailing,
-    this.onTap,
-    this.selected,
-    this.destructive = false,
-  });
-  final String title;
-  final String? subtitle, value;
-  final IconData? icon;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final bool? selected;
-  final bool destructive;
-  @override
-  Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    final color = destructive ? Theme.of(context).colorScheme.error : t.ink;
-    return Semantics(
-      selected: selected,
-      button: onTap != null,
-      child: InkWell(
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: NodeLaneTokens.rowHeight,
-          ),
-          child: Padding(
-            padding: NodeLaneTokens.rowPadding,
-            child: Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: NodeLaneTokens.iconSize, color: color),
-                  const SizedBox(width: 16),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: t.readerLabel.copyWith(color: color)),
-                      if (subtitle?.isNotEmpty == true) ...[
-                        const SizedBox(height: 4),
-                        Text(subtitle!, style: t.readerSecondary),
-                      ],
-                    ],
-                  ),
-                ),
-                if (value != null) ...[
-                  const SizedBox(width: 12),
-                  Flexible(
-                    fit: FlexFit.tight,
-                    child: Text(
-                      value!,
-                      style: t.readerValue,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.end,
-                    ),
-                  ),
-                ],
-                if (trailing != null) ...[
-                  const SizedBox(width: 12),
-                  trailing!,
-                ] else if (selected != null) ...[
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 24,
-                    child: selected!
-                        ? Icon(icons.check, color: t.accent)
-                        : null,
-                  ),
-                ] else if (onTap != null && !destructive) ...[
-                  const SizedBox(width: 12),
-                  Icon(icons.forward, size: 16, color: t.muted),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class SourceOption<T> {
   const SourceOption(this.value, this.label, {this.subtitle});
@@ -244,7 +129,10 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
                 Row(
                   children: [
                     if (widget.reset)
-                      TextButton(onPressed: selectAll, child: Text(l10n.reset))
+                      NodeLaneSecondaryButton(
+                        onPressed: selectAll,
+                        child: Text(l10n.reset),
+                      )
                     else
                       Expanded(
                         child: NodeLaneSecondaryButton(
@@ -273,17 +161,17 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: [
           if (searchable) ...[
-            NodeLaneSearchField(
+            NodeLaneTextField.search(
               controller: search,
               hint: widget.allLabel == null ? '搜索选项' : '搜索语言',
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
           ],
-          SourceGroup(
+          NodeLaneGroupSurface(
             children: [
               if (widget.allLabel != null && search.text.isEmpty)
-                SourceRow(
+                NodeLaneRow(
                   title: widget.allLabel!,
                   selected: widget.options.every(
                     (o) => selected.contains(o.value),
@@ -291,7 +179,7 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
                   onTap: selectAll,
                 ),
               for (final option in filtered)
-                SourceRow(
+                NodeLaneRow(
                   title: option.label,
                   subtitle: option.subtitle,
                   selected: selected.contains(option.value),
@@ -395,35 +283,12 @@ class _SourceTextEditorState extends State<SourceTextEditor> {
             Text(widget.description!, style: t.readerSecondary),
             const SizedBox(height: 16),
           ],
-          SourceGroup(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  onChanged: (_) => setState(() {}),
-                  style: t.readerLabel,
-                  decoration: t.searchDecoration(
-                    widget.title,
-                    suffixIcon: controller.text.isEmpty
-                        ? null
-                        : IconButton(
-                            tooltip: MaterialLocalizations.of(context)
-                                .deleteButtonTooltip,
-                            icon: Icon(
-                              NodeLaneIcons.of(context).clear,
-                              size: 20,
-                              color: t.muted,
-                            ),
-                            onPressed: () => setState(controller.clear),
-                          ),
-                  ),
-                  maxLines: 3,
-                  minLines: 1,
-                ),
-              ),
-            ],
+          NodeLaneTextField(
+            controller: controller,
+            hint: widget.title,
+            autofocus: true,
+            onChanged: (_) => setState(() {}),
+            maxLines: 3,
           ),
         ],
       ),

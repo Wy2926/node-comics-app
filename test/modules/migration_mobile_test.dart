@@ -116,7 +116,7 @@ void main() {
       expect(submitted, isEmpty);
       expect(find.text('Results for “Seed”'), findsOneWidget);
       expect(built, lessThan(12));
-      await tester.tap(find.byTooltip('Search...'));
+      await tester.testTextInput.receiveAction(TextInputAction.search);
       await tester.pump();
       expect(submitted, ['Draft']);
       expect(find.text('Results for “Draft”'), findsOneWidget);

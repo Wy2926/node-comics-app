@@ -5,7 +5,9 @@ import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
+import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
+import 'package:mangayomi/modules/webview/browser_url.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 
 import 'package:flutter/material.dart';
@@ -148,9 +150,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     setState(() {
       _selectedIndex = index;
       _showSearchField = false;
+      if (_isFiltering) filters = copySourceFilters(_defaultFilters);
       _isFiltering = false;
       _query = '';
-      filters = copySourceFilters(_defaultFilters);
       _resetResults();
     });
   }
@@ -402,6 +404,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
         display: display,
         canSave: _query.trim().isNotEmpty,
         local: isLocal,
+        notes: source.notes,
+        hasFilters: _defaultFilters.isNotEmpty,
+        filtering: _isFiltering,
       ),
     );
     if (choice == null || !mounted) return;
@@ -418,10 +423,10 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
         await _promptSaveSearch();
       case SourceCatalogAction.saved:
         await _showSavedSearches();
-      case SourceCatalogAction.browser:
-        await _onSourceOverflow(0);
       case SourceCatalogAction.settings:
         await _onSourceOverflow(1);
+      case SourceCatalogAction.filter:
+        await _mobileFilters();
     }
   }
 
@@ -431,7 +436,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       context,
       MobileSourceFilterSheet(
         filters: filters,
-        defaults: () => getFilterList(source: source),
+        defaults: () => _defaultFilters,
         sourceName: source.name,
       ),
     );
@@ -450,6 +455,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     final loading = _getManga!.isLoading;
     final error = loading ? null : _getManga!.error;
     final count = loading || error != null ? 0 : _visibleCount;
+    final canOpenWebsite =
+        !isLocal &&
+        isBrowserUrl(ref.watch(sourceBaseUrlProvider(source: source)));
     return MobileSourceCatalog(
       title: isLocal
           ? '${l10n.local_source} ${source.itemType.localized(l10n)}'
@@ -461,9 +469,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       supportsLatest: supportsLatest,
       filtering: _isFiltering,
       onSelect: _select,
-      onFilter: _defaultFilters.isEmpty ? null : _mobileFilters,
       onOptions: () => _mobileOptions(display),
-      onSavedSearches: _showSavedSearches,
+      onBrowser: canOpenWebsite ? () => _onSourceOverflow(0) : null,
       results: MobileSourceResults(
         controller: _scrollController,
         display: display,
@@ -471,14 +478,6 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           libraryGridSizeStateProvider(itemType: source.itemType),
         ),
         count: count,
-        status: _query.isNotEmpty
-            ? l10n.global_search_results_for(_query)
-            : _isFiltering
-            ? l10n.filter
-            : _selectedIndex == 1
-            ? '最新作品'
-            : '热门作品',
-        notes: source.notes,
         itemBuilder: (context, index) => display == DisplayType.list
             ? MangaHomeImageCardListTile(
                 itemType: source.itemType,
@@ -504,9 +503,10 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
               : _pageError != null
               ? _loadMore
               : null,
-          onBrowser: error != null && !isLocal
+          onBrowser: error != null && canOpenWebsite
               ? () => _onSourceOverflow(0)
               : null,
+          searchEmpty: !loading && error == null && count == 0 && _usesSearch,
           onLoadMore:
               !loading && error == null && _pageError == null && _hasMore
               ? _loadMore

@@ -1,3 +1,6 @@
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -148,7 +151,13 @@ class _MassMigrationRunnerScreenState
             key: const PageStorageKey('mass-migration-review'),
             slivers: [
               SliverToBoxAdapter(
-                child: MobileBrowseGroup(
+                child: NodeLaneGroupSurface(
+                  margin: const EdgeInsets.fromLTRB(
+                    NodeLaneTokens.gutter,
+                    0,
+                    NodeLaneTokens.gutter,
+                    NodeLaneTokens.space12,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(18),
                     child: Column(

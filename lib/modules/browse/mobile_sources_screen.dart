@@ -144,9 +144,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           children: [
-            SourceGroup(
+            NodeLaneGroupSurface(
               children: [
-                SourceRow(
+                NodeLaneRow(
                   title: source.isPinned == true ? '取消常用' : '固定到常用',
                   icon: NodeLaneIcons.of(context).pin,
                   onTap: () {
@@ -154,7 +154,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                     _pin(source);
                   },
                 ),
-                SourceRow(
+                NodeLaneRow(
                   title: '最新内容',
                   icon: NodeLaneIcons.of(context).latest,
                   onTap: () {
@@ -167,7 +167,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                   },
                 ),
                 if ((source.baseUrl ?? '').isNotEmpty) ...[
-                  SourceRow(
+                  NodeLaneRow(
                     title: '在浏览器打开',
                     icon: NodeLaneIcons.of(context).navigation,
                     onTap: () {
@@ -183,7 +183,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                   ),
                 ],
                 if (source.isAdded == true) ...[
-                  SourceRow(
+                  NodeLaneRow(
                     title: '来源设置',
                     icon: NodeLaneIcons.of(context).settings,
                     onTap: () {
@@ -208,7 +208,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         installed &&
         source.isObsolete != true &&
         compareVersions(source.version ?? '', source.versionLast ?? '') < 0;
-    return NodeLaneCatalogRow(
+    return NodeLaneRow.card(
       key: ValueKey('source-${source.id}'),
       title: source.name ?? '',
       subtitle: [
@@ -235,29 +235,16 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
               child: CircularProgressIndicator(strokeWidth: 2, color: t.accent),
             )
           : managing
-          ? IconButton(
+          ? NodeLaneIconButton(
               tooltip: source.isPinned == true ? '取消常用' : '固定到常用',
               onPressed: () => _pin(source),
-              icon: Icon(
-                source.isPinned == true ? icons.pinSelected : icons.pin,
-                color: t.accent,
-              ),
+              style: NodeLaneIconButtonStyle.plain,
+              icon: source.isPinned == true ? icons.pinSelected : icons.pin,
             )
           : thirdParty && (!installed || update)
-          ? TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: t.accentSoft,
-                minimumSize: const Size(64, 44),
-                shape: const StadiumBorder(),
-              ),
+          ? NodeLaneSecondaryButton(
               onPressed: () => _fetch(source),
-              child: Text(
-                update ? '更新' : '安装',
-                style: t.readerSecondary.copyWith(
-                  color: t.accent,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: Text(update ? '更新' : '安装'),
             )
           : null,
     );
@@ -382,7 +369,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: NodeLaneSearchField(
+                          child: NodeLaneTextField.search(
                             controller: query,
                             hint: '网站名或作品名',
                             clearLabel: '清除',
@@ -390,9 +377,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                             onChanged: (_) => setState(() {}),
                           ),
                         ),
-                        PopupMenuButton<String>(
+                        const SizedBox(width: NodeLaneTokens.space8),
+                        NodeLaneMenuButton<String>(
                           tooltip: '来源操作',
-                          icon: Icon(icons.more),
+                          icon: icons.more,
                           onSelected: (value) {
                             if (value == 'search') _searchContents();
                             if (value == 'filter') {
@@ -410,21 +398,32 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                           },
                           itemBuilder: (_) => [
                             const PopupMenuItem(
+                              height: NodeLaneTokens.menuItemHeight,
                               value: 'search',
                               child: Text('搜作品'),
                             ),
-                            PopupMenuItem(value: 'filter', child: Text('语言筛选')),
+                            PopupMenuItem(
+                              height: NodeLaneTokens.menuItemHeight,
+                              value: 'filter',
+                              child: Text('语言筛选'),
+                            ),
                             if (thirdParty)
                               const PopupMenuItem(
+                                height: NodeLaneTokens.menuItemHeight,
                                 value: 'update',
                                 child: Text('更新已安装来源'),
                               ),
                             if (ref.read(developerModeStateProvider))
                               const PopupMenuItem(
+                                height: NodeLaneTokens.menuItemHeight,
                                 value: 'create',
                                 child: Text('创建扩展'),
                               ),
-                            PopupMenuItem(value: 'local', child: Text('本地来源')),
+                            PopupMenuItem(
+                              height: NodeLaneTokens.menuItemHeight,
+                              value: 'local',
+                              child: Text('本地来源'),
+                            ),
                           ],
                         ),
                       ],
@@ -583,7 +582,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                           sliver: SliverToBoxAdapter(
-                            child: NodeLaneCatalogRow(
+                            child: NodeLaneRow.card(
                               title: '添加仓库',
                               leading: Icon(icons.add, color: t.accent),
                               onTap: () =>

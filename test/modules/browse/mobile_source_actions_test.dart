@@ -55,6 +55,9 @@ void main() {
                 display: DisplayType.comfortableGrid,
                 canSave: false,
                 local: false,
+                hasFilters: true,
+                filtering: true,
+                notes: '网站自己的说明内容',
               ),
             );
           },
@@ -64,18 +67,22 @@ void main() {
     );
     await tester.tap(find.text('打开'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('保存当前搜索'));
+    expect(find.text('保存当前搜索'), findsNothing);
+    expect(find.text('在浏览器打开'), findsNothing);
+    expect(find.text('网站自己的说明内容'), findsNothing);
+    await tester.tap(find.text('网站说明'));
     await tester.pumpAndSettle();
-    expect(result, isNull);
+    expect(find.text('网站自己的说明内容'), findsOneWidget);
     expect(find.text('显示方式'), findsOneWidget);
     await tester.tap(find.text('仅封面'));
     await tester.pumpAndSettle();
     expect(result, DisplayType.compactGrid);
     await tester.tap(find.text('打开'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('在浏览器打开'));
+    expect(find.text('已应用'), findsOneWidget);
+    await tester.tap(find.text('筛选'));
     await tester.pumpAndSettle();
-    expect(result, SourceCatalogAction.browser);
+    expect(result, SourceCatalogAction.filter);
   });
 
   testWidgets(

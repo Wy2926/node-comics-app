@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
@@ -8,7 +9,6 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 class SourcePreferenceWidget extends StatefulWidget {
   const SourcePreferenceWidget({
@@ -206,7 +206,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                   }),
           );
     if (mobile) {
-      return SourceRow(
+      return NodeLaneRow(
         title: title,
         subtitle: checked != null || p.editTextPreference != null
             ? summary
@@ -229,7 +229,9 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
   Widget build(BuildContext context) => Column(
     children: [
       if (mobile)
-        SourceGroup(children: [for (var i = 0; i < values.length; i++) row(i)])
+        NodeLaneGroupSurface(
+          children: [for (var i = 0; i < values.length; i++) row(i)],
+        )
       else ...[
         for (var i = 0; i < values.length; i++) row(i),
       ],
@@ -285,17 +287,7 @@ class _EditTextDialogWidgetState extends State<EditTextDialogWidget> {
           Text(widget.dialogMessage, style: const TextStyle(fontSize: 13)),
         ],
       ),
-      content: TextField(
-        controller: _controller,
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: context.secondaryColor),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: context.primaryColor),
-          ),
-        ),
-      ),
+      content: NodeLaneTextField(controller: _controller),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),

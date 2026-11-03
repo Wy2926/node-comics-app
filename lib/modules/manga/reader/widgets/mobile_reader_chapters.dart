@@ -263,7 +263,7 @@ class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      child: NodeLaneSearchField(
+                      child: NodeLaneTextField.search(
                         controller: _search,
                         enabled: !_busy,
                         hint: l10n.reader_chapter_search,

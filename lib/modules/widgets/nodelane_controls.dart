@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -40,23 +41,209 @@ class NodeLanePageHeading extends StatelessWidget {
 class NodeLaneGroupSurface extends StatelessWidget {
   const NodeLaneGroupSurface({
     super.key,
-    required this.child,
+    this.child,
+    this.children,
+    this.margin,
     this.outlined = false,
-  });
-  final Widget child;
+    this.first = true,
+    this.last = true,
+    this.selected = false,
+  }) : assert((child == null) != (children == null));
+  final Widget? child;
+  final List<Widget>? children;
+  final EdgeInsetsGeometry? margin;
   final bool outlined;
+  final bool first, last, selected;
   @override
-  Widget build(BuildContext context) => Material(
-    color: NodeLaneTokens.of(context).surface,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(NodeLaneTokens.groupRadius),
-      side: outlined
-          ? BorderSide(color: NodeLaneTokens.of(context).line)
-          : BorderSide.none,
+  Widget build(BuildContext context) => Padding(
+    padding: margin ?? EdgeInsets.zero,
+    child: Material(
+      color: selected
+          ? NodeLaneTokens.of(context).accentSoft
+          : NodeLaneTokens.of(context).surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: first
+              ? const Radius.circular(NodeLaneTokens.groupRadius)
+              : Radius.zero,
+          bottom: last
+              ? const Radius.circular(NodeLaneTokens.groupRadius)
+              : Radius.zero,
+        ),
+        side: outlined
+            ? BorderSide(color: NodeLaneTokens.of(context).line)
+            : BorderSide.none,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child:
+          child ??
+          Column(
+            children: [
+              for (var i = 0; i < children!.length; i++) ...[
+                if (i > 0) _groupDivider(context),
+                children![i],
+              ],
+            ],
+          ),
     ),
-    clipBehavior: Clip.antiAlias,
-    child: child,
   );
+}
+
+Widget _groupDivider(BuildContext context) => Padding(
+  padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space16),
+  child: Divider(
+    height: 1,
+    thickness: .5,
+    color: NodeLaneTokens.of(context).line,
+  ),
+);
+
+/// One row for settings, choices and card actions. Card edges are supplied by
+/// lazy list callers; the content and tap behavior are shared with grouped rows.
+class NodeLaneRow extends StatelessWidget {
+  const NodeLaneRow({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.value,
+    this.icon,
+    this.leading,
+    this.trailing,
+    this.onTap,
+    this.onLongPress,
+    this.selected,
+    this.destructive = false,
+  }) : assert(icon == null || leading == null),
+       _card = false,
+       first = true,
+       last = true;
+
+  const NodeLaneRow.card({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.value,
+    this.icon,
+    this.leading,
+    this.trailing,
+    this.onTap,
+    this.onLongPress,
+    this.selected,
+    this.destructive = false,
+    this.first = true,
+    this.last = true,
+  }) : assert(icon == null || leading == null),
+       _card = true;
+
+  final String title;
+  final String? subtitle, value;
+  final IconData? icon;
+  final Widget? leading, trailing;
+  final VoidCallback? onTap, onLongPress;
+  final bool? selected;
+  final bool destructive, first, last, _card;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final color = destructive ? Theme.of(context).colorScheme.error : t.ink;
+    final content = InkWell(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Column(
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: _card
+                  ? NodeLaneTokens.catalogRowHeight
+                  : NodeLaneTokens.rowHeight,
+            ),
+            child: Padding(
+              padding: NodeLaneTokens.rowPadding,
+              child: Row(
+                children: [
+                  if (leading != null || icon != null) ...[
+                    if (leading != null)
+                      SizedBox.square(
+                        dimension: NodeLaneTokens.websiteIconSize,
+                        child: ExcludeSemantics(child: leading!),
+                      )
+                    else
+                      Icon(icon, size: NodeLaneTokens.iconSize, color: color),
+                    const SizedBox(width: NodeLaneTokens.space12),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: t.readerLabel.copyWith(color: color),
+                        ),
+                        if (subtitle?.isNotEmpty == true) ...[
+                          const SizedBox(height: NodeLaneTokens.space4),
+                          Text(subtitle!, style: t.readerSecondary),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (value != null) ...[
+                    const SizedBox(width: NodeLaneTokens.space12),
+                    Flexible(
+                      fit: FlexFit.tight,
+                      child: Text(
+                        value!,
+                        style: t.readerValue,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                  if (trailing != null) ...[
+                    const SizedBox(width: NodeLaneTokens.space12),
+                    trailing!,
+                  ] else if (!_card && selected != null) ...[
+                    const SizedBox(width: NodeLaneTokens.space12),
+                    SizedBox(
+                      width: NodeLaneTokens.iconSize,
+                      child: selected!
+                          ? Icon(
+                              icons.check,
+                              size: NodeLaneTokens.iconSize,
+                              color: t.accent,
+                            )
+                          : null,
+                    ),
+                  ] else if (onTap != null && !destructive) ...[
+                    const SizedBox(width: NodeLaneTokens.space12),
+                    Icon(
+                      icons.forward,
+                      size: NodeLaneTokens.smallIconSize,
+                      color: t.muted,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          if (_card && !last) _groupDivider(context),
+        ],
+      ),
+    );
+    return Semantics(
+      selected: selected,
+      button: onTap != null,
+      child: _card
+          ? NodeLaneGroupSurface(
+              first: first,
+              last: last,
+              selected: selected == true,
+              child: content,
+            )
+          : content,
+    );
+  }
 }
 
 /// A small cover annotation, shared by source and cross-source results.
@@ -129,45 +316,117 @@ class NodeLaneIconButton extends StatelessWidget {
     required this.onPressed,
     this.style = NodeLaneIconButtonStyle.tonal,
     this.active = false,
+    this.destructive = false,
   });
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
   final NodeLaneIconButtonStyle style;
-  final bool active;
+  final bool active, destructive;
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onPressed,
-      icon: Icon(icon, size: NodeLaneTokens.iconSize),
-      style: IconButton.styleFrom(
-        minimumSize: const Size(
-          NodeLaneTokens.minTapTarget,
-          NodeLaneTokens.minTapTarget,
+    return _iconButtonSurface(
+      context,
+      style: style,
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: onPressed,
+        icon: Icon(icon, size: NodeLaneTokens.iconSize),
+        style: _iconButtonStyle(
+          context,
+          style: style,
+          active: active,
+          destructive: destructive,
         ),
-        foregroundColor: style == NodeLaneIconButtonStyle.field && !active
-            ? colors.muted
-            : colors.accent,
-        backgroundColor: switch (style) {
-          NodeLaneIconButtonStyle.plain => Colors.transparent,
-          NodeLaneIconButtonStyle.tonal => colors.accentSoft,
-          NodeLaneIconButtonStyle.field =>
-            active ? colors.accentSoft : colors.soft,
-        },
-        shape: style == NodeLaneIconButtonStyle.field
-            ? RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  NodeLaneTokens.controlRadius,
-                ),
-              )
-            : const CircleBorder(),
       ),
     );
   }
 }
+
+/// A menu trigger uses the same geometry and material as a toolbar action.
+class NodeLaneMenuButton<T> extends StatelessWidget {
+  const NodeLaneMenuButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.itemBuilder,
+    required this.onSelected,
+  });
+  final IconData icon;
+  final String tooltip;
+  final PopupMenuItemBuilder<T> itemBuilder;
+  final PopupMenuItemSelected<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) => _iconButtonSurface(
+    context,
+    style: NodeLaneIconButtonStyle.tonal,
+    child: PopupMenuButton<T>(
+      tooltip: tooltip,
+      icon: Icon(icon, size: NodeLaneTokens.iconSize),
+      style: _iconButtonStyle(context),
+      itemBuilder: itemBuilder,
+      onSelected: onSelected,
+    ),
+  );
+}
+
+ButtonStyle _iconButtonStyle(
+  BuildContext context, {
+  NodeLaneIconButtonStyle style = NodeLaneIconButtonStyle.tonal,
+  bool active = false,
+  bool destructive = false,
+}) {
+  final t = NodeLaneTokens.of(context);
+  final glass = t.usesGlass && style != NodeLaneIconButtonStyle.plain;
+  return IconButton.styleFrom(
+    minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    foregroundColor: destructive
+        ? Theme.of(context).colorScheme.error
+        : active
+        ? t.accent
+        : glass
+        ? t.ink
+        : style == NodeLaneIconButtonStyle.field
+        ? t.muted
+        : t.accent,
+    backgroundColor: glass
+        ? Colors.transparent
+        : switch (style) {
+            NodeLaneIconButtonStyle.plain => Colors.transparent,
+            NodeLaneIconButtonStyle.tonal => t.accentSoft,
+            NodeLaneIconButtonStyle.field => active ? t.accentSoft : t.soft,
+          },
+    shape: style == NodeLaneIconButtonStyle.field && !glass
+        ? RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+          )
+        : const CircleBorder(),
+  );
+}
+
+Widget _iconButtonSurface(
+  BuildContext context, {
+  required NodeLaneIconButtonStyle style,
+  required Widget child,
+}) => Center(
+  widthFactor: 1,
+  heightFactor: 1,
+  child: SizedBox.square(
+    dimension: NodeLaneTokens.minTapTarget,
+    child:
+        NodeLaneTokens.of(context).usesGlass &&
+            style != NodeLaneIconButtonStyle.plain
+        ? NodeLaneGlassSurface(
+            borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+            elevated: true,
+            child: child,
+          )
+        : child,
+  ),
+);
 
 /// A neutral close target shared by sheets and webpage thumbnail cards.
 class NodeLaneCloseButton extends StatelessWidget {
@@ -206,113 +465,176 @@ class NodeLaneCloseButton extends StatelessWidget {
   }
 }
 
-class NodeLaneSearchField extends StatelessWidget {
-  const NodeLaneSearchField({
+/// A single input implementation. Search only changes keyboard and leading
+/// affordance; callers own drafts, submission and clearing side effects.
+class NodeLaneTextField extends StatelessWidget {
+  const NodeLaneTextField({
     super.key,
-    required this.controller,
-    required this.hint,
-    required this.onChanged,
+    this.controller,
+    this.initialValue,
+    this.label,
+    this.hint = '',
+    this.inGroup = false,
+    this.onChanged,
+    this.onClear,
     this.clearLabel,
     this.onSubmitted,
     this.enabled = true,
-  });
-  final TextEditingController controller;
-  final String hint;
-  final String? clearLabel;
-  final ValueChanged<String> onChanged;
-  final ValueChanged<String>? onSubmitted;
-  final bool enabled;
+    this.autofocus = false,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.keyboardType,
+    this.textInputAction,
+    this.minLines = 1,
+    this.maxLines = 1,
+  }) : assert(controller == null || initialValue == null),
+       _search = false;
 
-  @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final icons = NodeLaneIcons.of(context);
-    return TextField(
-      enabled: enabled,
-      controller: controller,
-      onChanged: onChanged,
-      onSubmitted: onSubmitted ?? (_) => FocusScope.of(context).unfocus(),
-      textInputAction: TextInputAction.search,
-      style: colors.body,
-      decoration: colors.searchDecoration(
-        hint,
-        prefixIcon: Icon(
-          icons.search,
-          size: NodeLaneTokens.smallIconSize,
-          color: colors.muted,
-        ),
-        suffixIcon: ValueListenableBuilder<TextEditingValue>(
-          valueListenable: controller,
-          builder: (context, value, _) => value.text.isEmpty
-              ? const SizedBox.shrink()
-              : IconButton(
-                  tooltip:
-                      clearLabel ??
-                      MaterialLocalizations.of(context).deleteButtonTooltip,
-                  icon: Icon(
-                    icons.clear,
-                    size: NodeLaneTokens.smallIconSize,
-                    color: colors.muted,
-                  ),
-                  onPressed: () {
-                    controller.clear();
-                    onChanged('');
-                  },
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A navigation affordance styled like search, without a fake editable field.
-class NodeLaneSearchLink extends StatelessWidget {
-  const NodeLaneSearchLink({
+  const NodeLaneTextField.search({
     super.key,
+    required this.controller,
     required this.hint,
-    required this.onTap,
-  });
+    this.onChanged,
+    this.onClear,
+    this.clearLabel,
+    this.onSubmitted,
+    this.enabled = true,
+    this.autofocus = false,
+  }) : initialValue = null,
+       label = null,
+       inGroup = false,
+       autocorrect = true,
+       enableSuggestions = true,
+       keyboardType = TextInputType.text,
+       textInputAction = TextInputAction.search,
+       minLines = 1,
+       maxLines = 1,
+       _search = true;
+
+  final TextEditingController? controller;
+  final String? initialValue, label, clearLabel;
   final String hint;
-  final VoidCallback onTap;
+  final bool inGroup;
+  final ValueChanged<String>? onChanged, onSubmitted;
+  final VoidCallback? onClear;
+  final bool enabled, autofocus, autocorrect, enableSuggestions, _search;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final int minLines, maxLines;
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    return Semantics(
-      button: true,
-      child: Material(
-        color: colors.soft,
-        borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: NodeLaneTokens.searchHeight,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: NodeLaneTokens.space12,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    NodeLaneIcons.of(context).search,
-                    size: NodeLaneTokens.smallIconSize,
-                    color: colors.muted,
-                  ),
-                  const SizedBox(width: NodeLaneTokens.space12),
-                  Expanded(
-                    child: Text(
-                      hint,
-                      style: colors.body.copyWith(color: colors.muted),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final glass = _search && t.usesGlass;
+    final formRow = label?.isNotEmpty == true;
+    return Focus(
+      canRequestFocus: false,
+      child: Builder(
+        builder: (context) {
+          final focused = Focus.of(context).hasFocus;
+          final field = TextFormField(
+            controller: controller,
+            initialValue: initialValue,
+            enabled: enabled,
+            autofocus: autofocus,
+            autocorrect: autocorrect,
+            enableSuggestions: enableSuggestions,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            minLines: minLines,
+            maxLines: maxLines,
+            textAlignVertical: TextAlignVertical.center,
+            onChanged: onChanged,
+            onFieldSubmitted: onSubmitted,
+            style: t.body,
+            decoration: t
+                .inputDecoration(
+                  hint,
+                  formRow: formRow,
+                  prefixIcon: formRow
+                      ? Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                            NodeLaneTokens.space16,
+                            NodeLaneTokens.space12,
+                            NodeLaneTokens.space12,
+                            NodeLaneTokens.space12,
+                          ),
+                          child: SizedBox(
+                            width: NodeLaneTokens.formLabelWidth,
+                            child: Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              widthFactor: 1,
+                              heightFactor: 1,
+                              child: Text(
+                                label!,
+                                style: t.readerLabel.copyWith(
+                                  color: !enabled
+                                      ? t.muted
+                                      : focused
+                                      ? t.accent
+                                      : t.ink,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : _search
+                      ? Icon(
+                          icons.search,
+                          size: NodeLaneTokens.smallIconSize,
+                          color: t.muted,
+                        )
+                      : null,
+                  suffixIcon: controller == null
+                      ? null
+                      : ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: controller!,
+                          builder: (context, value, _) => value.text.isEmpty
+                              ? const SizedBox.shrink()
+                              : IconButton(
+                                  tooltip:
+                                      clearLabel ??
+                                      MaterialLocalizations.of(context)
+                                          .deleteButtonTooltip,
+                                  icon: Icon(
+                                    icons.clear,
+                                    size: NodeLaneTokens.smallIconSize,
+                                    color: t.muted,
+                                  ),
+                                  onPressed: !enabled
+                                      ? null
+                                      : () {
+                                          if (onClear != null) {
+                                            onClear!();
+                                          } else {
+                                            controller!.clear();
+                                            onChanged?.call('');
+                                          }
+                                        },
+                                ),
+                        ),
+                )
+                .copyWith(
+                  fillColor: formRow
+                      ? focused
+                            ? t.accentSoft
+                            : t.surface
+                      : glass
+                      ? Colors.transparent
+                      : t.soft,
+                ),
+          );
+          if (formRow) {
+            return inGroup ? field : NodeLaneGroupSurface(child: field);
+          }
+          return glass
+              ? NodeLaneGlassSurface(
+                  borderRadius: t.inputRadius,
+                  grouped: true,
+                  child: field,
+                )
+              : field;
+        },
       ),
     );
   }
@@ -347,7 +669,11 @@ class NodeLaneSegments<T> extends StatelessWidget {
             ? colors.detailChipSurface
             : colors.soft,
         borderRadius: BorderRadius.circular(
-          prominent || pill ? 22 : NodeLaneTokens.controlRadius,
+          colors.usesGlass
+              ? NodeLaneTokens.capsuleRadius
+              : prominent || pill
+              ? 22
+              : NodeLaneTokens.controlRadius,
         ),
       ),
       child: Padding(
@@ -368,7 +694,12 @@ class NodeLaneSegments<T> extends StatelessWidget {
                         ? colors.accent
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(
-                      prominent || pill ? 20 : NodeLaneTokens.segmentRadius,
+                      colors.usesGlass
+                          ? NodeLaneTokens.capsuleRadius -
+                                NodeLaneTokens.segmentInset
+                          : prominent || pill
+                          ? 20
+                          : NodeLaneTokens.segmentRadius,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(

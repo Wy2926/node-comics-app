@@ -63,7 +63,7 @@ class MobileBookshelfHeader extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: NodeLaneSearchField(
+                    child: NodeLaneTextField.search(
                       controller: controller,
                       onChanged: (_) => onSearchChanged(),
                       hint: count == null

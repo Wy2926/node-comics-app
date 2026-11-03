@@ -1,7 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/mass_migration/models/mass_migration_models.dart';
 import 'package:mangayomi/modules/mass_migration/widgets/mass_migration_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -62,7 +62,13 @@ class MobileMassMigrationSelectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final title = item.name ?? l10n.mass_migration_unknown_title;
-    return MobileBrowseGroup(
+    return NodeLaneGroupSurface(
+      margin: const EdgeInsets.fromLTRB(
+        NodeLaneTokens.gutter,
+        0,
+        NodeLaneTokens.gutter,
+        NodeLaneTokens.space12,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -147,7 +153,13 @@ class MobileMassMigrationMatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final chapters = item.destinationPreview?.chapters;
-    return MobileBrowseGroup(
+    return NodeLaneGroupSurface(
+      margin: const EdgeInsets.fromLTRB(
+        NodeLaneTokens.gutter,
+        0,
+        NodeLaneTokens.gutter,
+        NodeLaneTokens.space12,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -288,7 +300,13 @@ class MobileMassMigrationProgress extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.symmetric(vertical: 12),
     children: [
-      MobileBrowseGroup(
+      NodeLaneGroupSurface(
+        margin: const EdgeInsets.fromLTRB(
+          NodeLaneTokens.gutter,
+          0,
+          NodeLaneTokens.gutter,
+          NodeLaneTokens.space12,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
@@ -311,7 +329,13 @@ class MobileMassMigrationProgress extends StatelessWidget {
         ),
       ),
       if (current != null)
-        MobileBrowseGroup(
+        NodeLaneGroupSurface(
+          margin: const EdgeInsets.fromLTRB(
+            NodeLaneTokens.gutter,
+            0,
+            NodeLaneTokens.gutter,
+            NodeLaneTokens.space12,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -360,7 +384,13 @@ class MobileMassMigrationSummary extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
-          child: MobileBrowseGroup(
+          child: NodeLaneGroupSurface(
+            margin: const EdgeInsets.fromLTRB(
+              NodeLaneTokens.gutter,
+              0,
+              NodeLaneTokens.gutter,
+              NodeLaneTokens.space12,
+            ),
             child: Padding(
               padding: const EdgeInsets.all(18),
               child: Column(
@@ -390,7 +420,13 @@ class MobileMassMigrationSummary extends StatelessWidget {
           ),
         ),
         SliverToBoxAdapter(
-          child: MobileBrowseGroup(
+          child: NodeLaneGroupSurface(
+            margin: const EdgeInsets.fromLTRB(
+              NodeLaneTokens.gutter,
+              0,
+              NodeLaneTokens.gutter,
+              NodeLaneTokens.space12,
+            ),
             child: Column(
               children: [
                 for (final stat in stats)

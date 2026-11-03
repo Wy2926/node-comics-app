@@ -523,7 +523,7 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
               },
               onTapOutside: (_) => focus.unfocus(),
               decoration: t
-                  .searchDecoration(
+                  .inputDecoration(
                     '输入或粘贴网址',
                     prefixIcon: Icon(
                       widget.compact && widget.url.startsWith('https:')

@@ -12,14 +12,18 @@ class NodeLaneTokens {
     required this.line,
     required this.accent,
     required this.onAccent,
+    this.usesGlass = false,
   });
 
   final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
+  final bool usesGlass;
   static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
   static const space16 = 16.0, space20 = 20.0, space24 = 24.0;
   static const gutter = space20, coverRadius = 10.0, controlRadius = 12.0;
   static const groupRadius = 18.0, capsuleRadius = 24.0;
+  static const glassBlur = 16.0, glassStroke = .75;
   static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
+  static const formLabelWidth = 88.0;
   static const avatarSize = 64.0, searchHeight = 48.0;
   static const coverAspectRatio = 1.43, shelfGap = 14.0;
   static const bookTitleSize = 15.0, captionSize = 12.0;
@@ -67,6 +71,10 @@ class NodeLaneTokens {
     space16,
   );
   static const groupPadding = EdgeInsets.all(space16);
+  static const buttonPadding = EdgeInsets.symmetric(
+    horizontal: space20,
+    vertical: space12,
+  );
   static const rowPadding = EdgeInsets.symmetric(
     horizontal: space16,
     vertical: space8,
@@ -111,11 +119,21 @@ class NodeLaneTokens {
       line: dark ? const Color(0xff353e4a) : const Color(0xffe7eaf0),
       accent: theme.colorScheme.primary,
       onAccent: theme.colorScheme.onPrimary,
+      usesGlass: theme.platform == TargetPlatform.iOS,
     );
   }
 
   Color get accentSoft =>
       Color.alphaBlend(accent.withValues(alpha: .11), surface);
+
+  OutlinedBorder get buttonShape => usesGlass
+      ? const StadiumBorder()
+      : RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(controlRadius),
+        );
+
+  BorderRadius get inputRadius =>
+      BorderRadius.circular(usesGlass ? capsuleRadius : controlRadius);
 
   TextStyle get pageTitle => TextStyle(
     fontSize: 34,
@@ -163,34 +181,50 @@ class NodeLaneTokens {
       TextStyle(fontSize: captionSize, height: 1.3, color: muted);
   TextStyle get sectionTitle => secondary.copyWith(fontWeight: FontWeight.w600);
 
-  InputDecoration searchDecoration(
+  InputDecoration inputDecoration(
     String hint, {
     Widget? suffixIcon,
     Widget? prefixIcon,
+    bool formRow = false,
   }) => InputDecoration(
     hintText: hint,
     hintStyle: body.copyWith(color: muted),
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: soft,
+    fillColor: formRow ? surface : soft,
     isDense: true,
+    constraints: BoxConstraints(minHeight: formRow ? rowHeight : searchHeight),
+    prefixIconConstraints: BoxConstraints(
+      minWidth: searchHeight,
+      minHeight: formRow ? rowHeight : searchHeight,
+    ),
+    suffixIconConstraints: const BoxConstraints(
+      minWidth: minTapTarget,
+      minHeight: searchHeight,
+    ),
     contentPadding: const EdgeInsets.symmetric(
-      horizontal: space12,
+      horizontal: space16,
       vertical: space12,
     ),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(controlRadius),
-      borderSide: BorderSide.none,
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(controlRadius),
-      borderSide: BorderSide.none,
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(controlRadius),
-      borderSide: BorderSide(color: accent, width: 1.5),
-    ),
+    border: formRow
+        ? InputBorder.none
+        : OutlineInputBorder(
+            borderRadius: inputRadius,
+            borderSide: BorderSide.none,
+          ),
+    enabledBorder: formRow
+        ? InputBorder.none
+        : OutlineInputBorder(
+            borderRadius: inputRadius,
+            borderSide: BorderSide.none,
+          ),
+    focusedBorder: formRow
+        ? InputBorder.none
+        : OutlineInputBorder(
+            borderRadius: inputRadius,
+            borderSide: BorderSide(color: accent, width: 1.5),
+          ),
   );
 }
 
@@ -202,7 +236,52 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
     borderRadius: BorderRadius.circular(NodeLaneTokens.modalRadius),
     side: BorderSide(color: colors.line),
   );
+  final buttonStyle = ButtonStyle(
+    minimumSize: const WidgetStatePropertyAll(
+      Size(NodeLaneTokens.minTapTarget, NodeLaneTokens.minTapTarget),
+    ),
+    shape: WidgetStatePropertyAll(colors.buttonShape),
+    textStyle: WidgetStatePropertyAll(colors.label),
+    padding: const WidgetStatePropertyAll(NodeLaneTokens.buttonPadding),
+  );
+  final input = colors.inputDecoration('');
   return base.copyWith(
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(foregroundColor: colors.accent)
+          .merge(buttonStyle),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: colors.accent,
+        foregroundColor: colors.onAccent,
+      ).merge(buttonStyle),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: colors.accent,
+        side: BorderSide(color: colors.line),
+      ).merge(buttonStyle),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: colors.soft,
+        foregroundColor: colors.accent,
+        elevation: 0,
+      ).merge(buttonStyle),
+    ),
+    inputDecorationTheme: base.inputDecorationTheme.copyWith(
+      filled: input.filled,
+      fillColor: input.fillColor,
+      border: input.border,
+      enabledBorder: input.enabledBorder,
+      focusedBorder: input.focusedBorder,
+      contentPadding: input.contentPadding,
+      constraints: input.constraints,
+      prefixIconConstraints: input.prefixIconConstraints,
+      suffixIconConstraints: input.suffixIconConstraints,
+      hintStyle: input.hintStyle,
+      isDense: input.isDense,
+    ),
     dialogTheme: base.dialogTheme.copyWith(
       backgroundColor: colors.surface,
       surfaceTintColor: Colors.transparent,
@@ -244,17 +323,28 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
       elevation: 6,
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(NodeLaneTokens.menuRadius),
+        borderRadius: BorderRadius.circular(
+          colors.usesGlass
+              ? NodeLaneTokens.capsuleRadius
+              : NodeLaneTokens.menuRadius,
+        ),
         side: BorderSide(color: colors.line),
       ),
       menuPadding: const EdgeInsets.all(6),
       textStyle: base.textTheme.bodyLarge?.copyWith(color: colors.ink),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => colors.readerLabel.copyWith(
+          color: states.contains(WidgetState.disabled)
+              ? colors.muted
+              : colors.ink,
+        ),
+      ),
       position: PopupMenuPosition.under,
     ),
   );
 }
 
-/// No fonts, image assets, or blur layers are added by the mobile visual system.
+/// Page colors and the shared control theme; surface materials own their effects.
 class NodeLaneSurface extends StatelessWidget {
   const NodeLaneSurface({super.key, required this.child});
   final Widget child;
@@ -289,54 +379,6 @@ class NodeLaneSurface extends StatelessWidget {
             borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
           ),
           labelStyle: colors.label,
-        ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            foregroundColor: colors.accent,
-            minimumSize: const Size(
-              NodeLaneTokens.minTapTarget,
-              NodeLaneTokens.minTapTarget,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-            ),
-          ),
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: colors.accent,
-            side: BorderSide(color: colors.line),
-            minimumSize: const Size(
-              NodeLaneTokens.minTapTarget,
-              NodeLaneTokens.minTapTarget,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: NodeLaneTokens.space20,
-              vertical: NodeLaneTokens.space12,
-            ),
-            textStyle: colors.label,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-            ),
-          ),
-        ),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            backgroundColor: colors.accent,
-            foregroundColor: colors.onAccent,
-            minimumSize: const Size(
-              NodeLaneTokens.minTapTarget,
-              NodeLaneTokens.minTapTarget,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: NodeLaneTokens.space20,
-              vertical: NodeLaneTokens.space12,
-            ),
-            textStyle: colors.label,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-            ),
-          ),
         ),
         appBarTheme: base.appBarTheme.copyWith(
           backgroundColor: colors.canvas,

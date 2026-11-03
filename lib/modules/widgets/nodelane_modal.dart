@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -9,59 +10,8 @@ class NodeLaneModalScope extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    final base = nodeLaneModalTheme(Theme.of(context));
-    final colors = NodeLaneTokens.fromTheme(base);
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-    );
-    final buttonStyle = ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(
-        Size(44, NodeLaneTokens.minTapTarget),
-      ),
-      shape: WidgetStatePropertyAll(shape),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 16),
-      ),
-    );
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-      borderSide: BorderSide(color: colors.line),
-    );
-    return Theme(
-      data: base.copyWith(
-        textButtonTheme: TextButtonThemeData(
-          style: base.textButtonTheme.style?.merge(buttonStyle) ?? buttonStyle,
-        ),
-        filledButtonTheme: FilledButtonThemeData(
-          style:
-              base.filledButtonTheme.style?.merge(buttonStyle) ?? buttonStyle,
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style:
-              base.outlinedButtonTheme.style?.merge(buttonStyle) ?? buttonStyle,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style:
-              base.elevatedButtonTheme.style?.merge(buttonStyle) ?? buttonStyle,
-        ),
-        inputDecorationTheme: base.inputDecorationTheme.copyWith(
-          filled: true,
-          fillColor: colors.soft,
-          border: border,
-          enabledBorder: border,
-          focusedBorder: border.copyWith(
-            borderSide: BorderSide(color: colors.accent, width: 2),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-        ),
-      ),
-      child: child,
-    );
-  }
+  Widget build(BuildContext context) =>
+      Theme(data: nodeLaneModalTheme(Theme.of(context)), child: child);
 }
 
 class NodeLaneAlertDialog extends StatelessWidget {
@@ -117,15 +67,10 @@ class NodeLaneSheetSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     return NodeLaneModalScope(
-      child: Material(
-        color: grouped ? colors.canvas : colors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
-          side: BorderSide(color: colors.line),
-        ),
-        clipBehavior: Clip.antiAlias,
+      child: NodeLaneGlassSurface(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+        grouped: grouped,
         child: child,
       ),
     );

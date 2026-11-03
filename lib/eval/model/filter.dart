@@ -284,3 +284,51 @@ List<Map<String, dynamic>?> filterValuesListToJson(List<dynamic> values) {
     return (e.toJson() as Map<String, dynamic>?);
   }).toList();
 }
+
+/// The extension's mutable filter objects must never be edited by a cancelled
+/// route or while a request still holds the previously applied filter list.
+List<dynamic> copySourceFilters(List<dynamic> filters) => filters
+    .map(
+      (value) => switch (value) {
+        TextFilter f => TextFilter(f.type, f.name, f.typeName, state: f.state),
+        CheckBoxFilter f => CheckBoxFilter(
+          f.type,
+          f.name,
+          f.value,
+          f.typeName,
+          state: f.state,
+        ),
+        TriStateFilter f => TriStateFilter(
+          f.type,
+          f.name,
+          f.value,
+          f.typeName,
+          state: f.state,
+        ),
+        SelectFilter f => SelectFilter(
+          f.type,
+          f.name,
+          f.state,
+          copySourceFilters(f.values),
+          f.typeName,
+        ),
+        SelectFilterOption f => SelectFilterOption(f.name, f.value, f.typeName),
+        GroupFilter f => GroupFilter(
+          f.type,
+          f.name,
+          copySourceFilters(f.state),
+          f.typeName,
+        ),
+        SortFilter f => SortFilter(
+          f.type,
+          f.name,
+          SortState(f.state.index, f.state.ascending, f.state.typeName),
+          copySourceFilters(f.values),
+          f.typeName,
+        ),
+        HeaderFilter f => HeaderFilter(f.name, f.typeName, type: f.type),
+        SeparatorFilter f => SeparatorFilter(f.typeName, type: f.type),
+        _ => value, // Unknown values are retained without an editor.
+      },
+    )
+    .toList();

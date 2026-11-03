@@ -4002,4 +4002,67 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reader_scale_fit_height_hint => '以页面高度适配';
+
+  @override
+  String get source_filter_active => '已应用';
+
+  @override
+  String get source_filter_apply => '应用筛选';
+
+  @override
+  String get source_filter_scope => '筛选仅用于当前网站。';
+
+  @override
+  String get source_filter_apply_hint => '应用筛选后生效。';
+
+  @override
+  String source_filter_term(String term) {
+    String _temp0 = intl.Intl.selectLogic(term, {
+      'genres': '题材',
+      'author': '作者',
+      'artist': '画师',
+      'title': '标题',
+      'year': '年份',
+      'tags': '标签',
+      'format': '形式',
+      'publisher': '出版社',
+      'relevance': '相关度',
+      'rating': '评分',
+      'views': '浏览量',
+      'random': '随机',
+      'all': '全部',
+      'none': '无',
+      'action': '动作',
+      'adventure': '冒险',
+      'comedy': '喜剧',
+      'drama': '剧情',
+      'fantasy': '奇幻',
+      'romance': '爱情',
+      'science_fiction': '科幻',
+      'slice_of_life': '日常',
+      'mystery': '悬疑',
+      'horror': '恐怖',
+      'psychological': '心理',
+      'historical': '历史',
+      'sports': '运动',
+      'supernatural': '超自然',
+      'school_life': '校园',
+      'tragedy': '悲剧',
+      'shounen': '少年',
+      'shoujo': '少女',
+      'seinen': '青年',
+      'josei': '女性',
+      'isekai': '异世界',
+      'martial_arts': '武侠',
+      'mecha': '机甲',
+      'music': '音乐',
+      'doujinshi': '同人',
+      'trending': '热门趋势',
+      'new': '新上架',
+      'adult_content': '成人内容',
+      'only': '仅显示',
+      'other': '$term',
+    });
+    return '$_temp0';
+  }
 }

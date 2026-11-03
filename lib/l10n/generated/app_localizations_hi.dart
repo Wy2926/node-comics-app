@@ -4209,4 +4209,68 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get reader_scale_fit_height_hint => 'Fit the page to the height';
+
+  @override
+  String get source_filter_active => 'Applied';
+
+  @override
+  String get source_filter_apply => 'Apply filters';
+
+  @override
+  String get source_filter_scope => 'Filters apply to this website only.';
+
+  @override
+  String get source_filter_apply_hint =>
+      'Apply filters to use your selections.';
+
+  @override
+  String source_filter_term(String term) {
+    String _temp0 = intl.Intl.selectLogic(term, {
+      'genres': 'Genres',
+      'author': 'Author',
+      'artist': 'Artist',
+      'title': 'Title',
+      'year': 'Year',
+      'tags': 'Tags',
+      'format': 'Format',
+      'publisher': 'Publisher',
+      'relevance': 'Relevance',
+      'rating': 'Rating',
+      'views': 'Views',
+      'random': 'Random',
+      'all': 'All',
+      'none': 'None',
+      'action': 'Action',
+      'adventure': 'Adventure',
+      'comedy': 'Comedy',
+      'drama': 'Drama',
+      'fantasy': 'Fantasy',
+      'romance': 'Romance',
+      'science_fiction': 'Science fiction',
+      'slice_of_life': 'Slice of life',
+      'mystery': 'Mystery',
+      'horror': 'Horror',
+      'psychological': 'Psychological',
+      'historical': 'Historical',
+      'sports': 'Sports',
+      'supernatural': 'Supernatural',
+      'school_life': 'School life',
+      'tragedy': 'Tragedy',
+      'shounen': 'Shounen',
+      'shoujo': 'Shoujo',
+      'seinen': 'Seinen',
+      'josei': 'Josei',
+      'isekai': 'Isekai',
+      'martial_arts': 'Martial arts',
+      'mecha': 'Mecha',
+      'music': 'Music',
+      'doujinshi': 'Doujinshi',
+      'trending': 'Trending',
+      'new': 'New',
+      'adult_content': 'Adult content',
+      'only': 'Only',
+      'other': '$term',
+    });
+    return '$_temp0';
+  }
 }

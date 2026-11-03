@@ -7463,6 +7463,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fit the page to the height'**
   String get reader_scale_fit_height_hint;
+
+  /// No description provided for @source_filter_active.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied'**
+  String get source_filter_active;
+
+  /// No description provided for @source_filter_apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply filters'**
+  String get source_filter_apply;
+
+  /// No description provided for @source_filter_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters apply to this website only.'**
+  String get source_filter_scope;
+
+  /// No description provided for @source_filter_apply_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply filters to use your selections.'**
+  String get source_filter_apply_hint;
+
+  /// Common extension filter display labels. Plugin values are never translated.
+  ///
+  /// In en, this message translates to:
+  /// **'{term, select, genres{Genres} author{Author} artist{Artist} title{Title} year{Year} tags{Tags} format{Format} publisher{Publisher} relevance{Relevance} rating{Rating} views{Views} random{Random} all{All} none{None} action{Action} adventure{Adventure} comedy{Comedy} drama{Drama} fantasy{Fantasy} romance{Romance} science_fiction{Science fiction} slice_of_life{Slice of life} mystery{Mystery} horror{Horror} psychological{Psychological} historical{Historical} sports{Sports} supernatural{Supernatural} school_life{School life} tragedy{Tragedy} shounen{Shounen} shoujo{Shoujo} seinen{Seinen} josei{Josei} isekai{Isekai} martial_arts{Martial arts} mecha{Mecha} music{Music} doujinshi{Doujinshi} trending{Trending} new{New} adult_content{Adult content} only{Only} other{{term}}}'**
+  String source_filter_term(String term);
 }
 
 class _AppLocalizationsDelegate

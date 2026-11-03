@@ -124,7 +124,7 @@ class _MobileRepositoryManagerState
                   ),
                 ),
               const SizedBox(height: 12),
-              NodeLaneCatalogRow(
+              NodeLaneRow.card(
                 title: '复制目录链接',
                 leading: Icon(icons.webLink),
                 onTap: () {
@@ -134,7 +134,7 @@ class _MobileRepositoryManagerState
               ),
               if (isBrowserUrl(current.website)) ...[
                 const SizedBox(height: 12),
-                NodeLaneCatalogRow(
+                NodeLaneRow.card(
                   title: '仓库网站',
                   leading: Icon(icons.web),
                   onTap: () => launchUrl(
@@ -145,7 +145,7 @@ class _MobileRepositoryManagerState
               ],
               const SizedBox(height: 12),
               if (!builtIn)
-                NodeLaneCatalogRow(
+                NodeLaneRow.card(
                   title: '移除仓库',
                   leading: Icon(icons.delete),
                   onTap: () async {
@@ -218,7 +218,7 @@ class _MobileRepositoryManagerState
             child: Text('还没有添加第三方仓库', style: t.readerSecondary),
           ),
         for (var i = 0; i < repos.length; i++)
-          NodeLaneCatalogRow(
+          NodeLaneRow.card(
             title: repositoryName(repos[i]),
             subtitle: [
               if (builtIn && i == 0) '内置临时目录',
@@ -231,13 +231,13 @@ class _MobileRepositoryManagerState
             onTap: () => _details(repos[i], builtIn: builtIn && i == 0),
           ),
         const SizedBox(height: 20),
-        NodeLaneCatalogRow(
+        NodeLaneRow.card(
           title: '添加仓库',
           leading: Icon(icons.add, color: t.accent),
           onTap: () => showMobileAddRepository(context, widget.itemType),
         ),
         const SizedBox(height: 20),
-        NodeLaneCatalogRow(
+        NodeLaneRow.card(
           title: refreshing ? '正在刷新…' : '刷新目录',
           leading: refreshing
               ? const Padding(
@@ -385,20 +385,16 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             children: [
-              Text('仓库地址', style: t.readerSecondary),
-              const SizedBox(height: 8),
-              TextField(
+              NodeLaneTextField(
                 controller: input,
+                label: '仓库地址',
+                hint: 'https://…',
                 enabled: !saving,
                 keyboardType: TextInputType.url,
                 autocorrect: false,
                 enableSuggestions: false,
                 maxLines: 2,
                 onChanged: _changed,
-                style: t.readerLabel,
-                decoration: t
-                    .searchDecoration('https://…')
-                    .copyWith(fillColor: t.surface),
               ),
               const SizedBox(height: 8),
               TextButton.icon(
@@ -419,7 +415,7 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
               if (checking)
                 const Center(child: CircularProgressIndicator(strokeWidth: 2)),
               if (preview != null)
-                NodeLaneCatalogRow(
+                NodeLaneRow.card(
                   title: repositoryName(preview!),
                   subtitle:
                       '${widget.itemType.localized(context.l10n)} · 目录已识别',
@@ -444,7 +440,6 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: preview == null || saving ? null : _save,
-                style: FilledButton.styleFrom(minimumSize: const Size(44, 48)),
                 child: Text(saving ? '正在添加…' : '添加仓库'),
               ),
               const SizedBox(height: 12),

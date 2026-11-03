@@ -28,10 +28,10 @@ class MobileBrowsePage extends StatelessWidget {
         appBar: AppBar(
           leading:
               leading ??
-              IconButton(
+              NodeLaneIconButton(
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 onPressed: () => Navigator.maybePop(context),
-                icon: Icon(NodeLaneIcons.of(context).back),
+                icon: NodeLaneIcons.of(context).back,
               ),
           // AppBar caps title scaling; reserve two lines without applying
           // the much larger accessibility body-text scale to the whole bar.
@@ -65,19 +65,6 @@ class MobileBrowsePage extends StatelessWidget {
                 ),
               ),
       ),
-    );
-  }
-}
-
-class MobileBrowseGroup extends StatelessWidget {
-  const MobileBrowseGroup({super.key, required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      child: NodeLaneGroupSurface(child: child),
     );
   }
 }
