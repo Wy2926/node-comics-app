@@ -40,7 +40,7 @@ class DetailBanner extends ConsumerWidget {
                     // The banner renders at 300 px behind an overlay;
                     // decode it resized instead of at full cover
                     // resolution.
-                    : cachedCompressedNetworkImage(
+                    : cachedNetworkImage(
                         headers: manga.isLocalArchive!
                             ? null
                             : ref.watch(
