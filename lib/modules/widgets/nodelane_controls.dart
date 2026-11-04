@@ -520,6 +520,7 @@ class NodeLaneDisclosure extends StatefulWidget {
     this.icon,
     this.compact = false,
     this.initiallyExpanded = false,
+    this.minHeight,
   });
   final String title;
   final String? subtitle;
@@ -528,6 +529,7 @@ class NodeLaneDisclosure extends StatefulWidget {
   final Widget child;
   final bool initiallyExpanded;
   final bool compact;
+  final double? minHeight;
   @override
   State<NodeLaneDisclosure> createState() => _NodeLaneDisclosureState();
 }
@@ -569,6 +571,7 @@ class _NodeLaneDisclosureState extends State<NodeLaneDisclosure> {
               : widget.title,
           subtitle: widget.subtitle,
           compact: widget.compact,
+          minHeight: widget.minHeight,
           icon: widget.icon,
           onTap: () => _controller.isExpanded
               ? _controller.collapse()
@@ -691,9 +694,17 @@ AppBar nodeLaneAppBar(
   required String title,
   List<Widget> actions = const [],
   bool busy = false,
+  VoidCallback? onBack,
+  TextStyle? titleStyle,
+  String? semanticTitle,
 }) => AppBar(
-  title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-  titleTextStyle: NodeLaneTokens.of(context).readerTitle,
+  title: Text(
+    title,
+    semanticsLabel: semanticTitle,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+  ),
+  titleTextStyle: titleStyle ?? NodeLaneTokens.of(context).readerTitle,
   centerTitle: true,
   toolbarHeight: (MediaQuery.textScalerOf(context).scale(22) * 1.3 + 16).clamp(
     kToolbarHeight,
@@ -701,13 +712,15 @@ AppBar nodeLaneAppBar(
   ),
   automaticallyImplyLeading: false,
   leadingWidth: 64,
-  leading: Navigator.of(context).canPop()
+  leading: onBack != null || Navigator.of(context).canPop()
       ? Padding(
           padding: const EdgeInsets.only(left: NodeLaneTokens.space20),
           child: NodeLaneIconButton(
             icon: NodeLaneIcons.of(context).back,
             tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-            onPressed: busy ? null : () => Navigator.maybePop(context),
+            onPressed: busy
+                ? null
+                : onBack ?? () => Navigator.maybePop(context),
           ),
         )
       : null,
@@ -769,17 +782,20 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     required this.tooltip,
     required this.itemBuilder,
     required this.onSelected,
+    this.enabled = true,
   });
   final IconData icon;
   final String tooltip;
   final PopupMenuItemBuilder<T> itemBuilder;
   final PopupMenuItemSelected<T> onSelected;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) => _iconButtonSurface(
     context,
     style: NodeLaneIconButtonStyle.tonal,
     child: PopupMenuButton<T>(
+      enabled: enabled,
       tooltip: tooltip,
       icon: Icon(icon, size: NodeLaneTokens.iconSize),
       style: _iconButtonStyle(context),

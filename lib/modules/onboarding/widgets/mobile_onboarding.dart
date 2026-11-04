@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
-/// Only the current step scrolls; exit and next remain above the keyboard.
+const _mediaOrder = [ItemType.manga, ItemType.novel, ItemType.anime];
+
+/// The owner retains navigation and work; only the current step scrolls.
 class MobileOnboardingFrame extends StatelessWidget {
   const MobileOnboardingFrame({
     super.key,
@@ -30,23 +34,17 @@ class MobileOnboardingFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
+    final l = context.l10n, t = NodeLaneTokens.of(context);
+    final welcome = step == 1;
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          leading: onBack == null
-              ? null
-              : IconButton(
-                  onPressed: busy ? null : onBack,
-                  tooltip: l10n.go_back,
-                  icon: const BackButtonIcon(),
-                ),
-          title: Semantics(
-            label: l10n.onboarding_step_count(step, 2),
-            child: ExcludeSemantics(child: Text('$step / 2')),
-          ),
+        appBar: nodeLaneAppBar(
+          context,
+          title: '$step / 2',
+          semanticTitle: l.onboarding_step_count(step, 2),
+          titleStyle: t.readerSecondary,
+          busy: busy,
+          onBack: onBack,
         ),
         body: SafeArea(
           top: false,
@@ -55,35 +53,52 @@ class MobileOnboardingFrame extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   key: PageStorageKey('mobile-onboarding-$step'),
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.fromLTRB(
+                    NodeLaneTokens.gutter,
+                    NodeLaneTokens.space8,
+                    NodeLaneTokens.gutter,
+                    NodeLaneTokens.space8,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (welcome) ...[
+                        const Center(child: NodeLaneBrandMark()),
+                        const SizedBox(height: NodeLaneTokens.space16),
+                        Text(
+                          l.onboarding_welcome,
+                          textAlign: TextAlign.center,
+                          style: t.readerSecondary,
+                        ),
+                        const SizedBox(height: NodeLaneTokens.space8),
+                      ],
                       Semantics(
                         header: true,
                         child: Text(
                           title,
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          textAlign: welcome
+                              ? TextAlign.center
+                              : TextAlign.start,
+                          style: t.detailTitle,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: NodeLaneTokens.space8),
                       Text(
                         description,
-                        style: TextStyle(color: colors.muted, height: 1.45),
+                        textAlign: welcome ? TextAlign.center : TextAlign.start,
+                        style: t.readerSecondary,
                       ),
-                      const SizedBox(height: 24),
-                      if (busy) ...[
-                        const LinearProgressIndicator(),
-                        const SizedBox(height: 16),
-                      ],
+                      const SizedBox(height: NodeLaneTokens.space24),
                       child,
                       if (error != null) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: NodeLaneTokens.space12),
                         Semantics(
                           liveRegion: true,
                           child: Text(
                             error!,
-                            style: TextStyle(
+                            style: t.readerSecondary.copyWith(
                               color: Theme.of(context).colorScheme.error,
                             ),
                           ),
@@ -93,27 +108,29 @@ class MobileOnboardingFrame extends StatelessWidget {
                   ),
                 ),
               ),
-              Divider(height: 1, color: colors.line),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                padding: const EdgeInsets.fromLTRB(
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space8,
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space8,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (onNext != null) ...[
-                      FilledButton(
-                        onPressed: busy ? null : onNext,
-                        child: Text(l10n.onboarding_next),
+                    FilledButton(
+                      onPressed: busy ? null : onNext ?? onLeave,
+                      child: Text(
+                        onNext == null ? leaveLabel : l.onboarding_continue,
                       ),
-                      const SizedBox(height: 4),
+                    ),
+                    if (onNext != null) ...[
+                      const SizedBox(height: NodeLaneTokens.space4),
                       TextButton(
                         onPressed: busy ? null : onLeave,
                         child: Text(leaveLabel),
                       ),
-                    ] else
-                      FilledButton(
-                        onPressed: busy ? null : onLeave,
-                        child: Text(leaveLabel),
-                      ),
+                    ],
                   ],
                 ),
               ),
@@ -145,35 +162,54 @@ class MobileOnboardingLibraries extends StatelessWidget {
   final VoidCallback onRestore;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      MobileSettingsGroup(
-        children: [
-          for (final type in ItemType.values)
-            CheckboxListTile.adaptive(
-              title: Text(_label(context, type)),
-              value: selected.contains(type),
-              onChanged:
-                  busy || (selected.length == 1 && selected.contains(type))
-                  ? null
-                  : (_) => onToggle(type),
-            ),
-        ],
-      ),
-      OutlinedButton.icon(
-        onPressed: busy ? null : onRestore,
-        icon: const Icon(Icons.settings_backup_restore_rounded),
-        label: Text(
-          context.l10n.onboarding_restore,
-          textAlign: TextAlign.center,
+  Widget build(BuildContext context) {
+    final l = context.l10n, t = NodeLaneTokens.of(context);
+    final icons = NodeLaneIcons.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: NodeLaneTokens.space12,
+          runSpacing: NodeLaneTokens.space4,
+          children: [
+            Text(l.onboarding_reading_content, style: t.readerLabel),
+            Text(l.onboarding_choose_one, style: t.readerSecondary),
+          ],
         ),
-      ),
-    ],
-  );
+        const SizedBox(height: NodeLaneTokens.space8),
+        NodeLaneGroupSurface(
+          children: [
+            for (final type in _mediaOrder)
+              NodeLaneRow(
+                title: _label(context, type),
+                icon: switch (type) {
+                  ItemType.manga => icons.manga,
+                  ItemType.novel => icons.novel,
+                  ItemType.anime => icons.anime,
+                },
+                selected: selected.contains(type),
+                checkable: true,
+                enabled:
+                    !busy && !(selected.length == 1 && selected.contains(type)),
+                onTap: () => onToggle(type),
+              ),
+          ],
+        ),
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneRow.card(
+          title: l.onboarding_restore,
+          subtitle: l.onboarding_restore_hint,
+          icon: icons.tracking,
+          enabled: !busy,
+          onTap: onRestore,
+        ),
+      ],
+    );
+  }
 }
 
-/// The owner retains URL validation, media identity, writes and folder scans.
+/// URL drafts, media identity, repository writes and scans remain with the owner.
 class MobileOnboardingSources extends StatelessWidget {
   const MobileOnboardingSources({
     super.key,
@@ -185,8 +221,8 @@ class MobileOnboardingSources extends StatelessWidget {
     required this.canAdd,
     required this.onAdd,
     required this.busy,
+    required this.onBrowse,
     required this.onAddFolder,
-    this.onRemoveFolder,
     this.repoError,
     this.addedName,
     this.folderStatus,
@@ -195,124 +231,139 @@ class MobileOnboardingSources extends StatelessWidget {
   final ItemType repoType;
   final ValueChanged<ItemType> onRepoType;
   final TextEditingController urlController;
-  final VoidCallback onUrlChanged, onAdd, onAddFolder;
-  final VoidCallback? onRemoveFolder;
+  final VoidCallback onUrlChanged, onAdd, onBrowse, onAddFolder;
   final bool busy, canAdd;
   final String? repoError, addedName;
   final Widget? folderStatus;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
+    final l = context.l10n, t = NodeLaneTokens.of(context);
+    final icons = NodeLaneIcons.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        MobileSettingsGroup(
-          title: l10n.onboarding_add,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.onboarding_body,
-                    style: TextStyle(color: colors.muted),
-                  ),
-                  if (libraries.length > 1) ...[
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final type in libraries)
-                          ChoiceChip(
-                            label: Text(_label(context, type)),
-                            selected: repoType == type,
-                            showCheckmark: false,
-                            onSelected: busy ? null : (_) => onRepoType(type),
-                          ),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: urlController,
-                    enabled: !busy,
-                    autocorrect: false,
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.done,
-                    onChanged: (_) => onUrlChanged(),
-                    onSubmitted: (_) {
-                      if (canAdd && !busy) onAdd();
-                    },
-                    decoration: InputDecoration(
-                      labelText: l10n.repo_url,
-                      border: const OutlineInputBorder(),
-                      errorText: repoError,
-                      errorMaxLines: 8,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.tonal(
-                    onPressed: canAdd && !busy ? onAdd : null,
-                    child: Text(
-                      l10n.onboarding_add,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  if (addedName != null) ...[
-                    const SizedBox(height: 16),
-                    Semantics(
-                      liveRegion: true,
-                      child: Text('${l10n.repo_added}\n$addedName'),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
+        NodeLaneRow.card(
+          title: l.bookshelf_browse_sources,
+          subtitle: l.onboarding_browse_hint,
+          icon: icons.navigation,
+          enabled: !busy,
+          onTap: onBrowse,
         ),
-        MobileSettingsGroup(
-          title: l10n.local_folder,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.onboarding_local_any_type,
-                    style: TextStyle(color: colors.muted),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: busy ? null : onAddFolder,
-                    icon: const Icon(Icons.folder_open_rounded),
-                    label: Text(
-                      l10n.onboarding_local_folder,
-                      textAlign: TextAlign.center,
+        const SizedBox(height: NodeLaneTokens.space16),
+        if (folderStatus == null)
+          NodeLaneRow.card(
+            title: l.onboarding_import_folder,
+            subtitle: l.onboarding_import_folder_hint,
+            icon: icons.folderOutline,
+            enabled: !busy,
+            onTap: onAddFolder,
+          )
+        else
+          NodeLaneDisclosure(
+            key: const ValueKey('onboarding-local'),
+            title: l.onboarding_import_folder,
+            subtitle: l.onboarding_import_folder_hint,
+            icon: icons.folderOutline,
+            minHeight: NodeLaneTokens.catalogRowHeight,
+            initiallyExpanded: true,
+            child: folderStatus!,
+          ),
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneDisclosure(
+          key: const ValueKey('onboarding-repository'),
+          title: l.onboarding_third_party,
+          subtitle: l.onboarding_third_party_hint,
+          icon: icons.webLink,
+          minHeight: NodeLaneTokens.catalogRowHeight,
+          initiallyExpanded:
+              urlController.text.isNotEmpty ||
+              repoError != null ||
+              addedName != null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: NodeLaneTokens.groupPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      l.onboarding_repository_hint,
+                      style: t.readerSecondary,
                     ),
-                  ),
-                  if (folderStatus != null) ...[
-                    const SizedBox(height: 16),
-                    folderStatus!,
-                  ],
-                  if (onRemoveFolder != null) ...[
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: busy ? null : onRemoveFolder,
-                      child: Text(
-                        l10n.onboarding_local_remove,
-                        textAlign: TextAlign.center,
+                    if (libraries.length > 1) ...[
+                      const SizedBox(height: NodeLaneTokens.space12),
+                      NodeLaneSegments<ItemType>(
+                        value: repoType,
+                        segments: [
+                          for (final type in _mediaOrder.where(
+                            libraries.contains,
+                          ))
+                            ButtonSegment(
+                              value: type,
+                              label: Text(_label(context, type)),
+                            ),
+                        ],
+                        onChanged: busy ? null : onRepoType,
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+              const NodeLaneGroupDivider(),
+              NodeLaneTextField(
+                controller: urlController,
+                label: l.onboarding_repository_address,
+                hint: l.onboarding_repository_address_hint,
+                inGroup: true,
+                enabled: !busy,
+                autocorrect: false,
+                enableSuggestions: false,
+                keyboardType: TextInputType.url,
+                textInputAction: TextInputAction.done,
+                onChanged: (_) => onUrlChanged(),
+                onSubmitted: (_) {
+                  if (canAdd && !busy) onAdd();
+                },
+              ),
+              const NodeLaneGroupDivider(),
+              Padding(
+                padding: NodeLaneTokens.groupPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (repoError != null) ...[
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          repoError!,
+                          style: t.readerSecondary.copyWith(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: NodeLaneTokens.space12),
+                    ],
+                    NodeLaneSecondaryButton(
+                      onPressed: canAdd && !busy ? onAdd : null,
+                      child: Text(l.onboarding_add_repository),
+                    ),
+                    if (addedName != null) ...[
+                      const SizedBox(height: NodeLaneTokens.space12),
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          '${l.repo_added}\n$addedName',
+                          style: t.readerSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

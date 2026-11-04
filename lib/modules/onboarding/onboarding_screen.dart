@@ -16,7 +16,6 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
-import 'package:mangayomi/modules/widgets/tv_pill.dart';
 import 'package:mangayomi/utils/local_directory_access.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
@@ -36,32 +35,10 @@ const _libraryRoutes = {
   ItemType.novel: '/NovelLibrary',
 };
 
-/// Shown once, on the first launch of a fresh install.
-///
-/// A new install opens on an empty library, an empty Browse, and a nav bar
-/// carrying three libraries the user may well not want. Nothing says that
-/// Mangayomi ships with no sources of its own and that supplying them is the
-/// first job. This asks which libraries and content they want, applies the
-/// answers, and leaves
-/// the user on Browse with a repository already added, which is where the
-/// extensions it holds are waiting to be installed.
-///
-/// Phones choose libraries and content in two steps. Narrow desktop layouts
-/// also offer the legacy navigation arrangement when several libraries are
-/// selected; the phone shell already groups them under Library.
-///
-/// No repository is suggested or shipped. The field starts empty and every step
-/// can be left without answering.
-///
-/// ## On a TV
-///
-/// The same decisions, laid out for a remote instead of a thumb. Typing a
-/// repository URL on a d-pad is genuinely unpleasant, so the TV build says out
-/// loud that this can be done later from Settings, and Skip is a first-class
-/// way off the screen rather than a consolation. The field takes focus on
-/// arrival so the first press of OK opens the keyboard, and every choice is a
-/// row of [TvPill]s, because a SegmentedButton's internals are not reliably
-/// reachable with a d-pad.
+/// First-run and replayable setup. Phones choose content, then browse the
+/// existing catalogue, import a folder or add a third-party repository.
+/// Desktop keeps its navigation arrangement; TV keeps remote-friendly controls.
+/// The owner manages preferences and work, while mobile widgets render state.
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
@@ -519,14 +496,9 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     }
   }
 
-  /// Leaves on the extensions list for the library the repository stocks,
-  /// which is where the extensions it provides are waiting to be installed.
-  /// That is the next thing to do, so there is no reason to make the user go
-  /// and find it.
-  ///
-  /// Only when a repository was actually added. Somebody who skipped has
-  /// nothing to install and is better off in their library.
-  void _finish() {
+  /// An explicit destination wins over the repository's next installation step.
+  /// Skipping without content simply closes setup on the existing route.
+  void _finish({BrowseTab? browseTarget, bool openLibrary = false}) {
     if (_busy) return;
     setState(() {
       _finishing = true;
@@ -538,18 +510,21 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       // dropping that library, would otherwise land them on an extensions list
       // with nothing in it.
       final landing = _addedFor;
-      if (landing == null || !_libraries.contains(landing)) {
+      final target =
+          browseTarget ??
+          (landing != null && _libraries.contains(landing)
+              ? BrowseTab(landing, BrowseTabKind.extensions)
+              : null);
+      if (target != null) {
+        ref.read(browseInitialTabProvider.notifier).request(target);
+        ref.read(routerProvider).go('/browse');
+      } else if (openLibrary) {
+        ref.read(routerProvider).go(_libraryRoutes[_chosen.first]!);
+      } else {
         _complete();
         return;
       }
-      ref
-          .read(browseInitialTabProvider.notifier)
-          .request(BrowseTab(landing, BrowseTabKind.extensions));
-      ref.read(routerProvider).go('/browse');
-      // Let Browse build behind this screen before fading to it. Navigating and
-      // finishing in the same frame meant the fade ran over the frame the branch
-      // was still being created in, tab controllers, permission check and all,
-      // which is what made the end of the flow the roughest part of it.
+      // Let the router accept the destination before dismissing setup.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _complete();
@@ -583,17 +558,22 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
 
     if (_mobile) {
       final first = _step == _Step.libraries;
+      final hasRepository = _addedFor != null && _libraries.contains(_addedFor);
+      final openLibrary =
+          !first && !hasRepository && _existingFolders.isNotEmpty;
       return MobileOnboardingFrame(
         step: first ? 1 : 2,
-        title: first
-            ? l10n.onboarding_nav_title
-            : l10n.onboarding_content_title,
+        title: first ? l10n.app_name : l10n.onboarding_content_title,
         description: first
             ? l10n.onboarding_mobile_libraries_body
             : l10n.onboarding_mobile_sources_body,
         busy: _busy,
-        leaveLabel: _leaveLabel(l10n),
-        onLeave: _finish,
+        leaveLabel: first
+            ? l10n.onboarding_skip
+            : openLibrary
+            ? l10n.onboarding_open_library
+            : l10n.onboarding_start,
+        onLeave: () => _finish(openLibrary: openLibrary),
         onBack: first ? null : _back,
         onNext: first ? _next : null,
         error: _actionError,
@@ -617,8 +597,10 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
                 addedName: _added == null
                     ? null
                     : _added!.name ?? _added!.jsonUrl ?? '',
+                onBrowse: () => _finish(
+                  browseTarget: BrowseTab(_chosen.first, BrowseTabKind.sources),
+                ),
                 onAddFolder: _addLocalFolder,
-                onRemoveFolder: _addedLocalFolder ? _removeLocalFolder : null,
                 folderStatus: _mobileFolderStatus(l10n),
               ),
       );
@@ -962,6 +944,9 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         message: _folderError!,
         path: _addedFolderPath,
         warn: true,
+        onAddFolder: _addLocalFolder,
+        onRemoveFolder: _addedLocalFolder ? _removeLocalFolder : null,
+        actionsEnabled: !_busy,
       );
     }
     if (_addedLocalFolder) {
@@ -978,6 +963,9 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         path: _addedFolderPath,
         titles: _foundTitleNames,
         busy: _scanningFolder || _pickingFolder,
+        onAddFolder: _addLocalFolder,
+        onRemoveFolder: _removeLocalFolder,
+        actionsEnabled: !_busy,
         warn:
             !_scanningFolder &&
             !_pickingFolder &&
@@ -988,6 +976,8 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     return OnboardingFolderStatus(
       mobile: true,
       message: l10n.onboarding_local_existing('${_existingFolders.length}'),
+      onAddFolder: _addLocalFolder,
+      actionsEnabled: !_busy,
       titles: _existingFolders
           .map((f) => f.name ?? '')
           .where((name) => name.isNotEmpty)

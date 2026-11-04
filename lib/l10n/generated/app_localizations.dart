@@ -6963,19 +6963,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding_mobile_libraries_body.
   ///
   /// In en, this message translates to:
-  /// **'Choose at least one type of content. Switch types at the top of Library. You can change this later in Settings.'**
+  /// **'Choose what to read. You can change this later.'**
   String get onboarding_mobile_libraries_body;
 
   /// No description provided for @onboarding_content_title.
   ///
   /// In en, this message translates to:
-  /// **'Add reading content'**
+  /// **'Start reading'**
   String get onboarding_content_title;
 
   /// No description provided for @onboarding_mobile_sources_body.
   ///
   /// In en, this message translates to:
-  /// **'Add an extension repository or a folder of your own files. You can also skip this and add them later.'**
+  /// **'Choose a way to start, or add content later.'**
   String get onboarding_mobile_sources_body;
 
   /// No description provided for @onboarding_step_count.
@@ -8159,6 +8159,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Download settings'**
   String get settings_downloads;
+
+  /// No description provided for @onboarding_welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to'**
+  String get onboarding_welcome;
+
+  /// No description provided for @onboarding_reading_content.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading content'**
+  String get onboarding_reading_content;
+
+  /// No description provided for @onboarding_choose_one.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one'**
+  String get onboarding_choose_one;
+
+  /// No description provided for @onboarding_restore_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore your library from a backup'**
+  String get onboarding_restore_hint;
+
+  /// No description provided for @onboarding_browse_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find titles on supported websites'**
+  String get onboarding_browse_hint;
+
+  /// No description provided for @onboarding_import_folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a local folder'**
+  String get onboarding_import_folder;
+
+  /// No description provided for @onboarding_import_folder_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Read manga, novels and anime on your device'**
+  String get onboarding_import_folder_hint;
+
+  /// No description provided for @onboarding_third_party.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a third-party repository'**
+  String get onboarding_third_party;
+
+  /// No description provided for @onboarding_third_party_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a repository address you already have'**
+  String get onboarding_third_party_hint;
+
+  /// No description provided for @onboarding_repository_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the address provided by the repository.'**
+  String get onboarding_repository_hint;
+
+  /// No description provided for @onboarding_repository_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get onboarding_repository_address;
+
+  /// No description provided for @onboarding_repository_address_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter repository address'**
+  String get onboarding_repository_address_hint;
+
+  /// No description provided for @onboarding_add_repository.
+  ///
+  /// In en, this message translates to:
+  /// **'Add repository'**
+  String get onboarding_add_repository;
+
+  /// No description provided for @onboarding_start.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboarding_start;
+
+  /// No description provided for @onboarding_open_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Open library'**
+  String get onboarding_open_library;
+
+  /// No description provided for @onboarding_view_imports.
+  ///
+  /// In en, this message translates to:
+  /// **'View imported content'**
+  String get onboarding_view_imports;
+
+  /// No description provided for @onboarding_view_folders.
+  ///
+  /// In en, this message translates to:
+  /// **'View folders'**
+  String get onboarding_view_folders;
 }
 
 class _AppLocalizationsDelegate

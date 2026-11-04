@@ -134,7 +134,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.go(_defaultLocation);
+        // The router already chooses the launch destination. When setup closes
+        // this shell mounts again, so an unconditional redirect loses the
+        // explicit source/library destination selected during onboarding.
+        final location = GoRouter.of(context)
+            .routeInformationProvider
+            .value
+            .uri
+            .path;
+        if (hiddenItems.contains(location) ||
+            (ref.read(animeOnlyTvModeProvider) &&
+                !_isNotHiddenLibOnTv(location))) {
+          context.go(_defaultLocation);
+        }
         _initializeTimers();
         _initializeProviders();
       }

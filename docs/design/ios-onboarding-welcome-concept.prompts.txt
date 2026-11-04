@@ -1,0 +1,50 @@
+Mode: built-in image_gen (ui-mockup)
+Status: design proposal only; not yet implemented.
+Output: docs/design/ios-onboarding-welcome-concept.png
+Reference 1 (board style and composition): docs/design/ios-about-update-v2.png
+Reference 2 (existing artwork): assets/brand/app-mark.png
+The four phones describe two steps and two alternate states of step 2.
+
+Use case: ui-mockup
+Asset type: high-fidelity NodeLane iOS welcome/onboarding design board for an existing Flutter mobile app.
+
+Edit target: image 1, the four-phone NodeLane About/update board. Replace only the board title, captions and ALL in-phone content with the welcome flow specified below, preserving the exact visual language, four equally sized upright black iPhones, full safe areas, scale, fine typography, surface hierarchy, spacing and restrained colors. Image 2 is the exact existing NodeLane brand mark to insert; preserve its blue N speech bubble, dark outline and pink folded corner, do not invent a new logo. This is an onboarding redesign, not an About page.
+
+Output: one polished landscape board with FOUR fully visible phones in one row. Board heading “NodeLane漫译 · 欢迎与开始”. Below the four phones use captions “01 欢迎与内容选择”, “02 开始阅读”, “03 第三方来源展开”, “04 本地导入结果”. Tiny board footer “两步引导 · 统一令牌 · 示例内容”. Phones 2, 3, 4 are different states of STEP 2, NOT extra steps. No tab bar on onboarding, no extra intro page, no sign-in gate, no paywall, no cloud catalogue claims, no device permissions or fake system dialogs.
+
+EXACT PROJECT TOKENS: logical phone viewport390×844. Light canvas #F5F6FA, white #FFFFFF grouped surfaces, ink #171A21, muted text #697180, divider #E7EAF0, primary blue #006EFF. Page horizontal gutters20pt, group padding16pt, section gap24pt, element gaps4/8/12/16/20/24pt. Group radius18pt; iOS buttons capsule radius24; circular glass back/more buttons44pt touch area. Main app name26pt semibold/bold, section headline26pt, card title17pt medium, secondary14pt regular, small step indicator14pt muted, button label15pt. Row height56pt, two-line card row72pt, outline SF Symbols-style icons24pt, trailing chevrons20pt, 44pt minimum action areas. Use a very subtle local glass treatment for circular back/more controls and the floating bottom action area; grouped content remains crisp white. No heavy borders, no bright colored icon tiles, no large gradient or decorative illustration. Match the existing board's calm restrained neutral style.
+
+PHONE1 — STEP1:
+Top status bar9:41, dynamic island. Small centered “1 / 2” in the upper navigation area, not a big heading. Centered exact NodeLane brand mark80pt below it. Gap16, muted14 “欢迎使用”, gap8, bold26 “NodeLane漫译”. Gap12, muted14 centered “选择阅读内容，之后也可调整。”
+Then section label “阅读内容” on the left and small muted “至少选择一种” on the right.
+ONE white rounded group containing three equal56pt selectable rows, separated by thin inset dividers: outline open-book icon + “漫画”, outline text-page icon + “小说”, outline play-circle icon + “动画”. All three are selected: blue circled checkmarks at far right, black title text, white background. Each whole row is tappable; do not add switches or segmented controls here.
+Gap16, ONE matching two-line white action card: restore-history outline icon, “恢复备份”, muted subtitle “从已有备份恢复书库”, trailing chevron.
+At the bottom safe area: one full-width blue capsule44pt high “继续”, below it unobtrusive blue text action “暂时跳过”, plenty of safe-area spacing but no giant footer block. Do not repeat Skip at the top.
+
+PHONE2 — STEP2 default:
+Circular back at top left, small centered “2 / 2”.
+Left aligned headline26 “开始阅读”, gap8 muted14 “选择一种方式，也可以稍后添加。”
+Gap24, THREE simple white rounded action cards with16pt gaps; same geometry and baseline as the reference About rows:
+1. outline compass/globe icon24, title “浏览来源”, secondary “从支持的网站找到作品”, trailing chevron. This leads into the app's EXISTING source catalogue, do not say official cloud, no invented websites.
+2. outline folder icon24, title “导入本地文件夹”, secondary “读取设备中的漫画、小说和动画”, trailing chevron. This invokes the existing system folder chooser.
+3. outline chain-link icon24, title “添加第三方来源库”, secondary “已有来源库地址时使用”, down-chevron to reveal optional details inline.
+No URL field exposed in this default view. No fake ready-state numbers, no feature carousel. One blue full-width capsule44pt “开始使用” anchored above bottom safe area. No duplicate skip button on this step: this action allows finishing without importing anything.
+
+PHONE3 — SAME STEP2 with third-party card expanded:
+Same circular back, “2 / 2”, title “开始阅读”, same subtitle. Keep the first two action cards in the exact same order and geometry, with the third card expanded in place and an UP-chevron. All content must fit naturally or be scrollable above the fixed footer, never covered by it.
+Inside third-party card, use the SAME shared form design as existing app:
+- Brief muted14 helper “输入来源库提供的地址。”
+- Three-way shared capsule segmented control height40pt with “漫画” selected blue, “小说”, “动画” neutral. These identify which media type the existing repository belongs to.
+- SINGLE-LAYER named form row minimum56pt: left label “地址”17pt, right placeholder “输入来源库地址”16pt muted, separated only by horizontal spacing, same white surface. NO floating label, NO nested rounded textbox, NO boxed field inside another boxed field, no redundant description repeating the label. Use a thin inset divider to separate neighboring content. 
+- Secondary rounded button44pt “添加来源库” in neutral DISABLED gray because the address is empty. Do not depict submission enabled for an empty URL.
+Bottom safe area retains the ONE blue “开始使用” capsule, no keyboard shown in this board. Labels are readable and do not crowd the field.
+
+PHONE4 — SAME STEP2 after local folder scan:
+Same top and title as Phone2.
+“浏览来源” card stays first and unchanged.
+Local folder card now expands to show a result: outlined folder icon, title “我的漫画”, muted subtitle “找到 3 部作品”, small blue check and a circular quiet ellipsis menu on right (menu is for infrequent actions like removing the folder). Below a thin divider, an optional disclosure row “查看导入内容” with a downward chevron, collapsed; do not invent covers or a full thumbnail grid. Keep the result compact.
+Third-party card remains collapsed and matches Phone2.
+Bottom blue capsule “进入书架”.
+The count and folder name are clearly design examples per board footer. No login, subscription, download or translation service actions added.
+
+Quality: actual shippable iOS UI mockups, aligned baselines and equal margins, consistent rounded corners, no perspective distortion or cropped phones, crisp readable Simplified Chinese exact text. Keep the brand name spelled exactly NodeLane漫译 (N and L capitals). The non-Chinese localized name is NodeLane Comics but do not redundantly print it on these Chinese screens. Do not copy any obsolete About, account, updater or bottom navigation content from image1.

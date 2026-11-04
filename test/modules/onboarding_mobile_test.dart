@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
@@ -92,6 +93,8 @@ void main() {
       delta,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.ensureVisible(finder);
+    await Scrollable.ensureVisible(tester.element(finder), alignment: .5);
     await tester.pump(const Duration(milliseconds: 150));
   }
 
@@ -130,17 +133,17 @@ void main() {
         ),
       );
       for (final label in ['Anime', 'Novel']) {
-        final tile = find.widgetWithText(CheckboxListTile, label);
+        final tile = find.widgetWithText(NodeLaneRow, label);
         await reveal(tester, tile);
         await tester.tap(tile);
         await tester.pumpAndSettle();
       }
-      final manga = find.widgetWithText(CheckboxListTile, 'Manga');
-      expect(tester.widget<CheckboxListTile>(manga).onChanged, isNull);
+      final manga = find.widgetWithText(NodeLaneRow, 'Manga');
+      expect(tester.widget<NodeLaneRow>(manga).enabled, isFalse);
       expect(selected, {ItemType.manga});
-      final restore = find.widgetWithText(OutlinedButton, 'Restore a backup');
+      final restore = find.widgetWithText(NodeLaneRow, 'Restore a backup');
       await reveal(tester, restore);
-      final nextButton = find.widgetWithText(FilledButton, 'Next');
+      final nextButton = find.widgetWithText(FilledButton, 'Continue');
       final skip = find.widgetWithText(TextButton, 'Skip for now');
       expect(nextButton.hitTestable(), findsOneWidget);
       expect(tester.getRect(skip).bottom, lessThanOrEqualTo(706));
@@ -164,7 +167,12 @@ void main() {
       final controller = TextEditingController();
       addTearDown(controller.dispose);
       var type = ItemType.anime;
-      var busy = false, backs = 0, skips = 0, folders = 0, removes = 0;
+      var busy = false,
+          backs = 0,
+          skips = 0,
+          folders = 0,
+          removes = 0,
+          browses = 0;
       String? error;
       final submissions = <(ItemType, String)>[];
       late StateSetter update;
@@ -175,7 +183,7 @@ void main() {
             update = setState;
             return MobileOnboardingFrame(
               step: 2,
-              title: 'Add reading content',
+              title: 'Start reading',
               description: 'You can also add content later.',
               busy: busy,
               leaveLabel: 'Skip for now',
@@ -194,10 +202,13 @@ void main() {
                 },
                 busy: busy,
                 repoError: error,
+                onBrowse: () => browses++,
                 onAddFolder: () => folders++,
-                onRemoveFolder: () => removes++,
                 folderStatus: OnboardingFolderStatus(
                   mobile: true,
+                  onAddFolder: () => folders++,
+                  onRemoveFolder: () => removes++,
+                  actionsEnabled: !busy,
                   message: '42 titles found',
                   path: '/sample/folder/with-a-long-name/Comics',
                   titles: List.generate(
@@ -211,6 +222,17 @@ void main() {
         ),
         inset: 260,
       );
+      final browse = find.widgetWithText(NodeLaneRow, 'Browse sources');
+      await reveal(tester, browse);
+      await tester.tap(browse);
+      expect(browses, 1);
+      final repository = find.widgetWithText(
+        NodeLaneRow,
+        'Add a third-party repository',
+      );
+      await reveal(tester, repository);
+      await tester.tap(repository);
+      await tester.pumpAndSettle();
       final field = find.byType(TextField);
       await reveal(tester, field);
       await tester.enterText(field, '  $_url  ');
@@ -221,8 +243,9 @@ void main() {
       await tester.pump();
       expect(submissions, [(ItemType.anime, '  $_url  ')]);
       expect(tester.widget<TextField>(field).enabled, isFalse);
+      expect(tester.widget<NodeLaneRow>(browse).enabled, isFalse);
       final back = find.byWidgetPredicate(
-        (w) => w is IconButton && w.tooltip == 'Go back',
+        (w) => w is IconButton && w.tooltip == 'Back',
       );
       expect(tester.widget<IconButton>(back).onPressed, isNull);
       final leave = find.widgetWithText(FilledButton, 'Skip for now');
@@ -234,14 +257,26 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(controller.text, '  $_url  ');
-      await reveal(tester, find.text('Preview items'));
-      await tester.tap(find.text('Preview items'));
+      // Closing a disclosure unmounts the form, but the owner keeps its draft.
+      await reveal(tester, repository, delta: -180);
+      await tester.tap(repository);
+      await tester.pumpAndSettle();
+      expect(field, findsNothing);
+      await tester.tap(repository);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(field).controller!.text, '  $_url  ');
+      expect(find.text('Could not read repository.'), findsOneWidget);
+      await reveal(tester, find.text('View imported content'), delta: -180);
+      await tester.tap(find.text('View imported content'));
       await tester.pumpAndSettle();
       expect(find.text('Sample title 40 with a long name'), findsOneWidget);
       expect(find.text('Sample title 41 with a long name'), findsNothing);
-      final remove = find.widgetWithText(TextButton, 'Remove that folder');
-      await reveal(tester, remove, delta: 600);
-      await tester.tap(remove);
+      final menu = find.byTooltip('More');
+      await reveal(tester, menu, delta: -180);
+      await tester.tap(menu);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Remove that folder'));
+      await tester.pumpAndSettle();
       expect(removes, 1);
       expect(leave.hitTestable(), findsOneWidget);
       await tester.tap(leave);

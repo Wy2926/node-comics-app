@@ -3932,14 +3932,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get onboarding_mobile_libraries_body =>
-      'Choose at least one type of content. Switch types at the top of Library. You can change this later in Settings.';
+      'Choose what to read. You can change this later.';
 
   @override
-  String get onboarding_content_title => 'Add reading content';
+  String get onboarding_content_title => 'Start reading';
 
   @override
   String get onboarding_mobile_sources_body =>
-      'Add an extension repository or a folder of your own files. You can also skip this and add them later.';
+      'Choose a way to start, or add content later.';
 
   @override
   String onboarding_step_count(int step, int total) {
@@ -4670,4 +4670,58 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settings_downloads => 'Download settings';
+
+  @override
+  String get onboarding_welcome => 'Welcome to';
+
+  @override
+  String get onboarding_reading_content => 'Reading content';
+
+  @override
+  String get onboarding_choose_one => 'Choose at least one';
+
+  @override
+  String get onboarding_restore_hint => 'Restore your library from a backup';
+
+  @override
+  String get onboarding_browse_hint => 'Find titles on supported websites';
+
+  @override
+  String get onboarding_import_folder => 'Import a local folder';
+
+  @override
+  String get onboarding_import_folder_hint =>
+      'Read manga, novels and anime on your device';
+
+  @override
+  String get onboarding_third_party => 'Add a third-party repository';
+
+  @override
+  String get onboarding_third_party_hint =>
+      'Use a repository address you already have';
+
+  @override
+  String get onboarding_repository_hint =>
+      'Enter the address provided by the repository.';
+
+  @override
+  String get onboarding_repository_address => 'Address';
+
+  @override
+  String get onboarding_repository_address_hint => 'Enter repository address';
+
+  @override
+  String get onboarding_add_repository => 'Add repository';
+
+  @override
+  String get onboarding_start => 'Get started';
+
+  @override
+  String get onboarding_open_library => 'Open library';
+
+  @override
+  String get onboarding_view_imports => 'View imported content';
+
+  @override
+  String get onboarding_view_folders => 'View folders';
 }

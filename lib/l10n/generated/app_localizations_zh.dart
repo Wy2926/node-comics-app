@@ -3731,14 +3731,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get preparing_installation => '正在准备安装…';
 
   @override
-  String get onboarding_mobile_libraries_body =>
-      '至少选择一种内容，在书架顶部切换类型。之后可在设置中调整。';
+  String get onboarding_mobile_libraries_body => '选择阅读内容，之后也可调整。';
 
   @override
-  String get onboarding_content_title => '添加阅读内容';
+  String get onboarding_content_title => '开始阅读';
 
   @override
-  String get onboarding_mobile_sources_body => '添加扩展库或自己的本地文件夹，也可以跳过，稍后再添加。';
+  String get onboarding_mobile_sources_body => '选择一种方式，也可以稍后添加。';
 
   @override
   String onboarding_step_count(int step, int total) {
@@ -4405,4 +4404,55 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settings_downloads => '下载设置';
+
+  @override
+  String get onboarding_welcome => '欢迎使用';
+
+  @override
+  String get onboarding_reading_content => '阅读内容';
+
+  @override
+  String get onboarding_choose_one => '至少选择一种';
+
+  @override
+  String get onboarding_restore_hint => '从已有备份恢复书库';
+
+  @override
+  String get onboarding_browse_hint => '从支持的网站找到作品';
+
+  @override
+  String get onboarding_import_folder => '导入本地文件夹';
+
+  @override
+  String get onboarding_import_folder_hint => '读取设备中的漫画、小说和动画';
+
+  @override
+  String get onboarding_third_party => '添加第三方来源库';
+
+  @override
+  String get onboarding_third_party_hint => '已有来源库地址时使用';
+
+  @override
+  String get onboarding_repository_hint => '输入来源库提供的地址。';
+
+  @override
+  String get onboarding_repository_address => '地址';
+
+  @override
+  String get onboarding_repository_address_hint => '输入来源库地址';
+
+  @override
+  String get onboarding_add_repository => '添加来源库';
+
+  @override
+  String get onboarding_start => '开始使用';
+
+  @override
+  String get onboarding_open_library => '进入书架';
+
+  @override
+  String get onboarding_view_imports => '查看导入内容';
+
+  @override
+  String get onboarding_view_folders => '查看文件夹';
 }

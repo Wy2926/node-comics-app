@@ -359,10 +359,8 @@ class _MyAppState extends ConsumerState<MyApp>
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, child) {
         Widget content = child ?? const SizedBox.shrink();
-        // First launch of a fresh install: the app has no sources of its own,
-        // so say so before dropping the user into an empty Browse. Gating here
-        // rather than in the router keeps the TV shortcuts, the UI scale and
-        // the toast host below wrapping it exactly as they wrap everything else.
+        // First-run setup uses the same UI scale, shortcuts and toast host as
+        // the app. The router retains the destination chosen during setup.
         // Fading rather than swapping. The first run used to vanish in a
         // single frame onto whatever the router had underneath it, which is
         // also the frame the browse branch is still building in, so the end of
