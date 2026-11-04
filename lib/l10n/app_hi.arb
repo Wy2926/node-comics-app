@@ -363,7 +363,6 @@
   "skip_ending": "एंडिंग स्किप करें",
   "fullscreen": "पूर्ण स्क्रीन",
   "update_library": "लाइब्रेरी अपडेट करें",
-  "updating_library": "लाइब्रेरी अपडेट हो रही है ({cur} / {max}) - विफल: {failed}",
   "next_chapter": "अगला अध्याय",
   "next_5_chapters": "अगले 5 अध्याय",
   "next_10_chapters": "अगले 10 अध्याय",

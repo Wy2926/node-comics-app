@@ -1,10 +1,10 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
@@ -209,7 +209,10 @@ class _CreateExtensionState extends State<CreateExtension> {
             ..typeSource = _sourceTypeValues[_sourceTypeIndex];
           sourceRepository.save(source);
           Navigator.pop(context, source);
-          botToast("Source updated successfully");
+          showNodeLaneNotice(
+            "Source updated successfully",
+            kind: NodeLaneNoticeKind.success,
+          );
           return;
         }
         final id = _sourceCodeLanguage == SourceCodeLanguage.dart
@@ -239,12 +242,15 @@ class _CreateExtensionState extends State<CreateExtension> {
                 : _jsSample(source);
           sourceRepository.save(source);
           Navigator.pop(context);
-          botToast(l10n.source_created_successfully);
+          showNodeLaneNotice(
+            l10n.source_created_successfully,
+            kind: NodeLaneNoticeKind.success,
+          );
         } else {
-          botToast(l10n.source_already_exists);
+          showNodeLaneNotice(l10n.source_already_exists);
         }
       } catch (e) {
-        botToast(
+        showNodeLaneNotice(
           _isEditMode
               ? "Error when updating source"
               : l10n.error_when_creating_source,

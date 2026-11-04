@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:archive/archive.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_account_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -50,8 +51,7 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
       await operation();
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.failed)));
+        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -110,12 +110,11 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
     if (service.busy) return;
     await service.clearResults();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          service.error ?? context.l10n.settings_translation_cache_done,
-        ),
-      ),
+    showNodeLaneNotice(
+      service.error ?? context.l10n.settings_translation_cache_done,
+      kind: service.error == null
+          ? NodeLaneNoticeKind.success
+          : NodeLaneNoticeKind.error,
     );
   }
 

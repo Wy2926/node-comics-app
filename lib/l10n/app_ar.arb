@@ -297,7 +297,6 @@
   "aniskip_button_timeout": "مهلة زر",
   "fullscreen": "شاشة كاملة",
   "update_library": "تحديث المكتبة",
-  "updating_library": "جاري تحديث المكتبة ({max} / {cur}) - فشل: {failed}",
   "next_chapter": "الفصل التالي",
   "next_5_chapters": "الفصول الخمسة التالية",
   "next_10_chapters": "الفصول العشرة التالية",

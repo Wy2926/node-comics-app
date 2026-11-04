@@ -1,7 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/repositories/sync_preference_repository.dart';
 import 'package:mangayomi/modules/more/settings/appearance/appearance_screen.dart'
     show SettingsSection;
@@ -224,7 +224,9 @@ class SyncScreen extends ConsumerWidget {
                               'Could not launch $serverUrl',
                               logLevel: LogLevel.error,
                             );
-                            botToast(l10n.could_not_launch_url(serverUrl));
+                            showNodeLaneNotice(
+                              l10n.could_not_launch_url(serverUrl),
+                            );
                           }
                         },
                         label: Text(l10n.get_sync_server),

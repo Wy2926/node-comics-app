@@ -110,7 +110,10 @@ extension UChapDataPreloadExtensions on UChapDataPreload {
       return findDownloadedPageFile(directory!, index!)?.path;
     }
     if (pageUrl != null) {
-      final cachedImage = await _getCachedImageFile(pageUrl!.url);
+      final cachedImage = await _getCachedImageFile(
+        pageUrl!.url,
+        cacheKey: pageUrl!.imageProcessing?.cacheKey(pageUrl!.url.trim()),
+      );
       if (cachedImage != null) {
         return cachedImage.path;
       }
@@ -130,10 +133,16 @@ extension UChapDataPreloadExtensions on UChapDataPreload {
     } else {
       File? cachedImage;
       if (pageUrl != null) {
-        cachedImage = await _getCachedImageFile(pageUrl!.url);
+        cachedImage = await _getCachedImageFile(
+          pageUrl!.url,
+          cacheKey: pageUrl!.imageProcessing?.cacheKey(pageUrl!.url.trim()),
+        );
         if (cachedImage == null) {
           await Future.delayed(const Duration(seconds: 3));
-          cachedImage = await _getCachedImageFile(pageUrl!.url);
+          cachedImage = await _getCachedImageFile(
+            pageUrl!.url,
+            cacheKey: pageUrl!.imageProcessing?.cacheKey(pageUrl!.url.trim()),
+          );
         }
       }
       imageBytes = await cachedImage?.readAsBytes();
@@ -173,20 +182,23 @@ extension UChapDataPreloadExtensions on UChapDataPreload {
                 )
         : CustomExtendedNetworkImageProvider(
             data.pageUrl!.url.trim(),
+            imageProcessing: data.pageUrl!.imageProcessing,
             cache: true,
             cacheMaxAge: const Duration(days: 7),
             showCloudFlareError: showCloudFlareError,
             imageCacheFolderName: "cacheimagemanga",
             headers: {
-              ...data.pageUrl!.headers ?? {},
               if (ref.context.mounted)
-                ...ref.watch(
+                // Request headers are a snapshot. This factory also runs in
+                // initState, retries and preloading, outside widget build.
+                ...ref.read(
                   headersProvider(
                     source: data.chapter!.manga.value!.source!,
                     lang: data.chapter!.manga.value!.lang!,
                     sourceId: data.chapter!.manga.value!.sourceId,
                   ),
                 ),
+              ...data.pageUrl!.headers ?? {},
             },
           ) as ImageProvider<Object>;
   }

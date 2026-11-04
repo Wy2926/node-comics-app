@@ -77,9 +77,9 @@ void main() {
         final container = ProviderContainer(
           retry: (_, _) => null,
           overrides: [
-            temporaryCatalogRepositoryProvider(ItemType.manga)
+            nodeLaneCatalogRepositoryProvider(ItemType.manga)
                 .overrideWithValue(repo),
-            temporaryCatalogLoadProvider(ItemType.manga)
+            nodeLaneCatalogLoadProvider(ItemType.manga)
                 .overrideWith((ref) async {}),
             fetchItemSourcesListProvider(
               reFresh: false,

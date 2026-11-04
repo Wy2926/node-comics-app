@@ -1,10 +1,13 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
+import 'package:mangayomi/services/translation/translation_service.dart';
 
 void main() {
   Future<void> mount(
@@ -17,16 +20,27 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
-      MaterialApp(
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(2),
-            padding: const EdgeInsets.only(top: 24, bottom: 24),
-            viewPadding: const EdgeInsets.only(top: 24, bottom: 24),
+      ProviderScope(
+        overrides: [
+          translationServiceProvider.overrideWith((ref) {
+            final service = _TranslationService();
+            ref.onDispose(service.dispose);
+            return service;
+          }),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(2),
+              padding: const EdgeInsets.only(top: 24, bottom: 24),
+              viewPadding: const EdgeInsets.only(top: 24, bottom: 24),
+            ),
+            child: child!,
           ),
-          child: child!,
+          home: Scaffold(body: child),
         ),
-        home: Scaffold(body: child),
       ),
     );
   }
@@ -298,6 +312,11 @@ void main() {
     expect(runtime.actions, [TranslationAction.verify]);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _TranslationService extends TranslationService {
+  @override
+  Future<void> initialize() async {}
 }
 
 class _ProgressRuntime extends Fake implements ChannelRuntime {

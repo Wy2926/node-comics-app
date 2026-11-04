@@ -1,7 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/modules/more/settings/track/myanimelist/model.dart';
 import 'package:mangayomi/modules/more/settings/track/providers/track_providers.dart';
 import 'package:mangayomi/utils/localized_message.dart';
@@ -54,7 +55,7 @@ mixin ExpiringOAuthTracker {
     final refreshed = await refreshOAuth(oAuth);
     if (refreshed == null) {
       widgetRef.read(tracksProvider(syncId: syncId).notifier).logout();
-      botToast(
+      showNodeLaneNotice(
         localizedMessage((l10n) => l10n.tracker_token_expired(trackerName)),
       );
       throw Exception("Token expired");

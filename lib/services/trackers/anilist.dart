@@ -1,7 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -484,7 +485,7 @@ class Anilist extends _$Anilist implements BaseTracker {
     final expiresIn = DateTime.fromMillisecondsSinceEpoch(mALOAuth.expiresIn!);
     if (DateTime.now().isAfter(expiresIn)) {
       widgetRef.read(tracksProvider(syncId: syncId).notifier).logout();
-      botToast(
+      showNodeLaneNotice(
         localizedMessage((l10n) => l10n.tracker_token_expired("Anilist")),
       );
       throw Exception("Token expired");

@@ -2,6 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,7 +21,7 @@ import 'package:url_launcher_platform_interface/url_launcher_platform_interface.
 final _package = PackageInfo(
   appName: 'NodeLane Preview',
   packageName: 'example.preview',
-  version: '0.9.9',
+  version: '0.1.0',
   buildNumber: '1',
 );
 const UpdateInfo _update = (
@@ -55,6 +56,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MaterialApp(
+        navigatorObservers: [BotToastNavigatorObserver()],
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -63,7 +65,7 @@ void main() {
             textScaler: TextScaler.linear(scale),
             padding: const EdgeInsets.only(top: 24, bottom: 34),
           ),
-          child: child!,
+          child: BotToastInit()(context, child),
         ),
         home: child,
       ),
@@ -107,7 +109,7 @@ void main() {
     onReports: onReports ?? () async {},
     onCheck: onCheck,
     updateBuilder: (update, onDismiss) => MobileAppUpdateView(
-      currentVersion: '0.9.9',
+      currentVersion: _package.version,
       targetVersion: update.$1,
       notes: update.$2,
       downloadOnDevice: false,
@@ -252,6 +254,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(retries, 1);
       expect(find.text('NodeLane Comics'), findsOneWidget);
+      expect(find.text('Version 0.1.0'), findsOneWidget);
       final auto = find.byType(NodeLaneSwitchRow).first;
       await reveal(tester, auto);
       await tester.tap(auto);
@@ -308,7 +311,7 @@ void main() {
             rebuild = setState;
             return Scaffold(
               body: MobileAppUpdateView(
-                currentVersion: '0.9.9',
+                currentVersion: _package.version,
                 targetVersion: '1.0.0',
                 notes: notes,
                 downloadOnDevice: android,
@@ -398,7 +401,7 @@ void main() {
       PackageInfo.setMockInitialValues(
         appName: 'Preview',
         packageName: 'example.preview',
-        version: '0.9.9',
+        version: _package.version,
         buildNumber: '1',
         buildSignature: '',
       );
@@ -465,7 +468,7 @@ void main() {
       PackageInfo.setMockInitialValues(
         appName: 'NodeLane Comics',
         packageName: 'example.preview',
-        version: '0.9.9',
+        version: _package.version,
         buildNumber: '1',
         buildSignature: '',
       );

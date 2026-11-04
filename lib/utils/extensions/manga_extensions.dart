@@ -170,9 +170,7 @@ extension MangaExtensions on Manga {
           if (s != 0) return s;
           final cmp = (sortKeys[a.id] ?? 0).compareTo(sortKeys[b.id] ?? 0);
           if (cmp != 0) return cmp;
-          return (originalIndex[a.id] ?? 0).compareTo(
-            originalIndex[b.id] ?? 0,
-          );
+          return (originalIndex[a.id] ?? 0).compareTo(originalIndex[b.id] ?? 0);
         });
         break;
       case 2: // by upload date
@@ -198,20 +196,29 @@ extension MangaExtensions on Manga {
     return reverse ? list : list.reversed.toList();
   }
 
-  /// Filtered chapters ready for sequential reading: same filters as
-  /// [getFilteredChapters] but with duplicate chapter numbers collapsed to a
-  /// single entry so the reader advances to the next story chapter rather than
-  /// another scanlator's copy of the same one. Chapters with no detectable
-  /// number (key is null — e.g. "Special") are never collapsed: there is no
-  /// reliable way to tell them apart, so treating them all as duplicates
-  /// would silently drop real chapters instead of just scanlator copies.
+  /// Preserve distinct URLs, including same-number parts with no group label.
+  /// Only collapse alternatives with different, explicit scanlator labels and
+  /// one entry per group; ambiguous same-group numbering retains every part.
   List<Chapter> getChapterListForReading() {
     final list = getFilteredChapters();
     final sortKeys = _chapterSortKeys(name ?? '', list);
+    final groups = <(double, String), int>{};
+    final ambiguous = <double>{};
+    for (final c in list) {
+      final key = sortKeys[c.id];
+      final group = c.scanlator?.trim() ?? '';
+      if (key == null) continue;
+      final count = groups.update(
+        (key, group),
+        (n) => n + 1,
+        ifAbsent: () => 1,
+      );
+      if (group.isEmpty || count > 1) ambiguous.add(key);
+    }
     final seen = <double>{};
     return list.where((c) {
       final key = sortKeys[c.id];
-      return key == null || seen.add(key);
+      return key == null || ambiguous.contains(key) || seen.add(key);
     }).toList();
   }
 

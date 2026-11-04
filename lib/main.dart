@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -14,7 +16,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:isar_community/isar.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/custom_button.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -554,7 +555,10 @@ class _MyAppState extends ConsumerState<MyApp>
                       ]);
 
                       if (!validUrls) {
-                        botToast(l10n.unsupported_repo);
+                        showNodeLaneNotice(
+                          l10n.unsupported_repo,
+                          kind: NodeLaneNoticeKind.error,
+                        );
                         return;
                       }
 
@@ -601,7 +605,10 @@ class _MyAppState extends ConsumerState<MyApp>
                         addRepos(ItemType.anime, animeRepoUrls),
                         addRepos(ItemType.novel, novelRepoUrls),
                       ]);
-                      botToast(l10n.repo_added);
+                      showNodeLaneNotice(
+                        l10n.repo_added,
+                        kind: NodeLaneNoticeKind.success,
+                      );
                     },
                   ),
                 ],
@@ -694,7 +701,10 @@ class _MyAppState extends ConsumerState<MyApp>
                               ..isFavourite = false
                               ..id = null,
                           );
-                          botToast(l10n.custom_buttons_added);
+                          showNodeLaneNotice(
+                            l10n.custom_buttons_added,
+                            kind: NodeLaneNoticeKind.success,
+                          );
                         },
                       ),
                     ],

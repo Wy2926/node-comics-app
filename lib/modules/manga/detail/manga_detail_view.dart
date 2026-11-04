@@ -1,8 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
@@ -95,7 +95,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final l10n = l10nLocalizations(context)!;
-      botToast(l10n.unrecognized_chapter_numbers(count), second: 5);
+      showNodeLaneNotice(l10n.unrecognized_chapter_numbers(count), seconds: 5);
     });
   }
 

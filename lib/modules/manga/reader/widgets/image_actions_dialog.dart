@@ -1,9 +1,10 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
@@ -190,6 +191,12 @@ class _ImageActionsSheet extends StatelessWidget {
     final file = File(p.join(dir.path, "$fileName$ext"));
     await file.writeAsBytes(imageBytes, flush: true);
 
-    if (context.mounted) botToast(context.l10n.picture_saved, second: 3);
+    if (context.mounted) {
+      showNodeLaneNotice(
+        context.l10n.picture_saved,
+        seconds: 3,
+        kind: NodeLaneNoticeKind.success,
+      );
+    }
   }
 }

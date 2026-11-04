@@ -32,6 +32,9 @@ class Source {
 
   String? sourceCodeUrl;
 
+  /// Versioned distribution metadata. Null for legacy third-party sources.
+  String? packageInfoJson;
+
   String? typeSource;
 
   String? iconUrl;
@@ -104,6 +107,7 @@ class Source {
     this.lastUsed = false,
     this.apiUrl = "",
     this.sourceCodeUrl = "",
+    this.packageInfoJson,
     this.version = "0.0.1",
     this.versionLast = "0.0.1",
     this.sourceCode = '',
@@ -151,6 +155,9 @@ class Source {
     name = json['name'];
     sourceCode = json['sourceCode'];
     sourceCodeUrl = json['sourceCodeUrl'];
+    packageInfoJson = json['nodelane'] == null
+        ? null
+        : jsonEncode(json['nodelane']);
     typeSource = json['typeSource'];
     version = json['version'];
     versionLast = json['versionLast'];
@@ -189,6 +196,7 @@ class Source {
     'name': name,
     'sourceCode': sourceCode,
     'sourceCodeUrl': sourceCodeUrl,
+    if (packageInfoJson != null) 'nodelane': jsonDecode(packageInfoJson!),
     'typeSource': typeSource,
     'version': version,
     'versionLast': versionLast,

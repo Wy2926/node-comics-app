@@ -1,8 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
@@ -365,7 +366,7 @@ class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
   }
 
   Future<void> _downloadSubtitle(int index) async {
-    botToast(context.l10n.started);
+    showNodeLaneNotice(context.l10n.started);
     try {
       final subtitle = subtitles![index];
       final storageProvider = StorageProvider();
@@ -407,13 +408,16 @@ class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
       AppLogger.log('Subtitle file downloaded: ${subtitle.language}');
       await subtitleFile.writeAsBytes(response.bodyBytes);
       if (mounted) {
-        botToast(context.l10n.finished(""));
+        showNodeLaneNotice(
+          context.l10n.finished(""),
+          kind: NodeLaneNoticeKind.success,
+        );
       }
     } catch (e) {
       AppLogger.log("Failed to download subtitle:", logLevel: LogLevel.error);
       AppLogger.log(e.toString(), logLevel: LogLevel.error);
       if (mounted) {
-        botToast(context.l10n.failed);
+        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
       }
     }
   }

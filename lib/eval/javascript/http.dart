@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:mangayomi/services/source_package.dart';
 
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:http_interceptor/http_interceptor.dart';
@@ -9,7 +12,8 @@ import 'package:http/http.dart' as http;
 
 class JsHttpClient {
   late JavascriptRuntime runtime;
-  JsHttpClient(this.runtime);
+  final SourcePackage? package;
+  JsHttpClient(this.runtime, {this.package});
 
   void init() {
     // MClient.init reads the settings row and builds a new interceptor stack;
@@ -23,29 +27,59 @@ class JsHttpClient {
         // Linux source catalogue requests otherwise carry no browser identity.
         // Keep other platforms unchanged and preserve any explicit source UA.
         () => MClient.init(
-          reqcopyWith: map,
+          reqcopyWith: package == null ? map : {...?map, 'useDartHttpClient': true, 'verifyCertificates': true},
           useDefaultUserAgent: Platform.isLinux,
         ),
       );
     }
 
     runtime.onMessage('http_head', (dynamic args) async {
-      return await _toHttpResponse(client(args[1]), "HEAD", args);
+      return await _toHttpResponse(
+        client(args[1]),
+        "HEAD",
+        args,
+        package: package,
+      );
     });
     runtime.onMessage('http_get', (dynamic args) async {
-      return await _toHttpResponse(client(args[1]), "GET", args);
+      return await _toHttpResponse(
+        client(args[1]),
+        "GET",
+        args,
+        package: package,
+      );
     });
     runtime.onMessage('http_post', (dynamic args) async {
-      return await _toHttpResponse(client(args[1]), "POST", args);
+      return await _toHttpResponse(
+        client(args[1]),
+        "POST",
+        args,
+        package: package,
+      );
     });
     runtime.onMessage('http_put', (dynamic args) async {
-      return await _toHttpResponse(client(args[1]), "PUT", args);
+      return await _toHttpResponse(
+        client(args[1]),
+        "PUT",
+        args,
+        package: package,
+      );
     });
     runtime.onMessage('http_delete', (dynamic args) async {
-      return await _toHttpResponse(client(args[1]), "DELETE", args);
+      return await _toHttpResponse(
+        client(args[1]),
+        "DELETE",
+        args,
+        package: package,
+      );
     });
     runtime.onMessage('http_patch', (dynamic args) async {
-      return await _toHttpResponse(client(args[1]), "PATCH", args);
+      return await _toHttpResponse(
+        client(args[1]),
+        "PATCH",
+        args,
+        package: package,
+      );
     });
     runtime.evaluate('''
 class Client {
@@ -105,7 +139,15 @@ class Client {
   }
 }
 
-Future<String> _toHttpResponse(Client client, String method, List args) async {
+Future<String> _toHttpResponse(
+  Client client,
+  String method,
+  List args, {
+  SourcePackage? package,
+}) async {
+  if (package != null) {
+    return _packageHttpResponse(client, method, args, package);
+  }
   final url = args[2] as String;
   final headers = (args[3] as Map?)?.toMapStringString;
   final body = args.length >= 5
@@ -146,4 +188,70 @@ Future<String> _toHttpResponse(Client client, String method, List args) async {
     _ => client.patch(Uri.parse(url), headers: headers, body: body),
   };
   return jsonEncode((await future).toJson());
+}
+
+// Official packages use bounded text requests and validate every redirect.
+// Site-specific parsing and verification challenges remain in the plugin/MClient.
+Future<String> _packageHttpResponse(
+  Client client,
+  String method,
+  List args,
+  SourcePackage package,
+) async {
+  var uri = Uri.parse(args[2] as String);
+  final headers = (args[3] as Map?)?.toMapStringString ?? {};
+  final body = args.length > 4 ? args[4] : null;
+  for (var hop = 0; hop < 5; hop++) {
+    package.checkRequest(uri);
+    final request = http.Request(method, uri)..followRedirects = false;
+    request.headers.addAll(headers);
+    if (body != null) {
+      if (headers.entries.any(
+        (e) =>
+            e.key.toLowerCase() == 'content-type' &&
+            e.value.contains('application/json'),
+      )) {
+        request.body = jsonEncode(body);
+      } else if (body is String) {
+        request.body = body;
+      } else if (body is Map) {
+        request.bodyFields = body.map(
+          (key, value) => MapEntry(key.toString(), value.toString()),
+        );
+      } else {
+        request.bodyBytes = (body as List).cast<int>();
+      }
+      if (request.bodyBytes.length > 1024 * 1024) throw StateError('插件请求体超过限制');
+    }
+    final response = await client
+        .send(request)
+        .timeout(const Duration(seconds: 30));
+    if ([301, 302, 303, 307, 308].contains(response.statusCode)) {
+      await response.stream.listen((_) {}).cancel();
+      final location = response.headers['location'];
+      if (location == null || method != 'GET' && method != 'HEAD') {
+        throw StateError('插件请求重定向无法安全重试');
+      }
+      uri = uri.resolve(location);
+      continue;
+    }
+    final bytes = BytesBuilder(copy: false);
+    await for (final chunk in response.stream.timeout(
+      const Duration(seconds: 30),
+    )) {
+      if (bytes.length + chunk.length > 4 * 1024 * 1024) {
+        throw StateError('插件响应超过 4 MiB');
+      }
+      bytes.add(chunk);
+    }
+    return jsonEncode(
+      http.Response.bytes(
+        bytes.takeBytes(),
+        response.statusCode,
+        headers: response.headers,
+        request: request,
+      ).toJson(),
+    );
+  }
+  throw StateError('插件请求重定向过多');
 }

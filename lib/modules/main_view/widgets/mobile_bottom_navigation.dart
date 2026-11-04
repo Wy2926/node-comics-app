@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -42,7 +44,15 @@ class MainMobileBottomNavigation extends StatelessWidget {
   final List<String>? mobileRoutes;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      NodeLaneNoticeAvoidance(child: _buildNavigation(context));
+
+  void _selectDestination(String destination) {
+    if (destination != location) dismissNodeLaneNotice();
+    onDestinationSelected(destination);
+  }
+
+  Widget _buildNavigation(BuildContext context) {
     if (isMobile && !isTv && mobileRoutes != null) {
       return NavigationBadgeCounts(
         routes: mobileRoutes!,
@@ -53,7 +63,7 @@ class MainMobileBottomNavigation extends StatelessWidget {
           maintainSpace: !isLongPressed,
           nativeIos: Platform.isIOS,
           badges: badges,
-          onSelected: onDestinationSelected,
+          onSelected: _selectDestination,
         ),
       );
     }
@@ -68,7 +78,7 @@ class MainMobileBottomNavigation extends StatelessWidget {
             context,
           ).cast<NavigationDestination>(),
           currentIndex: currentIndex,
-          onSelected: (newIndex) => onDestinationSelected(dest[newIndex]),
+          onSelected: (newIndex) => _selectDestination(dest[newIndex]),
           showLabels: context.isLandscape,
           shrink: shrink,
           onWake: onWake,
@@ -95,7 +105,7 @@ class MainMobileBottomNavigation extends StatelessWidget {
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: buildNavigationWidgetsMobile(ref, dest, context),
           onDestinationSelected: (newIndex) {
-            onDestinationSelected(dest[newIndex]);
+            _selectDestination(dest[newIndex]);
           },
         ),
       ),

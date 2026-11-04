@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -82,8 +84,9 @@ class _MobileReaderChaptersButtonState
       pushReplacementMangaReaderView(context: context, chapter: latest);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.manga_action_incomplete)),
+        showNodeLaneNotice(
+          context.l10n.manga_action_incomplete,
+          kind: NodeLaneNoticeKind.error,
         );
       }
     } finally {

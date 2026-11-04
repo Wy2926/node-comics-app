@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -130,7 +131,10 @@ class MobileBrowserToolbar extends StatelessWidget {
   final VoidCallback? onTranslate, onBack, onControls;
   final ValueChanged<bool>? onDisplayChanged;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      NodeLaneNoticeAvoidance(child: _buildToolbar(context));
+
+  Widget _buildToolbar(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(

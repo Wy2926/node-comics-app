@@ -1,6 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:convert';
 import 'dart:io'; // For I/O-operations
 import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
@@ -12,7 +15,6 @@ import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/utils/localized_message.dart';
 import 'package:mangayomi/utils/ios_archive_path.dart';
 import 'package:path/path.dart' as p; // For manipulating file system paths
-import 'package:bot_toast/bot_toast.dart'; // For Exceptions
 import 'package:mangayomi/models/manga.dart'; // Has Manga model and ItemType enum
 import 'package:mangayomi/models/chapter.dart'; // Has Chapter model with archivePath
 import 'package:mangayomi/providers/storage_provider.dart'; // Provides storage directory selection
@@ -311,8 +313,9 @@ Future<void> _scanDirectory(
           coverBytes = await _readMangaFolderCover(ref, subDirs, files);
         }
       } catch (e) {
-        BotToast.showText(
-          text: localizedMessage((l10n) => l10n.error_reading_cover_image(e)),
+        showNodeLaneNotice(
+          localizedMessage((l10n) => l10n.error_reading_cover_image(e)),
+          kind: NodeLaneNoticeKind.error,
         );
       }
     } else if (itemType == ItemType.manga && manga.customCoverImage == null) {
@@ -347,8 +350,9 @@ Future<void> _scanDirectory(
             : Status.unknown;
         manga.lastUpdate = dateNow;
       } catch (e) {
-        BotToast.showText(
-          text: localizedMessage((l10n) => l10n.error_reading_metadata(e)),
+        showNodeLaneNotice(
+          localizedMessage((l10n) => l10n.error_reading_metadata(e)),
+          kind: NodeLaneNoticeKind.error,
         );
       }
     }
@@ -394,8 +398,9 @@ Future<void> _scanDirectory(
     // Save all new and changed items to the library
     await mangaRepository.putAll(changedMangas);
   } catch (e) {
-    BotToast.showText(
-      text: "Database write error. Manga/Anime couldn't be saved: $e",
+    showNodeLaneNotice(
+      "Database write error. Manga/Anime couldn't be saved: $e",
+      kind: NodeLaneNoticeKind.error,
     );
   }
 
@@ -498,10 +503,11 @@ Future<void> _scanDirectory(
       await mangaRepository.putAll(processedMangas);
     }
   } catch (e) {
-    BotToast.showText(
-      text: localizedMessage(
+    showNodeLaneNotice(
+      localizedMessage(
         (l10n) => l10n.error_saving_chapter_episode_to_library(e),
       ),
+      kind: NodeLaneNoticeKind.error,
     );
   }
   try {
@@ -524,8 +530,9 @@ Future<void> _scanDirectory(
       });
     }
   } catch (e) {
-    BotToast.showText(
-      text: "Database write error. Manga/Anime couldn't be saved: $e",
+    showNodeLaneNotice(
+      "Database write error. Manga/Anime couldn't be saved: $e",
+      kind: NodeLaneNoticeKind.error,
     );
   }
 }
@@ -558,10 +565,9 @@ Future<Uint8List?> _readMangaFolderCover(
     try {
       return await imageFile.readAsBytes();
     } catch (e) {
-      BotToast.showText(
-        text: localizedMessage(
-          (l10n) => l10n.error_reading_chapter_cover_image(e),
-        ),
+      showNodeLaneNotice(
+        localizedMessage((l10n) => l10n.error_reading_chapter_cover_image(e)),
+        kind: NodeLaneNoticeKind.error,
       );
     }
   }
@@ -575,10 +581,9 @@ Future<Uint8List?> _readMangaFolderCover(
       );
       return data.$3;
     } catch (e) {
-      BotToast.showText(
-        text: localizedMessage(
-          (l10n) => l10n.error_reading_archive_cover_image(e),
-        ),
+      showNodeLaneNotice(
+        localizedMessage((l10n) => l10n.error_reading_archive_cover_image(e)),
+        kind: NodeLaneNoticeKind.error,
       );
     }
   }
@@ -658,8 +663,8 @@ Future<Directory?> getLocalLibrary() async {
     final dir = await StorageProvider().getDefaultDirectory();
     return dir == null ? null : Directory(p.join(dir.path, 'local'));
   } catch (e) {
-    BotToast.showText(
-      text: localizedMessage((l10n) => l10n.error_getting_local_library(e)),
+    showNodeLaneNotice(
+      localizedMessage((l10n) => l10n.error_getting_local_library(e)),
     );
     return null;
   }

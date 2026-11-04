@@ -11,6 +11,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http_client_helper/http_client_helper.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
+import 'package:mangayomi/models/source_image_processing.dart';
+import 'package:mangayomi/services/source_images/tile_shuffle.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/utils/avif.dart';
@@ -156,7 +158,8 @@ class CustomExtendedNetworkImageProvider
     this.retries = 3,
     this.timeLimit,
     this.timeRetry = const Duration(milliseconds: 100),
-    this.cacheKey,
+    String? cacheKey,
+    this.imageProcessing,
     this.printError = true,
     this.cacheRawData = false,
     this.cancelToken,
@@ -164,7 +167,7 @@ class CustomExtendedNetworkImageProvider
     this.imageCacheFolderName,
     this.cacheMaxAge = const Duration(days: 30),
     this.showCloudFlareError = false,
-  });
+  }) : cacheKey = imageProcessing?.cacheKey(cacheKey ?? url) ?? cacheKey;
 
   /// The name of [ImageCache], you can define custom [ImageCache] to store this provider.
   @override
@@ -223,6 +226,7 @@ class CustomExtendedNetworkImageProvider
   final Duration? cacheMaxAge;
 
   final bool showCloudFlareError;
+  final SourceImageProcessing? imageProcessing;
 
   final String? imageCacheFolderName;
 
@@ -472,6 +476,15 @@ class CustomExtendedNetworkImageProvider
         return null;
       }
 
+      if (imageProcessing != null) {
+        final bytes = await readBoundedSourceImage(response);
+        return await restoreSourceImageInBackground(
+          bytes,
+          response.headers,
+          imageProcessing!,
+          checkCancelled: () => cancelToken?.throwIfCancellationRequested(),
+        );
+      }
       final int total = response.contentLength ?? 0;
       final BytesBuilder bytesBuilder = BytesBuilder(copy: false);
       int received = 0;
@@ -501,6 +514,7 @@ class CustomExtendedNetworkImageProvider
       }
       return Future<Uint8List>.error(StateError('User cancel request $url.'));
     } catch (e) {
+      if (imageProcessing != null) rethrow;
       if (kDebugMode) {
         print(e);
       }

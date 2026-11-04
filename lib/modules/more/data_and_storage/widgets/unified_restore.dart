@@ -1,8 +1,7 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/backup_decoder.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/backup_format.dart';
@@ -12,7 +11,6 @@ import 'package:mangayomi/modules/more/data_and_storage/widgets/rollback_last_ch
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
 import 'package:mangayomi/modules/more/widgets/dialog_actions.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/error_toast.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
@@ -89,7 +87,10 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final preview = previewTachiBkImport(path);
     if (preview == null) {
-      botToast("Unsupported or unrecognized backup file.");
+      showNodeLaneNotice(
+        "Unsupported or unrecognized backup file.",
+        kind: NodeLaneNoticeKind.error,
+      );
       return false;
     }
 
@@ -185,7 +186,7 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) return false;
     ref.invalidate(lastLibrarySnapshotProvider);
 
-    _showImportResultToast(context, ref, resultDescription, safetyBackupPath);
+    _showImportResultNotice(context, ref, resultDescription, safetyBackupPath);
     return true;
   } catch (e, s) {
     toastError(e, stack: s, source: 'restore');
@@ -216,7 +217,9 @@ Future<bool> _performMangayomiRestore(
         source: 'restore_decode',
         level: LogLevel.warning,
       );
-      if (context.mounted) botToast("$e");
+      if (context.mounted) {
+        showNodeLaneNotice("$e", kind: NodeLaneNoticeKind.error);
+      }
       return false;
     }
     if (!context.mounted) return false;
@@ -314,7 +317,7 @@ Future<bool> _performMangayomiRestore(
     if (!context.mounted) return false;
     ref.invalidate(lastLibrarySnapshotProvider);
 
-    _showImportResultToast(context, ref, resultDescription, safetyBackupPath);
+    _showImportResultNotice(context, ref, resultDescription, safetyBackupPath);
     return true;
   } catch (e, s) {
     toastError(e, stack: s, source: 'restore');
@@ -667,38 +670,24 @@ Future<bool?> _confirmReplaceSummary(
   );
 }
 
-void _showImportResultToast(
+void _showImportResultNotice(
   BuildContext context,
   WidgetRef ref,
   String resultDescription,
   String? safetyBackupPath,
 ) {
   final l10n = context.l10n;
-  BotToast.showNotification(
-    animationDuration: const Duration(milliseconds: 200),
-    animationReverseDuration: const Duration(milliseconds: 200),
-    duration: const Duration(seconds: 8),
-    backButtonBehavior: BackButtonBehavior.none,
-    leading: (_) => Image.asset(appIconAssets[1], height: 32),
-    title: (_) => Text(
-      resultDescription,
-      style: const TextStyle(fontWeight: FontWeight.bold),
-    ),
-    trailing: safetyBackupPath == null
+  showNodeLaneNotice(
+    l10n.notice_import_completed,
+    description: resultDescription,
+    kind: NodeLaneNoticeKind.recovery,
+    actionLabel: safetyBackupPath == null ? null : l10n.roll_back,
+    onAction: safetyBackupPath == null
         ? null
-        : (_) => UnconstrainedBox(
-            alignment: Alignment.topLeft,
-            child: TextButton(
-              onPressed: () =>
-                  offerLibraryRollback(context, ref, safetyBackupPath),
-              child: Text(
-                l10n.roll_back,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          ),
-    enableSlideOff: true,
-    onlyOne: true,
-    crossPage: true,
+        : () {
+            if (context.mounted) {
+              offerLibraryRollback(context, ref, safetyBackupPath);
+            }
+          },
   );
 }

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -38,33 +39,37 @@ class MobileReaderPanel extends StatelessWidget {
                   ? Duration.zero
                   : const Duration(milliseconds: 180),
               curve: Curves.easeOut,
-              child: NodeLaneSurface(
-                child: Material(
-                  color: colors.surface,
-                  borderRadius: top
-                      ? null
-                      : const BorderRadius.vertical(
-                          top: Radius.circular(NodeLaneTokens.modalRadius),
-                        ),
-                  clipBehavior: Clip.antiAlias,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight:
-                          MediaQuery.sizeOf(context).height * (top ? .32 : .48),
-                    ),
-                    child: SafeArea(
-                      top: top,
-                      bottom: !top,
-                      child: NotificationListener<ScrollNotification>(
-                        // Scrolling enlarged controls must not trigger the page's
-                        // scroll-to-hide handler.
-                        onNotification: (_) => true,
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: top ? 4 : 12,
-                            vertical: top ? 4 : 8,
+              child: NodeLaneNoticeAvoidance(
+                enabled: visible && !top,
+                child: NodeLaneSurface(
+                  child: Material(
+                    color: colors.surface,
+                    borderRadius: top
+                        ? null
+                        : const BorderRadius.vertical(
+                            top: Radius.circular(NodeLaneTokens.modalRadius),
                           ),
-                          child: child,
+                    clipBehavior: Clip.antiAlias,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight:
+                            MediaQuery.sizeOf(context).height *
+                            (top ? .32 : .48),
+                      ),
+                      child: SafeArea(
+                        top: top,
+                        bottom: !top,
+                        child: NotificationListener<ScrollNotification>(
+                          // Scrolling enlarged controls must not trigger the page's
+                          // scroll-to-hide handler.
+                          onNotification: (_) => true,
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: top ? 4 : 12,
+                              vertical: top ? 4 : 8,
+                            ),
+                            child: child,
+                          ),
                         ),
                       ),
                     ),

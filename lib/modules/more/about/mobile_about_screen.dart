@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
@@ -75,8 +76,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
       await action();
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.failed)));
+        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
       }
     } finally {
       if (mounted) setState(() {});

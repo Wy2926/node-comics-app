@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/page.dart';
+import 'package:mangayomi/services/source_images/tile_shuffle.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/services/http/rhttp/src/model/settings.dart';
 import 'package:mangayomi/services/download_manager/m3u8/models/download.dart';
@@ -563,6 +564,29 @@ Future<void> _downloadFile(
 ) async {
   try {
     if (itemType != ItemType.anime) {
+      if (pageUrl.imageProcessing != null) {
+        final request = Request('GET', Uri.parse(pageUrl.url))
+          ..headers.addAll(pageUrl.headers ?? {});
+        final response = await client
+            .send(request)
+            .timeout(const Duration(seconds: 30));
+        final bytes = await readBoundedSourceImage(response);
+        final restored = restoreSourceImage(
+          bytes,
+          response.headers,
+          pageUrl.imageProcessing!,
+        );
+        // Restoration must succeed before a downloaded page becomes visible.
+        final target = File(path.setExtension(pageUrl.fileName!, '.png'));
+        final partial = File('${target.path}.partial');
+        try {
+          await partial.writeAsBytes(restored, flush: true);
+          await partial.rename(target.path);
+        } finally {
+          if (await partial.exists()) await partial.delete();
+        }
+        return;
+      }
       final response = await _withRetry(
         () => client
             .get(Uri.parse(pageUrl.url), headers: pageUrl.headers)

@@ -42,7 +42,14 @@ class _Nsfw extends ShowNSFWState {
 }
 
 void main() {
-  final repo = Repo(name: '社区目录', jsonUrl: 'https://example.org/index.json');
+  final repo = Repo(
+    name: 'NodeLane 官方 · 本地开发',
+    jsonUrl: 'http://127.0.0.1:8787/index.json',
+  );
+  final community = Repo(
+    name: '社区目录',
+    jsonUrl: 'https://example.org/index.json',
+  );
   Future<void> mount(
     WidgetTester tester,
     Widget child,
@@ -77,9 +84,9 @@ void main() {
           extensionsRepoStateProvider(ItemType.manga).overrideWith(_Repos.new),
           hideItemsStateProvider.overrideWith(_Hidden.new),
           showNSFWStateProvider.overrideWith(_Nsfw.new),
-          temporaryCatalogRepositoryProvider(ItemType.manga)
+          nodeLaneCatalogRepositoryProvider(ItemType.manga)
               .overrideWithValue(repo),
-          temporaryCatalogLoadProvider(ItemType.manga)
+          nodeLaneCatalogLoadProvider(ItemType.manga)
               .overrideWith((ref) async {}),
           fetchItemSourcesListProvider(
             reFresh: false,
@@ -99,6 +106,22 @@ void main() {
                 versionLast: '2.0.0',
               ),
               Source(id: 2, name: 'WEBTOON', lang: 'en', repo: repo),
+              Source(
+                id: 3,
+                name: 'Community Installed',
+                lang: 'en',
+                repo: community,
+                isAdded: true,
+                sourceCode: 'existing',
+                version: '1.0.0',
+                versionLast: '2.0.0',
+              ),
+              Source(
+                id: 4,
+                name: 'Community Available',
+                lang: 'en',
+                repo: community,
+              ),
             ]),
           ),
         ],
@@ -108,9 +131,13 @@ void main() {
       expect(find.text('MangaDex'), findsOneWidget);
       expect(find.text('安装'), findsNothing);
       expect(find.text('更新'), findsNothing);
-      expect(find.textContaining('临时目录'), findsOneWidget);
+      expect(find.textContaining('NodeLane 官方'), findsOneWidget);
+      expect(find.text('Community Available'), findsNothing);
       await tester.tap(find.text('第三方'));
       await tester.pumpAndSettle();
+      expect(find.text('MangaDex'), findsNothing);
+      expect(find.text('WEBTOON'), findsNothing);
+      expect(find.text('Community Available'), findsOneWidget);
       expect(find.text('安装'), findsOneWidget);
       expect(find.text('更新'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'missing');
@@ -163,16 +190,21 @@ void main() {
           extensionsRepoStateProvider(ItemType.manga).overrideWith(_Repos.new),
           hideItemsStateProvider.overrideWith(_Hidden.new),
           showNSFWStateProvider.overrideWith(_Nsfw.new),
-          temporaryCatalogRepositoryProvider(ItemType.manga)
+          nodeLaneCatalogRepositoryProvider(ItemType.manga)
               .overrideWithValue(repo),
-          temporaryCatalogLoadProvider(ItemType.manga)
+          nodeLaneCatalogLoadProvider(ItemType.manga)
               .overrideWith((ref) async {}),
           fetchItemSourcesListProvider(
             reFresh: false,
             itemType: ItemType.manga,
           ).overrideWith((ref) async {}),
-          mobileCatalogEntriesProvider(ItemType.manga)
-              .overrideWith((ref) => Stream.value([english, japanese])),
+          mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
+            (ref) => Stream.value([
+              english,
+              japanese,
+              Source(id: 3, name: 'English site', lang: 'en', repo: community),
+            ]),
+          ),
         ],
       );
       addTearDown(container.dispose);

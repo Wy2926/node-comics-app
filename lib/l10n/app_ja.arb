@@ -249,7 +249,6 @@
   "only_update_ongoing_manga_info": "完結していないマンガのみ更新",
   "update_library_on_app_launch": "アプリ起動時にライブラリを更新",
   "update_library": "ライブラリを更新",
-  "updating_library": "ライブラリを更新中 ({cur} / {max}) - 失敗: {failed}",
   "check_for_app_updates": "起動時にアプリ更新を確認",
   "page_preload_amount": "ページプリロード量",
   "scale_type": "スケールタイプ",

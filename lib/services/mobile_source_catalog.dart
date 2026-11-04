@@ -5,30 +5,33 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
+import 'package:mangayomi/services/source_catalog_config.dart';
+export 'package:mangayomi/services/source_catalog_config.dart'
+    show nodeLaneCatalogUrl;
 
-/// A reversible substitute until the NodeLane catalog exists. Prefer the
-/// user's visible repository. Do not relabel its authorship as official.
-final temporaryCatalogRepositoryProvider = Provider.family<Repo?, ItemType>((
+/// The development catalog is served from this checkout, independently of the
+/// user's third-party repositories. For an iPhone, use the Mac's LAN address.
+
+bool isNodeLaneCatalogSource(Source source, Repo? official) =>
+    official != null && source.repo?.jsonUrl == official.jsonUrl;
+
+final nodeLaneCatalogRepositoryProvider = Provider.family<Repo?, ItemType>((
   ref,
   type,
 ) {
-  final repos = ref.watch(extensionsRepoStateProvider(type));
-  final existing = repos.where((repo) => repo.hidden != true).firstOrNull;
-  if (existing != null) return existing;
-  if (type == ItemType.anime) return null;
+  if (type != ItemType.manga) return null;
   return Repo(
-    name: 'Mangayomi 社区目录',
-    website: 'https://github.com/kodjodevf/mangayomi-extensions',
-    jsonUrl:
-        'https://kodjodevf.github.io/mangayomi-extensions/${type == ItemType.novel ? 'novel_index' : 'index'}.json',
+    name: 'NodeLane 官方 · 本地开发',
+    website: Uri.parse(nodeLaneCatalogUrl).resolve('repo.json').toString(),
+    jsonUrl: nodeLaneCatalogUrl,
   );
 });
 
-final temporaryCatalogLoadProvider = FutureProvider.family<void, ItemType>((
+final nodeLaneCatalogLoadProvider = FutureProvider.family<void, ItemType>((
   ref,
   type,
 ) async {
-  final repo = ref.watch(temporaryCatalogRepositoryProvider(type));
+  final repo = ref.watch(nodeLaneCatalogRepositoryProvider(type));
   if (repo == null) return;
   await fetchSourcesList(
     refresh: true,

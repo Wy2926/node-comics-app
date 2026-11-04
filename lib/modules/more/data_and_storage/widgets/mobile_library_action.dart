@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -30,8 +31,7 @@ class _MobileLibraryActionState extends State<MobileLibraryAction> {
       await widget.onOpen();
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.failed)));
+        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
       }
     } finally {
       if (mounted) setState(() => _busy = false);

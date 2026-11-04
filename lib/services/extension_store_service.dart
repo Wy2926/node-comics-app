@@ -5,6 +5,8 @@ import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/proto/mihon_extension_store.pb.dart';
 import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/services/source_catalog_config.dart';
+import 'package:mangayomi/services/source_package.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 
 class ExtensionStoreFetchResult {
@@ -19,6 +21,10 @@ class ExtensionStoreFetchResult {
     required this.indexUrl,
     required this.sources,
   });
+}
+
+class InvalidNodeLaneCatalog extends StateError {
+  InvalidNodeLaneCatalog() : super('插件目录包含损坏的记录，已保留已有来源');
 }
 
 class ExtensionStoreService {
@@ -58,11 +64,11 @@ class ExtensionStoreService {
       if (firstByte == 0x5B) {
         String? repoName;
         String? repoWebsite;
-        final baseUrlMatch = RegExp(
-          r'^(.*)/[^/]+\.json$',
-        ).firstMatch(currentUrl);
-        final baseUrl =
-            baseUrlMatch != null ? baseUrlMatch.group(1)! : currentUrl;
+        final baseUrlMatch = RegExp(r'^(.*)/[^/]+\.json$')
+            .firstMatch(currentUrl);
+        final baseUrl = baseUrlMatch != null
+            ? baseUrlMatch.group(1)!
+            : currentUrl;
         try {
           final repoRes = await client.get(Uri.parse('$baseUrl/repo.json'));
           if (repoRes.statusCode == 200) {
@@ -114,6 +120,8 @@ class ExtensionStoreService {
 
       // 3. Binary Protobuf: NetworkExtensionStore
       return await _parseProtobufStore(currentUrl, bytes, client);
+    } on InvalidNodeLaneCatalog {
+      rethrow;
     } catch (_) {
       return null;
     }
@@ -325,6 +333,46 @@ class ExtensionStoreService {
       final jsonList = jsonDecode(utf8.decode(bytes));
       if (jsonList is! List) return null;
 
+      // A packaged catalog is one snapshot. Never silently drop a malformed
+      // row and then mark its installed source obsolete during reconciliation.
+      if (indexUrl == nodeLaneCatalogUrl ||
+          jsonList.any((e) => e is Map && e.containsKey('nodelane'))) {
+        try {
+          final sources = jsonList.map((e) {
+            if (e is! Map<String, dynamic> ||
+                e['id'] is! int ||
+                e['name'] is! String ||
+                (e['name'] as String).isEmpty ||
+                e['version'] is! String ||
+                !RegExp(r'^\d+\.\d+\.\d+$').hasMatch(e['version']) ||
+                e['sourceCodeUrl'] is! String ||
+                (e['sourceCodeUrl'] as String).isEmpty ||
+                e['nodelane'] is! Map) {
+              throw InvalidNodeLaneCatalog();
+            }
+            final source = Source.fromJson(e);
+            source.sourceCodeUrl = Uri.parse(indexUrl)
+                .resolve(source.sourceCodeUrl!)
+                .toString();
+            if (source.iconUrl?.isNotEmpty == true) {
+              source.iconUrl = Uri.parse(indexUrl)
+                  .resolve(source.iconUrl!)
+                  .toString();
+            }
+            validatePackageLocation(source, indexUrl);
+            return source;
+          }).toList();
+          return ExtensionStoreFetchResult(
+            name: name ?? 'NodeLane 官方',
+            website: website,
+            indexUrl: indexUrl,
+            sources: sources,
+          );
+        } catch (_) {
+          throw InvalidNodeLaneCatalog();
+        }
+      }
+
       final repoBaseUrl = indexUrl.replaceAll(RegExp(r'/[^/]+\.json$'), '');
       final sources = <Source>[];
 
@@ -470,6 +518,18 @@ class ExtensionStoreService {
         try {
           final src = Source.fromJson(e);
           if (src.name != null && src.name!.isNotEmpty) {
+            // A portable local catalog can use paths relative to its index.
+            // Resolve only distribution assets; baseUrl belongs to the site.
+            if (src.sourceCodeUrl?.isNotEmpty == true) {
+              src.sourceCodeUrl = Uri.parse(indexUrl)
+                  .resolve(src.sourceCodeUrl!)
+                  .toString();
+            }
+            if (src.iconUrl?.isNotEmpty == true) {
+              src.iconUrl = Uri.parse(indexUrl)
+                  .resolve(src.iconUrl!)
+                  .toString();
+            }
             sources.add(src);
           }
         } catch (_) {}
@@ -502,16 +562,16 @@ class ExtensionStoreService {
 
       final repoName =
           (name != null &&
-                  name.isNotEmpty &&
-                  !name.endsWith('.json') &&
-                  name != '.dist' &&
-                  name != 'dist')
-              ? name
-              : defaultRepoName;
+              name.isNotEmpty &&
+              !name.endsWith('.json') &&
+              name != '.dist' &&
+              name != 'dist')
+          ? name
+          : defaultRepoName;
       final repoWebsite =
           (defaultRepoWebsite != null && defaultRepoWebsite.isNotEmpty)
-              ? defaultRepoWebsite
-              : repoBaseUrl;
+          ? defaultRepoWebsite
+          : repoBaseUrl;
 
       return ExtensionStoreFetchResult(
         name: repoName,
@@ -519,6 +579,8 @@ class ExtensionStoreService {
         indexUrl: indexUrl,
         sources: sources,
       );
+    } on InvalidNodeLaneCatalog {
+      rethrow;
     } catch (_) {
       return null;
     }

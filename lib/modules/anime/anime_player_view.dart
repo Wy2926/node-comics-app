@@ -1,10 +1,11 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:bot_toast/bot_toast.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riv;
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/custom_button_repository.dart';
@@ -495,16 +495,7 @@ class _AnimeStreamPageState extends riv.ConsumerState<AnimeStreamPage>
       case "aniyomi/show_text":
         final text = _readMpvString(value);
         if (text == null) break;
-        botToast(
-          text,
-          alignY: -0.99,
-          second: 2,
-          dismissDirections: const [
-            DismissDirection.vertical,
-            DismissDirection.horizontal,
-          ],
-          showIcon: false,
-        );
+        showNodeLaneNotice(text, seconds: 2);
         nativePlayer.setProperty("user-data/aniyomi/show_text", "");
         break;
       case "aniyomi/toggle_ui":
@@ -2140,12 +2131,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     }
     _fit.value = fit;
     _key.currentState?.update(fit: fit);
-    BotToast.showText(
-      onlyOne: true,
-      align: const Alignment(0, 0.90),
-      duration: const Duration(seconds: 1),
-      text: fit.name.toUpperCase(),
-    );
+    showNodeLaneNotice(fit.name.toUpperCase(), seconds: 1);
   }
 
   Widget _seekToWidget({bool iconOnly = false}) {
@@ -2946,7 +2932,11 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
           final file = File(path.join(dir!.path, "$name.png"));
           file.writeAsBytesSync(imageBytes!);
           if (context.mounted) {
-            botToast(context.l10n.picture_saved, second: 3);
+            showNodeLaneNotice(
+              context.l10n.picture_saved,
+              seconds: 3,
+              kind: NodeLaneNoticeKind.success,
+            );
           }
         },
         // The sheet is its own route, so the player's setState alone

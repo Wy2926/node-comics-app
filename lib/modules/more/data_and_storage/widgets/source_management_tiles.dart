@@ -1,6 +1,6 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/mass_migration/mass_migration_preview_screen.dart';
 import 'package:mangayomi/modules/mass_migration/models/mass_migration_models.dart';
@@ -126,7 +126,7 @@ Future<void> _checkMissingSources(BuildContext context) async {
     return;
   }
   if (groups.isEmpty) {
-    botToast(l10n.missing_source_check_none_found);
+    showNodeLaneNotice(l10n.missing_source_check_none_found);
     return;
   }
 
@@ -221,7 +221,7 @@ Future<void> _deleteSource(BuildContext context, WidgetRef ref) async {
   final groups = librarySourceGroups();
   final mobile = isMobile && !isTv;
   if (groups.isEmpty && !mobile) {
-    botToast(l10n.delete_source_empty);
+    showNodeLaneNotice(l10n.delete_source_empty);
     return;
   }
 
@@ -379,11 +379,14 @@ Future<void> _deleteSource(BuildContext context, WidgetRef ref) async {
     );
     if (!context.mounted) return;
     if (!mobile) ref.invalidate(lastLibrarySnapshotProvider);
-    botToast(
+    showNodeLaneNotice(
       l10n.delete_source_result_message(counts.mangaCount, group.sourceName),
     );
   } catch (e) {
-    botToast("Error deleting source: $e");
+    showNodeLaneNotice(
+      "Error deleting source: $e",
+      kind: NodeLaneNoticeKind.error,
+    );
   } finally {
     if (mobile && context.mounted) hideBusyDialog(context);
   }
@@ -407,7 +410,7 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
   }
   final mobile = isMobile && !isTv;
   if (taggedClusters.isEmpty && !mobile) {
-    botToast(l10n.merge_manga_none_found);
+    showNodeLaneNotice(l10n.merge_manga_none_found);
     return;
   }
 
@@ -577,11 +580,14 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
     await mergeMangaGroup(primary, others);
     if (!context.mounted) return;
     if (!mobile) ref.invalidate(lastLibrarySnapshotProvider);
-    botToast(
+    showNodeLaneNotice(
       l10n.merge_manga_result_message(others.length, primary.name ?? ''),
     );
   } catch (e) {
-    botToast("Error merging manga: $e");
+    showNodeLaneNotice(
+      "Error merging manga: $e",
+      kind: NodeLaneNoticeKind.error,
+    );
   } finally {
     if (mobile && context.mounted) hideBusyDialog(context);
   }

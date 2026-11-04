@@ -1,6 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
@@ -41,7 +42,10 @@ class TotalChapterCacheSizeState extends _$TotalChapterCacheSizeState {
     } catch (_) {}
     if (msg != null && showToast) {
       state = msg;
-      botToast(localizedMessage((l10n) => l10n.cache_cleared));
+      showNodeLaneNotice(
+        localizedMessage((l10n) => l10n.cache_cleared),
+        kind: NodeLaneNoticeKind.success,
+      );
     }
   }
 

@@ -1,10 +1,11 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -367,7 +368,12 @@ void _showClearAllSourcesDialog(BuildContext context, dynamic l10n) {
       message: l10n.clear_all_sources_msg,
       onConfirm: (_) async {
         await sourceRepository.clearAll();
-        if (context.mounted) botToast(l10n.sources_cleared);
+        if (context.mounted) {
+          showNodeLaneNotice(
+            l10n.sources_cleared,
+            kind: NodeLaneNoticeKind.success,
+          );
+        }
       },
     );
     return;
@@ -395,7 +401,10 @@ void _showClearAllSourcesDialog(BuildContext context, dynamic l10n) {
                     sourceRepository.clearAll();
 
                     Navigator.pop(ctx);
-                    botToast(l10n.sources_cleared);
+                    showNodeLaneNotice(
+                      l10n.sources_cleared,
+                      kind: NodeLaneNoticeKind.success,
+                    );
                   },
                   child: Text(l10n.ok),
                 ),
@@ -421,7 +430,12 @@ void _showCleanNonLibraryDialog(
       onConfirm: (_) async {
         final mangasList = mangaRepository.getNonFavorites();
         await mangaRepository.wipeMangas(ref, mangasList);
-        if (context.mounted) botToast(l10n.cleaned_database(mangasList.length));
+        if (context.mounted) {
+          showNodeLaneNotice(
+            l10n.cleaned_database(mangasList.length),
+            kind: NodeLaneNoticeKind.success,
+          );
+        }
       },
     );
     return;
@@ -450,7 +464,10 @@ void _showCleanNonLibraryDialog(
                     mangaRepository.wipeMangas(ref, mangasList);
 
                     Navigator.pop(ctx);
-                    botToast(l10n.cleaned_database(mangasList.length));
+                    showNodeLaneNotice(
+                      l10n.cleaned_database(mangasList.length),
+                      kind: NodeLaneNoticeKind.success,
+                    );
                   },
                   child: Text(l10n.ok),
                 ),
@@ -474,7 +491,10 @@ void _showClearLibraryDialog(BuildContext context, WidgetRef ref) {
         final mangasList = mangaRepository.getByItemTypeNames(types);
         await mangaRepository.wipeMangas(ref, mangasList);
         if (context.mounted) {
-          botToast(context.l10n.cleaned_database(mangasList.length));
+          showNodeLaneNotice(
+            context.l10n.cleaned_database(mangasList.length),
+            kind: NodeLaneNoticeKind.success,
+          );
         }
       },
     );
@@ -543,8 +563,9 @@ void _showClearLibraryDialog(BuildContext context, WidgetRef ref) {
                                       ),
                                 );
                             mangaRepository.wipeMangas(ref, mangasList);
-                            botToast(
+                            showNodeLaneNotice(
                               context.l10n.cleaned_database(mangasList.length),
+                              kind: NodeLaneNoticeKind.success,
                             );
                             Navigator.pop(context);
                           },
@@ -577,7 +598,10 @@ void _showClearLocalLibraryDialog(BuildContext context, WidgetRef ref) {
         final mangasList = mangaRepository.getBySourceLocalOrArchive();
         await mangaRepository.wipeMangas(ref, mangasList);
         if (context.mounted) {
-          botToast(context.l10n.cleaned_database(mangasList.length));
+          showNodeLaneNotice(
+            context.l10n.cleaned_database(mangasList.length),
+            kind: NodeLaneNoticeKind.success,
+          );
         }
       },
     );
@@ -607,7 +631,10 @@ void _showClearLocalLibraryDialog(BuildContext context, WidgetRef ref) {
                   final mangasList = mangaRepository
                       .getBySourceLocalOrArchive();
                   mangaRepository.wipeMangas(ref, mangasList);
-                  botToast(context.l10n.cleaned_database(mangasList.length));
+                  showNodeLaneNotice(
+                    context.l10n.cleaned_database(mangasList.length),
+                    kind: NodeLaneNoticeKind.success,
+                  );
                   Navigator.pop(context);
                 },
                 child: Text(

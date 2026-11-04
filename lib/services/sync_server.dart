@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 // Riverpod-facing orchestration for the sync-server's `/api/sync/v1`
 // protocol. The wire transport lives in SyncApiClient, applying a pulled
 // response to local storage lives in SyncEntityApplier, and collecting local
@@ -10,7 +12,6 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/blend_level_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/flex_scheme_color_state_provider.dart';
@@ -118,7 +119,7 @@ class SyncServer extends _$SyncServer {
       ref
           .read(synchingProvider(syncId: syncId).notifier)
           .login(server, username, accessToken);
-      botToast(l10n.sync_logged);
+      showNodeLaneNotice(l10n.sync_logged, kind: NodeLaneNoticeKind.success);
       return (true, "");
     } catch (e) {
       return (false, e.toString());
@@ -161,19 +162,26 @@ class SyncServer extends _$SyncServer {
     // otherwise it could race the restore and pull stale data back down.
     if (!bypassRestoreGuard && ref.read(restoreSyncGuardProvider)) {
       if (!silent && l10n != null) {
-        botToast(l10n.sync_restore_in_progress, second: 3);
+        showNodeLaneNotice(l10n.sync_restore_in_progress, seconds: 3);
       }
       return false;
     }
-    if (!silent && l10n != null) {
-      botToast(l10n.sync_starting, second: 500);
-    }
+    final notice = !silent && l10n != null
+        ? showNodeLaneNotice(
+            l10n.sync_starting,
+            kind: NodeLaneNoticeKind.progress,
+          )
+        : null;
     final progress = ref.read(syncProgressProvider(syncId: syncId).notifier);
     progress.begin();
     try {
       if (!await _apiClient.checkVersion(_getServer())) {
         if (!silent && l10n != null) {
-          botToast(l10n.sync_failed, second: 5);
+          showNodeLaneNotice(
+            l10n.sync_failed,
+            seconds: 5,
+            kind: NodeLaneNoticeKind.error,
+          );
         }
         return false;
       }
@@ -193,7 +201,11 @@ class SyncServer extends _$SyncServer {
 
       if (!ok) {
         if (!silent && l10n != null) {
-          botToast(l10n.sync_failed, second: 5);
+          showNodeLaneNotice(
+            l10n.sync_failed,
+            seconds: 5,
+            kind: NodeLaneNoticeKind.error,
+          );
         }
         return false;
       }
@@ -201,15 +213,24 @@ class SyncServer extends _$SyncServer {
         ref.invalidate(synchingProvider(syncId: syncId));
       }
       if (!silent && l10n != null) {
-        botToast(l10n.sync_finished, second: 2);
+        showNodeLaneNotice(
+          l10n.sync_finished,
+          seconds: 2,
+          kind: NodeLaneNoticeKind.success,
+        );
       }
       return true;
     } catch (error) {
       if (!silent) {
-        botToast(error.toString(), second: 5);
+        showNodeLaneNotice(
+          error.toString(),
+          seconds: 5,
+          kind: NodeLaneNoticeKind.error,
+        );
       }
       return false;
     } finally {
+      notice?.dismiss();
       progress.finish();
     }
   }

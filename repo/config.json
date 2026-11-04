@@ -1,9 +1,14 @@
 {
-    "repo_url": "kodjodevf/mangayomi",
-    "json_file": "repo/source.json",
-    "app_id": "com.kodjodevf.mangayomi",
-    "app_name": "Mangayomi",
-    "caption": "Update for Mangayomi now available!",
-    "tint_colour": "EF4444",
-    "image_url": "https://raw.githubusercontent.com/kodjodevf/mangayomi/refs/heads/main/repo/images/news/update_default.webp"
+  "repo_url": "Wy2926/node-comics-app",
+  "json_file": "repo/source.json",
+  "app_id": "com.nodelane-comics.app",
+  "app_slug": "nodelane-comics",
+  "app_name": "NodeLane Comics",
+  "developer_name": "NodeLane",
+  "subtitle": "Read comics with NodeLane translation",
+  "description": "NodeLane Comics (NodeLane漫译) brings comic reading, website sources and translation together, with support for novels and animation. Releases and support: https://github.com/Wy2926/node-comics-app",
+  "caption": "A new NodeLane Comics update is available.",
+  "tint_colour": "006EFF",
+  "icon_path": "assets/brand/app-mark.png",
+  "min_os_version": "15.0"
 }

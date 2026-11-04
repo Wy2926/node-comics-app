@@ -1,10 +1,6 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:bot_toast/bot_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:html/dom.dart' hide Text;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -12,7 +8,6 @@ import 'package:js_packer/js_packer.dart';
 import 'package:mangayomi/eval/model/document.dart';
 import 'package:mangayomi/eval/http_response_extensions.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/services/anime_extractors/dood_extractor.dart';
 import 'package:mangayomi/services/anime_extractors/filemoon.dart';
 import 'package:mangayomi/services/anime_extractors/gogocdn_extractor.dart';
@@ -24,16 +19,13 @@ import 'package:mangayomi/services/anime_extractors/sibnet_extractor.dart';
 import 'package:mangayomi/services/anime_extractors/streamlare_extractor.dart';
 import 'package:mangayomi/services/anime_extractors/streamtape_extractor.dart';
 import 'package:mangayomi/models/video.dart';
-import 'package:mangayomi/modules/widgets/toast_notification_content.dart';
 import 'package:mangayomi/services/anime_extractors/streamwish_extractor.dart';
 import 'package:mangayomi/services/anime_extractors/vidbom_extractor.dart';
 import 'package:mangayomi/services/anime_extractors/voe_extractor.dart';
 import 'package:mangayomi/services/anime_extractors/your_upload_extractor.dart';
-import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/cryptoaes/crypto_aes.dart';
 import 'package:mangayomi/utils/cryptoaes/deobfuscator.dart';
 import 'package:mangayomi/utils/cryptoaes/js_unpacker.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:mangayomi/utils/reg_exp_matcher.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
@@ -893,87 +885,6 @@ const List<String> _textualDateFormats = [
   'MMMM d, yyyy',
   'MMM dd,yyyy',
 ];
-
-void Function() botToast(
-  String title, {
-  int second = 10,
-  double? fontSize,
-  double alignX = 0,
-  double alignY = 0.99,
-  bool hasCloudFlare = false,
-  String? url,
-  int animationDuration = 200,
-  List<DismissDirection> dismissDirections = const [
-    DismissDirection.horizontal,
-    DismissDirection.down,
-  ],
-  bool onlyOne = true,
-  bool? themeDark,
-  bool showIcon = true,
-  int maxLines = 6,
-  VoidCallback? onDetails,
-  String? detailsLabel,
-}) {
-  final context = navigatorKey.currentState?.context;
-  return BotToast.showNotification(
-    onlyOne: onlyOne,
-    dismissDirections: dismissDirections,
-    align: Alignment(alignX, alignY),
-    duration: Duration(seconds: second),
-    animationDuration: Duration(milliseconds: animationDuration),
-    animationReverseDuration: Duration(milliseconds: animationDuration),
-    leading: showIcon
-        ? (_) => Image.asset(
-            (themeDark == null
-                ? appIconAssets[Random().nextInt(2)]
-                : appIconAssets[themeDark ? 0 : 1]),
-            height: 25,
-          )
-        : null,
-    // ListTile gives a trailing action its full intrinsic width before laying
-    // out the title. A labelled action there can squeeze an error down to one
-    // or two characters per line on a phone, so actions live below the message
-    // inside the title column instead.
-    title: (cancel) {
-      void resolveChallenge() {
-        cancel();
-        context?.push("/mangawebview", extra: {'url': url, 'title': ''});
-      }
-
-      return ToastNotificationContent(
-        message: title,
-        fontSize: fontSize,
-        maxLines: maxLines,
-        action: hasCloudFlare
-            ? Semantics(
-                button: true,
-                label: 'Resolve Cloudflare challenge',
-                excludeSemantics: true,
-                onTap: resolveChallenge,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: context?.secondaryColor,
-                    minimumSize: const Size(0, 44),
-                  ),
-                  onPressed: resolveChallenge,
-                  label: const Text('Resolve challenge'),
-                  icon: const Icon(Icons.public, size: 18),
-                ),
-              )
-            : onDetails == null
-            ? null
-            : TextButton(
-                onPressed: () {
-                  cancel();
-                  onDetails();
-                },
-                child: Text(detailsLabel ?? 'Details'),
-              ),
-      );
-    },
-    trailing: null,
-  );
-}
 
 (encrypt.Encrypter, encrypt.IV) _encrypt(String keyy, String ivv) {
   final key = encrypt.Key.fromUtf8(keyy);

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -190,8 +191,9 @@ class _MangaMenuButtonState extends State<_MangaMenuButton> {
       await action(value);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.manga_action_incomplete)),
+        showNodeLaneNotice(
+          context.l10n.manga_action_incomplete,
+          kind: NodeLaneNoticeKind.error,
         );
       }
     } finally {

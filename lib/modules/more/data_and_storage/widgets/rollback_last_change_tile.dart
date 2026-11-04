@@ -1,6 +1,6 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/pre_import_backup.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/restore.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
@@ -166,5 +166,5 @@ Future<void> offerLibraryRollback(
   await clearLastLibrarySnapshot();
   if (!context.mounted) return;
   ref.invalidate(lastLibrarySnapshotProvider);
-  botToast(l10n.roll_back_done);
+  showNodeLaneNotice(l10n.roll_back_done, kind: NodeLaneNoticeKind.success);
 }

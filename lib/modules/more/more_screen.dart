@@ -7,7 +7,7 @@ import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/modules/more/widgets/incognito_mode_widget.dart';
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/models/manga.dart';
 
@@ -30,16 +30,9 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
         child: Column(
           children: [
             SizedBox(height: AppBar().preferredSize.height),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              child: Image.asset(
-                appIconAssets[2],
-                color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-                fit: BoxFit.cover,
-                height: 100,
-              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: NodeLaneBrandMark(size: 100),
             ),
             const Divider(),
             // ListTile(

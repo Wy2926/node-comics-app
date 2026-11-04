@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -279,8 +281,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   Future<void> _promptSaveSearch() async {
     final query = _query.trim();
     if (query.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.enter_search_to_save_first)),
+      showNodeLaneNotice(
+        context.l10n.enter_search_to_save_first,
+        kind: NodeLaneNoticeKind.error,
       );
       return;
     }

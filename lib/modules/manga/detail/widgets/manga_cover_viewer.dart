@@ -1,8 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -105,9 +106,9 @@ void showMangaCoverViewer(
                                         );
                                         if (context.mounted) {
                                           Navigator.pop(context);
-                                          botToast(
+                                          showNodeLaneNotice(
                                             context.l10n.cover_updated,
-                                            second: 3,
+                                            seconds: 3,
                                           );
                                         }
                                       }
@@ -208,9 +209,9 @@ void showMangaCoverViewer(
                                           ),
                                         );
                                         file.writeAsBytesSync(bytes);
-                                        botToast(
+                                        showNodeLaneNotice(
                                           context.l10n.cover_saved,
-                                          second: 3,
+                                          seconds: 3,
                                         );
                                       }
                                     }

@@ -99,7 +99,7 @@ jobs:
       - name: Upload Android debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-android-debug
+          name: nodelane-comics-android-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
 
   build-android-tv:
@@ -155,7 +155,7 @@ jobs:
       - name: Upload Android TV debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-android-tv-debug
+          name: nodelane-comics-android-tv-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
 
   build-ios:
@@ -191,7 +191,7 @@ jobs:
       - name: Upload iOS debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-ios-debug
+          name: nodelane-comics-ios-debug
           path: build/ios/iphoneos/Runner.app
 
   build-macos:
@@ -226,7 +226,7 @@ jobs:
       - name: Upload macOS debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-macos-debug
+          name: nodelane-comics-macos-debug
           path: build/macos/Build/Products/Debug/Mangayomi.app
 
   build-windows:
@@ -257,7 +257,7 @@ jobs:
       - name: Upload Windows debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-windows-debug
+          name: nodelane-comics-windows-debug
           path: build/windows/x64/runner/Debug/
 
   build-linux:
@@ -297,5 +297,5 @@ jobs:
       - name: Upload Linux debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-linux-debug
+          name: nodelane-comics-linux-debug
           path: build/linux/x64/debug/bundle/

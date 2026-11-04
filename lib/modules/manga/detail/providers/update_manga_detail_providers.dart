@@ -1,4 +1,5 @@
 import 'package:mangayomi/utils/chapter_recognition.dart';
+import 'package:mangayomi/eval/model/m_chapter.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/update.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -86,13 +87,9 @@ Future<dynamic> updateMangaDetail(
       final existingChapters = manga.chapters.toList();
       final recognition = ChapterRecognition();
 
-      // Season and episode together, never the episode alone. The episode
-      // alone makes season 2 episode 1 the same chapter as season 1 episode 1,
-      // so whichever arrives second is dropped before it reaches the library
-      // and a two season show displays one season.
-      //
-      // Not parseChapterNumber either: that truncates, so 12, 12.1 and 12.5
-      // all answer 12 and two of the three are dropped the same way.
+      // A URL identifies a chapter. Number/season/group is only a fallback
+      // for an unambiguous URL replacement, never grounds to drop entries.
+      // For example, 64.2 and 64.20 can be distinct parts on the source site.
       String? identityOf(Chapter c, {bool withScanlator = true}) {
         if (c.name == null) return null;
         return recognition.chapterIdentityKey(
@@ -103,51 +100,80 @@ Future<dynamic> updateMangaDetail(
       }
 
       final existingByUrl = <String, Chapter>{};
-      final existingByComposite = <String, Chapter>{};
       final duplicateIds = <int>{};
       for (final c in existingChapters) {
         final u = c.url?.trim();
-        final urlKey = (u == null || u.isEmpty) ? null : u.getUrlWithoutDomain;
-        final compositeKey = identityOf(c);
-
-        final prior =
-            (urlKey != null ? existingByUrl[urlKey] : null) ??
-            (compositeKey != null ? existingByComposite[compositeKey] : null);
+        final urlKey = (u == null || u.isEmpty) ? null : u;
+        final prior = urlKey != null ? existingByUrl[urlKey] : null;
         if (prior == null) {
           if (urlKey != null) existingByUrl[urlKey] = c;
-          if (compositeKey != null) existingByComposite[compositeKey] = c;
         } else {
           final priorHasState =
               (prior.isRead ?? false) || (prior.lastPageRead ?? '').isNotEmpty;
           final keep = priorHasState ? prior : c;
           final drop = identical(keep, prior) ? c : prior;
           if (urlKey != null) existingByUrl[urlKey] = keep;
-          if (compositeKey != null) existingByComposite[compositeKey] = keep;
           if (drop.id != null) duplicateIds.add(drop.id!);
         }
       }
 
-      // Keyed without the scanlator: the same episode from a different group
-      // is still that episode, so read state carries. Keyed with the season
-      // for the same reason as above.
-      final readByEpisode = <String, bool>{};
+      final existingByComposite = <String, List<Chapter>>{};
       for (final c in existingChapters) {
-        final key = identityOf(c, withScanlator: false);
+        if (duplicateIds.contains(c.id)) continue;
+        final key = identityOf(c);
         if (key != null) {
-          readByEpisode[key] =
-              (readByEpisode[key] ?? false) || (c.isRead ?? false);
+          existingByComposite.putIfAbsent(key, () => []).add(c);
+        }
+      }
+      final incomingByUrl = <String, MChapter>{};
+      final incomingByComposite = <String, int>{};
+      for (final chap in chaps) {
+        final url = chap.url?.trim();
+        if (url == null || url.isEmpty || incomingByUrl.containsKey(url)) {
+          continue;
+        }
+        incomingByUrl[url] = chap;
+        final key = chap.name == null
+            ? null
+            : recognition.chapterIdentityKey(
+                manga.name ?? '',
+                chap.name!,
+                chap.scanlator ?? '',
+              );
+        if (key != null) {
+          incomingByComposite[key] = (incomingByComposite[key] ?? 0) + 1;
+        }
+      }
+
+      // Carry read state only between explicitly named, unambiguous groups.
+      // An unknown group or two same-number URLs may instead be split parts.
+      final readByEpisode = <String, Set<String>>{};
+      for (final group in existingByComposite.values) {
+        if (group.length != 1) continue;
+        final c = group.single;
+        final scanlator = c.scanlator?.trim() ?? '';
+        final key = identityOf(c, withScanlator: false);
+        if (key != null && scanlator.isNotEmpty && (c.isRead ?? false)) {
+          readByEpisode.putIfAbsent(key, () => {}).add(scanlator);
         }
       }
 
       final newChapters = <Chapter>[];
-      final seenKeys = <String>{};
       final chaptersToUpdate = <Chapter>[];
 
-      for (final chap in chaps) {
-        final url = chap.url?.trim();
-        if (url == null || url.isEmpty) continue;
-        final key = url.getUrlWithoutDomain;
-
+      for (final entry in incomingByUrl.entries) {
+        final url = entry.key, chap = entry.value;
+        final rawDate = chap.dateUpload?.trim();
+        final timestamp = int.tryParse(rawDate ?? '');
+        // Empty/zero explicitly means unknown. An omitted or invalid field
+        // leaves a known stored date intact; discovery time is not upload time.
+        final uploadDate = rawDate == '' || rawDate == '0'
+            ? ''
+            : timestamp != null &&
+                  timestamp > 0 &&
+                  timestamp <= 8640000000000000
+            ? timestamp.toString()
+            : null;
         final compositeKey = chap.name == null
             ? null
             : recognition.chapterIdentityKey(
@@ -159,25 +185,28 @@ Future<dynamic> updateMangaDetail(
             ? null
             : recognition.chapterIdentityKey(manga.name!, chap.name!);
 
-        if (!seenKeys.add(key)) continue;
-        if (compositeKey != null && !seenKeys.add('c:$compositeKey')) {
-          continue;
+        var existing = existingByUrl[url];
+        final candidates = existingByComposite[compositeKey];
+        if (existing == null &&
+            incomingByComposite[compositeKey] == 1 &&
+            candidates?.length == 1 &&
+            candidates!.single.name?.trim() == chap.name?.trim() &&
+            !incomingByUrl.containsKey(candidates.single.url?.trim())) {
+          existing = candidates.single;
         }
 
-        final existing =
-            existingByUrl[key] ??
-            (compositeKey != null ? existingByComposite[compositeKey] : null);
-
         if (existing == null) {
+          final scanlator = chap.scanlator?.trim() ?? '';
           final alreadyRead =
-              episodeKey != null && (readByEpisode[episodeKey] ?? false);
+              scanlator.isNotEmpty &&
+              incomingByComposite[compositeKey] == 1 &&
+              (readByEpisode[episodeKey]?.any((group) => group != scanlator) ??
+                  false);
 
           final newChapter = Chapter(
             name: chap.name!,
             url: url,
-            dateUpload: chap.dateUpload == null
-                ? now.toString()
-                : chap.dateUpload.toString(),
+            dateUpload: uploadDate ?? '',
             scanlator: chap.scanlator ?? '',
             mangaId: savedMangaId,
             updatedAt: now,
@@ -191,11 +220,6 @@ Future<dynamic> updateMangaDetail(
           if (alreadyRead) {
             newChapter.isRead = alreadyRead;
             newChapter.lastPageRead = "1";
-          }
-
-          existingByUrl[key] = newChapter;
-          if (compositeKey != null) {
-            existingByComposite[compositeKey] = newChapter;
           }
 
           newChapters.add(newChapter);
@@ -213,6 +237,7 @@ Future<dynamic> updateMangaDetail(
             ..description = chap.description
             ..downloadSize = chap.downloadSize
             ..duration = chap.duration;
+          if (uploadDate != null) existing.dateUpload = uploadDate;
           chaptersToUpdate.add(existing);
         }
       }

@@ -1,8 +1,8 @@
 # 解耦漫画翻译架构
 
-本文维护 **NodeLane 手机 App 的翻译架构、当前实现与验收边界**，面向 Android / iOS。代码基线与许可见 [UPSTREAM](../UPSTREAM.md)，产品约束见 [AGENTS](../AGENTS.md)。方案已获确认并进入实现；代码落地、模拟验证、构建成功与真机／真实服务可用分别记录，不能互相替代。
+本文维护 **NodeLane 手机 App 的翻译架构、当前实现与验收边界**，面向 Android / iOS。代码基线与许可见 [UPSTREAM](../UPSTREAM.md)，产品约束见 [AGENTS](../AGENTS.md)。代码实现、模拟验证、构建成功与真机／真实服务可用分别记录，不能互相替代。
 
-当前执行顺序以 iOS 为主，Android 构建、模拟器与真机测试暂缓；下文两平台契约与历史验证记录保留，Android 验收要求待恢复该平台工作后执行。
+当前执行顺序以 iOS 为主，Android 构建、模拟器与真机测试暂缓；两平台契约继续保留，Android 验收要求待恢复该平台工作后执行。
 
 ## 当前实现与使用
 
@@ -256,7 +256,7 @@ UUID 使用标准随机 UUID，生成器不依赖网页。进程内合并在途�
 
 ### 4.5 MTU 证明的可替换边界
 
-参考 MTU 对照版本为 `hgmzhn/manga-translator-ui@2130ccb108dea055e6e105e9aa7d3cfb52f4150d`；本轮核对的是 NodeLane 适配器，没有连接或验证该服务。后续适配只需实现上述运行器及完整图片读取：`POST /auth/login` 取渠道 token；`POST /translate/with-form/image` 以 `X-Session-Token`、multipart `image` 和 `config.translator.target_lang` 提交，完成后验证整张图片。语言代码映射、32 MiB 上传检查与错误规则留在 MTU 目录。
+参考 MTU 对照版本为 `hgmzhn/manga-translator-ui@2130ccb108dea055e6e105e9aa7d3cfb52f4150d`；当前已实现 NodeLane 适配器，MTU 服务尚未接入或验证。后续适配只需实现上述运行器及完整图片读取：`POST /auth/login` 取渠道 token；`POST /translate/with-form/image` 以 `X-Session-Token`、multipart `image` 和 `config.translator.target_lang` 提交，完成后验证整张图片。语言代码映射、32 MiB 上传检查与错误规则留在 MTU 目录。
 
 MTU 不需要 NodeLane 登录，不实现官方 SSE／overlay／额度或远端恢复；同配置串行执行。手机原生 HTTP 代替扩展的非激活执行标签页，不维持浏览器宿主。发送前保存本地回执，进程死亡或断连接只能标记“结果未知，服务可能仍在处理”，不会自动重发。缺失完整本地结果只能显式重新翻译；UI 不把它伪装成可恢复的官方成功结果。
 
@@ -450,17 +450,16 @@ MTU 真正接入及 Shinobu 评估另立具体任务，不阻塞上述核心接�
 
 ## 9. 许可、证据与未决项
 
-本轮不复制 `node-comics` 源码、模型或字体，保留 App 的 [LICENSE](../LICENSE)、[原始 README](../README.mangayomi.md) 和上游来源。接口语义的独立实现与复制／翻译已有源码需要区分；把 TS 改写成 Dart 并不自动消除原代码许可义务。
+翻译层独立实现，未复制 `node-comics` 源码、模型或字体；保留 App 的 [LICENSE](../LICENSE)、[原始 README](../README.mangayomi.md) 和上游来源。接口语义的独立实现与复制／翻译已有源码需要区分；把 TS 改写成 Dart 并不自动消除原代码许可义务。
 
 `node-comics` 默认是 GPL-3.0-only，不能当作 Apache-2.0 代码直接并入后继续将整个派生发行物标成仅 Apache。Apache-2.0 代码可进入符合 GPLv3 的组合发行，但原版权／许可声明仍保留；方向性说明见 [Apache 官方许可兼容说明](https://apache.org/licenses/GPL-compatibility.html)。若后续选择复制原位脚本、站点规则实现或合成代码，应先明确相应发行采用 GPL-3.0-only 及其源代码义务，或取得有效的另行授权；不能仅靠独立目录、JS 资源包或网络边界名称绕开判断。首期推荐独立实现最小契约与通用脚本，复制候选留到单独可审阅的变更中决定。
 
-实际引入时记录仓库 URL、固定 commit／版本、逐文件 SHA-256、原 SPDX／版权、必要 NOTICE、修改与重建方式；必要代码快照进入本仓库，不引用同级目录构建。站点 fixtures 保留来源依据但移除 Cookie、token、用户内容和签名地址。模型／字体有各自许可和体积，不能沿用代码许可；Shinobu 设计中的资产状态亦不是手机发布授权，本期不引入这些资产。最终渠道代码与发行方式的许可核对放在公开分发前完成，本轮不变更项目许可。
+实际引入时记录仓库 URL、固定 commit／版本、逐文件 SHA-256、原 SPDX／版权、必要 NOTICE、修改与重建方式；必要代码快照进入本仓库，不引用同级目录构建。站点 fixtures 保留来源依据但移除 Cookie、token、用户内容和签名地址。模型／字体有各自许可和体积，不能沿用代码许可；Shinobu 设计中的资产状态亦不是手机发布授权，本期不引入这些资产。最终渠道代码与发行方式的许可核对放在公开分发前完成，保留项目原有许可声明。
 
-当前证据与边界：
+当前验证边界：
 
-- 已验证：Flutter 静态分析无错误（Isar 生成代码仍有实验 API 警告）；10 项翻译定向测试与 19 项既有阅读器回归通过，覆盖隔离 API 的响应丢失／同体重放／账号隔离／原图变化、图片合成、SSE、整图渠道替换，以及拆页共用结果、原译显示与后台解码资源释放。Chrome DOM 夹具通过 Blob 双向分块、原译图与位置、过期消息拒绝、隐藏停工与释放。这些验证均未使用真实翻译服务。
-- iOS：无签名设备 debug 构建成功；明确 `ARCHS=arm64 ONLY_ACTIVE_ARCH=YES` 并使用正常模拟器 ad hoc 签名后，模拟器构建、启动、翻译设置、语言切换与缓存清理通过。未限定架构的模拟器构建会在上游 `media_kit_video` 的 Swift 头文件失败；无签名产物不能替代钥匙串交互验证。后续手机 UI 迭代已验证本地阅读、多标签静态网页、显示选项切换和部分恢复路径，具体边界见[手机界面验证](MOBILE_UI_DESIGN.md#实现边界与验证)，不代表真实译图或服务验收。
-- 环境：独立 Flutter 3.47.8／Dart 3.13.7、Rust stable、CocoaPods 1.16.2、JDK 21，以及 Android SDK 36、Build Tools 36.0.0、NDK 28.2.13676358、CMake 3.22.1 已安装。安装命令禁用代理环境变量；系统仍存在映射 DNS／TUN 路由，未修改全局网络配置，不能据此保证底层完全直连。项目依赖仍使用原锁定版本，不以环境准备为由升级应用依赖。
-- Android：`flutter build apk --debug --target-platform android-arm64 --no-pub` 已成功产出调试 APK。首次依赖下载遭遇间歇 TLS 握手失败；对最后缺失的 Flutter 引擎 JAR 从官方地址下载并核验存储对象摘要后，复验构建通过，未降低 TLS／证书校验或更换仓库。新增备份规则通过 AAPT2 资源编译。独立 Android 16／API 36 模拟器已运行，界面与恢复检查见[手机界面验证](MOBILE_UI_DESIGN.md#实现边界与验证)。两端真机、真实登录／翻译服务、长时间内存与能耗或部署仍未验收；编译和静态网页样例不证明源站登录在真机可用。
-- 发布前门槛：原生桥主框架／origin 在两端的行为、SameSite／分区 Cookie、规范化颜色／方向、四种阅读模式的页内位置、WebView 冷恢复与真实多进程解码峰值。未通过的 Canvas／超长图能力保持关闭。应用标识、图标、更新地址、身份服务原生回调和发行许可仍需独立确认。
+- 静态与模拟：Flutter 静态分析无错误，Isar 生成代码仍有实验 API 警告；翻译与阅读器回归覆盖响应丢失、同体重放、账号隔离、原图变化、图片合成、SSE、整图渠道替换、拆页共用结果、显示切换和资源释放。Chrome DOM 夹具覆盖 Blob 双向分块、位置保持、过期消息拒绝和隐藏释放；这些均不依赖真实翻译服务。
+- iOS：设备无签名 debug 和 arm64 模拟器构建通过；模拟器使用 `ARCHS=arm64 ONLY_ACTIVE_ARCH=YES`、正常 ad hoc 签名及钥匙串权限。未限定架构的模拟器构建存在上游 `media_kit_video` Swift 头文件问题，无签名产物不能用于证明钥匙串交互。设置、本地阅读、多标签网页和恢复路径的边界见[手机界面验证](MOBILE_UI_DESIGN.md#实现边界与验证)。
+- 真实服务与平台：用户反馈登录和翻译成功，但设备、入口及范围未记录；完整真机、续期、换号与故障恢复仍需验收。Android 构建和运行验收暂缓，不沿用旧构建或模拟器结果证明当前实现可用；依赖保持原锁定版本。
+- 发布前门槛：核对两端原生桥主框架／origin、SameSite／分区 Cookie、颜色／方向、四种阅读模式的页内位置、WebView 冷恢复和多进程解码峰值，以及应用标识、图标、更新地址、身份服务原生回调和发行许可。Canvas／超长图未通过前保持关闭；真机性能、能耗与部署尚未验收。
 - 暂不扩展：通用跨域 iframe 翻译、任意污染 Canvas、整章后台翻译、自动安装本机模型、完整扩展运行时和全站点迁移。

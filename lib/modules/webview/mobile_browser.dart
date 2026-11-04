@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -332,8 +334,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   void _tabLimit() {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('最多保留 12 个标签页，请先关闭一个。')));
+    showNodeLaneNotice('最多保留 12 个标签页，请先关闭一个。');
     _showTabs();
   }
 
@@ -431,8 +432,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       if (mounted) await current?.controller?.reload();
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('清除失败，请重试。')));
+        showNodeLaneNotice('清除失败，请重试。', kind: NodeLaneNoticeKind.error);
       }
     } finally {
       if (mounted) setState(() => _clearingLogins = false);

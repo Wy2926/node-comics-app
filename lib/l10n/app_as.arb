@@ -363,7 +363,6 @@
   "skip_ending": "এণ্ডিং স্কিপ কৰক",
   "fullscreen": "সম্পূৰ্ণ স্ক্ৰীন",
   "update_library": "পুথিভঁৰাল আপডেট কৰক",
-  "updating_library": "পুথিভঁৰাল আপডেট কৰি আছে ({cur} / {max}) - বিফল: {failed}",
   "next_chapter": "পৰৱৰ্তী অধ্যায়",
   "next_5_chapters": "পৰৱৰ্তী ৫ টা অধ্যায়",
   "next_10_chapters": "পৰৱৰ্তী ১০ টা অধ্যায়",

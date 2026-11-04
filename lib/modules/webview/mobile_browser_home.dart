@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -48,8 +49,7 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
 
   Future<void> _new() async {
     if (browserSessionStore.entries.length >= BrowserSessionStore.maxTabs) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('最多保留 12 个标签页，请先关闭一个。')));
+      showNodeLaneNotice('最多保留 12 个标签页，请先关闭一个。');
       await _tabs();
       return;
     }

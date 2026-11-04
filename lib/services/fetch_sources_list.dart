@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:mangayomi/services/source_package.dart';
+
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
@@ -42,10 +44,14 @@ Future<void> fetchSourcesList({
   final info = await PackageInfo.fromPlatform();
 
   List<Source> sourceList = [];
+  List<Source>? allCatalogSources;
 
   // Try parsing with ExtensionStoreService (.pb, NetworkExtensionStore JSON, or legacy min.json)
   final storeResult = await ExtensionStoreService.fetchStore(url, http);
   if (storeResult != null && storeResult.sources.isNotEmpty) {
+    allCatalogSources = storeResult.sources
+        .where((s) => s.itemType == itemType)
+        .toList();
     sourceList = storeResult.sources
         .where(
           (source) =>
@@ -127,6 +133,27 @@ Future<void> fetchSourcesList({
   // A failed/empty response must not erase cached catalog entries as obsolete.
   if (sourceList.isEmpty) throw StateError('目录为空或暂时无法读取');
 
+  final catalogIds = <int>{};
+  for (final source in allCatalogSources ?? sourceList) {
+    if (source.id == null || !catalogIds.add(source.id!)) {
+      throw StateError('来源目录包含无效或重复 ID，未修改已有来源');
+    }
+  }
+  // Validate ownership before mutating any record from this catalog.
+  for (final source in allCatalogSources ?? sourceList) {
+    validatePackageLocation(source, url);
+    final existing = source.id == null
+        ? null
+        : sourceRepository.getById(source.id!);
+    if (existing != null && !canReplaceSource(existing, source, url)) {
+      throw StateError('来源 ID 与另一仓库冲突，未修改已安装来源');
+    }
+  }
+  sourceList = sourceList
+      .where((source) => SourcePackage.of(source)?.compatible ?? true)
+      .toList();
+  if (sourceList.isEmpty) throw StateError('此目录需要更新 App，已保留已安装版本');
+
   if (id != null) {
     final matchingSource = sourceList.firstWhere(
       (source) => source.id == id,
@@ -134,6 +161,8 @@ Future<void> fetchSourcesList({
     );
     if (matchingSource.id != null && matchingSource.sourceCodeUrl!.isNotEmpty) {
       await _updateSource(matchingSource, androidProxyServer, repo, itemType);
+    } else {
+      throw StateError('此来源已不在目录中，已保留已安装版本');
     }
   } else {
     for (var source in sourceList) {
@@ -141,6 +170,9 @@ Future<void> fetchSourcesList({
       if (existingSource == null) {
         await _addNewSource(source, repo, itemType);
         continue;
+      }
+      if (existingSource.repo?.jsonUrl != repo!.jsonUrl) {
+        await sourceRepository.save(existingSource..repo = repo);
       }
       final shouldUpdate =
           existingSource.isAdded! &&
@@ -156,22 +188,54 @@ Future<void> fetchSourcesList({
     }
   }
 
-  checkIfSourceIsObsolete(sourceList, repo!, itemType);
+  await checkIfSourceIsObsolete(
+    allCatalogSources ?? sourceList,
+    repo!,
+    itemType,
+  );
 }
 
+final _installations = <int, Future<void>>{};
+
 Future<void> _updateSource(
+  Source source,
+  String proxy,
+  Repo? repo,
+  ItemType type,
+) async {
+  final id = source.id!;
+  final previous = _installations[id];
+  final future = () async {
+    try {
+      await previous;
+    } catch (_) {
+      /* A failed attempt must not block retry. */
+    }
+    await _installSource(source, proxy, repo, type);
+  }();
+  _installations[id] = future;
+  try {
+    await future;
+  } finally {
+    if (identical(_installations[id], future)) _installations.remove(id);
+  }
+}
+
+Future<void> _installSource(
   Source source,
   String androidProxyServer,
   Repo? repo,
   ItemType itemType,
 ) async {
   final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
-  final req = await http.get(Uri.parse(source.sourceCodeUrl!));
+  // MClient owns and pools its underlying transport; an individual install
+  // must not close it and break subsequent catalog requests.
+  final bytes = await downloadSourcePackage(http, source);
   final sourceCode =
       (source.sourceCodeLanguage == SourceCodeLanguage.mihon ||
           source.sourceCodeLanguage == SourceCodeLanguage.aidoku)
-      ? base64.encode(req.bodyBytes)
-      : req.body;
+      ? base64.encode(bytes)
+      : utf8.decode(bytes);
 
   Map<String, String> headers = {};
   bool? supportLatest;
@@ -210,6 +274,11 @@ Future<void> _updateSource(
   final existing = source.id != null
       ? sourceRepository.getById(source.id!)
       : null;
+  if (existing != null &&
+      existing.isAdded == true &&
+      compareVersions(existing.version ?? '0.0.0', source.version!) > 0) {
+    throw StateError('拒绝安装较旧版本；恢复旧实现请发布新版本号');
+  }
   final updatedSource = Source()
     ..headers = jsonEncode(headers)
     ..supportLatest = supportLatest
@@ -218,10 +287,12 @@ Future<void> _updateSource(
         ? jsonEncode(preferenceList.map((e) => e.toJson()).toList())
         : null
     ..isAdded = true
+    ..isActive = existing?.isActive ?? true
     ..isPinned = existing?.isPinned ?? false
     ..lastUsed = existing?.lastUsed ?? false
     ..sourceCode = sourceCode
     ..sourceCodeUrl = source.sourceCodeUrl
+    ..packageInfoJson = source.packageInfoJson
     ..id = source.id
     ..apiUrl = source.apiUrl
     ..baseUrl = source.baseUrl
@@ -251,6 +322,7 @@ Future<void> _updateSource(
 Future<void> _addNewSource(Source source, Repo? repo, ItemType itemType) async {
   final newSource = Source()
     ..sourceCodeUrl = source.sourceCodeUrl
+    ..packageInfoJson = source.packageInfoJson
     ..id = source.id
     ..sourceCode = source.sourceCode
     ..apiUrl = source.apiUrl
@@ -297,8 +369,9 @@ Future<void> checkIfSourceIsObsolete(
   final toUpdate = <Source>[];
   final toDelete = <int>[];
   for (var source in sources) {
-    final isNowObsolete =
-        !sourceIds.contains(source.id) && source.repo?.jsonUrl == repo.jsonUrl;
+    // Refreshing one catalog must not clear another catalog's obsolete state.
+    if (source.repo?.jsonUrl != repo.jsonUrl) continue;
+    final isNowObsolete = !sourceIds.contains(source.id);
 
     if (!(source.isAdded ?? false) && isNowObsolete) {
       // Not installed and gone from the repo: nothing to install, so

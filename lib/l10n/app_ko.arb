@@ -635,7 +635,6 @@
   "skip_ending": "엔딩 건너뛰기",
   "fullscreen": "전체 화면",
   "update_library": "보관함 업데이트",
-  "updating_library": "보관함 업데이트 중 ({cur} / {max}) - 실패: {failed}",
   "next_chapter": "다음 화",
   "next_5_chapters": "다음 5화",
   "next_10_chapters": "다음 10화",

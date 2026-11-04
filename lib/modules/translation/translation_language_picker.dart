@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -96,8 +97,7 @@ class _TranslationLanguageRowState
     if (value == null || value == service.language) return;
     await service.setLanguage(value);
     if (mounted && service.error != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(service.error!)));
+      showNodeLaneNotice(service.error!, kind: NodeLaneNoticeKind.error);
     }
   }
 

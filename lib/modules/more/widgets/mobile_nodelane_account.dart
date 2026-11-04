@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -96,8 +98,7 @@ class _AccountViewState extends ConsumerState<_AccountView>
     } catch (_) {
       _websiteOpen = false;
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.failed)));
+        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
       }
     }
   }
@@ -222,10 +223,9 @@ class _AccountViewState extends ConsumerState<_AccountView>
                                   ),
                                 );
                                 if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(l.error_reports_copied),
-                                    ),
+                                  showNodeLaneNotice(
+                                    l.error_reports_copied,
+                                    kind: NodeLaneNoticeKind.error,
                                   );
                                 }
                               },

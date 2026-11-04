@@ -1,6 +1,9 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:mangayomi/services/source_package.dart';
+import 'package:mangayomi/services/source_catalog_config.dart';
+
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:mangayomi/eval/javascript/dom_selector.dart';
 import 'package:mangayomi/eval/javascript/js_errors.dart';
@@ -31,7 +34,7 @@ class JsExtensionService implements ExtensionService {
   void _init() {
     if (_isInitialized) return;
     runtime = getJavascriptRuntime();
-    JsHttpClient(runtime).init();
+    JsHttpClient(runtime, package: SourcePackage.of(source)).init();
     _jsDomSelector = JsDomSelector(runtime)..init();
     JsUtils(runtime).init();
     JsVideosExtractors(runtime).init();
@@ -39,6 +42,7 @@ class JsExtensionService implements ExtensionService {
     final sourceJson = jsonEncode(source.toMSource().toJson());
 
     runtime.evaluate('''
+const NodeLane = Object.freeze({capabilities: Object.freeze(${jsonEncode(nodeLaneHostCapabilities.toList())})});
 class MProvider {
     get source() {
         return $sourceJson;
@@ -154,10 +158,8 @@ var extention = new DefaultExtension();
 
   @override
   Future<List<PageUrl>> getPageList(String url) async {
-    final pages = LinkedHashSet<PageUrl>(
-      equals: (a, b) => a.url == b.url,
-      hashCode: (p) => p.url.hashCode,
-    );
+    // Repeated URLs may be distinct page slots; retain source order and count.
+    final pages = <PageUrl>[];
 
     for (final e in await _extensionCallAsync<List>(
       'getPageList(${jsonEncode(url)})',

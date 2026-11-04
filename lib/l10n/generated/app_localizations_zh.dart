@@ -1635,11 +1635,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get update_library => '更新库';
 
   @override
-  String updating_library(Object cur, Object failed, Object max) {
-    return '正在更新库 ($cur / $max) - 失败: $failed';
-  }
-
-  @override
   String get next_chapter => '下一章';
 
   @override
@@ -4455,4 +4450,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onboarding_view_folders => '查看文件夹';
+
+  @override
+  String get notice_backup_created => '备份已创建';
+
+  @override
+  String get notice_backup_ready => '可将备份文件保存到其他位置。';
+
+  @override
+  String get notice_backup_restored => '备份已恢复';
+
+  @override
+  String get notice_backup_unsupported => '不支持此备份格式。';
+
+  @override
+  String get notice_verification_required => '网站需要验证';
+
+  @override
+  String get notice_verification_hint => '完成验证后可继续访问。';
+
+  @override
+  String get notice_verify => '前往验证';
+
+  @override
+  String get notice_action_incomplete => '操作未完成，请先核对结果再决定是否重试。';
+
+  @override
+  String get notice_library_updating => '正在更新书库';
+
+  @override
+  String notice_library_progress(Object current, Object total) {
+    return '已检查 $current / $total 部作品';
+  }
+
+  @override
+  String get notice_library_failed => '部分作品更新失败';
+
+  @override
+  String get notice_import_completed => '导入完成';
+
+  @override
+  String get notice_operation_incomplete => '操作未完成';
 }

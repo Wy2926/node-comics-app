@@ -4,7 +4,7 @@
 
 产品目标是将漫画阅读、网站适配与 NodeLane 翻译结合起来，并提供内置多标签浏览器，在原网页中翻译漫画图片。
 
-当前代码基线为 Mangayomi **v0.9.9**。已接入独立翻译契约、官方渠道回执恢复、阅读器显示切换和手机多标签网页桥。手机默认底栏为书架、更新、来源、浏览器和更多；来源区分 NodeLane 临时目录与第三方，云端目录尚未接入。独立历史页已移除，阅读进度继续保留。手机“更多”页整合账号、订阅额度与设置入口；翻译语言直接弹层选择，译图缓存清理位于存储与备份，阅读器及网页工具栏中的翻译按钮按当前阅读窗口启用。关于页、账号默认标识与应用内名称使用 NodeLane 品牌；移动端交互、真实账号／服务和性能验收边界见架构与界面文档。
+NodeLane 应用版本为 **0.1.0**（构建号 **1**），上游代码基线为 Mangayomi **v0.9.9**。应用提供书架、阅读器、来源、多标签浏览器和翻译账号入口；已接入独立翻译契约与官方渠道恢复。官方插件由独立仓库维护，本地测试来源为 Comix 与 S2READ，正式目录尚未部署。当前能力和验收边界见下方专题文档。
 
 ## 开发导航
 
@@ -12,7 +12,7 @@
 | --- | --- |
 | [开发约定](AGENTS.md) | 产品边界、翻译解耦、性能与验证要求 |
 | [翻译架构与实现状态](docs/TRANSLATION_ARCHITECTURE.md) | 接入方式、共享渠道、回执恢复、资源预算及尚未通过的验收门槛 |
-| [手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md) | 书架、来源、更新、详情、阅读工具栏、浏览器、更多／设置、翻译账号、平台底栏及迭代清单 |
+| [手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md) | 书架、来源、更新、详情、阅读工具栏、浏览器、更多／设置、翻译账号、平台底栏及验证边界 |
 | [上游基线](UPSTREAM.md) | 来源、固定提交、许可证和摘要 |
 | [Mangayomi 原始说明](README.mangayomi.md) | 上游功能、构建说明和致谢 |
 | [Flutter 配置](pubspec.yaml) | Dart SDK 与依赖要求 |
@@ -21,7 +21,9 @@
 | [手机网页入口](lib/modules/webview/mobile_browser.dart) | 有限保活的多标签与原位翻译；桌面继续使用上游 WebView |
 | [翻译契约](lib/services/translation/contracts.dart) | 来源、渠道运行时、结果与释放边界 |
 | [章节图片入口](lib/services/get_chapter_pages.dart) | 来源页面清单获取 |
-| [CI](.github/workflows/ci.yml) | 上游静态分析、测试和各平台构建流程 |
+| [独立插件仓库与主机契约](docs/SOURCE_PLUGINS.md) | 本地联调、目录与包校验、CF、图片还原及验证入口 |
+| [CI](.github/workflows/ci.yml)／[发行构建](.github/workflows/release.yml) | 静态分析、测试、各平台构建与 NodeLane 产物上传 |
+| [iOS 侧载订阅配置](repo/config.json) | NodeLane 订阅元数据；生成规则与发行前置条件见[应用更新](docs/MOBILE_UI_DESIGN.md#关于与应用更新) |
 
 ## 本地运行与检查
 
@@ -42,7 +44,7 @@ flutter build apk --debug
 flutter build ios --debug --no-codesign
 ```
 
-这些是各平台运行入口，不代表已完成本机编译或真机验证；当前按开发约定只推进 iOS 平台验证，Android 命令暂不执行。iOS／Android 显示名已本地化，应用 GitHub、反馈及更新查询统一指向项目仓库。包标识、启动图标、版本号、签名和各平台发行配置仍需在 NodeLane 发布前独立核对；本轮没有发布构建产物。
+这些是各平台运行入口，不代表已完成本机编译或真机验证；当前按开发约定只推进 iOS 平台验证，Android 命令暂不执行。iOS／Android 显示名已本地化，应用 GitHub、反馈及更新查询统一指向项目仓库。iOS 使用独立包标识 `com.nodelane-comics.app`，系统图标和应用内标识使用 NodeLane 素材，安装与迁移边界见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。其他平台包标识与原生图标、签名和平台发行元数据仍待调整；发行构建与部署尚未验收。
 
 ## 既有 NodeLane 能力
 

@@ -1,7 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/services/crash_report_issue.dart';
@@ -194,7 +194,7 @@ Future<void> _copyReport(BuildContext context, CrashReport report) async {
   await Clipboard.setData(
     ClipboardData(text: '${report.error}\n\n${report.stack ?? ''}'),
   );
-  botToast(copied, second: 2);
+  showNodeLaneNotice(copied, seconds: 2, kind: NodeLaneNoticeKind.success);
 }
 
 Future<void> _report(CrashReport report, VoidCallback onReported) async {

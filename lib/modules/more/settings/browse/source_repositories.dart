@@ -1,9 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/browse/mobile_repository_sheets.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
@@ -417,7 +417,10 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                                     if (context.mounted) {
                                       setState(() => isLoading = false);
                                     }
-                                    botToast(l10n.unsupported_repo);
+                                    showNodeLaneNotice(
+                                      l10n.unsupported_repo,
+                                      kind: NodeLaneNoticeKind.error,
+                                    );
                                     return;
                                   }
                                   final repoUrl = repo.jsonUrl
@@ -440,14 +443,19 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                                   });
                                   if (isDuplicate) {
                                     setState(() => isLoading = false);
-                                    botToast(l10n.repo_already_exists);
+                                    showNodeLaneNotice(
+                                      l10n.repo_already_exists,
+                                    );
                                     return;
                                   }
                                   await repoNotifier.set([
                                     ...currentRepos,
                                     repo,
                                   ]);
-                                  botToast(l10n.repo_added);
+                                  showNodeLaneNotice(
+                                    l10n.repo_added,
+                                    kind: NodeLaneNoticeKind.success,
+                                  );
                                 } catch (e, s) {
                                   if (context.mounted) {
                                     setState(() => isLoading = false);

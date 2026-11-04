@@ -1699,11 +1699,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get update_library => 'Actualizar biblioteca';
 
   @override
-  String updating_library(Object cur, Object failed, Object max) {
-    return 'Actualizando biblioteca ($cur / $max) - Fallido: $failed';
-  }
-
-  @override
   String get next_chapter => 'Próximo capítulo';
 
   @override
@@ -4731,6 +4726,50 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboarding_view_folders => 'View folders';
+
+  @override
+  String get notice_backup_created => 'Backup created';
+
+  @override
+  String get notice_backup_ready => 'Save or share the backup file.';
+
+  @override
+  String get notice_backup_restored => 'Backup restored';
+
+  @override
+  String get notice_backup_unsupported =>
+      'This backup format is not supported.';
+
+  @override
+  String get notice_verification_required => 'Website verification required';
+
+  @override
+  String get notice_verification_hint =>
+      'Complete verification to continue browsing.';
+
+  @override
+  String get notice_verify => 'Verify website';
+
+  @override
+  String get notice_action_incomplete =>
+      'The action did not finish. Check its result before trying again.';
+
+  @override
+  String get notice_library_updating => 'Updating library';
+
+  @override
+  String notice_library_progress(Object current, Object total) {
+    return 'Checked $current / $total titles';
+  }
+
+  @override
+  String get notice_library_failed => 'Some titles could not be updated';
+
+  @override
+  String get notice_import_completed => 'Import completed';
+
+  @override
+  String get notice_operation_incomplete => 'Action incomplete';
 }
 
 /// The translations for Spanish Castilian, as used in Latin America and the Caribbean (`es_419`).
@@ -6376,11 +6415,6 @@ class AppLocalizationsEs419 extends AppLocalizationsEs {
 
   @override
   String get update_library => 'Actualizar biblioteca';
-
-  @override
-  String updating_library(Object cur, Object failed, Object max) {
-    return 'Actualizando biblioteca ($cur / $max) - Fallido: $failed';
-  }
 
   @override
   String get next_chapter => 'Siguiente capítulo';

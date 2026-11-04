@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 // The detail screen's overflow menu actions (update check, categories,
 // share link, migrate, view source, export metadata, mass migration),
 // shared by the popup menu off-TV and the centred TV menu. Split out of
@@ -10,7 +12,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/providers/export_metadata.dart';
 import 'package:mangayomi/modules/widgets/category_selection_dialog.dart';
@@ -92,10 +93,13 @@ Future<void> handleDetailOverflowAction({
             directory: Directory(result),
             headers: headers,
           );
-          botToast(l10n.exported);
+          showNodeLaneNotice(l10n.exported, kind: NodeLaneNoticeKind.success);
         }
       } catch (e) {
-        botToast(l10n.failed_to_export_metadata(e));
+        showNodeLaneNotice(
+          l10n.failed_to_export_metadata(e),
+          kind: NodeLaneNoticeKind.error,
+        );
       }
       break;
     case 6:

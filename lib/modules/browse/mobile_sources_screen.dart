@@ -225,7 +225,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
           ? null
           : managing
           ? () => _pin(source)
-          : installed
+          : installed && (thirdParty || !update)
           ? () => _open(source)
           : () => _fetch(source, open: true),
       onLongPress: () => _sourceActions(source),
@@ -291,8 +291,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         ref.read(browseInitialTabProvider.notifier).clear();
       });
     });
-    final temporary = ref.watch(temporaryCatalogRepositoryProvider(type));
-    final loading = ref.watch(temporaryCatalogLoadProvider(type));
+    final official = ref.watch(nodeLaneCatalogRepositoryProvider(type));
+    final loading = ref.watch(nodeLaneCatalogLoadProvider(type));
     ref.watch(fetchItemSourcesListProvider(reFresh: false, itemType: type));
     final sources = ref.watch(mobileCatalogEntriesProvider(type));
     final repositories = ref.watch(extensionsRepoStateProvider(type));
@@ -305,7 +305,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
               !repositories.any(
                 (r) => r.jsonUrl == s.repo?.jsonUrl && r.hidden == true,
               ) &&
-              (thirdParty || s.repo?.jsonUrl == temporary?.jsonUrl),
+              (thirdParty
+                  ? !isNodeLaneCatalogSource(s, official)
+                  : isNodeLaneCatalogSource(s, official)),
         )
         .toList();
     final selectedLanguages = languages[(type, thirdParty)];
@@ -446,10 +448,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                       await refresh;
                       if (!mounted) return;
                       ref.invalidate(
-                        temporaryCatalogLoadProvider(requestedType),
+                        nodeLaneCatalogLoadProvider(requestedType),
                       );
                       await ref.read(
-                        temporaryCatalogLoadProvider(requestedType).future,
+                        nodeLaneCatalogLoadProvider(requestedType).future,
                       );
                     } catch (_) {
                       if (mounted && type == requestedType) {
@@ -474,15 +476,17 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                               : Padding(
                                   padding: const EdgeInsets.only(top: 12),
                                   child: Text(
-                                    temporary == null
-                                        ? '暂未配置此类来源'
-                                        : '临时目录 · ${temporary.name ?? '第三方'}',
+                                    official == null
+                                        ? 'NodeLane 暂未提供此类来源，可在第三方中添加'
+                                        : '${official.name} · ${Uri.parse(official.jsonUrl!).authority}',
                                     style: t.readerSecondary,
                                   ),
                                 ),
                         ),
                       ),
-                      if (error != null || sources.hasError || loading.hasError)
+                      if (error != null ||
+                          sources.hasError ||
+                          (!thirdParty && loading.hasError))
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.all(20),
@@ -498,7 +502,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.all(24),
-                            child: loading.isLoading || sources.isLoading
+                            child:
+                                (!thirdParty && loading.isLoading) ||
+                                    sources.isLoading
                                 ? const Center(
                                     child: CircularProgressIndicator(),
                                   )

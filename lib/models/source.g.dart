@@ -82,52 +82,57 @@ const SourceSchema = CollectionSchema(
     r'lastUsed': PropertySchema(id: 21, name: r'lastUsed', type: IsarType.bool),
     r'name': PropertySchema(id: 22, name: r'name', type: IsarType.string),
     r'notes': PropertySchema(id: 23, name: r'notes', type: IsarType.string),
-    r'preferenceList': PropertySchema(
+    r'packageInfoJson': PropertySchema(
       id: 24,
+      name: r'packageInfoJson',
+      type: IsarType.string,
+    ),
+    r'preferenceList': PropertySchema(
+      id: 25,
       name: r'preferenceList',
       type: IsarType.string,
     ),
     r'repo': PropertySchema(
-      id: 25,
+      id: 26,
       name: r'repo',
       type: IsarType.object,
 
       target: r'Repo',
     ),
     r'sourceCode': PropertySchema(
-      id: 26,
+      id: 27,
       name: r'sourceCode',
       type: IsarType.string,
     ),
     r'sourceCodeLanguage': PropertySchema(
-      id: 27,
+      id: 28,
       name: r'sourceCodeLanguage',
       type: IsarType.byte,
       enumMap: _SourcesourceCodeLanguageEnumValueMap,
     ),
     r'sourceCodeUrl': PropertySchema(
-      id: 28,
+      id: 29,
       name: r'sourceCodeUrl',
       type: IsarType.string,
     ),
     r'supportLatest': PropertySchema(
-      id: 29,
+      id: 30,
       name: r'supportLatest',
       type: IsarType.bool,
     ),
     r'typeSource': PropertySchema(
-      id: 30,
+      id: 31,
       name: r'typeSource',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 31,
+      id: 32,
       name: r'updatedAt',
       type: IsarType.long,
     ),
-    r'version': PropertySchema(id: 32, name: r'version', type: IsarType.string),
+    r'version': PropertySchema(id: 33, name: r'version', type: IsarType.string),
     r'versionLast': PropertySchema(
-      id: 33,
+      id: 34,
       name: r'versionLast',
       type: IsarType.string,
     ),
@@ -272,6 +277,12 @@ int _sourceEstimateSize(
     }
   }
   {
+    final value = object.packageInfoJson;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.preferenceList;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -347,21 +358,22 @@ void _sourceSerialize(
   writer.writeBool(offsets[21], object.lastUsed);
   writer.writeString(offsets[22], object.name);
   writer.writeString(offsets[23], object.notes);
-  writer.writeString(offsets[24], object.preferenceList);
+  writer.writeString(offsets[24], object.packageInfoJson);
+  writer.writeString(offsets[25], object.preferenceList);
   writer.writeObject<Repo>(
-    offsets[25],
+    offsets[26],
     allOffsets,
     RepoSchema.serialize,
     object.repo,
   );
-  writer.writeString(offsets[26], object.sourceCode);
-  writer.writeByte(offsets[27], object.sourceCodeLanguage.index);
-  writer.writeString(offsets[28], object.sourceCodeUrl);
-  writer.writeBool(offsets[29], object.supportLatest);
-  writer.writeString(offsets[30], object.typeSource);
-  writer.writeLong(offsets[31], object.updatedAt);
-  writer.writeString(offsets[32], object.version);
-  writer.writeString(offsets[33], object.versionLast);
+  writer.writeString(offsets[27], object.sourceCode);
+  writer.writeByte(offsets[28], object.sourceCodeLanguage.index);
+  writer.writeString(offsets[29], object.sourceCodeUrl);
+  writer.writeBool(offsets[30], object.supportLatest);
+  writer.writeString(offsets[31], object.typeSource);
+  writer.writeLong(offsets[32], object.updatedAt);
+  writer.writeString(offsets[33], object.version);
+  writer.writeString(offsets[34], object.versionLast);
 }
 
 Source _sourceDeserialize(
@@ -397,23 +409,24 @@ Source _sourceDeserialize(
     lastUsed: reader.readBoolOrNull(offsets[21]),
     name: reader.readStringOrNull(offsets[22]),
     notes: reader.readStringOrNull(offsets[23]),
-    preferenceList: reader.readStringOrNull(offsets[24]),
+    packageInfoJson: reader.readStringOrNull(offsets[24]),
+    preferenceList: reader.readStringOrNull(offsets[25]),
     repo: reader.readObjectOrNull<Repo>(
-      offsets[25],
+      offsets[26],
       RepoSchema.deserialize,
       allOffsets,
     ),
-    sourceCode: reader.readStringOrNull(offsets[26]),
-    sourceCodeUrl: reader.readStringOrNull(offsets[28]),
-    supportLatest: reader.readBoolOrNull(offsets[29]),
-    typeSource: reader.readStringOrNull(offsets[30]),
-    updatedAt: reader.readLongOrNull(offsets[31]),
-    version: reader.readStringOrNull(offsets[32]),
-    versionLast: reader.readStringOrNull(offsets[33]),
+    sourceCode: reader.readStringOrNull(offsets[27]),
+    sourceCodeUrl: reader.readStringOrNull(offsets[29]),
+    supportLatest: reader.readBoolOrNull(offsets[30]),
+    typeSource: reader.readStringOrNull(offsets[31]),
+    updatedAt: reader.readLongOrNull(offsets[32]),
+    version: reader.readStringOrNull(offsets[33]),
+    versionLast: reader.readStringOrNull(offsets[34]),
   );
   object.sourceCodeLanguage =
       _SourcesourceCodeLanguageValueEnumMap[reader.readByteOrNull(
-        offsets[27],
+        offsets[28],
       )] ??
       SourceCodeLanguage.dart;
   return object;
@@ -479,31 +492,33 @@ P _sourceDeserializeProp<P>(
     case 24:
       return (reader.readStringOrNull(offset)) as P;
     case 25:
+      return (reader.readStringOrNull(offset)) as P;
+    case 26:
       return (reader.readObjectOrNull<Repo>(
             offset,
             RepoSchema.deserialize,
             allOffsets,
           ))
           as P;
-    case 26:
-      return (reader.readStringOrNull(offset)) as P;
     case 27:
+      return (reader.readStringOrNull(offset)) as P;
+    case 28:
       return (_SourcesourceCodeLanguageValueEnumMap[reader.readByteOrNull(
                 offset,
               )] ??
               SourceCodeLanguage.dart)
           as P;
-    case 28:
-      return (reader.readStringOrNull(offset)) as P;
     case 29:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 30:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 31:
-      return (reader.readLongOrNull(offset)) as P;
-    case 32:
       return (reader.readStringOrNull(offset)) as P;
+    case 32:
+      return (reader.readLongOrNull(offset)) as P;
     case 33:
+      return (reader.readStringOrNull(offset)) as P;
+    case 34:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -3338,6 +3353,171 @@ extension SourceQueryFilter on QueryBuilder<Source, Source, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'packageInfoJson'),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition>
+  packageInfoJsonIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'packageInfoJson'),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'packageInfoJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition>
+  packageInfoJsonGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'packageInfoJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'packageInfoJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'packageInfoJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'packageInfoJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'packageInfoJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'packageInfoJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'packageInfoJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition> packageInfoJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'packageInfoJson', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterFilterCondition>
+  packageInfoJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'packageInfoJson', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Source, Source, QAfterFilterCondition> preferenceListIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -4790,6 +4970,18 @@ extension SourceQuerySortBy on QueryBuilder<Source, Source, QSortBy> {
     });
   }
 
+  QueryBuilder<Source, Source, QAfterSortBy> sortByPackageInfoJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'packageInfoJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterSortBy> sortByPackageInfoJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'packageInfoJson', Sort.desc);
+    });
+  }
+
   QueryBuilder<Source, Source, QAfterSortBy> sortByPreferenceList() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'preferenceList', Sort.asc);
@@ -5200,6 +5392,18 @@ extension SourceQuerySortThenBy on QueryBuilder<Source, Source, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Source, Source, QAfterSortBy> thenByPackageInfoJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'packageInfoJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Source, Source, QAfterSortBy> thenByPackageInfoJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'packageInfoJson', Sort.desc);
+    });
+  }
+
   QueryBuilder<Source, Source, QAfterSortBy> thenByPreferenceList() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'preferenceList', Sort.asc);
@@ -5484,6 +5688,17 @@ extension SourceQueryWhereDistinct on QueryBuilder<Source, Source, QDistinct> {
     });
   }
 
+  QueryBuilder<Source, Source, QDistinct> distinctByPackageInfoJson({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'packageInfoJson',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
   QueryBuilder<Source, Source, QDistinct> distinctByPreferenceList({
     bool caseSensitive = true,
   }) {
@@ -5705,6 +5920,12 @@ extension SourceQueryProperty on QueryBuilder<Source, Source, QQueryProperty> {
   QueryBuilder<Source, String?, QQueryOperations> notesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'notes');
+    });
+  }
+
+  QueryBuilder<Source, String?, QQueryOperations> packageInfoJsonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'packageInfoJson');
     });
   }
 

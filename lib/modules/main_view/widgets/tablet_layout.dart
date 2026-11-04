@@ -1,4 +1,4 @@
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -274,13 +274,7 @@ class _TvRailHeader extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
-            appIconAssets[2],
-            width: 30,
-            height: 30,
-            color: accent,
-            filterQuality: FilterQuality.medium,
-          ),
+          const NodeLaneBrandMark(size: 30),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),

@@ -1,9 +1,11 @@
+import 'package:mangayomi/core/navigation/app_navigator.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_interceptor/http_interceptor.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -115,7 +117,7 @@ class MClient {
   // domain "example.com" a source actually scrapes, leaving Cloudflare
   // looking "unresolved" even right after a successful manual bypass.
   static bool _hostsMatch(String a, String b) {
-    return a == b || a.endsWith('.$b') || b.endsWith('.$a') || a.contains(b);
+    return a == b || a.endsWith('.$b') || b.endsWith('.$a');
   }
 
   static Map<String, String> getCookiesPref(
@@ -324,6 +326,19 @@ Map<String, String> redactHeaders(Map<String, String> headers) => {
     key: _redactedHeaders.contains(key.toLowerCase()) ? '<redacted>' : value,
 };
 
+/// Source query strings may contain signed API/image URLs. Keep the endpoint
+/// useful for diagnostics without persisting tokens or search terms.
+@visibleForTesting
+String redactRequestUrl(Uri url) => url
+    .replace(
+      userInfo: '',
+      queryParameters: url.hasQuery
+          ? {for (final key in url.queryParameters.keys) key: '<redacted>'}
+          : null,
+    )
+    .removeFragment()
+    .toString();
+
 final _redactedHeaderInText = RegExp(
   '\\b(${_redactedHeaders.map(RegExp.escape).join('|')}): [^,}]*',
   caseSensitive: false,
@@ -339,13 +354,12 @@ class LoggerInterceptor extends InterceptorContract {
   bool showCloudFlareError;
   @override
   Future<BaseRequest> interceptRequest({required BaseRequest request}) async {
-    final head = "----- Request -----\n${request.toString()}\nheaders: ";
+    final head =
+        "----- Request -----\n${request.method} ${redactRequestUrl(request.url)}\nheaders: ";
 
     if (kDebugMode || useLogger) {
-      // The console keeps the real headers for debugging; only the log file,
-      // which gets shared, has them redacted.
       // ignore: avoid_print
-      print("$head${request.headers}");
+      print("$head${redactHeaders(request.headers)}");
       Logger.add(LoggerLevel.info, "$head${redactHeaders(request.headers)}");
     }
 
@@ -359,7 +373,7 @@ class LoggerInterceptor extends InterceptorContract {
     if (showCloudFlareError) {
       final cloudflare = isCloudflare(response);
       final content =
-          "----- Response -----\n${response.request?.method}: ${response.request?.url}, statusCode: ${response.statusCode} ${cloudflare ? "Failed to bypass Cloudflare" : ""}";
+          "----- Response -----\n${response.request?.method}: ${response.request == null ? '' : redactRequestUrl(response.request!.url)}, statusCode: ${response.statusCode} ${cloudflare ? "Failed to bypass Cloudflare" : ""}";
 
       if (kDebugMode || useLogger) {
         // ignore: avoid_print
@@ -432,14 +446,23 @@ void _showCloudflareAlert(BaseResponse response) {
   final noResolverAvailable =
       Platform.isLinux && CfProxyStore.url.trim().isEmpty;
   try {
-    botToast(
+    showNodeLaneNotice(
       noResolverAvailable
           ? "Cloudflare check. Add bypass URL: Settings > General."
-          : "Cloudflare verification required (HTTP ${response.statusCode})",
-      // The button opens the webview resolver, which does nothing on Linux.
-      hasCloudFlare: !noResolverAvailable,
-      url: response.request?.url.toString(),
-      maxLines: noResolverAvailable ? 6 : 2,
+          : localizedMessage((l) => l.notice_verification_required),
+      description: noResolverAvailable
+          ? null
+          : localizedMessage((l) => l.notice_verification_hint),
+      kind: NodeLaneNoticeKind.verification,
+      actionLabel: noResolverAvailable || response.request == null
+          ? null
+          : localizedMessage((l) => l.notice_verify),
+      onAction: noResolverAvailable || response.request == null
+          ? null
+          : () => AppNavigator.push(
+              '/mangawebview',
+              extra: {'url': response.request!.url.toString(), 'title': ''},
+            ),
     );
   } catch (e) {
     throw noResolverAvailable
@@ -581,7 +604,7 @@ Future<void> webviewServer() async {
         "Couldn't start Cloudflare Resolution Webview Server: $e\n$st",
       );
     }
-    botToast(
+    showNodeLaneNotice(
       localizedMessage(
         (l10n) => l10n.cloudflare_resolution_webview_server_start_failed,
       ),

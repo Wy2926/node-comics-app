@@ -1,5 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/core/navigation/app_navigator.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/utils/localized_message.dart';
 import 'package:mangayomi/utils/log/logger.dart';
@@ -35,12 +35,13 @@ void toastError(
   int seconds = 6,
 }) {
   recordError(error, stack: stack, source: source);
-  botToast(
-    errorToastMessage(error),
-    second: seconds,
-    maxLines: 3,
-    detailsLabel: localizedMessage((l10n) => l10n.error_reports_banner_action),
-    onDetails: () => AppNavigator.push('/errorReports'),
+  showNodeLaneNotice(
+    localizedMessage((l10n) => l10n.notice_operation_incomplete),
+    description: errorToastMessage(error),
+    seconds: seconds,
+    kind: NodeLaneNoticeKind.error,
+    actionLabel: localizedMessage((l10n) => l10n.error_reports_banner_action),
+    onAction: () => AppNavigator.push('/errorReports'),
   );
 }
 

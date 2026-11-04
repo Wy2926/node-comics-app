@@ -1,0 +1,56 @@
+NodeLane 通知组件设计参考
+生成方式：内置 image_gen；未使用 CLI/API 后备方式。
+用途：通知组件替换的设计参考，尚未实施；生成图中的数值与书籍内容是示例。
+组件图：ios-notification-components-concept.png
+来源：/Users/wy/.codex/generated_images/01a194fb-7fc9-7530-9638-3b596df7f818/exec-e699bde0-8fa4-4131-ad61-5b484c14e586.png
+落位图：ios-notification-placement-concept.png
+来源：/Users/wy/.codex/generated_images/01a194fb-7fc9-7530-9638-3b596df7f818/exec-c41c3380-4a9f-4825-9d0b-274d47b17c35.png
+素材：使用当前项目的令牌描述生成，无新增字体、图标包或第三方素材。
+落位图背景仅说明通知位置，书架卡片、浏览器工具栏和原生导航仍以实际组件为准。
+字号、尺寸和颜色以代码令牌及文档为准，生图不是像素测量基准。
+
+--- 组件图完整提示词 ---
+Use case: ui-mockup
+Asset type: high-fidelity iOS design-system board for the existing NodeLane Comics / NodeLane漫译 Flutter app.
+Primary request: Design ONE unified notification component family to replace scattered app toast, snackbar and custom notification styles. This is a carefully typeset developer reference board, not a website and not a notification inbox. Produce a polished landscape 3:2 image, preferably 2400x1600 or greater. Everything must be crisp and legible, with accurate simplified Chinese.
+
+Visual direction and invariants: understated iOS liquid-glass-inspired material consistent with the existing NodeLane app. Canvas #F5F6FA, near-white glass surfaces, primary ink #171A21, secondary text #697180, thin border #E7EAF0, accent #006EFF. Very subtle bounded frosted glass, softly lit thin edge, small restrained shadow, no dramatic refraction, no shiny 3D. Default outline icons are the SAME dark ink as text, including success checkmarks. Only errors/destructive actions use semantic red, active/progress/actions use blue. No rainbow of green, orange, purple status fills. No logo/avatar on ordinary notices.
+All notice examples share one component anatomy and equal width: leading 24 pt SF/Cupertino-style outline icon, gap12, text area, optional close at top right (20 icon in 44 pt target), optional one blue text action below aligned with title, optional 3 pt progress track. Outer floating radius24; embedded instance radius18; padding16; gaps4/8/12/16/20/24. Title17 medium, secondary14 regular, action15 medium, compact message16 regular. Minimum touch target44. Height follows content, no large empty footer. Action has its own line when a subtitle exists, never squeezes long text into a narrow column. No duplicated headings within a card.
+
+Composition: A large clean title at top left "NodeLane · 统一通知组件", subtitle "同一组件 · 不同状态". Below, an orderly 4-column by 2-row grid with generous but consistent breathing room. Each tile is a separate sample, not eight simultaneous notifications. Small gray section labels sit OUTSIDE cards, above them. White notification cards are equal width and share exact geometry. No phone bezels. Each example shown at an equivalent 350 pt width, enough for natural Chinese line lengths. The bottom of the board is a minimal spec strip with compact typography and dimensions, not a huge paragraph.
+
+8 exact sample tiles:
+1 label "01 轻提示"; short compact pill/card, ink checkmark icon, exact message "已复制链接", no subtitle, no button, no close.
+2 label "02 完成 · 可操作"; ink checkmark circle icon, title "备份已创建", subtitle "可将备份文件保存到其他位置。", blue action "分享", subtle ink close.
+3 label "03 失败 · 可重试"; red exclamation-circle icon, ink title "下载未完成", secondary subtitle "网络连接中断，请稍后重试。", blue action "重试", ink close. Do not put all text in red.
+4 label "04 需要处理"; ink globe icon, title "网站需要验证", subtitle "完成验证后可继续访问。", blue action "前往验证", ink close.
+5 label "05 进行中"; blue circular spinner, ink title "正在更新书库", subtitle "已检查 12 / 36 部作品", 3 pt blue progress line one-third filled, a small top-right close button only. Do not add unsupported pause/cancel.
+6 label "06 结果与恢复"; ink arrow-counterclockwise icon, title "导入完成", subtitle "已保留本次操作前的备份。", blue action "查看回滚", ink close.
+7 label "07 页面内提示"; solid white rather than floating, same content layout but radius18 and no shadow. Ink title "部分作品更新失败", red exclamation-circle icon, subtitle "可在更新错误中查看原因。", blue action "查看详情". No close, no invented count.
+8 label "08 深色适配"; show the same retry notification as sample03 against a small dark charcoal #13171D tile, card #1E242C, text #F0F3F8, secondary #A9B4C4, red icon, blue "重试", matching geometry and sizes. Keep the board itself light.
+
+Footer exact short spec line "标题 17 · 正文 14 · 操作 15 · 图标 24 · 点击区 ≥44"
+Second short spec line "圆角 24 / 18 · 内边距 16 · 图文间距 12"
+Tiny footer "设计参考 · 尚未实施"
+
+Constraints: strictly one family with the same glyph weights, alignment, text styles, spacing, button affordance, and subtle glass treatment. No stacked duplicate nested rounded cards, no big app mark, no notification badge counts, no OS push notifications, no notification center, no modal confirmation pretending to be a toast, no fictitious product features, no watermark.
+
+--- 落位图完整提示词 ---
+Use case: ui-mockup
+Asset type: implementation-ready iOS in-app notification placement concept for NodeLane漫译.
+Primary request: A landscape high-fidelity board with FOUR equal front-on iPhone app screens, title "NodeLane · 通知落位与层次", subtitle "轻提示不打断 · 操作提示可直达". This is app UI redesign based on existing functions, not OS notification-center UI. Render large enough for accurate simplified Chinese, preferably 2400x1350 or greater, all four screens same scale. Labels beneath screens and generous outer margins.
+
+Shared exact style: iOS liquid-glass-inspired, restrained near-white frosted surfaces, background #F5F6FA, ink #171A21, secondary #697180, blue #006EFF. Thin bright edge, subtle small shadow, no dark toast slabs. SF/PingFang-like system type, page title34, row17, notice title17 medium, subtitle14, action15, icon24. Uniform thin Cupertino/SF-style symbols in ink; error symbol red, actions/progress blue. Notice radius24, embedded card radius18, padding16, icon/text gap12, 44pt touch targets. All transient notices use exactly the same component structure at full content width with 20pt side margins; the one-line variant has content-driven height. Keep existing native iOS tab bar and reading toolbar usable. Do not add new nav items, bells, a notification inbox or push permission. No app avatar inside notices. No random green/orange state backgrounds.
+
+Screen1, label "01 轻提示 · 底栏上方": existing bookshelf page "书架", capsule media switch "漫画", simple white pill search "搜索书架", two-column comic covers with short fictional book names "海岸来信" and "雨后的森林", secondary source "本地" only once per card; clean native iOS bottom tabs "书架 更新 来源 浏览器 更多". Show a SINGLE compact frosted white notice directly ABOVE the bottom tab bar with visible 12pt separation, dark checkmark and "已复制链接". Don't cover the navigation or use a second message.
+
+Screen2, label "02 操作提示 · 保留上下文": existing in-app browser page for example.org, address capsule at top, simplified black-and-white seaside comic content beneath. Reader browser bottom toolbar remains visible with back, blue translation action, plus, tabs. Above that toolbar with a 12pt gap place ONE expanded white frosted notice, ink globe24, ink title "网站需要验证", muted subtitle "完成验证后可继续访问。", blue text action "前往验证" on its own line aligned with text, small neutral close in a 44pt touch target. No backdrop dimming: webpage stays visible and tappable elsewhere.
+
+Screen3, label "03 持续状态 · 页面内": existing update page "更新", normal refresh button at top. Near top of content show one solid white radius18 status card using the exact SAME icon/text geometry: thin blue activity indicator24, title "正在更新书库", subtitle "已检查 12 / 36 部作品", 3pt blue progress at one third under text. Below show 3 modest chapter update rows with small covers and names, no extra floating notice or modal, and native bottom navigation with 更新 selected. No cancel, pause, new task controls or inaccurate state counts.
+
+Screen4, label "04 需要确认 · 复用现有弹框": existing simple data/storage page "数据与存储" dimmed only in this panel. Centered existing NodeLane-style alert with radius24, title20 "移除下载文件？", subtitle14 "删除所选章节的下载副本。", two clearly separated standard actions in a single footer: blue or neutral "取消" and red text "移除". Default trash icon, if shown, is red24 and modest, never a large hero illustration. Dialog height matches content, no enormous lower blank. This is the existing confirmation modal style, NOT a third transient notification shape. Show no concurrent toast behind the modal.
+
+Bottom board note "浮层避开导航与键盘 · 同一任务原位更新 · 确认操作沿用现有弹框"
+Tiny footer "设计参考 · 示例内容 · 尚未实施"
+Preserve alignment/geometry strictly, readable Chinese, all colors and icons harmonized. No Android mockups, no OS lock screen, no push notifications or unsupported product functions, no watermark.
+

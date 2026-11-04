@@ -1,8 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/video.dart' as vid;
 import 'package:mangayomi/modules/anime/utils/audio_track_label.dart';
@@ -216,7 +217,10 @@ class _SubtitleSectionWidgetState extends State<SubtitleSectionWidget> {
                 if (!context.mounted) return;
                 widget.onDone();
               } catch (e) {
-                botToast(context.l10n.error_with_message(e));
+                showNodeLaneNotice(
+                  context.l10n.error_with_message(e),
+                  kind: NodeLaneNoticeKind.error,
+                );
                 widget.onDone();
               }
             },
@@ -242,7 +246,10 @@ class _SubtitleSectionWidgetState extends State<SubtitleSectionWidget> {
                 if (!context.mounted) return;
                 widget.onDone();
               } catch (_) {
-                botToast(context.l10n.error);
+                showNodeLaneNotice(
+                  context.l10n.error,
+                  kind: NodeLaneNoticeKind.error,
+                );
                 widget.onDone();
               }
             },

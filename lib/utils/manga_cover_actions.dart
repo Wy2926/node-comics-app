@@ -1,7 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -44,5 +45,11 @@ Future<void> applyMangaCover(
   final coverImage = bytes?.getCoverImage;
   if (coverImage == null) return;
   await mangaRepository.save(manga..customCoverImage = coverImage);
-  if (context.mounted) botToast(context.l10n.cover_updated, second: 3);
+  if (context.mounted) {
+    showNodeLaneNotice(
+      context.l10n.cover_updated,
+      seconds: 3,
+      kind: NodeLaneNoticeKind.success,
+    );
+  }
 }

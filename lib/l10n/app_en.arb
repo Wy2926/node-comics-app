@@ -664,7 +664,6 @@
   "skip_ending": "Skip ending",
   "fullscreen": "Fullscreen",
   "update_library": "Update library",
-  "updating_library": "Updating library ({cur} / {max}) - Failed: {failed}",
   "next_chapter": "Next chapter",
   "next_5_chapters": "Next 5 chapters",
   "next_10_chapters": "Next 10 chapters",
@@ -1927,5 +1926,18 @@
   "onboarding_start": "Get started",
   "onboarding_open_library": "Open library",
   "onboarding_view_imports": "View imported content",
-  "onboarding_view_folders": "View folders"
+  "onboarding_view_folders": "View folders",
+  "notice_backup_created": "Backup created",
+  "notice_backup_ready": "Save or share the backup file.",
+  "notice_backup_restored": "Backup restored",
+  "notice_backup_unsupported": "This backup format is not supported.",
+  "notice_verification_required": "Website verification required",
+  "notice_verification_hint": "Complete verification to continue browsing.",
+  "notice_verify": "Verify website",
+  "notice_action_incomplete": "The action did not finish. Check its result before trying again.",
+  "notice_library_updating": "Updating library",
+  "notice_library_progress": "Checked {current} / {total} titles",
+  "notice_library_failed": "Some titles could not be updated",
+  "notice_import_completed": "Import completed",
+  "notice_operation_incomplete": "Action incomplete"
 }

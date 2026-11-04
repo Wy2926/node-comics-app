@@ -1650,11 +1650,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get update_library => '보관함 업데이트';
 
   @override
-  String updating_library(Object cur, Object failed, Object max) {
-    return '보관함 업데이트 중 ($cur / $max) - 실패: $failed';
-  }
-
-  @override
   String get next_chapter => '다음 화';
 
   @override
@@ -4616,4 +4611,48 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get onboarding_view_folders => 'View folders';
+
+  @override
+  String get notice_backup_created => 'Backup created';
+
+  @override
+  String get notice_backup_ready => 'Save or share the backup file.';
+
+  @override
+  String get notice_backup_restored => 'Backup restored';
+
+  @override
+  String get notice_backup_unsupported =>
+      'This backup format is not supported.';
+
+  @override
+  String get notice_verification_required => 'Website verification required';
+
+  @override
+  String get notice_verification_hint =>
+      'Complete verification to continue browsing.';
+
+  @override
+  String get notice_verify => 'Verify website';
+
+  @override
+  String get notice_action_incomplete =>
+      'The action did not finish. Check its result before trying again.';
+
+  @override
+  String get notice_library_updating => 'Updating library';
+
+  @override
+  String notice_library_progress(Object current, Object total) {
+    return 'Checked $current / $total titles';
+  }
+
+  @override
+  String get notice_library_failed => 'Some titles could not be updated';
+
+  @override
+  String get notice_import_completed => 'Import completed';
+
+  @override
+  String get notice_operation_incomplete => 'Action incomplete';
 }

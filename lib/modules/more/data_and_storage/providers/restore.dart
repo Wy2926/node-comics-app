@@ -1,10 +1,11 @@
+import 'package:mangayomi/utils/localized_message.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 
 import 'package:archive/archive_io.dart';
-import 'package:bot_toast/bot_toast.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/models/category.dart';
@@ -47,7 +48,6 @@ import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/repositories/update_repository.dart';
 import 'package:mangayomi/services/sync_server.dart';
-import 'package:mangayomi/utils/constant.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'restore.g.dart';
@@ -140,7 +140,10 @@ Future<void> doRestore(
       default:
     }
     if (backupType != BackupType.unknown) {
-      showBotToast("Backup restored!");
+      showNodeLaneNotice(
+        localizedMessage((l) => l.notice_backup_restored),
+        kind: NodeLaneNoticeKind.success,
+      );
       if (syncAfterRestore == false) {
         // User declined to push this restore to the server — turn sync off
         // rather than leave it running, since the next sync would otherwise
@@ -148,7 +151,7 @@ Future<void> doRestore(
         final syncNotifier = ref.read(synchingProvider(syncId: 1).notifier);
         syncNotifier.setSyncOn(false);
         syncNotifier.setAutoSyncFrequency(0);
-        if (l10n != null) botToast(l10n.sync_disabled_after_restore);
+        if (l10n != null) showNodeLaneNotice(l10n.sync_disabled_after_restore);
       } else if (syncAfterRestore == true && l10n != null) {
         // Sync may have been disabled by a previous restore — re-enable it
         // before pushing, since startSync below is the connection check
@@ -161,7 +164,10 @@ Future<void> doRestore(
         unawaited(_uploadToSyncServerIfConnected(ref, l10n));
       }
     } else {
-      showBotToast("Backup Type not supported!");
+      showNodeLaneNotice(
+        localizedMessage((l) => l.notice_backup_unsupported),
+        kind: NodeLaneNoticeKind.error,
+      );
     }
   } finally {
     if (!uploadStarted) {
@@ -185,7 +191,7 @@ Future<void> _uploadToSyncServerIfConnected(
         (syncPreference.authToken?.isNotEmpty ?? false) &&
         (syncPreference.server?.isNotEmpty ?? false);
     if (!connected) return;
-    botToast(l10n.restore_sync_uploading);
+    showNodeLaneNotice(l10n.restore_sync_uploading);
     // silent: true suppresses startSync's own generic "Starting/Finished"
     // toasts (this one is restore-specific below) - it still shows its own
     // "Sync failed" toast on failure, so that case doesn't need one here.
@@ -193,31 +199,20 @@ Future<void> _uploadToSyncServerIfConnected(
         .read(syncServerProvider(syncId: 1).notifier)
         .startSync(l10n, true, upload: true, bypassRestoreGuard: true);
     if (success) {
-      botToast(l10n.restore_sync_upload_success);
+      showNodeLaneNotice(
+        l10n.restore_sync_upload_success,
+        kind: NodeLaneNoticeKind.success,
+      );
     }
   } catch (e, s) {
     recordError(e, stack: s, source: 'restore_sync_upload');
-    botToast(
+    showNodeLaneNotice(
       "Backup restored, but couldn't push it to your sync server: $e. "
       "The server still has the old data until the next successful sync.",
     );
   } finally {
     ref.read(restoreSyncGuardProvider.notifier).finish();
   }
-}
-
-void showBotToast(String text) {
-  BotToast.showNotification(
-    animationDuration: const Duration(milliseconds: 200),
-    animationReverseDuration: const Duration(milliseconds: 200),
-    duration: const Duration(seconds: 5),
-    backButtonBehavior: BackButtonBehavior.none,
-    leading: (_) => Image.asset(appIconAssets[1], height: 40),
-    title: (_) => Text(text, style: TextStyle(fontWeight: FontWeight.bold)),
-    enableSlideOff: true,
-    onlyOne: true,
-    crossPage: true,
-  );
 }
 
 @riverpod

@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -7,7 +9,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/modules/more/settings/browse/extension_server/android_proxy_server_dialog.dart';
 import 'package:mangayomi/modules/more/settings/browse/extension_server/extension_server_release.dart';
 import 'package:mangayomi/modules/more/settings/browse/extension_server/extension_server_tiles.dart';
@@ -433,14 +434,17 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
       await MExtensionServerPlatform(ref).stopServer();
       await _installDownloadedBundle(bundleZip, installDir, l10n);
       await _startServerAndRefresh();
-      botToast(l10n.extension_server_files_ready);
+      showNodeLaneNotice(
+        l10n.extension_server_files_ready,
+        kind: NodeLaneNoticeKind.success,
+      );
     } catch (e) {
       if (wasInstalled) {
         await _startServerAndRefresh();
       } else {
         await _refreshStatus();
       }
-      botToast(e.toString(), second: 5);
+      showNodeLaneNotice(e.toString(), seconds: 5);
     } finally {
       await _cleanupTempDirectory(tempDir);
       _setDownloadState(isDownloading: false);
@@ -450,7 +454,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   Future<void> _chooseInstallDirectory() async {
     final l10n = l10nLocalizations(context)!;
     if (!_requiresJre) {
-      botToast(l10n.ios_extension_server_import_hint, second: 5);
+      showNodeLaneNotice(l10n.ios_extension_server_import_hint, seconds: 5);
       return;
     }
     final initialDirectory = _selectedInstallDirectory.isNotEmpty
@@ -477,20 +481,27 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     }
     final installDir = await _selectedInstallDirectoryOrNull();
     if (installDir == null || !await installDir.exists()) {
-      botToast(l10n.selected_folder_does_not_exist, second: 5);
+      showNodeLaneNotice(
+        l10n.selected_folder_does_not_exist,
+        seconds: 5,
+        kind: NodeLaneNoticeKind.error,
+      );
       return;
     }
     final resolvedPaths = await _resolvePathsInDirectory(installDir);
     if (!_hasResolvedPaths(resolvedPaths)) {
-      botToast(
+      showNodeLaneNotice(
         l10n.no_extension_server_files_found_in_selected_folder,
-        second: 5,
+        seconds: 5,
       );
       return;
     }
     await _persistResolvedPaths(resolvedPaths, installDir.path);
     await _restartServerAndRefresh();
-    botToast(l10n.extension_server_files_linked);
+    showNodeLaneNotice(
+      l10n.extension_server_files_linked,
+      kind: NodeLaneNoticeKind.success,
+    );
   }
 
   Future<void> _importExistingIosJar() async {
@@ -498,7 +509,11 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     final sourceFile = await _pickIosJarFile(l10n);
     if (sourceFile == null) return;
     if (!await sourceFile.exists()) {
-      botToast(l10n.selected_file_could_not_be_accessed, second: 5);
+      showNodeLaneNotice(
+        l10n.selected_file_could_not_be_accessed,
+        seconds: 5,
+        kind: NodeLaneNoticeKind.error,
+      );
       return;
     }
     final installDir = await _defaultInstallDirectory();
@@ -513,7 +528,10 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
       installDirectory: installDir.path,
     );
     await _restartServerAndRefresh();
-    botToast(l10n.extension_server_jar_imported);
+    showNodeLaneNotice(
+      l10n.extension_server_jar_imported,
+      kind: NodeLaneNoticeKind.success,
+    );
   }
 
   Future<void> _extractArchive(File archiveFile, Directory installDir) async {
@@ -588,7 +606,10 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
       Uri.parse(mExtensionServerReleaseUrl),
       mode: LaunchMode.externalApplication,
     )) {
-      botToast(l10n.could_not_launch_apk_bridge_page);
+      showNodeLaneNotice(
+        l10n.could_not_launch_apk_bridge_page,
+        kind: NodeLaneNoticeKind.error,
+      );
     }
   }
 
@@ -711,11 +732,13 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   ExtensionServerRelease? _validateDownloadAction(dynamic l10n) {
     final release = _latestRelease;
     if (release == null) {
-      botToast(l10n.no_extension_server_bundle_available_for_this_platform);
+      showNodeLaneNotice(
+        l10n.no_extension_server_bundle_available_for_this_platform,
+      );
       return null;
     }
     if (_isInstalled && !_hasUpdateAvailable) {
-      botToast(l10n.no_newer_proxy_server_release_available);
+      showNodeLaneNotice(l10n.no_newer_proxy_server_release_available);
       return null;
     }
     return release;

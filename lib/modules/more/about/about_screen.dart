@@ -1,10 +1,10 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/get_package_info.dart';
@@ -105,13 +105,11 @@ class AboutScreen extends ConsumerWidget {
                       ),
                       ListTile(
                         onTap: () async {
-                          BotToast.showText(text: l10n.searching_for_updates);
+                          showNodeLaneNotice(l10n.searching_for_updates);
                           try {
                             final updateInfo = await performManualUpdateCheck();
                             if (updateInfo != null) {
-                              BotToast.showText(
-                                text: l10n.new_update_available,
-                              );
+                              showNodeLaneNotice(l10n.new_update_available);
                               await Future.delayed(const Duration(seconds: 1));
                               if (context.mounted) {
                                 showDialog(
@@ -122,14 +120,10 @@ class AboutScreen extends ConsumerWidget {
                                 );
                               }
                             } else {
-                              BotToast.showText(
-                                text: l10n.no_new_updates_available,
-                              );
+                              showNodeLaneNotice(l10n.no_new_updates_available);
                             }
                           } catch (_) {
-                            BotToast.showText(
-                              text: l10n.no_new_updates_available,
-                            );
+                            showNodeLaneNotice(l10n.no_new_updates_available);
                           }
                         },
                         title: Text(l10n.check_for_update),
@@ -223,7 +217,7 @@ Future<void> _shareLogs(BuildContext context) async {
   final directory = await storage.getDefaultDirectory();
   final file = File(path.join(directory!.path, 'logs.txt'));
   if (!await file.exists()) {
-    if (context.mounted) botToast(context.l10n.no_app_logs);
+    if (context.mounted) showNodeLaneNotice(context.l10n.no_app_logs);
     return;
   }
   if (!context.mounted) return;

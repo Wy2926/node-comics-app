@@ -318,7 +318,6 @@
   "skip_ending": "跳过片尾",
   "fullscreen": "全屏",
   "update_library": "更新库",
-  "updating_library": "正在更新库 ({cur} / {max}) - 失败: {failed}",
   "next_chapter": "下一章",
   "next_5_chapters": "下5章",
   "next_10_chapters": "下10章",
@@ -1789,5 +1788,18 @@
   "onboarding_start": "开始使用",
   "onboarding_open_library": "进入书架",
   "onboarding_view_imports": "查看导入内容",
-  "onboarding_view_folders": "查看文件夹"
+  "onboarding_view_folders": "查看文件夹",
+  "notice_backup_created": "备份已创建",
+  "notice_backup_ready": "可将备份文件保存到其他位置。",
+  "notice_backup_restored": "备份已恢复",
+  "notice_backup_unsupported": "不支持此备份格式。",
+  "notice_verification_required": "网站需要验证",
+  "notice_verification_hint": "完成验证后可继续访问。",
+  "notice_verify": "前往验证",
+  "notice_action_incomplete": "操作未完成，请先核对结果再决定是否重试。",
+  "notice_library_updating": "正在更新书库",
+  "notice_library_progress": "已检查 {current} / {total} 部作品",
+  "notice_library_failed": "部分作品更新失败",
+  "notice_import_completed": "导入完成",
+  "notice_operation_incomplete": "操作未完成"
 }

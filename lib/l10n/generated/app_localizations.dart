@@ -3109,12 +3109,6 @@ abstract class AppLocalizations {
   /// **'Update library'**
   String get update_library;
 
-  /// No description provided for @updating_library.
-  ///
-  /// In en, this message translates to:
-  /// **'Updating library ({cur} / {max}) - Failed: {failed}'**
-  String updating_library(Object cur, Object failed, Object max);
-
   /// No description provided for @next_chapter.
   ///
   /// In en, this message translates to:
@@ -8261,6 +8255,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View folders'**
   String get onboarding_view_folders;
+
+  /// No description provided for @notice_backup_created.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup created'**
+  String get notice_backup_created;
+
+  /// No description provided for @notice_backup_ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Save or share the backup file.'**
+  String get notice_backup_ready;
+
+  /// No description provided for @notice_backup_restored.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup restored'**
+  String get notice_backup_restored;
+
+  /// No description provided for @notice_backup_unsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This backup format is not supported.'**
+  String get notice_backup_unsupported;
+
+  /// No description provided for @notice_verification_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Website verification required'**
+  String get notice_verification_required;
+
+  /// No description provided for @notice_verification_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete verification to continue browsing.'**
+  String get notice_verification_hint;
+
+  /// No description provided for @notice_verify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify website'**
+  String get notice_verify;
+
+  /// No description provided for @notice_action_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The action did not finish. Check its result before trying again.'**
+  String get notice_action_incomplete;
+
+  /// No description provided for @notice_library_updating.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating library'**
+  String get notice_library_updating;
+
+  /// No description provided for @notice_library_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked {current} / {total} titles'**
+  String notice_library_progress(Object current, Object total);
+
+  /// No description provided for @notice_library_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Some titles could not be updated'**
+  String get notice_library_failed;
+
+  /// No description provided for @notice_import_completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import completed'**
+  String get notice_import_completed;
+
+  /// No description provided for @notice_operation_incomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Action incomplete'**
+  String get notice_operation_incomplete;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -14,6 +15,8 @@ Future<void> _show(WidgetTester tester, Widget button) async {
   await tester.pumpWidget(
     MaterialApp(
       key: UniqueKey(),
+      builder: BotToastInit(),
+      navigatorObservers: [BotToastNavigatorObserver()],
       theme: ThemeData(platform: TargetPlatform.iOS),
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

@@ -79,8 +79,8 @@ class _MobileRepositoryManagerState
       );
       await refreshed;
       if (!mounted) return;
-      ref.invalidate(temporaryCatalogLoadProvider(widget.itemType));
-      await ref.read(temporaryCatalogLoadProvider(widget.itemType).future);
+      ref.invalidate(nodeLaneCatalogLoadProvider(widget.itemType));
+      await ref.read(nodeLaneCatalogLoadProvider(widget.itemType).future);
     } catch (_) {
       if (mounted) {
         setState(() => refreshError = '目录刷新失败，已保留缓存，可重试。');
@@ -201,13 +201,13 @@ class _MobileRepositoryManagerState
   @override
   Widget build(BuildContext context) {
     final configured = ref.watch(extensionsRepoStateProvider(widget.itemType));
-    final temporary = ref.watch(
-      temporaryCatalogRepositoryProvider(widget.itemType),
+    final official = ref.watch(
+      nodeLaneCatalogRepositoryProvider(widget.itemType),
     );
     final builtIn =
-        temporary != null &&
-        !configured.any((r) => r.jsonUrl == temporary.jsonUrl);
-    final repos = [if (builtIn) temporary, ...configured];
+        official != null &&
+        !configured.any((r) => r.jsonUrl == official.jsonUrl);
+    final repos = [if (builtIn) official, ...configured];
     final icons = NodeLaneIcons.of(context), t = NodeLaneTokens.of(context);
     final list = ListView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
@@ -221,7 +221,7 @@ class _MobileRepositoryManagerState
           NodeLaneRow.card(
             title: repositoryName(repos[i]),
             subtitle: [
-              if (builtIn && i == 0) '内置临时目录',
+              if (builtIn && i == 0) '内置官方目录',
               Uri.tryParse(repos[i].jsonUrl ?? '')?.host ?? '',
               if (repos[i].hidden == true) '已隐藏',
             ].join(' · '),

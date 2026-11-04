@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:convert';
 
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -7,7 +9,6 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/source.dart';
@@ -81,9 +82,16 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     setState(() => _busy = true);
     try {
       await MClient.deleteAllCookies(source.baseUrl ?? '');
-      if (mounted) botToast(context.l10n.cookies_deleted);
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.cookies_deleted,
+          kind: NodeLaneNoticeKind.success,
+        );
+      }
     } catch (_) {
-      if (mounted) botToast('清理未完成，请重试。');
+      if (mounted) {
+        showNodeLaneNotice('清理未完成，请重试。', kind: NodeLaneNoticeKind.error);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -116,7 +124,9 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
       await sourceRepository.uninstall(ref, source);
       if (mounted) Navigator.pop(context);
     } catch (_) {
-      if (mounted) botToast('卸载未完成，请重试。');
+      if (mounted) {
+        showNodeLaneNotice('卸载未完成，请重试。', kind: NodeLaneNoticeKind.error);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

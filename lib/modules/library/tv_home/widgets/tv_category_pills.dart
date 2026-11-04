@@ -1,5 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/categories/widgets/custom_textfield.dart';
@@ -51,7 +51,7 @@ class _CategoryPillsState extends State<TvCategoryPills> {
     categoryRepository.setHidden(category, true);
     if (widget.selected == category.id) widget.onSelect(null);
     _focusAll();
-    botToast('Hid “${category.name}” · hold OK on “All” to unhide');
+    showNodeLaneNotice('Hid “${category.name}” · hold OK on “All” to unhide');
   }
 
   @override
@@ -120,7 +120,7 @@ class _CategoryPillsState extends State<TvCategoryPills> {
 /// focused. Hiding leaves focus there, so the toast can name the way back.
 void _showHiddenCategoriesDialog(BuildContext context, List<Category> hidden) {
   if (hidden.isEmpty) {
-    botToast('No hidden categories');
+    showNodeLaneNotice('No hidden categories');
     return;
   }
   showDialog(

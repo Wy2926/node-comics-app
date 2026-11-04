@@ -1,8 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
@@ -403,7 +403,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
       widget.manga.sourceId,
     );
     if (source == null) {
-      botToast(l10n.source_not_added);
+      showNodeLaneNotice(l10n.source_not_added);
       return;
     }
     context.pushReplacement('/mangaHome', extra: (source, false));
@@ -505,7 +505,11 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
             if (name != null && name.isNotEmpty) {
               await Clipboard.setData(ClipboardData(text: name));
               if (mounted) {
-                botToast(context.l10n.error_reports_copied, second: 2);
+                showNodeLaneNotice(
+                  context.l10n.error_reports_copied,
+                  seconds: 2,
+                  kind: NodeLaneNoticeKind.success,
+                );
               }
             }
           },

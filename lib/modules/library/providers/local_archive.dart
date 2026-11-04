@@ -1,7 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/archive_reader/models/models.dart';
@@ -153,7 +154,7 @@ extension Uint8ListExtensions on Uint8List {
     if (lengthInBytes < maxMangaCoverImageBytes) {
       return this;
     }
-    botToast(
+    showNodeLaneNotice(
       "Cover image is larger than 5MB (${length.toStringAsFixed(2)}MB). Skipping cover image.",
     );
     return null;
