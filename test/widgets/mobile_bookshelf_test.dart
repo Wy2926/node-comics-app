@@ -7,6 +7,15 @@ import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_card.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_empty.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_header.dart';
 import 'package:mangayomi/modules/main_view/widgets/nodelane_mobile_navigation.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+final coverImage = MemoryImage(
+  base64Decode(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=',
+  ),
+);
 
 Widget app(Widget child, {double scale = 1, bool dark = false}) => MaterialApp(
   locale: const Locale('zh'),
@@ -26,16 +35,292 @@ void main() {
     expect(mobileBookshelfColumns(350, comfortable: false), 3);
     expect(mobileBookshelfColumns(280, comfortable: false), 2);
     expect(mobileBookshelfColumns(700, comfortable: true), 4);
+    expect(
+      mobileBookshelfColumns(
+        350,
+        comfortable: false,
+        textScaler: TextScaler.linear(2),
+      ),
+      1,
+    );
   });
+
+  for (final mode in ['list', 'comfortable', 'compact', 'cover']) {
+    testWidgets(
+      '$mode resolves local identity once and places downloads in its information band',
+      (tester) async {
+        final list = mode == 'list', coverOnly = mode == 'cover';
+        await tester.pumpWidget(
+          app(
+            Center(
+              child: SizedBox(
+                width: list
+                    ? 350
+                    : mode == 'comfortable'
+                    ? 168
+                    : 106,
+                height: list ? null : 320,
+                child: MobileBookshelfCard(
+                  title: '海岸来信',
+                  image: coverImage,
+                  selected: false,
+                  isLocal: true,
+                  source: 'Local',
+                  language: 'local',
+                  unreadCount: 12,
+                  downloadCount: 3,
+                  list: list,
+                  coverOnly: coverOnly,
+                  onTap: () {},
+                  onLongPress: () {},
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final card = find.byType(MobileBookshelfCard);
+        final folder = NodeLaneIcons.of(tester.element(card)).folderOutline;
+        expect(find.byIcon(folder), findsOneWidget);
+        expect(find.textContaining('Local', findRichText: true), findsNothing);
+        expect(find.textContaining('LOCAL', findRichText: true), findsNothing);
+        final metadata = find.byWidgetPredicate(
+          (w) => w is Text && w.semanticsLabel == '本地',
+        );
+        expect(metadata, coverOnly ? findsNothing : findsOneWidget);
+        final badges = find.byType(NodeLaneCoverBadge);
+        expect(badges, findsNWidgets(coverOnly ? 3 : 2));
+        final download = find.byWidgetPredicate(
+          (w) => w is NodeLaneCoverBadge && w.label == '3',
+        );
+        final cover = tester.getRect(find.byType(Image));
+        if (coverOnly) {
+          expect(tester.getRect(download).bottom, lessThan(cover.center.dy));
+        } else {
+          expect(
+            tester.getCenter(metadata).dy,
+            closeTo(tester.getCenter(download).dy, .5),
+          );
+          if (!list) {
+            expect(tester.getRect(download).top, greaterThan(cover.bottom));
+          }
+        }
+        expect(
+          tester.getRect(download).right,
+          lessThanOrEqualTo(tester.getRect(card).right),
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'hidden local identity never falls back to archive source or language',
+    (tester) async {
+      await tester.pumpWidget(
+        app(
+          SizedBox(
+            width: 168,
+            height: 320,
+            child: MobileBookshelfCard(
+              title: '本地作品',
+              image: coverImage,
+              selected: false,
+              isLocal: true,
+              showLocal: false,
+              source: 'Local',
+              language: 'local',
+              onTap: () {},
+              onLongPress: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCoverBadge), findsNothing);
+      expect(
+        find.byWidgetPredicate((w) => w is Text && w.semanticsLabel != null),
+        findsNothing,
+      );
+      expect(find.textContaining('LOCAL', findRichText: true), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'remote identity and download share one line, including long sources',
+    (tester) async {
+      await tester.pumpWidget(
+        app(
+          Center(
+            child: SizedBox(
+              width: 106,
+              height: 250,
+              child: MobileBookshelfCard(
+                title: '雨后的街角',
+                image: coverImage,
+                selected: false,
+                source: '  很长的示例来源  ',
+                language: 'zh',
+                downloadCount: 3,
+                onTap: () {},
+                onLongPress: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final identity = find.byWidgetPredicate(
+        (w) => w is Text && w.semanticsLabel == '很长的示例来源 · ZH',
+      );
+      expect(identity, findsOneWidget);
+      final badge = find.byType(NodeLaneCoverBadge);
+      expect(tester.getCenter(identity).dy, tester.getCenter(badge).dy);
+      expect(
+        tester.getRect(identity).right,
+        lessThan(tester.getRect(badge).left),
+      );
+      final t = NodeLaneTokens.of(tester.element(badge));
+      final background = tester.widget<Container>(
+        find.descendant(of: badge, matching: find.byType(Container)),
+      );
+      expect((background.decoration! as BoxDecoration).color, t.soft);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'large counts keep real semantics and selection retains one local label',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      var selecting = false;
+      late StateSetter change;
+      await tester.pumpWidget(
+        app(
+          StatefulBuilder(
+            builder: (context, setState) {
+              change = setState;
+              return Center(
+                child: SizedBox(
+                  width: 168,
+                  height: 350,
+                  child: MobileBookshelfCard(
+                    title: '海岸来信',
+                    image: coverImage,
+                    selected: selecting,
+                    isLocal: true,
+                    source: '本地',
+                    language: 'zh',
+                    unreadCount: 1234,
+                    downloadCount: 2345,
+                    onTap: () {},
+                    onLongPress: () {},
+                    continueButton: NodeLaneIconButton(
+                      icon: Icons.book,
+                      tooltip: '继续',
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('999+'), findsNWidgets(2));
+      expect(find.bySemanticsLabel(RegExp(r': 1234')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r': 2345')), findsOneWidget);
+      final before = tester.getRect(find.byType(Image));
+      change(() => selecting = true);
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCoverBadge), findsNothing);
+      expect(find.byTooltip('继续'), findsNothing);
+      expect(
+        find.byWidgetPredicate((w) => w is Text && w.semanticsLabel == '本地'),
+        findsOneWidget,
+      );
+      expect(tester.getRect(find.byType(Image)), before);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+    },
+  );
+
+  testWidgets(
+    'responsive extents fit long names and counts at larger text sizes',
+    (tester) async {
+      for (final scale in [1.0, 2.0, 2.5]) {
+        for (final list in [false, true]) {
+          for (final local in [false, true]) {
+            await tester.pumpWidget(
+              app(
+                Builder(
+                  builder: (context) {
+                    final columns = mobileBookshelfColumns(
+                      280,
+                      comfortable: false,
+                      textScaler: MediaQuery.textScalerOf(context),
+                    );
+                    final width =
+                        (280 - (columns - 1) * NodeLaneTokens.shelfGap) /
+                        columns;
+                    return Align(
+                      alignment: Alignment.topLeft,
+                      child: SizedBox(
+                        width: list ? 280 : width,
+                        height: list
+                            ? null
+                            : width * NodeLaneTokens.coverAspectRatio +
+                                  MobileBookshelfCard.captionHeight(
+                                    context,
+                                    metadata: true,
+                                  ),
+                        child: MobileBookshelfCard(
+                          title: '书名比较长时仍然保留最多两行',
+                          image: coverImage,
+                          selected: false,
+                          list: list,
+                          isLocal: local,
+                          source: '示例来源',
+                          language: 'zh',
+                          unreadCount: 1234,
+                          downloadCount: 2345,
+                          onTap: () {},
+                          onLongPress: () {},
+                          continueButton: NodeLaneIconButton(
+                            icon: Icons.book,
+                            tooltip: '继续',
+                            onPressed: () {},
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                scale: scale,
+                dark: scale > 1,
+              ),
+            );
+            await tester.pumpAndSettle();
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: 'scale=$scale list=$list local=$local',
+            );
+            expect(
+              tester.getSize(find.byType(NodeLaneIconButton)),
+              const Size(44, 44),
+            );
+          }
+        }
+      }
+    },
+  );
 
   testWidgets(
     'different title lengths keep cover sizes aligned and selection hides resume',
     (tester) async {
-      final image = MemoryImage(
-        base64Decode(
-          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=',
-        ),
-      );
       var selecting = false;
       late StateSetter change;
       await tester.pumpWidget(
@@ -51,7 +336,7 @@ void main() {
                       height: 300,
                       child: MobileBookshelfCard(
                         title: title,
-                        image: image,
+                        image: coverImage,
                         selected: false,
                         selectionMode: selecting,
                         unreadCount: 12,
@@ -201,11 +486,6 @@ void main() {
   testWidgets('card action slots do not trigger the enclosing book action', (
     tester,
   ) async {
-    final image = MemoryImage(
-      base64Decode(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=',
-      ),
-    );
     var opens = 0, selections = 0, resumes = 0;
     await tester.pumpWidget(
       app(
@@ -215,8 +495,8 @@ void main() {
             height: 330,
             child: MobileBookshelfCard(
               title: '很长的漫画书名，用于两行排版',
-              subtitle: '本地 · ZH',
-              image: image,
+              isLocal: true,
+              image: coverImage,
               selected: false,
               onTap: () => opens++,
               onLongPress: () => selections++,

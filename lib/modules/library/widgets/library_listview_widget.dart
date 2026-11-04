@@ -7,6 +7,7 @@ import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -45,16 +46,15 @@ class LibraryListViewWidget extends StatelessWidget {
             final isLongPressed = ref.watch(isLongPressedStateProvider);
             if (isMobile && !isTv) {
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NodeLaneTokens.gutter,
+                ),
                 child: MobileBookshelfCard(
                   title: entry.name ?? '',
-                  subtitle: [
-                    if (sourceBadge)
-                      (entry.isLocalArchive ?? false)
-                          ? context.l10n.local
-                          : entry.source ?? '',
-                    if (language) entry.lang?.toUpperCase() ?? '',
-                  ].where((value) => value.isNotEmpty).join(' · '),
+                  source: sourceBadge ? entry.source : null,
+                  language: language ? entry.lang : null,
+                  isLocal: entry.isLocalArchive ?? false,
+                  showLocal: localSource || sourceBadge,
                   image: resolveCoverImage(entry, ref),
                   list: true,
                   first: index == 0,
@@ -68,7 +68,7 @@ class LibraryListViewWidget extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       handleLongOrSecondaryTap(isLongPressed, ref, entry),
-                  selectionMode: ref.watch(isLongPressedStateProvider),
+                  selectionMode: isLongPressed,
                   unreadCount: entry.unreadChaptersCount(settings),
                   unreadLabel: entry.itemType == ItemType.anime
                       ? context.l10n.unwatched
@@ -78,7 +78,6 @@ class LibraryListViewWidget extends StatelessWidget {
                     ref,
                     enabled: downloadedChapter,
                   ),
-                  local: localSource && (entry.isLocalArchive ?? false),
                   continueButton: continueReaderBtn && entry.chapters.isNotEmpty
                       ? ContinueReaderButton(entry: entry, large: true)
                       : null,

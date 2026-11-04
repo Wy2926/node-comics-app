@@ -316,7 +316,7 @@ class NodeLaneRow extends StatelessWidget {
   }
 }
 
-enum NodeLaneBadgeTone { overlay, accent, softAccent, neutral }
+enum NodeLaneBadgeTone { overlay, accent, softAccent, neutral, soft }
 
 /// One annotation geometry for covers and compact status information.
 class NodeLaneCoverBadge extends StatelessWidget {
@@ -339,7 +339,7 @@ class NodeLaneCoverBadge extends StatelessWidget {
       NodeLaneBadgeTone.overlay => Colors.white,
       NodeLaneBadgeTone.accent => t.onAccent,
       NodeLaneBadgeTone.softAccent => t.accent,
-      NodeLaneBadgeTone.neutral => t.ink,
+      NodeLaneBadgeTone.neutral || NodeLaneBadgeTone.soft => t.ink,
     };
     return Semantics(
       label: semanticsLabel,
@@ -355,6 +355,7 @@ class NodeLaneCoverBadge extends StatelessWidget {
             NodeLaneBadgeTone.accent => t.accent,
             NodeLaneBadgeTone.softAccent => t.accentSoft,
             NodeLaneBadgeTone.neutral => t.surface,
+            NodeLaneBadgeTone.soft => t.soft,
           },
           borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
         ),

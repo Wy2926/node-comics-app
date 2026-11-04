@@ -57,32 +57,36 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
           return LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth - NodeLaneTokens.gutter * 2;
+              final scale = MediaQuery.textScalerOf(context);
               final columns = mobileBookshelfColumns(
                 width,
                 comfortable: widget.isComfortableGrid,
+                textScaler: scale,
               );
               final coverWidth =
                   (width - (columns - 1) * NodeLaneTokens.shelfGap) / columns;
               final coverOnly =
                   widget.isCoverOnlyGrid && !widget.isComfortableGrid;
-              final scale = MediaQuery.textScalerOf(context);
               final captionHeight = coverOnly
                   ? 0.0
-                  : NodeLaneTokens.space8 +
-                        scale.scale(NodeLaneTokens.bookTitleSize) * 2.5 +
-                        ((widget.sourceBadge || widget.language)
-                            ? scale.scale(NodeLaneTokens.captionSize) * 1.3 + 4
-                            : 0);
+                  : MobileBookshelfCard.captionHeight(
+                      context,
+                      metadata:
+                          widget.sourceBadge ||
+                          widget.language ||
+                          widget.localSource ||
+                          widget.downloadedChapter,
+                    );
               return GridView.builder(
                 key: PageStorageKey('mobile-shelf-${widget.itemType}'),
                 physics: const AlwaysScrollableScrollPhysics(),
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(
-                  20,
-                  12,
-                  20,
-                  24,
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space12,
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space24,
                 ).add(pageBottomInsets(context)),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: columns,
@@ -95,18 +99,12 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
                 itemCount: widget.entriesManga.length,
                 itemBuilder: (context, index) {
                   final entry = widget.entriesManga[index];
-                  final subtitle = [
-                    if (widget.sourceBadge &&
-                        (entry.source?.isNotEmpty ?? false))
-                      (entry.isLocalArchive ?? false)
-                          ? context.l10n.local
-                          : entry.source!,
-                    if (widget.language && (entry.lang?.isNotEmpty ?? false))
-                      entry.lang!.toUpperCase(),
-                  ].join(' · ');
                   return MobileBookshelfCard(
                     title: entry.name ?? '',
-                    subtitle: subtitle,
+                    source: widget.sourceBadge ? entry.source : null,
+                    language: widget.language ? entry.lang : null,
+                    isLocal: entry.isLocalArchive ?? false,
+                    showLocal: widget.localSource || widget.sourceBadge,
                     image: resolveCoverImage(entry, ref),
                     selected: widget.mangaIdsList.contains(entry.id),
                     coverOnly: coverOnly,
@@ -131,8 +129,6 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
                       ref,
                       enabled: widget.downloadedChapter,
                     ),
-                    local:
-                        widget.localSource && (entry.isLocalArchive ?? false),
                     continueButton:
                         widget.continueReaderBtn && entry.chapters.isNotEmpty
                         ? ContinueReaderButton(entry: entry, large: true)
