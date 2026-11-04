@@ -887,6 +887,8 @@
   "flash_color_black": "काला",
   "flash_color_white": "सफेद",
   "flash_color_white_black": "सफेद और काला",
+  "flash_interval_label": "फ़्लैश अंतराल",
+  "flash_interval_value": "{n} पन्ने",
   "flash_interval": "फ़्लैश अंतराल: {n} पन्ने",
   "@flash_interval": {
     "placeholders": {
@@ -895,6 +897,8 @@
       }
     }
   },
+  "flash_duration_label": "फ़्लैश अवधि",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "फ़्लैश अवधि: {n} ms",
   "@flash_duration": {
     "placeholders": {

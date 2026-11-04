@@ -123,17 +123,15 @@ class MobileReaderContinuousSettings extends ConsumerWidget {
           onChanged: ref.read(showPageGapsStateProvider.notifier).set,
         ),
         NodeLaneSliderRow(
-          title: '',
+          title: l10n.webtoon_side_padding,
           value: ref.watch(webtoonSidePaddingStateProvider).toDouble(),
           min: 0,
           max: 50,
           divisions: 50,
-          onChanged: (value) => (ref
+          onChanged: (value) => ref
               .read(webtoonSidePaddingStateProvider.notifier)
-              .set)(value.round()),
-          label: (draft) =>
-              ((value) =>
-                  '${l10n.webtoon_side_padding}: $value%')(draft.round()),
+              .set(value.round()),
+          label: (draft) => '${draft.round()}%',
         ),
       ],
     );
@@ -346,30 +344,28 @@ class MobileReaderFlashSettings extends ConsumerWidget {
             onChanged: ref.read(flashColorStateProvider.notifier).set,
           ),
           NodeLaneSliderRow(
-            title: '',
+            title: l10n.flash_interval_label,
             value: ref.watch(flashIntervalStateProvider).toDouble(),
             min: 1,
             max: 10,
             divisions: 9,
-            onChanged: (value) => (ref
+            onChanged: (value) => ref
                 .read(flashIntervalStateProvider.notifier)
-                .set)(value.round()),
+                .set(value.round()),
             label: (draft) =>
-                ((value) =>
-                    l10n.flash_interval(value.toString()))(draft.round()),
+                l10n.flash_interval_value(draft.round().toString()),
           ),
           NodeLaneSliderRow(
-            title: '',
+            title: l10n.flash_duration_label,
             value: ref.watch(flashDurationStateProvider).toDouble(),
             min: 50,
             max: 500,
             divisions: 9,
-            onChanged: (value) => (ref
+            onChanged: (value) => ref
                 .read(flashDurationStateProvider.notifier)
-                .set)(value.round()),
+                .set(value.round()),
             label: (draft) =>
-                ((value) =>
-                    l10n.flash_duration(value.toString()))(draft.round()),
+                l10n.flash_duration_value(draft.round().toString()),
           ),
         ],
       ],

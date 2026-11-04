@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,13 +32,14 @@ void main() {
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      navigatorObservers: [BotToastNavigatorObserver()],
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: const TextScaler.linear(2.5),
           padding: const EdgeInsets.only(top: 24, bottom: 34),
           viewInsets: EdgeInsets.only(bottom: keyboard),
         ),
-        child: child!,
+        child: BotToastInit()(context, child),
       ),
       home: home,
     );
@@ -256,7 +258,7 @@ void main() {
         find.text('Translated image cache cleared; translation records kept'),
         findsNothing,
       );
-      await tester.pump(const Duration(seconds: 5));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       await tap(tester, clearTranslation);
       await tester.tap(find.widgetWithText(FilledButton, 'Clear'));

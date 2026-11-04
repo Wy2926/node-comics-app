@@ -2951,8 +2951,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get flash_color_white_black => 'Weiß & Schwarz';
 
   @override
+  String get flash_interval_label => 'Blinkintervall';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n Seiten';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'Blinkintervall: $n Seiten';
+  }
+
+  @override
+  String get flash_duration_label => 'Blinkdauer';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override

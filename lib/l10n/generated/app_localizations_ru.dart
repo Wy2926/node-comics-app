@@ -2968,8 +2968,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get flash_color_white_black => 'Белый и Черный';
 
   @override
+  String get flash_interval_label => 'Интервал вспышки';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n страниц';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'Интервал вспышки: $n страниц';
+  }
+
+  @override
+  String get flash_duration_label => 'Длительность вспышки';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n мс';
   }
 
   @override

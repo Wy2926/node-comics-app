@@ -1180,6 +1180,9 @@
   "flash_color_black": "Black",
   "flash_color_white": "White",
   "flash_color_white_black": "White & Black",
+  "flash_interval_label": "Flash Interval",
+  "flash_interval_value": "{n} pages",
+  "@flash_interval_value": {"placeholders": {"n": {"type": "String"}}},
   "flash_interval": "Flash Interval: {n} pages",
   "@flash_interval": {
     "placeholders": {
@@ -1188,6 +1191,9 @@
       }
     }
   },
+  "flash_duration_label": "Flash Duration",
+  "flash_duration_value": "{n} ms",
+  "@flash_duration_value": {"placeholders": {"n": {"type": "String"}}},
   "flash_duration": "Flash Duration: {n} ms",
   "@flash_duration": {
     "placeholders": {

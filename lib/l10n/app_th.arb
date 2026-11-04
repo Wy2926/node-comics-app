@@ -724,6 +724,8 @@
   "flash_color_black": "สีดำ",
   "flash_color_white": "สีขาว",
   "flash_color_white_black": "สีขาวและสีดำ",
+  "flash_interval_label": "ช่วงการกะพริบ",
+  "flash_interval_value": "ทุก {n} หน้า",
   "flash_interval": "ช่วงการกะพริบ: ทุก {n} หน้า",
   "@flash_interval": {
     "placeholders": {
@@ -732,6 +734,8 @@
       }
     }
   },
+  "flash_duration_label": "ระยะเวลาการกะพริบ",
+  "flash_duration_value": "{n} มิลลิวินาที",
   "flash_duration": "ระยะเวลาการกะพริบ: {n} มิลลิวินาที",
   "@flash_duration": {
     "placeholders": {

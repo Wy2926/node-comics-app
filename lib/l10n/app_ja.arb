@@ -830,6 +830,8 @@
   "flash_color_black": "黒",
   "flash_color_white": "白",
   "flash_color_white_black": "白 & 黒",
+  "flash_interval_label": "点滅間隔",
+  "flash_interval_value": "{n}ページ",
   "flash_interval": "点滅間隔：{n}ページ",
   "@flash_interval": {
     "placeholders": {
@@ -838,6 +840,8 @@
       }
     }
   },
+  "flash_duration_label": "点滅時間",
+  "flash_duration_value": "{n}ミリ秒",
   "flash_duration": "点滅時間：{n}ミリ秒",
   "@flash_duration": {
     "placeholders": {

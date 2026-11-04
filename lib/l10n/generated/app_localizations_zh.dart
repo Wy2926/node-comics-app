@@ -2831,8 +2831,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get flash_color_white_black => '白与黑';
 
   @override
+  String get flash_interval_label => '闪烁间隔';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n页';
+  }
+
+  @override
   String flash_interval(String n) {
     return '闪烁间隔：$n页';
+  }
+
+  @override
+  String get flash_duration_label => '闪烁持续时间';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n毫秒';
   }
 
   @override

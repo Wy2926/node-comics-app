@@ -1058,6 +1058,8 @@
   "flash_color_black": "검은색",
   "flash_color_white": "흰색",
   "flash_color_white_black": "흰색 & 검은색",
+  "flash_interval_label": "플래시 간격",
+  "flash_interval_value": "{n} 페이지",
   "flash_interval": "플래시 간격: {n} 페이지",
   "@flash_interval": {
     "placeholders": {
@@ -1066,6 +1068,8 @@
       }
     }
   },
+  "flash_duration_label": "플래시 지속 시간",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "플래시 지속 시간: {n} ms",
   "@flash_duration": {
     "placeholders": {

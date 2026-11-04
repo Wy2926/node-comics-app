@@ -51,7 +51,7 @@ class MobileGeneralScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.auto_library_update,
-                    subtitle: updateLabel(interval),
+                    value: updateLabel(interval),
                     icon: NodeLaneIcons.of(context).refresh,
                     onTap: () async {
                       final selected = await showMobileSettingsPicker<int>(
@@ -215,11 +215,10 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
           NodeLaneRow(
             openOnReveal: true,
             title: l10n.dns_provider,
-            subtitle: doh.providerId == DoHProviders.customId
+            value: doh.providerId == DoHProviders.customId
                 ? '${l10n.custom} · ${DohCustomStore.url}'
                 : (DoHProviders.byId[doh.providerId ?? 0]?.name ??
                       DoHProviders.cloudflare.name),
-            subtitleMaxLines: 2,
             icon: NodeLaneIcons.of(context).repository,
             onTap: () => _chooseDoh(doh.providerId ?? 0),
           )
@@ -227,8 +226,7 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
           NodeLaneRow(
             openOnReveal: true,
             title: l10n.custom_dns,
-            subtitle: dns.isEmpty ? null : dns,
-            subtitleMaxLines: 2,
+            value: dns.isEmpty ? l10n.default0 : dns,
             icon: NodeLaneIcons.of(context).repository,
             onTap: () async {
               final value = await _edit(
@@ -244,8 +242,7 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
         NodeLaneRow(
           openOnReveal: true,
           title: l10n.default_user_agent,
-          subtitle: userAgent,
-          subtitleMaxLines: 2,
+          value: userAgent,
           icon: NodeLaneIcons.of(context).web,
           onTap: () async {
             final value = await _edit(
@@ -260,8 +257,8 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
         NodeLaneRow(
           openOnReveal: true,
           title: l10n.cloudflare_bypass_proxy,
-          subtitle: _proxyUrl.isEmpty ? l10n.cf_proxy_helper : _proxyUrl,
-          subtitleMaxLines: 2,
+          value: _proxyUrl.isEmpty ? l10n.off : _proxyUrl,
+          subtitle: l10n.cf_proxy_helper,
           icon: NodeLaneIcons.of(context).repository,
           onTap: () async {
             final value = await _edit(

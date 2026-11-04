@@ -887,6 +887,8 @@
   "flash_color_black": "Черный",
   "flash_color_white": "Белый",
   "flash_color_white_black": "Белый и Черный",
+  "flash_interval_label": "Интервал вспышки",
+  "flash_interval_value": "{n} страниц",
   "flash_interval": "Интервал вспышки: {n} страниц",
   "@flash_interval": {
     "placeholders": {
@@ -895,6 +897,8 @@
       }
     }
   },
+  "flash_duration_label": "Длительность вспышки",
+  "flash_duration_value": "{n} мс",
   "flash_duration": "Длительность вспышки: {n} мс",
   "@flash_duration": {
     "placeholders": {

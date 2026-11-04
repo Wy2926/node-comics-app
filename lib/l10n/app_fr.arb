@@ -775,6 +775,8 @@
   "flash_color_black": "Noir",
   "flash_color_white": "Blanc",
   "flash_color_white_black": "Blanc & Noir",
+  "flash_interval_label": "Intervalle de flash",
+  "flash_interval_value": "{n} pages",
   "flash_interval": "Intervalle de flash : {n} pages",
   "@flash_interval": {
     "placeholders": {
@@ -783,6 +785,8 @@
       }
     }
   },
+  "flash_duration_label": "Durée de flash",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "Durée de flash : {n} ms",
   "@flash_duration": {
     "placeholders": {

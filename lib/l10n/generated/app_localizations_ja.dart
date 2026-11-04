@@ -2874,8 +2874,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get flash_color_white_black => '白 & 黒';
 
   @override
+  String get flash_interval_label => '点滅間隔';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$nページ';
+  }
+
+  @override
   String flash_interval(String n) {
     return '点滅間隔：$nページ';
+  }
+
+  @override
+  String get flash_duration_label => '点滅時間';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$nミリ秒';
   }
 
   @override

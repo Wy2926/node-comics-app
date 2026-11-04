@@ -165,18 +165,14 @@ class _MobileTtsSettingsState extends State<MobileTtsSettings> {
             ],
           ),
           MobileSettingsGroup(
-            title: l10n.tts_language,
             children: [
               NodeLaneRow(
                 enabled: enabled && !_loadFailed,
                 icon: NodeLaneIcons.of(context).web,
-                title: language == null
+                title: l10n.tts_language,
+                value: language == null
                     ? l10n.tts_default
                     : _languageLabel(language),
-                subtitle:
-                    language != null && ttsLocaleNames.containsKey(language)
-                    ? language
-                    : null,
                 onTap: enabled && !_loadFailed ? _selectLanguage : null,
               ),
               if (!_busy && _loadFailed)

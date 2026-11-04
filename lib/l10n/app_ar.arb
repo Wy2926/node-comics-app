@@ -889,6 +889,8 @@
   "flash_color_black": "أسود",
   "flash_color_white": "أبيض",
   "flash_color_white_black": "أبيض وأسود",
+  "flash_interval_label": "معدل الوميض",
+  "flash_interval_value": "كل {n} صفحات",
   "flash_interval": "معدل الوميض: كل {n} صفحات",
   "@flash_interval": {
     "placeholders": {
@@ -897,6 +899,8 @@
       }
     }
   },
+  "flash_duration_label": "مدة الوميض",
+  "flash_duration_value": "{n} مللي ثانية",
   "flash_duration": "مدة الوميض: {n} مللي ثانية",
   "@flash_duration": {
     "placeholders": {

@@ -2865,8 +2865,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get flash_color_white_black => '흰색 & 검은색';
 
   @override
+  String get flash_interval_label => '플래시 간격';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n 페이지';
+  }
+
+  @override
   String flash_interval(String n) {
     return '플래시 간격: $n 페이지';
+  }
+
+  @override
+  String get flash_duration_label => '플래시 지속 시간';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override

@@ -887,6 +887,8 @@
   "flash_color_black": "Preto",
   "flash_color_white": "Branco",
   "flash_color_white_black": "Branco e Preto",
+  "flash_interval_label": "Intervalo do flash",
+  "flash_interval_value": "{n} páginas",
   "flash_interval": "Intervalo do flash: {n} páginas",
   "@flash_interval": {
     "placeholders": {
@@ -895,6 +897,8 @@
       }
     }
   },
+  "flash_duration_label": "Duração do flash",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "Duração do flash: {n} ms",
   "@flash_duration": {
     "placeholders": {

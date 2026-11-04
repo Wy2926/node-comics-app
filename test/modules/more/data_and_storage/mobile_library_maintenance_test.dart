@@ -2,6 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,12 +27,13 @@ void main() {
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      navigatorObservers: [BotToastNavigatorObserver()],
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: const TextScaler.linear(2.5),
           padding: const EdgeInsets.only(top: 24, bottom: 34),
         ),
-        child: child!,
+        child: BotToastInit()(context, child),
       ),
       home: home,
     );

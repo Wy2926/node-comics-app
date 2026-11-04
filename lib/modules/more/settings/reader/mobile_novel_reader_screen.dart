@@ -40,20 +40,20 @@ class MobileNovelReaderScreen extends ConsumerWidget {
               MobileSettingsGroup(
                 title: l10n.font,
                 children: [
-                  _NovelChoice<String?>(
+                  MobileSettingsChoice<String?>(
                     title: l10n.font,
                     icon: NodeLaneIcons.of(context).font,
                     value: font,
-                    subtitle:
+                    label: (value) =>
                         novelReaderFontOptions
-                            .where((option) => option.key == font)
+                            .where((option) => option.key == value)
                             .map(
                               (option) => option.key == null
                                   ? l10n.default0
                                   : option.label,
                             )
                             .firstOrNull ??
-                        font ??
+                        value ??
                         l10n.default0,
                     options: [
                       for (final option in novelReaderFontOptions)
@@ -144,11 +144,11 @@ class _NovelColors extends ConsumerWidget {
     return MobileSettingsGroup(
       title: l10n.theme,
       children: [
-        _NovelChoice<NovelReaderThemePreset?>(
+        MobileSettingsChoice<NovelReaderThemePreset?>(
           title: l10n.theme,
           icon: NodeLaneIcons.of(context).palette,
           value: preset,
-          subtitle: preset?.label(context) ?? l10n.custom,
+          label: (value) => value?.label(context) ?? l10n.custom,
           options: [
             for (final option in NovelReaderThemePreset.values)
               MobileSettingOption(
@@ -204,11 +204,11 @@ class _NovelColors extends ConsumerWidget {
     required String title,
     required String value,
     required ValueChanged<String> onChanged,
-  }) => _NovelChoice<String>(
+  }) => MobileSettingsChoice<String>(
     title: title,
     icon: NodeLaneIcons.of(context).palette,
     value: value,
-    subtitle: value,
+    label: (value) => value,
     options: [
       for (final color in novelReaderColorPalette)
         MobileSettingOption(
@@ -270,11 +270,11 @@ class _NovelPageLayout extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _NovelChoice<NovelTextAlign>(
+        MobileSettingsChoice<NovelTextAlign>(
           title: l10n.text_align,
           icon: NodeLaneIcons.of(context).alignLeft,
           value: alignment,
-          subtitle: alignLabel(alignment),
+          label: alignLabel,
           options: [
             for (final value in NovelTextAlign.values)
               MobileSettingOption(value, alignLabel(value)),
@@ -332,38 +332,4 @@ class _NovelPageLayout extends ConsumerWidget {
       ],
     );
   }
-}
-
-class _NovelChoice<T> extends StatelessWidget {
-  const _NovelChoice({
-    required this.title,
-    required this.icon,
-    required this.value,
-    required this.subtitle,
-    required this.options,
-    required this.onChanged,
-  });
-  final String title, subtitle;
-  final IconData icon;
-  final T value;
-  final List<MobileSettingOption<T>> options;
-  final ValueChanged<T> onChanged;
-  @override
-  Widget build(BuildContext context) => NodeLaneRow(
-    openOnReveal: true,
-    title: title,
-    subtitle: subtitle,
-    icon: icon,
-    onTap: () async {
-      final selected = await showMobileSettingsPicker<T>(
-        context,
-        title: title,
-        current: value,
-        options: options,
-      );
-      if (context.mounted && selected != null && selected.value != value) {
-        onChanged(selected.value);
-      }
-    },
-  );
 }

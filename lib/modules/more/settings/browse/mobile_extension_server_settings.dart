@@ -187,7 +187,7 @@ class _MobileExtensionServerSettingsState
                   NodeLaneRow(
                     enabled: !_busy,
                     title: l10n.set_proxy_address,
-                    subtitle: widget.proxyAddress.isEmpty
+                    value: widget.proxyAddress.isEmpty
                         ? '—'
                         : widget.proxyAddress,
                     onTap: _busy ? null : _editAddress,

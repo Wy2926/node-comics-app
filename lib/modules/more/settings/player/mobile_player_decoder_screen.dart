@@ -37,7 +37,7 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
                   .set,
             ),
             if (hardware)
-              MobilePlayerSettingChoice<String>(
+              MobileSettingsChoice<String>(
                 title: l10n.hwdec,
                 icon: NodeLaneIcons.of(context).memory,
                 value: ref.watch(hwdecModeStateProvider(rawValue: true)),
@@ -92,7 +92,7 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
         MobileSettingsGroup(
           title: l10n.display,
           children: [
-            MobilePlayerSettingChoice<DebandingType>(
+            MobileSettingsChoice<DebandingType>(
               title: l10n.debanding,
               icon: NodeLaneIcons.of(context).palette,
               value: ref.watch(debandingStateProvider),

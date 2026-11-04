@@ -857,6 +857,8 @@
   "flash_color_black": "Hitam",
   "flash_color_white": "Putih",
   "flash_color_white_black": "Putih & Hitam",
+  "flash_interval_label": "Interval flash",
+  "flash_interval_value": "{n} halaman",
   "flash_interval": "Interval flash: {n} halaman",
   "@flash_interval": {
     "placeholders": {
@@ -865,6 +867,8 @@
       }
     }
   },
+  "flash_duration_label": "Durasi flash",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "Durasi flash: {n} ms",
   "@flash_duration": {
     "placeholders": {

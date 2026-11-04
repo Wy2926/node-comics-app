@@ -26,7 +26,7 @@ class MobilePlayerScreen extends ConsumerWidget {
         MobileSettingsGroup(
           title: l10n.general,
           children: [
-            MobilePlayerSettingChoice<double>(
+            MobileSettingsChoice<double>(
               title: l10n.default_playback_speed_length,
               icon: NodeLaneIcons.of(context).speed,
               value: ref.watch(defaultPlayBackSpeedStateProvider),
@@ -51,7 +51,7 @@ class MobilePlayerScreen extends ConsumerWidget {
                   .read(defaultPlayBackSpeedStateProvider.notifier)
                   .set,
             ),
-            MobilePlayerSettingChoice<int>(
+            MobileSettingsChoice<int>(
               title: l10n.markEpisodeAsSeenSetting,
               icon: NodeLaneIcons.of(context).check,
               value: ref.watch(markEpisodeAsSeenTypeStateProvider),
@@ -69,7 +69,7 @@ class MobilePlayerScreen extends ConsumerWidget {
         MobileSettingsGroup(
           title: l10n.video_subtitle,
           children: [
-            MobilePlayerSettingChoice<Locale>(
+            MobileSettingsChoice<Locale>(
               title: l10n.default_subtitle_language,
               icon: NodeLaneIcons.of(context).translate,
               value: ref.watch(defaultSubtitleLangStateProvider),
@@ -139,7 +139,7 @@ class _Controls extends ConsumerWidget {
         NodeLaneRow(
           openOnReveal: true,
           title: l10n.default_skip_intro_length,
-          subtitle: '${intro}s',
+          value: '${intro}s',
           icon: NodeLaneIcons.of(context).nextChapter,
           onTap: () async {
             final result = await showDialog<String>(
@@ -162,7 +162,7 @@ class _Controls extends ConsumerWidget {
             }
           },
         ),
-        MobilePlayerSettingChoice<int>(
+        MobileSettingsChoice<int>(
           title: l10n.default_skip_forward_skip_length,
           icon: NodeLaneIcons.of(context).fastForward,
           value: ref.watch(defaultDoubleTapToSkipLengthStateProvider),
@@ -235,7 +235,7 @@ class _AniSkip extends ConsumerWidget {
             value: ref.watch(enableAutoSkipStateProvider),
             onChanged: ref.read(enableAutoSkipStateProvider.notifier).set,
           ),
-          MobilePlayerSettingChoice<int>(
+          MobileSettingsChoice<int>(
             title: l10n.aniskip_button_timeout,
             icon: NodeLaneIcons.of(context).timer,
             value: ref.watch(aniSkipTimeoutLengthStateProvider),

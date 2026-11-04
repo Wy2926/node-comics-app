@@ -165,7 +165,12 @@ class NodeLaneRow extends StatelessWidget {
        _card = true;
 
   final String title;
-  final String? subtitle, value;
+
+  /// Supporting explanation; current selections belong in [value].
+  final String? subtitle;
+
+  /// Current selection, aligned to the trailing side of the title.
+  final String? value;
   final int? subtitleMaxLines;
   final IconData? icon;
   final Size leadingSize;
@@ -235,10 +240,13 @@ class NodeLaneRow extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          title,
-                          style: (prominent ? t.readerTitle : t.readerLabel)
-                              .copyWith(color: color),
+                        _NodeLaneLabelValue(
+                          title: title,
+                          titleStyle:
+                              (prominent ? t.readerTitle : t.readerLabel)
+                                  .copyWith(color: color),
+                          value: value,
+                          valueLeading: valueLeading,
                         ),
                         if (subtitle?.isNotEmpty == true) ...[
                           const SizedBox(height: NodeLaneTokens.space4),
@@ -254,23 +262,6 @@ class NodeLaneRow extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (valueLeading != null) ...[
-                    const SizedBox(width: NodeLaneTokens.space12),
-                    valueLeading!,
-                  ],
-                  if (value != null) ...[
-                    const SizedBox(width: NodeLaneTokens.space12),
-                    Flexible(
-                      fit: FlexFit.tight,
-                      child: Text(
-                        value!,
-                        style: t.readerValue,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
-                      ),
-                    ),
-                  ],
                   if (trailing != null) ...[
                     const SizedBox(width: NodeLaneTokens.space12),
                     trailing!,
@@ -325,6 +316,44 @@ class NodeLaneRow extends StatelessWidget {
           : content,
     );
   }
+}
+
+/// The same label/value alignment for choice rows and slider headers.
+class _NodeLaneLabelValue extends StatelessWidget {
+  const _NodeLaneLabelValue({
+    required this.title,
+    required this.titleStyle,
+    this.value,
+    this.valueLeading,
+  });
+  final String title;
+  final TextStyle titleStyle;
+  final String? value;
+  final Widget? valueLeading;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(child: Text(title, style: titleStyle)),
+      if (valueLeading != null) ...[
+        const SizedBox(width: NodeLaneTokens.space12),
+        valueLeading!,
+      ],
+      if (value != null) ...[
+        const SizedBox(width: NodeLaneTokens.space12),
+        Flexible(
+          fit: FlexFit.tight,
+          child: Text(
+            value!,
+            style: NodeLaneTokens.of(context).readerValue,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+          ),
+        ),
+      ],
+    ],
+  );
 }
 
 enum NodeLaneBadgeTone { overlay, accent, softAccent, neutral, soft }
@@ -684,9 +713,10 @@ class _NodeLaneSliderRowState extends State<NodeLaneSliderRow> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            widget.title.isEmpty ? valueLabel : '${widget.title} · $valueLabel',
-            style: t.readerLabel,
+          _NodeLaneLabelValue(
+            title: widget.title,
+            titleStyle: t.readerLabel,
+            value: valueLabel,
           ),
           if (widget.subtitle != null) ...[
             const SizedBox(height: NodeLaneTokens.space4),

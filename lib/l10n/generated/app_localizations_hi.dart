@@ -2930,8 +2930,24 @@ class AppLocalizationsHi extends AppLocalizations {
   String get flash_color_white_black => 'सफेद और काला';
 
   @override
+  String get flash_interval_label => 'फ़्लैश अंतराल';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n पन्ने';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'फ़्लैश अंतराल: $n पन्ने';
+  }
+
+  @override
+  String get flash_duration_label => 'फ़्लैश अवधि';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override

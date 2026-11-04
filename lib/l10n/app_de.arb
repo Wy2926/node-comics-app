@@ -870,6 +870,8 @@
   "flash_color_black": "Schwarz",
   "flash_color_white": "Weiß",
   "flash_color_white_black": "Weiß & Schwarz",
+  "flash_interval_label": "Blinkintervall",
+  "flash_interval_value": "{n} Seiten",
   "flash_interval": "Blinkintervall: {n} Seiten",
   "@flash_interval": {
     "placeholders": {
@@ -878,6 +880,8 @@
       }
     }
   },
+  "flash_duration_label": "Blinkdauer",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "Blinkdauer: {n} ms",
   "@flash_duration": {
     "placeholders": {

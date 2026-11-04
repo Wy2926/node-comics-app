@@ -857,6 +857,8 @@
   "flash_color_black": "Siyah",
   "flash_color_white": "Beyaz",
   "flash_color_white_black": "Beyaz & Siyah",
+  "flash_interval_label": "Flaş Aralığı",
+  "flash_interval_value": "{n} sayfa",
   "flash_interval": "Flaş Aralığı: {n} sayfa",
   "@flash_interval": {
     "placeholders": {
@@ -865,6 +867,8 @@
       }
     }
   },
+  "flash_duration_label": "Flaş Süresi",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "Flaş Süresi: {n} ms",
   "@flash_duration": {
     "placeholders": {

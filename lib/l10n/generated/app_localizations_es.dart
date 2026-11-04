@@ -2962,8 +2962,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get flash_color_white_black => 'Blanco y Negro';
 
   @override
+  String get flash_interval_label => 'Intervalo de destello';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n páginas';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'Intervalo de destello: $n páginas';
+  }
+
+  @override
+  String get flash_duration_label => 'Duración del destello';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override
@@ -7610,8 +7626,24 @@ class AppLocalizationsEs419 extends AppLocalizationsEs {
   String get flash_color_white_black => 'Blanco y Negro';
 
   @override
+  String get flash_interval_label => 'Intervalo de destello';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n páginas';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'Intervalo de destello: $n páginas';
+  }
+
+  @override
+  String get flash_duration_label => 'Duración del destello';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override

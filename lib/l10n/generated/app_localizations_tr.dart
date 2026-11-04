@@ -2941,8 +2941,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get flash_color_white_black => 'Beyaz & Siyah';
 
   @override
+  String get flash_interval_label => 'Flaş Aralığı';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n sayfa';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'Flaş Aralığı: $n sayfa';
+  }
+
+  @override
+  String get flash_duration_label => 'Flaş Süresi';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override

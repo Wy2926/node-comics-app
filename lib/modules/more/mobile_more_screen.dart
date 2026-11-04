@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/settings_search.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
@@ -69,20 +68,12 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
       String title,
       IconData icon,
       String route, {
-      String? value,
       String keywords = '',
     }) => entry(
       title,
-      NodeLaneRow(
-        title: title,
-        value: value,
-        icon: icon,
-        onTap: () => _open(route),
-      ),
+      NodeLaneRow(title: title, icon: icon, onTap: () => _open(route)),
       keywords,
     );
-    final followSystem = ref.watch(followSystemThemeStateProvider);
-    final dark = ref.watch(themeModeStateProvider);
     final sections = [
       (
         title: l.settings_frequent,
@@ -129,11 +120,6 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
             l.settings_appearance_interface,
             icons.palette,
             '/appearance',
-            value: followSystem
-                ? l.follow_system_theme
-                : dark
-                ? l.theme_dark
-                : l.theme_light,
             keywords: l.appearance_subtitle,
           ),
           link(l.settings_security_privacy, icons.security, '/security'),

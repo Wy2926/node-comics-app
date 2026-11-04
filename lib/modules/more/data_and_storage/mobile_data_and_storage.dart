@@ -143,10 +143,12 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
       IconData icon,
       Future<void> Function() action, {
       String? subtitle,
+      String? value,
       bool enabled = true,
     }) => NodeLaneRow(
       title: title,
       subtitle: subtitle,
+      value: value,
       icon: icon,
       trailing: TextButton(
         onPressed: _busy || !enabled ? null : () => _clear(title, action),
@@ -221,7 +223,7 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                         () => ref
                             .read(totalChapterCacheSizeStateProvider.notifier)
                             .clearCache(),
-                        subtitle: cacheSize,
+                        value: cacheSize,
                       ),
                       clearRow(
                         l.settings_cover_cache,
@@ -269,7 +271,7 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                         if (widget.canChooseBackupLocation)
                           NodeLaneRow(
                             title: l.backup_location,
-                            subtitle: backupLocation.$2.isEmpty
+                            value: backupLocation.$2.isEmpty
                                 ? backupLocation.$1
                                 : backupLocation.$2,
                             icon: icons.folderOutline,
@@ -297,47 +299,23 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                                   () => widget.onEncryptionChanged(value),
                                 ),
                         ),
-                        Padding(
-                          padding: NodeLaneTokens.groupPadding,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                '${l.compression_level} · $compression',
-                                style: t.readerLabel,
-                              ),
-                              const SizedBox(height: NodeLaneTokens.space8),
-                              Text(
-                                l.compression_info(
-                                  DeflateLevel.defaultCompression,
-                                ),
-                                style: t.readerSecondary,
-                              ),
-                              Slider(
-                                min: 0,
-                                max: 9,
-                                divisions: 9,
-                                value: compression.clamp(0, 9).toDouble(),
-                                label: '$compression',
-                                semanticFormatterCallback: (value) =>
-                                    '${l.compression_level} ${value.round()}',
-                                onChanged: _busy
-                                    ? null
-                                    : (value) => ref
-                                          .read(
-                                            backupCompressionLevelProvider
-                                                .notifier,
-                                          )
-                                          .update(value.round()),
-                                onChangeEnd: (value) => _run(
-                                  () => ref
-                                      .read(
-                                        backupCompressionLevelProvider.notifier,
-                                      )
-                                      .set(value.round()),
-                                ),
-                              ),
-                            ],
+                        NodeLaneSliderRow(
+                          title: l.compression_level,
+                          subtitle: l.compression_info(
+                            DeflateLevel.defaultCompression,
+                          ),
+                          value: compression.clamp(0, 9).toDouble(),
+                          min: 0,
+                          max: 9,
+                          divisions: 9,
+                          enabled: !_busy,
+                          onPreview: (value) => ref
+                              .read(backupCompressionLevelProvider.notifier)
+                              .update(value.round()),
+                          onChanged: (value) => _run(
+                            () => ref
+                                .read(backupCompressionLevelProvider.notifier)
+                                .set(value.round()),
                           ),
                         ),
                         NodeLaneSwitchRow(

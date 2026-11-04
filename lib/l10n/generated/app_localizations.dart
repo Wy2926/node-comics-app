@@ -5335,11 +5335,35 @@ abstract class AppLocalizations {
   /// **'White & Black'**
   String get flash_color_white_black;
 
+  /// No description provided for @flash_interval_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Flash Interval'**
+  String get flash_interval_label;
+
+  /// No description provided for @flash_interval_value.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} pages'**
+  String flash_interval_value(String n);
+
   /// No description provided for @flash_interval.
   ///
   /// In en, this message translates to:
   /// **'Flash Interval: {n} pages'**
   String flash_interval(String n);
+
+  /// No description provided for @flash_duration_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Flash Duration'**
+  String get flash_duration_label;
+
+  /// No description provided for @flash_duration_value.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} ms'**
+  String flash_duration_value(String n);
 
   /// No description provided for @flash_duration.
   ///

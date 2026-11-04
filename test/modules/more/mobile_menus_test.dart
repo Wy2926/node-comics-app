@@ -7,7 +7,6 @@ import 'package:mangayomi/modules/more/mobile_more_screen.dart';
 import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
-import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -44,8 +43,6 @@ void main() {
           ref.onDispose(service.dispose);
           return service;
         }),
-        followSystemThemeStateProvider.overrideWith(_FollowSystem.new),
-        themeModeStateProvider.overrideWith(_DarkTheme.new),
         morePendingDownloadsProvider.overrideWith((ref) => Stream.value(0)),
         downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
         incognitoModeStateProvider.overrideWith(_Incognito.new),
@@ -189,8 +186,6 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           translationServiceProvider.overrideWithValue(account),
-          followSystemThemeStateProvider.overrideWith(_FollowSystem.new),
-          themeModeStateProvider.overrideWith(_DarkTheme.new),
           morePendingDownloadsProvider.overrideWith((ref) => Stream.value(0)),
           hideItemsStateProvider.overrideWith(_HiddenItems.new),
           downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
@@ -248,6 +243,19 @@ void main() {
       await tester.pumpAndSettle();
       expect(incognito.writes, [true]);
       expect(downloaded.writes, [true, false]);
+
+      final appearance = find.widgetWithText(
+        NodeLaneRow,
+        'Appearance and interface',
+      );
+      await tester.scrollUntilVisible(
+        appearance,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<NodeLaneRow>(appearance).value, isNull);
+      expect(tester.widget<NodeLaneRow>(appearance).subtitle, isNull);
 
       container.read(hideItemsStateProvider.notifier).set(['/browser']);
       await tester.pumpAndSettle();
@@ -312,14 +320,4 @@ class _HideRpc extends HideDiscordRpcInIncognitoState {
 class _AccountService extends TranslationService {
   @override
   Future<void> initialize() async {}
-}
-
-class _FollowSystem extends FollowSystemThemeState {
-  @override
-  bool build() => true;
-}
-
-class _DarkTheme extends ThemeModeState {
-  @override
-  bool build() => false;
 }

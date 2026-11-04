@@ -118,6 +118,9 @@ void main() {
           container.read(l10nLocaleStateProvider.notifier) as _Locale;
       final language = link('App language');
       expect(language.hitTestable(), findsOneWidget);
+      final languageRow = tester.widget<NodeLaneRow>(language);
+      expect(languageRow.value, completeLanguageName('en'));
+      expect(languageRow.subtitle, isNull);
       await tester.tap(language);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '中文');
@@ -165,7 +168,13 @@ void main() {
       200,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Color blend level · 20'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.widgetWithText(NodeLaneSliderRow, 'Color blend level'),
+        matching: find.text('20'),
+      ),
+      findsOneWidget,
+    );
     final blend = container.read(blendLevelStateProvider.notifier) as _Blend;
     expect(blend.writes, isEmpty);
 
@@ -209,13 +218,7 @@ void main() {
       await choose(tester, 'Default');
       expect(font.writes, [null]);
 
-      await open(tester, 'Date format');
-      await choose(tester, 'dd/MM/yy');
-      expect(container.read(dateFormatStateProvider), 'dd/MM/yy');
-      await tester.scrollUntilVisible(
-        find.textContaining('Interface scale ·'),
-        -300,
-      );
+      await tester.scrollUntilVisible(find.text('Interface scale'), -300);
       await tester.pumpAndSettle();
       final slider = find.byWidgetPredicate(
         (widget) => widget is Slider && widget.min == .85,

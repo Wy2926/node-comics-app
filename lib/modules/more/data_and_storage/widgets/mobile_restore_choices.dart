@@ -189,7 +189,8 @@ class _MobileRestoreSourcesState extends State<MobileRestoreSources> {
             children: [
               NodeLaneRow(
                 title: entry.key,
-                subtitle: '$typeLabel · $selectedLabel',
+                subtitle: typeLabel,
+                value: selectedLabel,
                 icon: Icons.extension_outlined,
                 onTap: () => _choose(entry.key, entry.value),
               ),

@@ -310,7 +310,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                       NodeLaneRow(
                         title: l10n.sync_auto,
                         openOnReveal: true,
-                        subtitle:
+                        value:
                             options
                                 .where(
                                   (option) =>

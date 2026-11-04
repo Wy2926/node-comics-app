@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
@@ -25,6 +26,47 @@ class MobileSettingsList extends StatelessWidget {
           ),
         )
       : ListView(padding: padding, children: children);
+}
+
+/// Choice presentation and cancellation only; preference writes stay with callers.
+class MobileSettingsChoice<T> extends StatelessWidget {
+  const MobileSettingsChoice({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.options,
+    required this.onChanged,
+    this.searchable = false,
+  });
+  final String title;
+  final IconData icon;
+  final T value;
+  final String Function(T) label;
+  final List<MobileSettingOption<T>> options;
+  final ValueChanged<T> onChanged;
+  final bool searchable;
+
+  @override
+  Widget build(BuildContext context) => NodeLaneRow(
+    openOnReveal: true,
+    title: title,
+    value: label(value),
+    icon: icon,
+    onTap: () async {
+      final result = await showMobileSettingsPicker<T>(
+        context,
+        title: title,
+        current: value,
+        options: options,
+        searchable: searchable,
+      );
+      if (context.mounted && result != null && result.value != value) {
+        onChanged(result.value);
+      }
+    },
+  );
 }
 
 /// Small presentation pieces shared by the mobile More and Settings menus.

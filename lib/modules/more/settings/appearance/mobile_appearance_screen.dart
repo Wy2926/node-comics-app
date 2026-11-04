@@ -102,7 +102,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.app_language,
-                    subtitle: completeLanguageName(locale.toLanguageTag()),
+                    value: completeLanguageName(locale.toLanguageTag()),
                     icon: NodeLaneIcons.of(context).web,
                     onTap: () => select(
                       title: l10n.app_language,
@@ -130,7 +130,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.theme,
-                    subtitle: modeOptions
+                    value: modeOptions
                         .firstWhere((option) => option.value == mode)
                         .label,
                     icon: NodeLaneIcons.of(context).brightness,
@@ -163,7 +163,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.color,
-                    subtitle: ThemeAA.schemes[schemeIndex].name,
+                    value: ThemeAA.schemes[schemeIndex].name,
                     icon: NodeLaneIcons.of(context).palette,
                     onTap: () => select(
                       title: l10n.color,
@@ -236,7 +236,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.font,
-                    subtitle: font ?? l10n.default0,
+                    value: font ?? l10n.default0,
                     icon: NodeLaneIcons.of(context).font,
                     onTap: () => select<String?>(
                       title: l10n.font,
@@ -266,7 +266,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.relative_timestamp,
-                    subtitle: relativeLabels[relative],
+                    value: relativeLabels[relative],
                     icon: NodeLaneIcons.of(context).history,
                     onTap: () => select(
                       title: l10n.relative_timestamp,
@@ -283,7 +283,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.date_format,
-                    subtitle: '$datePattern · ${dateExample(datePattern)}',
+                    value: datePattern,
                     icon: NodeLaneIcons.of(context).calendar,
                     onTap: () => select(
                       title: l10n.date_format,

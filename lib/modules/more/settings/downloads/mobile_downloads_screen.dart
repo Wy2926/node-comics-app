@@ -89,7 +89,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
                     NodeLaneRow(
                       title: l10n.concurrent_downloads,
                       openOnReveal: true,
-                      subtitle: '$count',
+                      value: '$count',
                       icon: NodeLaneIcons.of(context).pageNumber,
                       onTap: () async {
                         final selected = await _number(
@@ -111,7 +111,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
                   NodeLaneRow(
                     title: l10n.download_delay,
                     openOnReveal: true,
-                    subtitle: delay == 0
+                    value: delay == 0
                         ? l10n.off
                         : l10n.download_delay_value(delay),
                     icon: NodeLaneIcons.of(context).timer,
@@ -141,7 +141,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
                   NodeLaneRow(
                     title: l10n.download_location,
                     openOnReveal: true,
-                    subtitle: location.$2.isEmpty ? location.$1 : location.$2,
+                    value: location.$2.isEmpty ? location.$1 : location.$2,
                     subtitleMaxLines: 2,
                     icon: NodeLaneIcons.of(context).folderOutline,
                     onTap: onPickLocation,

@@ -2923,8 +2923,24 @@ class AppLocalizationsTh extends AppLocalizations {
   String get flash_color_white_black => 'สีขาวและสีดำ';
 
   @override
+  String get flash_interval_label => 'ช่วงการกะพริบ';
+
+  @override
+  String flash_interval_value(String n) {
+    return 'ทุก $n หน้า';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'ช่วงการกะพริบ: ทุก $n หน้า';
+  }
+
+  @override
+  String get flash_duration_label => 'ระยะเวลาการกะพริบ';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n มิลลิวินาที';
   }
 
   @override

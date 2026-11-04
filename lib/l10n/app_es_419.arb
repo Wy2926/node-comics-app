@@ -859,6 +859,8 @@
   "flash_color_black": "Negro",
   "flash_color_white": "Blanco",
   "flash_color_white_black": "Blanco y Negro",
+  "flash_interval_label": "Intervalo de destello",
+  "flash_interval_value": "{n} páginas",
   "flash_interval": "Intervalo de destello: {n} páginas",
   "@flash_interval": {
     "placeholders": {
@@ -867,6 +869,8 @@
       }
     }
   },
+  "flash_duration_label": "Duración del destello",
+  "flash_duration_value": "{n} ms",
   "flash_duration": "Duración del destello: {n} ms",
   "@flash_duration": {
     "placeholders": {

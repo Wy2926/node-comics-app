@@ -33,7 +33,7 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
             NodeLaneRow(
               openOnReveal: true,
               title: l10n.audio_preferred_languages,
-              subtitle: languages.isEmpty ? l10n.default0 : languages,
+              value: languages.isEmpty ? l10n.default0 : languages,
               icon: NodeLaneIcons.of(context).translate,
               onTap: () async {
                 final result = await showDialog<String>(
@@ -56,7 +56,7 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
                 }
               },
             ),
-            MobilePlayerSettingChoice<AudioChannel>(
+            MobileSettingsChoice<AudioChannel>(
               title: l10n.audio_channels,
               icon: NodeLaneIcons.of(context).audio,
               value: ref.watch(audioChannelStateProvider),
@@ -82,9 +82,9 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
             ),
             NodeLaneSliderRow(
               value: ref.watch(volumeBoostCapStateProvider).toDouble(),
-              onChanged: (value) => (ref
+              onChanged: (value) => ref
                   .read(volumeBoostCapStateProvider.notifier)
-                  .set)(value.toInt()),
+                  .set(value.toInt()),
               title: l10n.volume_boost_cap,
               min: 0,
               max: 200,

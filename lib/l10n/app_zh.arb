@@ -908,6 +908,8 @@
   "flash_color_black": "黑色",
   "flash_color_white": "白色",
   "flash_color_white_black": "白与黑",
+  "flash_interval_label": "闪烁间隔",
+  "flash_interval_value": "{n}页",
   "flash_interval": "闪烁间隔：{n}页",
   "@flash_interval": {
     "placeholders": {
@@ -916,6 +918,8 @@
       }
     }
   },
+  "flash_duration_label": "闪烁持续时间",
+  "flash_duration_value": "{n}毫秒",
   "flash_duration": "闪烁持续时间：{n}毫秒",
   "@flash_duration": {
     "placeholders": {

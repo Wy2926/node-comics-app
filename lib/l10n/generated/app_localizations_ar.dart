@@ -2930,8 +2930,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get flash_color_white_black => 'أبيض وأسود';
 
   @override
+  String get flash_interval_label => 'معدل الوميض';
+
+  @override
+  String flash_interval_value(String n) {
+    return 'كل $n صفحات';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'معدل الوميض: كل $n صفحات';
+  }
+
+  @override
+  String get flash_duration_label => 'مدة الوميض';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n مللي ثانية';
   }
 
   @override

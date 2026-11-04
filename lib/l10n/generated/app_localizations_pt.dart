@@ -2956,8 +2956,24 @@ class AppLocalizationsPt extends AppLocalizations {
   String get flash_color_white_black => 'Branco e Preto';
 
   @override
+  String get flash_interval_label => 'Intervalo do flash';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n páginas';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'Intervalo do flash: $n páginas';
+  }
+
+  @override
+  String get flash_duration_label => 'Duração do flash';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override
@@ -7597,8 +7613,24 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get flash_color_white_black => 'Branco e Preto';
 
   @override
+  String get flash_interval_label => 'Intervalo do flash';
+
+  @override
+  String flash_interval_value(String n) {
+    return '$n páginas';
+  }
+
+  @override
   String flash_interval(String n) {
     return 'Intervalo do flash: $n páginas';
+  }
+
+  @override
+  String get flash_duration_label => 'Duração do flash';
+
+  @override
+  String flash_duration_value(String n) {
+    return '$n ms';
   }
 
   @override

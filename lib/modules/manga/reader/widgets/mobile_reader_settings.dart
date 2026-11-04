@@ -177,19 +177,14 @@ class _MobileReaderSettingsState extends ConsumerState<MobileReaderSettings> {
                                   valueListenable: widget.pageOffset,
                                   builder: (context, speed, _) =>
                                       NodeLaneSliderRow(
-                                        title: '',
+                                        title: l10n.speed,
                                         value: speed.round().toDouble(),
                                         min: 2,
                                         max: 30,
                                         divisions: 28,
-                                        onChanged: (value) => ((value) =>
+                                        onChanged: (value) =>
                                             widget.onSpeedChanged(
-                                              value.toDouble(),
-                                            ))(value.round()),
-                                        label: (draft) =>
-                                            ((value) =>
-                                                '${l10n.speed}: $value')(
-                                              draft.round(),
+                                              value.round().toDouble(),
                                             ),
                                       ),
                                 ),
