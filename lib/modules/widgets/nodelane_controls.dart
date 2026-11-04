@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -130,6 +131,7 @@ class NodeLaneRow extends StatelessWidget {
     this.accented = false,
     this.checkable = false,
     this.enabled = true,
+    this.openOnReveal = false,
   }) : assert(icon == null || leading == null),
        _card = false,
        first = true,
@@ -156,6 +158,7 @@ class NodeLaneRow extends StatelessWidget {
     this.accented = false,
     this.checkable = false,
     this.enabled = true,
+    this.openOnReveal = false,
     this.first = true,
     this.last = true,
   }) : assert(icon == null || leading == null),
@@ -173,8 +176,16 @@ class NodeLaneRow extends StatelessWidget {
   final bool destructive, checkable, enabled, first, last, _card;
   final bool compact, prominent, accented;
 
+  /// Opt in only for navigation and opening a picker, never preference writes.
+  final bool openOnReveal;
+
   @override
   Widget build(BuildContext context) {
+    NodeLaneRevealScope.reveal(
+      context,
+      title,
+      open: openOnReveal && enabled && !destructive ? onTap : null,
+    );
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final color = !enabled
         ? t.muted.withValues(alpha: .5)
@@ -546,6 +557,16 @@ class _NodeLaneDisclosureState extends State<NodeLaneDisclosure> {
   late final _controller = ExpansibleController();
   // Descendant scrollables must not read Expansible's boolean as an offset.
   final _bodyStorage = PageStorageBucket();
+  bool _revealed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_revealed && NodeLaneRevealScope.expands(context, widget.title)) {
+      _revealed = true;
+      _controller.expand();
+    }
+  }
 
   @override
   void initState() {
@@ -655,6 +676,7 @@ class _NodeLaneSliderRowState extends State<NodeLaneSliderRow> {
 
   @override
   Widget build(BuildContext context) {
+    NodeLaneRevealScope.reveal(context, widget.title);
     final t = NodeLaneTokens.of(context);
     final valueLabel = widget.label?.call(_draft) ?? _draft.round().toString();
     return Padding(

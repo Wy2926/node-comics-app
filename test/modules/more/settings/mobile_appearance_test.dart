@@ -14,9 +14,13 @@ import 'package:mangayomi/modules/more/settings/appearance/providers/pure_black_
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/language.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 
 void main() {
-  Future<ProviderContainer> showAppearance(WidgetTester tester) async {
+  Future<ProviderContainer> showAppearance(
+    WidgetTester tester, {
+    String? target,
+  }) async {
     tester.view.physicalSize = const Size(360, 740);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -51,7 +55,12 @@ void main() {
             ),
             child: child!,
           ),
-          home: const MobileAppearanceScreen(),
+          home: target == null
+              ? const MobileAppearanceScreen()
+              : NodeLaneRevealScope(
+                  path: [target],
+                  child: const MobileAppearanceScreen(),
+                ),
         ),
       ),
     );
@@ -73,6 +82,33 @@ void main() {
     await tester.tap(find.text(label).last);
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'search opens the existing language picker once and cancellation preserves locale',
+    (tester) async {
+      final container = await showAppearance(tester, target: 'App language');
+      expect(find.byType(TextField), findsOneWidget);
+      final locale =
+          container.read(l10nLocaleStateProvider.notifier) as _Locale;
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      container.read(themeModeStateProvider.notifier).setTheme(Brightness.dark);
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsNothing);
+      expect(locale.writes, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('search reaches the date picker below the fold at large text', (
+    tester,
+  ) async {
+    final container = await showAppearance(tester, target: 'Date format');
+    await choose(tester, 'dd/MM/yy');
+    expect(container.read(dateFormatStateProvider), 'dd/MM/yy');
+    expect(link('Date format').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'app language is immediately reachable and only selection changes it',

@@ -41,7 +41,7 @@ class MobileGeneralScreen extends ConsumerWidget {
         appBar: nodeLaneAppBar(context, title: l10n.general),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-general'),
             padding: NodeLaneTokens.pagePadding,
             children: [
@@ -49,6 +49,7 @@ class MobileGeneralScreen extends ConsumerWidget {
                 title: l10n.library,
                 children: [
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.auto_library_update,
                     subtitle: updateLabel(interval),
                     icon: NodeLaneIcons.of(context).refresh,
@@ -212,6 +213,7 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
         ),
         if (doh.enabled)
           NodeLaneRow(
+            openOnReveal: true,
             title: l10n.dns_provider,
             subtitle: doh.providerId == DoHProviders.customId
                 ? '${l10n.custom} · ${DohCustomStore.url}'
@@ -223,6 +225,7 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
           )
         else
           NodeLaneRow(
+            openOnReveal: true,
             title: l10n.custom_dns,
             subtitle: dns.isEmpty ? null : dns,
             subtitleMaxLines: 2,
@@ -239,6 +242,7 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
             },
           ),
         NodeLaneRow(
+          openOnReveal: true,
           title: l10n.default_user_agent,
           subtitle: userAgent,
           subtitleMaxLines: 2,
@@ -254,6 +258,7 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
           },
         ),
         NodeLaneRow(
+          openOnReveal: true,
           title: l10n.cloudflare_bypass_proxy,
           subtitle: _proxyUrl.isEmpty ? l10n.cf_proxy_helper : _proxyUrl,
           subtitleMaxLines: 2,

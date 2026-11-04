@@ -32,7 +32,7 @@ class MobileNovelReaderScreen extends ConsumerWidget {
         appBar: nodeLaneAppBar(context, title: '${l10n.novel} ${l10n.reader}'),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-novel-reader-settings'),
             padding: NodeLaneTokens.pagePadding,
             children: [
@@ -101,6 +101,7 @@ class MobileNovelReaderScreen extends ConsumerWidget {
                   ),
                   if (onOpenTts != null)
                     NodeLaneRow(
+                      openOnReveal: true,
                       title: l10n.tts,
                       icon: NodeLaneIcons.of(context).speech,
                       onTap: onOpenTts!,
@@ -349,6 +350,7 @@ class _NovelChoice<T> extends StatelessWidget {
   final ValueChanged<T> onChanged;
   @override
   Widget build(BuildContext context) => NodeLaneRow(
+    openOnReveal: true,
     title: title,
     subtitle: subtitle,
     icon: icon,

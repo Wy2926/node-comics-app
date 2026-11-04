@@ -31,6 +31,7 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
         MobileSettingsGroup(
           children: [
             NodeLaneRow(
+              openOnReveal: true,
               title: l10n.audio_preferred_languages,
               subtitle: languages.isEmpty ? l10n.default0 : languages,
               icon: NodeLaneIcons.of(context).translate,

@@ -38,7 +38,7 @@ class MobileSecuritySettingsView extends StatelessWidget {
         appBar: nodeLaneAppBar(context, title: l10n.security),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             padding: NodeLaneTokens.pagePadding,
             children: [
               MobileSettingsGroup(

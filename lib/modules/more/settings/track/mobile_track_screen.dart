@@ -189,7 +189,7 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
           appBar: nodeLaneAppBar(context, title: l10n.tracking),
           body: SafeArea(
             top: false,
-            child: ListView(
+            child: MobileSettingsList(
               key: const PageStorageKey('mobile-tracking-settings'),
               padding: NodeLaneTokens.pagePadding,
               children: [

@@ -261,6 +261,7 @@ class MobileReaderAdvancedSettings extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         NodeLaneRow(
+          openOnReveal: true,
           title: l10n.page_preload_amount,
           icon: NodeLaneIcons.of(context).image,
           onTap: () async {
@@ -399,6 +400,7 @@ class MobileReaderSettingsChoice<T> extends StatelessWidget {
   final String? scopeDescription;
   @override
   Widget build(BuildContext context) => NodeLaneRow(
+    openOnReveal: true,
     title: title,
     valueLeading: valueLeading,
     icon: icon,

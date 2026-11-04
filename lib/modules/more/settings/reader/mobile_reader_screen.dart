@@ -23,7 +23,7 @@ class MobileReaderScreen extends ConsumerWidget {
         appBar: nodeLaneAppBar(context, title: l10n.reader),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-reader-settings'),
             padding: NodeLaneTokens.pagePadding,
             children: [

@@ -69,6 +69,8 @@ import 'package:mangayomi/modules/more/settings/security/security_screen.dart';
 import 'package:mangayomi/services/crash_route_observer.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_tts_settings_screen.dart';
 part 'router.g.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -263,6 +265,11 @@ class RouterNotifier extends ChangeNotifier {
     _genericRoute(name: "general", child: const GeneralScreen()),
     _genericRoute(name: "readerMode", child: const ReaderScreen()),
     _genericRoute(name: "novelReaderMode", child: const NovelReaderScreen()),
+    if (isMobile && !isTv)
+      _genericRoute(
+        name: "ttsSettings",
+        child: const MobileTtsSettingsScreen(),
+      ),
     _genericRoute(name: "browseS", child: const BrowseSScreen()),
     _genericRoute(
       name: "extensionServer",
@@ -363,23 +370,28 @@ class RouterNotifier extends ChangeNotifier {
     Widget Function(T extra)? builder,
     Widget? child,
   }) {
+    Widget pageChild(GoRouterState state) {
+      final page = builder != null ? builder(state.extra as T) : child!;
+      final target = state.uri.queryParametersAll['setting'];
+      return target == null || target.isEmpty
+          ? page
+          : NodeLaneRevealScope(
+              key: ValueKey(state.uri),
+              path: target,
+              child: page,
+            );
+    }
+
     return GoRoute(
       path: path ?? (name != null ? "/$name" : "/"),
       name: name,
-      builder: (context, state) {
-        if (builder != null) {
-          final id = state.extra as T;
-          return builder(id);
-        } else {
-          return child!;
-        }
-      },
+      builder: (context, state) => pageChild(state),
       pageBuilder: isApple
           ? (context, state) {
-              final pageChild = builder != null
-                  ? builder(state.extra as T)
-                  : child!;
-              return transitionPage(key: state.pageKey, child: pageChild);
+              return transitionPage(
+                key: state.pageKey,
+                child: pageChild(state),
+              );
             }
           : null,
     );

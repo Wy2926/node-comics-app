@@ -249,7 +249,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
         appBar: nodeLaneAppBar(context, title: l10n.syncing),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-sync-settings'),
             padding: NodeLaneTokens.pagePadding,
             children: [
@@ -309,6 +309,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                     if (preference.syncOn && _logged)
                       NodeLaneRow(
                         title: l10n.sync_auto,
+                        openOnReveal: true,
                         subtitle:
                             options
                                 .where(

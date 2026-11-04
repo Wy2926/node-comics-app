@@ -13,6 +13,7 @@ import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 void main() {
   void phone(WidgetTester tester) {
@@ -57,9 +58,18 @@ void main() {
         GoRoute(path: '/', builder: (_, _) => const MobileMoreScreen()),
         GoRoute(
           path: '/appearance',
-          builder: (_, _) => Scaffold(
-            appBar: AppBar(title: const Text('Appearance destination')),
+          builder: (_, state) => Scaffold(
+            appBar: AppBar(
+              title: Text(
+                state.uri.queryParameters['setting'] ??
+                    'Appearance destination',
+              ),
+            ),
           ),
+        ),
+        GoRoute(
+          path: '/playerDecoderScreen',
+          builder: (_, _) => const Scaffold(body: Text('Decoder destination')),
         ),
       ],
     );
@@ -98,8 +108,8 @@ void main() {
       tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus,
       isTrue,
     );
-    expect(find.text('Manga Reader'), findsOneWidget);
-    expect(find.text('Novel Reader'), findsOneWidget);
+    expect(find.text('Manga Reader'), findsWidgets);
+    expect(find.text('Novel Reader'), findsWidgets);
     container.read(hideItemsStateProvider.notifier).set([
       '/MangaLibrary',
       '/NovelLibrary',
@@ -116,21 +126,36 @@ void main() {
     for (final query in ['display language', '显示语言']) {
       await tester.enterText(find.byType(TextField), query);
       await tester.pumpAndSettle();
+      expect(find.text('App language'), findsOneWidget);
       expect(find.text('Appearance and interface'), findsOneWidget);
     }
-    await tester.enterText(find.byType(TextField), 'theme');
+    await tester.ensureVisible(find.text('App language'));
+    await tester.tap(find.text('App language'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Appearance and interface'));
-    await tester.tap(find.text('Appearance and interface'));
-    await tester.pumpAndSettle();
-    expect(find.text('Appearance destination'), findsOneWidget);
+    expect(find.text('App language'), findsOneWidget);
+    expect(find.byType(MobileMoreScreen), findsNothing);
     router.pop();
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
-      'theme',
+      '显示语言',
     );
     expect(find.text('Appearance and interface'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'decoder');
+    await tester.pumpAndSettle();
+    final decoder = find.byWidgetPredicate(
+      (widget) => widget is NodeLaneRow && widget.title == 'Decoder',
+    );
+    await tester.ensureVisible(decoder);
+    await tester.tap(decoder);
+    await tester.pumpAndSettle();
+    expect(find.text('Decoder destination'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    container.read(hideItemsStateProvider.notifier).set(['/AnimeLibrary']);
+    await tester.pumpAndSettle();
+    expect(decoder, findsNothing);
 
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.enterText(find.byType(TextField), 'missing setting');

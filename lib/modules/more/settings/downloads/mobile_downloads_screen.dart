@@ -63,7 +63,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
         appBar: nodeLaneAppBar(context, title: l10n.downloads),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-download-settings'),
             padding: NodeLaneTokens.pagePadding,
             children: [
@@ -88,6 +88,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
                   if (concurrent)
                     NodeLaneRow(
                       title: l10n.concurrent_downloads,
+                      openOnReveal: true,
                       subtitle: '$count',
                       icon: NodeLaneIcons.of(context).pageNumber,
                       onTap: () async {
@@ -109,6 +110,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
                     ),
                   NodeLaneRow(
                     title: l10n.download_delay,
+                    openOnReveal: true,
                     subtitle: delay == 0
                         ? l10n.off
                         : l10n.download_delay_value(delay),
@@ -138,6 +140,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
                 children: [
                   NodeLaneRow(
                     title: l10n.download_location,
+                    openOnReveal: true,
                     subtitle: location.$2.isEmpty ? location.$1 : location.$2,
                     subtitleMaxLines: 2,
                     icon: NodeLaneIcons.of(context).folderOutline,
@@ -187,6 +190,7 @@ class MobileDownloadsScreen extends ConsumerWidget {
                     ),
                     NodeLaneRow(
                       title: l10n.local_folder_structure,
+                      openOnReveal: true,
                       icon: NodeLaneIcons.of(context).info,
                       onTap: onHelp,
                     ),

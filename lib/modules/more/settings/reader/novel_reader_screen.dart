@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/novel/tts/novel_tts_service.dart';
 import 'package:mangayomi/modules/novel/tts/tts_settings_tab.dart';
 import 'package:mangayomi/modules/novel/widgets/novel_general_settings_tab.dart';
@@ -8,7 +9,6 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_novel_reader_screen.dart';
-import 'mobile_tts_settings_screen.dart';
 
 class NovelReaderScreen extends ConsumerWidget {
   const NovelReaderScreen({super.key});
@@ -18,13 +18,7 @@ class NovelReaderScreen extends ConsumerWidget {
     final ttsSupported = NovelTtsService.instance.isSupported;
     if (isMobile && !isTv) {
       return MobileNovelReaderScreen(
-        onOpenTts: ttsSupported
-            ? () => Navigator.of(context).push<void>(
-                MaterialPageRoute(
-                  builder: (_) => const MobileTtsSettingsScreen(),
-                ),
-              )
-            : null,
+        onOpenTts: ttsSupported ? () => context.push('/ttsSettings') : null,
       );
     }
     return DefaultTabController(

@@ -93,13 +93,14 @@ class MobileAppearanceScreen extends ConsumerWidget {
         appBar: nodeLaneAppBar(context, title: l10n.appearance),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-appearance'),
             padding: NodeLaneTokens.pagePadding,
             children: [
               NodeLaneGroupSurface(
                 children: [
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.app_language,
                     subtitle: completeLanguageName(locale.toLanguageTag()),
                     icon: NodeLaneIcons.of(context).web,
@@ -127,6 +128,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                 title: l10n.theme,
                 children: [
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.theme,
                     subtitle: modeOptions
                         .firstWhere((option) => option.value == mode)
@@ -159,6 +161,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                     ),
                   ),
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.color,
                     subtitle: ThemeAA.schemes[schemeIndex].name,
                     icon: NodeLaneIcons.of(context).palette,
@@ -231,6 +234,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                         .set(value, end: true),
                   ),
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.font,
                     subtitle: font ?? l10n.default0,
                     icon: NodeLaneIcons.of(context).font,
@@ -247,6 +251,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                     ),
                   ),
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.reorder_navigation,
                     subtitle: l10n.reorder_navigation_description,
                     icon: NodeLaneIcons.of(context).pageLayout,
@@ -259,6 +264,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                 title: l10n.timestamp,
                 children: [
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.relative_timestamp,
                     subtitle: relativeLabels[relative],
                     icon: NodeLaneIcons.of(context).history,
@@ -275,6 +281,7 @@ class MobileAppearanceScreen extends ConsumerWidget {
                     ),
                   ),
                   NodeLaneRow(
+                    openOnReveal: true,
                     title: l10n.date_format,
                     subtitle: '$datePattern · ${dateExample(datePattern)}',
                     icon: NodeLaneIcons.of(context).calendar,

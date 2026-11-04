@@ -107,7 +107,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
         appBar: nodeLaneAppBar(context, title: l.settings_about_help),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-about'),
             padding: NodeLaneTokens.pagePadding,
             children: [

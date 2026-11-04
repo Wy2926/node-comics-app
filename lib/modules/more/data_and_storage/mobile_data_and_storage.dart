@@ -167,7 +167,7 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
             top: false,
             child: AbsorbPointer(
               absorbing: _busy,
-              child: ListView(
+              child: MobileSettingsList(
                 key: const PageStorageKey('mobile-data-and-storage'),
                 padding: NodeLaneTokens.pagePadding,
                 children: [
@@ -186,6 +186,7 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                       ),
                       NodeLaneRow(
                         title: l.automatic_backups,
+                        openOnReveal: true,
                         icon: icons.refresh,
                         value: frequency >= 0 && frequency < frequencies.length
                             ? frequencies[frequency]
@@ -243,6 +244,7 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                     children: [
                       NodeLaneRow(
                         title: l.download_location,
+                        openOnReveal: true,
                         icon: icons.folderOutline,
                         value: location.$2.isEmpty
                             ? l.default0

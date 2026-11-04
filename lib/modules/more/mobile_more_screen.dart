@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
+import 'package:mangayomi/modules/more/settings/settings_search.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/modules/more/widgets/incognito_mode_widget.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
@@ -133,11 +134,7 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                 : dark
                 ? l.theme_dark
                 : l.theme_light,
-            // Keep display language discoverable even before the user has
-            // switched the app's default language.
-            keywords:
-                '${l.appearance_subtitle} ${l.app_language} ${l.language} '
-                'display language interface language 语言 显示语言 界面语言 中文 English',
+            keywords: l.appearance_subtitle,
           ),
           link(l.settings_security_privacy, icons.security, '/security'),
           link(l.general, icons.settings, '/general'),
@@ -193,7 +190,17 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
         .map((e) => e.child)
         .toList();
     final showAbout = l.settings_about_help.toLowerCase().contains(query);
-    final empty = filtered.isEmpty && matchingTools.isEmpty && !showAbout;
+    final settingMatches = query.isEmpty
+        ? <SettingsSearchEntry>[]
+        : settingsSearchEntries(
+            context,
+            hidden,
+          ).where((entry) => entry.matches(query)).toList();
+    final empty =
+        filtered.isEmpty &&
+        matchingTools.isEmpty &&
+        settingMatches.isEmpty &&
+        !showAbout;
 
     return NodeLaneSurface(
       child: Scaffold(
@@ -271,6 +278,22 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                   ),
                   sliver: SliverList.list(
                     children: [
+                      if (settingMatches.isNotEmpty)
+                        MobileSettingsGroup(
+                          children: [
+                            for (final entry in settingMatches)
+                              NodeLaneRow(
+                                key: ValueKey(
+                                  'settings-search:${entry.title}:${entry.location}',
+                                ),
+                                title: entry.title,
+                                subtitle: entry.breadcrumb,
+                                icon: entry.icon,
+                                onTap: () =>
+                                    _open(entry.location, extra: entry.extra),
+                              ),
+                          ],
+                        ),
                       for (final section in filtered)
                         MobileSettingsGroup(
                           title: section.title,

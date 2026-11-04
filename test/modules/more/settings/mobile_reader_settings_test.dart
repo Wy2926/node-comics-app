@@ -7,27 +7,35 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/reader/mobile_reader_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/mobile_reader_picker.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 
 final _writes = <(String, Object)>[];
 
 void main() {
   var scale = 1.0;
-  Widget app(ProviderContainer container) => UncontrolledProviderScope(
-    container: container,
-    child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('en'),
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(scale),
-          padding: const EdgeInsets.only(top: 24, bottom: 34),
+  Widget app(ProviderContainer container, {List<String>? target}) =>
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(scale),
+              padding: const EdgeInsets.only(top: 24, bottom: 34),
+            ),
+            child: child!,
+          ),
+          home: target == null
+              ? const MobileReaderScreen()
+              : NodeLaneRevealScope(
+                  key: ValueKey(target.join('/')),
+                  path: target,
+                  child: const MobileReaderScreen(),
+                ),
         ),
-        child: child!,
-      ),
-      home: const MobileReaderScreen(),
-    ),
-  );
+      );
   ProviderContainer preferences(WidgetTester tester) {
     tester.view.physicalSize = const Size(360, 740);
     tester.view.devicePixelRatio = 1;
@@ -186,6 +194,51 @@ void main() {
     scale = 1;
     _writes.clear();
   });
+
+  testWidgets(
+    'search expands advanced settings and reveals a switch without changing it',
+    (tester) async {
+      scale = 2.5;
+      final container = preferences(tester);
+      await tester.pumpWidget(
+        app(container, target: ['Advanced', 'Animate page transitions']),
+      );
+      await tester.pumpAndSettle();
+      final row = find.widgetWithText(
+        NodeLaneSwitchRow,
+        'Animate page transitions',
+      );
+      expect(row.hitTestable(), findsOneWidget);
+      expect(_writes, isEmpty);
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(_writes, hasLength(1));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'an unavailable dependent setting reveals its prerequisite without enabling it',
+    (tester) async {
+      final container = preferences(tester);
+      await tester.pumpWidget(
+        app(
+          container,
+          target: ['Advanced', 'Flash on page change', 'Flash color'],
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find
+            .widgetWithText(NodeLaneSwitchRow, 'Flash on page change')
+            .hitTestable(),
+        findsOneWidget,
+      );
+      expect(_writes, isEmpty);
+      expect(container.read(flashOnPageChangeStateProvider), isFalse);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   Future<void> reveal(
     WidgetTester tester,

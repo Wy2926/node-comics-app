@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
@@ -20,7 +21,7 @@ class MobilePlayerSettingsPage extends StatelessWidget {
       appBar: nodeLaneAppBar(context, title: title),
       body: SafeArea(
         top: false,
-        child: ListView(
+        child: MobileSettingsList(
           key: PageStorageKey(storageKey),
           padding: NodeLaneTokens.pagePadding,
           children: children,
@@ -51,6 +52,7 @@ class MobilePlayerSettingChoice<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => NodeLaneRow(
+    openOnReveal: true,
     title: title,
     subtitle: label(value),
     icon: icon,

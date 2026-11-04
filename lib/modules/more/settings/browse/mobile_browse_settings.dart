@@ -36,7 +36,7 @@ class MobileBrowseSettings extends ConsumerWidget {
         appBar: nodeLaneAppBar(context, title: l10n.browse),
         body: SafeArea(
           top: false,
-          child: ListView(
+          child: MobileSettingsList(
             key: const PageStorageKey('mobile-browse-settings'),
             padding: NodeLaneTokens.pagePadding,
             children: [

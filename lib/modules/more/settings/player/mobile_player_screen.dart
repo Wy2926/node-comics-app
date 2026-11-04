@@ -137,6 +137,7 @@ class _Controls extends ConsumerWidget {
     return Column(
       children: [
         NodeLaneRow(
+          openOnReveal: true,
           title: l10n.default_skip_intro_length,
           subtitle: '${intro}s',
           icon: NodeLaneIcons.of(context).nextChapter,
