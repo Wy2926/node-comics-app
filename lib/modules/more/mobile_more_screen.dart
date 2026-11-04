@@ -133,7 +133,11 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                 : dark
                 ? l.theme_dark
                 : l.theme_light,
-            keywords: l.appearance_subtitle,
+            // Keep display language discoverable even before the user has
+            // switched the app's default language.
+            keywords:
+                '${l.appearance_subtitle} ${l.app_language} ${l.language} '
+                'display language interface language 语言 显示语言 界面语言 中文 English',
           ),
           link(l.settings_security_privacy, icons.security, '/security'),
           link(l.general, icons.settings, '/general'),

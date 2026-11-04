@@ -13,6 +13,7 @@ import 'package:mangayomi/modules/more/settings/appearance/providers/flex_scheme
 import 'package:mangayomi/modules/more/settings/appearance/providers/pure_black_dark_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/language.dart';
 
 void main() {
   Future<ProviderContainer> showAppearance(WidgetTester tester) async {
@@ -72,6 +73,33 @@ void main() {
     await tester.tap(find.text(label).last);
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'app language is immediately reachable and only selection changes it',
+    (tester) async {
+      final container = await showAppearance(tester);
+      final locale =
+          container.read(l10nLocaleStateProvider.notifier) as _Locale;
+      final language = link('App language');
+      expect(language.hitTestable(), findsOneWidget);
+      await tester.tap(language);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '中文');
+      await tester.pumpAndSettle();
+      expect(find.text(completeLanguageName('zh')), findsOneWidget);
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(locale.writes, isEmpty);
+      await tester.tap(language);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '中文');
+      await tester.pumpAndSettle();
+      await choose(tester, completeLanguageName('zh'));
+      expect(locale.writes, [const Locale('zh')]);
+      expect(container.read(l10nLocaleStateProvider), const Locale('zh'));
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('theme choices keep pure-black and stored blend independent', (
     tester,
@@ -234,10 +262,14 @@ class _Font extends AppFontFamily {
 }
 
 class _Locale extends L10nLocaleState {
+  final writes = <Locale>[];
   @override
   Locale build() => const Locale('en');
   @override
-  void setLocale(Locale value) => state = value;
+  void setLocale(Locale value) {
+    writes.add(value);
+    state = value;
+  }
 }
 
 class _Relative extends RelativeTimesTampsState {

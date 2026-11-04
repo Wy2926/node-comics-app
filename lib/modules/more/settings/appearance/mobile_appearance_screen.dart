@@ -97,6 +97,31 @@ class MobileAppearanceScreen extends ConsumerWidget {
             key: const PageStorageKey('mobile-appearance'),
             padding: NodeLaneTokens.pagePadding,
             children: [
+              NodeLaneGroupSurface(
+                children: [
+                  NodeLaneRow(
+                    title: l10n.app_language,
+                    subtitle: completeLanguageName(locale.toLanguageTag()),
+                    icon: NodeLaneIcons.of(context).web,
+                    onTap: () => select(
+                      title: l10n.app_language,
+                      current: locale,
+                      searchable: true,
+                      options: [
+                        for (final value in AppLocalizations.supportedLocales)
+                          MobileSettingOption(
+                            value,
+                            completeLanguageName(value.toLanguageTag()),
+                          ),
+                      ],
+                      apply: ref
+                          .read(l10nLocaleStateProvider.notifier)
+                          .setLocale,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: NodeLaneTokens.space24),
               MobileSettingsGroup(
                 key: const ValueKey('appearance-theme'),
                 title: l10n.theme,
@@ -204,26 +229,6 @@ class MobileAppearanceScreen extends ConsumerWidget {
                     onChanged: (value) => ref
                         .read(appUiScaleStateProvider.notifier)
                         .set(value, end: true),
-                  ),
-                  NodeLaneRow(
-                    title: l10n.app_language,
-                    subtitle: completeLanguageName(locale.toLanguageTag()),
-                    icon: NodeLaneIcons.of(context).web,
-                    onTap: () => select(
-                      title: l10n.app_language,
-                      current: locale,
-                      searchable: true,
-                      options: [
-                        for (final value in AppLocalizations.supportedLocales)
-                          MobileSettingOption(
-                            value,
-                            completeLanguageName(value.toLanguageTag()),
-                          ),
-                      ],
-                      apply: ref
-                          .read(l10nLocaleStateProvider.notifier)
-                          .setLocale,
-                    ),
                   ),
                   NodeLaneRow(
                     title: l10n.font,

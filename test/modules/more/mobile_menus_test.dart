@@ -113,6 +113,11 @@ void main() {
       'reader',
     );
 
+    for (final query in ['display language', '显示语言']) {
+      await tester.enterText(find.byType(TextField), query);
+      await tester.pumpAndSettle();
+      expect(find.text('Appearance and interface'), findsOneWidget);
+    }
     await tester.enterText(find.byType(TextField), 'theme');
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Appearance and interface'));

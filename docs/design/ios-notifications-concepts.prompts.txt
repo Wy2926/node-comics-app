@@ -53,4 +53,3 @@ Screen4, label "04 需要确认 · 复用现有弹框": existing simple data/sto
 Bottom board note "浮层避开导航与键盘 · 同一任务原位更新 · 确认操作沿用现有弹框"
 Tiny footer "设计参考 · 示例内容 · 尚未实施"
 Preserve alignment/geometry strictly, readable Chinese, all colors and icons harmonized. No Android mockups, no OS lock screen, no push notifications or unsupported product functions, no watermark.
-
