@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/manga_info_header.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_actions.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -11,7 +12,7 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 void main() => runApp(const DetailOverviewPreview());
 void _noop() {}
 
-class DetailOverviewPreview extends StatelessWidget {
+class DetailOverviewPreview extends StatefulWidget {
   const DetailOverviewPreview({
     super.key,
     this.onRead = _noop,
@@ -20,6 +21,12 @@ class DetailOverviewPreview extends StatelessWidget {
   });
   final VoidCallback onRead, onLibrary;
   final bool statusPlaceholder;
+  @override
+  State<DetailOverviewPreview> createState() => _DetailOverviewPreviewState();
+}
+
+class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
+  bool _expanded = false;
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -42,25 +49,30 @@ class DetailOverviewPreview extends StatelessWidget {
               body: SafeArea(
                 child: CustomScrollView(
                   slivers: [
-                    if (statusPlaceholder)
+                    if (widget.statusPlaceholder)
                       const SliverToBoxAdapter(child: SizedBox(height: 50)),
                     SliverToBoxAdapter(
                       child: SizedBox(
                         height: 44,
                         child: Row(
                           children: [
-                            IconButton(
+                            NodeLaneIconButton(
+                              tooltip: '返回',
                               onPressed: () {},
-                              icon: Icon(icons.back),
+                              icon: icons.back,
                             ),
                             const Spacer(),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(icons.download),
+                            MobileMangaDownloadActionsButton(
+                              bookTitle: '海岸来信',
+                              hasChapters: true,
+                              onSelected: (_) async {},
                             ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(icons.more),
+                            const SizedBox(width: NodeLaneTokens.space8),
+                            MobileMangaDetailActionsButton(
+                              bookTitle: '海岸来信',
+                              localArchive: false,
+                              favorite: true,
+                              onSelected: (_) async {},
                             ),
                           ],
                         ),
@@ -91,44 +103,58 @@ class DetailOverviewPreview extends StatelessWidget {
                           ),
                         ),
                         actions: MobileDetailPrimaryActions(
-                          reading: MobileDetailButton(
-                            label: '继续阅读',
-                            icon: icons.manga,
-                            primary: true,
-                            onPressed: onRead,
+                          reading: FilledButton.icon(
+                            label: const Text('继续阅读'),
+                            icon: Icon(
+                              icons.manga,
+                              size: NodeLaneTokens.iconSize,
+                            ),
+                            onPressed: widget.onRead,
                           ),
-                          library: MobileDetailButton(
-                            label: '已在书架',
+                          library: NodeLaneSecondaryButton(
                             icon: icons.check,
-                            onPressed: onLibrary,
+                            onPressed: widget.onLibrary,
+                            child: const Text('已在书架'),
                           ),
                         ),
                         synopsis: MobileDetailSynopsis(
                           title: '简介',
                           text: '一封寄错地址的信，让少女回到久别的海边小镇。在潮汐与旧日回忆之间，她逐渐找到了自己的答案。',
-                          expanded: false,
-                          onChanged: (_) {},
-                          genres: Row(
-                            children: [
-                              for (final genre in ['日常', '治愈', '成长'])
-                                DetailGenreChip(
-                                  label: genre,
-                                  mobile: true,
-                                  libraryLabel: '书架搜索',
-                                  sourceLabel: '来源搜索',
-                                  onSelected: (_) {},
-                                ),
-                            ],
-                          ),
+                          expanded: _expanded,
+                          onChanged: (value) =>
+                              setState(() => _expanded = value),
+                          genres: [
+                            for (final genre in ['日常', '治愈', '成长'])
+                              DetailGenreChip(
+                                label: genre,
+                                mobile: true,
+                                libraryLabel: '书架搜索',
+                                sourceLabel: '来源搜索',
+                                onSelected: (_) {},
+                              ),
+                          ],
                         ),
-                        more: NodeLaneGroupSurface(
-                          child: ExpansionTile(
-                            minTileHeight: NodeLaneTokens.detailMoreHeight,
-                            dense: true,
-                            visualDensity: VisualDensity.standard,
-                            shape: const Border(),
-                            collapsedShape: const Border(),
-                            title: Text('更多', style: colors.detailSectionTitle),
+                        more: NodeLaneDisclosure(
+                          title: '更多',
+                          compact: true,
+                          child: MobileDetailShortcuts(
+                            children: [
+                              NodeLaneToolbarAction(
+                                label: '网页',
+                                icon: icons.webLink,
+                                onPressed: () {},
+                              ),
+                              NodeLaneToolbarAction(
+                                label: '推荐',
+                                icon: icons.recommend,
+                                onPressed: () {},
+                              ),
+                              NodeLaneToolbarAction(
+                                label: '相关作品',
+                                icon: icons.related,
+                                onPressed: () {},
+                              ),
+                            ],
                           ),
                         ),
                         chapters: Row(
@@ -139,8 +165,9 @@ class DetailOverviewPreview extends StatelessWidget {
                                 style: colors.detailSectionTitle,
                               ),
                             ),
-                            MobileDetailFilterButton(
-                              label: '筛选',
+                            NodeLaneIconButton(
+                              icon: icons.filter,
+                              tooltip: '筛选',
                               onPressed: () {},
                             ),
                           ],

@@ -102,7 +102,7 @@ void main() {
                   padding: const EdgeInsets.all(20),
                   child: NodeLaneGroupSurface(
                     child: NodeLaneChoiceRow<int>(
-                      title: 'Unread',
+                      title: 'Read',
                       value: value,
                       segments: const [
                         ButtonSegment(value: 0, label: Text('Any')),
@@ -135,7 +135,7 @@ void main() {
         ),
       );
       expect(
-        tester.getCenter(find.text('Unread')).dy,
+        tester.getCenter(find.text('Read')).dy,
         closeTo(tester.getCenter(find.text('Any')).dy, 1),
       );
       await tester.tap(find.text('Include'));

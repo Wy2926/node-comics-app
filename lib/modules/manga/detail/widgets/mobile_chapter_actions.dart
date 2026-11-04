@@ -3,7 +3,9 @@ import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/detail/chapter_bulk_actions.dart';
-import 'package:mangayomi/modules/widgets/bottom_select_bar.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 enum MobileChapterAction { bookmark, read, readFollowing, download, delete }
@@ -60,72 +62,84 @@ class MobileChapterSelectionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final l10n = context.l10n;
+    final l10n = context.l10n, icons = NodeLaneIcons.of(context);
     final singleBookmark =
         selected.length == 1 && selected.first.isBookmarked == true;
     final markRead = bulkChapterTargetReadState(selected);
-    BottomSelectButton button(
+    Widget button(
       MobileChapterAction action,
       String label,
       IconData icon, {
       bool destructive = false,
-    }) => BottomSelectButton(
-      label: label,
-      icon: Icon(
-        icon,
-        color: destructive ? Theme.of(context).colorScheme.error : colors.ink,
+    }) => Expanded(
+      child: NodeLaneToolbarAction(
+        label: label,
+        icon: icon,
+        destructive: destructive,
+        enabled: !busy && selected.isNotEmpty,
+        onPressed: () => onAction(action),
       ),
-      onPressed: busy || selected.isEmpty ? null : () => onAction(action),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (visible && busy && ModalRoute.of(context)?.isCurrent == true)
-          const LinearProgressIndicator(minHeight: 2),
-        BottomSelectBar(
-          isVisible: visible,
-          respectSafeArea: true,
-          backgroundColor: colors.surface,
-          actions: [
-            button(
-              MobileChapterAction.bookmark,
-              selected.length == 1
-                  ? singleBookmark
-                        ? l10n.chapter_remove_bookmark
-                        : l10n.chapter_add_bookmark
-                  : l10n.chapter_swipe_toggle_bookmark,
-              singleBookmark
-                  ? Icons.bookmark_remove_outlined
-                  : Icons.bookmark_add_outlined,
-            ),
-            button(
-              MobileChapterAction.read,
-              markRead ? l10n.bookshelf_mark_read : l10n.bookshelf_mark_unread,
-              markRead ? Icons.done_all : Icons.remove_done,
-            ),
-            if (hasFollowing)
-              button(
-                MobileChapterAction.readFollowing,
-                l10n.chapter_read_following,
-                Icons.playlist_add_check,
-              ),
-            if (canDownload)
-              button(
-                MobileChapterAction.download,
-                l10n.download,
-                Icons.download_outlined,
-              ),
-            if (canDelete)
-              button(
-                MobileChapterAction.delete,
-                l10n.delete,
-                Icons.delete_outline,
-                destructive: true,
-              ),
-          ],
+    if (!visible) return const SizedBox.shrink();
+    return SafeArea(
+      top: false,
+      maintainBottomViewPadding: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: NodeLaneTokens.space16,
+          vertical: NodeLaneTokens.space8,
         ),
-      ],
+        child: NodeLaneGlassSurface(
+          elevated: true,
+          borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (busy && ModalRoute.of(context)?.isCurrent == true)
+                const LinearProgressIndicator(minHeight: 2),
+              Row(
+                children: [
+                  button(
+                    MobileChapterAction.bookmark,
+                    selected.length == 1
+                        ? singleBookmark
+                              ? l10n.chapter_remove_bookmark
+                              : l10n.chapter_add_bookmark
+                        : l10n.chapter_swipe_toggle_bookmark,
+                    singleBookmark ? icons.bookmark : icons.bookmarkOutline,
+                  ),
+                  button(
+                    MobileChapterAction.read,
+                    markRead
+                        ? l10n.bookshelf_mark_read
+                        : l10n.bookshelf_mark_unread,
+                    markRead ? icons.check : icons.unread,
+                  ),
+                  if (hasFollowing)
+                    button(
+                      MobileChapterAction.readFollowing,
+                      l10n.chapter_read_following,
+                      icons.chapters,
+                    ),
+                  if (canDownload)
+                    button(
+                      MobileChapterAction.download,
+                      l10n.download,
+                      icons.download,
+                    ),
+                  if (canDelete)
+                    button(
+                      MobileChapterAction.delete,
+                      l10n.delete,
+                      icons.delete,
+                      destructive: true,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

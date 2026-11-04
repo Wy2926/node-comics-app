@@ -16,7 +16,7 @@ import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/detail/manga_detail_view.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
@@ -243,14 +243,16 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
                 ],
               ),
         action: mobile
-            ? MobileDetailButton(
-                label: widget.manga.favorite!
-                    ? l10n.in_library
-                    : l10n.add_to_library,
+            ? NodeLaneSecondaryButton(
                 icon: widget.manga.favorite!
                     ? NodeLaneIcons.of(context).check
                     : NodeLaneIcons.of(context).add,
                 onPressed: _onFavoritePressed,
+                child: Text(
+                  widget.manga.favorite!
+                      ? l10n.in_library
+                      : l10n.add_to_library,
+                ),
               )
             : widget.manga.favorite!
             ? SizedBox(
@@ -370,13 +372,15 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     required String label,
     required VoidCallback onPressed,
   }) => mobile
-      ? MobileDetailButton(
-          label: label,
-          icon: widget.manga.itemType == ItemType.anime
-              ? NodeLaneIcons.of(context).anime
-              : NodeLaneIcons.of(context).manga,
+      ? FilledButton.icon(
+          label: Text(label),
+          icon: Icon(
+            widget.manga.itemType == ItemType.anime
+                ? NodeLaneIcons.of(context).anime
+                : NodeLaneIcons.of(context).manga,
+            size: NodeLaneTokens.iconSize,
+          ),
           onPressed: onPressed,
-          primary: true,
         )
       : CustomFloatingActionBtn(
           isExtended: isExtended,

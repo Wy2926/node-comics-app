@@ -29,15 +29,10 @@ class NodeLaneReaderSurface extends StatelessWidget {
           return NodeLaneReaderScope(
             child: Theme(
               data: base.copyWith(
-                iconTheme: IconThemeData(
-                  color: colors.ink,
-                  size: NodeLaneTokens.readerIconSize,
-                ),
                 sliderTheme: readerSliderTheme(context),
                 listTileTheme: base.listTileTheme.copyWith(
                   minTileHeight: NodeLaneTokens.readerRowHeight,
                   horizontalTitleGap: NodeLaneTokens.space12,
-                  iconColor: colors.ink,
                   titleTextStyle: colors.readerLabel,
                   subtitleTextStyle: colors.readerSecondary,
                 ),

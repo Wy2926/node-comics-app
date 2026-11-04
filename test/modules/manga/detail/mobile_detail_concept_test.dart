@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
@@ -47,10 +48,12 @@ void main() {
               expanded = value;
               changes.add(value);
             }),
-            genres: TextButton(
-              onPressed: () => genreCalls++,
-              child: const Text('Slice of life'),
-            ),
+            genres: [
+              TextButton(
+                onPressed: () => genreCalls++,
+                child: const Text('Slice of life'),
+              ),
+            ],
           ),
         ),
       );
@@ -61,7 +64,7 @@ void main() {
           .getSize(find.byType(MobileDetailSynopsis))
           .height;
       await tester.tap(find.text('Expand'));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(changes, [true]);
       expect(
         tester.getSize(find.byType(MobileDetailSynopsis)).height,
@@ -121,17 +124,17 @@ void main() {
           width: 304,
           child: MobileDetailShortcuts(
             children: [
-              MobileDetailShortcut(
+              NodeLaneToolbarAction(
                 icon: Icons.sync,
                 label: '3 个追踪器',
                 onPressed: () => calls++,
               ),
-              MobileDetailShortcut(
+              NodeLaneToolbarAction(
                 icon: Icons.thumb_up,
                 label: '推荐',
                 onPressed: () {},
               ),
-              MobileDetailShortcut(
+              NodeLaneToolbarAction(
                 icon: Icons.book,
                 label: '相关作品',
                 onPressed: () {},
@@ -142,7 +145,7 @@ void main() {
       ),
     );
     expect(tester.takeException(), isNull);
-    expect(tester.getTopLeft(find.byType(MobileDetailShortcut).first).dx, 20);
+    expect(tester.getTopLeft(find.byType(NodeLaneToolbarAction).first).dx, 20);
     await tester.tap(find.text('3 个追踪器'));
     expect(calls, 1);
   });

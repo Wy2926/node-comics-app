@@ -131,12 +131,11 @@ void main() {
       await tester.pump();
       expect(find.text('Toggle bookmark'), findsOneWidget);
       expect(find.text('Mark read'), findsOneWidget);
-      expect(
-        tester
-            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-            .every((button) => button.onPressed == null),
-        isTrue,
-      );
+      final beforeBusyTap = actions.length;
+      for (final text in ['Toggle bookmark', 'Mark read', 'Delete']) {
+        await tester.tap(find.text(text));
+      }
+      expect(actions, hasLength(beforeBusyTap));
       change(() {
         visible = false;
         busy = false;

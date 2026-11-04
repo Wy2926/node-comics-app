@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -139,8 +141,8 @@ void main() {
           matching: find.byType(Scrollable),
         ),
       );
-      final tile = tester.widget<ListTile>(
-        find.widgetWithText(ListTile, 'All chapters'),
+      final tile = tester.widget<NodeLaneRow>(
+        find.widgetWithText(NodeLaneRow, 'All chapters'),
       );
       expect(tile.onTap, isNull);
       expect(tile.enabled, false);
@@ -184,7 +186,9 @@ void main() {
       await _open(tester, 'Comic actions');
       await tester.ensureVisible(find.text('Export metadata'));
       final choose = tester
-          .widget<ListTile>(find.widgetWithText(ListTile, 'Export metadata'))
+          .widget<NodeLaneRow>(
+            find.widgetWithText(NodeLaneRow, 'Export metadata'),
+          )
           .onTap!;
       choose();
       choose();

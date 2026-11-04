@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -30,51 +30,55 @@ class MobileMangaDetailActionsButton extends StatelessWidget {
         title: l10n.manga_actions,
         bookTitle: bookTitle,
         actions: (choose) => [
-          if (!localArchive)
+          [
+            if (!localArchive)
+              _action(
+                l10n.refresh,
+                NodeLaneIcons.of(context).refresh,
+                () => choose(0),
+              ),
+            if (favorite)
+              _action(
+                l10n.set_categories,
+                NodeLaneIcons.of(context).folderOutline,
+                () => choose(1),
+                disclosure: true,
+              ),
+            if (!localArchive)
+              _action(
+                l10n.share,
+                NodeLaneIcons.of(context).share,
+                () => choose(2),
+              ),
+          ],
+          [
             _action(
-              l10n.refresh,
-              NodeLaneIcons.of(context).refresh,
-              () => choose(0),
-            ),
-          if (favorite)
-            _action(
-              l10n.set_categories,
-              NodeLaneIcons.of(context).folderOutline,
-              () => choose(1),
+              l10n.migrate,
+              NodeLaneIcons.of(context).migrate,
+              () => choose(3),
               disclosure: true,
             ),
-          if (!localArchive)
             _action(
-              l10n.share,
-              NodeLaneIcons.of(context).share,
-              () => choose(2),
-            ),
-          if (favorite || !localArchive) const Divider(),
-          _action(
-            l10n.migrate,
-            NodeLaneIcons.of(context).migrate,
-            () => choose(3),
-            disclosure: true,
-          ),
-          _action(
-            l10n.mass_migration_title,
-            NodeLaneIcons.of(context).categories,
-            () => choose(6),
-            disclosure: true,
-          ),
-          if (!localArchive)
-            _action(
-              l10n.extension_settings,
-              NodeLaneIcons.of(context).extensions,
-              () => choose(4),
+              l10n.mass_migration_title,
+              NodeLaneIcons.of(context).categories,
+              () => choose(6),
               disclosure: true,
             ),
-          const Divider(),
-          _action(
-            l10n.export_metadata,
-            NodeLaneIcons.of(context).export,
-            () => choose(5),
-          ),
+            if (!localArchive)
+              _action(
+                l10n.extension_settings,
+                NodeLaneIcons.of(context).extensions,
+                () => choose(4),
+                disclosure: true,
+              ),
+          ],
+          [
+            _action(
+              l10n.export_metadata,
+              NodeLaneIcons.of(context).export,
+              () => choose(5),
+            ),
+          ],
         ],
       ),
     );
@@ -116,18 +120,22 @@ class MobileMangaDownloadActionsButton extends StatelessWidget {
             ? l10n.manga_download_scope_hint
             : l10n.manga_download_scope_empty,
         actions: (choose) => [
-          for (var index = 0; index < labels.length; index++) ...[
-            if (index == 4) const Divider(),
-            _action(
-              labels[index],
-              index < 4
-                  ? NodeLaneIcons.of(context).forward
-                  : index == 4
-                  ? NodeLaneIcons.of(context).unread
-                  : NodeLaneIcons.of(context).manga,
-              hasChapters ? () => choose(index) : null,
-            ),
-          ],
+          for (final indices in [
+            const [0, 1, 2, 3],
+            const [4, 5],
+          ])
+            [
+              for (final index in indices)
+                _action(
+                  labels[index],
+                  index < 4
+                      ? NodeLaneIcons.of(context).forward
+                      : index == 4
+                      ? NodeLaneIcons.of(context).unread
+                      : NodeLaneIcons.of(context).manga,
+                  hasChapters ? () => choose(index) : null,
+                ),
+            ],
         ],
       ),
     );
@@ -139,29 +147,12 @@ Widget _action(
   IconData icon,
   VoidCallback? onTap, {
   bool disclosure = false,
-}) => Builder(
-  builder: (context) => ListTile(
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: NodeLaneTokens.space16,
-    ),
-    minTileHeight: 60,
-    horizontalTitleGap: 16,
-    enabled: onTap != null,
-    leading: Icon(icon, size: 28),
-    title: Text(
-      label,
-      style: NodeLaneTokens.of(context).body
-          .copyWith(fontWeight: FontWeight.w500),
-    ),
-    trailing: disclosure
-        ? Icon(
-            NodeLaneIcons.of(context).forward,
-            size: NodeLaneTokens.smallIconSize,
-            color: NodeLaneTokens.of(context).muted,
-          )
-        : null,
-    onTap: onTap,
-  ),
+}) => NodeLaneRow(
+  title: label,
+  icon: icon,
+  enabled: onTap != null,
+  onTap: onTap,
+  trailing: disclosure ? null : const SizedBox.shrink(),
 );
 
 /// Only owns presentation and in-flight UI state. The callback keeps the
@@ -193,18 +184,7 @@ class _MangaMenuButtonState extends State<_MangaMenuButton> {
     final menu = widget.menu;
     setState(() => _opened = true);
     try {
-      final value = await showModalBottomSheet<int>(
-        context: context,
-        useRootNavigator: true,
-        useSafeArea: true,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        shape: NodeLaneTokens.detailSheetShape,
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * .85,
-        ),
-        builder: (_) => menu,
-      );
+      final value = await showNodeLaneCatalogSheet<int>(context, menu);
       if (!mounted || value == null) return;
       setState(() => _working = true);
       await action(value);
@@ -225,18 +205,11 @@ class _MangaMenuButtonState extends State<_MangaMenuButton> {
   }
 
   @override
-  Widget build(BuildContext context) => IconButton(
+  Widget build(BuildContext context) => NodeLaneIconButton(
     tooltip: widget.tooltip,
     onPressed: _opened ? null : _open,
-    icon: _working
-        ? SizedBox.square(
-            dimension: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              semanticsLabel: context.l10n.bookshelf_processing,
-            ),
-          )
-        : Icon(widget.icon),
+    icon: widget.icon,
+    busy: _working,
   );
 }
 
@@ -250,7 +223,7 @@ class _MangaActionSheet extends StatefulWidget {
 
   final String title, bookTitle;
   final String? hint;
-  final List<Widget> Function(ValueChanged<int>) actions;
+  final List<List<Widget>> Function(ValueChanged<int>) actions;
 
   @override
   State<_MangaActionSheet> createState() => _MangaActionSheetState();
@@ -268,75 +241,26 @@ class _MangaActionSheetState extends State<_MangaActionSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final sections = <List<Widget>>[[]];
-    for (final action in widget.actions(_close)) {
-      if (action is Divider) {
-        if (sections.last.isNotEmpty) sections.add([]);
-      } else {
-        sections.last.add(action);
-      }
-    }
-    return NodeLaneSurface(
-      child: NodeLaneSheetSurface(
-        grouped: true,
-        radius: NodeLaneTokens.detailSheetRadius,
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              NodeLaneSheetHeading(
-                title: widget.title,
-                subtitle: widget.bookTitle,
-                description: widget.hint,
-                detail: true,
-                centerTitle: true,
-                onClose: _close,
-              ),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.fromLTRB(
-                    NodeLaneTokens.detailGutter,
-                    0,
-                    NodeLaneTokens.detailGutter,
-                    NodeLaneTokens.space12,
-                  ),
-                  children: [
-                    for (final section in sections.where(
-                      (items) => items.isNotEmpty,
-                    ))
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: NodeLaneTokens.space12,
-                        ),
-                        child: NodeLaneGroupSurface(
-                          child: Column(
-                            children: [
-                              for (var i = 0; i < section.length; i++) ...[
-                                if (i > 0)
-                                  Divider(
-                                    height: 1,
-                                    indent: 16,
-                                    endIndent: 16,
-                                    thickness: .5,
-                                    color: colors.line,
-                                  ),
-                                section[i],
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
+  Widget build(BuildContext context) => NodeLaneCatalogSheet(
+    title: widget.title,
+    subtitle: [
+      widget.bookTitle,
+      widget.hint,
+    ].whereType<String>().where((text) => text.isNotEmpty).join('\n'),
+    onClose: _close,
+    heightFactor: .85,
+    fitContent: true,
+    child: ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
+      children: [
+        for (final section
+            in widget.actions(_close).where((items) => items.isNotEmpty))
+          NodeLaneGroupSurface(
+            margin: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
+            children: section,
           ),
-        ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }

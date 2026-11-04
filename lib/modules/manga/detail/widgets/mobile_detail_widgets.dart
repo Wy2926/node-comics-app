@@ -36,41 +36,6 @@ class MobileDetailOverview extends StatelessWidget {
   );
 }
 
-/// Builds secondary actions for each mount and releases them when collapsed.
-class MobileDetailDisclosure extends StatelessWidget {
-  const MobileDetailDisclosure({
-    super.key,
-    required this.title,
-    required this.builder,
-  });
-  final String title;
-  final WidgetBuilder builder;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    return NodeLaneGroupSurface(
-      child: ExpansionTile(
-        minTileHeight: NodeLaneTokens.detailMoreHeight,
-        dense: true,
-        visualDensity: VisualDensity.standard,
-        iconColor: colors.muted,
-        collapsedIconColor: colors.muted,
-        tilePadding: const EdgeInsets.symmetric(
-          horizontal: NodeLaneTokens.space16,
-        ),
-        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        shape: const Border(),
-        collapsedShape: const Border(),
-        title: Text(title, style: colors.detailSectionTitle),
-        // ExpansionTile disposes collapsed children but retains their widgets.
-        // Build again on mount so a single-subscription query is never reused.
-        children: [Builder(builder: builder)],
-      ),
-    );
-  }
-}
-
 /// Layout only: the detail page supplies its existing cover and title actions.
 class MobileDetailHeading extends StatelessWidget {
   const MobileDetailHeading({
@@ -131,58 +96,17 @@ class MobileDetailPrimaryActions extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       if (reading != null) ...[
-        Expanded(child: reading!),
-        const SizedBox(width: 10),
+        Expanded(child: _action(reading!)),
+        const SizedBox(width: NodeLaneTokens.space12),
       ],
-      Expanded(child: library),
+      Expanded(child: _action(library)),
     ],
   );
-}
 
-class MobileDetailButton extends StatelessWidget {
-  const MobileDetailButton({
-    super.key,
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-    this.primary = false,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback onPressed;
-  final bool primary;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    return FilledButton.icon(
-      style: FilledButton.styleFrom(
-        backgroundColor: primary
-            ? colors.accent
-            : Color.alphaBlend(
-                colors.accent.withValues(alpha: .14),
-                colors.surface,
-              ),
-        foregroundColor: primary ? colors.onAccent : colors.accent,
-        minimumSize: const Size(0, NodeLaneTokens.detailActionHeight),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-        ),
-      ),
-      onPressed: onPressed,
-      icon: Icon(icon, size: 26),
-      label: Text(
-        label,
-        style: colors.label.copyWith(
-          fontSize: 16,
-          color: primary ? colors.onAccent : colors.accent,
-        ),
-      ),
-    );
-  }
+  Widget _action(Widget child) => ConstrainedBox(
+    constraints: const BoxConstraints(minHeight: NodeLaneTokens.rowHeight),
+    child: child,
+  );
 }
 
 /// Keeps the existing filter controls inside one bounded, scrollable sheet.
@@ -400,7 +324,7 @@ class MobileChapterTile extends StatelessWidget {
   }
 }
 
-/// Presentation of the existing expandable description and genre menu slots.
+/// The synopsis owns presentation; description and genre actions stay separate.
 class MobileDetailSynopsis extends StatelessWidget {
   const MobileDetailSynopsis({
     super.key,
@@ -408,73 +332,81 @@ class MobileDetailSynopsis extends StatelessWidget {
     required this.text,
     required this.expanded,
     required this.onChanged,
-    this.genres,
+    this.genres = const [],
   });
   final String title, text;
   final bool expanded;
   final ValueChanged<bool> onChanged;
-  final Widget? genres;
+  final List<Widget> genres;
 
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final labels = MaterialLocalizations.of(context);
+    final hasText = text.trim().isNotEmpty;
     return NodeLaneGroupSurface(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (text.trim().isNotEmpty) ...[
-              Semantics(
-                expanded: expanded,
-                button: true,
-                child: InkWell(
-                  onTap: () => onChanged(!expanded),
-                  child: SizedBox(
-                    height: NodeLaneTokens.minTapTarget,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Semantics(
-                            header: true,
-                            child: Text(
-                              title,
-                              style: colors.detailSectionTitle,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          expanded
-                              ? labels.expandedIconTapHint
-                              : labels.collapsedIconTapHint,
-                          style: colors.secondary.copyWith(
-                            color: colors.accent,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (hasText)
+            Semantics(
+              expanded: expanded,
+              child: NodeLaneRow(
+                title: title,
+                compact: true,
                 onTap: () => onChanged(!expanded),
-                child: Text(
-                  text.trim(),
-                  maxLines: expanded ? null : 3,
-                  overflow: expanded ? null : TextOverflow.ellipsis,
-                  style: colors.secondary.copyWith(fontSize: 14, height: 1.7),
+                trailing: Text(
+                  expanded
+                      ? labels.expandedIconTapHint
+                      : labels.collapsedIconTapHint,
+                  style: colors.readerSecondary.copyWith(color: colors.accent),
                 ),
               ),
-            ],
-            if (genres != null) ...[
-              if (text.trim().isNotEmpty) const SizedBox(height: 6),
-              genres!,
-            ],
-          ],
-        ),
+            ),
+          AnimatedSize(
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : NodeLaneTokens.disclosureDuration,
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                NodeLaneTokens.space16,
+                0,
+                NodeLaneTokens.space16,
+                NodeLaneTokens.space8,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (hasText)
+                    InkWell(
+                      onTap: () => onChanged(!expanded),
+                      child: Text(
+                        text.trim(),
+                        maxLines: expanded ? null : 3,
+                        overflow: expanded ? null : TextOverflow.ellipsis,
+                        style: colors.readerSecondary,
+                      ),
+                    ),
+                  if (genres.isNotEmpty) ...[
+                    if (hasText) const SizedBox(height: NodeLaneTokens.space8),
+                    if (expanded || !hasText)
+                      Wrap(spacing: NodeLaneTokens.space8, children: genres)
+                    else
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          spacing: NodeLaneTokens.space8,
+                          children: genres,
+                        ),
+                      ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -489,101 +421,16 @@ class MobileDetailShortcuts extends StatelessWidget {
     builder: (context, constraints) => SizedBox(
       width: constraints.maxWidth,
       child: Wrap(
-        spacing: 6,
-        runSpacing: 8,
+        spacing: NodeLaneTokens.space8,
+        runSpacing: NodeLaneTokens.space8,
         children: [
           for (final child in children)
-            SizedBox(width: (constraints.maxWidth - 24) / 5, child: child),
+            SizedBox(
+              width: (constraints.maxWidth - NodeLaneTokens.space8 * 4) / 5,
+              child: child,
+            ),
         ],
       ),
     ),
   );
-}
-
-/// Small secondary actions; the caller supplies availability and callbacks.
-class MobileDetailShortcut extends StatelessWidget {
-  const MobileDetailShortcut({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-  @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    return Semantics(
-      button: true,
-      child: SizedBox(
-        width: 62,
-        height: 80,
-        child: Material(
-          color: colors.canvas,
-          borderRadius: BorderRadius.circular(8),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 26, color: colors.ink),
-                  const SizedBox(height: 6),
-                  Text(
-                    label,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: colors.caption,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A 48 × 36 visual control inside a 48 × 44 tap target, as on the overview.
-class MobileDetailFilterButton extends StatelessWidget {
-  const MobileDetailFilterButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    this.active = false,
-  });
-  final String label;
-  final VoidCallback? onPressed;
-  final bool active;
-  @override
-  Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    return SizedBox(
-      width: 48,
-      height: 44,
-      child: Center(
-        child: IconButton(
-          tooltip: label,
-          onPressed: onPressed,
-          style: IconButton.styleFrom(
-            minimumSize: const Size(48, 36),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            tapTargetSize: MaterialTapTargetSize.padded,
-            backgroundColor: active ? colors.accentSoft : colors.surface,
-            foregroundColor: active ? colors.accent : colors.ink,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          icon: Icon(NodeLaneIcons.of(context).filter, size: 22),
-        ),
-      ),
-    );
-  }
 }

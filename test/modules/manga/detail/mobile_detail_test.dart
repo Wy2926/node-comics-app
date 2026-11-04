@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
@@ -51,16 +52,15 @@ void main() {
               spacing: 8,
               runSpacing: 8,
               children: [
-                MobileDetailButton(
-                  label: 'Resume reading',
-                  icon: Icons.play_arrow,
-                  primary: true,
+                FilledButton.icon(
+                  label: const Text('Resume reading'),
+                  icon: const Icon(Icons.play_arrow),
                   onPressed: () => events.add('read'),
                 ),
-                MobileDetailButton(
-                  label: 'Add to library',
+                NodeLaneSecondaryButton(
                   icon: Icons.add,
                   onPressed: () => events.add('favorite'),
+                  child: const Text('Add to library'),
                 ),
               ],
             ),

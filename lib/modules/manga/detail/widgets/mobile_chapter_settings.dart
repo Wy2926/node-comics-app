@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
@@ -32,65 +32,50 @@ class MobileMangaChapterSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return NodeLaneSurface(
-      child: NodeLaneSheetSurface(
-        grouped: true,
-        radius: NodeLaneTokens.detailSheetRadius,
-        child: DefaultTabController(
-          length: 2,
-          child: Builder(
-            builder: (context) {
-              final controller = DefaultTabController.of(context);
-              return AnimatedBuilder(
-                animation: controller,
-                builder: (context, _) => SafeArea(
-                  top: false,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      NodeLaneSheetHeading(
-                        title: l10n.chapter_settings,
-                        detail: true,
-                        subtitle: manga.name ?? '',
-                        description: l10n.chapter_settings_live,
-                        onClose: () {
-                          if (ModalRoute.of(context)?.isCurrent == true) {
-                            Navigator.pop(context);
-                          }
-                        },
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: NodeLaneTokens.detailGutter,
-                        ),
-                        child: NodeLaneTabSegments(
-                          prominent: true,
-                          labels: [l10n.filter, l10n.sort],
-                        ),
-                      ),
-                      Flexible(
-                        child: SingleChildScrollView(
-                          key: PageStorageKey(
-                            'chapter-settings-${controller.index}',
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: NodeLaneTokens.space16,
-                          ),
-                          child: controller.index == 0
-                              ? _ChapterFilters(
-                                  manga: manga,
-                                  localArchive: localArchive,
-                                )
-                              : _ChapterSort(manga: manga),
-                        ),
-                      ),
-                    ],
+    return DefaultTabController(
+      length: 2,
+      child: Builder(
+        builder: (context) {
+          final controller = DefaultTabController.of(context);
+          return ListenableBuilder(
+            listenable: controller,
+            builder: (context, _) => NodeLaneCatalogSheet(
+              title: l10n.chapter_settings,
+              subtitle: '${manga.name ?? ''}\n${l10n.chapter_settings_live}',
+              heightFactor: .75,
+              fitContent: true,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NodeLaneTokens.gutter,
+                    ),
+                    child: NodeLaneTabSegments(
+                      labels: [l10n.filter, l10n.sort],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      key: PageStorageKey(
+                        'chapter-settings-${controller.index}',
+                      ),
+                      padding: const EdgeInsets.only(
+                        top: NodeLaneTokens.space16,
+                      ),
+                      child: controller.index == 0
+                          ? _ChapterFilters(
+                              manga: manga,
+                              localArchive: localArchive,
+                            )
+                          : _ChapterSort(manga: manga),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -132,9 +117,7 @@ class _ChapterFilters extends ConsumerWidget {
       ),
     ];
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: NodeLaneTokens.detailGutter,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -238,9 +221,7 @@ class _ChapterSort extends ConsumerWidget {
     ];
     // The existing chapter comparator uses reverse=true for ascending order.
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: NodeLaneTokens.detailGutter,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -268,23 +249,16 @@ class _ChapterSort extends ConsumerWidget {
           const SizedBox(height: 16),
           MobileSettingsGroup(
             children: [
-              RadioGroup<int>(
-                groupValue: sort.index,
-                onChanged: (value) {
-                  if (value != null && value != ref.read(provider).index) {
-                    ref.read(provider.notifier).set(value);
-                  }
-                },
-                child: Column(
-                  children: [
-                    for (final choice in choices)
-                      RadioListTile<int>(
-                        value: choice.$1,
-                        title: Text(choice.$2),
-                      ),
-                  ],
+              for (final choice in choices)
+                NodeLaneRow(
+                  title: choice.$2,
+                  selected: sort.index == choice.$1,
+                  onTap: () {
+                    if (choice.$1 != ref.read(provider).index) {
+                      ref.read(provider.notifier).set(choice.$1);
+                    }
+                  },
                 ),
-              ),
             ],
           ),
         ],
@@ -385,16 +359,24 @@ class _MobileScanlatorFilterPageState extends State<MobileScanlatorFilterPage> {
                         ),
                       ),
                     ),
-                    SliverList.builder(
-                      itemCount: visible.length,
-                      itemBuilder: (_, index) => CheckboxListTile.adaptive(
-                        title: Text(visible[index]),
-                        value: _excluded.contains(visible[index]),
-                        onChanged: (value) => setState(() {
-                          value!
-                              ? _excluded.add(visible[index])
-                              : _excluded.remove(visible[index]);
-                        }),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: NodeLaneTokens.gutter,
+                      ),
+                      sliver: SliverList.builder(
+                        itemCount: visible.length,
+                        itemBuilder: (_, index) => NodeLaneRow.card(
+                          title: visible[index],
+                          checkable: true,
+                          selected: _excluded.contains(visible[index]),
+                          first: index == 0,
+                          last: index == visible.length - 1,
+                          onTap: () => setState(() {
+                            _excluded.contains(visible[index])
+                                ? _excluded.remove(visible[index])
+                                : _excluded.add(visible[index]);
+                          }),
+                        ),
                       ),
                     ),
                   ],

@@ -13,6 +13,7 @@ import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 /// The detail page's app bar: the normal title/actions bar, or - while a
 /// long-press has put the chapter list into multi-select - a count plus
@@ -83,7 +84,9 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 mobileManga
                     ? l10n.chapter_selected_count(chapterList.length)
                     : chapterList.length.toString(),
-                style: mobileManga ? const TextStyle(fontSize: 17) : null,
+                style: mobileManga
+                    ? NodeLaneTokens.of(context).readerLabel
+                    : null,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -98,7 +101,9 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       .read(isLongPressedStateProvider.notifier)
                       .update(!isLongPressed);
                 },
-                icon: const Icon(Icons.clear),
+                icon: Icon(
+                  mobile ? NodeLaneIcons.of(context).close : Icons.clear,
+                ),
               ),
               actions: [
                 IconButton(
@@ -153,20 +158,27 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
             toolbarHeight: mobileManga
                 ? NodeLaneTokens.detailToolbarHeight
                 : null,
-            leadingWidth: mobileManga ? 44 : null,
+            leadingWidth: mobileManga
+                ? NodeLaneTokens.detailGutter + NodeLaneTokens.minTapTarget
+                : null,
+            actionsPadding: mobileManga
+                ? const EdgeInsets.only(right: NodeLaneTokens.detailGutter)
+                : null,
             centerTitle: mobileManga ? true : null,
             elevation: 0,
             scrolledUnderElevation: 0,
             surfaceTintColor: Colors.transparent,
-            iconTheme: mobileManga
-                ? IconThemeData(color: NodeLaneTokens.of(context).ink, size: 24)
-                : null,
             leading: mobileManga
-                ? IconButton(
-                    tooltip: MaterialLocalizations.of(context)
-                        .backButtonTooltip,
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: Icon(NodeLaneIcons.of(context).back),
+                ? Padding(
+                    padding: const EdgeInsets.only(
+                      left: NodeLaneTokens.detailGutter,
+                    ),
+                    child: NodeLaneIconButton(
+                      tooltip: MaterialLocalizations.of(context)
+                          .backButtonTooltip,
+                      onPressed: () => Navigator.maybePop(context),
+                      icon: NodeLaneIcons.of(context).back,
+                    ),
                   )
                 : null,
             title: ref.watch(offsetProvider.select((val) => val > 200))
@@ -191,6 +203,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   hasChapters: chapters.isNotEmpty,
                   onDownload: onDownload,
                 ),
+                if (mobileManga) const SizedBox(width: NodeLaneTokens.space8),
               ],
               if (!mobile)
                 IconButton(

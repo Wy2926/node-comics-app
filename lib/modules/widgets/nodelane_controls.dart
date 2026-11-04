@@ -446,22 +446,29 @@ class NodeLaneSecondaryButton extends StatelessWidget {
     super.key,
     required this.child,
     this.onPressed,
+    this.icon,
   });
   final Widget child;
   final VoidCallback? onPressed;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
-    return FilledButton(
-      style: FilledButton.styleFrom(
-        backgroundColor: t.soft,
-        foregroundColor: t.ink,
-        iconColor: t.accent,
-      ),
-      onPressed: onPressed,
-      child: child,
+    final style = FilledButton.styleFrom(
+      backgroundColor: t.soft,
+      foregroundColor: t.ink,
+      iconColor: t.ink,
     );
+    if (icon != null) {
+      return FilledButton.icon(
+        style: style,
+        onPressed: onPressed,
+        icon: Icon(icon, size: NodeLaneTokens.iconSize),
+        label: child,
+      );
+    }
+    return FilledButton(style: style, onPressed: onPressed, child: child);
   }
 }
 
@@ -748,12 +755,13 @@ class NodeLaneIconButton extends StatelessWidget {
     this.style = NodeLaneIconButtonStyle.tonal,
     this.active = false,
     this.destructive = false,
+    this.busy = false,
   });
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
   final NodeLaneIconButtonStyle style;
-  final bool active, destructive;
+  final bool active, destructive, busy;
 
   @override
   Widget build(BuildContext context) {
@@ -762,8 +770,16 @@ class NodeLaneIconButton extends StatelessWidget {
       style: style,
       child: IconButton(
         tooltip: tooltip,
-        onPressed: onPressed,
-        icon: Icon(icon, size: NodeLaneTokens.iconSize),
+        onPressed: busy ? null : onPressed,
+        icon: busy
+            ? SizedBox.square(
+                dimension: NodeLaneTokens.smallIconSize,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  semanticsLabel: tooltip,
+                ),
+              )
+            : Icon(icon, size: NodeLaneTokens.iconSize),
         style: _iconButtonStyle(
           context,
           style: style,
@@ -784,26 +800,72 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     required this.itemBuilder,
     required this.onSelected,
     this.enabled = true,
-  });
-  final IconData icon;
+  }) : label = null;
+
+  const NodeLaneMenuButton.label({
+    super.key,
+    required this.label,
+    required this.tooltip,
+    required this.itemBuilder,
+    required this.onSelected,
+    this.enabled = true,
+  }) : icon = null;
+
+  final IconData? icon;
+  final String? label;
   final String tooltip;
   final PopupMenuItemBuilder<T> itemBuilder;
   final PopupMenuItemSelected<T> onSelected;
   final bool enabled;
 
   @override
-  Widget build(BuildContext context) => _iconButtonSurface(
-    context,
-    style: NodeLaneIconButtonStyle.tonal,
-    child: PopupMenuButton<T>(
-      enabled: enabled,
-      tooltip: tooltip,
-      icon: Icon(icon, size: NodeLaneTokens.iconSize),
-      style: _iconButtonStyle(context),
-      itemBuilder: itemBuilder,
-      onSelected: onSelected,
-    ),
-  );
+  Widget build(BuildContext context) {
+    if (label != null) {
+      final t = NodeLaneTokens.of(context);
+      return PopupMenuButton<T>(
+        enabled: enabled,
+        tooltip: tooltip,
+        itemBuilder: itemBuilder,
+        onSelected: onSelected,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: NodeLaneTokens.minTapTarget,
+            minHeight: NodeLaneTokens.minTapTarget,
+          ),
+          child: Center(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: Container(
+              constraints: const BoxConstraints(
+                minHeight: NodeLaneTokens.tagHeight,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.space12,
+                vertical: NodeLaneTokens.space4,
+              ),
+              decoration: BoxDecoration(
+                color: t.soft,
+                borderRadius: t.inputRadius,
+              ),
+              child: Text(label!, style: t.readerValue),
+            ),
+          ),
+        ),
+      );
+    }
+    return _iconButtonSurface(
+      context,
+      style: NodeLaneIconButtonStyle.tonal,
+      child: PopupMenuButton<T>(
+        enabled: enabled,
+        tooltip: tooltip,
+        icon: Icon(icon, size: NodeLaneTokens.iconSize),
+        style: _iconButtonStyle(context),
+        itemBuilder: itemBuilder,
+        onSelected: onSelected,
+      ),
+    );
+  }
 }
 
 ButtonStyle _iconButtonStyle(
@@ -821,11 +883,7 @@ ButtonStyle _iconButtonStyle(
         ? Theme.of(context).colorScheme.error
         : active
         ? t.accent
-        : glass
-        ? t.ink
-        : style == NodeLaneIconButtonStyle.field
-        ? t.muted
-        : t.accent,
+        : t.ink,
     backgroundColor: glass
         ? Colors.transparent
         : switch (style) {
@@ -1311,12 +1369,28 @@ class NodeLaneChoiceRow<T> extends StatelessWidget {
           segments: segments,
           onChanged: onChanged,
         );
-        final label = Text(
-          title,
-          style: NodeLaneTokens.of(context).body
-              .copyWith(fontWeight: compact ? FontWeight.w600 : null),
-        );
+        final style = NodeLaneTokens.of(context).body
+            .copyWith(fontWeight: compact ? FontWeight.w600 : null);
+        final label = Text(title, style: style);
+        final titleLayout =
+            TextPainter(
+              text: TextSpan(text: title, style: style),
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+              maxLines: 1,
+            )..layout(
+              maxWidth:
+                  (constraints.maxWidth - NodeLaneTokens.space12).clamp(
+                    0,
+                    double.infinity,
+                  ) *
+                  2 /
+                  7,
+            );
+        final needsTitleRow = titleLayout.didExceedMaxLines;
+        titleLayout.dispose();
         if (constraints.maxWidth < 290 ||
+            needsTitleRow ||
             MediaQuery.textScalerOf(context).scale(16) > 20) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1349,17 +1423,20 @@ class NodeLaneToolbarAction extends StatelessWidget {
     this.onPressed,
     this.active = false,
     this.enabled = true,
+    this.destructive = false,
   });
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
-  final bool active, enabled;
+  final bool active, enabled, destructive;
 
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final color = !enabled
         ? colors.muted.withValues(alpha: .5)
+        : destructive
+        ? Theme.of(context).colorScheme.error
         : active
         ? colors.accent
         : colors.ink;

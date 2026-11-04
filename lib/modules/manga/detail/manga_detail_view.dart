@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -858,21 +859,11 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
 
   void _showDraggableMenu() {
     if (isMobile && !isTv && widget.itemType == ItemType.manga) {
-      showModalBottomSheet<void>(
-        context: context,
-        useRootNavigator: true,
-        isScrollControlled: true,
-        useSafeArea: true,
-        backgroundColor: Colors.transparent,
-        shape: NodeLaneTokens.detailSheetShape,
-        builder: (sheetContext) => ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(sheetContext).height * .75,
-          ),
-          child: MobileMangaChapterSettings(
-            manga: widget.manga!,
-            localArchive: isLocalArchive,
-          ),
+      showNodeLaneCatalogSheet<void>(
+        context,
+        MobileMangaChapterSettings(
+          manga: widget.manga!,
+          localArchive: isLocalArchive,
         ),
       );
       return;

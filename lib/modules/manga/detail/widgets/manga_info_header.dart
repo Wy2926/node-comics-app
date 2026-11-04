@@ -31,6 +31,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
 
@@ -293,47 +294,35 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
               text: widget.manga.description ?? '',
               expanded: _expanded,
               onChanged: (value) => setState(() => _expanded = value),
-              genres: genres.isEmpty
-                  ? null
-                  : _expanded
-                  ? Wrap(
-                      children: [
-                        for (var i = 0; i < genres.length; i++)
-                          _genreChip(i, l10n),
-                      ],
-                    )
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < genres.length; i++)
-                            _genreChip(i, l10n),
-                        ],
-                      ),
-                    ),
+              genres: [
+                for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
+              ],
             )
           : null,
-      more: MobileDetailDisclosure(
+      more: NodeLaneDisclosure(
         title: l10n.more,
-        builder: (context) => StreamBuilder(
-          stream: trackRepository.watchAllWithSyncId(),
-          builder: (context, snapshot) {
-            final entries = snapshot.data ?? <TrackPreference>[];
-            return _DetailActions(
-              manga: widget.manga,
-              leading: [
-                if (widget.isLocalArchive)
-                  _headerButton(
-                    icon: NodeLaneIcons.of(context).edit,
-                    label: l10n.edit,
-                    onPressed: _editLocalArchiveInfos,
-                  ),
-                if (!widget.isLocalArchive) _webviewButton(),
-                if (entries.isNotEmpty) _trackingAction(entries),
-                if (!widget.isLocalArchive) _smartUpdateDays(),
-              ],
-            );
-          },
+        compact: true,
+        child: Builder(
+          builder: (context) => StreamBuilder(
+            stream: trackRepository.watchAllWithSyncId(),
+            builder: (context, snapshot) {
+              final entries = snapshot.data ?? <TrackPreference>[];
+              return _DetailActions(
+                manga: widget.manga,
+                leading: [
+                  if (widget.isLocalArchive)
+                    _headerButton(
+                      icon: NodeLaneIcons.of(context).edit,
+                      label: l10n.edit,
+                      onPressed: _editLocalArchiveInfos,
+                    ),
+                  if (!widget.isLocalArchive) _webviewButton(),
+                  if (entries.isNotEmpty) _trackingAction(entries),
+                  if (!widget.isLocalArchive) _smartUpdateDays(),
+                ],
+              );
+            },
+          ),
         ),
       ),
       chapters: Column(
@@ -358,8 +347,9 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                   onPressed: _addChapters,
                   icon: NodeLaneIcons.of(context).add,
                 ),
-              MobileDetailFilterButton(
-                label: l10n.filter,
+              NodeLaneIconButton(
+                icon: NodeLaneIcons.of(context).filter,
+                tooltip: l10n.filter,
                 onPressed: widget.onShowFilterMenu,
                 active: filtering,
               ),
@@ -553,7 +543,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     Color? color,
   }) {
     if (isMobile && !isTv) {
-      return MobileDetailShortcut(
+      return NodeLaneToolbarAction(
         icon: icon,
         label: label,
         onPressed: onPressed,
@@ -700,22 +690,19 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     );
     final route = DialogRoute<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (dialogContext) => NodeLaneAlertDialog(
         title: Text(l10n.edit),
         scrollable: true,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: name,
-              decoration: InputDecoration(labelText: l10n.name),
-            ),
+            NodeLaneTextField(controller: name, label: l10n.name),
             const SizedBox(height: 16),
-            TextField(
+            NodeLaneTextField(
               controller: description,
               minLines: 2,
               maxLines: 5,
-              decoration: InputDecoration(labelText: l10n.description),
+              label: l10n.description,
             ),
           ],
         ),
@@ -772,35 +759,14 @@ class DetailGenreChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (mobile) {
-      final colors = NodeLaneTokens.of(context);
-      return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: PopupMenuButton<int>(
-          popUpAnimationStyle: popupAnimationStyle,
-          onSelected: onSelected,
-          itemBuilder: (context) => [
-            PopupMenuItem(value: 0, child: Text(libraryLabel)),
-            PopupMenuItem(value: 1, child: Text(sourceLabel)),
-          ],
-          child: SizedBox(
-            height: NodeLaneTokens.minTapTarget,
-            child: Center(
-              child: Container(
-                height: NodeLaneTokens.detailChipHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: colors.detailChipSurface,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  label,
-                  style: colors.secondary.copyWith(fontSize: 15),
-                ),
-              ),
-            ),
-          ),
-        ),
+      return NodeLaneMenuButton<int>.label(
+        label: label,
+        tooltip: label,
+        onSelected: onSelected,
+        itemBuilder: (context) => [
+          PopupMenuItem(value: 0, child: Text(libraryLabel)),
+          PopupMenuItem(value: 1, child: Text(sourceLabel)),
+        ],
       );
     }
     return Padding(
@@ -962,7 +928,7 @@ class _DetailActions extends ConsumerWidget {
         children: [
           ...leading,
           for (final action in actions)
-            MobileDetailShortcut(
+            NodeLaneToolbarAction(
               icon: action.icon,
               label: action.label,
               onPressed: action.onPressed,

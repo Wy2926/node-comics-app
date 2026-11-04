@@ -1,8 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
@@ -21,27 +22,29 @@ void main() {
           theme: ThemeData(platform: TargetPlatform.iOS),
           home: NodeLaneSurface(
             child: Scaffold(
-              body: MobileDetailDisclosure(
+              body: NodeLaneDisclosure(
                 title: 'More',
-                builder: (context) {
-                  // Like an Isar query watch, each instance permits only one listener.
-                  final stream = StreamController<String>(
-                    onListen: () {
-                      active++;
-                      listens++;
-                    },
-                    onCancel: () {
-                      active--;
-                      cancels++;
-                    },
-                  )..add(account);
-                  streams.add(stream);
-                  return StreamBuilder<String>(
-                    stream: stream.stream,
-                    builder: (context, snapshot) =>
-                        Text(snapshot.data ?? 'Loading'),
-                  );
-                },
+                child: Builder(
+                  builder: (context) {
+                    // Like an Isar query watch, each instance permits only one listener.
+                    final stream = StreamController<String>(
+                      onListen: () {
+                        active++;
+                        listens++;
+                      },
+                      onCancel: () {
+                        active--;
+                        cancels++;
+                      },
+                    )..add(account);
+                    streams.add(stream);
+                    return StreamBuilder<String>(
+                      stream: stream.stream,
+                      builder: (context, snapshot) =>
+                          Text(snapshot.data ?? 'Loading'),
+                    );
+                  },
+                ),
               ),
             ),
           ),

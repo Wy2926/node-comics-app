@@ -40,18 +40,12 @@ class NodeLaneTokens {
   static const shelfComfortableWidth = 168.0, shelfCompactWidth = 96.0;
   static const shelfThumbnailWidth = 64.0, shelfThumbnailHeight = 92.0;
   static const badgeHeight = 22.0, badgeIconSize = 14.0;
+  static const tagHeight = 32.0;
   static const choicePreviewHeight = 40.0;
   // Measured against the 390-point detail overview in the iOS concept.
   static const detailGutter = 16.0, detailToolbarHeight = 44.0;
   static const detailCoverWidth = 132.0, detailCoverHeight = 188.0;
-  static const detailActionHeight = 56.0, detailMoreHeight = 48.0;
-  static const detailChipHeight = 32.0, chapterRowHeight = 72.0;
-  static const detailSheetRadius = 32.0;
-  static const detailSheetShape = RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(
-      top: Radius.circular(detailSheetRadius),
-    ),
-  );
+  static const chapterRowHeight = 72.0;
   static const defaultMobileAccent = Color(0xff006eff);
   // Reader concept: all overlays use the same geometry, type and controls.
   static const readerSheetFraction = .78, readerDisplayFraction = .86;
@@ -272,6 +266,20 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
   );
   final input = colors.inputDecoration('');
   return base.copyWith(
+    iconTheme: base.iconTheme.copyWith(
+      color: colors.ink,
+      size: NodeLaneTokens.iconSize,
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: (base.iconButtonTheme.style ?? const ButtonStyle()).copyWith(
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled)
+              ? colors.muted.withValues(alpha: .5)
+              : colors.ink,
+        ),
+      ),
+    ),
+    listTileTheme: base.listTileTheme.copyWith(iconColor: colors.ink),
     cupertinoOverrideTheme:
         (base.cupertinoOverrideTheme ?? const CupertinoThemeData()).copyWith(
           primaryColor: colors.accent,
@@ -384,17 +392,17 @@ class NodeLaneSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final base = Theme.of(context);
+    final theme = nodeLaneModalTheme(base);
     return Theme(
-      data: nodeLaneModalTheme(base).copyWith(
+      data: theme.copyWith(
         scaffoldBackgroundColor: colors.canvas,
         dividerColor: colors.line,
-        listTileTheme: base.listTileTheme.copyWith(
+        listTileTheme: theme.listTileTheme.copyWith(
           minLeadingWidth: 28,
           horizontalTitleGap: NodeLaneTokens.space12,
           selectedColor: colors.accent,
           selectedTileColor: colors.accentSoft,
           textColor: colors.ink,
-          iconColor: colors.accent,
         ),
         badgeTheme: base.badgeTheme.copyWith(
           backgroundColor: colors.accent,

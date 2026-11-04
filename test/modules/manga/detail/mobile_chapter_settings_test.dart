@@ -249,12 +249,12 @@ void main() {
           .widget<NodeLaneSegments<bool>>(find.byType(NodeLaneSegments<bool>))
           .onChanged!;
       final chooseSort = tester
-          .widget<RadioGroup<int>>(find.byType(RadioGroup<int>))
-          .onChanged;
+          .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'By name'))
+          .onTap!;
       chooseDirection(true);
       chooseDirection(true);
-      chooseSort(3);
-      chooseSort(3);
+      chooseSort();
+      chooseSort();
       await flush(tester);
       final saved = settingsRepository.current;
       final sort = saved.sortChapterList!.firstWhere(
@@ -326,10 +326,8 @@ void main() {
       await search('39');
       expect(
         tester
-            .widget<CheckboxListTile>(
-              find.widgetWithText(CheckboxListTile, 'Team 39'),
-            )
-            .value,
+            .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Team 39'))
+            .selected,
         false,
       );
       await tester.tap(find.text('Team 39'));

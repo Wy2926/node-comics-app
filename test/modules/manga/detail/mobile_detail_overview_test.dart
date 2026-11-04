@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
@@ -42,10 +43,10 @@ void main() {
             body: SizedBox(
               width: 358,
               child: MobileDetailPrimaryActions(
-                library: MobileDetailButton(
-                  label: 'In library',
+                library: NodeLaneSecondaryButton(
                   icon: Icons.check,
                   onPressed: () => calls++,
+                  child: const Text('In library'),
                 ),
               ),
             ),
