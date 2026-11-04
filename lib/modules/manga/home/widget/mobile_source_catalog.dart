@@ -162,6 +162,7 @@ class MobileSourceResults extends StatelessWidget {
       final compact = display == DisplayType.compactGrid;
       return CustomScrollView(
         controller: controller,
+        physics: const AlwaysScrollableScrollPhysics(),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
           SliverPadding(
@@ -316,14 +317,12 @@ class MobileSourceStatus extends StatelessWidget {
     super.key,
     this.loading = false,
     this.message,
-    this.onRetry,
-    this.onBrowser,
     this.onLoadMore,
     this.searchEmpty = false,
   });
   final bool loading, searchEmpty;
   final String? message;
-  final VoidCallback? onRetry, onBrowser, onLoadMore;
+  final VoidCallback? onLoadMore;
 
   @override
   Widget build(BuildContext context) {
@@ -334,50 +333,6 @@ class MobileSourceStatus extends StatelessWidget {
       return const Padding(
         padding: EdgeInsets.all(20),
         child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (onRetry != null) {
-      return NodeLaneGroupSurface(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Icon(icons.webLink, size: 48, color: t.muted),
-              const SizedBox(height: 20),
-              Text('暂时无法加载', textAlign: TextAlign.center, style: t.readerTitle),
-              const SizedBox(height: 12),
-              Text(
-                onBrowser == null ? '已保留当前内容，请重试。' : '可以重试，或在浏览器中打开网站。',
-                textAlign: TextAlign.center,
-                style: t.readerSecondary,
-              ),
-              const SizedBox(height: 24),
-              FilledButton(onPressed: onRetry, child: Text(l10n.retry)),
-              if (onBrowser != null) ...[
-                const SizedBox(height: 12),
-                NodeLaneSecondaryButton(
-                  onPressed: onBrowser,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(icons.navigation, color: t.accent),
-                      const SizedBox(width: 8),
-                      const Flexible(child: Text('在浏览器打开')),
-                    ],
-                  ),
-                ),
-              ],
-              if (message?.isNotEmpty == true) _SourceErrorDetails(message!),
-              if (onBrowser != null)
-                Text(
-                  '浏览器内可使用漫画图片翻译。',
-                  textAlign: TextAlign.center,
-                  style: t.readerSecondary,
-                ),
-            ],
-          ),
-        ),
       );
     }
     if (searchEmpty) {
@@ -418,45 +373,6 @@ class MobileSourceStatus extends StatelessWidget {
           NodeLaneSecondaryButton(
             onPressed: onLoadMore,
             child: Text(l10n.load_more),
-          ),
-      ],
-    );
-  }
-}
-
-class _SourceErrorDetails extends StatefulWidget {
-  const _SourceErrorDetails(this.message);
-  final String message;
-  @override
-  State<_SourceErrorDetails> createState() => _SourceErrorDetailsState();
-}
-
-class _SourceErrorDetailsState extends State<_SourceErrorDetails> {
-  bool expanded = false;
-  @override
-  Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextButton(
-          style: TextButton.styleFrom(padding: EdgeInsets.zero),
-          onPressed: () => setState(() => expanded = !expanded),
-          child: Row(
-            children: [
-              Expanded(child: const Text('查看错误详情')),
-              Icon(
-                expanded ? icons.down : icons.forward,
-                size: NodeLaneTokens.smallIconSize,
-                color: t.muted,
-              ),
-            ],
-          ),
-        ),
-        if (expanded)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: SelectableText(widget.message, style: t.readerSecondary),
           ),
       ],
     );

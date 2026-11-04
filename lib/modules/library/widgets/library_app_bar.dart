@@ -172,7 +172,6 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         filterLabel: l10n.filter,
         controller: textEditingController,
         onSearchChanged: onSearchClear,
-        count: showNumbersOfItems ? numberOfItems : null,
         filtered: !isNotFiltering,
         onImport: () => showImportLocalDialog(context, itemType),
         onFilter: () => showLibrarySettingsSheet(

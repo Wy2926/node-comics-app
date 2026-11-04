@@ -4,6 +4,7 @@ import 'package:mangayomi/services/mobile_source_catalog.dart';
 
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +20,7 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 class _Repos extends ExtensionsRepoState {
   int writes = 0;
@@ -65,6 +67,8 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          builder: BotToastInit(),
+          navigatorObservers: [BotToastNavigatorObserver()],
           theme: ThemeData(
             platform: TargetPlatform.iOS,
             colorSchemeSeed: NodeLaneTokens.defaultMobileAccent,
@@ -131,7 +135,8 @@ void main() {
       expect(find.text('MangaDex'), findsOneWidget);
       expect(find.text('安装'), findsNothing);
       expect(find.text('更新'), findsNothing);
-      expect(find.textContaining('NodeLane 官方'), findsOneWidget);
+      expect(find.textContaining('NodeLane 官方'), findsNothing);
+      expect(find.textContaining('127.0.0.1'), findsNothing);
       expect(find.text('Community Available'), findsNothing);
       await tester.tap(find.text('第三方'));
       await tester.pumpAndSettle();
@@ -168,6 +173,56 @@ void main() {
     await tester.tap(find.text('Website'));
     expect([opened, installed], [1, 1]);
   });
+  testWidgets(
+    'catalog failures float once without moving the cached directory',
+    (tester) async {
+      final loading = Completer<void>();
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          extensionsRepoStateProvider(ItemType.manga).overrideWith(_Repos.new),
+          hideItemsStateProvider.overrideWith(_Hidden.new),
+          showNSFWStateProvider.overrideWith(_Nsfw.new),
+          nodeLaneCatalogRepositoryProvider(ItemType.manga)
+              .overrideWithValue(repo),
+          nodeLaneCatalogLoadProvider(ItemType.manga)
+              .overrideWith((ref) => loading.future),
+          fetchItemSourcesListProvider(
+            reFresh: false,
+            itemType: ItemType.manga,
+          ).overrideWith((ref) async {}),
+          mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
+            (ref) => Stream.value([
+              Source(id: 1, name: 'Cached site', lang: 'en', repo: repo),
+            ]),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      await mount(tester, const MobileSourcesScreen(), container);
+      final before = tester.getRect(find.text('Cached site'));
+      loading.completeError(StateError('private endpoint'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneNotice), findsOneWidget);
+      expect(tester.getRect(find.text('Cached site')), before);
+      expect(find.textContaining('private endpoint'), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.text('目录加载失败，可下拉重试。'),
+        ),
+        findsNothing,
+      );
+      await tester.pump(const Duration(seconds: 7));
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneNotice), findsNothing);
+      await tester.enterText(find.byType(TextField), 'Cached');
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneNotice), findsNothing);
+      expect(find.text('Cached site'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'language choices only filter their directory and never change installation flags',
     (tester) async {

@@ -20,7 +20,6 @@ class MobileBookshelfHeader extends StatelessWidget {
     required this.mediaMenu,
     required this.menu,
     required this.filtered,
-    this.count,
     this.updateControl,
   });
 
@@ -29,7 +28,6 @@ class MobileBookshelfHeader extends StatelessWidget {
   final VoidCallback onSearchChanged, onImport, onFilter;
   final Widget mediaMenu, menu;
   final Widget? updateControl;
-  final int? count;
   final bool filtered;
 
   @override
@@ -66,9 +64,7 @@ class MobileBookshelfHeader extends StatelessWidget {
                     child: NodeLaneTextField.search(
                       controller: controller,
                       onChanged: (_) => onSearchChanged(),
-                      hint: count == null
-                          ? searchLabel
-                          : '$searchLabel · $count',
+                      hint: searchLabel,
                     ),
                   ),
                   const SizedBox(width: NodeLaneTokens.space8),

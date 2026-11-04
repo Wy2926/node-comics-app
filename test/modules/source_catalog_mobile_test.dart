@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +22,8 @@ import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/services/get_popular.dart';
+import 'package:mangayomi/services/get_latest_updates.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/services/local_source_page.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/headers.dart';
@@ -46,19 +49,51 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: locale,
+        navigatorObservers: [BotToastNavigatorObserver()],
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaler: TextScaler.linear(scale),
             viewInsets: EdgeInsets.only(bottom: inset),
             padding: const EdgeInsets.only(top: 24, bottom: 34),
           ),
-          child: child!,
+          child: BotToastInit()(context, child),
         ),
         home: child,
       ),
     );
     await tester.pump();
   }
+
+  testWidgets('empty and short source results both support pull to refresh', (
+    tester,
+  ) async {
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    var refreshed = 0;
+    for (final count in [0, 1]) {
+      await mount(
+        tester,
+        Scaffold(
+          body: RefreshIndicator(
+            onRefresh: () async {
+              refreshed++;
+            },
+            child: MobileSourceResults(
+              controller: scroll,
+              display: DisplayType.list,
+              count: count,
+              itemBuilder: (_, _) => const Text('A book'),
+              footer: const SizedBox.shrink(),
+            ),
+          ),
+        ),
+      );
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, 350));
+      await tester.pumpAndSettle();
+      expect(refreshed, count + 1);
+      expect(tester.takeException(), isNull);
+    }
+  });
 
   testWidgets(
     'source header preserves a draft and lazy results remain usable with keyboard',
@@ -322,6 +357,80 @@ void main() {
       });
 
       testWidgets(
+        'browse tabs retain pagination, in-flight pages and position until leaving the source',
+        (tester) async {
+          final nextPopular = Completer<MPages?>();
+          final latest = Completer<MPages?>();
+          final calls = <String>[], disposed = <String>[];
+          await tester.runAsync(
+            () => mount(
+              tester,
+              ProviderScope(
+                overrides: [
+                  headersProvider.overrideWith((ref, args) => {}),
+                  getPopularProvider.overrideWith((ref, args) async {
+                    calls.add('popular:${args.page}');
+                    if (args.page == 1) {
+                      ref.onDispose(() => disposed.add('popular'));
+                      return MPages(
+                        list: List.generate(20, (i) => _book('Popular $i')),
+                        hasNextPage: true,
+                      );
+                    }
+                    return nextPopular.future;
+                  }),
+                  getLatestUpdatesProvider.overrideWith((ref, args) async {
+                    calls.add('latest:${args.page}');
+                    ref.onDispose(() => disposed.add('latest'));
+                    return latest.future;
+                  }),
+                ],
+                child: MangaHomeScreen(source: source),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final results = find.byType(SuperListViewWidget);
+          final popularView = tester.widget<SuperListViewWidget>(results);
+          popularView.controller!.jumpTo(200);
+          await tester.pumpAndSettle();
+          (popularView.itemBuilder(
+            tester.element(results),
+            20,
+          ) as MobileSourceStatus).onLoadMore!();
+          await tester.pump();
+          await tester.tap(find.text('Latest'));
+          await tester.pump();
+          await tester.tap(find.text('Popular'));
+          await tester.pump();
+          expect(calls, ['popular:1', 'popular:2', 'latest:1']);
+          expect(disposed, isEmpty);
+          await tester.tap(find.text('Latest'));
+          await tester.pump();
+          nextPopular.complete(MPages(list: [_book('Popular tail')]));
+          latest.complete(MPages(list: [_book('Latest result')]));
+          await tester.pumpAndSettle();
+          expect(find.text('Latest result'), findsOneWidget);
+          expect(find.text('Popular tail'), findsNothing);
+          await tester.tap(find.text('Popular'));
+          await tester.pumpAndSettle();
+          final restored = tester.widget<SuperListViewWidget>(results);
+          expect(restored.itemCount, 22);
+          expect(restored.controller!.offset, closeTo(200, .5));
+          await tester.tap(find.text('Latest'));
+          await tester.pumpAndSettle();
+          expect(find.text('Latest result'), findsOneWidget);
+          expect(calls, ['popular:1', 'popular:2', 'latest:1']);
+          expect(find.byType(NodeLaneNotice), findsNothing);
+          await tester.pumpWidget(const SizedBox());
+          await tester.runAsync(() => database.mangas.count());
+          await tester.pump();
+          expect(disposed, containsAll(['popular', 'latest']));
+          expect(tester.takeException(), isNull);
+        },
+      );
+
+      testWidgets(
         'seed clear and pagination retry preserve results, discard old completion and stop on empty last page',
         (tester) async {
           final oldPage = Completer<MPages?>();
@@ -375,12 +484,11 @@ void main() {
           expect(find.text('Popular'), findsWidgets);
           await tester.tap(find.widgetWithText(FilledButton, 'Load More'));
           await tester.pumpAndSettle();
-          expect(find.text('暂时无法加载'), findsOneWidget);
-          await tester.tap(find.text('查看错误详情'));
-          await tester.pumpAndSettle();
-          expect(find.textContaining('Page two failed'), findsOneWidget);
+          expect(find.text('加载更多失败，请重试。'), findsOneWidget);
+          expect(find.text('暂时无法加载'), findsNothing);
+          expect(find.textContaining('Page two failed'), findsNothing);
           expect(find.byType(MangaHomeImageCardListTile), findsOneWidget);
-          await tester.tap(find.widgetWithText(FilledButton, 'Retry'));
+          await tester.tap(find.text('Retry'));
           await tester.pumpAndSettle();
           expect(calls, [
             'Seed:1',

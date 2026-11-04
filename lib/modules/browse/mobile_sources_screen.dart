@@ -10,6 +10,7 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
@@ -36,7 +37,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   bool thirdParty = false, managing = false;
   final busy = <int>{};
   final languages = <(ItemType, bool), Set<String>>{};
-  String? error;
+  bool _refreshing = false;
+  NodeLaneNoticeHandle? _notice;
   @override
   void initState() {
     super.initState();
@@ -55,6 +57,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
 
   @override
   void dispose() {
+    _notice?.dismiss();
     query.dispose();
     super.dispose();
   }
@@ -94,8 +97,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     bool open = false,
     bool latest = false,
   }) async {
-    if (source.id == null || !busy.add(source.id!)) return;
-    setState(() => error = null);
+    if (source.id == null || busy.contains(source.id)) return;
+    final requestedThirdParty = thirdParty;
+    setState(() => busy.add(source.id!));
     try {
       await fetchSourcesList(
         id: source.id,
@@ -117,9 +121,51 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         _open(loaded, latest: latest);
       }
     } catch (_) {
-      if (mounted) setState(() => error = '网站暂时无法加载，请重试或在浏览器打开。');
+      if (mounted &&
+          type == source.itemType &&
+          thirdParty == requestedThirdParty) {
+        _showFailure('网站暂时无法加载，请重试。');
+      }
     } finally {
       if (mounted) setState(() => busy.remove(source.id));
+    }
+  }
+
+  void _showFailure(String message) {
+    if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+    final router = GoRouter.maybeOf(context);
+    if (router != null &&
+        router.routeInformationProvider.value.uri.path != '/browse') {
+      return;
+    }
+    _notice?.dismiss();
+    _notice = showNodeLaneNotice(message, kind: NodeLaneNoticeKind.error);
+  }
+
+  Future<void> _refreshCatalog() async {
+    if (_refreshing) return;
+    _refreshing = true;
+    final requestedType = type, requestedThirdParty = thirdParty;
+    _notice?.dismiss();
+    try {
+      final refresh = ref.refresh(
+        fetchItemSourcesListProvider(
+          reFresh: true,
+          itemType: requestedType,
+        ).future,
+      );
+      await refresh;
+      if (!mounted) return;
+      ref.invalidate(nodeLaneCatalogLoadProvider(requestedType));
+      await ref.read(nodeLaneCatalogLoadProvider(requestedType).future);
+    } catch (_) {
+      if (mounted &&
+          type == requestedType &&
+          thirdParty == requestedThirdParty) {
+        _showFailure('目录刷新失败，已保留当前内容，可下拉重试。');
+      }
+    } finally {
+      _refreshing = false;
     }
   }
 
@@ -295,6 +341,21 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     final loading = ref.watch(nodeLaneCatalogLoadProvider(type));
     ref.watch(fetchItemSourcesListProvider(reFresh: false, itemType: type));
     final sources = ref.watch(mobileCatalogEntriesProvider(type));
+    ref.listen(nodeLaneCatalogLoadProvider(type), (previous, next) {
+      if (!_refreshing &&
+          !thirdParty &&
+          next.hasError &&
+          !identical(previous?.error, next.error)) {
+        _showFailure('目录加载失败，可下拉重试。');
+      }
+    });
+    ref.listen(mobileCatalogEntriesProvider(type), (previous, next) {
+      if (!_refreshing &&
+          next.hasError &&
+          !identical(previous?.error, next.error)) {
+        _showFailure('目录加载失败，可下拉重试。');
+      }
+    });
     final repositories = ref.watch(extensionsRepoStateProvider(type));
     final showNsfw = ref.watch(showNSFWStateProvider);
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
@@ -348,7 +409,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                           onChanged: (value) => setState(() {
                             type = value;
                             query.clear();
-                            error = null;
+                            _notice?.dismiss();
                           }),
                         ),
                       ],
@@ -363,7 +424,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                       onChanged: (value) => setState(() {
                         thirdParty = value;
                         managing = false;
-                        error = null;
+                        _notice?.dismiss();
                         query.clear();
                       }),
                     ),
@@ -435,66 +496,20 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
               ),
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () async {
-                    final requestedType = type;
-                    setState(() => error = null);
-                    try {
-                      final refresh = ref.refresh(
-                        fetchItemSourcesListProvider(
-                          reFresh: true,
-                          itemType: requestedType,
-                        ).future,
-                      );
-                      await refresh;
-                      if (!mounted) return;
-                      ref.invalidate(
-                        nodeLaneCatalogLoadProvider(requestedType),
-                      );
-                      await ref.read(
-                        nodeLaneCatalogLoadProvider(requestedType).future,
-                      );
-                    } catch (_) {
-                      if (mounted && type == requestedType) {
-                        setState(() => error = '目录刷新失败，已保留缓存，可下拉重试。');
-                      }
-                    }
-                  },
+                  onRefresh: _refreshCatalog,
                   child: CustomScrollView(
                     key: PageStorageKey('catalog-${type.name}-$thirdParty'),
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        sliver: SliverToBoxAdapter(
-                          child: thirdParty
-                              ? NodeLaneCatalogHeading(
-                                  '第三方来源',
-                                  action: '管理仓库',
-                                  onAction: () =>
-                                      showMobileRepositories(context, type),
-                                )
-                              : Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Text(
-                                    official == null
-                                        ? 'NodeLane 暂未提供此类来源，可在第三方中添加'
-                                        : '${official.name} · ${Uri.parse(official.jsonUrl!).authority}',
-                                    style: t.readerSecondary,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      if (error != null ||
-                          sources.hasError ||
-                          (!thirdParty && loading.hasError))
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text(
-                              error ?? '目录加载失败，下拉重试。',
-                              style: t.readerSecondary.copyWith(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
+                      if (thirdParty)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          sliver: SliverToBoxAdapter(
+                            child: NodeLaneCatalogHeading(
+                              '第三方来源',
+                              action: '管理仓库',
+                              onAction: () =>
+                                  showMobileRepositories(context, type),
                             ),
                           ),
                         ),

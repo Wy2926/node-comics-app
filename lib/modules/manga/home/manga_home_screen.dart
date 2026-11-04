@@ -68,23 +68,38 @@ class TypeMangaSelector {
   TypeMangaSelector(this.icon, this.title);
 }
 
+/// Route-local pagination and position; no images or global cache are retained.
+class _SourceCatalogResults {
+  final items = <MManga>[];
+  int visibleLimit = 50, page = 1, revision = 0;
+  bool hasNextPage = true,
+      loadingNext = false,
+      receivedFirstPage = false,
+      refreshing = false;
+  MPages? firstPage;
+  Object? pageError, notifiedError;
+  double offset = 0;
+}
+
 class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
-  bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
-  int _fullDataLength = 50;
-  int _page = 1;
-  bool _hasNextPage = true;
-  int _requestVersion = 0;
-  MPages? _firstPage;
-  bool _receivedFirstPage = false;
-  Object? _pageError;
+  final _resultsByTab = <int, _SourceCatalogResults>{
+    0: _SourceCatalogResults(),
+    1: _SourceCatalogResults(),
+    2: _SourceCatalogResults(),
+  };
+  // Only visited browse tabs retain their first-page provider until this route
+  // closes. Search keeps one replaceable result set, never a query cache.
+  final _visitedBrowseTabs = <int>{};
+  _SourceCatalogResults get _results => _resultsByTab[_selectedIndex]!;
+  NodeLaneNoticeHandle? _notice;
   bool get _usesSearch => _query.isNotEmpty || _isFiltering;
   bool get _hasMore => source.isFullData == true
-      ? _fullDataLength < _mangaList.length
-      : _hasNextPage;
+      ? _results.visibleLimit < _results.items.length
+      : _results.hasNextPage;
   int get _visibleCount => source.isFullData == true
-      ? math.min(_fullDataLength, _mangaList.length)
-      : _mangaList.length;
+      ? math.min(_results.visibleLimit, _results.items.length)
+      : _results.items.length;
   late int _selectedIndex = _query.isNotEmpty
       ? 2
       : widget.isLatest
@@ -96,7 +111,6 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       ? []
       : getFilterList(source: source);
   late List<dynamic> filters = copySourceFilters(_defaultFilters);
-  final List<MManga> _mangaList = [];
   late StreamSubscription<List<Manga>> _mangaStreamSub;
   Map<String, Manga> _libraryIndex = {};
   List<TypeMangaSelector> _types(BuildContext context) {
@@ -109,21 +123,38 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   }
 
   void _resetResults() {
-    _requestVersion++;
-    _page = 1;
-    _hasNextPage = true;
-    _fullDataLength = 50;
-    _isLoading = false;
-    _pageError = null;
-    _firstPage = null;
-    _receivedFirstPage = false;
-    _mangaList.clear();
-    final version = _requestVersion;
+    _results.revision++;
+    _results.page = 1;
+    _results.hasNextPage = true;
+    _results.visibleLimit = 50;
+    _results.loadingNext = false;
+    _results.refreshing = false;
+    _results.pageError = null;
+    _results.notifiedError = null;
+    _results.firstPage = null;
+    _results.receivedFirstPage = false;
+    _results.items.clear();
+    _results.offset = 0;
+    _restorePosition();
+  }
+
+  void _savePosition() {
+    _notice?.dismiss();
+    if (_scrollController.hasClients) {
+      _results.offset = _scrollController.offset;
+    }
+  }
+
+  void _restorePosition() {
+    final results = _results, version = results.revision;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted &&
-          version == _requestVersion &&
+          identical(results, _results) &&
+          version == results.revision &&
           _scrollController.hasClients) {
-        _scrollController.jumpTo(0);
+        _scrollController.jumpTo(
+          results.offset.clamp(0, _scrollController.position.maxScrollExtent),
+        );
       }
     });
   }
@@ -132,11 +163,17 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     final query = value.trim();
     FocusScope.of(context).unfocus();
     if (query == _query && (_usesSearch || _selectedIndex == 0)) return;
+    _savePosition();
     setState(() {
       _query = query;
       _showSearchField = true;
       _selectedIndex = _usesSearch ? 2 : 0;
-      _resetResults();
+      if (_usesSearch) {
+        _resetResults();
+      } else {
+        _visitedBrowseTabs.add(0);
+        _restorePosition();
+      }
     });
   }
 
@@ -149,13 +186,15 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     FocusScope.of(context).unfocus();
     _textEditingController.clear();
     if (_selectedIndex == index && !_usesSearch) return;
+    _savePosition();
     setState(() {
       _selectedIndex = index;
       _showSearchField = false;
       if (_isFiltering) filters = copySourceFilters(_defaultFilters);
       _isFiltering = false;
       _query = '';
-      _resetResults();
+      _visitedBrowseTabs.add(index);
+      _restorePosition();
     });
   }
 
@@ -176,59 +215,106 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     filterList: _isFiltering ? filters : const [],
   );
 
-  void _refresh() {
-    setState(_resetResults);
+  Future<MPages?> _readPage(int page) {
+    if (_usesSearch) return ref.read(_searchRequest(page).future);
+    return _selectedIndex == 1
+        ? ref.read(getLatestUpdatesProvider(source: source, page: page).future)
+        : ref.read(getPopularProvider(source: source, page: page).future);
+  }
+
+  Future<void> _refresh() async {
+    final results = _results;
+    if (results.refreshing || _getManga?.isLoading == true) return;
+    _notice?.dismiss();
+    setState(() {
+      _results.revision++;
+      _results.receivedFirstPage = false;
+      _results.pageError = null;
+      _results.notifiedError = null;
+      _results.loadingNext = false;
+      _results.refreshing = true;
+    });
+    final revision = results.revision;
     _invalidatePage(1);
+    try {
+      await _readPage(1);
+    } catch (_) {
+      // The observed provider reports the failure once; keep visible results.
+    } finally {
+      if (mounted && revision == results.revision) {
+        setState(() => results.refreshing = false);
+      }
+    }
+  }
+
+  void _notifyFailure(Object error, {bool nextPage = false}) {
+    final results = _results, revision = results.revision;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          !identical(results, _results) ||
+          revision != results.revision ||
+          identical(results.notifiedError, error) ||
+          ModalRoute.of(context)?.isCurrent == false) {
+        return;
+      }
+      results.notifiedError = error;
+      _notice?.dismiss();
+      _notice = showNodeLaneNotice(
+        nextPage ? '加载更多失败，请重试。' : '网站暂时无法加载，可下拉重试。',
+        kind: NodeLaneNoticeKind.error,
+        actionLabel: context.l10n.retry,
+        onAction: () async {
+          if (mounted &&
+              identical(results, _results) &&
+              revision == results.revision) {
+            await (nextPage ? _loadMore() : _refresh());
+          }
+        },
+      );
+    });
   }
 
   Future<void> _loadMore() async {
-    if (!_receivedFirstPage ||
+    if (!_results.receivedFirstPage ||
         !_hasMore ||
-        _isLoading ||
+        _results.refreshing ||
+        _results.loadingNext ||
         (_getManga?.isLoading ?? true)) {
       return;
     }
     if (source.isFullData == true) {
       setState(
-        () =>
-            _fullDataLength = math.min(_fullDataLength + 50, _mangaList.length),
+        () => _results.visibleLimit = math.min(
+          _results.visibleLimit + 50,
+          _results.items.length,
+        ),
       );
       return;
     }
-    final version = _requestVersion;
-    final nextPage = _page + 1;
-    if (_pageError != null) _invalidatePage(nextPage);
+    final results = _results, version = results.revision;
+    final nextPage = results.page + 1;
+    if (_results.pageError != null) _invalidatePage(nextPage);
     setState(() {
-      _isLoading = true;
-      _pageError = null;
+      _results.loadingNext = true;
+      _results.pageError = null;
+      _results.notifiedError = null;
     });
     try {
-      final MPages? result;
-      if (_usesSearch) {
-        result = await ref.read(_searchRequest(nextPage).future);
-      } else if (_selectedIndex == 1) {
-        result = await ref.read(
-          getLatestUpdatesProvider(source: source, page: nextPage).future,
-        );
-      } else {
-        result = await ref.read(
-          getPopularProvider(source: source, page: nextPage).future,
-        );
-      }
-      if (!mounted || version != _requestVersion) return;
+      final result = await _readPage(nextPage);
+      if (!mounted || version != results.revision) return;
       setState(() {
-        _mangaList.addAll(result?.list ?? []);
-        _page = nextPage;
-        _hasNextPage =
+        results.items.addAll(result?.list ?? []);
+        results.page = nextPage;
+        results.hasNextPage =
             result != null && result.list.isNotEmpty && result.hasNextPage;
       });
     } catch (error) {
-      if (mounted && version == _requestVersion) {
-        setState(() => _pageError = error);
+      if (mounted && version == results.revision) {
+        setState(() => results.pageError = error);
       }
     } finally {
-      if (mounted && version == _requestVersion) {
-        setState(() => _isLoading = false);
+      if (mounted && version == results.revision) {
+        setState(() => results.loadingNext = false);
       }
     }
   }
@@ -236,6 +322,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   @override
   void initState() {
     super.initState();
+    if (!_usesSearch) _visitedBrowseTabs.add(_selectedIndex);
     _scrollController.addListener(_onScroll);
     _mangaStreamSub = mangaRepository
         .watchBySourceAndLang(source.name, source.lang)
@@ -261,6 +348,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
 
   @override
   void dispose() {
+    _notice?.dismiss();
     _mangaStreamSub.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
@@ -272,8 +360,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
 
   void _onScroll() {
     if (_scrollController.position.extentAfter < 240 &&
-        _mangaList.isNotEmpty &&
-        _pageError == null) {
+        _results.items.isNotEmpty &&
+        _results.pageError == null) {
       _loadMore();
     }
   }
@@ -444,6 +532,11 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       ),
     );
     if (selected == null || !mounted) return;
+    _applyFilters(selected);
+  }
+
+  void _applyFilters(List<dynamic> selected) {
+    _savePosition();
     setState(() {
       filters = selected;
       _selectedIndex = 2;
@@ -457,7 +550,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     final l10n = context.l10n;
     final loading = _getManga!.isLoading;
     final error = loading ? null : _getManga!.error;
-    final count = loading || error != null ? 0 : _visibleCount;
+    final count = _visibleCount;
+    if (error != null) _notifyFailure(error);
     final canOpenWebsite =
         !isLocal &&
         isBrowserUrl(ref.watch(sourceBaseUrlProvider(source: source)));
@@ -474,46 +568,43 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       onSelect: _select,
       onOptions: () => _mobileOptions(display),
       onBrowser: canOpenWebsite ? () => _onSourceOverflow(0) : null,
-      results: MobileSourceResults(
-        controller: _scrollController,
-        display: display,
-        gridSize: ref.watch(
-          libraryGridSizeStateProvider(itemType: source.itemType),
-        ),
-        count: count,
-        itemBuilder: (context, index) => display == DisplayType.list
-            ? MangaHomeImageCardListTile(
-                itemType: source.itemType,
-                manga: _mangaList[index],
-                source: source,
-                libraryManga: _libraryIndex[_mangaList[index].name],
-              )
-            : MangaHomeImageCard(
-                itemType: source.itemType,
-                manga: _mangaList[index],
-                source: source,
-                isComfortableGrid: display == DisplayType.comfortableGrid,
-                libraryManga: _libraryIndex[_mangaList[index].name],
-              ),
-        footer: MobileSourceStatus(
-          loading: loading || _isLoading,
-          message:
-              error?.toString() ??
-              _pageError?.toString() ??
-              (!loading && count == 0 ? l10n.no_result : null),
-          onRetry: error != null
-              ? _refresh
-              : _pageError != null
-              ? _loadMore
-              : null,
-          onBrowser: error != null && canOpenWebsite
-              ? () => _onSourceOverflow(0)
-              : null,
-          searchEmpty: !loading && error == null && count == 0 && _usesSearch,
-          onLoadMore:
-              !loading && error == null && _pageError == null && _hasMore
-              ? _loadMore
-              : null,
+      results: RefreshIndicator(
+        onRefresh: _refresh,
+        child: MobileSourceResults(
+          controller: _scrollController,
+          display: display,
+          gridSize: ref.watch(
+            libraryGridSizeStateProvider(itemType: source.itemType),
+          ),
+          count: count,
+          itemBuilder: (context, index) => display == DisplayType.list
+              ? MangaHomeImageCardListTile(
+                  itemType: source.itemType,
+                  manga: _results.items[index],
+                  source: source,
+                  libraryManga: _libraryIndex[_results.items[index].name],
+                )
+              : MangaHomeImageCard(
+                  itemType: source.itemType,
+                  manga: _results.items[index],
+                  source: source,
+                  isComfortableGrid: display == DisplayType.comfortableGrid,
+                  libraryManga: _libraryIndex[_results.items[index].name],
+                ),
+          footer: MobileSourceStatus(
+            loading: (loading && count == 0) || _results.loadingNext,
+            message: !loading && error == null && count == 0 && !_usesSearch
+                ? l10n.no_result
+                : null,
+            searchEmpty: !loading && error == null && count == 0 && _usesSearch,
+            onLoadMore:
+                !loading &&
+                    error == null &&
+                    _results.pageError == null &&
+                    _hasMore
+                ? _loadMore
+                : null,
+          ),
         ),
       ),
     );
@@ -521,29 +612,40 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final popular = _visitedBrowseTabs.contains(0)
+        ? ref.watch(getPopularProvider(source: source, page: 1))
+        : null;
+    final latest = _visitedBrowseTabs.contains(1)
+        ? ref.watch(getLatestUpdatesProvider(source: source, page: 1))
+        : null;
     if (_usesSearch) {
       _getManga = ref.watch(_searchRequest(1));
     } else if (_selectedIndex == 1) {
-      _getManga = ref.watch(getLatestUpdatesProvider(source: source, page: 1));
+      _getManga = latest;
     } else {
-      _getManga = ref.watch(getPopularProvider(source: source, page: 1));
+      _getManga = popular;
     }
     if (!_getManga!.isLoading &&
         _getManga!.hasValue &&
         !_getManga!.hasError &&
-        (!_receivedFirstPage || !identical(_firstPage, _getManga!.value))) {
-      if (_receivedFirstPage) _requestVersion++;
-      _fullDataLength = 50;
-      _firstPage = _getManga!.value;
-      _receivedFirstPage = true;
-      _mangaList
+        (!_results.receivedFirstPage ||
+            !identical(_results.firstPage, _getManga!.value))) {
+      if (_results.receivedFirstPage) _results.revision++;
+      _results.visibleLimit = 50;
+      _results.firstPage = _getManga!.value;
+      _results.receivedFirstPage = true;
+      _results.items
         ..clear()
-        ..addAll(_firstPage?.list ?? []);
-      _page = 1;
-      _hasNextPage =
-          _mangaList.isNotEmpty && (_firstPage?.hasNextPage ?? false);
-      _isLoading = false;
-      _pageError = null;
+        ..addAll(_results.firstPage?.list ?? []);
+      _results.page = 1;
+      _results.hasNextPage =
+          _results.items.isNotEmpty &&
+          (_results.firstPage?.hasNextPage ?? false);
+      _results.loadingNext = false;
+      _results.pageError = null;
+    }
+    if (_results.pageError != null) {
+      _notifyFailure(_results.pageError!, nextPage: true);
     }
     final l10n = context.l10n;
     final displayType = ref.watch(mangaHomeDisplayTypeStateProvider);
@@ -838,14 +940,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                             ),
                           );
                           if (result == 'filter') {
-                            filters = draft;
                             if (mounted) {
-                              setState(() {
-                                _selectedIndex = 2;
-                                _isFiltering = true;
-                                _resetResults();
-                              });
-                              _invalidatePage(1);
+                              _applyFilters(draft);
                             }
                           }
                         } else {
@@ -886,12 +982,12 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           : _getManga!.when(
               data: (data) {
                 Widget buildProgressIndicator() => MobileSourceStatus(
-                  loading: _isLoading,
-                  message: _pageError?.toString(),
-                  onRetry: _pageError == null ? null : _loadMore,
-                  onLoadMore: _hasMore && _pageError == null ? _loadMore : null,
+                  loading: _results.loadingNext,
+                  onLoadMore: _hasMore && _results.pageError == null
+                      ? _loadMore
+                      : null,
                 );
-                if (_mangaList.isEmpty) {
+                if (_results.items.isEmpty) {
                   return Center(child: Text(l10n.no_result));
                 }
                 final length = _visibleCount;
@@ -912,10 +1008,12 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                                   }
                                   return MangaHomeImageCardListTile(
                                     itemType: source.itemType,
-                                    manga: _mangaList[index],
+                                    manga: _results.items[index],
                                     source: source,
                                     libraryManga:
-                                        _libraryIndex[_mangaList[index].name],
+                                        _libraryIndex[_results
+                                            .items[index]
+                                            .name],
                                   );
                                 },
                               )
@@ -944,11 +1042,12 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                                             index == 0 &&
                                             !_showSearchField,
                                         itemType: source.itemType,
-                                        manga: _mangaList[index],
+                                        manga: _results.items[index],
                                         source: source,
                                         isComfortableGrid: isComfortableGrid,
                                         libraryManga:
-                                            _libraryIndex[_mangaList[index]
+                                            _libraryIndex[_results
+                                                .items[index]
                                                 .name],
                                       );
                                     },
