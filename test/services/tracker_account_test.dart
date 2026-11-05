@@ -605,12 +605,11 @@ void main() {
       expect(uri.path, '/api/v2/oauth/authorize');
       expect(uri.queryParameters['client_id'], '55972');
       expect(
-        uri.queryParameters['redirect_uri'],
-        'nodelane-comics://anilist-auth',
+        uri.queryParameters.keys,
+        unorderedEquals(['client_id', 'response_type', 'state']),
       );
       expect(uri.queryParameters['response_type'], 'token');
       expect(uri.queryParameters['state'], isNotEmpty);
-      expect(uri.queryParameters, isNot(contains('client_secret')));
       authorizations.add(uri);
     }
 

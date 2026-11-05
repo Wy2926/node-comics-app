@@ -32,7 +32,6 @@ class Anilist extends _$Anilist implements BaseTracker {
 
   final Client http;
   static const _clientId = '55972';
-  static const _redirectUri = '$appUrlScheme://anilist-auth';
   static const String _baseApiUrl = "https://graphql.anilist.co/";
   Future<bool>? _loginFuture;
   final _browser = TrackerOAuthBrowser();
@@ -56,9 +55,9 @@ class Anilist extends _$Anilist implements BaseTracker {
       final state = base64UrlEncode(
         List.generate(32, (_) => random.nextInt(256)),
       ).replaceAll('=', '');
+      // AniList's implicit grant uses the callback registered for this client.
       final authorization = Uri.https('anilist.co', '/api/v2/oauth/authorize', {
         'client_id': _clientId,
-        'redirect_uri': _redirectUri,
         'response_type': 'token',
         'state': state,
       });

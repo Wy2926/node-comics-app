@@ -216,8 +216,8 @@ class _CreateExtensionState extends State<CreateExtension> {
           return;
         }
         final id = _sourceCodeLanguage == SourceCodeLanguage.dart
-            ? 'mangayomi-$_lang.$_name'.hashCode
-            : 'mangayomi-js-$_lang.$_name'.hashCode;
+            ? 'nodelane-comics-$_lang.$_name'.hashCode
+            : 'nodelane-comics-js-$_lang.$_name'.hashCode;
         final checkIfExist = sourceRepository.getById(id);
         if (checkIfExist == null) {
           Source source = Source(
@@ -239,7 +239,7 @@ class _CreateExtensionState extends State<CreateExtension> {
             ..isLocal = true
             ..sourceCode = _sourceCodeLanguage == SourceCodeLanguage.dart
                 ? _dartTemplate
-                : _jsSample(source);
+                : _jsTemplate;
           sourceRepository.save(source);
           Navigator.pop(context);
           showNodeLaneNotice(
@@ -548,22 +548,7 @@ TestSource main(MSource source) {
   return TestSource(source:source);
 }''';
 
-String _jsSample(Source source) =>
-    '''
-const mangayomiSources = [{
-    "name": "${source.name}",
-    "lang": "${source.lang}",
-    "baseUrl": "${source.baseUrl}",
-    "apiUrl": "${source.apiUrl}",
-    "iconUrl": "${source.iconUrl}",
-    "typeSource": "${source.typeSource}",
-    "itemType": ${source.itemType.index},
-    "isNsfw": ${source.isNsfw},
-    "version": "${source.version}",
-    "pkgPath": "",
-    "notes": "${source.notes}"
-}];
-
+const _jsTemplate = r'''
 // Every method returns plain data (objects, arrays, strings, numbers and
 // booleans). Async methods may return the value directly or a Promise.
 //

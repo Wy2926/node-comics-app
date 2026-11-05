@@ -485,7 +485,7 @@ NodeLane 漫画目录读取官方本地开发源，默认 `http://127.0.0.1:8787
 | MyAnimeList | 各平台均为 `nodelane-comics://myanimelist-auth` | iOS、Android、Other 三个自有 Client ID 已接入，三个应用都须登记此地址；真实账号登录待设备验收 |
 | 自建同步服务 | 移动端 `nodelane-comics://oauth-callback`；桌面 `http://localhost:48765/callback` | 由所选服务的部署者允许相应回调；真实登录与同步待验收 |
 
-AniList 各平台共用新回调，按官方 [Implicit Grant](https://docs.anilist.co/guide/auth/implicit) 接收 URI 片段中的令牌，不内置 Client Secret；旧应用 ID、密钥、换码请求及本地 HTTP 回调已移除。每次登录生成独立 state，校验完整回调地址、唯一参数与有效期，再读取 Viewer，成功后保存绑定 `55972` 的凭据；旧凭据不复用，需要重新登录。并发登录合并，取消或失败可重试，释放后忽略迟到结果。Windows／Linux 通过外部浏览器及已有应用协议接收回调，临时链接订阅在完成、失败、释放或十分钟超时后取消；手机与 macOS 沿用系统授权会话。复用现有账号存储与登录组件，不增加后端或授权框架；开销为一次 Viewer 查询及桌面登录期间的订阅，性能未专项测量。
+AniList 各平台共用新回调，按官方 [Implicit Grant](https://docs.anilist.co/guide/auth/implicit) 接收 URI 片段中的令牌。授权请求只传 `client_id`、`response_type=token` 与独立 state，回调采用 AniList 应用后台登记的 `nodelane-comics://anilist-auth`，不在请求中覆盖 `redirect_uri`，也不内置 Client Secret；旧应用 ID、密钥、换码请求及本地 HTTP 回调已移除。收到结果后校验完整回调地址、唯一参数与有效期，再读取 Viewer，成功后保存绑定 `55972` 的凭据；旧凭据不复用，需要重新登录。并发登录合并，取消或失败可重试，释放后忽略迟到结果。Windows／Linux 通过外部浏览器及已有应用协议接收回调，临时链接订阅在完成、失败、释放或十分钟超时后取消；手机与 macOS 沿用系统授权会话。复用现有账号存储与登录组件，不增加后端或授权框架；开销为一次 Viewer 查询及桌面登录期间的订阅，性能未专项测量。
 
 MyAnimeList 的 iOS Client ID 为 `79c9fc22f3d141372e12b62e48ffddfd`，Android 为 `8205c12a0bef7f51110aa5ba5bcc8533`，macOS／Windows／Linux 共用 Other 类型的 `d3e6963529b9fe709b42e6dc3eb24856`。按官方 [OAuth 说明](https://myanimelist.net/apiconfig/references/authorization) 使用 PKCE plain，每次生成独立 verifier 与 state；授权和换码均传入上述固定回调，校验地址、state 和唯一授权码，再读取账号后保存。移除上游两个 ID、跨 ID 刷新重试及共享 verifier；旧凭据和不同 Client ID 的凭据均需重新登录，刷新只使用当前平台对应的自有 ID。复用既有令牌续期与账号存储；AniList 和 MyAnimeList 共用 `TrackerOAuthBrowser`，macOS 与手机使用系统授权会话，Windows／Linux 使用外部浏览器及应用协议回调，按各服务回调主机分发。临时监听在成功、失败、释放或十分钟超时后取消，不保留旧桌面 HTTP 回调或借用移动端 ID 的分支。额外开销为本地随机数、校验与登录期间的桌面订阅，无新后台请求；性能未专项测量。
 
@@ -714,7 +714,7 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 
 | 层级／范围 | 已有证据 | 尚未覆盖 |
 | --- | --- | --- |
-| 静态与构建 | 受影响代码的静态检查、iOS arm64 Debug 模拟器构建、Release 无签名真机包及 Android Debug APK 构建通过；全量分析有既有 Isar 生成代码警告和翻译契约提示，Android 构建有既有 Kotlin 插件迁移提示 | CI 正式发行与其他平台 Release 构建；构建结果不代表完整功能通过 |
+| 静态与构建 | 受影响代码的静态检查、iOS arm64 Debug 模拟器构建、Release 无签名真机包及 Android Debug APK 构建通过；本地 iOS Release 构建使用 `--no-tree-shake-icons` 绕过 Flutter 字体裁剪输出阻塞，IPA 增加约 0.8 MB，CI 参数未改；全量分析有既有 Isar 生成代码警告和翻译契约提示，Android 构建有既有 Kotlin 插件迁移提示 | CI 正式发行、iOS 默认字体裁剪及其他平台 Release 构建；构建结果不代表完整功能通过 |
 | 单元、widget 与模拟服务 | 覆盖草稿取消、重复提交、迟到结果、账号／来源隔离、偏好合并、失败恢复、路由返回及订阅释放；临时 Isar 覆盖章节身份、日期更新和阅读状态保留 | 替身请求、文件及平台通道不证明真实网络、系统授权或服务写入 |
 | 书架、详情与阅读器 | iOS 常规入口验证布局、筛选／排序、目录、弹层、已读完后重新阅读、本地包读取、切页与同进程后台恢复；设置验证灰度和自动滚动暂停／恢复 | 全部阅读模式与原译图尺寸切换、在线／下载长章节、真实书签／分类／删除／导出及失败恢复 |
 | 官方来源 | S2READ 的安装／更新、搜索、完整目录、上传日期刷新、实际章节首尾页与下一章，以及后台和重进后的阅读位置已在 iOS 模拟器验证 | Comix 章节仍需站点验证码；真实 CF、下载和来源特有筛选分别验收，详见 [来源契约](SOURCE_PLUGINS.md) |
