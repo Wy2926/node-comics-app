@@ -233,10 +233,13 @@ Future<void> _postLaunchInit(StorageProvider storage) async {
   unawaited(backfillMissingClientIds());
   unawaited(MDownloader.initializeIsolatePool(poolSize: 6));
   unawaited(_deleteLegacyHiveCache());
+  // Temporarily disabled until NodeLane has its own Discord application.
+  /*
   if (isDesktop && !kDebugMode) {
-    discordRpc = DiscordRPC(applicationId: "1395040506677039157");
+    discordRpc = DiscordRPC(applicationId: '');
     await discordRpc?.initialize();
   }
+  */
   await storage.deleteBtDirectory();
   await webviewServer();
   // Deferred until after runApp() creates the window: on Windows,

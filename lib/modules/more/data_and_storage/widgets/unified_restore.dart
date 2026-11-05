@@ -48,13 +48,20 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
     final (hasServer, syncOn) = _syncState(ref);
 
     final backupType = peekBackupType(path);
+    if (backupType == BackupType.unknown) {
+      showNodeLaneNotice(
+        context.l10n.notice_backup_unsupported,
+        kind: NodeLaneNoticeKind.error,
+      );
+      return false;
+    }
     final isMihonFamily =
         backupType == BackupType.mihon ||
         backupType == BackupType.aniyomi ||
         backupType == BackupType.neko;
 
-    if (backupType == BackupType.mangayomi) {
-      return await _performMangayomiRestore(context, ref, path);
+    if (backupType == BackupType.nodeLane) {
+      return await _performNodeLaneRestore(context, ref, path);
     }
 
     if (!isMihonFamily) {
@@ -198,10 +205,10 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
   }
 }
 
-/// Native mangayomi-format restore, with the same merge/replace choice and
+/// Native NodeLane restore, with the same merge/replace choice and
 /// category/source conflict resolution the Mihon-family path already has -
 /// the dialogs below are shared with it, not duplicated.
-Future<bool> _performMangayomiRestore(
+Future<bool> _performNodeLaneRestore(
   BuildContext context,
   WidgetRef ref,
   String path,
@@ -210,7 +217,7 @@ Future<bool> _performMangayomiRestore(
   try {
     final Map<String, dynamic> backup;
     try {
-      backup = await decodeMangayomiBackup(path, context);
+      backup = await decodeNodeLaneBackup(path, context);
     } catch (e, s) {
       recordError(
         e,
@@ -225,7 +232,7 @@ Future<bool> _performMangayomiRestore(
     }
     if (!context.mounted) return false;
     final l10n = context.l10n;
-    final preview = previewMangayomiBackup(backup);
+    final preview = previewNodeLaneBackup(backup);
 
     final keepExisting = await _chooseImportMode(context);
     if (keepExisting == null || !context.mounted) return false;
@@ -308,7 +315,7 @@ Future<bool> _performMangayomiRestore(
           merge: keepExisting,
           categoryDecisions: categoryDecisions,
           sourceDecisions: sourceDecisions,
-          decodedMangayomiBackup: backup,
+          decodedNodeLaneBackup: backup,
           syncAfterRestore: syncAfterRestore,
         ).future,
       );

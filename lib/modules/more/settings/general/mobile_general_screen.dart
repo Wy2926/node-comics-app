@@ -3,7 +3,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/main.dart' show discordRpc;
+// import 'package:mangayomi/main.dart' show discordRpc;
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/providers/algorithm_weights_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
@@ -113,11 +113,13 @@ class MobileGeneralScreen extends ConsumerWidget {
                     icon: NodeLaneIcons.of(context).adjustments,
                     child: const _RecommendationWeights(),
                   ),
+                  /* Discord settings are temporarily hidden.
                   NodeLaneDisclosure(
                     title: 'Discord',
                     icon: NodeLaneIcons.of(context).chat,
                     child: _DiscordSettings(),
                   ),
+                  */
                   NodeLaneSwitchRow(
                     title: l10n.memory_overlay,
                     subtitle: l10n.memory_overlay_subtitle,
@@ -377,6 +379,7 @@ class _RecommendationWeightsState
   }
 }
 
+/* Kept with the hidden Discord settings entry.
 class _DiscordSettings extends ConsumerWidget {
   const _DiscordSettings();
 
@@ -423,3 +426,4 @@ class _DiscordSettings extends ConsumerWidget {
     );
   }
 }
+*/

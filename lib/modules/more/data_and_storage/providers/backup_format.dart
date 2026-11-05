@@ -15,14 +15,15 @@ import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
+import 'package:path/path.dart' as p;
 import 'package:protobuf/protobuf.dart';
 
-enum BackupType { unknown, mangayomi, mihon, aniyomi, kotatsu, neko }
+enum BackupType { unknown, nodeLane, mihon, aniyomi, kotatsu, neko }
 
 BackupType checkBackupType(String path, Archive archive) {
-  if (path.toLowerCase().contains("mangayomi") &&
+  if (p.basename(path).toLowerCase().startsWith('nodelane-comics_') &&
       (archive.files.firstOrNull?.name ?? "").endsWith(".backup.db")) {
-    return BackupType.mangayomi;
+    return BackupType.nodeLane;
   } else if (path.toLowerCase().contains("kotatsu") &&
       archive.files.where((f) {
             switch (f.name) {
@@ -206,20 +207,17 @@ List<Source> installedSourcesFor(ItemType itemType) => sourceRepository
     .toList();
 
 /// Same preview shape as previewTachiBkImport, but for the native
-/// mangayomi backup format - already-decoded (and, for encrypted backups,
+/// NodeLane backup format - already-decoded (and, for encrypted backups,
 /// already-decrypted) JSON rather than a path to re-read from disk.
-TachiBkImportPreview previewMangayomiBackup(Map<String, dynamic> backup) {
+TachiBkImportPreview previewNodeLaneBackup(Map<String, dynamic> backup) {
   final mangaList = (backup["manga"] as List?)
-      ?.map((e) => Manga.fromJson(e)..itemType = convertToItemType(e))
+      ?.map((e) => Manga.fromJson(e))
       .toList();
   final chapterList = (backup["chapters"] as List?)
       ?.map((e) => Chapter.fromJson(e))
       .toList();
   final categoryList = (backup["categories"] as List?)
-      ?.map(
-        (e) =>
-            Category.fromJson(e)..forItemType = convertToItemTypeCategory(e),
-      )
+      ?.map((e) => Category.fromJson(e))
       .toList();
 
   final existingCategoryNames = categoryRepository
@@ -288,24 +286,6 @@ TachiBkImportPreview previewMangayomiBackup(Map<String, dynamic> backup) {
 }
 
 int currentFavoriteMangaCount() => mangaRepository.countFavorites();
-
-ItemType convertToItemType(Map<String, dynamic> backup) {
-  final isManga = backup['isManga'];
-  return isManga == null
-      ? ItemType.values[backup['itemType'] ?? 0]
-      : isManga
-      ? ItemType.manga
-      : ItemType.anime;
-}
-
-ItemType convertToItemTypeCategory(Map<String, dynamic> backup) {
-  final forManga = backup['forManga'];
-  return forManga == null
-      ? ItemType.values[backup['forItemType'] ?? 0]
-      : forManga
-      ? ItemType.manga
-      : ItemType.anime;
-}
 
 int protoInt(Object value) {
   if (value is int) {

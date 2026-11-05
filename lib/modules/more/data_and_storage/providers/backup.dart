@@ -38,7 +38,7 @@ Future<void> doBackUp(
   final compression = ref.read(backupCompressionLevelProvider);
   final compressionLevel = compression.clamp(0, 9).toInt();
   try {
-    final zipPath = await writeMangayomiBackupZip(
+    final zipPath = await writeNodeLaneBackupZip(
       list: list,
       directory: path,
       compressionLevel: compressionLevel,
@@ -74,7 +74,7 @@ Future<void> doBackUp(
   }
 }
 
-Future<String> writeMangayomiBackupZip({
+Future<String> writeNodeLaneBackupZip({
   required List<int> list,
   required String directory,
   int compressionLevel = 6,
@@ -156,7 +156,7 @@ Future<String> writeMangayomiBackupZip({
   }
   final regExp = RegExp(r'[^a-zA-Z0-9 .()\-\s]');
   final name =
-      'mangayomi_${DateTime.now().toString().replaceAll(regExp, '_').replaceAll(' ', '_')}';
+      'nodelane-comics_${DateTime.now().toString().replaceAll(regExp, '_').replaceAll(' ', '_')}';
   final backupFilePath = p.join(directory, "$name.backup.db");
   final file = File(backupFilePath);
 

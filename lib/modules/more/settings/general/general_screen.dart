@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/main.dart';
+// import 'package:mangayomi/main.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/memory_probe_provider.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/providers/algorithm_weights_state_provider.dart';
@@ -59,6 +59,7 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
     final l10n = l10nLocalizations(context);
     final customDns = ref.watch(customDnsStateProvider);
     final userAgent = ref.watch(userAgentStateProvider);
+    /* Discord settings are temporarily hidden.
     final enableDiscordRpc = ref.watch(enableDiscordRpcStateProvider);
     final hideDiscordRpcInIncognito = ref.watch(
       hideDiscordRpcInIncognitoStateProvider,
@@ -68,6 +69,7 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
     );
     final rpcShowTitleState = ref.watch(rpcShowTitleStateProvider);
     final rpcShowCoverImage = ref.watch(rpcShowCoverImageStateProvider);
+    */
     final showNavDoubleTapTooltip = ref.watch(
       showNavDoubleTapTooltipStateProvider,
     );
@@ -529,6 +531,7 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
                   .read(showNavDoubleTapTooltipStateProvider.notifier)
                   .set(value),
             ),
+            /* Discord settings are temporarily hidden.
             SwitchListTile(
               value: enableDiscordRpc,
               title: Text(l10n.enable_discord_rpc),
@@ -573,6 +576,7 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
                 ref.read(rpcShowCoverImageStateProvider.notifier).set(value);
               },
             ),
+            */
           ],
         ),
       ),

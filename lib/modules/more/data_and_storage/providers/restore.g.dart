@@ -8,13 +8,29 @@ part of 'restore.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Restores the backup at [path], replacing or merging into the library.
+///
+/// Throws when the restore fails, and leaves reporting it to the caller: the
+/// restore flows announce the outcome themselves, so an error swallowed here
+/// used to be followed by their success message.
 
 @ProviderFor(doRestore)
 final doRestoreProvider = DoRestoreFamily._();
 
+/// Restores the backup at [path], replacing or merging into the library.
+///
+/// Throws when the restore fails, and leaves reporting it to the caller: the
+/// restore flows announce the outcome themselves, so an error swallowed here
+/// used to be followed by their success message.
+
 final class DoRestoreProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
     with $FutureModifier<void>, $FutureProvider<void> {
+  /// Restores the backup at [path], replacing or merging into the library.
+  ///
+  /// Throws when the restore fails, and leaves reporting it to the caller: the
+  /// restore flows announce the outcome themselves, so an error swallowed here
+  /// used to be followed by their success message.
   DoRestoreProvider._({
     required DoRestoreFamily super.from,
     required ({
@@ -23,7 +39,7 @@ final class DoRestoreProvider
       bool merge,
       Map<String, bool> categoryDecisions,
       Map<String, int> sourceDecisions,
-      Map<String, dynamic>? decodedMangayomiBackup,
+      Map<String, dynamic>? decodedNodeLaneBackup,
       bool? syncAfterRestore,
     })
     super.argument,
@@ -60,7 +76,7 @@ final class DoRestoreProvider
               bool merge,
               Map<String, bool> categoryDecisions,
               Map<String, int> sourceDecisions,
-              Map<String, dynamic>? decodedMangayomiBackup,
+              Map<String, dynamic>? decodedNodeLaneBackup,
               bool? syncAfterRestore,
             });
     return doRestore(
@@ -70,7 +86,7 @@ final class DoRestoreProvider
       merge: argument.merge,
       categoryDecisions: argument.categoryDecisions,
       sourceDecisions: argument.sourceDecisions,
-      decodedMangayomiBackup: argument.decodedMangayomiBackup,
+      decodedNodeLaneBackup: argument.decodedNodeLaneBackup,
       syncAfterRestore: argument.syncAfterRestore,
     );
   }
@@ -86,7 +102,13 @@ final class DoRestoreProvider
   }
 }
 
-String _$doRestoreHash() => r'b76dac06392c5e643eb854e52a2ae0bf2c2f9c90';
+String _$doRestoreHash() => r'80d48376549ac0a79d6817a68b4840795738abbe';
+
+/// Restores the backup at [path], replacing or merging into the library.
+///
+/// Throws when the restore fails, and leaves reporting it to the caller: the
+/// restore flows announce the outcome themselves, so an error swallowed here
+/// used to be followed by their success message.
 
 final class DoRestoreFamily extends $Family
     with
@@ -98,7 +120,7 @@ final class DoRestoreFamily extends $Family
             bool merge,
             Map<String, bool> categoryDecisions,
             Map<String, int> sourceDecisions,
-            Map<String, dynamic>? decodedMangayomiBackup,
+            Map<String, dynamic>? decodedNodeLaneBackup,
             bool? syncAfterRestore,
           })
         > {
@@ -111,13 +133,19 @@ final class DoRestoreFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Restores the backup at [path], replacing or merging into the library.
+  ///
+  /// Throws when the restore fails, and leaves reporting it to the caller: the
+  /// restore flows announce the outcome themselves, so an error swallowed here
+  /// used to be followed by their success message.
+
   DoRestoreProvider call({
     required String path,
     required BuildContext context,
     bool merge = false,
     Map<String, bool> categoryDecisions = const {},
     Map<String, int> sourceDecisions = const {},
-    Map<String, dynamic>? decodedMangayomiBackup,
+    Map<String, dynamic>? decodedNodeLaneBackup,
     bool? syncAfterRestore,
   }) => DoRestoreProvider._(
     argument: (
@@ -126,7 +154,7 @@ final class DoRestoreFamily extends $Family
       merge: merge,
       categoryDecisions: categoryDecisions,
       sourceDecisions: sourceDecisions,
-      decodedMangayomiBackup: decodedMangayomiBackup,
+      decodedNodeLaneBackup: decodedNodeLaneBackup,
       syncAfterRestore: syncAfterRestore,
     ),
     from: this,
@@ -207,7 +235,7 @@ final class RestoreBackupProvider
   }
 }
 
-String _$restoreBackupHash() => r'6af385ae2015151b982b02ae21d672e45eaad355';
+String _$restoreBackupHash() => r'4bb160319401bb611fa5cc3783a7aa485fb08e61';
 
 final class RestoreBackupFamily extends $Family
     with

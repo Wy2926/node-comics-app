@@ -38,10 +38,6 @@ class DiscordRPC {
         label: 'Get ${NodeLaneBrand.displayName}',
         url: NodeLaneBrand.repositoryUrl,
       ),
-      const RPCButton(
-        label: "Upstream community",
-        url: "https://discord.com/invite/EjfBuYahsP",
-      ),
     ],
     details: "Idle",
     state: "-----",

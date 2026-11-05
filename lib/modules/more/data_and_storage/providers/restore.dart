@@ -65,10 +65,10 @@ Future<void> doRestore(
   bool merge = false,
   Map<String, bool> categoryDecisions = const {},
   Map<String, int> sourceDecisions = const {},
-  // Already-decoded/decrypted mangayomi-format backup, if the caller ran
-  // decodeMangayomiBackup itself to preview it first. Skips re-decoding
+  // Already-decoded/decrypted NodeLane backup, if the caller ran
+  // decodeNodeLaneBackup itself to preview it first. Skips re-decoding
   // (and re-prompting for a password) here.
-  Map<String, dynamic>? decodedMangayomiBackup,
+  Map<String, dynamic>? decodedNodeLaneBackup,
   // Caller's answer to "upload this restore to your sync server?", asked
   // only when a server was connected. true = upload, false = the user chose
   // to turn sync off instead (so stale server data can't come back and
@@ -97,7 +97,7 @@ Future<void> doRestore(
     // Zip filenames aren't encrypted even when file content is, so this
     // initial pass (no password) is always enough to list files and
     // determine backup type. Password resolution only happens below, and
-    // only for the mangayomi format, right before reading file *content*.
+    // only for the NodeLane format, right before reading file *content*.
     final probeStream = InputFileStream(path);
     final Archive archive;
     try {
@@ -106,12 +106,14 @@ Future<void> doRestore(
       probeStream.close();
     }
     final backupType = checkBackupType(path, archive);
+    if (backupType == BackupType.unknown) {
+      throw const FormatException('Unsupported backup format');
+    }
     switch (backupType) {
-      case BackupType.mangayomi:
+      case BackupType.nodeLane:
         if (!context.mounted) return;
         final backup =
-            decodedMangayomiBackup ??
-            await decodeMangayomiBackup(path, context);
+            decodedNodeLaneBackup ?? await decodeNodeLaneBackup(path, context);
         await ref.read(
           restoreBackupProvider(
             backup,
@@ -139,35 +141,28 @@ Future<void> doRestore(
         break;
       default:
     }
-    if (backupType != BackupType.unknown) {
-      showNodeLaneNotice(
-        localizedMessage((l) => l.notice_backup_restored),
-        kind: NodeLaneNoticeKind.success,
-      );
-      if (syncAfterRestore == false) {
-        // User declined to push this restore to the server — turn sync off
-        // rather than leave it running, since the next sync would otherwise
-        // pull the server's old data back down and undo the restore.
-        final syncNotifier = ref.read(synchingProvider(syncId: 1).notifier);
-        syncNotifier.setSyncOn(false);
-        syncNotifier.setAutoSyncFrequency(0);
-        if (l10n != null) showNodeLaneNotice(l10n.sync_disabled_after_restore);
-      } else if (syncAfterRestore == true && l10n != null) {
-        // Sync may have been disabled by a previous restore — re-enable it
-        // before pushing, since startSync below is the connection check
-        // (its own error handling reports a bad server/credentials).
-        ref.read(synchingProvider(syncId: 1).notifier).setSyncOn(true);
-        // Not awaited: this pushes to the sync server over the network, and
-        // shouldn't hold up the restore flow (e.g. a caller's busy dialog)
-        // waiting on it. It owns clearing the guard once it settles.
-        uploadStarted = true;
-        unawaited(_uploadToSyncServerIfConnected(ref, l10n));
-      }
-    } else {
-      showNodeLaneNotice(
-        localizedMessage((l) => l.notice_backup_unsupported),
-        kind: NodeLaneNoticeKind.error,
-      );
+    showNodeLaneNotice(
+      localizedMessage((l) => l.notice_backup_restored),
+      kind: NodeLaneNoticeKind.success,
+    );
+    if (syncAfterRestore == false) {
+      // User declined to push this restore to the server — turn sync off
+      // rather than leave it running, since the next sync would otherwise
+      // pull the server's old data back down and undo the restore.
+      final syncNotifier = ref.read(synchingProvider(syncId: 1).notifier);
+      syncNotifier.setSyncOn(false);
+      syncNotifier.setAutoSyncFrequency(0);
+      if (l10n != null) showNodeLaneNotice(l10n.sync_disabled_after_restore);
+    } else if (syncAfterRestore == true && l10n != null) {
+      // Sync may have been disabled by a previous restore — re-enable it
+      // before pushing, since startSync below is the connection check
+      // (its own error handling reports a bad server/credentials).
+      ref.read(synchingProvider(syncId: 1).notifier).setSyncOn(true);
+      // Not awaited: this pushes to the sync server over the network, and
+      // shouldn't hold up the restore flow (e.g. a caller's busy dialog)
+      // waiting on it. It owns clearing the guard once it settles.
+      uploadStarted = true;
+      unawaited(_uploadToSyncServerIfConnected(ref, l10n));
     }
   } finally {
     if (!uploadStarted) {
@@ -229,29 +224,25 @@ Future<void> restoreBackup(
   Map<String, int> sourceDecisions = const {},
 }) async {
   final version = backup['version'];
-  if (["1", "2"].any((e) => e == version)) {
+  if (version == '2') {
     try {
       final manga = (backup["manga"] as List?)
-          ?.map((e) => Manga.fromJson(e)..itemType = convertToItemType(e))
+          ?.map((e) => Manga.fromJson(e))
           .toList();
       final chapters = (backup["chapters"] as List?)
           ?.map((e) => Chapter.fromJson(e))
           .toList();
       final categories = (backup["categories"] as List?)
-          ?.map(
-            (e) =>
-                Category.fromJson(e)
-                  ..forItemType = convertToItemTypeCategory(e),
-          )
+          ?.map((e) => Category.fromJson(e))
           .toList();
       final track = (backup["tracks"] as List?)
-          ?.map((e) => Track.fromJson(e)..itemType = convertToItemType(e))
+          ?.map((e) => Track.fromJson(e))
           .toList();
       final trackPreferences = (backup["trackPreferences"] as List?)
           ?.map((e) => TrackPreference.fromJson(e))
           .toList();
       final history = (backup["history"] as List?)
-          ?.map((e) => History.fromJson(e)..itemType = convertToItemType(e))
+          ?.map((e) => History.fromJson(e))
           .toList();
       final downloads = (backup["downloads"] as List?)
           ?.map((e) => Download.fromJson(e))
@@ -260,7 +251,7 @@ Future<void> restoreBackup(
           ?.map((e) => Settings.fromJson(e))
           .toList();
       final extensions = (backup["extensions"] as List?)
-          ?.map((e) => Source.fromJson(e)..itemType = convertToItemType(e))
+          ?.map((e) => Source.fromJson(e))
           .toList();
       final sourcesPrefs = (backup["extensions_preferences"] as List?)
           ?.map((e) => SourcePreference.fromJson(e))
@@ -275,7 +266,7 @@ Future<void> restoreBackup(
       final currentSettings = settingsRepository.currentOrNull;
       await restoreRepository.run(() {
         if (merge) {
-          _mergeMangayomiBackup(
+          _mergeNodeLaneBackup(
             manga: manga,
             chapters: chapters,
             categories: categories,
@@ -420,7 +411,7 @@ Future<void> restoreBackup(
   }
 }
 
-/// Adds a mangayomi-format backup's library into the existing one instead of
+/// Adds a NodeLane backup's library into the existing one instead of
 /// wiping it first. Mirrors what restoreTachiBkBackup already does for
 /// Mihon-family merges: match manga by link, keep the existing entry's
 /// state on conflict, only carry over chapters/history/updates that don't
@@ -429,7 +420,7 @@ Future<void> restoreBackup(
 /// the tables first, so reusing ids is safe), a merge runs against a
 /// non-empty library where the backup's ids could belong to something else
 /// entirely on this device.
-void _mergeMangayomiBackup({
+void _mergeNodeLaneBackup({
   required List<Manga>? manga,
   required List<Chapter>? chapters,
   required List<Category>? categories,

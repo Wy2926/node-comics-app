@@ -109,6 +109,7 @@ void main() {
       );
       await tester.scrollUntilVisible(weightsSection, 250);
       await tester.pumpAndSettle();
+      expect(find.text('Discord'), findsNothing);
       await tester.tap(weightsSection);
       await tester.pumpAndSettle();
       final slider = find.byType(Slider).first;

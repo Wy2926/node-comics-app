@@ -32,6 +32,7 @@ import 'package:mangayomi/modules/more/data_and_storage/providers/proto/BackupSo
 import 'package:mangayomi/modules/more/data_and_storage/providers/restore.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/router/router.dart';
+import 'package:path/path.dart' as p;
 
 Manga _manga(String name) => Manga(
   source: 'src',
@@ -138,33 +139,69 @@ void main() {
     if (directory.existsSync()) directory.deleteSync(recursive: true);
   });
 
-  testWidgets('replace with a mangayomi backup swaps the library', (
-    tester,
-  ) async {
-    final (ctx, ref) = await _pumpShell(tester);
+  for (final merge in [false, true]) {
+    testWidgets('NodeLane backup round trip with merge=$merge is repeatable', (
+      tester,
+    ) async {
+      final (ctx, ref) = await _pumpShell(tester);
 
-    await tester.runAsync(() async {
-      await isar.writeTxn(() async {
-        await isar.mangas.clear();
-        await isar.mangas.put(_manga('New'));
+      await tester.runAsync(() async {
+        await isar.writeTxn(() async {
+          await isar.mangas.clear();
+          await isar.mangas.putAll([
+            _manga('New'),
+            _manga('Anime')..itemType = ItemType.anime,
+            _manga('Novel')..itemType = ItemType.novel,
+          ]);
+          await isar.categorys.putAll([
+            for (final type in ItemType.values)
+              Category(name: type.name, forItemType: type),
+          ]);
+        });
+        final path = await writeNodeLaneBackupZip(
+          list: const [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          directory: directory.path,
+          encrypt: false,
+        );
+        expect(p.basename(path), startsWith('nodelane-comics_'));
+        final archive = ZipDecoder().decodeBytes(File(path).readAsBytesSync());
+        expect(archive.files.single.name, '${p.basename(path)}.db');
+        await isar.writeTxn(() async {
+          await isar.mangas.clear();
+          await isar.mangas.put(_manga('Old'));
+          await isar.categorys.clear();
+        });
+
+        final provider = doRestoreProvider(
+          path: path,
+          context: ctx,
+          merge: merge,
+        );
+        await ref.read(provider.future);
+        ref.invalidate(provider);
+        await ref.read(provider.future);
       });
-      final path = await writeMangayomiBackupZip(
-        list: const [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        directory: directory.path,
-        encrypt: false,
+
+      expect(
+        [
+          for (final manga in mangaRepository.getAll())
+            (manga.name, manga.itemType),
+        ],
+        unorderedEquals([
+          if (merge) ('Old', ItemType.manga),
+          ('New', ItemType.manga),
+          ('Anime', ItemType.anime),
+          ('Novel', ItemType.novel),
+        ]),
       );
-      await isar.writeTxn(() async {
-        await isar.mangas.clear();
-        await isar.mangas.put(_manga('Old'));
-      });
-
-      await ref.read(
-        doRestoreProvider(path: path, context: ctx, merge: false).future,
+      expect(
+        isar.categorys.where().findAllSync().map(
+          (category) => category.forItemType,
+        ),
+        unorderedEquals(ItemType.values),
       );
     });
-
-    expect(_library(), ['New']);
-  });
+  }
 
   testWidgets('replace with a Mihon backup swaps the library', (tester) async {
     final (ctx, ref) = await _pumpShell(tester);
@@ -185,9 +222,8 @@ void main() {
         ],
       );
       final path = '${directory.path}/mihon_test.tachibk';
-      File(
-        path,
-      ).writeAsBytesSync(GZipEncoder().encodeBytes(backup.writeToBuffer()));
+      File(path)
+          .writeAsBytesSync(GZipEncoder().encodeBytes(backup.writeToBuffer()));
 
       await ref.read(
         doRestoreProvider(path: path, context: ctx, merge: false).future,
@@ -197,35 +233,40 @@ void main() {
     expect(_library(), ['New']);
   });
 
-  testWidgets('a restore that fails says so, and keeps the library', (
-    tester,
-  ) async {
-    // The restore flows announce success once doRestore returns. A failure
-    // it swallowed used to be followed by "Replaced your library with N
-    // series" while nothing had changed.
-    final (ctx, ref) = await _pumpShell(tester);
+  for (final (name, version) in [
+    ('mangayomi_old', '2'),
+    ('nodelane-comics_old', '1'),
+  ]) {
+    testWidgets('unsupported backup $name fails and keeps the library', (
+      tester,
+    ) async {
+      final (ctx, ref) = await _pumpShell(tester);
 
-    final error = await tester.runAsync(() async {
-      final path = '${directory.path}/mangayomi_broken.backup';
-      final archive = Archive()
-        ..addFile(
-          ArchiveFile.string(
-            'mangayomi_broken.backup.db',
-            '{"version": "99", "manga": []}',
-          ),
-        );
-      File(path).writeAsBytesSync(ZipEncoder().encode(archive));
-      try {
-        await ref.read(
-          doRestoreProvider(path: path, context: ctx, merge: false).future,
-        );
-        return null;
-      } catch (e) {
-        return e;
-      }
+      final error = await tester.runAsync(() async {
+        // The parent directory must not make an upstream backup recognizable.
+        final folder = Directory('${directory.path}/nodelane-comics_backups')
+          ..createSync();
+        final path = '${folder.path}/$name.backup';
+        final archive = Archive()
+          ..addFile(
+            ArchiveFile.string(
+              '$name.backup.db',
+              '{"version": "$version", "manga": []}',
+            ),
+          );
+        File(path).writeAsBytesSync(ZipEncoder().encode(archive));
+        try {
+          await ref.read(
+            doRestoreProvider(path: path, context: ctx, merge: false).future,
+          );
+          return null;
+        } catch (e) {
+          return e;
+        }
+      });
+
+      expect(error, isNotNull);
+      expect(_library(), ['Old']);
     });
-
-    expect(error, isNotNull);
-    expect(_library(), ['Old']);
-  });
+  }
 }
