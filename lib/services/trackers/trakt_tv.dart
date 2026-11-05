@@ -1,8 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:mangayomi/utils/url_protocol/protocol.dart' show appUrlScheme;
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
@@ -26,18 +23,7 @@ class TraktTv extends _$TraktTv
   final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
   static const _baseOAuthUrl = 'https://api.trakt.tv/oauth';
   static const _baseApiUrl = 'https://api.trakt.tv';
-  static final _isDesktop = (Platform.isWindows || Platform.isLinux);
-  static final _redirectUri = _isDesktop
-      ? 'http://localhost:43824'
-      : '$appUrlScheme://';
-  static const _clientId =
-      '5520c7e24da0d8d73ec80315b61b9849483583b013cb7f296c6db723eb9886a1';
-  static const _clientSecret =
-      'b512565ad92d4179290de257b6e435d03ee47b2e4371b3bd918081beb6121734';
-
-  String getFallbackClientId(String usedId) {
-    return _clientId;
-  }
+  static const _clientId = '';
 
   @override
   void build({
@@ -45,31 +31,6 @@ class TraktTv extends _$TraktTv
     required ItemType? itemType,
     required dynamic widgetRef,
   }) {}
-
-  Future<bool?> login() async {
-    final callbackUrlScheme = _isDesktop
-        ? 'http://localhost:43824'
-        : appUrlScheme;
-    final loginUrl = _authUrl();
-
-    try {
-      final uri = await FlutterWebAuth2.authenticate(
-        url: "$loginUrl&redirect_uri=$_redirectUri",
-        callbackUrlScheme: callbackUrlScheme,
-      );
-      final code = Uri.parse(uri).queryParameters['code'];
-      if (code == null) return null;
-
-      final oAuthData = await _getOAuth(code);
-      final oAuth = buildExpiringOAuth(oAuthData, _clientId);
-      final username = await _getUserName(oAuth.accessToken!);
-      _saveOAuth(username, oAuth);
-
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
 
   @override
   Future<List<TrackSearch>> fetchGeneralData({
@@ -497,28 +458,17 @@ class TraktTv extends _$TraktTv
 
   @override
   Future<OAuth?> refreshOAuth(OAuth oldOAuth) async {
-    String primaryClientId = oldOAuth.clientId ?? _clientId;
-
-    Future<OAuth?> tryRefresh(String cid) async {
-      final params = {
+    final response = await http.post(
+      Uri.parse('$_baseOAuthUrl/token'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
         'refresh_token': oldOAuth.refreshToken,
-        'client_id': cid,
-        'client_secret': _clientSecret,
-        'redirect_uri': _redirectUri,
+        'client_id': _clientId,
         'grant_type': 'refresh_token',
-      };
-      final response = await http.post(
-        Uri.parse('$_baseOAuthUrl/token'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(params),
-      );
-      if (response.statusCode != 200) return null;
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      return buildExpiringOAuth(body, cid);
-    }
-
-    return await tryRefresh(primaryClientId) ??
-        await tryRefresh(getFallbackClientId(primaryClientId));
+      }),
+    );
+    if (response.statusCode != 200) return null;
+    return buildExpiringOAuth(jsonDecode(response.body), _clientId);
   }
 
   void _saveOAuth(String username, OAuth oAuth) {
@@ -540,26 +490,6 @@ class TraktTv extends _$TraktTv
       accessToken,
     );
     return "${jsonDecode(response.body)['user']['username']}";
-  }
-
-  String _authUrl() {
-    return '$_baseOAuthUrl/authorize?client_id=$_clientId&response_type=code';
-  }
-
-  Future<dynamic> _getOAuth(String code) async {
-    final params = {
-      'code': code,
-      'client_id': _clientId,
-      'client_secret': _clientSecret,
-      'redirect_uri': _redirectUri,
-      'grant_type': 'authorization_code',
-    };
-    final response = await http.post(
-      Uri.parse('$_baseOAuthUrl/token'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(params),
-    );
-    return jsonDecode(response.body);
   }
 
   Future<Response> _makeGetRequest(Uri url, String accessToken) async {

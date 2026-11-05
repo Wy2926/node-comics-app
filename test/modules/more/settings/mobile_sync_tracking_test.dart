@@ -477,9 +477,11 @@ void main() {
       loginResult.completeError(StateError('unavailable'));
       await tester.pumpAndSettle();
       await reveal(tester, find.text('Failed!'), delta: -250);
-      for (final id in [2, 3, 1, 4, 5]) {
+      for (final id in [2, 3, 1, 4]) {
         await reveal(tester, find.byKey(ValueKey('tracker-account-$id')));
       }
+      expect(find.byKey(const ValueKey('tracker-account-5')), findsNothing);
+      expect(find.text('Trakt'), findsNothing);
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Manage trackers'));
       expect(manages, 1);
       final opened = <TrackPreference>[];

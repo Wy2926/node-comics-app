@@ -474,7 +474,7 @@ NodeLane 漫画目录读取官方本地开发源，默认 `http://127.0.0.1:8787
 | NodeLane 账号 | `nodelane-comics://nodelane-auth` | 自有 Logto Native 应用已登记，匿名授权检查接受新地址；真实登录待设备验收，详见[翻译架构](TRANSLATION_ARCHITECTURE.md#当前实现与使用) |
 | AniList | `nodelane-comics://anilist-auth` | 自有应用 Client ID `55972`；无密钥授权已接入，真实账号登录待设备验收 |
 | Simkl | 各平台均为 `nodelane-comics://simkl-auth` | 自有 AUTH V2 公共客户端已接入，手机与桌面共用一个 Client ID，无 Client Secret；真实账号登录待设备验收 |
-| Trakt | 移动端 `nodelane-comics://` | 当前实现待改为官方 [PKCE 与 HTTPS 回调](https://developer.trakt.tv/docs/pkce)；需自有 Client ID、HTTPS 回调域名、iOS Universal Links 关联与开发团队 ID；发现入口的上游 API key 同步替换 |
+| Trakt | 登录入口已隐藏 | 登录与发现接口的上游凭据已移除，Client ID 留空；后续接入自有 Client ID 与 [PKCE／HTTPS 回调](https://developer.trakt.tv/docs/pkce) 后再恢复登录 |
 | MyAnimeList | 各平台均为 `nodelane-comics://myanimelist-auth` | iOS、Android、Other 三个自有 Client ID 已接入，三个应用都须登记此地址；真实账号登录待设备验收 |
 | 同步服务 | 移动端 `nodelane-comics://oauth-callback` | 更新自有服务重定向允许列表 |
 
@@ -486,7 +486,9 @@ Simkl 使用自有 Client ID `c2c74e7a95db1444f40967d2a7757cf3a7aeac83ae581f40de
 
 Simkl 到期按需续期，同一客户端进程内各页面共用一次在途续期；401 先重读最新令牌，必要时续期并最多重发一次，网络错误或未知写入结果不自动重发。临时服务故障保留会话，明确失效的授权要求重新登录；退出、切换账号与释放后的迟到结果不回写。搜索、发现、书单和进度同步沿用现有路径。增加的开销为 PKCE 本地计算、到期时的续期请求与仅在续期期间存在的 Future；未做性能实测。仅替换 Client ID 无法满足 V2 的权限及令牌生命周期要求。
 
-Trakt 的 Windows／Linux 回调当前仍为 `http://localhost:43824`，macOS 与手机共用自定义协议；这些是现有代码值，新应用应按各自的新回调要求登记。桌面同步使用 `http://localhost:48765/callback`。Trakt 的自有身份与同步服务回调登记待处理，客户端不回退旧协议。本地测试覆盖导入分发、重复／失败释放、NodeLane 模拟 PKCE，以及 AniList／MyAnimeList／Simkl 的回调校验、身份隔离、重试与迟到结果丢弃；桌面监听释放、超时、MyAnimeList 五个平台的身份选择、三种 Client ID 的恢复续期及拒绝后的单次请求均经模拟测试。匿名请求可进入 AniList 登录页，尚未完成真实账号授权。Windows 注册仅作静态核对，桌面回调仅模拟测试，不代表原生唤起通过；iOS 实机登录待验收。Android 仅检查声明与纯 Dart 逻辑，构建、模拟器与真机测试暂缓。
+Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码及回调代码已移除，续期不再携带上游密钥或重复尝试同一 Client ID。书单、推荐、观看顺序的业务实现和本地记录保留；当前缺少自有凭据，相关网络功能尚不可用。没有新增旧会话兼容、迁移或请求拦截逻辑。桌面同步仍使用 `http://localhost:48765/callback`，自有同步服务的回调登记待处理。
+
+本地测试覆盖导入分发、重复／失败释放、NodeLane 模拟 PKCE，以及 AniList／MyAnimeList／Simkl 的回调校验、身份隔离、重试与迟到结果丢弃；桌面监听释放、超时、MyAnimeList 五个平台的身份选择、三种 Client ID 的恢复续期及拒绝后的单次请求均经模拟测试。匿名请求可进入 AniList 登录页，尚未完成真实账号授权。Windows 注册仅作静态核对，桌面回调仅模拟测试，不代表原生唤起通过；iOS 实机登录待验收。Android 仅检查声明与纯 Dart 逻辑，构建、模拟器与真机测试暂缓。
 
 ## 翻译与账号设置
 

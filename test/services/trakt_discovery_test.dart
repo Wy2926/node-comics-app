@@ -67,7 +67,7 @@ void main() {
         expect(requested.path, '/search/tmdb/1396');
         expect(requested.queryParameters['type'], 'show');
         expect(requestHeaders['trakt-api-version'], '2');
-        expect(requestHeaders['trakt-api-key'], isNotEmpty);
+        expect(requestHeaders['trakt-api-key'], isEmpty);
         expect(requestHeaders['User-Agent'], 'nodelane-comics');
       },
     );

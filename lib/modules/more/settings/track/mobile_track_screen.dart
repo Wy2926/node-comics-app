@@ -18,7 +18,6 @@ import 'package:mangayomi/services/trackers/anilist.dart';
 import 'package:mangayomi/services/trackers/kitsu.dart';
 import 'package:mangayomi/services/trackers/myanimelist.dart';
 import 'package:mangayomi/services/trackers/simkl.dart';
-import 'package:mangayomi/services/trackers/trakt_tv.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/constant.dart';
 
@@ -87,16 +86,6 @@ class _MobileTrackScreenState extends ConsumerState<MobileTrackScreen> {
             simklProvider(syncId: id, itemType: null, widgetRef: ref).notifier,
           )
           .login();
-    } else if (id == TrackerProviders.trakt.syncId) {
-      await ref
-          .read(
-            traktTvProvider(
-              syncId: id,
-              itemType: null,
-              widgetRef: ref,
-            ).notifier,
-          )
-          .login();
     }
   }
 
@@ -153,7 +142,6 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
     TrackerProviders.kitsu.syncId,
     TrackerProviders.myAnimeList.syncId,
     TrackerProviders.simkl.syncId,
-    TrackerProviders.trakt.syncId,
   ];
   bool _busy = false, _failed = false;
   Future<void> _account(int id) async {
