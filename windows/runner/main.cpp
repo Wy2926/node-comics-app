@@ -6,9 +6,13 @@
 #include "utils.h"
 #include "app_links/app_links_plugin_c_api.h"
 
-bool SendAppLinkToInstance(const std::wstring& title) {
+namespace {
+constexpr wchar_t kAppWindowTitle[] = L"nodelane-comics";
+}
+
+bool SendAppLinkToInstance() {
   // Find our exact window
-  HWND hwnd = ::FindWindow(L"FLUTTER_RUNNER_WIN32_WINDOW", title.c_str());
+  HWND hwnd = ::FindWindow(L"FLUTTER_RUNNER_WIN32_WINDOW", kAppWindowTitle);
 
   if (hwnd) {
     // Dispatch new link to current window
@@ -43,9 +47,7 @@ bool SendAppLinkToInstance(const std::wstring& title) {
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
-  // Replace "example" with the generated title found as parameter of `window.Create` in this file.
-  // You may ignore the result if you need to create another window.
-  if (SendAppLinkToInstance(L"Mangayomi")) {
+  if (SendAppLinkToInstance()) {
     return EXIT_SUCCESS;
   }
 
@@ -69,7 +71,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.Create(L"Mangayomi", origin, size)) {
+  if (!window.Create(kAppWindowTitle, origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

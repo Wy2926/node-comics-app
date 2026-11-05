@@ -308,9 +308,6 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
-      - name: Enable inno_bundle
-        run: dart pub global activate inno_bundle
-
       - name: build windows exe
         run: |
           dart run inno_bundle:build --release

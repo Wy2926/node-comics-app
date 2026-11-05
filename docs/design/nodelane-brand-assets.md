@@ -18,11 +18,14 @@
 
 macOS 从同一输入导出 16／32／64／128／256／512／1024 像素图标，保留透明背景，供 `macos/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json` 的 10 个尺寸／倍率项引用；无未引用图片。使用同一 `flutter_launcher_icons` 工具，仅启用现有配置中的 macOS 项，不重新生成其他平台资源。
 
-| 1024 像素输出 | SHA-256 |
+Windows 使用同一工具与输入导出 `windows/runner/resources/app_icon.ico`，内含 256 × 256、32 位透明图标，应用资源与 `inno_bundle.installer_icon` 共用该文件；按平台单独生成，不更新其他平台资源。
+
+| 平台输出 | SHA-256 |
 | --- | --- |
 | `Icon-App-1024x1024@1x.png` | `5b66c71d892ece51fd3962ca1847b9b02136c343f394c345a7ddc685acf00ecc` |
 | `Icon-App-Dark-1024x1024@1x.png` | `575ae4e8fa6c8324933137b54532bd036d71baabf6a5bf2482ccc384ddcb4f14` |
 | `Icon-App-Tinted-1024x1024@1x.png` | `3c0b8071327a076e29a9031e597cfdec14ec43bb43cdb19546c7685915d985b1` |
 | macOS `app_icon_1024.png` | `575ae4e8fa6c8324933137b54532bd036d71baabf6a5bf2482ccc384ddcb4f14` |
+| Windows `app_icon.ico`（256 像素） | `f04976df67739514c76663bcc190be1e22de6cee7dd1da12648d6e3139370c0b` |
 
-Android／Windows 的生成输入与本地 Linux 打包图标入口已指向 NodeLane 素材，原生图标输出仍待对应平台处理；各平台发行验收独立进行。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。
+Android 的生成输入与本地 Linux 打包图标入口已指向 NodeLane 素材，原生图标输出仍待对应平台处理；各平台发行验收独立进行。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。

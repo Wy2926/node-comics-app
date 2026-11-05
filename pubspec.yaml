@@ -186,13 +186,16 @@ flutter_launcher_icons:
   windows:
     generate: true
     image_path: "assets/brand/nodelane-comics-icon.png"
+    icon_size: 256
   macos:
     generate: true
     image_path: "assets/brand/nodelane-comics-icon.png"
 inno_bundle:
-  id: 6CB26FFA-E72B-42C3-91E8-594940031CA2
-  publisher: kodjodevf
-  name: Mangayomi
+  # Keep this installation identity stable across NodeLane releases.
+  id: D80A683F-91A2-4296-BC85-2A903B6E247C
+  publisher: NodeLane
+  name: nodelane-comics
+  installer_icon: windows/runner/resources/app_icon.ico
   url: https://github.com/Wy2926/node-comics-app
   support_url: https://github.com/Wy2926/node-comics-app/issues
   updates_url: https://github.com/Wy2926/node-comics-app/releases
