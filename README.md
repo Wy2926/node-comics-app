@@ -44,7 +44,7 @@ flutter build apk --debug
 flutter build ios --debug --no-codesign
 ```
 
-这些是各平台运行入口，不代表已完成本机编译或真机验证；当前按开发约定只推进 iOS 平台验证，Android 命令暂不执行。iOS／Android 显示名已本地化，应用 GitHub、反馈及更新查询统一指向项目仓库。iOS 使用独立包标识 `com.nodelane-comics.app`，系统图标和应用内标识使用 NodeLane 素材，安装与迁移边界见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。其他平台包标识与原生图标、签名和平台发行元数据仍待调整；发行构建与部署尚未验收。
+这些是各平台运行入口，不代表已完成本机编译或真机验证；当前按开发约定以 iOS 验证为主，Android 命令暂不执行。iOS／Android 显示名已本地化，应用 GitHub、反馈及更新查询统一指向项目仓库。iOS／macOS 使用独立包标识 `com.nodelane-comics.app`，系统图标和应用内标识使用 NodeLane 素材；macOS 产物为 `nodelane-comics.app`。安装与迁移边界见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。其余平台包标识、原生图标与发行元数据仍待调整；签名、发行构建与部署尚未验收。
 
 ## 既有 NodeLane 能力
 

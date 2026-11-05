@@ -279,7 +279,7 @@ jobs:
           cd ..
           flutter build macos --release --verbose
           brew install create-dmg
-          create-dmg --volname nodelane-comics-${{ github.ref_name }}-macos --window-pos 200 120 --window-size 800 450 --icon-size 100 --app-drop-link 600 185 nodelane-comics-${{ github.ref_name }}-macos.dmg build/macos/Build/Products/Release/Mangayomi.app
+          create-dmg --volname nodelane-comics-${{ github.ref_name }}-macos --window-pos 200 120 --window-size 800 450 --icon-size 100 --app-drop-link 600 185 nodelane-comics-${{ github.ref_name }}-macos.dmg build/macos/Build/Products/Release/nodelane-comics.app
 
       - name: upload artifact macos dmg
         uses: actions/upload-artifact@v4

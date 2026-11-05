@@ -227,7 +227,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nodelane-comics-macos-debug
-          path: build/macos/Build/Products/Debug/Mangayomi.app
+          path: build/macos/Build/Products/Debug/nodelane-comics.app
 
   build-windows:
     name: Build (Windows debug)

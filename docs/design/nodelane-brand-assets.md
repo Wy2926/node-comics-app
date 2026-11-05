@@ -16,10 +16,13 @@
 
 生成配置位于 `pubspec.yaml` 的 `flutter_launcher_icons`，锁定工具版本见 `pubspec.lock`（当前为 0.14.4）。iOS 的标准图标合成白色背景并移除 alpha，深色图标保留透明背景，着色图标由工具转换为灰度；其余形状与比例保留。输出由 `ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json` 声明，目录内不保留未引用的 PNG。现有透明启动占位图保持不变。
 
-| iOS 1024 像素输出 | SHA-256 |
+macOS 从同一输入导出 16／32／64／128／256／512／1024 像素图标，保留透明背景，供 `macos/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json` 的 10 个尺寸／倍率项引用；无未引用图片。使用同一 `flutter_launcher_icons` 工具，仅启用现有配置中的 macOS 项，不重新生成其他平台资源。
+
+| 1024 像素输出 | SHA-256 |
 | --- | --- |
 | `Icon-App-1024x1024@1x.png` | `5b66c71d892ece51fd3962ca1847b9b02136c343f394c345a7ddc685acf00ecc` |
 | `Icon-App-Dark-1024x1024@1x.png` | `575ae4e8fa6c8324933137b54532bd036d71baabf6a5bf2482ccc384ddcb4f14` |
 | `Icon-App-Tinted-1024x1024@1x.png` | `3c0b8071327a076e29a9031e597cfdec14ec43bb43cdb19546c7685915d985b1` |
+| macOS `app_icon_1024.png` | `575ae4e8fa6c8324933137b54532bd036d71baabf6a5bf2482ccc384ddcb4f14` |
 
-其他平台的生成输入与本地 Linux 打包图标入口已指向 NodeLane 素材，原生图标输出和发行验收仍待对应平台处理。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。
+Android／Windows 的生成输入与本地 Linux 打包图标入口已指向 NodeLane 素材，原生图标输出仍待对应平台处理；各平台发行验收独立进行。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。
