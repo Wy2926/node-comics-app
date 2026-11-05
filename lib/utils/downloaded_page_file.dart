@@ -17,13 +17,8 @@ const List<String> knownPageImageExtensions = [
   '.avif',
 ];
 
-/// Superset of [knownPageImageExtensions] for recognizing image files
-/// mangayomi didn't create itself - user-added local comics, archive
-/// contents, anything from outside the downloader. Includes the '.jpeg'
-/// spelling some external tools use, which detectImageExtension never
-/// produces, so [knownPageImageExtensions] deliberately excludes it - a
-/// lookup for one of mangayomi's own downloaded pages should never need to
-/// check for a spelling it never writes.
+/// Formats accepted from local comics and archives, including the '.jpeg'
+/// spelling that [detectImageExtension] never produces for downloaded pages.
 const List<String> recognizedImageExtensions = [
   ...knownPageImageExtensions,
   '.jpeg',

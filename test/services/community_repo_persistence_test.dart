@@ -27,7 +27,7 @@ void main() {
 
   setUp(() async {
     databaseDirectory = await Directory.systemTemp.createTemp(
-      'mangayomi-community-repo-',
+      'nodelane-comics-community-repo-',
     );
     app.isar = await Isar.open(
       [SettingsSchema, SourceSchema],
@@ -46,22 +46,47 @@ void main() {
     }
   });
 
-  test('awaiting set guarantees that the repository is persisted', () async {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    final notifier = container.read(
-      extensionsRepoStateProvider(ItemType.manga).notifier,
-    );
+  test(
+    'set persists deduplicated repositories and reloads their original order',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = extensionsRepoStateProvider(ItemType.manga);
+      final notifier = container.read(provider.notifier);
 
-    await notifier.set([
-      Repo(name: 'Community', jsonUrl: 'https://example.com/manga.json'),
-    ]);
+      await notifier.set([
+        Repo(name: 'First', jsonUrl: 'https://example.test/manga.json'),
+        Repo(name: 'Duplicate', jsonUrl: ' HTTPS://EXAMPLE.TEST/MANGA.JSON '),
+        Repo(name: 'Second', jsonUrl: 'https://example.test/other.json'),
+      ]);
 
-    expect(
-      app.isar.settings.getSync(227)!.mangaExtensionsRepo!.single.jsonUrl,
-      'https://example.com/manga.json',
-    );
-  });
+      final expected = [
+        ('First', 'https://example.test/manga.json'),
+        ('Second', 'https://example.test/other.json'),
+      ];
+      expect(
+        app.isar.settings
+            .getSync(227)!
+            .mangaExtensionsRepo!
+            .map((repo) => (repo.name, repo.jsonUrl)),
+        expected,
+      );
+      expect(
+        notifier.containsRepo(' HTTPS://EXAMPLE.TEST/MANGA.JSON/ '),
+        isTrue,
+      );
+      expect(
+        notifier.containsRepo('https://example.test/not-added.json'),
+        isFalse,
+      );
+
+      container.invalidate(provider);
+      expect(
+        container.read(provider).map((repo) => (repo.name, repo.jsonUrl)),
+        expected,
+      );
+    },
+  );
 
   test('concurrent content-type writes are serialized without loss', () async {
     final container = ProviderContainer();

@@ -257,12 +257,8 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     });
   }
 
-  /// Runs the existing restore flow, then leaves.
-  ///
-  /// A backup carries repositories, library and settings, which answers every
-  /// question this screen asks. Anyone who has one should not have to walk the
-  /// steps first and find Settings afterwards. Mangayomi's own backups and
-  /// Mihon, Aniyomi and Neko ones all go through the same picker.
+  /// Restores a NodeLane backup or imports a supported third-party backup
+  /// through the shared picker, then checks whether source setup is needed.
   Future<void> _restore() async {
     if (_busy) return;
     setState(() {
@@ -272,18 +268,9 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     try {
       final restored = await performRestore(context, ref);
       if (!mounted) return;
-      // Nothing was restored, so nothing has been answered. Backing out of the
-      // file picker used to drop the user into an empty library, which is the
-      // opposite of what cancelling should do.
       if (!restored) return;
-      // Whether the backup brought sources with it depends on what it was. A
-      // Mangayomi backup carries the repositories, but only when its settings
-      // were included in it, and a Mihon, Aniyomi or Neko backup references its
-      // own ecosystem's extensions and never carries Mangayomi repositories.
-      //
-      // So ask rather than assume. Repositories present means the rest of this
-      // screen has been answered already; none means the one question still
-      // worth asking is where sources come from.
+      // A NodeLane backup includes repositories only when settings were saved.
+      // Third-party imports can restore a library without configuring sources.
       if (_hasAnyRepo) {
         ref.read(onboardingCompletedStateProvider.notifier).complete();
       } else {
