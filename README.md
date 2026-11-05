@@ -44,7 +44,7 @@ flutter build apk --debug
 flutter build ios --debug --no-codesign
 ```
 
-这些是各平台运行入口，实际验证范围按任务授权执行，不代表完整功能或真机验收。应用 GitHub、反馈及更新查询统一指向项目仓库；各平台身份、图标、Android 安装验证及发行待办见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。正式签名、发行构建与部署尚未验收。
+这些是各平台运行入口，实际验证范围按任务授权执行，不代表完整功能验收。应用 GitHub、反馈及更新查询统一指向项目仓库；各平台身份、图标、安装验证及发行待办见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。iOS Release IPA 已通过个人签名真机安装及启动，正式发行、覆盖更新与部署尚未验收。
 
 ## 既有 NodeLane 能力
 
