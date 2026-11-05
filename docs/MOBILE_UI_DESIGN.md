@@ -449,16 +449,18 @@ NodeLane 漫画目录读取官方本地开发源，默认 `http://127.0.0.1:8787
 已按内置 image_gen 生成的[关于、搜索空态与更新设计](design/ios-about-update-v2.png)实现，[完整提示词](design/ios-about-update-v2.prompts.txt)随图保留。图中版本与说明为示例，实际页面读取运行版本及发布查询结果。
 
 - 关于页使用居中 80 点品牌区，名称 26 点、版本 14 点，以下为应用更新、项目与帮助分组；诊断、错误报告与日志收进共用 `NodeLaneDisclosure`。页面边距 20、分组内边距 16、组间距 24，背景、图标、分隔线与按钮均沿用已有令牌。包信息失败可重试，从报告页返回后刷新数量。桌面与电视保留原布局。
-- 中文应用名为「NodeLane漫译」，其他语言为「NodeLane Comics」；Flutter 文案和 iOS 本地化显示名同步，Android 仅更新显示名资源。iOS 主应用包标识为 `com.nodelane-comics.app`，测试目标为 `com.nodelane-comics.app.RunnerTests`，Debug／Profile／Release 使用一致的安装身份。Android／Linux 包标识待调整，发布签名另行验收；协议见[应用链接](#应用链接)。`NodeLaneBrandMark` 共用绘制实现，应用标识与账号默认标识分别使用独立素材路径，便于后续分别替换；[素材来源及许可](design/nodelane-brand-assets.md)单独记录。
+- 中文应用名为「NodeLane漫译」，其他语言为「NodeLane Comics」；Flutter 文案和 iOS 本地化显示名同步，Android 仅更新显示名资源。iOS 主应用包标识为 `com.nodelane.comics`，测试目标为 `com.nodelane.comics.RunnerTests`，Debug／Profile／Release 使用一致的安装身份。Android 包标识待调整，发布签名另行验收；协议见[应用链接](#应用链接)。`NodeLaneBrandMark` 共用绘制实现，应用标识与账号默认标识分别使用独立素材路径，便于后续分别替换；[素材来源及许可](design/nodelane-brand-assets.md)单独记录。
 - iOS 的新包标识与旧 `com.kodjodevf.mangayomi` 属于不同应用身份，不能作为旧包的覆盖更新或直接读取其私有数据；不提供上游备份兼容或数据迁移。NodeLane 后续 IPA 更新应保持新包标识与兼容的签名身份。Apple App ID 注册、匹配的团队／描述文件及签名安装尚未验收。
-- iOS 系统图标的标准／深色／着色资源使用 NodeLane 图形；应用内通知、备份／恢复结果、更多页与侧栏统一复用 `NodeLaneBrandMark`，保留各入口尺寸，移除旧图标数组、随机红／黑选择和专用主题参数。平台生成源不作为 Flutter 运行时图片加载；资源来源、生成配置与摘要见[品牌素材说明](design/nodelane-brand-assets.md#平台图标)。Android／Linux 原生图标输出尚待处理。
-- macOS 使用 `com.nodelane-comics.app`、`nodelane-comics.app` 及 NodeLane 图标，权限说明显示 NodeLane Comics，上游版权署名保留。Debug／Profile／Release 共用产品身份和 Flutter 版本，Xcode scheme、CI 上传及 DMG 输入路径与产物一致；工程仅保留应用与 Flutter Assemble 目标。Xcode 配置解析与图标资源编译通过，不代表完整构建、签名、公证、安装或桌面登录回调已经验收。
+- iOS 系统图标的标准／深色／着色资源使用 NodeLane 图形；应用内通知、备份／恢复结果、更多页与侧栏统一复用 `NodeLaneBrandMark`，保留各入口尺寸，移除旧图标数组、随机红／黑选择和专用主题参数。平台生成源不作为 Flutter 运行时图片加载；资源来源、生成配置与摘要见[品牌素材说明](design/nodelane-brand-assets.md#平台图标)。Android 原生图标输出尚待处理。
+- macOS 使用 `com.nodelane.comics`、`nodelane-comics.app` 及 NodeLane 图标，权限说明显示 NodeLane Comics，上游版权署名保留。Debug／Profile／Release 共用产品身份和 Flutter 版本，Xcode scheme、CI 上传及 DMG 输入路径与产物一致；工程仅保留应用与 Flutter Assemble 目标。Xcode 配置解析与图标资源编译通过，不代表完整构建、签名、公证、安装或桌面登录回调已经验收。
 - Windows 的窗口标题、安装器、快捷方式及卸载展示名为 `nodelane-comics`，发布者为 `NodeLane`，应用与安装器共用 NodeLane 图标。安装器使用独立且后续发行保持稳定的 ID `D80A683F-91A2-4296-BC85-2A903B6E247C`，不覆盖旧上游安装或迁移其数据。窗口创建与登录回调查找共用同一标题；文件属性使用自有产品名和 Flutter 传入的版本，移除旧版本回退。内部工程与可执行文件仍为 `mangayomi`／`mangayomi.exe`，安装器按该真实文件名建立快捷方式。发行流程使用项目锁定的 `inno_bundle`，无需全局激活。配置解析、图标与静态一致性检查通过；Windows 原生构建、签名、安装和真实回调尚未验收。
+- Linux 的窗口、可执行文件和 RPM／Debian 包名为 `nodelane-comics`；GTK 应用与程序标识、桌面文件基名和 `StartupWMClass` 统一为 `com.nodelane.comics`，按 [GTK 的桌面集成约定](https://docs.gtk.org/gtk4/migrating-3to4.html)关联 X11／Wayland 窗口。各格式复用 `linux/com.nodelane.comics.desktop` 和六种尺寸的 NodeLane 图标，桌面启动传入 `%u`。RPM／Debian 将程序与运行库安装到 `/opt/nodelane-comics`，通过包内的 `/usr/bin/nodelane-comics` 符号链接启动；不覆盖或迁移旧上游安装。
+- Linux 发行沿用 Flutter／Rust 与现有 CI 入口：AppImage 使用 `linuxdeploy`，RPM 使用 `rpmbuild`，Debian 使用 `dpkg-deb` 和 `linux/packaging/deb/control`，不再维护 Fastforge 的重复生成与拆包覆盖流程。Debian 维护者为 `NodeLane <q921381971@gmail.com>`，版本直接取 `pubspec.yaml` 的 `0.1.0+1`，安装大小从实际目录计算；RPM 的版本为 `0.1.0`、Release 为构建号 `1`。发行包附带上游基线、应用代码许可、品牌素材来源与许可全文，RPM 许可字段区分 Apache-2.0 代码与 GPL-3.0-only 品牌素材。YAML、脚本语法和打包目录模拟检查覆盖身份、图标、独立路径、重复打包及失败退出；原生打包工具在模拟中替代，Linux 编译、实际包生成、安装／升级、桌面展示和真实回调均未验收。
 - `NodeLaneBrand` 集中维护产品英文名、应用请求标识、项目仓库、发布查询及标识路径。应用 GitHub、错误反馈和 Releases API 指向 `Wy2926/node-comics-app`；上游社区明确标注 Mangayomi，保留上游与依赖来源信息。
 - LNReader 缺失来源路径时提示 NodeLane 无法打开并联系来源维护者，按当前来源错误分类，不保留旧提示语匹配分支。Dood 视频请求、Trakt 发现与 DoH 的应用自报 UA 统一为 `nodelane-comics`；浏览器 UA、来源自定义 UA 和匹配 Cookie 的 UA 沿用现有规则。Discord 设置入口与启动初始化暂时注释，上游应用 ID 和活动状态中的上游社区按钮已移除；活动业务代码与偏好保留，待自有应用 ID 和 `app-icon` 素材配置后恢复。上述网络与活动逻辑经过本地静态及模拟检查，真实服务及桌面 Discord 显示尚待验收。
 - NodeLane 的独立版本从 `pubspec.yaml` 中的 `0.1.0+1` 开始：应用版本为 `0.1.0`，构建号为 `1`。iOS／macOS／Windows 通过 Flutter 生成配置传入版本与构建号，关于页从已安装包读取，未另设显示用版本常量。发行 workflow 先校验 `v<应用版本>` 标签与 `pubspec.yaml` 完全一致且构建号为正整数，校验通过后各平台才开始构建。后续修改以 `pubspec.yaml` 为版本来源，构建号递增；上游基线、第三方库和原始设计稿的版本记录保留。当前版本配置不表示已发布 `v0.1.0`，也不作为旧上游包的覆盖升级。
-- CI 调试产物名为 `nodelane-comics-<platform>-debug`，发行文件统一为 `nodelane-comics-<tag>-<platform>.<ext>`；Android／TV 的 APK 继续在平台后带 ABI，iOS 为 `nodelane-comics-<tag>-ios.ipa`。构建输出、上传和发布收集使用同一命名，上传未找到文件时报错；macOS 从工作区相对路径上传 DMG。各发行包以平铺文件上传，发布步骤直接合并当前标签的产物，已移除重复的目录摊平步骤。内部构建入口沿用现值，Linux 安装器和桌面包内的名称与元数据待对应平台处理；此处命名校验不代表各平台发行构建或安装已验收。
-- iOS 侧载源由 `repo/config.json` 与 `repo/update_source.py` 生成到 `repo/source.json`，名称为 NodeLane Comics、源标识为 `com.nodelane-comics.app.source`、应用标识为 `com.nodelane-comics.app`，图标复用本仓库 `assets/brand/app-mark.png`。旧上游发行、新闻、截图、横幅及未引用素材已移除；上游原始 README 和其四张侧载按钮继续保留。初始源的 `apps`／`news` 为空，未将尚未发布的 `0.1.0` 或虚构下载链接作为已发布内容。
+- CI 调试产物名为 `nodelane-comics-<platform>-debug`，发行文件统一为 `nodelane-comics-<tag>-<platform>.<ext>`；Android／TV 的 APK 继续在平台后带 ABI，iOS 为 `nodelane-comics-<tag>-ios.ipa`。构建输出、上传和发布收集使用同一命名，上传未找到文件时报错；macOS 从工作区相对路径上传 DMG。各发行包以平铺文件上传，发布步骤直接合并当前标签的产物，已移除重复的目录摊平步骤。此处命名校验不代表各平台发行构建或安装已验收。
+- iOS 侧载源由 `repo/config.json` 与 `repo/update_source.py` 生成到 `repo/source.json`，名称为 NodeLane Comics、源标识为 `com.nodelane.comics.source`、应用标识为 `com.nodelane.comics`，图标复用本仓库 `assets/brand/app-mark.png`。旧上游发行、新闻、截图、横幅及未引用素材已移除；上游原始 README 和其四张侧载按钮继续保留。初始源的 `apps`／`news` 为空，未将尚未发布的 `0.1.0` 或虚构下载链接作为已发布内容。
 - 订阅生成只读取项目仓库公开 Releases，按页拉取并筛选正式 `vX.Y.Z`／`X.Y.Z` 标签和同一仓库的 `nodelane-comics-<tag>-ios.ipa` 已上传资源。版本按数值降序、同版本按发布时间去重；旧客户端字段与首个有效版本保持一致，新闻随有效版本重新生成，重复执行不累加旧记录。版本标签去掉 `v` 后须与 IPA 的 `CFBundleShortVersionString` 一致；当前按版本号分发更新，不声明同版本的不同 build。最低 iOS 为配置中的 15.0，权限从当前 `Info.plist` 和 `NodeLane.entitlements` 声明生成；发布前仍须核对实际签名 IPA 的版本、最低系统与权限，不能将源文件校验视为安装验收。字段依据 [AltStore Source 格式](https://faq.altstore.io/developers/make-a-source)。
 - 生成脚本使用 Python 标准库，网络请求设超时；404、网络或数据错误均非零退出并保留现有源文件，成功生成后才原子替换。对应 workflow 先运行 `python3 -B -m unittest discover -s repo -p 'test_*.py'`，再更新源；仍由既有发布流程或手动触发。本地文件未发布，公开访问和侧载客户端安装／更新尚未验收；签名配置待后续处理。
 - 手动检查与启动自动检查偏好独立。关于页就地展示检查中、暂无可安装更新、失败重试或新版本卡片，不弹更新框；检查期间禁止重复请求，离页忽略迟到结果。启动自动检查发现适配新版本时继续弹提醒。HTTP 404 视为无公开发行结果，其他网络及响应错误显示失败；不把空结果宣称为最新版本。
@@ -467,7 +469,7 @@ NodeLane 漫画目录读取官方本地开发源，默认 `http://127.0.0.1:8787
 
 ## 应用链接
 
-- 应用协议统一为 `nodelane-comics`。iOS／macOS URL Types、Android 链接与 OAuth 回调声明、Windows 启动注册、Linux 桌面 MIME 与打包声明使用同一名称，不注册或转发旧协议。内部可执行文件名暂保留；Linux 桌面启动传入 `%u`，Windows 直接注册当前可执行文件并引用 URL 参数，写入后关闭注册表句柄。
+- 应用协议统一为 `nodelane-comics`。iOS／macOS URL Types、Android 链接与 OAuth 回调声明、Windows 启动注册、Linux 桌面 MIME 与打包声明使用同一名称，不注册或转发旧协议。Windows 内部可执行文件名暂保留；Linux 桌面启动传入 `%u`，Windows 直接注册当前可执行文件并引用 URL 参数，写入后关闭注册表句柄。
 - 导入入口为 `nodelane-comics://add-repo` 与 `nodelane-comics://add-button`。来源链接使用 `repo_name`、`repo_url` 和可重复的 `manga_url`／`anime_url`／`novel_url`；按钮链接使用可重复的 `button`（Base64 JSON）。显示实际仓库地址或按钮代码，确认后才写入。只接收这两个主机名，拒绝凭据、端口、子路径和片段；登录回调不进入导入流程。
 - 同一导入链接仅在确认／保存期间去重，完成、取消或失败后释放，可再次打开；首次处理等到导航首帧，移除永久记住上一条链接的逻辑。仅增加在途 URI 集合，无后台轮询；冷启动与前后台系统分发仍需 iOS 实机验收。
 
@@ -617,7 +619,7 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 ## 备份、恢复与存储
 
 - 默认文件目录为 Android 的 `/storage/emulated/0/nodelane-comics`、桌面 Documents 下的 `nodelane-comics`；iOS 直接使用本应用 Documents。数据库名统一为 `nodelane-comics`，macOS 存于 Application Support 下的 `nodelane-comics/databases`，Windows／Linux 存于默认目录的 `databases`，iOS 存于 Documents/databases，Android 保留应用私有目录。数据库改名后使用新库，不读取、搬迁或删除上游旧库；旧 macOS 搬迁与 Hive 清理逻辑已移除。
-- 本地书库按 `source=local` 查询，路径映射只使用当前配置的目录，不再按 `Mangayomi/local` 兜底。iOS 目录授权书签使用 `com.nodelane-comics.app.local_directory_bookmarks`，压缩包页面临时文件使用 `nodelane-comics_archive_` 前缀。桌面文件与临时数据库验证新库隔离、重开保留、自定义目录和本地查询；iOS 原生目录授权仍待真机验证，Android 构建及设备验收暂缓。
+- 本地书库按 `source=local` 查询，路径映射只使用当前配置的目录，不再按 `Mangayomi/local` 兜底。iOS 目录授权书签使用 `com.nodelane.comics.local_directory_bookmarks`，压缩包页面临时文件使用 `nodelane-comics_archive_` 前缀。桌面文件与临时数据库验证新库隔离、重开保留、自定义目录和本地查询；iOS 原生目录授权仍待真机验证，Android 构建及设备验收暂缓。
 - 自有备份与维护快照统一导出为 `nodelane-comics_<时间>.backup`，ZIP 内为同名 `.backup.db`；格式识别只读取文件名，不以父目录名判断。保留当前 JSON 结构版本 `2`、压缩与加密，不再识别 Mangayomi 文件名前缀或恢复结构版本 `1`，移除备份预览与恢复中的旧媒体字段转换。Mihon／Aniyomi／Kotatsu／Neko 的独立导入功能保留。导出、合并／替换、重复恢复和不支持格式的失败隔离由本地文件与临时数据库测试验证；iOS 真机备份恢复尚待验收。
 - “存储与备份”首页依次展示创建／恢复／自动备份、三类本机缓存、下载位置及默认收起的高级选项。压缩、加密、启动清理和回滚／来源维护继续使用原工具。下载位置首页显示默认或自定义，选择页和高级区显示完整路径；取消不写入，iOS 保留固定备份目录。章节缓存沿用原方法，封面清理只删除 `cacheimagecover`，译图清理保留原回执和任务记录；清理前确认，取消不执行，进行中禁止重复操作。
 - 备份频率仍是原六项；关闭频率不清空路径、选择或加密偏好。压缩级别沿用 0–9 和原即时状态更新，仅在拖动结束持久化；缓存大小、清理及启动时清理仍使用原 provider，不为原方法吞掉的异常新增成功判断。页面只限制同时进行的操作，不增加后台备份调度。

@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Mangayomi
-Icon=mangayomi
-Exec=/usr/bin/mangayomi %u
+Name=nodelane-comics
+Icon=nodelane-comics
+Exec=nodelane-comics %u
 MimeType=x-scheme-handler/nodelane-comics;
 Categories=AudioVideo;
 Keywords=Manga;Anime;BitTorrent;
@@ -24,4 +24,4 @@ Comment[tr]=Manga ve light novel oku, anime izle
 Comment[zh]=阅读漫画、轻小说和观看动漫
 
 # Used for proper icon matching in X11 (ignored on Wayland)
-StartupWMClass=Mangayomi
+StartupWMClass=com.nodelane.comics

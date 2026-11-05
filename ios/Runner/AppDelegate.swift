@@ -7,7 +7,7 @@ import UniformTypeIdentifiers
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate {
   private var activeBackgroundTasks: [String: UIBackgroundTaskIdentifier] = [:]
   private let localDirectoryBookmarksKey =
-    "com.nodelane-comics.app.local_directory_bookmarks"
+    "com.nodelane.comics.local_directory_bookmarks"
   private var localDirectoryPickerResult: FlutterResult?
   private weak var localDirectoryPickerController: UIDocumentPickerViewController?
   private var activeSecurityScopedUrls: [String: URL] = [:]

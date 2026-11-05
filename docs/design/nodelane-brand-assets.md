@@ -7,6 +7,7 @@
 - 两份 PNG 的 SHA-256：`dce89a469d12bbfaacb3e67d7176ca20bd46a57e362f089d8c2985f637ff6406`。
 - 来源素材清单记载由 `gpt-image-2` 生成，经过透明边缘清理、裁切、留边和缩放。图形为对白框、N 字母与粉色折页。
 - 许可记录：来源仓库声明 `GPL-3.0-only`，素材目录没有单独声明其他许可，因此保留该来源许可信息，不把素材改标为本项目上游的 Apache-2.0。用户指定复用 NodeLane 品牌图形；本次没有复制参考仓库的运行时代码、导出脚本或字体。
+- [GPL 许可全文](../../assets/brand/LICENSE-GPL-3.0-only)来自来源仓库提交 `811e267b6ef82e0d583ab594ad40110fb785e0a8` 的 `LICENSE`，SHA-256 为 `3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`。应用代码的上游 Apache-2.0 许可继续由仓库根目录 `LICENSE` 保存。
 
 关于页和更新流程设计稿见 [统一设计](ios-about-update-v2.png)，由内置 `image_gen` 生成，[完整提示词](ios-about-update-v2.prompts.txt)保留参考角色及约束。图中的版本和更新内容为示例，运行页面只使用真实版本与检查结果。
 
@@ -20,6 +21,8 @@ macOS 从同一输入导出 16／32／64／128／256／512／1024 像素图标�
 
 Windows 使用同一工具与输入导出 `windows/runner/resources/app_icon.ico`，内含 256 × 256、32 位透明图标，应用资源与 `inno_bundle.installer_icon` 共用该文件；按平台单独生成，不更新其他平台资源。
 
+Linux 的 `linux/packaging/icons/hicolor/<尺寸>/apps/nodelane-comics.png` 复用上述 macOS 的 16／32／64／128／256／512 像素输出，通过仓库内相对符号链接引用；发行打包时解引用为 PNG，安装后不依赖 macOS 目录。桌面入口、AppImage、RPM 与 Debian 共用这些资源，不另存重复图片。
+
 | 平台输出 | SHA-256 |
 | --- | --- |
 | `Icon-App-1024x1024@1x.png` | `5b66c71d892ece51fd3962ca1847b9b02136c343f394c345a7ddc685acf00ecc` |
@@ -28,4 +31,4 @@ Windows 使用同一工具与输入导出 `windows/runner/resources/app_icon.ico
 | macOS `app_icon_1024.png` | `575ae4e8fa6c8324933137b54532bd036d71baabf6a5bf2482ccc384ddcb4f14` |
 | Windows `app_icon.ico`（256 像素） | `f04976df67739514c76663bcc190be1e22de6cee7dd1da12648d6e3139370c0b` |
 
-Android 的生成输入与本地 Linux 打包图标入口已指向 NodeLane 素材，原生图标输出仍待对应平台处理；各平台发行验收独立进行。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。
+Android 的生成输入已指向 NodeLane 素材，原生图标输出仍待处理；各平台发行验收独立进行。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。

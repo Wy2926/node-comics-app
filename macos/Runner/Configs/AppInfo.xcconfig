@@ -1,6 +1,6 @@
 // NodeLane macOS product identity. Version comes from Flutter / pubspec.yaml.
 PRODUCT_NAME = nodelane-comics
-PRODUCT_BUNDLE_IDENTIFIER = com.nodelane-comics.app
+PRODUCT_BUNDLE_IDENTIFIER = com.nodelane.comics
 
 // Retain the original upstream copyright attribution.
 PRODUCT_COPYRIGHT = NodeLane Comics — based on Mangayomi. Copyright © 2023 com.kodjodevf. All rights reserved.

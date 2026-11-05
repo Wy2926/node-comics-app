@@ -1,7 +1,7 @@
 {
   "repo_url": "Wy2926/node-comics-app",
   "json_file": "repo/source.json",
-  "app_id": "com.nodelane-comics.app",
+  "app_id": "com.nodelane.comics",
   "app_slug": "nodelane-comics",
   "app_name": "NodeLane Comics",
   "developer_name": "NodeLane",

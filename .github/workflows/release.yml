@@ -367,7 +367,10 @@ jobs:
         run: flutter pub get
 
       - name: build linux
-        run: flutter build linux --release --verbose
+        run: |
+          flutter build linux --release --verbose
+          mkdir -p build/linux/x64/release/bundle/licenses
+          cp LICENSE UPSTREAM.md assets/brand/LICENSE-GPL-3.0-only docs/design/nodelane-brand-assets.md build/linux/x64/release/bundle/licenses/
 
       - name: Zip
         uses: thedoctor0/zip-release@main
@@ -418,7 +421,7 @@ jobs:
             EXCLUDE_ARGS+=" --exclude-library $lib"
           done
           # Copy desktop file to AppDir root
-          cp linux/mangayomi.desktop AppDir/mangayomi.desktop
+          cp linux/com.nodelane.comics.desktop AppDir/com.nodelane.comics.desktop
           # Create AppRun file
           cat <<EOF > AppDir/AppRun
           #!/bin/sh
@@ -426,65 +429,68 @@ jobs:
           HERE=\${SELF%/*}
           export PATH="\${HERE}/usr/bin/:\${PATH}"
           export LD_LIBRARY_PATH="\${HERE}/usr/bin/lib/:\${HERE}/usr/lib/:\${LD_LIBRARY_PATH}"
-          exec "\${HERE}/usr/bin/mangayomi" "\$@"
+          exec "\${HERE}/usr/bin/nodelane-comics" "\$@"
           EOF
           chmod +x AppDir/AppRun
           # Make AppImage
           /usr/local/bin/linuxdeploy \
             --appdir AppDir \
-            --desktop-file AppDir/mangayomi.desktop \
-            --icon-file AppDir/usr/share/icons/hicolor/512x512/apps/mangayomi.png \
-            --executable AppDir/usr/bin/mangayomi \
+            --desktop-file AppDir/com.nodelane.comics.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/512x512/apps/nodelane-comics.png \
+            --executable AppDir/usr/bin/nodelane-comics \
             $EXCLUDE_ARGS \
             --output appimage
-          mv $(find . -type f -name "*.AppImage") build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.AppImage
+          mv ./*.AppImage build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.AppImage
 
       - name: Create RPM Package
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+          APP_VERSION=$(sed -n 's/^version: //p' pubspec.yaml)
+          VERSION=${APP_VERSION%+*}
+          BUILD_NUMBER=${APP_VERSION##*+}
+          rm -rf rpm_build
           mkdir -p rpm_build/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-          cp -r build/linux/x64/release/bundle rpm_build/SOURCES/mangayomi-${VERSION}
-          tar czf rpm_build/SOURCES/mangayomi-${VERSION}.tar.gz -C rpm_build/SOURCES mangayomi-${VERSION}
+          cp -r build/linux/x64/release/bundle rpm_build/SOURCES/nodelane-comics-${VERSION}
+          tar czf rpm_build/SOURCES/nodelane-comics-${VERSION}.tar.gz -C rpm_build/SOURCES nodelane-comics-${VERSION}
           mkdir -p rpm_build/SOURCES/usr/share/icons
           cp -rL linux/packaging/icons/* rpm_build/SOURCES/usr/share/icons
-          cp linux/mangayomi.desktop rpm_build/SOURCES/
+          cp linux/com.nodelane.comics.desktop rpm_build/SOURCES/
           # RPM Spec File
-          cat <<EOF > rpm_build/SPECS/mangayomi.spec
-          Name: mangayomi
+          cat <<EOF > rpm_build/SPECS/nodelane-comics.spec
+          Name: nodelane-comics
           Version: ${VERSION}
-          Release: 1%{?dist}
-          Summary: Mangayomi is an open-source Flutter app for reading manga, novels, and watching animes across multiple platforms
+          Release: ${BUILD_NUMBER}%{?dist}
+          Summary: NodeLane Comics manga, novel and anime reader
           Requires: (libjpeg-turbo or libjpeg) libpng libavif webkit2gtk4.1 mpv
-          License: MIT
+          License: Apache-2.0 AND GPL-3.0-only
+          URL: https://github.com/Wy2926/node-comics-app
           Source0: %{name}-%{version}.tar.gz
           BuildArch: x86_64
 
           %description
-          Mangayomi is an open-source Flutter app for reading manga, novels, and watching animes across multiple platforms.
+          Read manga and novels, watch anime, and translate manga with NodeLane.
+          Application code is based on Mangayomi (Apache-2.0); NodeLane artwork
+          retains its separately recorded GPL-3.0-only source license.
 
           %prep
           %setup -q
 
           %install
+          mkdir -p %{buildroot}/opt/%{name}
           mkdir -p %{buildroot}/usr/bin
           mkdir -p %{buildroot}/usr/share/applications
-          mkdir -p %{buildroot}/usr/share/icons/hicolor/256x256/apps
-          cp -r * %{buildroot}/usr/bin/
+          cp -r . %{buildroot}/opt/%{name}/
+          ln -s /opt/%{name}/%{name} %{buildroot}/usr/bin/%{name}
           cp -r %{_sourcedir}/usr/share/* %{buildroot}/usr/share/
-          cp %{_sourcedir}/mangayomi.desktop %{buildroot}/usr/share/applications/mangayomi.desktop
+          install -m 644 %{_sourcedir}/com.nodelane.comics.desktop %{buildroot}/usr/share/applications/com.nodelane.comics.desktop
 
           %files
-          /usr/bin/*
-          /usr/share/applications/mangayomi.desktop
-          /usr/share/icons/hicolor/16x16/apps/mangayomi.png
-          /usr/share/icons/hicolor/32x32/apps/mangayomi.png
-          /usr/share/icons/hicolor/64x64/apps/mangayomi.png
-          /usr/share/icons/hicolor/128x128/apps/mangayomi.png
-          /usr/share/icons/hicolor/256x256/apps/mangayomi.png
-          /usr/share/icons/hicolor/512x512/apps/mangayomi.png
+          /opt/%{name}
+          /usr/bin/%{name}
+          /usr/share/applications/com.nodelane.comics.desktop
+          /usr/share/icons/hicolor/*/apps/nodelane-comics.png
           EOF
 
-          rpmbuild --define "_topdir $(pwd)/rpm_build" -ba rpm_build/SPECS/mangayomi.spec
+          rpmbuild --define "_topdir $(pwd)/rpm_build" -ba rpm_build/SPECS/nodelane-comics.spec
           mv rpm_build/RPMS/x86_64/*.rpm build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.rpm
 
       - name: upload artifact linux zip
@@ -509,7 +515,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install webkit2gtk-4.1 clang cmake ninja-build pkg-config libgtk-3-dev mpv libmpv-dev dpkg-dev libfuse2 libjpeg-dev libpng-dev libavif-dev libsecret-1-dev
+          sudo apt-get install webkit2gtk-4.1 clang cmake ninja-build pkg-config libgtk-3-dev mpv libmpv-dev dpkg-dev libjpeg-dev libpng-dev libavif-dev libsecret-1-dev
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -522,27 +528,26 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
-      - name: Enable fastforge
-        run: dart pub global activate fastforge
-
-      - name: Update PATH
-        run: echo "PATH=${HOME}/.pub-cache/bin:${PATH}" >> $GITHUB_ENV
+      - name: Build Linux
+        run: |
+          flutter build linux --release --verbose
+          mkdir -p build/linux/x64/release/bundle/licenses
+          cp LICENSE UPSTREAM.md assets/brand/LICENSE-GPL-3.0-only docs/design/nodelane-brand-assets.md build/linux/x64/release/bundle/licenses/
 
       - name: Build deb package
-        run: fastforge package --platform linux --targets deb
-
-      - name: Inject custom .desktop file into .deb
         run: |
-          mkdir extracted_deb
-          dpkg-deb -R "$(find dist -name '*.deb' | head -n 1)" extracted_deb
-          # Replace desktop file
-          cp -f linux/mangayomi.desktop extracted_deb/usr/share/applications/mangayomi.desktop
-          # copy all icon sizes
-          cp -rLf linux/packaging/icons/* extracted_deb/usr/share/icons
-          # Set correct permissions
-          chmod 644 extracted_deb/usr/share/applications/mangayomi.desktop
-          # Repack the .deb
-          fakeroot dpkg-deb -b extracted_deb dist/nodelane-comics-${{ github.ref_name }}-linux.deb
+          PACKAGE_DIR=build/linux/x64/deb
+          rm -rf "$PACKAGE_DIR"
+          mkdir -p "$PACKAGE_DIR/DEBIAN" "$PACKAGE_DIR/opt/nodelane-comics" "$PACKAGE_DIR/usr/bin" "$PACKAGE_DIR/usr/share/applications" "$PACKAGE_DIR/usr/share/icons" dist
+          cp -a build/linux/x64/release/bundle/. "$PACKAGE_DIR/opt/nodelane-comics/"
+          ln -s /opt/nodelane-comics/nodelane-comics "$PACKAGE_DIR/usr/bin/nodelane-comics"
+          install -m 644 linux/com.nodelane.comics.desktop "$PACKAGE_DIR/usr/share/applications/com.nodelane.comics.desktop"
+          cp -rL linux/packaging/icons/. "$PACKAGE_DIR/usr/share/icons/"
+          install -m 644 linux/packaging/deb/control "$PACKAGE_DIR/DEBIAN/control"
+          APP_VERSION=$(sed -n 's/^version: //p' pubspec.yaml)
+          INSTALLED_SIZE=$(du -sk "$PACKAGE_DIR/opt" "$PACKAGE_DIR/usr" | awk '{size += $1} END {print size}')
+          printf 'Version: %s\nInstalled-Size: %s\n' "$APP_VERSION" "$INSTALLED_SIZE" >> "$PACKAGE_DIR/DEBIAN/control"
+          dpkg-deb --build --root-owner-group "$PACKAGE_DIR" dist/nodelane-comics-${{ github.ref_name }}-linux.deb
 
       - name: upload artifact linux deb
         uses: actions/upload-artifact@v4

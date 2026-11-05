@@ -56,7 +56,7 @@ class SourceUpdaterTests(unittest.TestCase):
         source = updater.build_source(self.config, releases)
         app = source["apps"][0]
         self.assertEqual([v["version"] for v in app["versions"]], ["0.2.0", "0.1.0"])
-        self.assertEqual(app["bundleIdentifier"], "com.nodelane-comics.app")
+        self.assertEqual(app["bundleIdentifier"], "com.nodelane.comics")
         for legacy, current in (("version", "version"), ("versionDate", "date"),
                                 ("downloadURL", "downloadURL"), ("size", "size"),
                                 ("versionDescription", "localizedDescription")):

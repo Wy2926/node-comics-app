@@ -1,6 +1,6 @@
 {
   "name": "NodeLane Comics",
-  "identifier": "com.nodelane-comics.app.source",
+  "identifier": "com.nodelane.comics.source",
   "website": "https://github.com/Wy2926/node-comics-app",
   "iconURL": "https://raw.githubusercontent.com/Wy2926/node-comics-app/refs/heads/main/assets/brand/app-mark.png",
   "subtitle": "Read comics with NodeLane translation",

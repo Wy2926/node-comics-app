@@ -26,7 +26,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   PackageInfo.setMockInitialValues(
     appName: 'NodeLane Comics',
-    packageName: 'com.nodelane-comics.app',
+    packageName: 'com.nodelane.comics',
     version: '0.1.0',
     buildNumber: '1',
     buildSignature: '',
