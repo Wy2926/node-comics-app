@@ -379,6 +379,52 @@ jobs:
           filename: nodelane-comics-${{ github.ref_name }}-linux.zip
           directory: build/linux/x64/release/bundle
 
+      - name: Prepare Arch Linux recipe
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import shutil
+          import tarfile
+          import tempfile
+          from pathlib import Path
+
+          app_version = next(
+              line.removeprefix('version:').strip()
+              for line in Path('pubspec.yaml').read_text().splitlines()
+              if line.startswith('version:')
+          )
+          version, build_number = app_version.split('+')
+          release = Path('build/linux/x64/release')
+          archive_name = f'nodelane-comics-v{version}-linux.zip'
+          resources = {'com.nodelane.comics.desktop': Path('linux/com.nodelane.comics.desktop')}
+          for size in (16, 32, 64, 128, 256, 512):
+              resources[f'icon-{size}.png'] = Path(
+                  f'linux/packaging/icons/hicolor/{size}x{size}/apps/nodelane-comics.png'
+              )
+
+          def sha256(path):
+              digest = hashlib.sha256()
+              with path.open('rb') as source:
+                  for chunk in iter(lambda: source.read(1024 * 1024), b''):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+          checksums = [sha256(release / 'bundle' / archive_name)]
+          checksums.extend(sha256(path) for path in resources.values())
+          recipe = Path('packaging/arch/PKGBUILD.in').read_text()
+          recipe = recipe.replace('@VERSION@', version).replace('@BUILD_NUMBER@', build_number)
+          recipe = recipe.replace('@DESKTOP_SOURCES@', '\n'.join(f"  '{name}'" for name in resources))
+          recipe = recipe.replace('@SHA256SUMS@', '\n'.join(f"  '{value}'" for value in checksums))
+          with tempfile.TemporaryDirectory(prefix='nodelane-arch-') as temporary:
+              package = Path(temporary) / 'nodelane-comics-bin'
+              package.mkdir()
+              (package / 'PKGBUILD').write_text(recipe)
+              for name, source in resources.items():
+                  shutil.copyfile(source, package / name)
+              with tarfile.open(release / f'nodelane-comics-v{version}-archlinux.tar.gz', 'w:gz') as archive:
+                  archive.add(package, arcname=package.name)
+          PY
+
       - name: Create AppImage
         run: |
           # Move Zip-file outside the bundle dir to avoid including it in the AppImage
@@ -501,6 +547,7 @@ jobs:
             build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.zip
             build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.AppImage
             build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.rpm
+            build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-archlinux.tar.gz
           if-no-files-found: error
 
   build-and-release-linux-deb:

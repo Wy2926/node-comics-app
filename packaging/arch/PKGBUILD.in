@@ -1,0 +1,37 @@
+# Maintainer: NodeLane <q921381971@gmail.com>
+# Rendered by the Linux release job with the built ZIP's SHA-256.
+
+pkgname=nodelane-comics-bin
+_pkgname=nodelane-comics
+pkgver=@VERSION@
+pkgrel=@BUILD_NUMBER@
+pkgdesc='Read manga and novels, watch anime, and translate manga'
+arch=('x86_64')
+url='https://github.com/Wy2926/node-comics-app'
+license=('Apache-2.0' 'GPL-3.0-only')
+
+depends=('gtk3' 'webkit2gtk-4.1' 'mpv' 'libsecret' 'libjpeg-turbo' 'libpng' 'libavif' 'libwebp')
+provides=("${_pkgname}=${pkgver}")
+conflicts=("${_pkgname}")
+options=('!strip')
+
+source=("${url}/releases/download/v${pkgver}/${_pkgname}-v${pkgver}-linux.zip"
+@DESKTOP_SOURCES@
+)
+sha256sums=(
+@SHA256SUMS@
+)
+
+package() {
+  install -d "${pkgdir}/opt/${_pkgname}" "${pkgdir}/usr/bin" \
+    "${pkgdir}/usr/share/licenses/${pkgname}" "${pkgdir}/usr/share/applications"
+  cp -a "${srcdir}/${_pkgname}" "${srcdir}/data" "${srcdir}/lib" "${pkgdir}/opt/${_pkgname}/"
+  cp -a "${srcdir}/licenses/." "${pkgdir}/usr/share/licenses/${pkgname}/"
+  ln -s "/opt/${_pkgname}/${_pkgname}" "${pkgdir}/usr/bin/${_pkgname}"
+
+  install -m644 "${srcdir}/com.nodelane.comics.desktop" "${pkgdir}/usr/share/applications/com.nodelane.comics.desktop"
+  for size in 16 32 64 128 256 512; do
+    install -d "${pkgdir}/usr/share/icons/hicolor/${size}x${size}/apps"
+    install -m644 "${srcdir}/icon-${size}.png" "${pkgdir}/usr/share/icons/hicolor/${size}x${size}/apps/${_pkgname}.png"
+  done
+}
