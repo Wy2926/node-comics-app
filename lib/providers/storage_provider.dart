@@ -72,18 +72,14 @@ class StorageProvider {
   }
 
   Future<Directory?> getDefaultDirectory() async {
-    Directory? directory;
     if (Platform.isAndroid) {
-      directory = Directory("/storage/emulated/0/Mangayomi/");
-    } else {
-      final dir = await _documentsDirectory();
-      // The documents dir in iOS is already named "Mangayomi".
-      // Appending "Mangayomi" to the documents dir would create
-      // unnecessarily nested Mangayomi/Mangayomi/ folder.
-      if (Platform.isIOS) return dir;
-      directory = Directory(path.join(dir.path, 'Mangayomi'));
+      return Directory("/storage/emulated/0/nodelane-comics/");
     }
-    return directory;
+    final dir = await _documentsDirectory();
+    // iOS Documents already belongs to this app; no extra product folder.
+    return Platform.isIOS
+        ? dir
+        : Directory(path.join(dir.path, 'nodelane-comics'));
   }
 
   Future<Directory?> getMpvDirectory() async {
@@ -154,7 +150,6 @@ class StorageProvider {
   }
 
   Future<Directory?> getDirectory() async {
-    Directory? directory;
     String dPath = "";
     try {
       final setting = settingsRepository.currentOrNull;
@@ -164,20 +159,10 @@ class StorageProvider {
         debugPrint("Could not get downloadLocation from Isar settings: $e");
       }
     }
-    if (Platform.isAndroid) {
-      directory = Directory(
-        dPath.isEmpty ? "/storage/emulated/0/Mangayomi/" : "$dPath/",
-      );
-    } else {
-      final dir = await _documentsDirectory();
-      final p = dPath.isEmpty ? dir.path : dPath;
-      // The documents dir in iOS is already named "Mangayomi".
-      // Appending "Mangayomi" to the documents dir would create
-      // unnecessarily nested Mangayomi/Mangayomi/ folder.
-      if (Platform.isIOS) return Directory(p);
-      directory = Directory(path.join(p, 'Mangayomi'));
-    }
-    return directory;
+    if (dPath.isEmpty) return getDefaultDirectory();
+    return Platform.isAndroid || Platform.isIOS
+        ? Directory(dPath)
+        : Directory(path.join(dPath, 'nodelane-comics'));
   }
 
   Future<Directory?> getMangaMainDirectory(Chapter chapter) async {
@@ -217,14 +202,8 @@ class StorageProvider {
   }
 
   Future<Directory?> getDatabaseDirectory() async {
-    // On macOS, host the libmdbx / Isar database under Application Support
-    // (app-private, not TCC-gated) instead of Documents. macOS denies
-    // unsigned/sideloaded/dev builds access to ~/Documents when iCloud
-    // "Desktop & Documents Folders" sync is enabled, surfacing as
-    // `IsarError: Cannot open Environment: MdbxError (13): Permission denied`
-    // and a black screen on launch. iOS keeps Documents so the DB remains
-    // visible alongside backups via the Files app. Windows / Linux are
-    // untouched — Documents is the conventional location there.
+    // macOS uses Application Support to avoid Documents permission prompts.
+    // iOS keeps the database visible alongside backups in the Files app.
     final dir = Platform.isMacOS
         ? await getApplicationSupportDirectory()
         : await _documentsDirectory();
@@ -235,54 +214,16 @@ class StorageProvider {
       // So they are not just in the app folders root dir
       dbDir = path.join(dir.path, 'databases');
     } else {
-      dbDir = path.join(dir.path, 'Mangayomi', 'databases');
-    }
-    if (Platform.isMacOS) {
-      await _migrateLegacyMacosDatabase(dbDir);
+      dbDir = path.join(dir.path, 'nodelane-comics', 'databases');
     }
     await createDirectorySafely(dbDir);
     return Directory(dbDir);
   }
 
-  /// One-shot migration: if a pre-existing macOS user has their database
-  /// under the legacy Documents path and the new Application Support path
-  /// is empty, rename it across so library / history / progress are not
-  /// silently reset. Subsequent launches skip this branch because the new
-  /// path already exists.
-  Future<void> _migrateLegacyMacosDatabase(String newDbDir) async {
-    try {
-      final docs = await getApplicationDocumentsDirectory();
-      final legacyDir = Directory(
-        path.join(docs.path, 'Mangayomi', 'databases'),
-      );
-      if (!await legacyDir.exists()) return;
-      final newDir = Directory(newDbDir);
-      if (await newDir.exists()) {
-        // Only migrate when the new location is empty — never overwrite.
-        final entries = await newDir.list(followLinks: false).take(1).toList();
-        if (entries.isNotEmpty) return;
-      }
-      await Directory(path.dirname(newDbDir)).create(recursive: true);
-      await legacyDir.rename(newDbDir);
-      if (kDebugMode) {
-        debugPrint(
-          '[storage] Migrated macOS DB from ${legacyDir.path} to $newDbDir',
-        );
-      }
-    } catch (e) {
-      // Migration is best-effort. Falling back to a fresh DB is preferable
-      // to crashing on launch — the user can manually move the legacy
-      // ~/Documents/Mangayomi/databases/ contents if needed.
-      if (kDebugMode) {
-        debugPrint('[storage] macOS DB migration skipped: $e');
-      }
-    }
-  }
-
   Future<Directory?> getGalleryDirectory() async {
     String gPath;
     if (Platform.isAndroid) {
-      gPath = "/storage/emulated/0/Pictures/Mangayomi/";
+      gPath = "/storage/emulated/0/Pictures/nodelane-comics/";
     } else {
       gPath = path.join((await getDirectory())!.path, 'Pictures');
     }
@@ -340,7 +281,7 @@ class StorageProvider {
         TrackerLibraryCacheSchema,
       ],
       directory: dir!.path,
-      name: "mangayomiDb",
+      name: "nodelane-comics",
       inspector: inspector,
     );
     try {

@@ -7479,7 +7479,7 @@ abstract class AppLocalizations {
   /// No description provided for @reader_image_save_android.
   ///
   /// In en, this message translates to:
-  /// **'Save to the device’s Pictures/Mangayomi folder.'**
+  /// **'Save to the device’s Pictures/nodelane-comics folder.'**
   String get reader_image_save_android;
 
   /// No description provided for @reader_image_share.

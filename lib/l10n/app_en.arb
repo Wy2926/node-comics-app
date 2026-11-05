@@ -1756,7 +1756,7 @@
   "reader_image_actions": "Image actions",
   "reader_image_original": "Uses the full original page, without translation, cropping or reader color filters.",
   "reader_image_save_ios": "Save to the Pictures folder in the current app storage location.",
-  "reader_image_save_android": "Save to the device’s Pictures/Mangayomi folder.",
+  "reader_image_save_android": "Save to the device’s Pictures/nodelane-comics folder.",
   "reader_image_share": "Open the system share sheet.",
   "reader_image_cover": "Change this comic’s cover after confirmation.",
   "reader_image_cover_limit": "Cover images must be smaller than 5 MB. Saving and sharing remain available.",

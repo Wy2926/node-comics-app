@@ -96,7 +96,7 @@ extension UChapDataPreloadExtensions on UChapDataPreload {
         chapter?.url,
       ].whereType<String>().where((value) => value.isNotEmpty).join('|');
       final baseName =
-          'mangayomi_archive_${keyToMd5(sourceKey)}_${index ?? pageIndex}';
+          'nodelane-comics_archive_${keyToMd5(sourceKey)}_${index ?? pageIndex}';
       final bytes = archiveImage!;
       final tempFile = await cacheImageBytesToTempFile(
         tempDir: Directory.systemTemp,

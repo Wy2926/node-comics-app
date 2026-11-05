@@ -4008,7 +4008,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reader_image_save_ios => '保存到当前应用存储位置的 Pictures 文件夹。';
 
   @override
-  String get reader_image_save_android => '保存到设备的 Pictures/Mangayomi 文件夹。';
+  String get reader_image_save_android =>
+      '保存到设备的 Pictures/nodelane-comics 文件夹。';
 
   @override
   String get reader_image_share => '打开系统分享面板。';

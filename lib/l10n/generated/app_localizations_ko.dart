@@ -4138,7 +4138,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get reader_image_save_android =>
-      'Save to the device’s Pictures/Mangayomi folder.';
+      'Save to the device’s Pictures/nodelane-comics folder.';
 
   @override
   String get reader_image_share => 'Open the system share sheet.';

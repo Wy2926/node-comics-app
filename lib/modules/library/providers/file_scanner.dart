@@ -68,23 +68,7 @@ class DownloadLocalFolderNameState extends _$DownloadLocalFolderNameState {
   }
 }
 
-/// Scans `Mangayomi/local` folder (if exists) for Mangas/Animes and imports in library.
-///
-/// **Folder structure:**
-/// ```
-/// Mangayomi/local/MangaName/CustomCover.jpg (optional)
-/// Mangayomi/local/MangaName/Chapter1/Page1.jpg
-/// Mangayomi/local/MangaName/Chapter2.cbz
-/// Mangayomi/local/AnimeName/Episode1.mp4
-/// Mangayomi/local/NovelName/NovelName.epub
-/// ```
-/// **Supported filetypes:** (taken from lib/modules/library/providers/local_archive.dart, line 98)
-/// ```
-/// Videotypes:   mp4, mov, avi, flv, wmv, mpeg, mkv
-/// Imagetypes:   jpg, jpeg, png, webp
-/// Archivetypes: cbz, zip, cbt, tar
-/// Other types: epub
-/// ```
+/// Scans the app's `local` folder and configured folders for library entries.
 @riverpod
 Future<void> scanLocalLibrary(Ref ref) async {
   // Get /local directory
@@ -741,15 +725,6 @@ String localVirtualPathFromStoredPath(
         normalized.startsWith('$normalizedFolderPath/')) {
       return getLocalVirtualPath(folder, storedPath);
     }
-  }
-
-  const legacyLocalPath = 'Mangayomi/local';
-  final legacyIndex = normalized.indexOf(legacyLocalPath);
-  if (legacyIndex != -1) {
-    final relative = normalized
-        .substring(legacyIndex + legacyLocalPath.length)
-        .replaceFirst(RegExp('^/+'), '');
-    return p.posix.join('local', relative);
   }
 
   return normalized;
