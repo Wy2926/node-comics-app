@@ -108,11 +108,8 @@ jobs:
           path: "build/app/outputs/flutter-apk/nodelane-comics-${{ github.ref_name }}-android-*.apk"
           if-no-files-found: error
 
-  # Dedicated Android TV build: same app, but with TV branding swapped in (a
-  # TV launcher icon + banner). Fire TV shows the square launcher icon for
-  # sideloaded apps and doesn't reliably honour the `-television` resource
-  # qualifier, so the icon is overwritten directly here rather than via a
-  # qualifier. Produces separate nodelane-comics-<tag>-android-tv-*.apk artifacts.
+  # Android TV uses the shared NodeLane icon and localized Leanback banners.
+  # Keep the separate artifact names used by the TV update selector.
   build-and-release-android-tv:
     needs: validate-release-version
     permissions:
@@ -154,18 +151,6 @@ jobs:
 
       - name: Install the CLI tool
         run: cargo install 'flutter_rust_bridge_codegen'
-
-      # Overwrite the default launcher icon (and banner) with the TV variants
-      # from android/tv_res before building. The leanback banner is declared in
-      # the manifest by the Android TV support work.
-      - name: Apply TV branding
-        run: |
-          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            cp -f "android/tv_res/mipmap-$d/launcher_icon.png" \
-                  "android/app/src/main/res/mipmap-$d/launcher_icon.png"
-          done
-          cp -f android/tv_res/drawable-xhdpi/tv_banner.png \
-                android/app/src/main/res/drawable-xhdpi/tv_banner.png || true
 
       - name: Setup Android keystore
         run: |

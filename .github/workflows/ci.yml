@@ -135,17 +135,6 @@ jobs:
       - name: Install flutter_rust_bridge_codegen
         run: cargo install 'flutter_rust_bridge_codegen'
 
-      # Overwrite the default launcher icon (and banner) with the TV variants
-      # from android/tv_res before building.
-      - name: Apply TV branding
-        run: |
-          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            cp -f "android/tv_res/mipmap-$d/launcher_icon.png" \
-                  "android/app/src/main/res/mipmap-$d/launcher_icon.png"
-          done
-          cp -f android/tv_res/drawable-xhdpi/tv_banner.png \
-                android/app/src/main/res/drawable-xhdpi/tv_banner.png || true
-
       - name: Install dependencies
         run: flutter pub get
 

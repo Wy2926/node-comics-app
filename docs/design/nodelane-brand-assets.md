@@ -23,6 +23,10 @@ Windows 使用同一工具与输入导出 `windows/runner/resources/app_icon.ico
 
 Linux 的 `linux/packaging/icons/hicolor/<尺寸>/apps/nodelane-comics.png` 复用上述 macOS 的 16／32／64／128／256／512 像素输出，通过仓库内相对符号链接引用；发行打包时解引用为 PNG，安装后不依赖 macOS 目录。桌面入口、AppImage、RPM 与 Debian 共用这些资源，不另存重复图片。
 
+Android 使用同一工具与输入导出五种密度的 `launcher_icon.png`，以及自适应图标的 `ic_launcher_foreground.png`；背景为白色，前景留边为 24%，避免圆形遮罩裁切对白框尾部。生成时只启用 Android，不更新其他平台资源。手机与 TV 共用图标，已删除未引用的旧 `ic_launcher.png`、启动视频、重复 TV 图标目录及构建覆盖步骤。
+
+TV 横幅为 320 × 180 PNG，复用品牌图形并合成浅色背景与应用名称；英文显示 NodeLane Comics，中文显示 NodeLane漫译。文字使用 macOS 系统字体栅格化，只分发 PNG，不引入字体文件。`drawable-xhdpi/tv_banner.png` 为默认横幅，`tv_banner_zh.png` 由简繁中文资源映射共用；没有按地区复制图片。尺寸及文字规则依据 [Android TV 图标指南](https://developer.android.com/design/ui/tv/guides/system/tv-app-icon-guidelines)。
+
 | 平台输出 | SHA-256 |
 | --- | --- |
 | `Icon-App-1024x1024@1x.png` | `5b66c71d892ece51fd3962ca1847b9b02136c343f394c345a7ddc685acf00ecc` |
@@ -30,5 +34,9 @@ Linux 的 `linux/packaging/icons/hicolor/<尺寸>/apps/nodelane-comics.png` 复�
 | `Icon-App-Tinted-1024x1024@1x.png` | `3c0b8071327a076e29a9031e597cfdec14ec43bb43cdb19546c7685915d985b1` |
 | macOS `app_icon_1024.png` | `575ae4e8fa6c8324933137b54532bd036d71baabf6a5bf2482ccc384ddcb4f14` |
 | Windows `app_icon.ico`（256 像素） | `f04976df67739514c76663bcc190be1e22de6cee7dd1da12648d6e3139370c0b` |
+| Android `mipmap-xxxhdpi/launcher_icon.png` | `c1c6492b64a94c6cf8b29d7db50de83c5756e16573c50c8120201ca1716cebfe` |
+| Android `drawable-xxxhdpi/ic_launcher_foreground.png` | `2b53764b10041d340e01bd86f5d929633a984f4d71c1c756dbaa115b42a0d0de` |
+| Android `drawable-xhdpi/tv_banner.png` | `742b54adfe8d82a3ecb6582699c9dc1a477d7d5f1e28c6a8ca195a406c69f3f1` |
+| Android `drawable-xhdpi/tv_banner_zh.png` | `aa16b356b7ab0fbeb66ac6b8b644ec918e9838c8cae3a82c69087e9697338f9d` |
 
-Android 的生成输入已指向 NodeLane 素材，原生图标输出仍待处理；各平台发行验收独立进行。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。
+各平台发行验收独立进行。`assets/app_icons/icon-red.png` 仅保留供未改动的上游原始 README 展示，不列入 Flutter 运行时资源。

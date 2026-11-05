@@ -175,6 +175,9 @@ flutter:
           weight: 700
 flutter_launcher_icons:
   android: "launcher_icon"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/brand/nodelane-comics-icon.png"
+  adaptive_icon_foreground_inset: 24
   ios: true
   remove_alpha_ios: true
   background_color_ios: "#FFFFFF"

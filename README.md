@@ -1,6 +1,6 @@
 # NodeLane Comics App
 
-「NodeLane漫译」（其他语言为 NodeLane Comics）是基于 [Mangayomi](https://github.com/kodjodevf/mangayomi) 开发的手机漫画应用，项目仓库为 [Wy2926/node-comics-app](https://github.com/Wy2926/node-comics-app)。当前开发与首版验收以 iOS 为主，Android 测试暂缓。
+「NodeLane漫译」（其他语言为 NodeLane Comics）是基于 [Mangayomi](https://github.com/kodjodevf/mangayomi) 开发的手机漫画应用，项目仓库为 [Wy2926/node-comics-app](https://github.com/Wy2926/node-comics-app)。当前开发与首版验收以 iOS 为主，各平台验证范围见下方专题文档。
 
 产品目标是将漫画阅读、网站适配与 NodeLane 翻译结合起来，并提供内置多标签浏览器，在原网页中翻译漫画图片。
 
@@ -44,7 +44,7 @@ flutter build apk --debug
 flutter build ios --debug --no-codesign
 ```
 
-这些是各平台运行入口，不代表已完成本机编译或真机验证；当前按开发约定以 iOS 验证为主，Android 命令暂不执行。应用 GitHub、反馈及更新查询统一指向项目仓库；各平台身份、图标及发行待办见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。签名、发行构建与部署尚未验收。
+这些是各平台运行入口，实际验证范围按任务授权执行，不代表完整功能或真机验收。应用 GitHub、反馈及更新查询统一指向项目仓库；各平台身份、图标、Android 安装验证及发行待办见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。正式签名、发行构建与部署尚未验收。
 
 ## 既有 NodeLane 能力
 

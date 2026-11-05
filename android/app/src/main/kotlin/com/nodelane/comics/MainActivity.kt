@@ -1,4 +1,4 @@
-package com.kodjodevf.mangayomi
+package com.nodelane.comics
 
 import androidx.annotation.NonNull
 import libmtorrentserver.Libmtorrentserver

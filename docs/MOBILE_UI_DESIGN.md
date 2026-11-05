@@ -1,6 +1,6 @@
 # 手机界面与视觉令牌
 
-当前验收范围为 **iOS 模拟器、常规字号**；超大字号专项适配与测试、Android 构建和运行测试暂缓。验证边界与待解决问题集中维护在文末。
+界面验收以 **iOS 模拟器、常规字号**为主；Android 已验证原生身份、图标及基础安装启动，完整功能与真机验收尚未完成。超大字号专项适配与测试暂缓，验证边界与待解决问题集中维护在文末。
 
 保留漫画、小说、动画及现有功能，不按首版范围删减入口。手机共享视觉令牌、媒体切换和模态组件统一维护；功能变化以明确需求为准。
 
@@ -449,9 +449,11 @@ NodeLane 漫画目录读取官方本地开发源，默认 `http://127.0.0.1:8787
 已按内置 image_gen 生成的[关于、搜索空态与更新设计](design/ios-about-update-v2.png)实现，[完整提示词](design/ios-about-update-v2.prompts.txt)随图保留。图中版本与说明为示例，实际页面读取运行版本及发布查询结果。
 
 - 关于页使用居中 80 点品牌区，名称 26 点、版本 14 点，以下为应用更新、项目与帮助分组；诊断、错误报告与日志收进共用 `NodeLaneDisclosure`。页面边距 20、分组内边距 16、组间距 24，背景、图标、分隔线与按钮均沿用已有令牌。包信息失败可重试，从报告页返回后刷新数量。桌面与电视保留原布局。
-- 中文应用名为「NodeLane漫译」，其他语言为「NodeLane Comics」；Flutter 文案和 iOS 本地化显示名同步，Android 仅更新显示名资源。iOS 主应用包标识为 `com.nodelane.comics`，测试目标为 `com.nodelane.comics.RunnerTests`，Debug／Profile／Release 使用一致的安装身份。Android 包标识待调整，发布签名另行验收；协议见[应用链接](#应用链接)。`NodeLaneBrandMark` 共用绘制实现，应用标识与账号默认标识分别使用独立素材路径，便于后续分别替换；[素材来源及许可](design/nodelane-brand-assets.md)单独记录。
+- 中文应用名为「NodeLane漫译」，其他语言为「NodeLane Comics」；Flutter、iOS 与 Android 本地化显示名同步。iOS 主应用包标识为 `com.nodelane.comics`，测试目标为 `com.nodelane.comics.RunnerTests`，Debug／Profile／Release 使用一致的安装身份。发布签名另行验收；协议见[应用链接](#应用链接)。`NodeLaneBrandMark` 共用绘制实现，应用标识与账号默认标识分别使用独立素材路径，便于后续分别替换；[素材来源及许可](design/nodelane-brand-assets.md)单独记录。
 - iOS 的新包标识与旧 `com.kodjodevf.mangayomi` 属于不同应用身份，不能作为旧包的覆盖更新或直接读取其私有数据；不提供上游备份兼容或数据迁移。NodeLane 后续 IPA 更新应保持新包标识与兼容的签名身份。Apple App ID 注册、匹配的团队／描述文件及签名安装尚未验收。
-- iOS 系统图标的标准／深色／着色资源使用 NodeLane 图形；应用内通知、备份／恢复结果、更多页与侧栏统一复用 `NodeLaneBrandMark`，保留各入口尺寸，移除旧图标数组、随机红／黑选择和专用主题参数。平台生成源不作为 Flutter 运行时图片加载；资源来源、生成配置与摘要见[品牌素材说明](design/nodelane-brand-assets.md#平台图标)。Android 原生图标输出尚待处理。
+- iOS 系统图标的标准／深色／着色资源使用 NodeLane 图形；应用内通知、备份／恢复结果、更多页与侧栏统一复用 `NodeLaneBrandMark`，保留各入口尺寸，移除旧图标数组、随机红／黑选择和专用主题参数。平台生成源不作为 Flutter 运行时图片加载；资源来源、生成配置与摘要见[品牌素材说明](design/nodelane-brand-assets.md#平台图标)。
+- Android 应用 ID、原生命名空间与入口类统一为 `com.nodelane.comics`，版本直接读取 Flutter 配置。FileProvider 使用 `${applicationId}.fileprovider`，应用私有外部文件根目录由系统解析，不写死旧包名；内部 Dart／Kotlin 方法通道保持成对一致。手机与 TV 共用 NodeLane 图标及中英文横幅，TV 保留独立发行文件名供更新选择，构建时不再覆盖旧品牌图片。旧启动视频、无引用图标及重复 TV 资源已删除，不提供旧应用数据迁移。
+- Android Debug APK 已在 API 36 arm64 模拟器验证新身份安装、冷启动、同包覆盖安装保留数据库、系统图标、中英文名称、各中文地区横幅及 FileProvider URI 的实际读取；普通启动与 Leanback、OAuth 回调入口均可解析。正式签名／发行、真实 OAuth 授权、在线 APK 下载与安装、TV 启动界面及真机行为尚未验收，不能由此推断其他 ABI 或完整 Android 功能通过。
 - macOS 使用 `com.nodelane.comics`、`nodelane-comics.app` 及 NodeLane 图标，权限说明显示 NodeLane Comics，上游版权署名保留。Debug／Profile／Release 共用产品身份和 Flutter 版本，Xcode scheme、CI 上传及 DMG 输入路径与产物一致；工程仅保留应用与 Flutter Assemble 目标。Xcode 配置解析与图标资源编译通过，不代表完整构建、签名、公证、安装或桌面登录回调已经验收。
 - Windows 的窗口标题、安装器、快捷方式及卸载展示名为 `nodelane-comics`，发布者为 `NodeLane`，应用与安装器共用 NodeLane 图标。安装器使用独立且后续发行保持稳定的 ID `D80A683F-91A2-4296-BC85-2A903B6E247C`，不覆盖旧上游安装或迁移其数据。窗口创建与登录回调查找共用同一标题；文件属性使用自有产品名和 Flutter 传入的版本，移除旧版本回退。内部工程与可执行文件仍为 `mangayomi`／`mangayomi.exe`，安装器按该真实文件名建立快捷方式。发行流程使用项目锁定的 `inno_bundle`，无需全局激活。配置解析、图标与静态一致性检查通过；Windows 原生构建、签名、安装和真实回调尚未验收。
 - Linux 的窗口、可执行文件和 RPM／Debian 包名为 `nodelane-comics`；GTK 应用与程序标识、桌面文件基名和 `StartupWMClass` 统一为 `com.nodelane.comics`，按 [GTK 的桌面集成约定](https://docs.gtk.org/gtk4/migrating-3to4.html)关联 X11／Wayland 窗口。各格式复用 `linux/com.nodelane.comics.desktop` 和六种尺寸的 NodeLane 图标，桌面启动传入 `%u`。RPM／Debian 将程序与运行库安装到 `/opt/nodelane-comics`，通过包内的 `/usr/bin/nodelane-comics` 符号链接启动；不覆盖或迁移旧上游安装。
@@ -493,7 +495,7 @@ Simkl 到期按需续期，同一客户端进程内各页面共用一次在途�
 
 Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码及回调代码已移除，续期不再携带上游密钥或重复尝试同一 Client ID。书单、推荐、观看顺序的业务实现和本地记录保留；当前缺少自有凭据，相关网络功能尚不可用。没有新增旧会话兼容、迁移或请求拦截逻辑。桌面同步仍使用 `http://localhost:48765/callback`，自有同步服务的回调登记待处理。
 
-本地测试覆盖导入分发、重复／失败释放、NodeLane 模拟 PKCE，以及 AniList／MyAnimeList／Simkl 的回调校验、身份隔离、重试与迟到结果丢弃；桌面监听释放、超时、MyAnimeList 五个平台的身份选择、三种 Client ID 的恢复续期及拒绝后的单次请求均经模拟测试。匿名请求可进入 AniList 登录页，尚未完成真实账号授权。Windows 注册仅作静态核对，桌面回调仅模拟测试，不代表原生唤起通过；iOS 实机登录待验收。Android 仅检查声明与纯 Dart 逻辑，构建、模拟器与真机测试暂缓。
+本地测试覆盖导入分发、重复／失败释放、NodeLane 模拟 PKCE，以及 AniList／MyAnimeList／Simkl 的回调校验、身份隔离、重试与迟到结果丢弃；桌面监听释放、超时、MyAnimeList 五个平台的身份选择、三种 Client ID 的恢复续期及拒绝后的单次请求均经模拟测试。匿名请求可进入 AniList 登录页，尚未完成真实账号授权。Windows 注册仅作静态核对，桌面回调仅模拟测试，不代表原生唤起通过；iOS 实机登录待验收。Android 已检查声明、纯 Dart 逻辑及模拟器中的回调入口解析，真实账号授权与真机登录仍待验收。
 
 ## 翻译与账号设置
 
@@ -631,7 +633,7 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 ## 备份、恢复与存储
 
 - 默认文件目录为 Android 的 `/storage/emulated/0/nodelane-comics`、桌面 Documents 下的 `nodelane-comics`；iOS 直接使用本应用 Documents。数据库名统一为 `nodelane-comics`，macOS 存于 Application Support 下的 `nodelane-comics/databases`，Windows／Linux 存于默认目录的 `databases`，iOS 存于 Documents/databases，Android 保留应用私有目录。数据库改名后使用新库，不读取、搬迁或删除上游旧库；旧 macOS 搬迁与 Hive 清理逻辑已移除。
-- 本地书库按 `source=local` 查询，路径映射只使用当前配置的目录，不再按 `Mangayomi/local` 兜底。iOS 目录授权书签使用 `com.nodelane.comics.local_directory_bookmarks`，压缩包页面临时文件使用 `nodelane-comics_archive_` 前缀。桌面文件与临时数据库验证新库隔离、重开保留、自定义目录和本地查询；iOS 原生目录授权仍待真机验证，Android 构建及设备验收暂缓。
+- 本地书库按 `source=local` 查询，路径映射只使用当前配置的目录，不再按 `Mangayomi/local` 兜底。iOS 目录授权书签使用 `com.nodelane.comics.local_directory_bookmarks`，压缩包页面临时文件使用 `nodelane-comics_archive_` 前缀。桌面文件与临时数据库验证新库隔离、重开保留、自定义目录和本地查询；iOS 原生目录授权仍待真机验证；Android 已验证 FileProvider 的应用外部文件目录，实际书库目录授权、扫描与真机读写尚未验收。
 - 自有备份与维护快照统一导出为 `nodelane-comics_<时间>.backup`，ZIP 内为同名 `.backup.db`；格式识别只读取文件名，不以父目录名判断。保留当前 JSON 结构版本 `2`、压缩与加密，不再识别 Mangayomi 文件名前缀或恢复结构版本 `1`，移除备份预览与恢复中的旧媒体字段转换。Mihon／Aniyomi／Kotatsu／Neko 的独立导入功能保留。导出、合并／替换、重复恢复和不支持格式的失败隔离由本地文件与临时数据库测试验证；iOS 真机备份恢复尚待验收。
 - “存储与备份”首页依次展示创建／恢复／自动备份、三类本机缓存、下载位置及默认收起的高级选项。压缩、加密、启动清理和回滚／来源维护继续使用原工具。下载位置首页显示默认或自定义，选择页和高级区显示完整路径；取消不写入，iOS 保留固定备份目录。章节缓存沿用原方法，封面清理只删除 `cacheimagecover`，译图清理保留原回执和任务记录；清理前确认，取消不执行，进行中禁止重复操作。
 - 备份频率仍是原六项；关闭频率不清空路径、选择或加密偏好。压缩级别沿用 0–9 和原即时状态更新，仅在拖动结束持久化；缓存大小、清理及启动时清理仍使用原 provider，不为原方法吞掉的异常新增成功判断。页面只限制同时进行的操作，不增加后台备份调度。
@@ -712,7 +714,7 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 
 | 层级／范围 | 已有证据 | 尚未覆盖 |
 | --- | --- | --- |
-| 静态与构建 | 受影响代码的静态检查、iOS arm64 Debug 模拟器构建通过；全量分析有既有 Isar 生成代码警告和翻译契约提示 | 发布签名与发行构建；不能据此判定运行时或真机通过 |
+| 静态与构建 | 受影响代码的静态检查、iOS arm64 Debug 模拟器构建及 Android Debug APK 构建通过；全量分析有既有 Isar 生成代码警告和翻译契约提示，Android 构建有既有 Kotlin 插件迁移提示 | 正式签名与发行构建；不能据此判定完整运行时或真机通过 |
 | 单元、widget 与模拟服务 | 覆盖草稿取消、重复提交、迟到结果、账号／来源隔离、偏好合并、失败恢复、路由返回及订阅释放；临时 Isar 覆盖章节身份、日期更新和阅读状态保留 | 替身请求、文件及平台通道不证明真实网络、系统授权或服务写入 |
 | 书架、详情与阅读器 | iOS 常规入口验证布局、筛选／排序、目录、弹层、已读完后重新阅读、本地包读取、切页与同进程后台恢复；设置验证灰度和自动滚动暂停／恢复 | 全部阅读模式与原译图尺寸切换、在线／下载长章节、真实书签／分类／删除／导出及失败恢复 |
 | 官方来源 | S2READ 的安装／更新、搜索、完整目录、上传日期刷新、实际章节首尾页与下一章，以及后台和重进后的阅读位置已在 iOS 模拟器验证 | Comix 章节仍需站点验证码；真实 CF、下载和来源特有筛选分别验收，详见 [来源契约](SOURCE_PLUGINS.md) |
@@ -721,7 +723,7 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 | 迁移、追踪、备份与维护 | 使用视图预览、内存仓库或临时数据库验证选择、确认、失败反馈和返回；常规入口验证只读状态与取消 | 真实持久化迁移、进度恢复、追踪写入、同步、备份加解密、回滚及文件失败恢复 |
 | 下载、播放器与听书 | 下载队列的展示、排序和任务回调有模拟覆盖；播放器设置使用替身，小说样例已验证实际语音暂停／停止和同进程恢复 | 真实下载重试、原生目录、真实音视频轨道／字幕／解码、完整 EPUB 与在线小说；下载队列触摸拖动仍需真机验收 |
 | 更新与诊断 | iOS 验证关于、错误报告展示和更新检查；新版本卡片与更新取消／失败使用隔离样例 | 真实更新下载／安装、记录清除、反馈发送和外部失败回退 |
-| 平台与性能 | 当前按 iOS 模拟器、常规字号推进 | Android 验收暂缓；两端真机、完整读屏、原生 Reduce Transparency 联动、长书架内存／帧率／耗电与发布部署尚未验收 |
+| 平台与性能 | 界面按 iOS 模拟器、常规字号推进；Android API 36 arm64 仅验证身份、资源、基础安装启动和文件共享路径 | Android 完整功能、其他 API／ABI 与 TV 运行；两端真机、完整读屏、原生 Reduce Transparency 联动、长书架内存／帧率／耗电与发布部署尚未验收 |
 
 ### 待解决问题与验收
 
@@ -729,4 +731,4 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 - 轻点进度条后切换阅读方向有偶发回退首页，完整拖动未复现，仍需定位。
 - 本地包仅支持在当前 iOS 沙盒中按相同相对路径恢复已有文件；临时文件被系统清理后的重装恢复及持久导入策略尚未验收。
 - 界面预览通过不代表数据操作完成。迁移、下载、分类／书签、备份、追踪等写入应继续验证失败、重复执行、处理中后台恢复和进程回收。
-- 发布前完成 iOS 真机、可访问性、长列表与图片资源测量、应用标识与签名核对；Android 恢复验收时单独补齐。
+- 发布前完成 iOS 真机、可访问性、长列表与图片资源测量、应用标识与签名核对；Android 完整功能与正式发行需独立验收。
