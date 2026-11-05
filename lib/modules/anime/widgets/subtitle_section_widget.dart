@@ -11,16 +11,11 @@ import 'package:mangayomi/modules/anime/utils/track_list_builder.dart';
 import 'package:mangayomi/modules/anime/widgets/search_subtitles.dart';
 import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/services/fetch_subtitles.dart';
 import 'package:media_kit/media_kit.dart';
 
-/// The player settings sheet's "subtitle" section: delay/speed steppers plus
-/// one row per available subtitle track (from the player and from the
-/// source's own subtitle list), and actions to load a local file or search
-/// online. Its own StatefulWidget (rather than the nested StatefulBuilder
-/// this used to be) since the delay/speed steppers' displayed value is
-/// local, UI-only state - the actual committed mpv property is driven by the
-/// text controllers' listeners, owned by the caller.
+/// Subtitle tracks, local files and online search in the player settings sheet.
+/// Delay/speed display state stays here; the caller's text-controller listeners
+/// apply the corresponding mpv properties.
 class SubtitleSectionWidget extends StatefulWidget {
   final Player player;
   final List<vid.Video> videos;
@@ -230,22 +225,23 @@ class _SubtitleSectionWidgetState extends State<SubtitleSectionWidget> {
             icon: Icons.search,
             onTap: () async {
               try {
-                final subtitle = await subtitlesSearchraggableMenu(
+                final subtitle = await showSubtitleSearch(
                   context,
                   chapter: widget.episode,
                   isLocal: widget.isLocal,
-                ) as ImdbSubtitle?;
+                );
                 if (subtitle != null && context.mounted) {
-                  final track = SubtitleTrack.uri(
-                    subtitle.url!,
-                    title: subtitle.language,
+                  final track = SubtitleTrack.data(
+                    subtitle.text,
+                    title: subtitle.name,
                     language: subtitle.language,
                   );
-                  unawaited(widget.onSetSubtitleTrack(track));
+                  await widget.onSetSubtitleTrack(track);
                 }
                 if (!context.mounted) return;
                 widget.onDone();
               } catch (_) {
+                if (!context.mounted) return;
                 showNodeLaneNotice(
                   context.l10n.error,
                   kind: NodeLaneNoticeKind.error,

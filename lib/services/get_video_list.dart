@@ -77,7 +77,7 @@ Future<(List<Video>, bool, List<String>, Directory?)> getVideoList(
         for (var element in subtitlesDir.listSync()) {
           if (element is File) {
             final subtitle = Track(
-              label: element.uri.pathSegments.last.replaceAll('.srt', ''),
+              label: p.basenameWithoutExtension(element.path),
               file: element.uri.toString(),
             );
             subtitles.add(subtitle);

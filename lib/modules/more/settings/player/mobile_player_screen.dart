@@ -11,6 +11,7 @@ import 'package:mangayomi/utils/language.dart';
 
 import 'mobile_player_settings_widgets.dart';
 import 'providers/player_state_provider.dart';
+import 'subtitle_service_screen.dart';
 
 class MobilePlayerScreen extends ConsumerWidget {
   const MobilePlayerScreen({super.key});
@@ -68,6 +69,7 @@ class MobilePlayerScreen extends ConsumerWidget {
         MobileSettingsGroup(
           title: l10n.video_subtitle,
           children: [
+            const SubtitleServiceSettingsRow(),
             MobileSettingsChoice<Locale>(
               title: l10n.default_subtitle_language,
               icon: NodeLaneIcons.of(context).translate,

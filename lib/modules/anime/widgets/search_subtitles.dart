@@ -1,31 +1,29 @@
-import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
-import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
+import 'package:mangayomi/modules/more/settings/player/subtitle_service_screen.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
-import 'package:mangayomi/services/fetch_subtitles.dart';
-import 'package:mangayomi/services/http/m_client.dart';
-import 'package:mangayomi/services/http/rhttp/src/model/settings.dart';
-import 'package:mangayomi/utils/log/logger.dart';
+import 'package:mangayomi/services/subtitles/subtitle_preferences.dart';
+import 'package:mangayomi/services/subtitles/subtitle_service.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:path/path.dart' as path;
 
 class SubtitlesWidgetSearch extends ConsumerStatefulWidget {
-  final Chapter chapter;
-  final bool isLocal;
   const SubtitlesWidgetSearch({
     required this.chapter,
     required this.isLocal,
     super.key,
   });
+  final Chapter chapter;
+  final bool isLocal;
 
   @override
   ConsumerState<SubtitlesWidgetSearch> createState() =>
@@ -33,33 +31,82 @@ class SubtitlesWidgetSearch extends ConsumerStatefulWidget {
 }
 
 class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
-  late final _controller = TextEditingController(text: query);
-  List<ImdbTitle> titles = [];
-  List<ImdbEpisode>? episodes;
-  List<ImdbSubtitle>? subtitles;
-  late String query = widget.chapter.manga.value?.name?.trim() ?? "";
-  bool _isLoading = true;
-  String? _errorMsg;
+  final _scope = Object();
 
   @override
-  initState() {
-    super.initState();
-    _init();
+  Widget build(BuildContext context) {
+    Widget status(Widget child) => NodeLaneCatalogSheet(
+      title: context.l10n.search_subtitles,
+      fitContent: true,
+      child: ListView(
+        shrinkWrap: true,
+        padding: NodeLaneTokens.pagePadding,
+        children: [const SubtitleServiceSettingsRow(), child],
+      ),
+    );
+    return ref
+        .watch(subtitleSearchServiceProvider(_scope))
+        .when(
+          skipLoadingOnRefresh: false,
+          loading: () => status(
+            NodeLaneNotice(
+              message: context.l10n.mass_migration_loading,
+              kind: NodeLaneNoticeKind.progress,
+            ),
+          ),
+          error: (_, _) => status(
+            NodeLaneNotice(
+              message: context.l10n.subtitle_storage_failed,
+              kind: NodeLaneNoticeKind.error,
+              actionLabel: context.l10n.retry,
+              onAction: () => ref.invalidate(subtitlePreferencesProvider),
+            ),
+          ),
+          data: (service) => service == null
+              ? status(
+                  NodeLaneNotice(message: context.l10n.subtitle_setup_required),
+                )
+              : _SubtitleSearchResults(
+                  key: ObjectKey(service),
+                  service: service,
+                  chapter: widget.chapter,
+                  isLocal: widget.isLocal,
+                ),
+        );
   }
+}
 
-  Future<void> _init() async {
-    // Yield to microtask queue so initState completes before async work
-    await Future(() {});
-    try {
-      titles = await fetchImdbTitles(query);
-    } catch (e) {
-      _errorMsg = e.toString();
-    }
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+class _SubtitleSearchResults extends StatefulWidget {
+  const _SubtitleSearchResults({
+    super.key,
+    required this.service,
+    required this.chapter,
+    required this.isLocal,
+  });
+  final SubtitleSearchService service;
+  final Chapter chapter;
+  final bool isLocal;
+
+  @override
+  State<_SubtitleSearchResults> createState() => _SubtitleSearchResultsState();
+}
+
+class _SubtitleSearchResultsState extends State<_SubtitleSearchResults> {
+  late final _controller = TextEditingController(
+    text: widget.chapter.manga.value?.name?.trim() ?? '',
+  );
+  List<SubtitleTitle> _titles = [];
+  SubtitleTitle? _title;
+  List<SubtitleEpisode>? _episodes;
+  List<SubtitleMatch>? _subtitles;
+  bool _busy = false;
+  SubtitleFailure? _error;
+  Future<void> Function()? _retry;
+
+  @override
+  void initState() {
+    super.initState();
+    _search(_controller.text);
   }
 
   @override
@@ -68,61 +115,126 @@ class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
     super.dispose();
   }
 
-  Future<void> _search(String value) async {
-    if (_isLoading) return;
-    FocusManager.instance.primaryFocus?.unfocus();
-    query = value.trim();
+  Future<void> _run(Future<void> Function() operation) async {
+    if (_busy || !mounted) return;
     setState(() {
-      _isLoading = true;
-      _errorMsg = null;
-      episodes = null;
-      subtitles = null;
-    });
-    await _init();
-  }
-
-  Future<void> _choose(int index) async {
-    if (_isLoading) return;
-    if (subtitles != null) {
-      Navigator.pop(context, subtitles![index]);
-      return;
-    }
-    setState(() {
-      _isLoading = true;
-      _errorMsg = null;
+      _busy = true;
+      _error = null;
+      _retry = null;
     });
     try {
-      if (episodes != null) {
-        subtitles = await fetchImdbSubtitles(episodes![index].id);
-      } else {
-        episodes = await fetchImdbEpisodes(titles[index].id);
-        if (episodes == null || episodes!.isEmpty) {
-          episodes = null;
-          subtitles = await fetchImdbSubtitles(titles[index].id);
-        }
+      await operation();
+    } catch (error) {
+      if (mounted) {
+        _error = error is SubtitleFailure
+            ? error
+            : const SubtitleFailure(SubtitleFailureCode.response);
+        _retry = operation;
       }
-    } catch (e) {
-      _errorMsg = e.toString();
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
-    if (mounted) setState(() => _isLoading = false);
   }
+
+  Future<void> _search(String value) => _run(() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    _title = null;
+    _episodes = null;
+    _subtitles = null;
+    _titles = await widget.service.catalog.searchTitles(value);
+  });
+
+  Future<void> _choose(int index) => _run(() async {
+    if (_subtitles != null) {
+      final content = await _subtitles![index].load();
+      if (mounted) Navigator.pop(context, content);
+    } else if (_episodes != null) {
+      final episode = _episodes![index];
+      _subtitles = await widget.service.source.search(
+        SubtitleQuery(
+          _title!.id,
+          season: episode.season,
+          episode: episode.episode,
+        ),
+      );
+    } else {
+      final title = _titles[index];
+      if (title.isSeries) {
+        final episodes = await widget.service.catalog.episodes(title.id);
+        _title = title;
+        _episodes = episodes;
+      } else {
+        _subtitles = await widget.service.source.search(
+          SubtitleQuery(title.id),
+        );
+        _title = title;
+      }
+    }
+  });
+
+  Future<void> _download(int index) => _run(() async {
+    final subtitle = await _subtitles![index].load();
+    if (!mounted) return;
+    final archive = widget.chapter.archivePath;
+    final resolved = archive != null && archive.isNotEmpty
+        ? await resolveLocalArchivePath(archive)
+        : null;
+    final directory = await StorageProvider().getMangaChapterDirectory(
+      widget.chapter,
+      mangaMainDirectory:
+          resolved != null && widget.chapter.manga.value?.source == 'local'
+          ? Directory(path.dirname(resolved))
+          : null,
+    );
+    if (!mounted) return;
+    if (directory == null) {
+      throw const FileSystemException('Subtitle directory unavailable');
+    }
+    final language = subtitle.language.replaceAll(
+      RegExp(r'[^a-zA-Z0-9_-]'),
+      '_',
+    );
+    final file = File(
+      path.join(
+        '${directory.path}_subtitles',
+        '${language.isEmpty ? 'und' : language}.${subtitle.format}',
+      ),
+    );
+    await file.parent.create(recursive: true);
+    final staging = await file.parent.createTemp('.subtitle-');
+    try {
+      final completed = await File(path.join(staging.path, 'subtitle'))
+          .writeAsString(subtitle.text, flush: true);
+      await completed.rename(file.path);
+    } finally {
+      await staging.delete(recursive: true);
+    }
+    if (mounted) {
+      showNodeLaneNotice(
+        context.l10n.finished(''),
+        kind: NodeLaneNoticeKind.success,
+      );
+    }
+  });
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n, icons = NodeLaneIcons.of(context);
-    final count = subtitles?.length ?? episodes?.length ?? titles.length;
+    final l = context.l10n, icons = NodeLaneIcons.of(context);
+    final count = _subtitles?.length ?? _episodes?.length ?? _titles.length;
     return NodeLaneCatalogSheet(
-      title: l10n.search_subtitles,
+      title: l.search_subtitles,
       heightFactor: .85,
       fitContent: true,
-      onBack: !_isLoading && (subtitles != null || episodes != null)
+      onBack: !_busy && (_subtitles != null || _episodes != null)
           ? () => setState(() {
-              if (subtitles != null) {
-                subtitles = null;
+              if (_subtitles != null) {
+                _subtitles = null;
               } else {
-                episodes = null;
+                _episodes = null;
+                _title = null;
               }
-              _errorMsg = null;
+              _error = null;
+              _retry = null;
             })
           : null,
       child: ListView(
@@ -130,48 +242,61 @@ class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         children: [
+          AbsorbPointer(
+            absorbing: _busy,
+            child: const SubtitleServiceSettingsRow(),
+          ),
           NodeLaneTextField.search(
             controller: _controller,
-            hint: l10n.search,
-            enabled: !_isLoading,
+            hint: l.search,
+            enabled: !_busy,
             onSubmitted: _search,
           ),
           const SizedBox(height: NodeLaneTokens.space16),
-          if (_isLoading)
+          if (_busy)
             NodeLaneNotice(
-              message: l10n.mass_migration_loading,
+              message: l.mass_migration_loading,
               kind: NodeLaneNoticeKind.progress,
             )
-          else if (_errorMsg != null)
-            NodeLaneNotice(message: l10n.failed, kind: NodeLaneNoticeKind.error)
+          else if (_error != null)
+            NodeLaneNotice(
+              message: switch (_error!.code) {
+                SubtitleFailureCode.configuration => l.subtitle_setup_required,
+                SubtitleFailureCode.authentication => l.subtitle_auth_failed,
+                SubtitleFailureCode.quota => l.subtitle_quota_exhausted,
+                SubtitleFailureCode.network => l.subtitle_network_failed,
+                SubtitleFailureCode.response => l.subtitle_response_invalid,
+              },
+              kind: NodeLaneNoticeKind.error,
+              actionLabel: l.retry,
+              onAction: () => _run(_retry!),
+            )
           else if (count == 0)
-            NodeLaneNotice(message: l10n.no_result)
+            NodeLaneNotice(message: l.no_result)
           else
             NodeLaneGroupSurface(
               children: [
                 for (var index = 0; index < count; index++)
                   NodeLaneRow(
-                    title: subtitles != null
-                        ? subtitles![index].name ?? l10n.video_subtitle
-                        : episodes != null
-                        ? 'S${episodes![index].season}E${episodes![index].episode}: ${episodes![index].title}'
-                        : titles[index].primaryTitle,
-                    subtitle: subtitles != null
-                        ? [
-                            subtitles![index].displayLang,
-                            subtitles![index].format?.toUpperCase(),
-                            subtitles![index].encoding,
-                          ].whereType<String>().join(' · ')
-                        : episodes != null
+                    title: _subtitles != null
+                        ? (_subtitles![index].name.isEmpty
+                              ? l.video_subtitle
+                              : _subtitles![index].name)
+                        : _episodes != null
+                        ? 'S${_episodes![index].season}E${_episodes![index].episode}: ${_episodes![index].name}'
+                        : _titles[index].name,
+                    subtitle: _subtitles != null
+                        ? '${_subtitles![index].displayLanguage} · ${_subtitles![index].format.toUpperCase()}'
+                        : _episodes != null
                         ? null
-                        : '${titles[index].startYear ?? "—"} · ${l10n.score} ${titles[index].aggregateRating?.toStringAsFixed(1) ?? "—"}',
-                    icon: subtitles != null ? icons.subtitles : icons.anime,
+                        : '${_titles[index].year ?? '—'} · ${l.score} ${_titles[index].rating?.toStringAsFixed(1) ?? '—'}',
+                    icon: _subtitles != null ? icons.subtitles : icons.anime,
                     onTap: () => _choose(index),
-                    trailing: subtitles != null && widget.isLocal
+                    trailing: _subtitles != null && widget.isLocal
                         ? NodeLaneIconButton(
                             icon: icons.download,
-                            tooltip: l10n.download,
-                            onPressed: () => _downloadSubtitle(index),
+                            tooltip: l.download,
+                            onPressed: () => _download(index),
                           )
                         : null,
                   ),
@@ -181,88 +306,13 @@ class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
       ),
     );
   }
-
-  Future<void> _downloadSubtitle(int index) async {
-    showNodeLaneNotice(context.l10n.started);
-    try {
-      final subtitle = subtitles![index];
-      final storageProvider = StorageProvider();
-      final resolvedArchivePath =
-          widget.chapter.archivePath?.isNotEmpty ?? false
-          ? await resolveLocalArchivePath(widget.chapter.archivePath!)
-          : null;
-      final animeDir =
-          resolvedArchivePath != null &&
-              widget.chapter.manga.value?.source == "local"
-          ? Directory(path.dirname(resolvedArchivePath))
-          : null;
-      final chapterDirectory = (await storageProvider.getMangaChapterDirectory(
-        widget.chapter,
-        mangaMainDirectory: animeDir,
-      ))!;
-      final subtitleFile = File(
-        path.join(
-          '${chapterDirectory.path}_subtitles',
-          '${subtitle.language}.srt',
-        ),
-      );
-      final client = MClient.httpClient(
-        settings: const ClientSettings(
-          throwOnStatusCode: false,
-          tlsSettings: TlsSettings(verifyCertificates: false),
-        ),
-      );
-      await subtitleFile.create(recursive: true);
-      final response = await _withRetry(
-        () => client.get(Uri.parse(subtitle.url ?? '')),
-      );
-      if (response.statusCode != 200) {
-        AppLogger.log(
-          'Warning: Failed to download subtitle file: ${subtitle.language}',
-        );
-        return;
-      }
-      AppLogger.log('Subtitle file downloaded: ${subtitle.language}');
-      await subtitleFile.writeAsBytes(response.bodyBytes);
-      if (mounted) {
-        showNodeLaneNotice(
-          context.l10n.finished(""),
-          kind: NodeLaneNoticeKind.success,
-        );
-      }
-    } catch (e) {
-      AppLogger.log("Failed to download subtitle:", logLevel: LogLevel.error);
-      AppLogger.log(e.toString(), logLevel: LogLevel.error);
-      if (mounted) {
-        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
-      }
-    }
-  }
-
-  Future<T> _withRetry<T>(Future<T> Function() operation) async {
-    int attempts = 0;
-    while (true) {
-      try {
-        attempts++;
-        return await operation();
-      } catch (e) {
-        if (attempts >= 3) {
-          AppLogger.log("Request retries failed", logLevel: LogLevel.error);
-          rethrow;
-        }
-        await Future.delayed(Duration(milliseconds: 300 * attempts));
-      }
-    }
-  }
 }
 
-Future<dynamic> subtitlesSearchraggableMenu(
+Future<SubtitleContent?> showSubtitleSearch(
   BuildContext context, {
   required Chapter chapter,
   required bool isLocal,
-}) async {
-  return showNodeLaneCatalogSheet(
-    context,
-    SubtitlesWidgetSearch(chapter: chapter, isLocal: isLocal),
-  );
-}
+}) => showNodeLaneCatalogSheet<SubtitleContent>(
+  context,
+  SubtitlesWidgetSearch(chapter: chapter, isLocal: isLocal),
+);

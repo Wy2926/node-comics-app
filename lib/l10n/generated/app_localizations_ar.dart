@@ -4739,4 +4739,78 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notice_operation_incomplete => 'Action incomplete';
+
+  @override
+  String get subtitle_service => 'Online subtitle service';
+
+  @override
+  String get subtitle_service_mode => 'Subtitle source';
+
+  @override
+  String get subtitle_service_disabled => 'Off · clear saved credentials';
+
+  @override
+  String get subtitle_personal_key => 'My Wyzie key';
+
+  @override
+  String get subtitle_custom_service => 'My subtitle service';
+
+  @override
+  String get subtitle_key => 'Wyzie API Key';
+
+  @override
+  String get subtitle_key_hint =>
+      'Enter your own Wyzie key. It stays on this device and is not included in app backups.';
+
+  @override
+  String get subtitle_get_key => 'Get a personal key';
+
+  @override
+  String get subtitle_service_address => 'Subtitle search URL';
+
+  @override
+  String get subtitle_service_token => 'Service access token (optional)';
+
+  @override
+  String get subtitle_custom_hint =>
+      'Use the full HTTPS search URL of a Wyzie-compatible service, including its path (for example, /search). Enter an access token only if your service requires one.';
+
+  @override
+  String get subtitle_service_off_hint =>
+      'Online subtitle search is off. Embedded, source-provided and local subtitles remain available.';
+
+  @override
+  String get subtitle_setup_required =>
+      'Choose a subtitle service before searching.';
+
+  @override
+  String get subtitle_invalid_key => 'Enter a key without spaces.';
+
+  @override
+  String get subtitle_invalid_address =>
+      'Use a complete HTTPS URL without a query, fragment or embedded credentials.';
+
+  @override
+  String get subtitle_invalid_token =>
+      'The access token cannot contain spaces.';
+
+  @override
+  String get subtitle_storage_failed =>
+      'Could not read or save subtitle settings. Please try again.';
+
+  @override
+  String get subtitle_auth_failed =>
+      'The subtitle service refused access. Check your key or service token.';
+
+  @override
+  String get subtitle_quota_exhausted =>
+      'The subtitle service quota is exhausted. Check your account with that service.';
+
+  @override
+  String get subtitle_network_failed =>
+      'Could not reach the subtitle service. Please try again.';
+
+  @override
+  String get subtitle_response_invalid =>
+      'The subtitle service returned an unsupported response or file.';
 }

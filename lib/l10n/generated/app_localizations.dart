@@ -8357,6 +8357,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Action incomplete'**
   String get notice_operation_incomplete;
+
+  /// No description provided for @subtitle_service.
+  ///
+  /// In en, this message translates to:
+  /// **'Online subtitle service'**
+  String get subtitle_service;
+
+  /// No description provided for @subtitle_service_mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle source'**
+  String get subtitle_service_mode;
+
+  /// No description provided for @subtitle_service_disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Off · clear saved credentials'**
+  String get subtitle_service_disabled;
+
+  /// No description provided for @subtitle_personal_key.
+  ///
+  /// In en, this message translates to:
+  /// **'My Wyzie key'**
+  String get subtitle_personal_key;
+
+  /// No description provided for @subtitle_custom_service.
+  ///
+  /// In en, this message translates to:
+  /// **'My subtitle service'**
+  String get subtitle_custom_service;
+
+  /// No description provided for @subtitle_key.
+  ///
+  /// In en, this message translates to:
+  /// **'Wyzie API Key'**
+  String get subtitle_key;
+
+  /// No description provided for @subtitle_key_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your own Wyzie key. It stays on this device and is not included in app backups.'**
+  String get subtitle_key_hint;
+
+  /// No description provided for @subtitle_get_key.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a personal key'**
+  String get subtitle_get_key;
+
+  /// No description provided for @subtitle_service_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle search URL'**
+  String get subtitle_service_address;
+
+  /// No description provided for @subtitle_service_token.
+  ///
+  /// In en, this message translates to:
+  /// **'Service access token (optional)'**
+  String get subtitle_service_token;
+
+  /// No description provided for @subtitle_custom_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the full HTTPS search URL of a Wyzie-compatible service, including its path (for example, /search). Enter an access token only if your service requires one.'**
+  String get subtitle_custom_hint;
+
+  /// No description provided for @subtitle_service_off_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Online subtitle search is off. Embedded, source-provided and local subtitles remain available.'**
+  String get subtitle_service_off_hint;
+
+  /// No description provided for @subtitle_setup_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a subtitle service before searching.'**
+  String get subtitle_setup_required;
+
+  /// No description provided for @subtitle_invalid_key.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a key without spaces.'**
+  String get subtitle_invalid_key;
+
+  /// No description provided for @subtitle_invalid_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a complete HTTPS URL without a query, fragment or embedded credentials.'**
+  String get subtitle_invalid_address;
+
+  /// No description provided for @subtitle_invalid_token.
+  ///
+  /// In en, this message translates to:
+  /// **'The access token cannot contain spaces.'**
+  String get subtitle_invalid_token;
+
+  /// No description provided for @subtitle_storage_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read or save subtitle settings. Please try again.'**
+  String get subtitle_storage_failed;
+
+  /// No description provided for @subtitle_auth_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'The subtitle service refused access. Check your key or service token.'**
+  String get subtitle_auth_failed;
+
+  /// No description provided for @subtitle_quota_exhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'The subtitle service quota is exhausted. Check your account with that service.'**
+  String get subtitle_quota_exhausted;
+
+  /// No description provided for @subtitle_network_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the subtitle service. Please try again.'**
+  String get subtitle_network_failed;
+
+  /// No description provided for @subtitle_response_invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The subtitle service returned an unsupported response or file.'**
+  String get subtitle_response_invalid;
 }
 
 class _AppLocalizationsDelegate

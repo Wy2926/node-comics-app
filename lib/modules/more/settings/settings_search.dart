@@ -311,6 +311,7 @@ List<SettingsSearchEntry> settingsSearchEntries(
       l.default_playback_speed_length,
       l.markEpisodeAsSeenSetting,
       l.default_subtitle_language,
+      l.subtitle_service,
       l.use_libass,
       l.player_controls,
       l.display,

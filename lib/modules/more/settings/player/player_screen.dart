@@ -10,6 +10,7 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_player_screen.dart';
+import 'subtitle_service_screen.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({super.key});
@@ -44,6 +45,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         padding: tvPageInsets,
         child: Column(
           children: [
+            const SubtitleServiceSettingsRow(),
             ListTile(
               onTap: () {
                 showDialog(

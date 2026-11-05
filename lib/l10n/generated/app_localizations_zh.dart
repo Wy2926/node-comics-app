@@ -4508,4 +4508,68 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notice_operation_incomplete => '操作未完成';
+
+  @override
+  String get subtitle_service => '在线字幕服务';
+
+  @override
+  String get subtitle_service_mode => '字幕来源';
+
+  @override
+  String get subtitle_service_disabled => '关闭并清除已存凭据';
+
+  @override
+  String get subtitle_personal_key => '我的 Wyzie Key';
+
+  @override
+  String get subtitle_custom_service => '我的字幕服务';
+
+  @override
+  String get subtitle_key => 'Wyzie API Key';
+
+  @override
+  String get subtitle_key_hint => '填写你自己的 Wyzie Key，仅保存在此设备上，不随应用备份导出。';
+
+  @override
+  String get subtitle_get_key => '获取个人 Key';
+
+  @override
+  String get subtitle_service_address => '字幕搜索地址';
+
+  @override
+  String get subtitle_service_token => '服务访问令牌（选填）';
+
+  @override
+  String get subtitle_custom_hint =>
+      '填写兼容 Wyzie 的完整 HTTPS 搜索地址，包含路径（如 /search）。服务需要鉴权时，再填写它的访问令牌。';
+
+  @override
+  String get subtitle_service_off_hint => '在线字幕搜索已关闭，仍可使用内嵌字幕、片源字幕和本地字幕。';
+
+  @override
+  String get subtitle_setup_required => '请先配置字幕服务，再搜索字幕。';
+
+  @override
+  String get subtitle_invalid_key => '请填写不含空白字符的 Key。';
+
+  @override
+  String get subtitle_invalid_address => '请填写完整 HTTPS 地址，不包含查询参数、片段或内嵌凭据。';
+
+  @override
+  String get subtitle_invalid_token => '访问令牌不能包含空白字符。';
+
+  @override
+  String get subtitle_storage_failed => '字幕配置读取或保存失败，请重试。';
+
+  @override
+  String get subtitle_auth_failed => '字幕服务拒绝访问，请检查 Key 或服务令牌。';
+
+  @override
+  String get subtitle_quota_exhausted => '字幕服务额度已用完，请到对应服务查看个人账户。';
+
+  @override
+  String get subtitle_network_failed => '暂时无法连接字幕服务，请重试。';
+
+  @override
+  String get subtitle_response_invalid => '字幕服务返回了不支持的响应或文件。';
 }
