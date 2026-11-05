@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
@@ -101,23 +102,25 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     final l10n = l10nLocalizations(context)!;
     return showDialog<_DuplicateLibraryAction>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => NodeLaneAlertDialog(
         title: Text(model.name ?? ''),
         content: Text(l10n.already_in_library(oldSourceName, model.name ?? '')),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(ctx, _DuplicateLibraryAction.addAnyway),
-            child: Text(l10n.add_anyway),
-          ),
-          TextButton(
+          NodeLaneDialogAction(
+            label: l10n.migrate,
             onPressed: () =>
                 Navigator.pop(ctx, _DuplicateLibraryAction.migrate),
-            child: Text(l10n.migrate),
+          ),
+          NodeLaneDialogAction(
+            label: l10n.add_anyway,
+            secondary: true,
+            onPressed: () =>
+                Navigator.pop(ctx, _DuplicateLibraryAction.addAnyway),
+          ),
+          NodeLaneDialogAction(
+            label: l10n.cancel,
+            secondary: true,
+            onPressed: () => Navigator.pop(ctx),
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 import 'dart:convert';
@@ -100,23 +101,12 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
   Future<void> _confirmUninstall() async {
     if (_busy) return;
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        scrollable: true,
-        title: Text(source.name ?? ''),
-        content: Text(l10n.uninstall_extension(source.name ?? '')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.ok),
-          ),
-        ],
-      ),
+    final confirmed = await showNodeLaneConfirmation(
+      context,
+      title: source.name ?? '',
+      message: l10n.uninstall_extension(source.name ?? ''),
+      confirmLabel: l10n.uninstall,
+      destructive: true,
     );
     if (!mounted || confirmed != true || _busy) return;
     setState(() => _busy = true);

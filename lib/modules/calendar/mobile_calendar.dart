@@ -82,9 +82,9 @@ class _MobileCalendarState extends State<MobileCalendar> {
                   title: Text(l10n.calendar),
                   content: Text(l10n.calendar_info),
                   actions: [
-                    TextButton(
+                    NodeLaneDialogAction(
+                      label: l10n.ok,
                       onPressed: () => Navigator.pop(context),
-                      child: Text(l10n.ok),
                     ),
                   ],
                 ),

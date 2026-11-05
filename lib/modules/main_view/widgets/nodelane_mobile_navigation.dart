@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -120,28 +122,32 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
         _select(route);
         return;
       }
-      final destination = await showModalBottomSheet<String>(
-        context: context,
-        showDragHandle: true,
-        useSafeArea: true,
-        builder: (context) => SafeArea(
-          top: false,
+      final destination = await showNodeLaneCatalogSheet<String>(
+        context,
+        NodeLaneCatalogSheet(
+          title: item(mobileOverflowTab).label,
+          fitContent: true,
           child: ListView(
             shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             children: [
-              for (final route in grouped.skip(4))
-                ListTile(
-                  leading: Icon(item(route).icon),
-                  title: Text(item(route).label),
-                  selected:
-                      (route == widget.location ||
-                      route == mobileLibraryTab &&
-                          mobileLibraryRoutes.contains(widget.location)),
-                  trailing: (widget.badges[route] ?? 0) > 0
-                      ? Badge(label: Text('${widget.badges[route]}'))
-                      : null,
-                  onTap: () => Navigator.pop(context, route),
-                ),
+              NodeLaneGroupSurface(
+                children: [
+                  for (final route in grouped.skip(4))
+                    NodeLaneRow(
+                      icon: item(route).icon,
+                      title: item(route).label,
+                      selected:
+                          route == widget.location ||
+                          route == mobileLibraryTab &&
+                              mobileLibraryRoutes.contains(widget.location),
+                      value: (widget.badges[route] ?? 0) > 0
+                          ? '${widget.badges[route]}'
+                          : null,
+                      onTap: () => Navigator.pop(context, route),
+                    ),
+                ],
+              ),
             ],
           ),
         ),

@@ -1,7 +1,6 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -55,30 +54,3 @@ class MobileServiceAccount extends StatelessWidget {
     );
   }
 }
-
-/// Returns only the decision. The owning page runs its existing operation.
-Future<bool> showMobileSettingsConfirmation(
-  BuildContext context, {
-  required String title,
-  String? message,
-  required String confirmLabel,
-}) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => NodeLaneAlertDialog(
-        scrollable: true,
-        title: Text(title),
-        content: message == null ? null : Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(confirmLabel),
-          ),
-        ],
-      ),
-    ) ??
-    false;

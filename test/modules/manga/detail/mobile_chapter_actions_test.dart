@@ -166,7 +166,7 @@ void main() {
       );
       expect(find.textContaining('all chapters in this comic'), findsOneWidget);
       final staleSubmit = tester
-          .widget<FilledButton>(find.byType(FilledButton))
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Delete'))
           .onPressed!;
       await tester.ensureVisible(find.text('25 chapters selected'));
       await tester.tap(find.text('25 chapters selected'));
@@ -216,13 +216,13 @@ void main() {
       expect(find.text('Delete downloaded files'), findsOneWidget);
       expect(find.textContaining('all chapters in this comic'), findsNothing);
       final submit = tester
-          .widget<FilledButton>(find.byType(FilledButton))
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Delete'))
           .onPressed!;
       submit();
       submit();
       await tester.pump();
       expect(calls, 1);
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
       await tester.binding.handlePopRoute();
       await tester.pump();
       expect(find.byType(MobileChapterDeleteDialog), findsOneWidget);
@@ -233,7 +233,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('private-path'), findsNothing);
-      expect(find.byType(FilledButton), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Delete'), findsNothing);
       submit();
       expect(calls, 1);
       await tester.tap(find.text('Close'));

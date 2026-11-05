@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -103,96 +104,99 @@ class _MobileAccountLoginDialogState extends State<MobileAccountLoginDialog> {
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !_busy,
-    child: NodeLaneAlertDialog(
-      scrollable: true,
-      title: Text(widget.title),
-      content: AutofillGroup(
+    child: NodeLaneCatalogSheet(
+      title: widget.title,
+      canClose: !_busy,
+      fitContent: true,
+      heightFactor: .9,
+      bottom: NodeLaneModalActions(
+        actions: [
+          NodeLaneDialogAction(
+            label: widget.submitLabel,
+            busy: _busy,
+            onPressed: _busy || !_valid ? null : _submit,
+          ),
+        ],
+      ),
+      child: AutofillGroup(
         onDisposeAction: AutofillContextAction.cancel,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (var index = 0; index < widget.fields.length; index++) ...[
-              if (index > 0) const SizedBox(height: 16),
-              Text(
-                widget.fields[index].label,
-                style: NodeLaneTokens.of(context).readerLabel,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: NodeLaneTokens.gutter,
+          ),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: NodeLaneTokens.space16,
+                children: [
+                  for (var index = 0; index < widget.fields.length; index++)
+                    NodeLaneTextField(
+                      key: ValueKey('account-${widget.fields[index].id}'),
+                      controller: _controllers[widget.fields[index].id],
+                      label: widget.fields[index].label,
+                      focusNode: _focus[widget.fields[index].id],
+                      enabled: !_busy,
+                      keyboardType: widget.fields[index].keyboardType,
+                      autofillHints: widget.fields[index].autofillHints,
+                      obscureText:
+                          widget.fields[index].secret &&
+                          !_revealed.contains(widget.fields[index].id),
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      textInputAction: index == widget.fields.length - 1
+                          ? TextInputAction.done
+                          : TextInputAction.next,
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) {
+                        if (index == widget.fields.length - 1) {
+                          _submit();
+                        } else {
+                          _focus[widget.fields[index + 1].id]!.requestFocus();
+                        }
+                      },
+                      trailing: !widget.fields[index].secret
+                          ? null
+                          : NodeLaneIconButton(
+                              tooltip:
+                                  _revealed.contains(widget.fields[index].id)
+                                  ? context.l10n.hide_password
+                                  : context.l10n.show_password,
+                              onPressed: _busy
+                                  ? null
+                                  : () => setState(() {
+                                      final id = widget.fields[index].id;
+                                      if (!_revealed.add(id)) {
+                                        _revealed.remove(id);
+                                      }
+                                    }),
+                              icon: _revealed.contains(widget.fields[index].id)
+                                  ? NodeLaneIcons.of(context).incognito
+                                  : NodeLaneIcons.of(context).visible,
+                              style: NodeLaneIconButtonStyle.field,
+                            ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Semantics(
-                label: widget.fields[index].label,
-                child: NodeLaneTextField(
-                  key: ValueKey('account-${widget.fields[index].id}'),
-                  controller: _controllers[widget.fields[index].id],
-                  focusNode: _focus[widget.fields[index].id],
-                  enabled: !_busy,
-                  keyboardType: widget.fields[index].keyboardType,
-                  autofillHints: widget.fields[index].autofillHints,
-                  obscureText:
-                      widget.fields[index].secret &&
-                      !_revealed.contains(widget.fields[index].id),
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  textInputAction: index == widget.fields.length - 1
-                      ? TextInputAction.done
-                      : TextInputAction.next,
-                  onChanged: (_) => setState(() {}),
-                  onSubmitted: (_) {
-                    if (index == widget.fields.length - 1) {
-                      _submit();
-                    } else {
-                      _focus[widget.fields[index + 1].id]!.requestFocus();
-                    }
-                  },
-                  trailing: !widget.fields[index].secret
-                      ? null
-                      : NodeLaneIconButton(
-                          tooltip: _revealed.contains(widget.fields[index].id)
-                              ? context.l10n.hide_password
-                              : context.l10n.show_password,
-                          onPressed: _busy
-                              ? null
-                              : () => setState(() {
-                                  final id = widget.fields[index].id;
-                                  if (!_revealed.add(id)) {
-                                    _revealed.remove(id);
-                                  }
-                                }),
-                          icon: _revealed.contains(widget.fields[index].id)
-                              ? NodeLaneIcons.of(context).incognito
-                              : NodeLaneIcons.of(context).visible,
-                          style: NodeLaneIconButtonStyle.field,
-                        ),
+              if (_error != null) ...[
+                const SizedBox(height: 16),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ],
-            if (_busy) ...[
-              const SizedBox(height: 16),
-              const LinearProgressIndicator(),
-            ],
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  _error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _busy ? null : () => Navigator.pop(context),
-          child: Text(context.l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: _busy || !_valid ? null : _submit,
-          child: Text(widget.submitLabel),
-        ),
-      ],
     ),
   );
 }

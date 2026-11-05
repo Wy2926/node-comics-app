@@ -82,7 +82,7 @@ void main() {
       await tester.tap(logout);
       await tester.pumpAndSettle();
       expect(service.calls, ['login', 'login']);
-      await tester.tap(find.widgetWithText(TextButton, '取消'));
+      await tester.tap(find.widgetWithText(FilledButton, '取消'));
       await tester.pumpAndSettle();
       expect(service.loggedIn, isTrue);
       await tester.tap(logout);

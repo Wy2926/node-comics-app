@@ -1,9 +1,11 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangayomi/repositories/tracker_library_cache_repository.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -670,93 +672,66 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
         .fetchWatchlistData();
   }
 
-  void _openSwitchProviderDialog(AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text(l10n.track_library_switch),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                _getListile(l10n, TrackerProviders.myAnimeList.syncId),
-                _getListile(l10n, TrackerProviders.anilist.syncId),
-                _getListile(l10n, TrackerProviders.kitsu.syncId),
-                _getListile(l10n, TrackerProviders.simkl.syncId),
-                _getListile(l10n, TrackerProviders.trakt.syncId),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  void _openSwitchProviderDialog(AppLocalizations l10n) => _switchTracker(l10n);
 
-  void _openSwitchTypeDialog(AppLocalizations l10n, int syncId) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text(l10n.track_library_switch),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                _getListile(l10n, syncId, isManga: true),
-                _getListile(l10n, syncId, isManga: false),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  void _openSwitchTypeDialog(AppLocalizations l10n, int syncId) =>
+      _switchTracker(l10n, syncId: syncId);
 
-  Widget _getListile(AppLocalizations l10n, int syncId, {bool? isManga}) {
-    final isLoggedIn = _preferences.any((p) => p.syncId == syncId);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        leading: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: trackInfos(syncId).$3,
+  Future<void> _switchTracker(AppLocalizations l10n, {int? syncId}) async {
+    final choice = await showNodeLaneCatalogSheet<(int, bool?)>(
+      context,
+      NodeLaneCatalogSheet(
+        title: l10n.track_library_switch,
+        fitContent: true,
+        child: Builder(
+          builder: (sheetContext) => ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            children: [
+              NodeLaneGroupSurface(
+                children: [
+                  if (syncId == null)
+                    for (final provider in TrackerProviders.values)
+                      NodeLaneRow(
+                        title: trackInfos(provider.syncId).$2,
+                        icon: NodeLaneIcons.of(sheetContext).tracking,
+                        enabled: _preferences.any(
+                          (p) => p.syncId == provider.syncId,
+                        ),
+                        onTap: () => Navigator.pop(sheetContext, (
+                          provider.syncId,
+                          null,
+                        )),
+                      )
+                  else
+                    for (final manga in [true, false])
+                      NodeLaneRow(
+                        title: manga ? l10n.manga : l10n.anime,
+                        icon: manga
+                            ? NodeLaneIcons.of(sheetContext).manga
+                            : NodeLaneIcons.of(sheetContext).anime,
+                        onTap: () =>
+                            Navigator.pop(sheetContext, (syncId, manga)),
+                      ),
+                ],
+              ),
+            ],
           ),
-          width: 60,
-          height: 70,
-          child: isManga == null
-              ? Image.asset(trackInfos(syncId).$1, height: 30)
-              : Icon(
-                  isManga ? Icons.collections_bookmark : Icons.video_collection,
-                  size: 30,
-                ),
         ),
-        title: Text(
-          isManga == null
-              ? trackInfos(syncId).$2
-              : isManga
-              ? l10n.manga
-              : l10n.anime,
-        ),
-        enabled: isLoggedIn,
-        onTap: () {
-          if (isManga == null &&
-              syncId != TrackerProviders.simkl.syncId &&
-              syncId != TrackerProviders.trakt.syncId) {
-            context.pop();
-            _openSwitchTypeDialog(l10n, syncId);
-          } else {
-            ref.read(lastTrackerLibraryLocationStateProvider.notifier).set((
-              syncId,
-              isManga ??
-                  (syncId != TrackerProviders.simkl.syncId &&
-                      syncId != TrackerProviders.trakt.syncId),
-            ));
-            context.pop();
-          }
-        },
       ),
     );
+    if (!mounted || choice == null) return;
+    final (provider, manga) = choice;
+    if (manga == null &&
+        provider != TrackerProviders.simkl.syncId &&
+        provider != TrackerProviders.trakt.syncId) {
+      _openSwitchTypeDialog(l10n, provider);
+    } else {
+      ref.read(lastTrackerLibraryLocationStateProvider.notifier).set((
+        provider,
+        manga ?? false,
+      ));
+    }
   }
 }
 

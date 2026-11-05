@@ -170,7 +170,9 @@ void main() {
       await tester.enterText(find.byType(TextField), 'invalid');
       await tester.pumpAndSettle();
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+            .onPressed,
         isNull,
       );
       await tester.tap(find.text('Cancel'));

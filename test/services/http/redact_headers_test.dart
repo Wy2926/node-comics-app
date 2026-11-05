@@ -15,7 +15,10 @@ void main() {
   });
 
   test('other headers are logged as they are', () {
-    final headers = {'User-Agent': 'Mangayomi', 'Referer': 'https://a.b/'};
+    final headers = {
+      'User-Agent': 'nodelane-comics',
+      'Referer': 'https://a.b/',
+    };
 
     expect(redactHeaders(headers), headers);
   });

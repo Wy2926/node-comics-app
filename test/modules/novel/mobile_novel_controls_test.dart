@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -100,7 +101,8 @@ void main() {
                         icon: Icons.list,
                         onPressed: () => actions.add('chapters'),
                       ),
-                      onFontSize: () => actions.add('font'),
+                      fontSize: 16,
+                      onFontSizeChanged: (_) => actions.add('font'),
                       onSettings: () => actions.add('settings'),
                       onListen: () => actions.add('listen'),
                       listening: false,
@@ -127,6 +129,16 @@ void main() {
       );
       await tap(tester, find.byTooltip('Next chapter'));
       await tap(tester, find.text('Chapters'));
+      await tap(tester, find.text('Font size'));
+      expect(
+        tester.getRect(find.byKey(const ValueKey('page-viewport'))),
+        viewport,
+      );
+      tester
+          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
+          .scrollController!
+          .jumpToItem(9);
+      await tester.pumpAndSettle();
       await tap(tester, find.text('Font size'));
       await tap(tester, find.text('Text-to-Speech'));
       await tap(tester, find.text('Settings'));
@@ -209,61 +221,40 @@ void main() {
   );
 
   testWidgets(
-    'font controls commit only on release, retain presets and close at large text',
+    'font popover saves only after scrolling stops and fits at large text',
     (tester) async {
       var value = 16;
       final writes = <int>[];
       await start(
         tester,
         Scaffold(
-          body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) => StatefulBuilder(
-                  builder: (context, setState) => SizedBox(
-                    height: 430,
-                    child: SafeArea(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: MobileNovelFontSize(
-                          value: value,
-                          onChanged: (next) {
-                            writes.add(next);
-                            setState(() => value = next);
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              child: const Text('Open'),
+          body: StatefulBuilder(
+            builder: (context, setState) => NodeLaneNumberPicker(
+              value: value,
+              min: 8,
+              max: 40,
+              label: (value) => '$value px',
+              builder: (context, toggle, _) =>
+                  TextButton(onPressed: toggle, child: const Text('Font size')),
+              onChanged: (next) {
+                writes.add(next);
+                setState(() => value = next);
+              },
             ),
           ),
         ),
       );
-      await tap(tester, find.text('Open'));
-      final slider = find.byType(Slider);
-      await tester.ensureVisible(slider);
-      await tester.pumpAndSettle();
-      final gesture = await tester.startGesture(tester.getCenter(slider));
-      await gesture.moveBy(const Offset(25, 0));
+      await tap(tester, find.text('Font size'));
+      final wheel = find.byType(CupertinoPicker);
+      final gesture = await tester.startGesture(tester.getCenter(wheel));
+      await gesture.moveBy(const Offset(0, -90));
       await tester.pump();
       expect(writes, isEmpty);
       await gesture.up();
       await tester.pumpAndSettle();
       expect(writes, hasLength(1));
-      await tap(tester, find.widgetWithText(ChoiceChip, '28'));
-      expect(writes.last, 28);
-      await tap(tester, find.byTooltip('Close'));
-      expect(find.byType(MobileNovelFontSize), findsNothing);
-      final before = writes.length;
-      await tap(tester, find.text('Open'));
-      expect(find.text('28 px'), findsOneWidget);
-      await tap(tester, find.byTooltip('Close'));
-      expect(writes, hasLength(before));
+      expect(writes.single, inInclusiveRange(8, 40));
+      expect(find.byType(Dialog), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

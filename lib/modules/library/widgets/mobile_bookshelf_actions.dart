@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -269,7 +271,6 @@ class _MobileBookshelfRemoveSheetState
     }
   }
 
-  bool _showTitles = false;
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), l10n = context.l10n;
@@ -278,76 +279,51 @@ class _MobileBookshelfRemoveSheetState
       child: NodeLaneCatalogSheet(
         title: l10n.remove,
         subtitle: l10n.bookshelf_selected_count(widget.titles.length),
-        heightFactor: .68,
+        heightFactor: .9,
+        fitContent: true,
         canClose: !_busy,
         onClose: () => Navigator.pop(context, false),
-        bottom: Row(
-          children: [
-            Expanded(
-              child: NodeLaneSecondaryButton(
-                onPressed: _busy ? null : () => Navigator.pop(context, false),
-                child: Text(_failed ? l10n.close : l10n.cancel),
-              ),
-            ),
-            if (!_failed) ...[
-              const SizedBox(width: NodeLaneTokens.space12),
-              Expanded(
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                    foregroundColor: Theme.of(context).colorScheme.onError,
+        bottom: _failed
+            ? null
+            : NodeLaneModalActions(
+                actions: [
+                  NodeLaneDialogAction(
+                    label: l10n.remove,
+                    destructive: true,
+                    busy: _busy,
+                    onPressed:
+                        widget.titles.isNotEmpty && (_fromLibrary || _downloads)
+                        ? _submit
+                        : null,
                   ),
-                  onPressed:
-                      !_busy &&
-                          widget.titles.isNotEmpty &&
-                          (_fromLibrary || _downloads)
-                      ? _submit
-                      : null,
-                  child: Text(l10n.remove),
-                ),
+                ],
               ),
-            ],
-          ],
-        ),
         child: ListView(
+          shrinkWrap: true,
           padding: const EdgeInsets.symmetric(
             horizontal: NodeLaneTokens.gutter,
           ),
           children: [
-            NodeLaneGroupSurface(
-              children: [
-                NodeLaneRow(
-                  title: l10n.bookshelf_view_selection,
-                  icon: NodeLaneIcons.of(context).chapters,
-                  onTap: () => setState(() => _showTitles = !_showTitles),
-                  trailing: RotatedBox(
-                    quarterTurns: _showTitles ? 2 : 0,
-                    child: Icon(
-                      NodeLaneIcons.of(context).down,
-                      size: NodeLaneTokens.smallIconSize,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (_showTitles)
-              SizedBox(
-                height: (widget.titles.length * NodeLaneTokens.rowHeight).clamp(
-                  0,
-                  168,
+            NodeLaneDisclosure(
+              title: l10n.bookshelf_view_selection,
+              icon: NodeLaneIcons.of(context).chapters,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxHeight: NodeLaneTokens.rowHeight * 3,
                 ),
                 child: ListView.builder(
+                  shrinkWrap: true,
                   itemCount: widget.titles.length,
                   itemBuilder: (_, i) => NodeLaneRow(title: widget.titles[i]),
                 ),
               ),
+            ),
             const SizedBox(height: NodeLaneTokens.space16),
             if (_failed)
-              Text(
-                l10n.bookshelf_remove_incomplete,
-                style: t.readerSecondary.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+              NodeLaneNotice(
+                message: l10n.bookshelf_remove_incomplete,
+                kind: NodeLaneNoticeKind.error,
+                contained: false,
               )
             else ...[
               NodeLaneGroupSurface(
@@ -380,11 +356,6 @@ class _MobileBookshelfRemoveSheetState
                     style: t.readerSecondary,
                   ),
                 ),
-              if (_busy) ...[
-                const SizedBox(height: NodeLaneTokens.space16),
-                const LinearProgressIndicator(),
-                Text(l10n.bookshelf_processing),
-              ],
             ],
           ],
         ),

@@ -1,8 +1,8 @@
+import 'package:mangayomi/utils/url_protocol/protocol.dart' show appUrlScheme;
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
-import 'dart:io';
+import 'package:http/http.dart' show Client;
 
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -19,6 +19,7 @@ import 'package:mangayomi/utils/localized_message.dart';
 import 'package:mangayomi/services/discovery/service_availability.dart';
 
 import 'base_tracker.dart';
+import 'oauth_browser.dart';
 import 'tracker_account.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -26,71 +27,101 @@ part 'anilist.g.dart';
 
 @riverpod
 class Anilist extends _$Anilist implements BaseTracker {
-  final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
-  static final _isDesktop = Platform.isWindows || Platform.isLinux;
-  final String _clientId = _isDesktop ? '13587' : '13588';
+  Anilist({Client? client})
+    : http = client ?? MClient.init(reqcopyWith: {'useDartHttpClient': true});
+
+  final Client http;
+  static const _clientId = '55972';
+  static const _redirectUri = '$appUrlScheme://anilist-auth';
   static const String _baseApiUrl = "https://graphql.anilist.co/";
-  final String _redirectUri = _isDesktop
-      ? 'http://localhost:43824/success?code=1337'
-      : 'mangayomi://success?code=1337';
-  final String _clientSecret = _isDesktop
-      ? 'tJA13cAR2tCCXrJCwwvmwEDbWRoIaahFiJTXToHd'
-      : 'G2fFUiGtgFd60D0lCkhgGKvMmrCfDmZXADQIzWXr';
+  Future<bool>? _loginFuture;
+  final _browser = TrackerOAuthBrowser();
 
   @override
   void build({
     required int syncId,
     ItemType? itemType,
     required dynamic widgetRef,
-  }) {}
+  }) {
+    ref.onDispose(_browser.dispose);
+  }
 
-  Future<bool?> login() async {
-    final callbackUrlScheme = _isDesktop
-        ? 'http://localhost:43824'
-        : 'mangayomi';
-    final loginUrl =
-        'https://anilist.co/api/v2/oauth/authorize?client_id=$_clientId'
-        '&redirect_uri=$_redirectUri&response_type=code';
+  Future<bool> login() =>
+      _loginFuture ??= _login().whenComplete(() => _loginFuture = null);
 
+  Future<bool> _login() async {
+    final keepAlive = ref.keepAlive();
     try {
-      final uri = await FlutterWebAuth2.authenticate(
-        url: loginUrl,
-        callbackUrlScheme: callbackUrlScheme,
+      final random = Random.secure();
+      final state = base64UrlEncode(
+        List.generate(32, (_) => random.nextInt(256)),
+      ).replaceAll('=', '');
+      final authorization = Uri.https('anilist.co', '/api/v2/oauth/authorize', {
+        'client_id': _clientId,
+        'redirect_uri': _redirectUri,
+        'response_type': 'token',
+        'state': state,
+      });
+      final started = DateTime.now();
+      final returned = await _browser.authenticate(
+        authorization,
+        callbackHost: 'anilist-auth',
       );
+      if (!ref.mounted ||
+          DateTime.now().difference(started) > const Duration(minutes: 10)) {
+        return false;
+      }
+      if (returned.scheme != appUrlScheme ||
+          returned.authority != 'anilist-auth' ||
+          returned.path.isNotEmpty ||
+          returned.hasQuery) {
+        return false;
+      }
+      final params = Uri(query: returned.fragment).queryParametersAll;
+      String single(String key) {
+        final values = params[key];
+        if (values == null || values.length != 1 || values.single.isEmpty) {
+          throw const FormatException('Invalid AniList authorization response');
+        }
+        return values.single;
+      }
 
-      final code = Uri.parse(uri).queryParameters['code'];
-      final response = await http.post(
-        Uri.parse('https://anilist.co/api/v2/oauth/token'),
-        body: {
-          'grant_type': 'authorization_code',
-          'client_id': _clientId,
-          'client_secret': _clientSecret,
-          'redirect_uri': _redirectUri,
-          'code': code,
-        },
+      if (params.containsKey('error') || single('state') != state) return false;
+      final tokenType = single('token_type');
+      final expiresIn = int.tryParse(single('expires_in'));
+      if (tokenType.toLowerCase() != 'bearer' ||
+          expiresIn == null ||
+          expiresIn <= 0 ||
+          expiresIn > const Duration(days: 366).inSeconds) {
+        return false;
+      }
+      final oauth = OAuth(
+        tokenType: tokenType,
+        accessToken: single('access_token'),
+        expiresIn: DateTime.now()
+            .add(Duration(seconds: expiresIn))
+            .millisecondsSinceEpoch,
+        clientId: _clientId,
       );
-      final res = jsonDecode(response.body) as Map<String, dynamic>;
-      final aLOAuth = OAuth.fromJson(res)
-        ..expiresIn = DateTime.now()
-            .add(Duration(seconds: res['expires_in']))
-            .millisecondsSinceEpoch;
-      final currenUser = await _getCurrentUser(aLOAuth.accessToken!);
-      widgetRef
+      final currentUser = await _getCurrentUser(oauth.accessToken!);
+      if (!ref.mounted || currentUser.$1.id.isEmpty) return false;
+      ref
           .read(tracksProvider(syncId: syncId).notifier)
           .login(
             TrackPreference(
               syncId: syncId,
-              username: currenUser.$1.id,
-              displayName: currenUser.$1.name,
-              avatarUrl: currenUser.$1.avatarUrl,
-              prefs: jsonEncode({"scoreFormat": currenUser.$2}),
-              oAuth: jsonEncode(aLOAuth.toJson()),
+              username: currentUser.$1.id,
+              displayName: currentUser.$1.name,
+              avatarUrl: currentUser.$1.avatarUrl,
+              prefs: jsonEncode({"scoreFormat": currentUser.$2}),
+              oAuth: jsonEncode(oauth.toJson()),
             ),
           );
-
       return true;
-    } catch (e) {
+    } catch (_) {
       return false;
+    } finally {
+      keepAlive.close();
     }
   }
 
@@ -468,29 +499,40 @@ class Anilist extends _$Anilist implements BaseTracker {
       },
       body: json.encode(body),
     );
+    if (response.statusCode != 200) {
+      throw StateError('AniList account verification failed');
+    }
     final data = json.decode(response.body);
-
     final viewer = data['data']['Viewer'] as Map<String, dynamic>;
-    return (
-      anilistAccount(viewer),
-      viewer['mediaListOptions']['scoreFormat'].toString(),
-    );
+    final id = viewer['id'];
+    final scoreFormat = viewer['mediaListOptions']?['scoreFormat'];
+    if (id is! int || id <= 0 || scoreFormat is! String) {
+      throw const FormatException('Invalid AniList account');
+    }
+    return (anilistAccount(viewer), scoreFormat);
   }
 
   Future<String> _getAccessToken() async {
-    final track = widgetRef.read(tracksProvider(syncId: syncId));
-    final mALOAuth = OAuth.fromJson(
-      jsonDecode(track!.oAuth!) as Map<String, dynamic>,
-    );
-    final expiresIn = DateTime.fromMillisecondsSinceEpoch(mALOAuth.expiresIn!);
-    if (DateTime.now().isAfter(expiresIn)) {
-      widgetRef.read(tracksProvider(syncId: syncId).notifier).logout();
-      showNodeLaneNotice(
-        localizedMessage((l10n) => l10n.tracker_token_expired("Anilist")),
+    final track = ref.read(tracksProvider(syncId: syncId));
+    OAuth? oauth;
+    try {
+      oauth = OAuth.fromJson(
+        jsonDecode(track?.oAuth ?? '{}') as Map<String, dynamic>,
       );
-      throw Exception("Token expired");
+    } catch (_) {
+      // Invalid credentials cannot be used for an authenticated request.
     }
-    return mALOAuth.accessToken!;
+    if (oauth?.clientId != _clientId ||
+        oauth?.accessToken?.isNotEmpty != true ||
+        oauth?.expiresIn == null ||
+        DateTime.now().millisecondsSinceEpoch >= oauth!.expiresIn!) {
+      ref.read(tracksProvider(syncId: syncId).notifier).logout();
+      showNodeLaneNotice(
+        localizedMessage((l10n) => l10n.tracker_token_expired("AniList")),
+      );
+      throw StateError("AniList login required");
+    }
+    return oauth.accessToken!;
   }
 
   String _toAnilistScore(int score) {
@@ -607,9 +649,12 @@ class Anilist extends _$Anilist implements BaseTracker {
 
   @override
   Future<bool> checkRefresh() async {
-    widgetRef
-        .read(tracksProvider(syncId: syncId).notifier)
-        .setRefreshing(false);
-    return true;
+    try {
+      await _getAccessToken();
+      ref.read(tracksProvider(syncId: syncId).notifier).setRefreshing(false);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }

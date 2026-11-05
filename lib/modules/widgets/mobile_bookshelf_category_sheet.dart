@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -116,26 +117,20 @@ class _MobileBookshelfCategorySheetState
         heightFactor: .78,
         canClose: !_busy && !_leaving,
         onClose: _close,
-        bottom: Row(
-          children: [
-            Expanded(
-              child: NodeLaneSecondaryButton(
-                onPressed: _busy ? null : _close,
-                child: Text(_failed ? l10n.close : l10n.cancel),
+        fitContent: true,
+        bottom: _failed
+            ? null
+            : NodeLaneModalActions(
+                actions: [
+                  NodeLaneDialogAction(
+                    label: l10n.save,
+                    busy: _busy,
+                    onPressed: _ready ? _save : null,
+                  ),
+                ],
               ),
-            ),
-            if (!_failed) ...[
-              const SizedBox(width: NodeLaneTokens.space12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _ready ? _save : null,
-                  child: Text(l10n.save),
-                ),
-              ),
-            ],
-          ],
-        ),
         child: CustomScrollView(
+          shrinkWrap: true,
           slivers: [
             if (_failed ||
                 widget.readFailed ||
@@ -234,15 +229,6 @@ class _MobileBookshelfCategorySheetState
                         title: l10n.bookshelf_manage_categories,
                         icon: NodeLaneIcons.of(context).categories,
                         onTap: _busy ? null : () => _close(edit: true),
-                      ),
-                    ],
-                    if (_busy) ...[
-                      const SizedBox(height: NodeLaneTokens.space16),
-                      const LinearProgressIndicator(),
-                      const SizedBox(height: NodeLaneTokens.space8),
-                      Semantics(
-                        liveRegion: true,
-                        child: Text(l10n.bookshelf_processing),
                       ),
                     ],
                   ],

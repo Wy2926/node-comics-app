@@ -39,3 +39,6 @@ categories:
   - AudioVideo
 
 startup_notify: true
+
+supported_mime_type:
+  - x-scheme-handler/nodelane-comics

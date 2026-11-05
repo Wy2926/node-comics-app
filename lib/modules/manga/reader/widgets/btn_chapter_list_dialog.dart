@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,48 +36,12 @@ Widget btnToShowChapterListDialog(
   Future<void> open() async {
     onChanged?.call(false);
     if (labeled && isMobile && !isTv) {
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        showDragHandle: true,
-        backgroundColor: NodeLaneTokens.of(context).surface,
-        builder: (sheetContext) => NodeLaneSurface(
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: MediaQuery.sizeOf(sheetContext).height * .75,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 8, 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: MaterialLocalizations.of(sheetContext)
-                              .closeButtonTooltip,
-                          onPressed: () => Navigator.pop(sheetContext),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: ChapterListWidget(chapter: chapter, mobile: true),
-                  ),
-                ],
-              ),
-            ),
-          ),
+      await showNodeLaneCatalogSheet<void>(
+        context,
+        NodeLaneCatalogSheet(
+          title: title,
+          heightFactor: .75,
+          child: ChapterListWidget(chapter: chapter, mobile: true),
         ),
       );
     } else {

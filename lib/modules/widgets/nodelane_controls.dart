@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart'
+    show CupertinoPicker, CupertinoPickerDefaultSelectionOverlay;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -652,6 +654,241 @@ class _NodeLaneDisclosureState extends State<NodeLaneDisclosure> {
   );
 }
 
+/// The existing setting row opens a compact wheel anchored to its value.
+class NodeLaneNumberRow extends StatelessWidget {
+  const NodeLaneNumberRow({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    this.step = 1,
+    this.label,
+    this.valueLabel,
+    this.subtitle,
+    this.icon,
+    this.enabled = true,
+  }) : assert(min <= max),
+       assert(step > 0);
+  final String title;
+  final int value, min, max, step;
+  final ValueChanged<int> onChanged;
+  final String Function(int)? label;
+  final String? valueLabel, subtitle;
+  final IconData? icon;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) => NodeLaneNumberPicker(
+    value: value,
+    min: min,
+    max: max,
+    step: step,
+    label: label,
+    enabled: enabled,
+    onChanged: onChanged,
+    builder: (context, toggle, isOpen) => NodeLaneRow(
+      title: title,
+      subtitle: subtitle,
+      value: valueLabel ?? label?.call(value) ?? '$value',
+      icon: icon,
+      enabled: enabled,
+      openOnReveal: true,
+      onTap: toggle,
+      trailing: Icon(
+        NodeLaneIcons.of(context).down,
+        size: NodeLaneTokens.smallIconSize,
+        color: NodeLaneTokens.of(context).muted,
+      ),
+    ),
+  );
+}
+
+/// One anchored picker for settings rows and reader/player toolbar actions.
+/// It never changes the page layout or pushes a modal route.
+class NodeLaneNumberPicker extends StatefulWidget {
+  const NodeLaneNumberPicker({
+    super.key,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    required this.builder,
+    this.controller,
+    this.onClose,
+    this.step = 1,
+    this.label,
+    this.enabled = true,
+  }) : assert(min <= max),
+       assert(step > 0);
+  final int value, min, max, step;
+  final ValueChanged<int> onChanged;
+  final String Function(int)? label;
+  final bool enabled;
+  final Widget Function(BuildContext, VoidCallback?, bool) builder;
+  final MenuController? controller;
+  final VoidCallback? onClose;
+
+  @override
+  State<NodeLaneNumberPicker> createState() => _NodeLaneNumberPickerState();
+}
+
+class _NodeLaneNumberPickerState extends State<NodeLaneNumberPicker> {
+  final _menu = MenuController();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    final width =
+        (NodeLaneTokens.numberPickerWidth *
+                (MediaQuery.textScalerOf(context).scale(17) / 17).clamp(1, 1.5))
+            .clamp(
+              0.0,
+              MediaQuery.sizeOf(context).width - NodeLaneTokens.gutter * 2,
+            );
+    return MenuAnchor(
+      controller: widget.controller ?? _menu,
+      onClose: widget.onClose,
+      consumeOutsideTap: true,
+      animated: !MediaQuery.disableAnimationsOf(context),
+      clipBehavior: Clip.none,
+      alignmentOffset: Offset(-width, NodeLaneTokens.space8),
+      reservedPadding: const EdgeInsets.all(NodeLaneTokens.space8),
+      style: const MenuStyle(
+        alignment: AlignmentDirectional.bottomEnd,
+        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+        elevation: WidgetStatePropertyAll(0),
+        backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+        surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+        side: WidgetStatePropertyAll(BorderSide.none),
+      ),
+      menuChildren: [
+        SizedBox(
+          width: width,
+          child: NodeLaneGlassSurface(
+            borderRadius: t.inputRadius,
+            elevated: true,
+            child: _NodeLaneNumberWheel(
+              value: widget.value,
+              min: widget.min,
+              max: widget.max,
+              step: widget.step,
+              label: widget.label,
+              enabled: widget.enabled,
+              onChanged: widget.onChanged,
+            ),
+          ),
+        ),
+      ],
+      builder: (context, controller, _) => widget.builder(
+        context,
+        widget.enabled
+            ? () => controller.isOpen ? controller.close() : controller.open()
+            : null,
+        controller.isOpen,
+      ),
+    );
+  }
+}
+
+/// Lazy wheel. Report only the settled item, not every frame of a fling.
+class _NodeLaneNumberWheel extends StatefulWidget {
+  const _NodeLaneNumberWheel({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.step,
+    required this.onChanged,
+    required this.enabled,
+    this.label,
+  });
+  final int value, min, max, step;
+  final ValueChanged<int> onChanged;
+  final String Function(int)? label;
+  final bool enabled;
+
+  @override
+  State<_NodeLaneNumberWheel> createState() => _NodeLaneNumberWheelState();
+}
+
+class _NodeLaneNumberWheelState extends State<_NodeLaneNumberWheel> {
+  int get _count => (widget.max - widget.min) ~/ widget.step + 1;
+  int get _index =>
+      ((widget.value - widget.min) ~/ widget.step).clamp(0, _count - 1);
+  // The popover shares the route's PageStorage with its anchor's list.
+  // Reopen from the setting value, never from a page/list scroll offset.
+  late final _scroll = FixedExtentScrollController(
+    initialItem: _index,
+    keepScrollOffset: false,
+  );
+
+  @override
+  void didUpdateWidget(covariant _NodeLaneNumberWheel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value ||
+        oldWidget.min != widget.min ||
+        oldWidget.max != widget.max ||
+        oldWidget.step != widget.step) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _scroll.hasClients && _scroll.selectedItem != _index) {
+          _scroll.jumpToItem(_index);
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    final scaled = MediaQuery.textScalerOf(context).scale(17);
+    final extent = scaled * 1.5 > NodeLaneTokens.minTapTarget
+        ? scaled * 1.5
+        : NodeLaneTokens.minTapTarget;
+    return Padding(
+      padding: const EdgeInsets.all(NodeLaneTokens.space12),
+      child: SizedBox(
+        height: extent * 3,
+        child: IgnorePointer(
+          ignoring: !widget.enabled,
+          child: CupertinoPicker.builder(
+            scrollController: _scroll,
+            itemExtent: extent,
+            childCount: _count,
+            changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
+            selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+              background: t.accent.withValues(alpha: .12),
+            ),
+            onSelectedItemChanged: (index) {
+              final value = widget.min + index * widget.step;
+              if (widget.enabled && value != widget.value) {
+                widget.onChanged(value);
+              }
+            },
+            itemBuilder: (context, index) {
+              final value = widget.min + index * widget.step;
+              return Center(
+                child: Text(
+                  widget.label?.call(value) ?? '$value',
+                  style: t.readerLabel.copyWith(
+                    color: widget.enabled ? t.ink : t.muted,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Pins existing content without duplicating its controller, focus or layout.
 /// PinnedHeaderSliver measures the child, including accessibility text scaling.
 class NodeLanePinnedHeader extends StatelessWidget {
@@ -1015,14 +1252,13 @@ class NodeLaneCloseButton extends StatelessWidget {
 
 /// A single input implementation. Search only changes keyboard and leading
 /// affordance; callers own drafts, submission and clearing side effects.
-class NodeLaneTextField extends StatelessWidget {
+class NodeLaneTextField extends StatefulWidget {
   const NodeLaneTextField({
     super.key,
     this.controller,
     this.initialValue,
     this.label,
     this.hint = '',
-    this.inGroup = false,
     this.onChanged,
     this.onClear,
     this.clearLabel,
@@ -1062,7 +1298,6 @@ class NodeLaneTextField extends StatelessWidget {
        code = false,
        initialValue = null,
        label = null,
-       inGroup = false,
        autocorrect = true,
        enableSuggestions = true,
        keyboardType = TextInputType.text,
@@ -1074,7 +1309,6 @@ class NodeLaneTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? initialValue, label, clearLabel;
   final String hint;
-  final bool inGroup;
   final ValueChanged<String>? onChanged, onSubmitted;
   final VoidCallback? onClear;
   final bool enabled, autofocus, autocorrect, enableSuggestions, _search;
@@ -1089,152 +1323,135 @@ class NodeLaneTextField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
 
   @override
-  Widget build(BuildContext context) {
+  State<NodeLaneTextField> createState() => _NodeLaneTextFieldState();
+
+  Widget _build(BuildContext context, FocusNode inputFocus) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    final glass = _search && t.usesGlass;
-    final formRow = label?.isNotEmpty == true;
-    return Focus(
-      canRequestFocus: false,
-      child: Builder(
-        builder: (context) {
-          final focused = Focus.of(context).hasFocus;
-          final field = TextFormField(
-            controller: controller,
-            initialValue: initialValue,
-            focusNode: focusNode,
-            obscureText: obscureText,
-            autofillHints: autofillHints,
-            enabled: enabled,
-            autofocus: autofocus,
-            autocorrect: !code && autocorrect,
-            enableSuggestions: !code && enableSuggestions,
-            smartDashesType: code || !autocorrect
-                ? SmartDashesType.disabled
-                : null,
-            smartQuotesType: code || !autocorrect
-                ? SmartQuotesType.disabled
-                : null,
-            keyboardType: keyboardType,
-            textInputAction: textInputAction,
-            minLines: minLines,
-            maxLines: maxLines,
-            textAlignVertical: TextAlignVertical.center,
-            onChanged: onChanged,
-            validator: validator,
-            onFieldSubmitted: onSubmitted,
-            style: code
-                ? t.readerSecondary.copyWith(
-                    fontFamily: 'monospace',
-                    color: t.ink,
+    final field = TextFormField(
+      controller: controller,
+      initialValue: initialValue,
+      focusNode: inputFocus,
+      obscureText: obscureText,
+      autofillHints: autofillHints,
+      enabled: enabled,
+      autofocus: autofocus,
+      autocorrect: !code && autocorrect,
+      enableSuggestions: !code && enableSuggestions,
+      smartDashesType: code || !autocorrect ? SmartDashesType.disabled : null,
+      smartQuotesType: code || !autocorrect ? SmartQuotesType.disabled : null,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      minLines: minLines,
+      maxLines: maxLines,
+      textAlignVertical: TextAlignVertical.center,
+      onChanged: onChanged,
+      validator: validator,
+      onFieldSubmitted: onSubmitted,
+      style: code
+          ? t.readerSecondary.copyWith(fontFamily: 'monospace', color: t.ink)
+          : t.body,
+      decoration: t
+          .inputDecoration(
+            hint,
+            prefixIcon: _search
+                ? Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: NodeLaneTokens.space16,
+                      end: NodeLaneTokens.space12,
+                    ),
+                    child: Icon(
+                      icons.search,
+                      size: NodeLaneTokens.smallIconSize,
+                      color: t.muted,
+                    ),
                   )
-                : t.body,
-            decoration: t
-                .inputDecoration(
-                  hint,
-                  formRow: formRow,
-                  search: _search,
-                  prefixIcon: formRow
-                      ? Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                            NodeLaneTokens.space16,
-                            NodeLaneTokens.space12,
-                            NodeLaneTokens.space12,
-                            NodeLaneTokens.space12,
-                          ),
-                          child: SizedBox(
-                            width: NodeLaneTokens.formLabelWidth,
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              widthFactor: 1,
-                              heightFactor: 1,
-                              child: Text(
-                                label!,
-                                style: t.readerLabel.copyWith(
-                                  color: !enabled
-                                      ? t.muted
-                                      : focused
-                                      ? t.accent
-                                      : t.ink,
+                : null,
+            suffixIcon:
+                trailing ??
+                (controller == null
+                    ? null
+                    : ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: controller!,
+                        builder: (context, value, _) => value.text.isEmpty
+                            ? const SizedBox.shrink()
+                            : IconButton(
+                                tooltip:
+                                    clearLabel ??
+                                    MaterialLocalizations.of(context)
+                                        .deleteButtonTooltip,
+                                icon: Icon(
+                                  icons.clear,
+                                  size: NodeLaneTokens.smallIconSize,
+                                  color: t.muted,
                                 ),
+                                onPressed: !enabled
+                                    ? null
+                                    : () {
+                                        if (onClear != null) {
+                                          onClear!();
+                                        } else {
+                                          controller!.clear();
+                                          onChanged?.call('');
+                                        }
+                                      },
                               ),
-                            ),
-                          ),
-                        )
-                      : _search
-                      ? Padding(
-                          padding: const EdgeInsetsDirectional.only(
-                            start: NodeLaneTokens.space16,
-                            end: NodeLaneTokens.space12,
-                          ),
-                          child: Icon(
-                            icons.search,
-                            size: NodeLaneTokens.smallIconSize,
-                            color: t.muted,
-                          ),
-                        )
-                      : null,
-                  suffixIcon:
-                      trailing ??
-                      (controller == null
-                          ? null
-                          : ValueListenableBuilder<TextEditingValue>(
-                              valueListenable: controller!,
-                              builder: (context, value, _) => value.text.isEmpty
-                                  ? const SizedBox.shrink()
-                                  : IconButton(
-                                      tooltip:
-                                          clearLabel ??
-                                          MaterialLocalizations.of(context)
-                                              .deleteButtonTooltip,
-                                      icon: Icon(
-                                        icons.clear,
-                                        size: NodeLaneTokens.smallIconSize,
-                                        color: t.muted,
-                                      ),
-                                      onPressed: !enabled
-                                          ? null
-                                          : () {
-                                              if (onClear != null) {
-                                                onClear!();
-                                              } else {
-                                                controller!.clear();
-                                                onChanged?.call('');
-                                              }
-                                            },
-                                    ),
-                            )),
-                )
-                .copyWith(
-                  fillColor: formRow
-                      ? focused
-                            ? t.accentSoft
-                            : t.surface
-                      : glass
-                      ? Colors.transparent
-                      : _search
-                      ? t.searchSurface
-                      : t.soft,
-                  border: glass ? InputBorder.none : null,
-                  enabledBorder: glass ? InputBorder.none : null,
-                  focusedBorder: glass ? InputBorder.none : null,
-                  disabledBorder: glass ? InputBorder.none : null,
-                ),
-          );
-          if (formRow) {
-            return inGroup ? field : NodeLaneGroupSurface(child: field);
-          }
-          return glass
-              ? NodeLaneGlassSurface(
-                  borderRadius: t.inputRadius,
-                  input: true,
-                  elevated: true,
-                  child: field,
-                )
-              : field;
-        },
-      ),
+                      )),
+          )
+          .copyWith(
+            fillColor: t.usesGlass ? Colors.transparent : null,
+            border: t.usesGlass ? InputBorder.none : null,
+            enabledBorder: t.usesGlass ? InputBorder.none : null,
+            focusedBorder: t.usesGlass ? InputBorder.none : null,
+            disabledBorder: t.usesGlass ? InputBorder.none : null,
+          ),
+    );
+    final input = t.usesGlass
+        ? NodeLaneGlassSurface(
+            borderRadius: t.inputRadius,
+            input: true,
+            elevated: true,
+            child: field,
+          )
+        : field;
+    if (label?.isNotEmpty != true) return input;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.only(
+            start: NodeLaneTokens.space4,
+            bottom: NodeLaneTokens.space8,
+          ),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: enabled ? inputFocus.requestFocus : null,
+            child: ExcludeSemantics(
+              child: Text(
+                label!,
+                style: t.readerLabel.copyWith(color: enabled ? t.ink : t.muted),
+              ),
+            ),
+          ),
+        ),
+        Semantics(label: label, child: input),
+      ],
     );
   }
+}
+
+class _NodeLaneTextFieldState extends State<NodeLaneTextField> {
+  FocusNode? _localFocus;
+
+  @override
+  void dispose() {
+    _localFocus?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      widget._build(context, widget.focusNode ?? (_localFocus ??= FocusNode()));
 }
 
 /// One visual and selection contract for page sections and filter choices.

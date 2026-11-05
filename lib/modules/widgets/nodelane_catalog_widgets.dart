@@ -170,6 +170,12 @@ class _NodeLaneCatalogSheetState extends State<NodeLaneCatalogSheet> {
                   children: [
                     NodeLaneReaderHeading(
                       title: widget.title,
+                      showHandle:
+                          widget.canClose &&
+                          (ModalRoute.of(context) is! ModalBottomSheetRoute ||
+                              (ModalRoute.of(
+                                context,
+                              ) as ModalBottomSheetRoute).enableDrag),
                       onBack: widget.onBack,
                       onClose: widget.canClose
                           ? widget.onClose ?? () => Navigator.pop(context)

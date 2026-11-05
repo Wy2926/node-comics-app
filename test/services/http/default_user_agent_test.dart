@@ -15,11 +15,14 @@ void main() {
       applyStoredRequestHeaders(
         request,
         cookieHeaders: const {},
-        userAgent: 'Mangayomi browser',
+        userAgent: 'Configured browser',
         useDefaultUserAgent: true,
       );
 
-      expect(request.headers[HttpHeaders.userAgentHeader], 'Mangayomi browser');
+      expect(
+        request.headers[HttpHeaders.userAgentHeader],
+        'Configured browser',
+      );
     });
 
     test('repairs a user agent previously saved with JSON quotes', () {
@@ -50,7 +53,7 @@ void main() {
       applyStoredRequestHeaders(
         request,
         cookieHeaders: const {},
-        userAgent: 'Mangayomi browser',
+        userAgent: 'Configured browser',
         useDefaultUserAgent: true,
       );
 
@@ -83,7 +86,7 @@ void main() {
       applyStoredRequestHeaders(
         request,
         cookieHeaders: const {},
-        userAgent: 'Mangayomi browser',
+        userAgent: 'Configured browser',
         useDefaultUserAgent: false,
       );
 

@@ -149,9 +149,9 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                     return Divider(height: 1, color: t.line);
                   }
                   if (f is TextFilter) {
-                    return NodeLaneGroupSurface(
-                      first: !widget.nested,
-                      last: !widget.nested,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      spacing: NodeLaneTokens.space16,
                       children: [
                         for (
                           var j = i;
@@ -167,7 +167,6 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                               (widget.filters[j] as TextFilter).name,
                             ),
                             hint: l10n.bookshelf_filter_any,
-                            inGroup: true,
                             textInputAction:
                                 j + 1 < widget.filters.length &&
                                     widget.filters[j + 1] is TextFilter

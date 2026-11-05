@@ -34,6 +34,7 @@ class NodeLaneNotice extends StatelessWidget {
     this.onClose,
     this.progress,
     this.floating = false,
+    this.contained = true,
   }) : assert((actionLabel == null) == (onAction == null));
 
   final String message;
@@ -42,6 +43,9 @@ class NodeLaneNotice extends StatelessWidget {
   final VoidCallback? onAction, onClose;
   final double? progress;
   final bool floating;
+
+  /// A surrounding modal or group can supply the surface and spacing.
+  final bool contained;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +62,7 @@ class NodeLaneNotice extends StatelessWidget {
     final content = Stack(
       children: [
         Padding(
-          padding: NodeLaneTokens.groupPadding,
+          padding: contained ? NodeLaneTokens.groupPadding : EdgeInsets.zero,
           child: Row(
             crossAxisAlignment: compact
                 ? CrossAxisAlignment.center
@@ -148,7 +152,9 @@ class NodeLaneNotice extends StatelessWidget {
                 ),
                 child: content,
               )
-            : NodeLaneGroupSurface(child: content),
+            : contained
+            ? NodeLaneGroupSurface(child: content)
+            : content,
       ),
     );
   }

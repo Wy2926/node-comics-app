@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -76,10 +77,9 @@ void main() {
       final home = Builder(
         builder: (context) => Scaffold(
           body: TextButton(
-            onPressed: () => showDialog<void>(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => MobileAccountLoginDialog(
+            onPressed: () => showNodeLaneCatalogSheet<void>(
+              context,
+              MobileAccountLoginDialog(
                 title: 'Login into SyncServer',
                 submitLabel: 'Log in with browser',
                 fields: const [
@@ -95,6 +95,7 @@ void main() {
                   return (true, '');
                 },
               ),
+              dismissible: false,
             ),
             child: const Text('Open'),
           ),
@@ -117,7 +118,7 @@ void main() {
         isNull,
       );
       await tester.enterText(field, 'https://draft.test/');
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(submitted, isEmpty);
       keyboard = 0;
@@ -147,10 +148,9 @@ void main() {
       final home = Builder(
         builder: (context) => Scaffold(
           body: TextButton(
-            onPressed: () => showDialog<void>(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => MobileAccountLoginDialog(
+            onPressed: () => showNodeLaneCatalogSheet<void>(
+              context,
+              MobileAccountLoginDialog(
                 title: 'Login into Kitsu',
                 submitLabel: 'Login',
                 fields: const [
@@ -170,6 +170,7 @@ void main() {
                   return result.future;
                 },
               ),
+              dismissible: false,
             ),
             child: const Text('Open'),
           ),
@@ -201,7 +202,7 @@ void main() {
       expect(tester.widget<NodeLaneTextField>(password).enabled, false);
       expect(
         tester
-            .widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'))
+            .widget<NodeLaneCloseButton>(find.byType(NodeLaneCloseButton))
             .onPressed,
         isNull,
       );
@@ -211,6 +212,7 @@ void main() {
       expect(find.byType(MobileAccountLoginDialog), findsOneWidget);
       result.complete((false, 'Login rejected'));
       await tester.pumpAndSettle();
+      await reveal(tester, find.text('Login rejected'));
       expect(find.text('Login rejected'), findsOneWidget);
       expect(
         tester.widget<NodeLaneTextField>(password).controller!.text,
@@ -362,7 +364,7 @@ void main() {
       await tap(tester, find.text('Advanced'));
       final upload = find.widgetWithText(OutlinedButton, 'Upload only');
       await tap(tester, upload);
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(calls, isEmpty);
       await tap(tester, upload);
@@ -402,7 +404,7 @@ void main() {
       await tester.pumpAndSettle();
       final logout = find.widgetWithText(TextButton, 'Log out');
       await tap(tester, logout, delta: -250);
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(logouts, 0);
       expect(tester.takeException(), isNull);
@@ -454,7 +456,7 @@ void main() {
         matching: find.widgetWithText(TextButton, 'Log out'),
       );
       await tap(tester, logout);
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(logouts, isEmpty);
       await tap(tester, logout);

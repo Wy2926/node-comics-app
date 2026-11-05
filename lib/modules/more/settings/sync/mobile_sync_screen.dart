@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
@@ -69,10 +71,9 @@ class _MobileSyncScreenState extends ConsumerState<MobileSyncScreen> {
               .recheck(),
           onLogout: () =>
               ref.read(synchingProvider(syncId: 1).notifier).logout(),
-          onLogin: () => showDialog<void>(
-            context: context,
-            barrierDismissible: false,
-            builder: (_) => MobileAccountLoginDialog(
+          onLogin: () => showNodeLaneCatalogSheet<void>(
+            context,
+            MobileAccountLoginDialog(
               title: context.l10n.login_into('SyncServer'),
               submitLabel: context.l10n.sync_login_browser,
               fields: [
@@ -87,6 +88,7 @@ class _MobileSyncScreenState extends ConsumerState<MobileSyncScreen> {
                   .read(syncServerProvider(syncId: 1).notifier)
                   .login(context.l10n, values['server']!),
             ),
+            dismissible: false,
           ),
           onSync: (action) => ref
               .read(syncServerProvider(syncId: 1).notifier)
@@ -175,7 +177,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
       await widget.onLogin();
       return;
     }
-    final confirmed = await showMobileSettingsConfirmation(
+    final confirmed = await showNodeLaneConfirmation(
       context,
       title: context.l10n.log_out_from('SyncServer'),
       confirmLabel: context.l10n.log_out,
@@ -187,7 +189,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
     if (!_available) return;
     final l10n = context.l10n;
     if (action != MobileSyncAction.sync) {
-      final confirmed = await showMobileSettingsConfirmation(
+      final confirmed = await showNodeLaneConfirmation(
         context,
         title: action == MobileSyncAction.upload
             ? l10n.sync_button_upload

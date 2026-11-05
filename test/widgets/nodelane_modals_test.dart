@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -166,15 +168,19 @@ void main() {
                     context: context,
                     builder: (context) => NodeLaneAlertDialog(
                       title: const Text('Edit'),
-                      content: TextField(controller: input),
+                      content: NodeLaneTextField(
+                        controller: input,
+                        label: "Name",
+                      ),
                       actions: [
-                        TextButton(
+                        NodeLaneDialogAction(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+                          secondary: true,
+                          label: 'Cancel',
                         ),
-                        FilledButton(
+                        NodeLaneDialogAction(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Save'),
+                          label: 'Save',
                         ),
                       ],
                     ),
@@ -188,7 +194,7 @@ void main() {
         );
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
-        final dialogTheme = Theme.of(tester.element(find.byType(AlertDialog)));
+        final dialogTheme = Theme.of(tester.element(find.byType(Dialog)));
         expect(
           dialogTheme.dialogTheme.backgroundColor,
           NodeLaneTokens.fromTheme(theme).surface,
@@ -205,6 +211,115 @@ void main() {
         expect(input.text, 'Draft');
         expect(tester.takeException(), isNull);
         tester.view.resetViewInsets();
+      }
+    },
+  );
+  testWidgets(
+    'anchored wheel preserves page layout, external values and disabled input',
+    (tester) async {
+      _phone(tester);
+      final value = ValueNotifier(6);
+      final enabled = ValueNotifier(true);
+      addTearDown(value.dispose);
+      addTearDown(enabled.dispose);
+      final writes = <int>[];
+      final routes = _Routes();
+      await tester.pumpWidget(
+        _app(
+          ListenableBuilder(
+            listenable: Listenable.merge([value, enabled]),
+            builder: (context, _) => SingleChildScrollView(
+              child: NodeLaneNumberRow(
+                key: GlobalObjectKey(value),
+                title: 'Preload',
+                min: 1,
+                max: 20,
+                value: value.value,
+                enabled: enabled.value,
+                onChanged: (next) {
+                  writes.add(next);
+                  value.value = next;
+                },
+              ),
+            ),
+          ),
+          observer: routes,
+        ),
+      );
+      final rowRect = tester.getRect(find.byType(NodeLaneNumberRow));
+      await tester.tap(find.text('Preload'));
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
+      expect(routes.pushed, hasLength(1));
+      expect(tester.getRect(find.byType(NodeLaneNumberRow)), rowRect);
+      expect(writes, isEmpty);
+      value.value = 12;
+      await tester.pumpAndSettle();
+      var picker = tester.widget<CupertinoPicker>(find.byType(CupertinoPicker));
+      expect(picker.scrollController!.selectedItem, 11);
+      expect(writes, isEmpty);
+      enabled.value = false;
+      await tester.pumpAndSettle();
+      await tester.dragFrom(
+        tester.getCenter(find.byType(CupertinoPicker)),
+        const Offset(0, -60),
+      );
+      await tester.pumpAndSettle();
+      expect(writes, isEmpty);
+      enabled.value = true;
+      await tester.pumpAndSettle();
+      picker = tester.widget<CupertinoPicker>(find.byType(CupertinoPicker));
+      picker.scrollController!.jumpToItem(19);
+      await tester.pumpAndSettle();
+      expect(writes, [20]);
+      await tester.tap(find.text('Preload'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Preload'));
+      await tester.pumpAndSettle();
+      expect(writes, [20]);
+      await tester.tapAt(const Offset(20, 600));
+      await tester.pumpAndSettle();
+      expect(find.byType(CupertinoPicker), findsNothing);
+      expect(tester.getRect(find.byType(NodeLaneNumberRow)), rowRect);
+      expect(writes, [20]);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'URL values stay on one line in the shared input at both text sizes',
+    (tester) async {
+      _phone(tester);
+      final controller = TextEditingController();
+      addTearDown(controller.dispose);
+      for (final scale in [1.0, 2.5]) {
+        await tester.pumpWidget(
+          _app(
+            MediaQuery(
+              data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+              child: NodeLaneTextField(
+                controller: controller,
+                label: 'Address',
+                keyboardType: TextInputType.url,
+              ),
+            ),
+          ),
+        );
+        await tester.enterText(
+          find.byType(TextField),
+          'https://example.test/a/very/long/address/that/continues/horizontally',
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<EditableText>(find.byType(EditableText)).maxLines,
+          1,
+        );
+        expect(
+          tester.getBottomLeft(find.text('Address')).dy,
+          lessThan(tester.getTopLeft(find.byType(TextFormField)).dy),
+        );
+        expect(tester.getSize(find.byType(TextFormField)).width, 390);
+        expect(tester.takeException(), isNull);
       }
     },
   );

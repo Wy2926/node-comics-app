@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:mangayomi/utils/url_protocol/protocol.dart' show appUrlScheme;
 import 'package:crypto/crypto.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -22,10 +23,7 @@ class NodeLaneSession {
     'NODELANE_AUTH_CLIENT_ID',
     defaultValue: 'pljp89y5gk6k5x2h9gp6q',
   );
-  static const redirect = String.fromEnvironment(
-    'NODELANE_AUTH_REDIRECT',
-    defaultValue: 'mangayomi://nodelane-auth',
-  );
+  static const redirect = '$appUrlScheme://nodelane-auth';
   Map<String, dynamic>? _value;
   Future<String>? _refresh;
   int _epoch = 0;
@@ -139,10 +137,12 @@ class NodeLaneSession {
         returned.host != callbackUri.host ||
         returned.path != callbackUri.path ||
         returned.userInfo.isNotEmpty ||
+        returned.hasPort ||
         returned.hasFragment ||
         params['state']?.length != 1 ||
         params['state']?.single != state ||
         params['code']?.length != 1 ||
+        params['code']!.single.isEmpty ||
         params.containsKey('error') ||
         (params.containsKey('iss') &&
             (params['iss']?.length != 1 ||

@@ -7,6 +7,11 @@ import 'package:mangayomi/modules/more/settings/general/providers/general_state_
 import 'package:mangayomi/utils/nodelane_brand.dart';
 
 class DiscordRPC {
+  static const _appAssets = RPCAssets(
+    largeImage: 'app-icon',
+    largeText: NodeLaneBrand.displayName,
+  );
+
   /// Id of the Discord Application
   final String applicationId;
 
@@ -27,10 +32,10 @@ class DiscordRPC {
 
   /// Instance of the current RPC activity
   final RpcActivity activity = RpcActivity(
-    assets: const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
+    assets: _appAssets,
     buttons: [
       const RPCButton(
-        label: "Get NodeLane Comics",
+        label: 'Get ${NodeLaneBrand.displayName}',
         url: NodeLaneBrand.repositoryUrl,
       ),
       const RPCButton(
@@ -76,11 +81,7 @@ class DiscordRPC {
   }
 
   Future<void> showIdleText() async {
-    await updateActivity(
-      details: "Idle",
-      state: "-----",
-      assets: const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
-    );
+    await updateActivity(details: "Idle", state: "-----", assets: _appAssets);
   }
 
   /// Marks a reader as the current owner of chapter presence updates.
@@ -117,26 +118,9 @@ class DiscordRPC {
               largeImage: imageUrl,
               largeText: rpcShowTitle ? chapter.manga.value!.name : "-----",
               smallImage: "app-icon",
-              smallText: "Mangayomi",
+              smallText: NodeLaneBrand.displayName,
             )
-          : const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
-    );
-  }
-
-  Future<void> showLargeImage() async {
-    await updateActivity(
-      assets: const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
-    );
-  }
-
-  Future<void> showSmallImage(String largeImage, String largeText) async {
-    await updateActivity(
-      assets: RPCAssets(
-        largeImage: largeImage,
-        largeText: largeText,
-        smallImage: "app-icon",
-        smallText: "Mangayomi",
-      ),
+          : _appAssets,
     );
   }
 

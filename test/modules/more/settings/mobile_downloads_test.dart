@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,26 +86,23 @@ void main() {
           container.read(concurrentDownloadsStateProvider.notifier) as _Count;
       final delay =
           container.read(downloadDelaySecondsStateProvider.notifier) as _Delay;
-      Future<void> edit(String title, String value) async {
+      Future<void> openWheel(String title) async {
         await reveal(tester, find.text(title));
         await tester.tap(find.text(title));
         await tester.pumpAndSettle();
-        await tester.enterText(find.byType(TextField), value);
-        await tester.pump();
+        expect(find.byType(Dialog), findsNothing);
       }
 
-      await edit('Concurrent downloads', '0');
-      expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-        isNull,
-      );
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
+      await openWheel('Concurrent downloads');
       expect(count.writes, isEmpty);
-      await edit('Concurrent downloads', '3');
-      await tester.tap(find.byType(FilledButton));
+      tester
+          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
+          .scrollController!
+          .jumpToItem(2);
       await tester.pumpAndSettle();
       expect(count.writes, [3]);
+      await tester.tap(find.text('Concurrent downloads'));
+      await tester.pumpAndSettle();
       await reveal(tester, find.text('Allow concurrent downloads'));
       await tester.tap(find.text('Allow concurrent downloads'));
       await tester.pumpAndSettle();
@@ -112,23 +110,16 @@ void main() {
       expect(container.read(concurrentDownloadsStateProvider), 3);
       await tester.tap(find.text('Allow concurrent downloads'));
       await tester.pumpAndSettle();
-      expect(find.text('3'), findsOneWidget);
+      expect(find.text('3'), findsWidgets);
       expect(count.writes, [3]);
 
-      await edit('Download delay', '0');
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      expect(delay.writes, isEmpty);
-      await edit('Download delay', '121');
-      expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-        isNull,
-      );
-      await tester.enterText(find.byType(TextField), '0');
-      await tester.pump();
-      await tester.tap(find.byType(FilledButton));
+      await openWheel('Download delay');
+      final picker = find.byType(CupertinoPicker);
+      tester.widget<CupertinoPicker>(picker).scrollController!.jumpToItem(0);
       await tester.pumpAndSettle();
       expect(delay.writes, [0]);
+      await tester.tap(find.text('Download delay'));
+      await tester.pumpAndSettle();
 
       await reveal(tester, find.text('Only on wifi'));
       await tester.tap(find.text('Only on wifi'));

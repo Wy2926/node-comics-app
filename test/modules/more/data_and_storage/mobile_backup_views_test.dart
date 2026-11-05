@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+
 import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
@@ -236,7 +238,7 @@ void main() {
       );
       await tap(tester, action('Cover cache'));
       expect(coverClears, 0);
-      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(coverClears, 0);
       await tap(tester, action('Cover cache'));
@@ -379,15 +381,15 @@ void main() {
           body: TextButton(
             child: const Text('Open'),
             onPressed: () async {
-              result = await showDialog<bool>(
-                context: context,
-                barrierDismissible: false,
-                builder: (_) => MobileBackupPasswordDialog(
+              result = await showNodeLaneCatalogSheet<bool>(
+                context,
+                MobileBackupPasswordDialog(
                   onSave: (value) {
                     calls.add(value);
                     return save.future;
                   },
                 ),
+                dismissible: false,
               );
             },
           ),
@@ -410,13 +412,15 @@ void main() {
         tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
         isNull,
       );
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.byTooltip('Close'));
       expect(result, isNull);
       expect(calls, isEmpty);
       await tap(tester, find.text('Open'));
       expect(
         tester
-            .widget<TextField>(find.byKey(const ValueKey('backup-password')))
+            .widget<NodeLaneTextField>(
+              find.byKey(const ValueKey('backup-password')),
+            )
             .controller!
             .text,
         '',
@@ -425,6 +429,7 @@ void main() {
         find.byKey(const ValueKey('backup-password')),
         ' sample password ',
       );
+      await tester.pumpAndSettle();
       await tap(tester, find.byTooltip('Show password'));
       expect(
         find.byKey(const ValueKey('backup-password-confirm')),
@@ -444,7 +449,9 @@ void main() {
       expect(find.textContaining('private secret'), findsNothing);
       expect(
         tester
-            .widget<TextField>(find.byKey(const ValueKey('backup-password')))
+            .widget<NodeLaneTextField>(
+              find.byKey(const ValueKey('backup-password')),
+            )
             .controller!
             .text,
         ' sample password ',
@@ -468,11 +475,10 @@ void main() {
           body: TextButton(
             child: const Text('Open'),
             onPressed: () async {
-              result = await showDialog<String>(
-                context: context,
-                barrierDismissible: false,
-                builder: (_) =>
-                    const MobileBackupPasswordDialog(wasIncorrect: true),
+              result = await showNodeLaneCatalogSheet<String>(
+                context,
+                const MobileBackupPasswordDialog(wasIncorrect: true),
+                dismissible: false,
               );
             },
           ),
@@ -486,16 +492,19 @@ void main() {
         tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
         isNull,
       );
+      await reveal(tester, find.byKey(const ValueKey('backup-password')));
       await tester.enterText(
         find.byKey(const ValueKey('backup-password')),
         ' draft ',
       );
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.byTooltip('Close'));
       expect(result, isNull);
       await tap(tester, find.text('Open'));
       expect(
         tester
-            .widget<TextField>(find.byKey(const ValueKey('backup-password')))
+            .widget<NodeLaneTextField>(
+              find.byKey(const ValueKey('backup-password')),
+            )
             .controller!
             .text,
         '',
@@ -547,7 +556,7 @@ void main() {
       );
       await tap(tester, find.text('Open'));
       await tap(tester, find.text('Second category'));
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.text('Cancel'));
       expect(result, isNull);
       await tap(tester, find.text('Open'));
       await reveal(tester, find.text('Second category'));

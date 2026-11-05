@@ -1,3 +1,4 @@
+import 'package:mangayomi/utils/url_protocol/protocol.dart' show appUrlScheme;
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 // Riverpod-facing orchestration for the sync-server's `/api/sync/v1`
@@ -71,10 +72,10 @@ class SyncServer extends _$SyncServer {
       final state = _generatePkceVerifier();
       final redirectUri = isDesktop
           ? 'http://localhost:$_desktopOAuthCallbackPort/callback'
-          : 'mangayomi://oauth-callback';
+          : '$appUrlScheme://oauth-callback';
       final callbackUrlScheme = isDesktop
           ? 'http://localhost:$_desktopOAuthCallbackPort'
-          : 'mangayomi';
+          : appUrlScheme;
 
       final authorizeUrl = Uri.parse('$server/api/oauth/authorize').replace(
         queryParameters: {

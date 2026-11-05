@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -185,40 +186,14 @@ void main() {
       await expand(tester, 'Controls');
       expect(_writes, isEmpty);
       await open(tester, 'Intro skip duration');
-      await tester.enterText(find.byType(TextField), '256');
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-        isNull,
-      );
-      await tester.enterText(find.byType(TextField), '0');
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-        isNull,
-      );
-      keyboard = 180;
-      await tester.pumpWidget(app(container, const MobilePlayerScreen()));
-      await tester.pumpAndSettle();
-      final cancel = find.widgetWithText(TextButton, 'Cancel');
-      await reveal(tester, cancel);
-      await tester.tap(cancel);
-      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
       expect(_writes, isEmpty);
-      keyboard = 0;
-      await tester.pumpWidget(app(container, const MobilePlayerScreen()));
+      tester
+          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
+          .scrollController!
+          .jumpToItem(254);
       await tester.pumpAndSettle();
       await open(tester, 'Intro skip duration');
-      expect(
-        tester.widget<TextField>(find.byType(TextField)).controller!.text,
-        '85',
-      );
-      await tester.enterText(find.byType(TextField), '255');
-      await tester.pumpAndSettle();
-      final confirm = find.byType(FilledButton);
-      await reveal(tester, confirm);
-      await tester.tap(confirm);
-      await tester.pumpAndSettle();
       await choose(tester, 'Double-tap seek duration', '3s');
       await expand(tester, 'Display');
       await toggle(tester, 'Use Fullscreen');
@@ -256,7 +231,7 @@ void main() {
       await tester.pumpAndSettle();
       await open(tester, 'Preferred languages');
       await tester.enterText(find.byType(TextField), 'cancelled');
-      final cancel = find.widgetWithText(TextButton, 'Cancel');
+      final cancel = find.text('Cancel');
       await reveal(tester, cancel);
       await tester.tap(cancel);
       await tester.pumpAndSettle();
@@ -270,8 +245,8 @@ void main() {
       keyboard = 180;
       await tester.pumpWidget(app(container, const MobilePlayerAudioScreen()));
       await tester.pumpAndSettle();
-      await reveal(tester, find.byType(FilledButton));
-      await tester.tap(find.byType(FilledButton));
+      await reveal(tester, find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pumpAndSettle();
       keyboard = 0;
       await tester.pumpWidget(app(container, const MobilePlayerAudioScreen()));
@@ -280,8 +255,8 @@ void main() {
       await open(tester, 'Preferred languages');
       await tester.enterText(find.byType(TextField), '');
       await tester.pumpAndSettle();
-      await reveal(tester, find.byType(FilledButton));
-      await tester.tap(find.byType(FilledButton));
+      await reveal(tester, find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pumpAndSettle();
       expect(_writes.last, ('languages', ''));
       await choose(tester, 'Audio channels', 'Reverse stereo');

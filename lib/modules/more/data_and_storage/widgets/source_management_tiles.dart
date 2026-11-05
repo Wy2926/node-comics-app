@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,7 +134,7 @@ Future<void> _checkMissingSources(BuildContext context) async {
   await showDialog(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         title: Text(l10n.missing_source_check_result_title(groups.length)),
         content: SizedBox(
           width: double.maxFinite,
@@ -184,9 +185,9 @@ Future<void> _checkMissingSources(BuildContext context) async {
           ),
         ),
         actions: [
-          TextButton(
+          NodeLaneDialogAction(
+            label: l10n.ok,
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.ok),
           ),
         ],
       );
@@ -236,7 +237,7 @@ Future<void> _deleteSource(BuildContext context, WidgetRef ref) async {
       : await showDialog<LibrarySourceGroup>(
           context: context,
           builder: (dialogContext) {
-            return AlertDialog(
+            return NodeLaneAlertDialog(
               title: Text(l10n.delete_source_pick_title),
               content: SizedBox(
                 width: double.maxFinite,
@@ -292,7 +293,7 @@ Future<void> _deleteSource(BuildContext context, WidgetRef ref) async {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setState) {
-            return AlertDialog(
+            return NodeLaneAlertDialog(
               title: Text(
                 l10n.delete_source_confirm_title(
                   "${group.sourceName} (${_itemTypeLabel(context, group.itemType)})",
@@ -346,7 +347,7 @@ Future<void> _deleteSource(BuildContext context, WidgetRef ref) async {
               actions: dialogCancelConfirmActions(
                 dialogContext: dialogContext,
                 confirmLabel: l10n.delete_source_button,
-                confirmColor: Colors.red,
+                destructive: true,
               ),
             );
           },
@@ -438,7 +439,7 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
       : await showDialog<_TaggedMangaCluster>(
           context: context,
           builder: (dialogContext) {
-            return AlertDialog(
+            return NodeLaneAlertDialog(
               title: Text(l10n.merge_manga_pick_title),
               content: SizedBox(
                 width: double.maxFinite,
@@ -490,7 +491,7 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
             var selected = mangaList.first;
             return StatefulBuilder(
               builder: (dialogContext, setState) {
-                return AlertDialog(
+                return NodeLaneAlertDialog(
                   title: Text(l10n.merge_manga_choose_primary_title),
                   content: SizedBox(
                     width: double.maxFinite,
@@ -541,7 +542,7 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         scrollable: mobile,
         title: Text(l10n.merge_preview_title),
         content: Text(

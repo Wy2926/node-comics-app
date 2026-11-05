@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -49,37 +51,36 @@ class _MobileBookshelfTorrentSheetState
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n, t = NodeLaneTokens.of(context);
+    final l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
       child: NodeLaneCatalogSheet(
         title: l10n.add_torrent,
         canClose: !_busy,
-        heightFactor: .62,
-        bottom: Row(
-          children: [
-            Expanded(
-              child: NodeLaneSecondaryButton(
-                onPressed: _busy ? null : () => Navigator.pop(context),
-                child: Text(_failed ? l10n.close : l10n.cancel),
+        heightFactor: .9,
+        fitContent: true,
+        bottom: _failed
+            ? null
+            : NodeLaneModalActions(
+                actions: [
+                  NodeLaneDialogAction(
+                    label: l10n.add,
+                    busy: _busy,
+                    onPressed: _url.text.trim().isEmpty ? null : _add,
+                  ),
+                ],
               ),
-            ),
-            if (!_failed) ...[
-              const SizedBox(width: NodeLaneTokens.space12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _busy || _url.text.trim().isEmpty ? null : _add,
-                  child: Text(l10n.add),
-                ),
-              ),
-            ],
-          ],
-        ),
         child: ListView(
+          shrinkWrap: true,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.all(NodeLaneTokens.gutter),
           children: [
             if (_failed)
-              Text(l10n.bookshelf_import_incomplete, style: t.readerSecondary)
+              NodeLaneNotice(
+                message: l10n.bookshelf_import_incomplete,
+                kind: NodeLaneNoticeKind.error,
+                contained: false,
+              )
             else ...[
               NodeLaneTextField(
                 controller: _url,
@@ -101,10 +102,6 @@ class _MobileBookshelfTorrentSheetState
                 icon: NodeLaneIcons.of(context).folderOutline,
                 onTap: _busy ? null : () => _add(file: true),
               ),
-              if (_busy) ...[
-                const SizedBox(height: NodeLaneTokens.space24),
-                const Center(child: CircularProgressIndicator.adaptive()),
-              ],
             ],
           ],
         ),

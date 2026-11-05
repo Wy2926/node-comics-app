@@ -212,7 +212,7 @@ void main() {
       await tester.ensureVisible(find.text('Remove from bookshelf'));
       await tester.tap(find.text('Remove from bookshelf'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(calls, 0);
       expect(result, false);
@@ -287,7 +287,7 @@ void main() {
       action();
       await tester.pump();
       expect(calls, 1);
-      await tester.tap(find.text('Close'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Open'), findsOneWidget);
       expect(tester.takeException(), isNull);

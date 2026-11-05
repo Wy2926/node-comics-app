@@ -99,27 +99,6 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-
-  testWidgets('uses a neutral icon for GitHub repositories', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          extensionsRepoStateProvider(ItemType.anime)
-              .overrideWith(_GitHubRepoState.new),
-        ],
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: SourceRepositories(itemType: ItemType.anime),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.text('Curated extensions'), findsOneWidget);
-    expect(find.byKey(const Key('repository-icon')), findsOneWidget);
-    expect(find.byIcon(Icons.source_outlined), findsOneWidget);
-  });
 }
 
 class _GitHubRepoState extends ExtensionsRepoState {

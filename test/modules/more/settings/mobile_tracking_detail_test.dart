@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -151,32 +152,22 @@ void main() {
       expect(writes.single.syncId, original.syncId);
       expect(writes.single.mangaId, original.mangaId);
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Chapters'));
-      keyboard = 280;
-      await tester.pumpWidget(app(home));
-      await tester.enterText(find.byType(TextField), '13');
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-        isNull,
-      );
-      await tester.enterText(find.byType(TextField), '8');
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
-      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
       expect(writes.length, 1);
-      keyboard = 0;
-      await tester.pumpWidget(app(home));
-      await tap(tester, find.widgetWithText(NodeLaneRow, 'Chapters'));
-      expect(
-        tester.widget<TextField>(find.byType(TextField)).controller!.text,
-        '4',
-      );
-      await tester.enterText(find.byType(TextField), '0');
-      await tap(tester, find.byType(FilledButton));
+      tester
+          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
+          .scrollController!
+          .jumpToItem(0);
       await tester.pumpAndSettle();
       expect(writes.last.lastChapterRead, 0);
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Chapters'));
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Score'));
-      await tap(tester, find.widgetWithText(NodeLaneRow, 'Score 60'));
+      tester
+          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
+          .scrollController!
+          .jumpToItem(2);
       await tester.pumpAndSettle();
+      await tap(tester, find.widgetWithText(NodeLaneRow, 'Score'));
       expect(writes.last.score, 60);
       expect(tester.takeException(), isNull, reason: 'Before date picker');
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Start date'));
@@ -209,7 +200,7 @@ void main() {
       expect(tester.takeException(), isNull, reason: 'After date picker');
       final remove = find.widgetWithText(TextButton, 'Remove tracking');
       await tap(tester, remove);
-      await tap(tester, find.widgetWithText(TextButton, 'Cancel'));
+      await tap(tester, find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(removes, 0);
       await tap(tester, remove);

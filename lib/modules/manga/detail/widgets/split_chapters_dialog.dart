@@ -13,13 +13,14 @@ Future<bool> showSplitChaptersDialog(BuildContext context) async {
           title: Text(l10n.split_epub_chapters),
           content: Text(l10n.split_epub_chapters_description),
           actions: [
-            TextButton(
+            NodeLaneDialogAction(
+              label: l10n.cancel,
+              secondary: true,
               onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.cancel),
             ),
-            FilledButton(
+            NodeLaneDialogAction(
+              label: l10n.split_epub_chapters,
               onPressed: () => Navigator.pop(context, true),
-              child: Text(l10n.split_epub_chapters),
             ),
           ],
         ),

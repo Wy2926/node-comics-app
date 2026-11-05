@@ -89,6 +89,7 @@ class _MobileCustomButtonScreenState
         message:
             '${button.title ?? ''}\n\n${context.l10n.custom_buttons_delete}',
         confirmLabel: context.l10n.delete,
+        destructive: true,
         onConfirm: () => _repository.delete(button.id!),
       ),
     );

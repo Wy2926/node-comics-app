@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -25,30 +24,6 @@ class MobileDownloadsScreen extends ConsumerWidget {
   final Future<LocalFolder?> defaultFolder;
   final VoidCallback onPickLocation, onAddFolder, onRescan, onHelp;
   final ValueChanged<LocalFolder> onRemoveFolder;
-
-  Future<int?> _number(
-    BuildContext context, {
-    required String title,
-    required int value,
-    required int min,
-    required int max,
-    String unit = '',
-  }) async {
-    final result = await showDialog<String>(
-      context: context,
-      builder: (_) => MobileSettingsTextDialog(
-        title: title,
-        initialValue: '$value',
-        helper: '$min–$max$unit',
-        keyboardType: TextInputType.number,
-        isValid: (text) {
-          final number = int.tryParse(text.trim());
-          return number != null && number >= min && number <= max;
-        },
-      ),
-    );
-    return result == null ? null : int.tryParse(result.trim());
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,52 +61,28 @@ class MobileDownloadsScreen extends ConsumerWidget {
                         .set,
                   ),
                   if (concurrent)
-                    NodeLaneRow(
+                    NodeLaneNumberRow(
                       title: l10n.concurrent_downloads,
-                      openOnReveal: true,
-                      value: '$count',
+                      value: count,
+                      min: 1,
+                      max: 255,
                       icon: NodeLaneIcons.of(context).pageNumber,
-                      onTap: () async {
-                        final selected = await _number(
-                          context,
-                          title: l10n.concurrent_downloads,
-                          value: count,
-                          min: 1,
-                          max: 255,
-                        );
-                        if (context.mounted &&
-                            selected != null &&
-                            selected != count) {
-                          ref
-                              .read(concurrentDownloadsStateProvider.notifier)
-                              .set(selected);
-                        }
-                      },
+                      onChanged: ref
+                          .read(concurrentDownloadsStateProvider.notifier)
+                          .set,
                     ),
-                  NodeLaneRow(
+                  NodeLaneNumberRow(
                     title: l10n.download_delay,
-                    openOnReveal: true,
-                    value: delay == 0
+                    value: delay,
+                    min: 0,
+                    max: 120,
+                    label: (value) => value == 0
                         ? l10n.off
-                        : l10n.download_delay_value(delay),
+                        : l10n.download_delay_value(value),
                     icon: NodeLaneIcons.of(context).timer,
-                    onTap: () async {
-                      final selected = await _number(
-                        context,
-                        title: l10n.download_delay,
-                        value: delay,
-                        min: 0,
-                        max: 120,
-                        unit: ' s',
-                      );
-                      if (context.mounted &&
-                          selected != null &&
-                          selected != delay) {
-                        ref
-                            .read(downloadDelaySecondsStateProvider.notifier)
-                            .set(selected);
-                      }
-                    },
+                    onChanged: ref
+                        .read(downloadDelaySecondsStateProvider.notifier)
+                        .set,
                   ),
                 ],
               ),

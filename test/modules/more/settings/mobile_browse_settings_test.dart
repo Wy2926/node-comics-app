@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -212,7 +214,9 @@ void main() {
 
       await open();
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+            .onPressed,
         isNull,
       );
       await choose('Manga');
@@ -222,28 +226,28 @@ void main() {
       expect(requests, isEmpty);
       await open();
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+            .onPressed,
         isNull,
       );
       await choose('Anime');
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       expect(selected, [
         [ItemType.anime],
       ]);
       expect(
         tester
-            .widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'))
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Cancel'))
             .onPressed,
         isNull,
       );
       expect(
         tester
-            .widget<CheckboxListTile>(
-              find.widgetWithText(CheckboxListTile, 'Anime'),
-            )
-            .onChanged,
+            .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Anime'))
+            .onTap,
         isNull,
       );
       await tester.binding.handlePopRoute();
@@ -254,7 +258,7 @@ void main() {
       expect(find.text('Failed!'), findsOneWidget);
       expect(find.textContaining('private storage detail'), findsNothing);
       expect(find.byType(MobileBrowseCleanupDialog), findsOneWidget);
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pump();
       expect(selected, [
         [ItemType.anime],
@@ -267,7 +271,7 @@ void main() {
       chooseTypes = false;
       await open();
       expect(find.byType(CheckboxListTile), findsNothing);
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pump();
       expect(selected.last, isEmpty);
       await tester.pumpWidget(const SizedBox());

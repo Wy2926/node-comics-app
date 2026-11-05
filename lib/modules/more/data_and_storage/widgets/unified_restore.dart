@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -333,7 +334,7 @@ Future<bool?> _confirmPlainRestore(BuildContext context) {
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         scrollable: isMobile && !isTv,
         title: Text(l10n.restore_backup),
         content: Row(
@@ -362,7 +363,7 @@ Future<bool?> _chooseImportMode(BuildContext context) {
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         title: Text(l10n.import_mode_title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -424,7 +425,7 @@ Future<Map<String, bool>?> _resolveCategoryConflicts(
     builder: (dialogContext) {
       return StatefulBuilder(
         builder: (dialogContext, setState) {
-          return AlertDialog(
+          return NodeLaneAlertDialog(
             title: Text(l10n.category_conflict_title),
             content: SizedBox(
               width: double.maxFinite,
@@ -506,7 +507,7 @@ Future<Map<String, int>?> _resolveSourceConflicts(
     builder: (dialogContext) {
       return StatefulBuilder(
         builder: (dialogContext, setState) {
-          return AlertDialog(
+          return NodeLaneAlertDialog(
             title: Text(l10n.source_conflict_title),
             content: SizedBox(
               width: double.maxFinite,
@@ -627,7 +628,7 @@ Future<bool?> _confirmImportSummary(
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         scrollable: isMobile && !isTv,
         title: Text(l10n.import_summary_title),
         content: Text(
@@ -656,14 +657,14 @@ Future<bool?> _confirmReplaceSummary(
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         scrollable: isMobile && !isTv,
         title: Text(l10n.replace_summary_title),
         content: Text(l10n.replace_summary_message(currentCount, backupCount)),
         actions: dialogCancelConfirmActions(
           dialogContext: dialogContext,
           confirmLabel: l10n.replace_summary_confirm,
-          confirmColor: Colors.red,
+          destructive: true,
         ),
       );
     },

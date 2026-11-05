@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter/material.dart';
@@ -637,12 +638,12 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
       if (mounted) {
         await showDialog<void>(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => NodeLaneAlertDialog(
             content: Text(context.l10n.chapter_action_incomplete),
             actions: [
-              TextButton(
+              NodeLaneDialogAction(
+                label: context.l10n.close,
                 onPressed: () => Navigator.pop(context),
-                child: Text(context.l10n.close),
               ),
             ],
           ),

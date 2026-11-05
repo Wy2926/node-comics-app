@@ -1,3 +1,6 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 import 'dart:async';
@@ -67,7 +70,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit/generated/libmpv/bindings.dart' as generated;
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:media_kit_video/media_kit_video_controls/src/controls/extensions/duration.dart';
-import 'package:numberpicker/numberpicker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -267,6 +269,18 @@ class _AnimeStreamPageState extends riv.ConsumerState<AnimeStreamPage>
   late final enableAudioPitchCorrection = ref.read(
     enableAudioPitchCorrectionStateProvider,
   );
+  ({
+    String title,
+    String format,
+    int min,
+    int max,
+    int step,
+    String property,
+    int value,
+  })?
+  _scriptNumber;
+  final _scriptNumberMenu = MenuController();
+
   riv.ProviderSubscription<PlayerSubtitleSettings>? _subSettingsSub;
 
   void _applySubtitleSettingsToMpv(PlayerSubtitleSettings settings) {
@@ -642,71 +656,22 @@ class _AnimeStreamPageState extends riv.ConsumerState<AnimeStreamPage>
         final start = int.parse(data[2]);
         final stop = int.parse(data[3]);
         final step = int.parse(data[4]);
-        int currentValue = start;
-        await showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text(data[0]),
-              content: StatefulBuilder(
-                builder: (context, setState) => SizedBox(
-                  height: 200,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      NumberPicker(
-                        value: currentValue,
-                        minValue: start,
-                        maxValue: stop,
-                        step: step,
-                        haptics: true,
-                        textMapper: (numberText) =>
-                            data[1].replaceAll("%d", numberText),
-                        onChanged: (value) =>
-                            setState(() => currentValue = value),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        context.l10n.cancel,
-                        style: TextStyle(color: context.primaryColor),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        final namePtr = data[5].toNativeUtf8();
-                        final valuePtr = calloc<Int64>(1)..value = currentValue;
-                        nativePlayer.mpv.mpv_set_property(
-                          nativePlayer.ctx,
-                          namePtr.cast(),
-                          generated.mpv_format.MPV_FORMAT_INT64,
-                          valuePtr.cast(),
-                        );
-                        malloc.free(namePtr);
-                        malloc.free(valuePtr);
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        context.l10n.ok,
-                        style: TextStyle(color: context.primaryColor),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        );
+        if (mounted && step > 0 && stop >= start) {
+          setState(
+            () => _scriptNumber = (
+              title: data[0],
+              format: data[1],
+              min: start,
+              max: stop,
+              step: step,
+              property: data[5],
+              value: start,
+            ),
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _scriptNumber != null) _scriptNumberMenu.open();
+          });
+        }
         nativePlayer.setProperty("user-data/aniyomi/launch_int_picker", "");
         break;
       case "mangayomi/chapter_titles":
@@ -2837,6 +2802,46 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
                   },
                 );
               },
+            ),
+          ),
+        if (_scriptNumber case final selection?)
+          Positioned(
+            right: NodeLaneTokens.gutter,
+            bottom: NodeLaneTokens.gutter,
+            child: SafeArea(
+              child: NodeLaneNumberPicker(
+                controller: _scriptNumberMenu,
+                value: selection.value,
+                min: selection.min,
+                max: selection.max,
+                step: selection.step,
+                label: (value) => selection.format.replaceAll('%d', '$value'),
+                onClose: () {
+                  if (mounted) setState(() => _scriptNumber = null);
+                },
+                onChanged: (value) {
+                  (_player.platform as NativePlayer).setProperty(
+                    selection.property,
+                    '$value',
+                  );
+                  setState(
+                    () => _scriptNumber = (
+                      title: selection.title,
+                      format: selection.format,
+                      min: selection.min,
+                      max: selection.max,
+                      step: selection.step,
+                      property: selection.property,
+                      value: value,
+                    ),
+                  );
+                },
+                builder: (context, toggle, _) => NodeLaneIconButton(
+                  tooltip: selection.title,
+                  icon: NodeLaneIcons.of(context).adjustments,
+                  onPressed: toggle,
+                ),
+              ),
             ),
           ),
       ],

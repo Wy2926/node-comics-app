@@ -145,16 +145,18 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
               title: Text(l10n.remove_everything),
               content: Text(l10n.remove_all_update_msg),
               actions: [
-                TextButton(
+                NodeLaneDialogAction(
+                  label: l10n.cancel,
+                  secondary: true,
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: Text(l10n.cancel),
                 ),
-                TextButton(
+                NodeLaneDialogAction(
+                  label: l10n.ok,
+                  destructive: true,
                   onPressed: () async {
                     Navigator.of(dialogContext).pop();
                     await _clearUpdates();
                   },
-                  child: Text(l10n.ok),
                 ),
               ],
             ),

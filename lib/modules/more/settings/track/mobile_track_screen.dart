@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
@@ -40,10 +42,9 @@ class _MobileTrackScreenState extends ConsumerState<MobileTrackScreen> {
           .read(anilistProvider(syncId: id, widgetRef: ref).notifier)
           .login();
     } else if (id == TrackerProviders.kitsu.syncId) {
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => MobileAccountLoginDialog(
+      await showNodeLaneCatalogSheet<void>(
+        context,
+        MobileAccountLoginDialog(
           title: context.l10n.login_into('Kitsu'),
           submitLabel: context.l10n.login,
           fields: [
@@ -68,6 +69,7 @@ class _MobileTrackScreenState extends ConsumerState<MobileTrackScreen> {
               .read(kitsuProvider(syncId: id, widgetRef: ref).notifier)
               .login(values['email']!.trim(), values['password']!),
         ),
+        dismissible: false,
       );
     } else if (id == TrackerProviders.myAnimeList.syncId) {
       await ref
@@ -162,7 +164,7 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
     });
     try {
       if (widget.entries.any((entry) => entry.syncId == id)) {
-        final confirmed = await showMobileSettingsConfirmation(
+        final confirmed = await showNodeLaneConfirmation(
           context,
           title: context.l10n.log_out_from(trackInfos(id).$2),
           confirmLabel: context.l10n.log_out,

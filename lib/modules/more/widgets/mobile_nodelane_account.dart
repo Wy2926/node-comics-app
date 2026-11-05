@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 import 'dart:async';
@@ -7,7 +8,6 @@ import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_account_widgets.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -106,7 +106,7 @@ class _AccountViewState extends ConsumerState<_AccountView>
   Future<void> _logout() async {
     if (_disabled || _confirming) return;
     _confirming = true;
-    final confirmed = await showMobileSettingsConfirmation(
+    final confirmed = await showNodeLaneConfirmation(
       context,
       title: context.l10n.nodelane_sign_out,
       message: context.l10n.nodelane_sign_out_confirm,

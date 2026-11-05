@@ -78,6 +78,30 @@ void main() {
     },
   );
 
+  test(
+    '18+ defaults to shown but preserves a stored opt-out and restore',
+    () async {
+      expect(stored().showNSFW, isTrue);
+      expect(container.read(showNSFWStateProvider), isTrue);
+
+      // An older database can contain null even though new settings have a default.
+      await settingsRepository.update((settings) => settings.showNSFW = null);
+      container.invalidate(showNSFWStateProvider);
+      expect(container.read(showNSFWStateProvider), isTrue);
+
+      container.read(showNSFWStateProvider.notifier).set(false);
+      await settingsRepository.transaction(() {});
+      container.invalidate(showNSFWStateProvider);
+      expect(container.read(showNSFWStateProvider), isFalse);
+      expect(stored().showNSFW, isFalse);
+      expect(Settings.fromJson(stored().toJson()).showNSFW, isFalse);
+
+      final legacy = stored().toJson()..remove('showNSFW');
+      expect(Settings.fromJson(legacy).showNSFW, isTrue);
+      expect(stored().themeIsDark, isTrue);
+    },
+  );
+
   test('following the system theme survives the write that turns it on', () async {
     // The system is light and the app is dark, so turning this on has to leave
     // the app light. It does in memory; the question is what reached the row.
@@ -122,24 +146,27 @@ void main() {
       expect(stored().id, 227);
     });
 
-    test('keeps a change made after the caller last looked at the row', () async {
-      // What every caller of this used to get wrong: hold the row, let
-      // something else write, then write the held copy back over it.
-      final stale = isar.settings.getSync(227)!;
-      isar.writeTxnSync(
-        () => isar.settings.putSync(
-          isar.settings.getSync(227)!..themeIsDark = false,
-        ),
-      );
+    test(
+      'keeps a change made after the caller last looked at the row',
+      () async {
+        // What every caller of this used to get wrong: hold the row, let
+        // something else write, then write the held copy back over it.
+        final stale = isar.settings.getSync(227)!;
+        isar.writeTxnSync(
+          () => isar.settings.putSync(
+            isar.settings.getSync(227)!..themeIsDark = false,
+          ),
+        );
 
-      await settingsRepository.update(
-        (settings) => settings.followSystemTheme = true,
-      );
+        await settingsRepository.update(
+          (settings) => settings.followSystemTheme = true,
+        );
 
-      expect(stale.themeIsDark, true, reason: 'the held copy is stale');
-      expect(stored().themeIsDark, false, reason: 'the row is not');
-      expect(stored().followSystemTheme, true);
-    });
+        expect(stale.themeIsDark, true, reason: 'the held copy is stale');
+        expect(stored().themeIsDark, false, reason: 'the row is not');
+        expect(stored().followSystemTheme, true);
+      },
+    );
 
     test('stamps updatedAt so a sync sees the change', () async {
       final before = stored().updatedAt ?? 0;

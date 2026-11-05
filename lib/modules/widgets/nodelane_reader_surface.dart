@@ -71,11 +71,13 @@ class NodeLaneReaderHeading extends StatelessWidget {
     required this.onClose,
     this.actions = const [],
     this.onBack,
+    this.showHandle = true,
   });
   final String title, closeLabel;
   final VoidCallback? onClose;
   final VoidCallback? onBack;
   final List<Widget> actions;
+  final bool showHandle;
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
@@ -83,19 +85,20 @@ class NodeLaneReaderHeading extends StatelessWidget {
       padding: const EdgeInsets.only(top: 12, bottom: 8),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Center(
-              child: Container(
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colors.muted.withValues(alpha: .3),
-                  borderRadius: BorderRadius.circular(2),
+          if (showHandle)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.muted.withValues(alpha: .3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
             ),
-          ),
           Padding(
             padding: EdgeInsets.only(left: onBack == null ? 20 : 8, right: 12),
             child: Row(

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -115,41 +116,31 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
     return NodeLaneCatalogSheet(
       title: widget.title,
       subtitle: widget.subtitle,
-      heightFactor: searchable
-          ? .65
-          : (.28 + widget.options.length * .06).clamp(.43, .78),
+      heightFactor: .8,
+      fitContent: true,
       bottom: widget.multiple
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (widget.allLabel == null) ...[
                   Text('已选择 ${selected.length} 项', style: t.readerSecondary),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: NodeLaneTokens.space12),
                 ],
-                Row(
-                  children: [
+                NodeLaneModalActions(
+                  actions: [
                     if (widget.reset)
-                      NodeLaneSecondaryButton(
+                      NodeLaneDialogAction(
+                        label: l10n.reset,
+                        secondary: true,
                         onPressed: selectAll,
-                        child: Text(l10n.reset),
-                      )
-                    else
-                      Expanded(
-                        child: NodeLaneSecondaryButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(l10n.cancel),
-                        ),
                       ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () {
-                          if (leaving) return;
-                          leaving = true;
-                          Navigator.pop(context, {...selected});
-                        },
-                        child: Text(widget.saveLabel ?? '保存'),
-                      ),
+                    NodeLaneDialogAction(
+                      label: widget.saveLabel ?? l10n.save,
+                      onPressed: () {
+                        if (leaving) return;
+                        leaving = true;
+                        Navigator.pop(context, {...selected});
+                      },
                     ),
                   ],
                 ),
@@ -157,6 +148,7 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
             )
           : null,
       child: ListView(
+        shrinkWrap: true,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: [
@@ -252,31 +244,25 @@ class _SourceTextEditorState extends State<SourceTextEditor> {
     return NodeLaneCatalogSheet(
       title: widget.title,
       subtitle: widget.subtitle,
-      heightFactor: .43,
-      bottom: Row(
-        children: [
-          Expanded(
-            child: NodeLaneSecondaryButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(context.l10n.cancel),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: FilledButton(
-              onPressed: !widget.allowEmpty && controller.text.trim().isEmpty
-                  ? null
-                  : () {
-                      if (leaving) return;
-                      leaving = true;
-                      Navigator.pop(context, controller.text);
-                    },
-              child: const Text('保存'),
-            ),
+      heightFactor: .9,
+      fitContent: true,
+      bottom: NodeLaneModalActions(
+        actions: [
+          NodeLaneDialogAction(
+            label: context.l10n.save,
+            onPressed: !widget.allowEmpty && controller.text.trim().isEmpty
+                ? null
+                : () {
+                    if (leaving) return;
+                    leaving = true;
+                    Navigator.pop(context, controller.text);
+                  },
           ),
         ],
       ),
       child: ListView(
+        shrinkWrap: true,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
           if (widget.description?.isNotEmpty == true) ...[
@@ -285,10 +271,10 @@ class _SourceTextEditorState extends State<SourceTextEditor> {
           ],
           NodeLaneTextField(
             controller: controller,
-            hint: widget.title,
             autofocus: true,
             onChanged: (_) => setState(() {}),
-            maxLines: 3,
+            maxLines: 1,
+            textInputAction: TextInputAction.done,
           ),
         ],
       ),

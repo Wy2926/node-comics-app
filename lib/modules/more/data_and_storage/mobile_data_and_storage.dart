@@ -1,6 +1,6 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:archive/archive.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_account_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -92,11 +92,12 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
     if (_busy || _confirming) return;
     _confirming = true;
     try {
-      final confirmed = await showMobileSettingsConfirmation(
+      final confirmed = await showNodeLaneConfirmation(
         context,
         title: title,
         message: context.l10n.settings_cache_confirmation(title),
         confirmLabel: context.l10n.settings_cache_clear,
+        destructive: true,
       );
       if (mounted && confirmed) await _run(operation);
     } finally {

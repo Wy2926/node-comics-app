@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -65,23 +67,12 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
 
   Future<void> _removeLocalFolder(LocalFolder folder) async {
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        scrollable: true,
-        title: Text(l10n.delete),
-        content: Text('${folder.name ?? ''}\n${folder.path ?? ''}'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.ok),
-          ),
-        ],
-      ),
+    final confirmed = await showNodeLaneConfirmation(
+      context,
+      title: l10n.delete,
+      message: '${folder.name ?? ''}\n${folder.path ?? ''}',
+      confirmLabel: l10n.delete,
+      destructive: true,
     );
     if (!mounted || confirmed != true) return;
     final folders = ref.read(localFoldersStateProvider).toList()
@@ -162,7 +153,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                   showDialog(
                     context: context,
                     builder: (context) {
-                      return AlertDialog(
+                      return NodeLaneAlertDialog(
                         title: Text(context.l10n.concurrent_downloads),
                         content: StatefulBuilder(
                           builder: (context, setState) => SizedBox(
@@ -188,16 +179,15 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              TextButton(
+                              NodeLaneDialogAction(
+                                label: context.l10n.cancel,
+                                secondary: true,
                                 onPressed: () async {
                                   Navigator.pop(context);
                                 },
-                                child: Text(
-                                  context.l10n.cancel,
-                                  style: TextStyle(color: context.primaryColor),
-                                ),
                               ),
-                              TextButton(
+                              NodeLaneDialogAction(
+                                label: context.l10n.ok,
                                 onPressed: () async {
                                   ref
                                       .read(
@@ -207,10 +197,6 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                                       .set(currentIntValue);
                                   Navigator.pop(context);
                                 },
-                                child: Text(
-                                  context.l10n.ok,
-                                  style: TextStyle(color: context.primaryColor),
-                                ),
                               ),
                             ],
                           ),
@@ -231,7 +217,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    return AlertDialog(
+                    return NodeLaneAlertDialog(
                       title: Text(context.l10n.download_delay),
                       content: StatefulBuilder(
                         builder: (context, setState) => SizedBox(
@@ -257,14 +243,13 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            TextButton(
+                            NodeLaneDialogAction(
+                              label: context.l10n.cancel,
+                              secondary: true,
                               onPressed: () => Navigator.pop(context),
-                              child: Text(
-                                context.l10n.cancel,
-                                style: TextStyle(color: context.primaryColor),
-                              ),
                             ),
-                            TextButton(
+                            NodeLaneDialogAction(
+                              label: context.l10n.ok,
                               onPressed: () {
                                 ref
                                     .read(
@@ -274,10 +259,6 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                                     .set(currentDelay);
                                 Navigator.pop(context);
                               },
-                              child: Text(
-                                context.l10n.ok,
-                                style: TextStyle(color: context.primaryColor),
-                              ),
                             ),
                           ],
                         ),
@@ -381,7 +362,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
     final controller = TextEditingController(text: initialName);
     return showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => NodeLaneAlertDialog(
         title: Text(context.l10n.name),
         content: TextField(
           controller: controller,
@@ -389,13 +370,14 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
           decoration: InputDecoration(labelText: context.l10n.name),
         ),
         actions: [
-          TextButton(
+          NodeLaneDialogAction(
+            label: context.l10n.cancel,
+            secondary: true,
             onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.cancel),
           ),
-          TextButton(
+          NodeLaneDialogAction(
+            label: context.l10n.ok,
             onPressed: () => Navigator.pop(context, controller.text),
-            child: Text(context.l10n.ok),
           ),
         ],
       ),
@@ -498,7 +480,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
       context: context,
       builder: (context) {
         if (isMobile && !isTv) {
-          return AlertDialog(
+          return NodeLaneAlertDialog(
             scrollable: true,
             title: Text(context.l10n.local_folder_structure),
             content: SingleChildScrollView(
@@ -506,16 +488,16 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
               child: buildSubFolder(data, 0),
             ),
             actions: [
-              TextButton(
+              NodeLaneDialogAction(
+                label: context.l10n.close,
                 onPressed: () => Navigator.pop(context),
-                child: Text(context.l10n.close),
               ),
             ],
           );
         }
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
+            return NodeLaneAlertDialog(
               title: Text(context.l10n.local_folder_structure),
               content: SizedBox(
                 width: context.width(0.6),
@@ -529,11 +511,12 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
+                    NodeLaneDialogAction(
+                      label: context.l10n.cancel,
+                      secondary: true,
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: Text(context.l10n.cancel),
                     ),
                   ],
                 ),

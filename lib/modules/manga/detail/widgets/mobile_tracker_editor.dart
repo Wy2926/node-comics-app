@@ -1,9 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_account_widgets.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
@@ -143,22 +143,6 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
     }
   });
 
-  Future<void> _score() => _run(() async {
-    final selected = await showMobileSettingsPicker(
-      context,
-      title: context.l10n.score,
-      current: widget.track.score ?? 0,
-      options: [
-        for (var value = 0; value <= widget.scoreMax; value += widget.scoreStep)
-          MobileSettingOption(value, widget.scoreLabel(value)),
-      ],
-    );
-    if (!mounted || selected == null || selected.value == widget.track.score) {
-      return;
-    }
-    await _update((draft) => draft.score = selected.value);
-  });
-
   Future<void> _date(bool start) => _run(() async {
     final milliseconds = start
         ? widget.track.startedReadingDate
@@ -198,11 +182,12 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
   });
 
   Future<void> _remove() => _run(() async {
-    final confirmed = await showMobileSettingsConfirmation(
+    final confirmed = await showNodeLaneConfirmation(
       context,
       title: context.l10n.remove_tracking,
       message: context.l10n.remove_tracking_confirm(widget.track.title ?? ''),
       confirmLabel: context.l10n.remove,
+      destructive: true,
     );
     if (mounted && confirmed) widget.onRemove();
   });
@@ -226,7 +211,7 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
       VoidCallback action,
     ) => NodeLaneRow(
       title: title,
-      subtitle: text,
+      value: text,
       icon: icon,
       enabled: !locked,
       onTap: locked ? null : action,
@@ -285,17 +270,38 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
             Icons.bookmark_outline_rounded,
             _status,
           ),
-          value(
-            widget.itemType == ItemType.manga ? l10n.chapters : l10n.episodes,
-            progress,
-            Icons.menu_book_outlined,
-            _progress,
-          ),
-          value(
-            l10n.score,
-            widget.scoreLabel(track.score ?? 0),
-            NodeLaneIcons.of(context).favorite,
-            _score,
+          if (total > 0)
+            NodeLaneNumberRow(
+              title: widget.itemType == ItemType.manga
+                  ? l10n.chapters
+                  : l10n.episodes,
+              value: track.lastChapterRead ?? 0,
+              valueLabel: progress,
+              min: 0,
+              max: total,
+              icon: NodeLaneIcons.of(context).manga,
+              enabled: !locked,
+              onChanged: (value) =>
+                  _run(() => _update((draft) => draft.lastChapterRead = value)),
+            )
+          else
+            value(
+              widget.itemType == ItemType.manga ? l10n.chapters : l10n.episodes,
+              progress,
+              NodeLaneIcons.of(context).manga,
+              _progress,
+            ),
+          NodeLaneNumberRow(
+            title: l10n.score,
+            value: track.score ?? 0,
+            min: 0,
+            max: widget.scoreMax,
+            step: widget.scoreStep,
+            label: widget.scoreLabel,
+            icon: NodeLaneIcons.of(context).favorite,
+            enabled: !locked,
+            onChanged: (value) =>
+                _run(() => _update((draft) => draft.score = value)),
           ),
           value(
             l10n.start_date,

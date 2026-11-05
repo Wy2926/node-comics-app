@@ -90,7 +90,7 @@ class OnlyIncludePinnedSourceState extends _$OnlyIncludePinnedSourceState {
 class ShowNSFWState extends _$ShowNSFWState {
   @override
   bool build() {
-    return settingsRepository.current.showNSFW ?? false;
+    return settingsRepository.current.showNSFW ?? Settings.defaultShowNSFW;
   }
 
   void set(bool value) {

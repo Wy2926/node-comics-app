@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -692,41 +693,57 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     final description = TextEditingController(
       text: widget.manga.description ?? '',
     );
-    final route = DialogRoute<void>(
-      context: context,
-      builder: (dialogContext) => NodeLaneAlertDialog(
-        title: Text(l10n.edit),
-        scrollable: true,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            NodeLaneTextField(controller: name, label: l10n.name),
-            const SizedBox(height: 16),
-            NodeLaneTextField(
-              controller: description,
-              minLines: 2,
-              maxLines: 5,
-              label: l10n.description,
+    final route = ModalBottomSheetRoute<void>(
+      builder: (sheetContext) => NodeLaneCatalogSheet(
+        title: l10n.edit,
+        fitContent: true,
+        heightFactor: .9,
+        bottom: NodeLaneModalActions(
+          actions: [
+            NodeLaneDialogAction(
+              label: l10n.save,
+              onPressed: () {
+                final manga = widget.manga;
+                manga.description = description.text;
+                manga.name = name.text;
+                mangaRepository.save(manga);
+                Navigator.pop(sheetContext);
+              },
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel),
+        child: ListView(
+          shrinkWrap: true,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.symmetric(
+            horizontal: NodeLaneTokens.gutter,
           ),
-          TextButton(
-            onPressed: () {
-              final manga = widget.manga;
-              manga.description = description.text;
-              manga.name = name.text;
-              mangaRepository.save(manga);
-              Navigator.pop(dialogContext);
-            },
-            child: Text(l10n.edit),
-          ),
-        ],
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: NodeLaneTokens.space16,
+              children: [
+                NodeLaneTextField(
+                  controller: name,
+                  label: l10n.name,
+                  textInputAction: TextInputAction.next,
+                ),
+                NodeLaneTextField(
+                  controller: description,
+                  label: l10n.description,
+                  minLines: 2,
+                  maxLines: 5,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: false,
+      backgroundColor: Colors.transparent,
+      shape: NodeLaneTokens.readerSheetShape,
     );
     await Navigator.of(context).push(route);
     await route.completed;

@@ -21,9 +21,9 @@
 
 账号展示通过渠道内 [account.dart](../lib/services/translation/channels/nodelane/account.dart) 解析既有 `/v1/me` 与 `/v1/billing/status` 只读响应，不扩充翻译公共契约。缺失字段保留未知，失败保留同账号快照；一次在途刷新合并，退出／换号／释放取消并丢弃迟到数据。官网管理链接不带凭据，无客户端支付写入或轮询；账号查询不替换阅读运行时。
 
-移动登录默认使用独立 public client `pljp89y5gk6k5x2h9gp6q`，可由 `--dart-define=NODELANE_AUTH_CLIENT_ID=…` 覆盖；`/v1/auth/config` 提供身份端点与 API resource，返回的浏览器 `client_id` 不用于移动端。授权、换码及续期使用同一移动应用 ID，不嵌入 client secret。恢复时要求服务与应用 ID 都匹配；旧浏览器应用会话需要重新登录，翻译回执不删除。
+移动登录默认使用独立 public client `pljp89y5gk6k5x2h9gp6q`，可由 `--dart-define=NODELANE_AUTH_CLIENT_ID=…` 覆盖；`/v1/auth/config` 提供身份端点与 API resource，返回的浏览器 `client_id` 不用于移动端。授权、换码及续期使用同一移动应用 ID，不嵌入 client secret。恢复时要求服务与应用 ID 都匹配，不接受其他客户端或服务的会话。
 
-系统浏览器 OAuth 回调默认为 **`mangayomi://nodelane-auth`**（无尾斜线），Android 回调 Activity 和 iOS URL Types 已接收 `mangayomi` Scheme。需在 Logto 上述应用的 Redirect URIs 中登记这一精确地址，并按[原生 Flutter 登录配置](https://docs.logto.io/quick-starts/flutter)使用 Native 应用及 Authorization Code + PKCE；`NODELANE_AUTH_REDIRECT` 变更时也需同步原生 URL Scheme。凭据只经原生安全存储与 HTTPS 客户端使用。用户已确认使用当前配置登录和翻译成功；该反馈未记录具体设备、阅读器／网页入口及测试范围，不等同于完整的真机、续期、换号或恢复验收。
+系统浏览器 OAuth 回调固定为 **`nodelane-comics://nodelane-auth`**（无尾斜线），与原生 `nodelane-comics` URL Scheme 一致；不提供单独的回调构建覆盖或旧协议回退。回调必须匹配地址且无额外端口、凭据或片段，校验 state 与非空授权码后才换取令牌。Logto Native 应用已登记新地址；匿名授权检查返回该地址及 `login_required`，证明地址被接受，不代表用户登录完成。模拟覆盖 PKCE、续期、恢复、异常回调与重试；新包的系统唤起及真实登录链路仍需设备验收。凭据只经原生安全存储与 HTTPS 客户端使用。其他应用链接与登录登记待办见[应用链接](MOBILE_UI_DESIGN.md#应用链接)。
 
 普通主框架图片及页面可读 Blob 已实现。Canvas 取样代码由 `NODELANE_READABLE_CANVAS` 默认关闭，尚无站点稳定重绘映射，不作为可用能力；污染 Canvas、data URL、跨域 iframe、CSS 变换／cover 图形、16-bit／ICC／动画／AVIF、超预算图片和 tiles 结果均未开放。当前像素估算保守，部分高清普通页也会在受理前被拒绝；64 MiB 是新增工作预算，不是 App 总内存的实测保证。Cookie 按目标 URL 获取且跨站受限，SameSite／分区会话、移动 CSP、站点登录仍须真机验证。
 
@@ -51,30 +51,9 @@ flutter build ios --debug --no-codesign
 
 ## 2. 实际代码依据
 
-### App 基线
-
-核对的 HEAD 为 `34dea5fd450a4b4d7683a32bec31a9ba2f0b555d`（Mangayomi v0.9.9），分支为 `codex/nodelane-comics-app`。根 README、AGENTS、README.mangayomi 和 UPSTREAM 的初始化改动先于本文存在。
-
-| 已有入口 | 核实到的行为 | 计划接法／注意事项 |
-| --- | --- | --- |
-| [get_chapter_pages.dart](../lib/services/get_chapter_pages.dart)、[page.dart](../lib/models/page.dart) | `getChapterPages` 优先已下载章节／归档和章节清单缓存，再调用来源 `getPageList`；`PageUrl` 只有 URL、headers、fileName | 包装为阅读器页面描述，不把翻译状态塞进 `PageUrl`，不改来源解析器 |
-| [chapter_cache.dart](../lib/services/chapter_cache.dart) | 缓存页面清单，键为漫画 ID 与章节 URL；清单会序列化 headers | 清单不是图片内容身份，也不是翻译回执；新增翻译记录不得复制这些 headers |
-| [u_chap_data_preload.dart](../lib/modules/manga/reader/u_chap_data_preload.dart) | 保留章节、原始页 index、本地路径、归档字节、`srcRect`、解码图和文件路径 | 原始页 index 可用于来源定位；合并章节后的数组 index 不可作为持久身份；宽页两半共享一个翻译 |
-| [others.dart](../lib/utils/extensions/others.dart) 的 `UChapDataPreloadExtensions` | `getLocalFilePath` 复用文件／归档临时文件／网络缓存；`getImageProvider` 组装来源 headers；`getImageBytes` 缺缓存时只等 3 秒再查 | 提取可取消的原图读取入口；翻译不能依赖“图片控件刚好下载好了” |
-| [custom_extended_image_provider.dart](../lib/modules/widgets/custom_extended_image_provider.dart) | 磁盘 LRU 上限 500 MiB，默认按 URL 的 MD5 缓存与合并在途下载，可传 `cacheKey`；不额外常驻完整压缩字节 | 复用取图与磁盘能力，但不能直接把 URL 键当账号隔离或内容摘要；受保护来源需新的会话作用域键 |
-| [reader_view.dart](../lib/modules/manga/reader/reader_view.dart)、[reader_page_content.dart](../lib/modules/manga/reader/widgets/reader_page_content.dart) | 管理当前页、章节衔接、双页／拆页、原图预取；后台／退出保存章节页码 | 在当前位置变化处更新翻译窗口，在图片呈现处选原图／译图；页内位置恢复需要补充 |
-| [image_view_paged.dart](../lib/modules/manga/reader/image_view_paged.dart)、[min_subsampling_image_view.dart](../lib/modules/manga/reader/subsampling_scale_image_view/src/min_subsampling_image_view.dart) | 从原页面获取文件或 provider；`ImageViewPaged.didUpdateWidget` 会因数据／路径变化重置部分缩放状态 | 增加独立显示资源参数，保留来源页和 controller；不能简单改 `resolvedFilePath` 然后假定位置不变 |
-| [chapter_preload_manager.dart](../lib/modules/manga/reader/managers/chapter_preload_manager.dart) | 保留当前及相邻章节，淘汰时清理归档字节、decodedImage、resolvedFilePath，保留页面描述 | 翻译资源另按图片窗口释放；不随整章把全部译图解码 |
-| [image_decoder.cpp](../lib/ffi/image_decoder.cpp)、[ffi_image_decoder.dart](../lib/modules/manga/reader/subsampling_scale_image_view/src/ffi_image_decoder.dart) | Apple 缓存整图 `CGImage`；Android 路径可预解码整张 RGBA；Dart 解码队列允许 3 个工作 | **分块显示不等于有界整图解码内存**；新翻译流水线不能据此宣称长图安全 |
-| [webview.dart](../lib/modules/webview/webview.dart) | `MangaWebView` 持有一个 controller，处理导航、返回、分享和 Cookie 同步，没有翻译桥或多标签管理 | 保留现有来源登录入口，抽出可复用标签视图，增加移动端浏览器容器 |
-| [m_client.dart](../lib/services/http/m_client.dart) | `setCookie` 将 Cookie 转成 name/value 字符串按 host 存储；已有敏感 header 脱敏 | 不能视为完整的 domain/path/expiry/SameSite 会话复制；新增取图按目标 URL 取 Cookie，官方 API 用独立客户端且不记录原始响应 |
-| [storage_provider.dart](../lib/providers/storage_provider.dart)、[pubspec.yaml](../pubspec.yaml)、[rust/Cargo.toml](../rust/Cargo.toml) | 已有 Isar、Riverpod、secure storage、crypto、Dart image、Rust image 与 FFI；没有 NodeLane 翻译集合 | 复用持久库和原生桥，不另加任务数据库或模型框架；已有图片依赖不代表 EXIF／ICC／编码策略已通过测试 |
-
-WebView 锁文件固定 fork `d4921f953ef75bdc21de6aed498a3badab696aa6`、包 `6.2.0-beta.3`，Android/iOS 实现包为 `1.2.0-beta.3`，平台接口为 `1.4.0-beta.3`；`pubspec.yaml` 仍引用 master，后续解析必须以锁文件为准。iOS 工程最低版本为 15.0；Android minSdk/targetSdk 由 Flutter 配置提供，不能根据图标配置推断。两端当前都有宽松明文网络配置，后续新增官方客户端仍限定 HTTPS。
-
 ### 同级参考树
 
-参考 `node-comics` HEAD 为 `dd06dbad46e30aa0b2dc473ec8c268663b9aff7b`。其扩展 README、渠道文档有未提交修改，Shinobu 文档未跟踪；定向阅读期间还出现了未提交的 Shinobu 注册及实现文件，文档仍标为待实现。本文只把已核对的官方／MTU 路径作为实现依据，不把并行工作树改动视为该提交、已发布功能或已验收能力。以下链接仅供同级工作区导航，不构成 App 的构建或运行依赖。
+接口语义参考 `node-comics` 提交 `dd06dbad46e30aa0b2dc473ec8c268663b9aff7b` 的官方／MTU 路径。以下链接仅供同级工作区导航，不构成 App 的构建或运行依赖，也不代表候选渠道已接入或通过验收。
 
 | 参考入口 | 已核对的边界 |
 | --- | --- |

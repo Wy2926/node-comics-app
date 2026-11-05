@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,6 +119,8 @@ void main() {
           browserPinnedSourcesProvider.overrideWithValue([]),
         ],
         child: MaterialApp(
+          builder: BotToastInit(),
+          navigatorObservers: [BotToastNavigatorObserver()],
           theme: ThemeData(platform: TargetPlatform.iOS),
           home: MobileComicBrowser(
             url: url,

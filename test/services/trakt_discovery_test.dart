@@ -68,6 +68,7 @@ void main() {
         expect(requested.queryParameters['type'], 'show');
         expect(requestHeaders['trakt-api-version'], '2');
         expect(requestHeaders['trakt-api-key'], isNotEmpty);
+        expect(requestHeaders['User-Agent'], 'nodelane-comics');
       },
     );
 

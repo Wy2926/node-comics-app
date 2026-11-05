@@ -96,10 +96,10 @@
     <array>
         <dict>
             <key>CFBundleURLName</key>
-            <string>mangayomi</string>
+            <string>nodelane-comics</string>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>mangayomi</string>
+                <string>nodelane-comics</string>
             </array>
         </dict>
     </array>

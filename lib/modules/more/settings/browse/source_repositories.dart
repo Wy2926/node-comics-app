@@ -9,7 +9,6 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/utils/error_toast.dart';
@@ -26,8 +25,6 @@ class SourceRepositories extends ConsumerStatefulWidget {
 }
 
 class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
-  List<Repo> _entries = [];
-  String urlInput = "";
   bool isRefreshing = false;
 
   Future<void> _launchInBrowser(Uri url) async {
@@ -51,6 +48,15 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
         'Invalid source - remove it';
   }
 
+  bool _containsRepository(String address) {
+    final clean = address.trim().toLowerCase();
+    return ref.read(extensionsRepoStateProvider(widget.itemType)).any((repo) {
+      final url = repo.jsonUrl?.trim().toLowerCase();
+      return url != null &&
+          (url == clean || url == '$clean/' || '$url/' == clean);
+    });
+  }
+
   Future<void> _refreshRepositories() async {
     if (isRefreshing) return;
     setState(() => isRefreshing = true);
@@ -70,15 +76,13 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = l10nLocalizations(context)!;
-    final repositories = ref.watch(
-      extensionsRepoStateProvider(widget.itemType),
-    );
-    _entries = repositories;
     if (isMobile && !isTv) {
       return MobileRepositoryManager(itemType: widget.itemType, asPage: true);
     }
-    final data = AsyncValue.data(repositories);
+    final l10n = context.l10n;
+    final repositories = ref.watch(
+      extensionsRepoStateProvider(widget.itemType),
+    );
     return Scaffold(
       appBar: AppBar(
         title: switch (widget.itemType) {
@@ -109,11 +113,8 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                 ),
         ],
       ),
-      body: data.when(
-        data: (data) {
-          if (data.isEmpty) {
-            _entries = [];
-            return Center(
+      body: repositories.isEmpty
+          ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -121,136 +122,116 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                   textAlign: TextAlign.center,
                 ),
               ),
-            );
-          }
-          _entries = data;
-
-          return SuperListView.builder(
-            itemCount: _entries.length,
-            itemBuilder: (context, index) {
-              final repo = _entries[index];
-              final isHidden = repo.hidden ?? false;
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      children: [
-                        Opacity(
-                          opacity: isHidden ? 0.3 : 1,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.all(8),
-                                child: SizedBox.square(
-                                  dimension: 64,
-                                  child: Icon(
-                                    Icons.source_outlined,
-                                    key: Key('repository-icon'),
-                                    size: 32,
+            )
+          : SuperListView.builder(
+              itemCount: repositories.length,
+              itemBuilder: (context, index) {
+                final repo = repositories[index];
+                final isHidden = repo.hidden ?? false;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        children: [
+                          Opacity(
+                            opacity: isHidden ? 0.3 : 1,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: SizedBox.square(
+                                    dimension: 64,
+                                    child: Icon(
+                                      Icons.source_outlined,
+                                      size: 32,
+                                    ),
                                   ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _repositoryName(repo),
+                                    style: TextStyle(
+                                      decoration: isHidden
+                                          ? TextDecoration.lineThrough
+                                          : TextDecoration.none,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (repo.website != null)
+                                IconButton(
+                                  onPressed: () {
+                                    _launchInBrowser(Uri.parse(repo.website!));
+                                  },
+                                  icon: Icon(Icons.open_in_new_outlined),
+                                ),
+                              SizedBox(width: 10),
+                              IconButton(
+                                onPressed: () async {
+                                  if (repo.jsonUrl != null) {
+                                    await Clipboard.setData(
+                                      ClipboardData(text: repo.jsonUrl!),
+                                    );
+                                  }
+                                },
+                                icon: const Icon(Icons.content_copy),
+                              ),
+                              SizedBox(width: 10),
+                              IconButton(
+                                onPressed: () => ref
+                                    .read(
+                                      extensionsRepoStateProvider(
+                                        widget.itemType,
+                                      ).notifier,
+                                    )
+                                    .setVisibility(repo, !isHidden),
+                                icon: Stack(
+                                  children: [
+                                    const Icon(Icons.remove_red_eye_outlined),
+                                    if (isHidden)
+                                      Positioned(
+                                        right: 8,
+                                        child: Transform.scale(
+                                          scaleX: 2.5,
+                                          child: const Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                '\\',
+                                                style: TextStyle(fontSize: 17),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _repositoryName(repo),
-                                  style: TextStyle(
-                                    decoration: isHidden
-                                        ? TextDecoration.lineThrough
-                                        : TextDecoration.none,
-                                  ),
-                                ),
+                              SizedBox(width: 10),
+                              IconButton(
+                                onPressed: () =>
+                                    _showRemoveRepoDialog(context, repo),
+                                icon: const Icon(Icons.delete_outlined),
                               ),
                             ],
                           ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            if (repo.website != null)
-                              IconButton(
-                                onPressed: () {
-                                  _launchInBrowser(Uri.parse(repo.website!));
-                                },
-                                icon: Icon(Icons.open_in_new_outlined),
-                              ),
-                            SizedBox(width: 10),
-                            IconButton(
-                              onPressed: () async {
-                                if (repo.jsonUrl != null) {
-                                  await Clipboard.setData(
-                                    ClipboardData(text: repo.jsonUrl!),
-                                  );
-                                }
-                              },
-                              icon: const Icon(Icons.content_copy),
-                            ),
-                            SizedBox(width: 10),
-                            IconButton(
-                              onPressed: () => ref
-                                  .read(
-                                    extensionsRepoStateProvider(widget.itemType)
-                                        .notifier,
-                                  )
-                                  .setVisibility(repo, !isHidden),
-                              icon: Stack(
-                                children: [
-                                  const Icon(Icons.remove_red_eye_outlined),
-                                  if (isHidden)
-                                    Positioned(
-                                      right: 8,
-                                      child: Transform.scale(
-                                        scaleX: 2.5,
-                                        child: const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              '\\',
-                                              style: TextStyle(fontSize: 17),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            IconButton(
-                              onPressed: () =>
-                                  _showRemoveRepoDialog(context, repo),
-                              icon: const Icon(Icons.delete_outlined),
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        },
-        error: (Object error, StackTrace stackTrace) {
-          _entries = [];
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                l10n.empty_extensions_repo,
-                textAlign: TextAlign.center,
-              ),
+                );
+              },
             ),
-          );
-        },
-        loading: () {
-          return const ProgressCenter();
-        },
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddRepoDialog(context),
         label: Row(
@@ -353,13 +334,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                         return l10n.invalid_url_format;
                       }
                       final clean = value.trim().toLowerCase();
-                      final alreadyExists = _entries.any((r) {
-                        final rUrl = r.jsonUrl?.trim().toLowerCase();
-                        if (rUrl == null) return false;
-                        return rUrl == clean ||
-                            rUrl == '$clean/' ||
-                            '$rUrl/' == clean;
-                      });
+                      final alreadyExists = _containsRepository(clean);
                       if (alreadyExists) {
                         return l10n.repo_already_exists;
                       }
@@ -384,13 +359,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
                     builder: (context, setState) {
                       final text = controller.text.trim();
                       final clean = text.toLowerCase();
-                      final alreadyExists = _entries.any((r) {
-                        final rUrl = r.jsonUrl?.trim().toLowerCase();
-                        if (rUrl == null) return false;
-                        return rUrl == clean ||
-                            rUrl == '$clean/' ||
-                            '$rUrl/' == clean;
-                      });
+                      final alreadyExists = _containsRepository(clean);
                       final isValid =
                           text.isNotEmpty &&
                           !alreadyExists &&

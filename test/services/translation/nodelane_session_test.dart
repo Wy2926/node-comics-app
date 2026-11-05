@@ -20,13 +20,14 @@ void main() {
   late HttpOverrides? previousOverrides;
   final exchanges = <Map<String, String>>[];
   late Uri authorization;
-  bool invalidState = false, billingFailure = false, wrongUser = false;
+  Uri Function(Uri)? callbackOverride;
+  bool billingFailure = false, wrongUser = false;
   final reads = <(String, String)>[];
 
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues({});
     exchanges.clear();
-    invalidState = false;
+    callbackOverride = null;
     billingFailure = false;
     wrongUser = false;
     reads.clear();
@@ -105,21 +106,18 @@ void main() {
     messenger.setMockMethodCallHandler(browser, (call) async {
       if (call.method != 'authenticate') return null;
       authorization = Uri.parse(call.arguments['url'] as String);
-      expect(call.arguments['callbackUrlScheme'], 'mangayomi');
+      expect(call.arguments['callbackUrlScheme'], 'nodelane-comics');
       expect(
         authorization.queryParameters['redirect_uri'],
-        'mangayomi://nodelane-auth',
+        'nodelane-comics://nodelane-auth',
       );
-      return Uri.parse(NodeLaneSession.redirect)
-          .replace(
-            queryParameters: {
-              'code': 'test-code',
-              'state': invalidState
-                  ? 'wrong-state'
-                  : authorization.queryParameters['state']!,
-            },
-          )
-          .toString();
+      final callback = Uri.parse(NodeLaneSession.redirect).replace(
+        queryParameters: {
+          'code': 'test-code',
+          'state': authorization.queryParameters['state']!,
+        },
+      );
+      return (callbackOverride?.call(callback) ?? callback).toString();
     });
   });
 
@@ -205,11 +203,22 @@ void main() {
     'invalid callback makes no token request and a new login can succeed',
     () async {
       final session = NodeLaneSession(base);
-      invalidState = true;
-      await expectLater(session.login(), throwsA(isA<TranslationFailure>()));
-      expect(session.userId, isNull);
-      expect(exchanges, isEmpty);
-      invalidState = false;
+      final invalidCallbacks = <Uri Function(Uri)>[
+        (uri) => uri.replace(scheme: 'mangayomi'),
+        (uri) => uri.replace(port: 443),
+        (uri) => uri.replace(
+          queryParameters: {...uri.queryParameters, 'state': 'wrong-state'},
+        ),
+        (uri) =>
+            uri.replace(queryParameters: {...uri.queryParameters, 'code': ''}),
+      ];
+      for (final invalid in invalidCallbacks) {
+        callbackOverride = invalid;
+        await expectLater(session.login(), throwsA(isA<TranslationFailure>()));
+        expect(session.userId, isNull);
+        expect(exchanges, isEmpty);
+      }
+      callbackOverride = null;
       await session.login();
       expect(session.userId, 'user-1');
       expect(exchanges.single['client_id'], nativeClient);

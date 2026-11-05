@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:mangayomi/utils/url_protocol/protocol.dart' show appUrlScheme;
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -28,7 +29,7 @@ class TraktTv extends _$TraktTv
   static final _isDesktop = (Platform.isWindows || Platform.isLinux);
   static final _redirectUri = _isDesktop
       ? 'http://localhost:43824'
-      : 'mangayomi://';
+      : '$appUrlScheme://';
   static const _clientId =
       '5520c7e24da0d8d73ec80315b61b9849483583b013cb7f296c6db723eb9886a1';
   static const _clientSecret =
@@ -48,7 +49,7 @@ class TraktTv extends _$TraktTv
   Future<bool?> login() async {
     final callbackUrlScheme = _isDesktop
         ? 'http://localhost:43824'
-        : 'mangayomi';
+        : appUrlScheme;
     final loginUrl = _authUrl();
 
     try {

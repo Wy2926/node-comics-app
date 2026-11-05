@@ -1,3 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -62,120 +66,106 @@ class _MobileBackupPasswordDialogState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final t = NodeLaneTokens.of(context);
+    Widget error(String message) => Padding(
+      padding: const EdgeInsets.only(top: NodeLaneTokens.space8),
+      child: Semantics(
+        liveRegion: true,
+        child: Text(
+          message,
+          style: t.readerSecondary.copyWith(
+            color: Theme.of(context).colorScheme.error,
+          ),
+        ),
+      ),
+    );
     return PopScope(
       canPop: !_busy,
-      child: NodeLaneAlertDialog(
-        scrollable: true,
-        title: Text(
-          _setup ? l10n.set_backup_password : l10n.enter_backup_password,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.wasIncorrect) ...[
-              Text(
-                l10n.incorrect_password_try_again,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              const SizedBox(height: 16),
-            ],
-            Text(l10n.password),
-            const SizedBox(height: 8),
-            Semantics(
-              label: l10n.password,
-              child: TextField(
-                key: const ValueKey('backup-password'),
-                controller: _password,
-                autofocus: true,
-                enabled: !_busy,
-                obscureText: _obscure,
-                autocorrect: false,
-                enableSuggestions: false,
-                smartDashesType: SmartDashesType.disabled,
-                smartQuotesType: SmartQuotesType.disabled,
-                textInputAction: _setup && _obscure
-                    ? TextInputAction.next
-                    : TextInputAction.done,
-                onChanged: (_) => setState(() {}),
-                onSubmitted: (_) => _setup && _obscure
-                    ? _confirmFocus.requestFocus()
-                    : _submit(),
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    tooltip: _obscure ? l10n.show_password : l10n.hide_password,
-                    onPressed: _busy
-                        ? null
-                        : () => setState(() => _obscure = !_obscure),
-                    icon: Icon(
-                      _obscure
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                  ),
-                ),
-              ),
+      child: NodeLaneCatalogSheet(
+        title: _setup ? l10n.set_backup_password : l10n.enter_backup_password,
+        canClose: !_busy,
+        fitContent: true,
+        heightFactor: .9,
+        bottom: NodeLaneModalActions(
+          actions: [
+            NodeLaneDialogAction(
+              label: l10n.ok,
+              busy: _busy,
+              onPressed: _busy || !_valid ? null : _submit,
             ),
-            if (_setup && _obscure) ...[
-              const SizedBox(height: 16),
-              Text(l10n.confirm_password),
-              const SizedBox(height: 8),
-              Semantics(
-                label: l10n.confirm_password,
-                child: TextField(
-                  key: const ValueKey('backup-password-confirm'),
-                  controller: _confirm,
-                  focusNode: _confirmFocus,
-                  enabled: !_busy,
-                  obscureText: true,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  smartDashesType: SmartDashesType.disabled,
-                  smartQuotesType: SmartQuotesType.disabled,
-                  textInputAction: TextInputAction.done,
-                  onChanged: (_) => setState(() {}),
-                  onSubmitted: (_) => _submit(),
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              if (_confirm.text.isNotEmpty &&
-                  _confirm.text != _password.text) ...[
-                const SizedBox(height: 8),
-                Text(
-                  l10n.passwords_do_not_match,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-            ],
-            if (_busy) ...[
-              const SizedBox(height: 16),
-              const LinearProgressIndicator(),
-            ],
-            if (_failed) ...[
-              const SizedBox(height: 16),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  l10n.failed,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-            ],
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: _busy ? null : () => Navigator.pop(context),
-            child: Text(l10n.cancel),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: NodeLaneTokens.gutter,
           ),
-          FilledButton(
-            onPressed: _busy || !_valid ? null : _submit,
-            child: Text(l10n.ok),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.wasIncorrect) ...[
+                error(l10n.incorrect_password_try_again),
+                const SizedBox(height: NodeLaneTokens.space12),
+              ],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: NodeLaneTokens.space16,
+                children: [
+                  NodeLaneTextField(
+                    key: const ValueKey('backup-password'),
+                    controller: _password,
+                    label: l10n.password,
+                    autofocus: true,
+                    enabled: !_busy,
+                    obscureText: _obscure,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    textInputAction: _setup && _obscure
+                        ? TextInputAction.next
+                        : TextInputAction.done,
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: (_) => _setup && _obscure
+                        ? _confirmFocus.requestFocus()
+                        : _submit(),
+                    trailing: NodeLaneIconButton(
+                      tooltip: _obscure
+                          ? l10n.show_password
+                          : l10n.hide_password,
+                      onPressed: _busy
+                          ? null
+                          : () => setState(() => _obscure = !_obscure),
+                      icon: _obscure
+                          ? NodeLaneIcons.of(context).visible
+                          : NodeLaneIcons.of(context).incognito,
+                      style: NodeLaneIconButtonStyle.field,
+                    ),
+                  ),
+                  if (_setup && _obscure)
+                    NodeLaneTextField(
+                      key: const ValueKey('backup-password-confirm'),
+                      controller: _confirm,
+                      focusNode: _confirmFocus,
+                      label: l10n.confirm_password,
+                      enabled: !_busy,
+                      obscureText: true,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      textInputAction: TextInputAction.done,
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) => _submit(),
+                    ),
+                ],
+              ),
+              if (_setup &&
+                  _obscure &&
+                  _confirm.text.isNotEmpty &&
+                  _confirm.text != _password.text)
+                error(l10n.passwords_do_not_match),
+              if (_failed) error(l10n.failed),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

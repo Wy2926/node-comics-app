@@ -4,7 +4,6 @@ import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_account_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
@@ -451,15 +450,15 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
                             icon: icons.delete,
                             destructive: true,
                             onTap: () => _run(() async {
-                              final confirmed =
-                                  await showMobileSettingsConfirmation(
-                                    context,
-                                    title: l10n.delete_category,
-                                    message: l10n.delete_category_msg(
-                                      category.name ?? '',
-                                    ),
-                                    confirmLabel: l10n.delete,
-                                  );
+                              final confirmed = await showNodeLaneConfirmation(
+                                context,
+                                title: l10n.delete_category,
+                                message: l10n.delete_category_msg(
+                                  category.name ?? '',
+                                ),
+                                confirmLabel: l10n.delete,
+                                destructive: true,
+                              );
                               if (!confirmed || !context.mounted) return;
                               await widget.onRemove(category);
                               if (context.mounted) Navigator.pop(context);
@@ -536,16 +535,15 @@ class _MobileCategoryNameDialogState extends State<MobileCategoryNameDialog> {
       canPop: !_busy,
       child: NodeLaneAlertDialog(
         scrollable: true,
-        title: Text(
-          widget.initialName == null ? l10n.add_category : l10n.rename_category,
-        ),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
             NodeLaneTextField(
               controller: _name,
-              label: l10n.name,
+              label: widget.initialName == null
+                  ? l10n.add_category
+                  : l10n.rename_category,
               enabled: !_busy,
               autofocus: true,
               textInputAction: TextInputAction.done,
@@ -564,17 +562,18 @@ class _MobileCategoryNameDialogState extends State<MobileCategoryNameDialog> {
               ),
             ),
             if (_failed) Text(l10n.failed),
-            if (_busy) const LinearProgressIndicator(),
           ],
         ),
         actions: [
-          NodeLaneSecondaryButton(
+          NodeLaneDialogAction(
+            label: l10n.cancel,
+            secondary: true,
             onPressed: _busy ? null : () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
           ),
-          FilledButton(
+          NodeLaneDialogAction(
+            label: widget.initialName == null ? l10n.add : l10n.ok,
+            busy: _busy,
             onPressed: _busy || !_valid ? null : _save,
-            child: Text(widget.initialName == null ? l10n.add : l10n.ok),
           ),
         ],
       ),

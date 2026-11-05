@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -136,31 +135,14 @@ class _Controls extends ConsumerWidget {
     final intro = ref.watch(defaultSkipIntroLengthStateProvider);
     return Column(
       children: [
-        NodeLaneRow(
-          openOnReveal: true,
+        NodeLaneNumberRow(
           title: l10n.default_skip_intro_length,
-          value: '${intro}s',
+          value: intro,
+          min: 1,
+          max: 255,
+          label: (value) => '${value}s',
           icon: NodeLaneIcons.of(context).nextChapter,
-          onTap: () async {
-            final result = await showDialog<String>(
-              context: context,
-              builder: (_) => MobileSettingsTextDialog(
-                title: l10n.default_skip_intro_length,
-                initialValue: '$intro',
-                hint: '1–255 s',
-                keyboardType: TextInputType.number,
-                isValid: (text) {
-                  final value = int.tryParse(text.trim());
-                  return value != null && value >= 1 && value <= 255;
-                },
-              ),
-            );
-            if (!context.mounted || result == null) return;
-            final value = int.parse(result.trim());
-            if (value != ref.read(defaultSkipIntroLengthStateProvider)) {
-              ref.read(defaultSkipIntroLengthStateProvider.notifier).set(value);
-            }
-          },
+          onChanged: ref.read(defaultSkipIntroLengthStateProvider.notifier).set,
         ),
         MobileSettingsChoice<int>(
           title: l10n.default_skip_forward_skip_length,

@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/backup_password_storage.dart';
@@ -10,14 +12,19 @@ import 'mobile_backup_password_dialog.dart';
 /// explicit opt-in, to the plaintext fallback), `false`/`null` otherwise -
 /// the caller should only flip the encryption toggle on when this is `true`.
 Future<bool?> showBackupEncryptionPasswordDialog(BuildContext context) {
+  if (isMobile && !isTv) {
+    return showNodeLaneCatalogSheet<bool>(
+      context,
+      MobileBackupPasswordDialog(
+        onSave: (password) => persistResolvedPassword(password, context),
+      ),
+      dismissible: false,
+    );
+  }
   return showDialog<bool>(
     context: context,
     barrierDismissible: false,
-    builder: (context) => isMobile && !isTv
-        ? MobileBackupPasswordDialog(
-            onSave: (password) => persistResolvedPassword(password, context),
-          )
-        : const _BackupEncryptionPasswordDialog(),
+    builder: (_) => const _BackupEncryptionPasswordDialog(),
   );
 }
 
@@ -30,18 +37,19 @@ Future<bool?> showSecureStorageFallbackPrompt(BuildContext context) {
   final l10n = l10nLocalizations(context)!;
   return showDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog(
+    builder: (context) => NodeLaneAlertDialog(
       scrollable: isMobile && !isTv,
       title: Text(l10n.no_secure_storage),
       content: Text(l10n.no_keyring_warning),
       actions: [
-        TextButton(
+        NodeLaneDialogAction(
+          label: l10n.cancel,
+          secondary: true,
           onPressed: () => Navigator.pop(context, false),
-          child: Text(l10n.cancel),
         ),
-        TextButton(
+        NodeLaneDialogAction(
+          label: l10n.ok,
           onPressed: () => Navigator.pop(context, true),
-          child: Text(l10n.ok),
         ),
       ],
     ),
@@ -78,12 +86,17 @@ Future<String?> showBackupDecryptPasswordDialog(
   BuildContext context, {
   bool wasIncorrect = false,
 }) {
+  if (isMobile && !isTv) {
+    return showNodeLaneCatalogSheet<String>(
+      context,
+      MobileBackupPasswordDialog(wasIncorrect: wasIncorrect),
+      dismissible: false,
+    );
+  }
   return showDialog<String>(
     context: context,
     barrierDismissible: false,
-    builder: (context) => isMobile && !isTv
-        ? MobileBackupPasswordDialog(wasIncorrect: wasIncorrect)
-        : _BackupDecryptPasswordDialog(wasIncorrect: wasIncorrect),
+    builder: (_) => _BackupDecryptPasswordDialog(wasIncorrect: wasIncorrect),
   );
 }
 
@@ -110,7 +123,7 @@ class _BackupDecryptPasswordDialogState
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
-    return AlertDialog(
+    return NodeLaneAlertDialog(
       title: Text(l10n.enter_backup_password),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -145,15 +158,16 @@ class _BackupDecryptPasswordDialogState
         ],
       ),
       actions: [
-        TextButton(
+        NodeLaneDialogAction(
+          label: l10n.cancel,
+          secondary: true,
           onPressed: () => Navigator.pop(context, null),
-          child: Text(l10n.cancel),
         ),
-        TextButton(
+        NodeLaneDialogAction(
+          label: l10n.ok,
           onPressed: _controller.text.isEmpty
               ? null
               : () => Navigator.pop(context, _controller.text),
-          child: Text(l10n.ok),
         ),
       ],
     );
@@ -206,7 +220,7 @@ class _BackupEncryptionPasswordDialogState
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
-    return AlertDialog(
+    return NodeLaneAlertDialog(
       title: Text(l10n.set_backup_password),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -244,9 +258,10 @@ class _BackupEncryptionPasswordDialogState
         ],
       ),
       actions: [
-        TextButton(
+        NodeLaneDialogAction(
+          label: l10n.cancel,
+          secondary: true,
           onPressed: _saving ? null : () => Navigator.pop(context, false),
-          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: (_canSubmit && !_saving) ? _submit : null,

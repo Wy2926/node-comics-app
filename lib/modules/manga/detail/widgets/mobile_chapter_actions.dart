@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -234,49 +235,45 @@ class _MobileChapterDeleteDialogState extends State<MobileChapterDeleteDialog> {
                 ),
               ],
               const SizedBox(height: 8),
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                title: Text(l10n.chapter_selected_count(widget.titles.length)),
-                children: [
-                  SizedBox(
-                    height: (widget.titles.length * 52.0).clamp(0, 156),
-                    child: ListView.builder(
-                      key: const ValueKey('chapter-delete-titles'),
-                      itemCount: widget.titles.length,
-                      itemBuilder: (_, index) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text(widget.titles[index]),
-                      ),
-                    ),
+              NodeLaneDisclosure(
+                title: l10n.chapter_selected_count(widget.titles.length),
+                icon: NodeLaneIcons.of(context).chapters,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxHeight: NodeLaneTokens.rowHeight * 3,
                   ),
-                ],
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    key: const ValueKey('chapter-delete-titles'),
+                    itemCount: widget.titles.length,
+                    itemBuilder: (_, index) =>
+                        NodeLaneRow(title: widget.titles[index]),
+                  ),
+                ),
               ),
-              if (_failed)
-                Text(
-                  l10n.chapter_action_incomplete,
-                  style: TextStyle(color: error),
-                )
-              else if (_busy) ...[
-                const LinearProgressIndicator(),
-                const SizedBox(height: 8),
-                Text(l10n.bookshelf_processing),
+              if (_failed) ...[
+                const SizedBox(height: NodeLaneTokens.space16),
+                NodeLaneNotice(
+                  message: l10n.chapter_action_incomplete,
+                  kind: NodeLaneNoticeKind.error,
+                  contained: false,
+                ),
               ],
             ],
           ),
         ),
         actions: [
-          TextButton(
+          NodeLaneDialogAction(
+            label: _failed ? l10n.close : l10n.cancel,
+            secondary: true,
             onPressed: _busy ? null : () => _close(false),
-            child: Text(_failed ? l10n.close : l10n.cancel),
           ),
           if (!_failed)
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: error,
-                foregroundColor: Theme.of(context).colorScheme.onError,
-              ),
+            NodeLaneDialogAction(
+              label: l10n.delete,
+              destructive: true,
+              busy: _busy,
               onPressed: _busy || widget.titles.isEmpty ? null : _submit,
-              child: Text(l10n.delete),
             ),
         ],
       ),

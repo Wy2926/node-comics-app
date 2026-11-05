@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:mangayomi/services/discovery/title_match.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
 
 const String _traktBaseUrl = 'https://api.trakt.tv';
 const String _traktClientId =
     '5520c7e24da0d8d73ec80315b61b9849483583b013cb7f296c6db723eb9886a1';
-const String _traktUserAgent = 'Mangayomi Trakt Discovery';
 
 typedef TraktHttpGet = Future<http.Response> Function(
   Uri uri, {
@@ -254,7 +254,7 @@ class TraktDiscovery {
     'Content-Type': 'application/json',
     'trakt-api-key': _traktClientId,
     'trakt-api-version': '2',
-    'User-Agent': _traktUserAgent,
+    'User-Agent': NodeLaneBrand.userAgent,
   };
 
   Future<TraktRootMedia?> resolveByTmdbId({

@@ -1,8 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -733,64 +732,11 @@ class MobileBrowserLoadError extends StatelessWidget {
   }
 }
 
-Future<bool?> confirmClearBrowserLogins(BuildContext context) =>
-    showNodeLaneCatalogSheet<bool>(context, const _ClearBrowserLoginsSheet());
-
-class _ClearBrowserLoginsSheet extends StatelessWidget {
-  const _ClearBrowserLoginsSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context);
-    return NodeLaneReaderSurface(
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              NodeLaneReaderHeading(
-                title: '清除所有网站登录状态？',
-                closeLabel: MaterialLocalizations.of(context)
-                    .closeButtonTooltip,
-                onClose: () => Navigator.pop(context),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('所有标签页中的网站可能需要重新登录。', style: t.readerSecondary),
-                    const SizedBox(height: NodeLaneTokens.space24),
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: t.surface,
-                        foregroundColor: Theme.of(context).colorScheme.error,
-                        minimumSize: const Size(44, 48),
-                        textStyle: t.readerLabel,
-                      ),
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('清除登录状态'),
-                    ),
-                    const SizedBox(height: NodeLaneTokens.space8),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: t.soft,
-                        foregroundColor: t.ink,
-                        minimumSize: const Size(44, 48),
-                        textStyle: t.readerLabel,
-                      ),
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('取消'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+Future<bool> confirmClearBrowserLogins(BuildContext context) =>
+    showNodeLaneConfirmation(
+      context,
+      title: '清除所有网站登录状态？',
+      message: '所有标签页中的网站可能需要重新登录。',
+      confirmLabel: '清除登录状态',
+      destructive: true,
     );
-  }
-}

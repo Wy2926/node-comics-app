@@ -2,7 +2,8 @@
 Type=Application
 Name=Mangayomi
 Icon=mangayomi
-Exec=/usr/bin/mangayomi
+Exec=/usr/bin/mangayomi %u
+MimeType=x-scheme-handler/nodelane-comics;
 Categories=AudioVideo;
 Keywords=Manga;Anime;BitTorrent;
 StartupNotify=true

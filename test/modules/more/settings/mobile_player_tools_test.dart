@@ -215,7 +215,7 @@ void main() {
       await reveal(tester, action(1, 'Delete'));
       await tester.tap(action(1, 'Delete'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Cancel'));
       await tester.pumpAndSettle();
       expect(repository.deletes, 0);
       await tester.tap(action(1, 'Delete'));
@@ -230,7 +230,7 @@ void main() {
       expect(repository.deletes, 1);
       expect(
         tester
-            .widget<TextButton>(find.widgetWithText(TextButton, 'Cancel'))
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Cancel'))
             .onPressed,
         isNull,
       );

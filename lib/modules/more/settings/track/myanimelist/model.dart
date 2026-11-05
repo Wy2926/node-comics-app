@@ -4,6 +4,7 @@ class OAuth {
   String? accessToken;
   String? refreshToken;
   String? clientId;
+  String? scope;
 
   OAuth({
     this.tokenType,
@@ -11,6 +12,7 @@ class OAuth {
     this.accessToken,
     this.refreshToken,
     this.clientId,
+    this.scope,
   });
 
   OAuth.fromJson(Map<String, dynamic> json) {
@@ -19,6 +21,7 @@ class OAuth {
     accessToken = json['access_token'];
     refreshToken = json['refresh_token'];
     clientId = json['client_id'];
+    scope = json['scope'];
   }
 
   Map<String, dynamic> toJson() {
@@ -28,6 +31,7 @@ class OAuth {
     data['access_token'] = accessToken;
     data['refresh_token'] = refreshToken;
     data['client_id'] = clientId;
+    if (scope != null) data['scope'] = scope;
     return data;
   }
 }

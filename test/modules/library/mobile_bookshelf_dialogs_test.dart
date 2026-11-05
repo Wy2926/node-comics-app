@@ -91,7 +91,7 @@ void main() {
       await tester.tap(find.text('Choose files'));
       await tester.pumpAndSettle();
       expect(choices, [false, false]);
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Open'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -134,7 +134,7 @@ void main() {
       add();
       expect(submitted, hasLength(1));
       expect(find.widgetWithText(FilledButton, 'Add'), findsNothing);
-      await tester.tap(find.text('Close'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Open'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -162,7 +162,7 @@ void main() {
           .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Choose files'))
           .onTap!;
       final cancel = tester
-          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Cancel'))
+          .widget<NodeLaneCloseButton>(find.byType(NodeLaneCloseButton))
           .onPressed!;
       choose();
       choose();
@@ -215,7 +215,7 @@ void main() {
       expect(find.text('Choose files'), findsNothing);
       choose();
       expect(calls, 1);
-      await tester.tap(find.text('Close'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Open'), findsOneWidget);
     },
@@ -262,7 +262,7 @@ void main() {
       expect(find.byType(MobileBookshelfCategorySheet), findsOneWidget);
       expect(
         tester
-            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Cancel'))
+            .widget<NodeLaneCloseButton>(find.byType(NodeLaneCloseButton))
             .onPressed,
         isNull,
       );
@@ -274,7 +274,7 @@ void main() {
       );
       save();
       expect(writes, hasLength(1));
-      await tester.tap(find.text('Close'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Open'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -340,7 +340,7 @@ void main() {
       expect(retries, 1);
       await tester.tap(find.text('Category 2 with its full name'));
       await tester.pump();
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(initial, [1]);
       expect(writes, 0);

@@ -312,20 +312,22 @@ class MobileOnboardingSources extends StatelessWidget {
                 ),
               ),
               const NodeLaneGroupDivider(),
-              NodeLaneTextField(
-                controller: urlController,
-                label: l.onboarding_repository_address,
-                hint: l.onboarding_repository_address_hint,
-                inGroup: true,
-                enabled: !busy,
-                autocorrect: false,
-                enableSuggestions: false,
-                keyboardType: TextInputType.url,
-                textInputAction: TextInputAction.done,
-                onChanged: (_) => onUrlChanged(),
-                onSubmitted: (_) {
-                  if (canAdd && !busy) onAdd();
-                },
+              Padding(
+                padding: NodeLaneTokens.groupPadding,
+                child: NodeLaneTextField(
+                  controller: urlController,
+                  label: l.onboarding_repository_address,
+                  hint: l.onboarding_repository_address_hint,
+                  enabled: !busy,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  keyboardType: TextInputType.url,
+                  textInputAction: TextInputAction.done,
+                  onChanged: (_) => onUrlChanged(),
+                  onSubmitted: (_) {
+                    if (canAdd && !busy) onAdd();
+                  },
+                ),
               ),
               const NodeLaneGroupDivider(),
               Padding(

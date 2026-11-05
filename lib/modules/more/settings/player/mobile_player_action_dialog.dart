@@ -11,8 +11,10 @@ class MobilePlayerActionDialog extends StatefulWidget {
     required this.message,
     required this.confirmLabel,
     required this.onConfirm,
+    this.destructive = false,
   });
   final String title, message, confirmLabel;
+  final bool destructive;
   final Future<void> Function() onConfirm;
   @override
   State<MobilePlayerActionDialog> createState() =>
@@ -62,13 +64,16 @@ class _MobilePlayerActionDialogState extends State<MobilePlayerActionDialog> {
         ],
       ),
       actions: [
-        TextButton(
+        NodeLaneDialogAction(
+          label: context.l10n.cancel,
+          secondary: true,
           onPressed: _busy ? null : () => Navigator.pop(context),
-          child: Text(context.l10n.cancel),
         ),
-        FilledButton(
+        NodeLaneDialogAction(
+          label: widget.confirmLabel,
+          destructive: widget.destructive,
+          busy: _busy,
           onPressed: _busy ? null : _confirm,
-          child: Text(widget.confirmLabel),
         ),
       ],
     ),

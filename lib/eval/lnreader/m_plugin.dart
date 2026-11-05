@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/nodelane_brand.dart';
+
 class ChapterItem {
   String name;
   String path;
@@ -89,13 +91,10 @@ class SourceNovel extends NovelItem {
 
   factory SourceNovel.fromJson(Map<String, dynamic> json) {
     if (json['path'] == null) {
-      // Reported as "path is null" and filed as an app bug (#936), because a
-      // bare string says nothing about whose fault it is. A novel with no
-      // path came from the plugin, and the fix belongs wherever that plugin
-      // is maintained.
+      // Missing paths are source failures; direct readers to its maintainer.
       throw Exception(
-        'The source returned a novel with no path, so it cannot be opened. '
-        'This is the extension rather than Mangayomi'
+        'The source returned a novel with no path, so '
+        '${NodeLaneBrand.displayName} cannot open it. Contact the source maintainer'
         '${json['name'] is String ? ' (while reading "${json['name']}")' : ''}.',
       );
     }

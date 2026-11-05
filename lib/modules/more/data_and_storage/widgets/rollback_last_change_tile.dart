@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -113,7 +114,7 @@ Future<void> offerLibraryRollback(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         scrollable: isMobile && !isTv,
         title: Text(l10n.roll_back),
         content: Text(
@@ -125,7 +126,7 @@ Future<void> offerLibraryRollback(
         actions: dialogCancelConfirmActions(
           dialogContext: dialogContext,
           confirmLabel: l10n.roll_back,
-          confirmColor: Colors.red,
+          destructive: true,
         ),
       );
     },

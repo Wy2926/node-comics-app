@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -430,7 +431,7 @@ void main() {
   );
 
   testWidgets(
-    'preload input validates its original bounds and hidden flash options keep independent values',
+    'preload wheel keeps its original bounds and hidden flash options keep independent values',
     (tester) async {
       scale = 2.5;
       final container = preferences(tester);
@@ -438,27 +439,15 @@ void main() {
       await tester.pumpAndSettle();
       await section(tester, 'Advanced');
       await openChoice(tester, 'Page preload amount');
-      tester.view.viewInsets = const FakeViewPadding(bottom: 180);
-      await tester.pumpAndSettle();
-      for (final value in ['0', '21']) {
-        await tester.enterText(find.byType(TextField), value);
-        await tester.pumpAndSettle();
-        expect(
-          tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-          isNull,
-        );
-      }
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      expect(container.read(pagePreloadAmountStateProvider), 6);
+      expect(find.byType(Dialog), findsNothing);
       expect(_writes, isEmpty);
-      tester.view.viewInsets = const FakeViewPadding();
-      await tester.pumpAndSettle();
-      await openChoice(tester, 'Page preload amount');
-      await tester.enterText(find.byType(TextField), '12');
-      await tester.tap(find.text('Confirm'));
+      final wheel = tester.widget<CupertinoPicker>(
+        find.byType(CupertinoPicker),
+      );
+      wheel.scrollController!.jumpToItem(11);
       await tester.pumpAndSettle();
       expect(_writes, [('pagePreloadAmount', 12)]);
+      await openChoice(tester, 'Page preload amount');
       await toggle(tester, 'Flash on page change');
       await choose(tester, 'Flash Color', 'Black');
       final interval = find.byType(Slider).first;

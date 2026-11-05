@@ -155,14 +155,16 @@ class _MobileRepositoryManagerState
                         title: const Text('移除仓库'),
                         content: const Text('保留已安装的来源，移除尚未安装的目录条目。'),
                         actions: [
-                          TextButton(
+                          NodeLaneDialogAction(
+                            label: '取消',
+                            secondary: true,
                             onPressed: () =>
                                 Navigator.pop(dialogContext, false),
-                            child: const Text('取消'),
                           ),
-                          TextButton(
+                          NodeLaneDialogAction(
+                            label: '移除',
+                            destructive: true,
                             onPressed: () => Navigator.pop(dialogContext, true),
-                            child: const Text('移除'),
                           ),
                         ],
                       ),
@@ -233,7 +235,7 @@ class _MobileRepositoryManagerState
         const SizedBox(height: 20),
         NodeLaneRow.card(
           title: '添加仓库',
-          leading: Icon(icons.add, color: t.accent),
+          leading: Icon(icons.add),
           onTap: () => showMobileAddRepository(context, widget.itemType),
         ),
         const SizedBox(height: 20),
@@ -244,7 +246,7 @@ class _MobileRepositoryManagerState
                   padding: EdgeInsets.all(10),
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Icon(icons.refresh, color: t.accent),
+              : Icon(icons.refresh),
           onTap: refreshing ? null : _refresh,
         ),
         if (refreshError != null)
@@ -372,84 +374,85 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return PopScope(
       canPop: !saving,
-      child: AnimatedPadding(
-        duration: const Duration(milliseconds: 160),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
+      child: NodeLaneCatalogSheet(
+        title: '添加仓库',
+        subtitle: '粘贴第三方仓库的目录链接',
+        heightFactor: .9,
+        fitContent: true,
+        canClose: !saving,
+        bottom: NodeLaneModalActions(
+          actions: [
+            NodeLaneDialogAction(
+              label: '添加仓库',
+              busy: saving,
+              onPressed: preview == null || saving ? null : _save,
+            ),
+          ],
         ),
-        child: NodeLaneCatalogSheet(
-          title: '添加仓库',
-          subtitle: '粘贴第三方仓库的目录链接',
-          heightFactor: MediaQuery.viewInsetsOf(context).bottom > 0 ? .5 : .66,
-          onClose: saving ? () {} : null,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            children: [
-              NodeLaneTextField(
-                controller: input,
-                label: '仓库地址',
-                hint: 'https://…',
-                enabled: !saving,
-                keyboardType: TextInputType.url,
-                autocorrect: false,
-                enableSuggestions: false,
-                maxLines: 2,
-                onChanged: _changed,
+        child: ListView(
+          shrinkWrap: true,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          children: [
+            NodeLaneTextField(
+              controller: input,
+              label: '仓库地址',
+              hint: 'https://…',
+              enabled: !saving,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLines: 1,
+              textInputAction: TextInputAction.done,
+              onChanged: _changed,
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      final value = await Clipboard.getData(
+                        Clipboard.kTextPlain,
+                      );
+                      if (!mounted || value?.text == null) return;
+                      input.text = value!.text!.trim();
+                      _changed(input.text);
+                    },
+              icon: Icon(icons.clipboard),
+              label: const Text('粘贴链接'),
+            ),
+            const SizedBox(height: 16),
+            if (checking)
+              const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            if (preview != null)
+              NodeLaneRow.card(
+                title: repositoryName(preview!),
+                subtitle: '${widget.itemType.localized(context.l10n)} · 目录已识别',
+                leading: Icon(icons.repository),
+                trailing: Icon(icons.check, color: t.accent),
               ),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: saving
-                    ? null
-                    : () async {
-                        final value = await Clipboard.getData(
-                          Clipboard.kTextPlain,
-                        );
-                        if (!mounted || value?.text == null) return;
-                        input.text = value!.text!.trim();
-                        _changed(input.text);
-                      },
-                icon: Icon(icons.clipboard),
-                label: const Text('粘贴链接'),
-              ),
-              const SizedBox(height: 16),
-              if (checking)
-                const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-              if (preview != null)
-                NodeLaneRow.card(
-                  title: repositoryName(preview!),
-                  subtitle:
-                      '${widget.itemType.localized(context.l10n)} · 目录已识别',
-                  leading: Icon(icons.repository),
-                  trailing: Icon(icons.check, color: t.accent),
-                ),
-              if (error != null) ...[
-                Text(
-                  error!,
-                  style: t.readerSecondary.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                ),
-                if (isBrowserUrl(input.text.trim()) && !_exists(input.text))
-                  TextButton(
-                    onPressed: checking
-                        ? null
-                        : () => _check(input.text.trim(), ++_revision),
-                    child: const Text('重试'),
-                  ),
-              ],
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: preview == null || saving ? null : _save,
-                child: Text(saving ? '正在添加…' : '添加仓库'),
-              ),
-              const SizedBox(height: 12),
+            if (error != null) ...[
               Text(
-                '添加后可选择需要的来源。',
-                textAlign: TextAlign.center,
-                style: t.readerSecondary,
+                error!,
+                style: t.readerSecondary.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
+              if (isBrowserUrl(input.text.trim()) && !_exists(input.text))
+                TextButton(
+                  onPressed: checking
+                      ? null
+                      : () => _check(input.text.trim(), ++_revision),
+                  child: const Text('重试'),
+                ),
             ],
-          ),
+            const SizedBox(height: 12),
+            Text(
+              '添加后可选择需要的来源。',
+              textAlign: TextAlign.center,
+              style: t.readerSecondary,
+            ),
+          ],
         ),
       ),
     );

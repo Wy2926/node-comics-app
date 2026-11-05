@@ -64,12 +64,10 @@ class _MobileBookshelfImportSheetState
         title: l10n.import_local_file,
         onClose: _close,
         canClose: !_busy,
-        heightFactor: widget.itemType == ItemType.novel ? .74 : .62,
-        bottom: NodeLaneSecondaryButton(
-          onPressed: _busy ? null : _close,
-          child: Text(_failed ? l10n.close : l10n.cancel),
-        ),
+        heightFactor: .85,
+        fitContent: true,
         child: ListView(
+          shrinkWrap: true,
           padding: const EdgeInsets.all(NodeLaneTokens.gutter),
           children: [
             Center(

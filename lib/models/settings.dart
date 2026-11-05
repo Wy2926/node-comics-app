@@ -6,6 +6,8 @@ part 'settings.g.dart';
 @collection
 @Name("Settings")
 class Settings {
+  static const defaultShowNSFW = true;
+
   Id? id;
 
   int? updatedAt;
@@ -636,7 +638,7 @@ class Settings {
     this.readerNavigationLayout = 0,
     this.backupCompressionLevel,
     this.backupEncryptionEnabled = false,
-    this.showNSFW = false,
+    this.showNSFW = defaultShowNSFW,
     this.showSourceBadge = false,
     this.ttsSpeechRate = 0.5,
     this.ttsPitch = 1.0,
@@ -987,7 +989,7 @@ class Settings {
     readerNavigationLayout = json['readerNavigationLayout'];
     backupCompressionLevel = json['backupCompressionLevel'];
     backupEncryptionEnabled = json['backupEncryptionEnabled'];
-    showNSFW = json['showNSFW'];
+    showNSFW = json['showNSFW'] ?? defaultShowNSFW;
     showSourceBadge = json['showSourceBadge'];
     ttsSpeechRate = json['ttsSpeechRate']?.toDouble();
     ttsPitch = json['ttsPitch']?.toDouble();

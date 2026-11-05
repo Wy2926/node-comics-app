@@ -31,7 +31,7 @@ class NodeLaneTokens {
   static const searchShadowBlur = 4.0, searchShadowOffset = 2.0;
   static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
   static const emptyStateIconSize = 48.0, progressTrackHeight = 3.0;
-  static const formLabelWidth = 88.0;
+  static const numberPickerWidth = 184.0;
   static const avatarSize = 64.0, searchHeight = 48.0;
   static const brandMarkSize = 80.0, brandCompactMarkSize = 40.0;
   static const accountHeroAvatarSize = 96.0, accountHeroIconSize = 56.0;
@@ -87,6 +87,7 @@ class NodeLaneTokens {
     vertical: space8,
   );
   static const modalRadius = 24.0, menuRadius = 16.0;
+  static const modalActionHeight = 48.0;
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
   static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
@@ -194,24 +195,18 @@ class NodeLaneTokens {
     String hint, {
     Widget? suffixIcon,
     Widget? prefixIcon,
-    bool formRow = false,
-    bool search = false,
   }) => InputDecoration(
     hintText: hint,
     hintStyle: body.copyWith(color: muted),
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: formRow
-        ? surface
-        : search
-        ? searchSurface
-        : soft,
+    fillColor: searchSurface,
     isDense: true,
-    constraints: BoxConstraints(minHeight: formRow ? rowHeight : searchHeight),
-    prefixIconConstraints: BoxConstraints(
+    constraints: const BoxConstraints(minHeight: searchHeight),
+    prefixIconConstraints: const BoxConstraints(
       minWidth: searchHeight,
-      minHeight: formRow ? rowHeight : searchHeight,
+      minHeight: searchHeight,
     ),
     suffixIconConstraints: const BoxConstraints(
       minWidth: minTapTarget,
@@ -221,30 +216,18 @@ class NodeLaneTokens {
       horizontal: space16,
       vertical: space12,
     ),
-    border: formRow
-        ? InputBorder.none
-        : OutlineInputBorder(
-            borderRadius: inputRadius,
-            borderSide: search
-                ? BorderSide(color: searchLine, width: glassStroke)
-                : BorderSide.none,
-          ),
-    enabledBorder: formRow
-        ? InputBorder.none
-        : OutlineInputBorder(
-            borderRadius: inputRadius,
-            borderSide: search
-                ? BorderSide(color: searchLine, width: glassStroke)
-                : BorderSide.none,
-          ),
-    focusedBorder: formRow
-        ? InputBorder.none
-        : OutlineInputBorder(
-            borderRadius: inputRadius,
-            borderSide: search
-                ? BorderSide(color: searchLine, width: glassStroke)
-                : BorderSide(color: accent, width: 1.5),
-          ),
+    border: OutlineInputBorder(
+      borderRadius: inputRadius,
+      borderSide: BorderSide(color: searchLine, width: glassStroke),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: inputRadius,
+      borderSide: BorderSide(color: searchLine, width: glassStroke),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: inputRadius,
+      borderSide: BorderSide(color: searchLine, width: glassStroke),
+    ),
   );
 }
 

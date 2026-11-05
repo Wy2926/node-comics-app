@@ -59,7 +59,7 @@ void main() {
       await tester.tap(find.text('打开'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('日本語'));
-      await tester.tap(find.text('取消'));
+      await tester.tap(find.byTooltip('关闭'));
       await tester.pumpAndSettle();
       expect(result, isNull);
       expect(original, {'en'});
@@ -143,7 +143,7 @@ void main() {
       tester.view.viewInsets = const FakeViewPadding(bottom: 330);
       await tester.pumpAndSettle();
       expect(find.text('保存').hitTestable(), findsOneWidget);
-      await tester.tap(find.text('取消'));
+      await tester.tap(find.byTooltip('关闭'));
       await tester.pumpAndSettle();
       expect(result, isNull);
       tester.view.viewInsets = FakeViewPadding.zero;

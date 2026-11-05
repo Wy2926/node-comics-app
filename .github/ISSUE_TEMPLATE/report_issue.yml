@@ -1,7 +1,14 @@
-name: 🐞 Issue report
-description: Report an issue in Mangayomi
+name: 🐞 NodeLane app issue
+description: Report a problem in NodeLane Comics
 labels: [Bug]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for NodeLane Comics app issues.
+        For official source problems or requests, use [NodeLane source plugins](https://github.com/Wy2926/nodelane-comics-extensions/issues/new/choose).
+        For third-party sources, use the source's own repository.
+
   - type: textarea
     id: reproduce-steps
     attributes:
@@ -38,12 +45,12 @@ body:
       required: true
 
   - type: input
-    id: mangayomi-version
+    id: nodelane-comics-version
     attributes:
-      label: Mangayomi version
-      description: You can find your Mangayomi version in **More → About**.
+      label: NodeLane Comics version
+      description: You can find your NodeLane Comics version in **More → About**. Include the build number when available.
       placeholder: |
-        Example: "0.0.67"
+        Example: "0.1.0 (1)"
     validations:
       required: true
 
@@ -53,7 +60,7 @@ body:
       label: Device
       description: List your device, model and the OS version.
       placeholder: |
-        Example: "Google Pixel 5 android 11"
+        Example: "iPhone 15, iOS 18.0"
     validations:
       required: true
 
@@ -68,13 +75,11 @@ body:
     id: acknowledgements
     attributes:
       label: Acknowledgements
-      description: Read this carefully, we will close and ignore your issue if you skimmed through this.
+      description: Check these before submitting your report.
       options:
         - label: I have searched the existing issues and this is a new ticket, **NOT** a duplicate or related to another open or closed issue.
           required: true
         - label: I have written a short but informative title.
           required: true
-        - label: If this is an issue with an extension, I should be opening an issue in the extension's repository.
-          required: true
-        - label: I have updated all installed extensions.
+        - label: This concerns the NodeLane Comics app. Source-specific problems belong in the source's repository linked above.
           required: true

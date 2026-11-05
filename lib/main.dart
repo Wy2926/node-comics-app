@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 import 'dart:async';
@@ -47,7 +48,8 @@ import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/client_id.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/utils/url_protocol/api.dart';
+import 'package:mangayomi/utils/url_protocol/import_links.dart';
+import 'package:mangayomi/utils/url_protocol/windows_protocol.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_provider.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
 import 'package:mangayomi/modules/more/settings/security/providers/security_state_provider.dart';
@@ -121,7 +123,7 @@ void main(List<String> args) async {
         await WindowGeometry.restore();
       }
       if (Platform.isWindows) {
-        registerProtocolHandler("mangayomi");
+        registerAppUrlProtocol();
       }
       final storage = StorageProvider();
       // Don't force the Android "all files access" (MANAGE_EXTERNAL_STORAGE)
@@ -264,9 +266,8 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp>
     with WidgetsBindingObserver, WindowListener {
-  late AppLinks _appLinks;
+  final _importLinks = ImportLinks();
   StreamSubscription<Uri>? _linkSubscription;
-  Uri? lastUri;
 
   @override
   void initState() {
@@ -478,245 +479,237 @@ class _MyAppState extends ConsumerState<MyApp>
     if (Platform.isLinux) exit(0);
   }
 
-  Future<void> _initDeepLinks() async {
-    _appLinks = AppLinks();
-    _linkSubscription = _appLinks.uriLinkStream.listen((uri) async {
-      if (uri == lastUri) return; // Debouncing Deep Links
-      lastUri = uri;
-      switch (uri.host) {
-        case "add-repo":
-          final repoName = uri.queryParameters["repo_name"];
-          final repoUrl = uri.queryParameters["repo_url"];
-          final mangaRepoUrls = uri.queryParametersAll["manga_url"];
-          final animeRepoUrls = uri.queryParametersAll["anime_url"];
-          final novelRepoUrls = uri.queryParametersAll["novel_url"];
-          final context = navigatorKey.currentContext;
-          if (context == null || !context.mounted) return;
-          final l10n = context.l10n;
-          // repo_name and repo_url are only labels the link chooses for
-          // itself; the *_url lists are what actually gets installed. Show
-          // those, or a link can borrow a trusted repo's name for its own.
-          final sourcesToAdd = [
-            for (final url in mangaRepoUrls ?? const <String>[])
-              (l10n.manga, url),
-            for (final url in animeRepoUrls ?? const <String>[])
-              (l10n.anime, url),
-            for (final url in novelRepoUrls ?? const <String>[])
-              (l10n.novel, url),
-          ];
-          if (sourcesToAdd.isEmpty) return;
-          showDialog(
-            context: navigatorKey.currentContext!,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(l10n.add_repo),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.label_value(l10n.name, repoName ?? l10n.unknown),
+  void _initDeepLinks() {
+    _linkSubscription = AppLinks().uriLinkStream.listen(
+      (uri) => unawaited(_importLinks.handle(uri, _handleImportLink)),
+    );
+  }
+
+  Future<void> _handleImportLink(Uri uri) async {
+    // A launch link can arrive before the navigator's first frame.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    switch (uri.host) {
+      case "add-repo":
+        final repoName = uri.queryParameters["repo_name"];
+        final repoUrl = uri.queryParameters["repo_url"];
+        final mangaRepoUrls = uri.queryParametersAll["manga_url"];
+        final animeRepoUrls = uri.queryParametersAll["anime_url"];
+        final novelRepoUrls = uri.queryParametersAll["novel_url"];
+        final context = navigatorKey.currentContext;
+        if (context == null || !context.mounted) return;
+        final l10n = context.l10n;
+        // repo_name and repo_url are only labels the link chooses for
+        // itself; the *_url lists are what actually gets installed. Show
+        // those, or a link can borrow a trusted repo's name for its own.
+        final sourcesToAdd = [
+          for (final url in mangaRepoUrls ?? const <String>[])
+            (l10n.manga, url),
+          for (final url in animeRepoUrls ?? const <String>[])
+            (l10n.anime, url),
+          for (final url in novelRepoUrls ?? const <String>[])
+            (l10n.novel, url),
+        ];
+        if (sourcesToAdd.isEmpty) return;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return NodeLaneAlertDialog(
+              title: Text(l10n.add_repo),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.label_value(l10n.name, repoName ?? l10n.unknown)),
+                    const SizedBox(height: 8),
+                    Text(l10n.label_value(l10n.url, repoUrl ?? l10n.unknown)),
+                    const SizedBox(height: 16),
+                    Text(l10n.add_repo_sources_to_add),
+                    const SizedBox(height: 4),
+                    for (final (type, url) in sourcesToAdd)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: SelectableText(l10n.label_value(type, url)),
                       ),
-                      const SizedBox(height: 8),
-                      Text(l10n.label_value(l10n.url, repoUrl ?? l10n.unknown)),
-                      const SizedBox(height: 16),
-                      Text(l10n.add_repo_sources_to_add),
-                      const SizedBox(height: 4),
-                      for (final (type, url) in sourcesToAdd)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: SelectableText(l10n.label_value(type, url)),
-                        ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.add_repo_warning,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    child: Text(l10n.cancel),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  FilledButton(
-                    child: Text(l10n.add),
-                    onPressed: () async {
-                      if (context.mounted) Navigator.of(context).pop();
-
-                      final validUrls = await _checkValidUrls([
-                        ...mangaRepoUrls ?? [],
-                        ...animeRepoUrls ?? [],
-                        ...novelRepoUrls ?? [],
-                      ]);
-
-                      if (!validUrls) {
-                        showNodeLaneNotice(
-                          l10n.unsupported_repo,
-                          kind: NodeLaneNoticeKind.error,
-                        );
-                        return;
-                      }
-
-                      Future<void> addRepos(
-                        ItemType type,
-                        List<String>? urls,
-                      ) async {
-                        if (urls == null) return;
-                        final current = ref.read(
-                          extensionsRepoStateProvider(type),
-                        );
-                        final existingUrls = current
-                            .map((r) => r.jsonUrl?.trim().toLowerCase())
-                            .whereType<String>()
-                            .toSet();
-                        final newRepos = urls
-                            .where((e) {
-                              final clean = e.trim().toLowerCase();
-                              return !existingUrls.contains(clean) &&
-                                  !existingUrls.contains('$clean/') &&
-                                  !existingUrls.contains(
-                                    clean.endsWith('/')
-                                        ? clean.substring(0, clean.length - 1)
-                                        : clean,
-                                  );
-                            })
-                            .map(
-                              (e) => Repo(
-                                name: repoName,
-                                jsonUrl: e,
-                                website: repoUrl,
-                              ),
-                            )
-                            .toList();
-                        if (newRepos.isEmpty) return;
-                        final updated = [...current, ...newRepos];
-                        await ref
-                            .read(extensionsRepoStateProvider(type).notifier)
-                            .set(updated);
-                      }
-
-                      await Future.wait([
-                        addRepos(ItemType.manga, mangaRepoUrls),
-                        addRepos(ItemType.anime, animeRepoUrls),
-                        addRepos(ItemType.novel, novelRepoUrls),
-                      ]);
-                      showNodeLaneNotice(
-                        l10n.repo_added,
-                        kind: NodeLaneNoticeKind.success,
-                      );
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-          break;
-        case "add-button":
-          final buttonDataRaw = uri.queryParametersAll["button"];
-          final context = navigatorKey.currentContext;
-          if (context == null || !context.mounted || buttonDataRaw == null) {
-            return;
-          }
-          final l10n = context.l10n;
-          for (final buttonRaw in buttonDataRaw) {
-            final Object? buttonData;
-            try {
-              buttonData = jsonDecode(utf8.decode(base64.decode(buttonRaw)));
-            } catch (_) {
-              continue;
-            }
-            if (buttonData is Map<String, dynamic>) {
-              final customButton = CustomButton.fromJson(buttonData);
-              // The button's code becomes an mpv Lua script, which can touch
-              // the filesystem and spawn processes. Show every line of it
-              // before it is saved, not just the title the link picked.
-              final codeSections = [
-                (l10n.custom_buttons_js_code, customButton.codePress),
-                (l10n.custom_buttons_js_code_long, customButton.codeLongPress),
-                (l10n.custom_buttons_startup, customButton.codeStartup),
-              ].where((s) => s.$2?.trim().isNotEmpty ?? false);
-              await showDialog(
-                context: navigatorKey.currentContext!,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text(l10n.custom_buttons_add),
-                    content: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.label_value(
-                              l10n.name,
-                              customButton.title ?? l10n.unknown,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            l10n.custom_buttons_add_warning,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                          for (final (label, code) in codeSections) ...[
-                            const SizedBox(height: 16),
-                            Text(label),
-                            const SizedBox(height: 4),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(8),
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              child: SelectableText(
-                                code!,
-                                style: const TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.add_repo_warning,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
                       ),
                     ),
-                    actions: [
-                      TextButton(
-                        child: Text(l10n.cancel),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                      FilledButton(
-                        child: Text(l10n.add),
-                        onPressed: () async {
-                          if (context.mounted) Navigator.of(context).pop();
-                          final pos = await customButtonRepository.count();
-                          await customButtonRepository.save(
-                            customButton
-                              ..pos = pos
-                              ..isFavourite = false
-                              ..id = null,
-                          );
-                          showNodeLaneNotice(
-                            l10n.custom_buttons_added,
-                            kind: NodeLaneNoticeKind.success,
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            }
+                  ],
+                ),
+              ),
+              actions: [
+                NodeLaneDialogAction(
+                  label: l10n.cancel,
+                  secondary: true,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                NodeLaneDialogAction(
+                  label: l10n.add,
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+              ],
+            );
+          },
+        );
+        if (!mounted || confirmed != true) return;
+        final validUrls = await _checkValidUrls([
+          ...mangaRepoUrls ?? [],
+          ...animeRepoUrls ?? [],
+          ...novelRepoUrls ?? [],
+        ]);
+
+        if (!mounted) return;
+        if (!validUrls) {
+          showNodeLaneNotice(
+            l10n.unsupported_repo,
+            kind: NodeLaneNoticeKind.error,
+          );
+          return;
+        }
+
+        Future<void> addRepos(ItemType type, List<String>? urls) async {
+          if (urls == null) return;
+          final current = ref.read(extensionsRepoStateProvider(type));
+          final existingUrls = current
+              .map((r) => r.jsonUrl?.trim().toLowerCase())
+              .whereType<String>()
+              .toSet();
+          final newRepos = urls
+              .where((e) {
+                final clean = e.trim().toLowerCase();
+                return !existingUrls.contains(clean) &&
+                    !existingUrls.contains('$clean/') &&
+                    !existingUrls.contains(
+                      clean.endsWith('/')
+                          ? clean.substring(0, clean.length - 1)
+                          : clean,
+                    );
+              })
+              .map((e) => Repo(name: repoName, jsonUrl: e, website: repoUrl))
+              .toList();
+          if (newRepos.isEmpty) return;
+          final updated = [...current, ...newRepos];
+          await ref
+              .read(extensionsRepoStateProvider(type).notifier)
+              .set(updated);
+        }
+
+        await Future.wait([
+          addRepos(ItemType.manga, mangaRepoUrls),
+          addRepos(ItemType.anime, animeRepoUrls),
+          addRepos(ItemType.novel, novelRepoUrls),
+        ]);
+        if (!mounted) return;
+        showNodeLaneNotice(l10n.repo_added, kind: NodeLaneNoticeKind.success);
+        break;
+      case "add-button":
+        final buttonDataRaw = uri.queryParametersAll["button"];
+        final context = navigatorKey.currentContext;
+        if (context == null || !context.mounted || buttonDataRaw == null) {
+          return;
+        }
+        final l10n = context.l10n;
+        for (final buttonRaw in buttonDataRaw) {
+          final Object? buttonData;
+          try {
+            buttonData = jsonDecode(utf8.decode(base64.decode(buttonRaw)));
+          } catch (_) {
+            continue;
           }
-          break;
-        default:
-      }
-    });
+          if (buttonData is Map<String, dynamic>) {
+            final customButton = CustomButton.fromJson(buttonData);
+            // The button's code becomes an mpv Lua script, which can touch
+            // the filesystem and spawn processes. Show every line of it
+            // before it is saved, not just the title the link picked.
+            final codeSections = [
+              (l10n.custom_buttons_js_code, customButton.codePress),
+              (l10n.custom_buttons_js_code_long, customButton.codeLongPress),
+              (l10n.custom_buttons_startup, customButton.codeStartup),
+            ].where((s) => s.$2?.trim().isNotEmpty ?? false);
+            if (!context.mounted) return;
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (BuildContext context) {
+                return NodeLaneAlertDialog(
+                  title: Text(l10n.custom_buttons_add),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.label_value(
+                            l10n.name,
+                            customButton.title ?? l10n.unknown,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.custom_buttons_add_warning,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                        for (final (label, code) in codeSections) ...[
+                          const SizedBox(height: 16),
+                          Text(label),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(8),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            child: SelectableText(
+                              code!,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    NodeLaneDialogAction(
+                      label: l10n.cancel,
+                      secondary: true,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    NodeLaneDialogAction(
+                      label: l10n.add,
+                      onPressed: () => Navigator.of(context).pop(true),
+                    ),
+                  ],
+                );
+              },
+            );
+            if (!mounted) return;
+            if (confirmed != true) continue;
+            final pos = await customButtonRepository.count();
+            await customButtonRepository.save(
+              customButton
+                ..pos = pos
+                ..isFavourite = false
+                ..id = null,
+            );
+            if (!mounted) return;
+            showNodeLaneNotice(
+              l10n.custom_buttons_added,
+              kind: NodeLaneNoticeKind.success,
+            );
+          }
+        }
+        break;
+      default:
+    }
   }
 
   Future<bool> _checkValidUrls(List<String> urls) async {

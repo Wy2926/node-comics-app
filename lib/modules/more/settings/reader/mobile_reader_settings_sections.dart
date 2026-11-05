@@ -2,7 +2,6 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -258,31 +257,14 @@ class MobileReaderAdvancedSettings extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        NodeLaneRow(
-          openOnReveal: true,
+        NodeLaneNumberRow(
           title: l10n.page_preload_amount,
+          subtitle: l10n.page_preload_amount_subtitle,
           icon: NodeLaneIcons.of(context).image,
-          onTap: () async {
-            final value = await showDialog<String>(
-              context: context,
-              builder: (_) => MobileSettingsTextDialog(
-                title: l10n.page_preload_amount,
-                initialValue: preload.toString(),
-                helper: l10n.page_preload_amount_subtitle,
-                keyboardType: TextInputType.number,
-                isValid: (text) {
-                  final number = int.tryParse(text);
-                  return number != null && number >= 1 && number <= 20;
-                },
-              ),
-            );
-            if (!context.mounted || value == null) return;
-            final number = int.parse(value);
-            if (number != preload) {
-              ref.read(pagePreloadAmountStateProvider.notifier).set(number);
-            }
-          },
-          value: preload.toString(),
+          value: preload,
+          min: 1,
+          max: 20,
+          onChanged: ref.read(pagePreloadAmountStateProvider.notifier).set,
         ),
         NodeLaneSwitchRow(
           title: l10n.animate_page_transitions,

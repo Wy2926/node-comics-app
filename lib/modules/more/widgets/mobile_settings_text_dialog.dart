@@ -42,36 +42,43 @@ class _MobileSettingsTextDialogState extends State<MobileSettingsTextDialog> {
     final l10n = context.l10n;
     return NodeLaneAlertDialog(
       scrollable: true,
-      title: Text(widget.title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.helper != null) ...[
-            Text(widget.helper!, style: colors.readerSecondary),
-            const SizedBox(height: 16),
-          ],
           NodeLaneTextField(
             controller: _input,
+            label: widget.title,
             autofocus: true,
             keyboardType: widget.keyboardType,
             autocorrect: false,
             enableSuggestions: false,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) {
+              if (widget.isValid?.call(_input.text) ?? true) {
+                Navigator.pop(context, _input.text);
+              }
+            },
             onChanged: (_) => setState(() {}),
             hint: widget.hint ?? '',
           ),
+          if (widget.helper != null) ...[
+            const SizedBox(height: NodeLaneTokens.space12),
+            Text(widget.helper!, style: colors.readerSecondary),
+          ],
         ],
       ),
       actions: [
-        TextButton(
+        NodeLaneDialogAction(
+          label: l10n.cancel,
+          secondary: true,
           onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
         ),
-        FilledButton(
+        NodeLaneDialogAction(
+          label: l10n.dialog_confirm,
           onPressed: (widget.isValid?.call(_input.text) ?? true)
               ? () => Navigator.pop(context, _input.text)
               : null,
-          child: Text(l10n.dialog_confirm),
         ),
       ],
     );
