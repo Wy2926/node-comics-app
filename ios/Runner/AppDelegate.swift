@@ -5,18 +5,11 @@ import UniformTypeIdentifiers
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate {
-  private var activeBackgroundTasks: [String: UIBackgroundTaskIdentifier] = [:]
   private let localDirectoryBookmarksKey =
     "com.nodelane.comics.local_directory_bookmarks"
   private var localDirectoryPickerResult: FlutterResult?
   private weak var localDirectoryPickerController: UIDocumentPickerViewController?
   private var activeSecurityScopedUrls: [String: URL] = [:]
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
@@ -62,44 +55,6 @@ import UniformTypeIdentifiers
         } else {
           result(FlutterError(code: "ERROR", message: error.debugDescription, details: nil))
         }
-      default:
-        result(FlutterMethodNotImplemented)
-      }
-    })
-
-    let backgroundTaskChannel = FlutterMethodChannel(
-      name: "com.kodjodevf.mangayomi.background_task",
-      binaryMessenger: messenger
-    )
-    backgroundTaskChannel.setMethodCallHandler({
-      [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-      switch call.method {
-      case "begin":
-        let args = call.arguments as? Dictionary<String, Any>
-        let name = args?["name"] as? String ?? "Mangayomi background task"
-        let identifier = UUID().uuidString
-        var task: UIBackgroundTaskIdentifier = .invalid
-        task = UIApplication.shared.beginBackgroundTask(withName: name) {
-          if task != .invalid {
-            UIApplication.shared.endBackgroundTask(task)
-          }
-          self?.activeBackgroundTasks.removeValue(forKey: identifier)
-        }
-        if task == .invalid {
-          result(nil)
-        } else {
-          self?.activeBackgroundTasks[identifier] = task
-          result(identifier)
-        }
-      case "end":
-        let args = call.arguments as? Dictionary<String, Any>
-        guard let identifier = args?["identifier"] as? String,
-              let task = self?.activeBackgroundTasks.removeValue(forKey: identifier) else {
-          result(nil)
-          return
-        }
-        UIApplication.shared.endBackgroundTask(task)
-        result(nil)
       default:
         result(FlutterMethodNotImplemented)
       }
