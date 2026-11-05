@@ -17,13 +17,11 @@ import 'package:mangayomi/repositories/sync_preference_repository.dart';
 import 'package:mangayomi/services/sync_server.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/date.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 enum MobileSyncAction { sync, upload, download }
 
 class MobileSyncScreen extends ConsumerStatefulWidget {
-  const MobileSyncScreen({super.key, required this.serverUrl});
-  final String serverUrl;
+  const MobileSyncScreen({super.key});
   @override
   ConsumerState<MobileSyncScreen> createState() => _MobileSyncScreenState();
 }
@@ -74,7 +72,7 @@ class _MobileSyncScreenState extends ConsumerState<MobileSyncScreen> {
           onLogin: () => showNodeLaneCatalogSheet<void>(
             context,
             MobileAccountLoginDialog(
-              title: context.l10n.login_into('SyncServer'),
+              title: context.l10n.login_into(context.l10n.sync_service),
               submitLabel: context.l10n.sync_login_browser,
               fields: [
                 MobileAccountField(
@@ -98,14 +96,6 @@ class _MobileSyncScreenState extends ConsumerState<MobileSyncScreen> {
                 upload: action == MobileSyncAction.upload,
                 download: action == MobileSyncAction.download,
               ),
-          onServerInfo: () async {
-            if (!await launchUrl(
-              Uri.parse(widget.serverUrl),
-              mode: LaunchMode.externalApplication,
-            )) {
-              throw StateError('Unavailable');
-            }
-          },
         );
       },
     );
@@ -126,7 +116,6 @@ class MobileSyncSettings extends StatefulWidget {
     required this.onLogin,
     required this.onLogout,
     required this.onSync,
-    required this.onServerInfo,
     required this.onRetry,
     this.lastSyncLabel,
     this.loading = false,
@@ -140,7 +129,7 @@ class MobileSyncSettings extends StatefulWidget {
   final ValueChanged<bool> onEnabledChanged;
   final ValueChanged<int> onFrequencyChanged;
   final VoidCallback onRecheck, onLogout, onRetry;
-  final Future<void> Function() onLogin, onServerInfo;
+  final Future<void> Function() onLogin;
   final Future<bool> Function(MobileSyncAction) onSync;
   @override
   State<MobileSyncSettings> createState() => _MobileSyncSettingsState();
@@ -179,7 +168,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
     }
     final confirmed = await showNodeLaneConfirmation(
       context,
-      title: context.l10n.log_out_from('SyncServer'),
+      title: context.l10n.log_out_from(context.l10n.sync_service),
       confirmLabel: context.l10n.log_out,
     );
     if (mounted && confirmed) widget.onLogout();
@@ -268,7 +257,7 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                   title: l10n.services,
                   children: [
                     MobileServiceAccount(
-                      title: 'SyncServer',
+                      title: l10n.sync_service,
                       icon: Icon(
                         NodeLaneIcons.of(context).repository,
                         color: colors.ink,
@@ -430,22 +419,9 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                       title: l10n.about,
                       child: Padding(
                         padding: NodeLaneTokens.groupPadding,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              l10n.syncing_subtitle,
-                              style: colors.readerSecondary,
-                            ),
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              onPressed: _locked
-                                  ? null
-                                  : () => _run(widget.onServerInfo),
-                              icon: Icon(NodeLaneIcons.of(context).external),
-                              label: Text(l10n.get_sync_server),
-                            ),
-                          ],
+                        child: Text(
+                          l10n.syncing_subtitle,
+                          style: colors.readerSecondary,
                         ),
                       ),
                     ),

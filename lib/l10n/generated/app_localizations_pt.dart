@@ -1100,7 +1100,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'Sincroniza o teu progresso em vários dispositivos através de um \nserver auto-hospedado. Consulta o nosso servidor discord para mais informações!';
+      'Introduz o endereço do teu servidor de sincronização e inicia sessão no navegador para sincronizar o progresso de leitura entre dispositivos.';
+
+  @override
+  String get sync_service => 'Sincronização autoalojada';
 
   @override
   String get last_sync => 'Última sincronização às: ';
@@ -1988,9 +1991,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'Obter M-Extension-Server';
-
-  @override
-  String get get_sync_server => 'Obter servidor de sincronização aqui';
 
   @override
   String get undefined => 'Indefinido';
@@ -5906,7 +5906,10 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get syncing_subtitle =>
-      'Sincronize seu progresso em vários dispositivos por meio de um \nservidor auto-hospedado. Confira nosso servidor discord para obter mais informações!';
+      'Informe o endereço do seu servidor de sincronização e entre pelo navegador para sincronizar o progresso de leitura entre dispositivos.';
+
+  @override
+  String get sync_service => 'Sincronização em servidor próprio';
 
   @override
   String get last_sync => 'Última sincronização às: ';
@@ -6788,9 +6791,6 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get get_m_extension_server => 'Obter M-Extension-Server';
-
-  @override
-  String get get_sync_server => 'Obter servidor de sincronização aqui';
 
   @override
   String get undefined => 'Indefinido';

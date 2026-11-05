@@ -1098,7 +1098,10 @@ class AppLocalizationsAs extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'স্ব-হোষ্ট কৰা চাৰ্ভাৰৰ জৰিয়তে একাধিক ডিভাইচত আপোনাৰ প্ৰগতি সমন্বয় কৰক। অধিক তথ্যৰ বাবে আমাৰ ডিস্ক\'ৰ্ড চাৰ্ভাৰ চাওক!';
+      'ডিভাইচসমূহত পঢ়াৰ অগ্ৰগতি সমন্বয় কৰিবলৈ আপোনাৰ সমন্বয় চাৰ্ভাৰৰ ঠিকনা লিখক আৰু ব্ৰাউজাৰৰ জৰিয়তে লগ ইন কৰক।';
+
+  @override
+  String get sync_service => 'স্ব-হোষ্ট কৰা সমন্বয়';
 
   @override
   String get last_sync => 'সৰ্বশেষ সমন্বয়: ';
@@ -1972,9 +1975,6 @@ class AppLocalizationsAs extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'M-Extension-Server প্ৰাপ্ত কৰক';
-
-  @override
-  String get get_sync_server => 'সিংক চাৰ্ভাৰ ইয়াত প্ৰাপ্ত কৰক';
 
   @override
   String get undefined => 'অপৰিভাষিত';

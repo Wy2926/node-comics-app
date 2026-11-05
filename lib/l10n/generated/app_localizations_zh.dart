@@ -1072,8 +1072,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sync_logged => '登录成功';
 
   @override
-  String get syncing_subtitle =>
-      '通过自托管的 \n服务器在多个设备上同步你的进度。查看我们的 discord 服务器，了解更多信息！';
+  String get syncing_subtitle => '填写你使用的同步服务器地址，通过浏览器登录后，在设备间同步阅读进度。';
+
+  @override
+  String get sync_service => '自建同步服务';
 
   @override
   String get last_sync => '上次同步时间：';
@@ -1918,9 +1920,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get get_m_extension_server => '获取 M-Extension-Server';
-
-  @override
-  String get get_sync_server => '在此获取同步服务器';
 
   @override
   String get undefined => '未定义';

@@ -1,4 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,21 +13,17 @@ import 'package:mangayomi/modules/more/settings/sync/widgets/sync_listile.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/sync_server.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:mangayomi/utils/log/logger.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
 
 import 'mobile_sync_screen.dart';
 
 class SyncScreen extends ConsumerWidget {
-  static const serverUrl = "https://github.com/Schnitzel5/mangayomi-server";
-
   const SyncScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (isMobile && !isTv) return const MobileSyncScreen(serverUrl: serverUrl);
+    if (isMobile && !isTv) return const MobileSyncScreen();
     final l10n = l10nLocalizations(context)!;
     final autoSyncOptions = {
       l10n.sync_auto_off: 0,
@@ -207,32 +202,6 @@ class SyncScreen extends ConsumerWidget {
                 SettingsSection(
                   title: l10n.about,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 15,
-                        right: 15,
-                        bottom: 10,
-                        top: 10,
-                      ),
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          if (!await launchUrl(
-                            Uri.parse(serverUrl),
-                            mode: LaunchMode.externalApplication,
-                          )) {
-                            AppLogger.log(
-                              'Could not launch $serverUrl',
-                              logLevel: LogLevel.error,
-                            );
-                            showNodeLaneNotice(
-                              l10n.could_not_launch_url(serverUrl),
-                            );
-                          }
-                        },
-                        label: Text(l10n.get_sync_server),
-                        icon: const Icon(Icons.download_outlined),
-                      ),
-                    ),
                     _hintTile(
                       context,
                       icon: Icons.info_outline_rounded,
@@ -444,7 +413,7 @@ class SyncScreen extends ConsumerWidget {
         builder: (context, setState) {
           return AlertDialog(
             title: Text(
-              l10n.login_into("SyncServer"),
+              l10n.login_into(l10n.sync_service),
               style: const TextStyle(fontSize: 30),
             ),
             content: SingleChildScrollView(

@@ -1094,7 +1094,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'İlerlemenizi kendi barındırdığınız bir \nserver aracılığıyla birden fazla cihaz arasında senkronize edin. Daha fazla bilgi için discord sunucumuza göz atın!';
+      'Okuma ilerlemenizi cihazlar arasında senkronize etmek için sunucu adresinizi girin ve tarayıcı üzerinden oturum açın.';
+
+  @override
+  String get sync_service => 'Kendi sunucunuzda senkronizasyon';
 
   @override
   String get last_sync => 'Son senkronizasyon: ';
@@ -1982,9 +1985,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'M-Extension-Server\'i edinin';
-
-  @override
-  String get get_sync_server => 'Senkronizasyon Sunucusunu buradan alın';
 
   @override
   String get undefined => 'Tanımsız';

@@ -1113,7 +1113,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'Синхронизируйте свой прогресс на нескольких устройствах через собственный \nserver. Загляните на наш сервер discord для получения дополнительной информации!';
+      'Введите адрес сервера синхронизации и войдите через браузер, чтобы синхронизировать прогресс чтения между устройствами.';
+
+  @override
+  String get sync_service => 'Синхронизация на своём сервере';
 
   @override
   String get last_sync => 'Последняя синхронизация: ';
@@ -2000,9 +2003,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'Получить M-Extension-Server';
-
-  @override
-  String get get_sync_server => 'Получить сервер синхронизации здесь';
 
   @override
   String get undefined => 'Не определено';

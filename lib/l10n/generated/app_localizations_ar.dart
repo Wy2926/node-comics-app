@@ -1107,7 +1107,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'قم بمزامنة تقدمك عبر أجهزة متعددة عبر خادم مستضاف ذاتيًا. اطّلع على خادم الخلاف الخاص بنا لمزيد من المعلومات!';
+      'أدخل عنوان خادم المزامنة وسجّل الدخول عبر المتصفح لمزامنة تقدّم القراءة بين أجهزتك.';
+
+  @override
+  String get sync_service => 'المزامنة على خادم ذاتي الاستضافة';
 
   @override
   String get last_sync => 'آخر مزامنة في: ';
@@ -1984,9 +1987,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'احصل على M-Extension-Server';
-
-  @override
-  String get get_sync_server => 'احصل على خادم المزامنة من هنا';
 
   @override
   String get undefined => 'غير محدد';

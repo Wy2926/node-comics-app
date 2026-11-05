@@ -80,7 +80,8 @@ void main() {
             onPressed: () => showNodeLaneCatalogSheet<void>(
               context,
               MobileAccountLoginDialog(
-                title: 'Login into SyncServer',
+                title: AppLocalizations.of(context)!
+                    .login_into(AppLocalizations.of(context)!.sync_service),
                 submitLabel: 'Log in with browser',
                 fields: const [
                   MobileAccountField(
@@ -277,7 +278,6 @@ void main() {
               syncs++;
               return true;
             },
-            onServerInfo: () async {},
           );
         },
       );
@@ -356,7 +356,6 @@ void main() {
               calls.add(action);
               return result.future;
             },
-            onServerInfo: () async {},
           );
         },
       );

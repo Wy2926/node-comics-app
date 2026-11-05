@@ -1104,7 +1104,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'Synchronisez votre progression sur plusieurs appareils via un serveur auto-hébergé. Consultez notre serveur discord pour plus d\'informations !';
+      'Saisissez l’adresse de votre serveur de synchronisation et connectez-vous dans le navigateur pour synchroniser votre progression de lecture entre vos appareils.';
+
+  @override
+  String get sync_service => 'Synchronisation auto-hébergée';
 
   @override
   String get last_sync => 'Dernière synchronisation à : ';
@@ -1996,9 +1999,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'Obtenir M-Extension-Server';
-
-  @override
-  String get get_sync_server => 'Obtenir le serveur de synchronisation ici';
 
   @override
   String get undefined => 'Indéfini';

@@ -1096,7 +1096,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'स्व-होस्ट किए गए सर्वर के माध्यम से कई उपकरणों में अपनी प्रगति को समन्वयित करें। अधिक जानकारी के लिए हमारे डिस्कॉर्ड सर्वर देखें!';
+      'अपने सिंक सर्वर का पता दर्ज करें और ब्राउज़र में लॉग इन करके अलग-अलग डिवाइसों पर पढ़ने की प्रगति सिंक करें।';
+
+  @override
+  String get sync_service => 'स्व-होस्ट की गई सिंक सेवा';
 
   @override
   String get last_sync => 'अंतिम सिंक समय: ';
@@ -1976,9 +1979,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'M-Extension-Server प्राप्त करें';
-
-  @override
-  String get get_sync_server => 'सिंक सर्वर यहां प्राप्त करें';
 
   @override
   String get undefined => 'अपरिभाषित';

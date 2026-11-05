@@ -1080,7 +1080,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      '셀프 호스팅 서버를 통해 여러 기기 간에 진행 상황을 동기화합니다. 자세한 내용은 디스코드 서버를 확인하세요!';
+      '동기화 서버 주소를 입력하고 브라우저에서 로그인하여 기기 간 읽기 진행 상황을 동기화하세요.';
+
+  @override
+  String get sync_service => '자체 호스팅 동기화';
 
   @override
   String get last_sync => '마지막 동기화: ';
@@ -1935,9 +1938,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'M-Extension-Server 받기';
-
-  @override
-  String get get_sync_server => '여기에서 동기화 서버 받기';
 
   @override
   String get undefined => '정의되지 않음';

@@ -1098,7 +1098,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'Synchronisiere deinen Fortschritt über mehrere Geräte mithilfe \neines selbstgehosteten Servers. Mehr Info gibt es bei unserem Discord Server!';
+      'Gib die Adresse deines Synchronisierungsservers ein und melde dich im Browser an, um deinen Lesefortschritt geräteübergreifend zu synchronisieren.';
+
+  @override
+  String get sync_service => 'Selbst gehostete Synchronisierung';
 
   @override
   String get last_sync => 'Letzte Synchronisierung um: ';
@@ -1989,9 +1992,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'M-Extension-Server herunterladen';
-
-  @override
-  String get get_sync_server => 'Sync-Server hier holen';
 
   @override
   String get undefined => 'Nicht definiert';

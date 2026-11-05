@@ -1099,7 +1099,10 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'Sinkronkan kemajuan Anda di beberapa perangkat melalui \nserver yang dihosting sendiri. Lihat server discord kami untuk info lebih lanjut!';
+      'Masukkan alamat server sinkronisasi Anda dan masuk melalui browser untuk menyinkronkan progres membaca di berbagai perangkat.';
+
+  @override
+  String get sync_service => 'Sinkronisasi mandiri';
 
   @override
   String get last_sync => 'Sinkronisasi terakhir pada: ';
@@ -1978,9 +1981,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'Dapatkan M-Extension-Server';
-
-  @override
-  String get get_sync_server => 'Dapatkan Server Sinkronisasi di sini';
 
   @override
   String get undefined => 'Tidak terdefinisi';

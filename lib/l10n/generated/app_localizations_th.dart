@@ -1096,7 +1096,10 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'ซิงค์ความคืบหน้าของคุณระหว่างอุปกรณ์ต่างๆ ผ่านเซิร์ฟเวอร์ที่โฮสต์ด้วยตนเอง ดูข้อมูลเพิ่มเติมได้ที่เซิร์ฟเวอร์ Discord ของเรา';
+      'กรอกที่อยู่เซิร์ฟเวอร์ซิงค์และเข้าสู่ระบบผ่านเบราว์เซอร์เพื่อซิงค์ความคืบหน้าการอ่านระหว่างอุปกรณ์';
+
+  @override
+  String get sync_service => 'ซิงค์ผ่านเซิร์ฟเวอร์ที่โฮสต์เอง';
 
   @override
   String get last_sync => 'การซิงค์ล่าสุดเมื่อ: ';
@@ -1972,9 +1975,6 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'รับ M-Extension-Server';
-
-  @override
-  String get get_sync_server => 'รับเซิร์ฟเวอร์ซิงค์ที่นี่';
 
   @override
   String get undefined => 'ไม่ได้กำหนด';

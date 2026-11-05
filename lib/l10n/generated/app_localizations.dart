@@ -2038,8 +2038,14 @@ abstract class AppLocalizations {
   /// No description provided for @syncing_subtitle.
   ///
   /// In en, this message translates to:
-  /// **'Sync your progress across multiple devices via a self-hosted \nserver. Check out our discord server for more info!'**
+  /// **'Enter your sync server address and sign in through the browser to sync reading progress across devices.'**
   String get syncing_subtitle;
+
+  /// No description provided for @sync_service.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-hosted sync'**
+  String get sync_service;
 
   /// No description provided for @last_sync.
   ///
@@ -3648,12 +3654,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get M-Extension-Server'**
   String get get_m_extension_server;
-
-  /// No description provided for @get_sync_server.
-  ///
-  /// In en, this message translates to:
-  /// **'Get Sync Server here'**
-  String get get_sync_server;
 
   /// No description provided for @undefined.
   ///

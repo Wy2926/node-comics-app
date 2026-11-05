@@ -1087,7 +1087,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get syncing_subtitle =>
-      'セルフホストサーバーを通じて複数デバイス間で進行状況を同期します。詳細はDiscordサーバーをご覧ください！';
+      '同期サーバーのアドレスを入力し、ブラウザーでログインすると、読書の進行状況をデバイス間で同期できます。';
+
+  @override
+  String get sync_service => 'セルフホスト同期';
 
   @override
   String get last_sync => '最終同期日時: ';
@@ -1940,9 +1943,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get get_m_extension_server => 'M-Extension-Serverを入手';
-
-  @override
-  String get get_sync_server => '同期サーバーをここで入手';
 
   @override
   String get undefined => '未定義';
