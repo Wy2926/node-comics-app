@@ -66,9 +66,6 @@ class AboutScreen extends ConsumerWidget {
         onShareLogs: () => _shareLogs(context),
         onGitHub: () =>
             _launchInBrowser(Uri.parse(NodeLaneBrand.repositoryUrl)),
-        onDiscord: () => _launchInBrowser(
-          Uri.parse('https://discord.com/invite/EjfBuYahsP'),
-        ),
       );
     }
     return Scaffold(
@@ -87,7 +84,6 @@ class AboutScreen extends ConsumerWidget {
                     children: [
                       const Divider(),
                       ListTile(
-                        onTap: () {},
                         title: Text(l10n.version),
                         subtitle: Text(
                           l10n.beta_version(data.version),
@@ -153,46 +149,13 @@ class AboutScreen extends ConsumerWidget {
                           onTap: () => _shareLogs(context),
                           title: Text(l10n.share_app_logs),
                         ),
-                      // ListTile(
-                      //   onTap: () {},
-                      //   title: const Text("What's news"),
-                      // ),
-                      // ListTile(
-                      //   onTap: () {},
-                      //   title: const Text('Help translation'),
-                      // ),
-                      // ListTile(
-                      //   onTap: () {},
-                      //   title: const Text('Privacy policy'),
-                      // ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              _launchInBrowser(
-                                Uri.parse(NodeLaneBrand.repositoryUrl),
-                              );
-                            },
-                            icon: const Padding(
-                              padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                              child: FaIcon(FontAwesomeIcons.github),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _launchInBrowser(
-                                Uri.parse(
-                                  'https://discord.com/invite/EjfBuYahsP',
-                                ),
-                              );
-                            },
-                            icon: const Padding(
-                              padding: EdgeInsets.only(right: 5),
-                              child: FaIcon(FontAwesomeIcons.discord),
-                            ),
-                          ),
-                        ],
+                      ListTile(
+                        leading: const FaIcon(FontAwesomeIcons.github),
+                        title: const Text('GitHub'),
+                        subtitle: const Text(NodeLaneBrand.repository),
+                        onTap: () => _launchInBrowser(
+                          Uri.parse(NodeLaneBrand.repositoryUrl),
+                        ),
                       ),
                     ],
                   ),

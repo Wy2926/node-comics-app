@@ -200,12 +200,6 @@ abstract class AppLocalizations {
   /// **'Diagnostics and logs'**
   String get app_diagnostics;
 
-  /// No description provided for @app_upstream_community.
-  ///
-  /// In en, this message translates to:
-  /// **'Upstream community'**
-  String get app_upstream_community;
-
   /// No description provided for @library.
   ///
   /// In en, this message translates to:
@@ -3808,7 +3802,7 @@ abstract class AppLocalizations {
   /// No description provided for @unsupported_repo.
   ///
   /// In en, this message translates to:
-  /// **'You\'ve tried to add an unsupported repository. Please check the discord server for support!'**
+  /// **'Unable to add this source repository. Check the repository address or contact its maintainer.'**
   String get unsupported_repo;
 
   /// No description provided for @end_of_chapter.

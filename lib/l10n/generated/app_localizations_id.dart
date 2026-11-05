@@ -49,9 +49,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'Perpustakaan';
 
   @override
@@ -2065,7 +2062,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'Anda telah mencoba menambahkan repositori yang tidak didukung. Silakan periksa server discord untuk mendapatkan dukungan!';
+      'Repositori sumber ini tidak dapat ditambahkan. Periksa alamat repositori atau hubungi pengelolanya.';
 
   @override
   String get end_of_chapter => 'Akhir bab';

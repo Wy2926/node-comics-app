@@ -49,9 +49,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'Biblioteca';
 
   @override
@@ -2078,7 +2075,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'Tentou adicionar um repositório não suportado. Por favor, verifique o servidor discord para obter suporte!';
+      'Não foi possível adicionar este repositório de fontes. Verifica o endereço do repositório ou contacta quem o mantém.';
 
   @override
   String get end_of_chapter => 'Fim do capítulo';
@@ -6871,7 +6868,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get unsupported_repo =>
-      'Você tentou adicionar um repositório sem suporte. Consulte o servidor do Discord para obter suporte!';
+      'Não foi possível adicionar este repositório de fontes. Verifique o endereço do repositório ou entre em contato com seu responsável.';
 
   @override
   String get end_of_chapter => 'Fim do capítulo';

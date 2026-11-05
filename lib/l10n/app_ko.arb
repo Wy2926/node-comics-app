@@ -749,7 +749,7 @@
   "load_own_subtitles": "내 자막 불러오기...",
   "search_subtitles": "온라인에서 자막 검색...",
   "extension_notes": "참고사항: {notes}",
-  "unsupported_repo": "지원되지 않는 저장소를 추가하려고 했습니다. 도움이 필요하면 디스코드 서버를 확인하세요!",
+  "unsupported_repo": "이 소스 저장소를 추가할 수 없습니다. 저장소 주소를 확인하거나 관리자에게 문의하세요.",
   "end_of_chapter": "이번 화 끝",
   "chapter_completed": "화 완료됨",
   "continue_to_next_chapter": "계속 스크롤하여 다음 화 읽기",

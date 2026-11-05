@@ -29,7 +29,6 @@ class MobileAboutScreen extends StatefulWidget {
     required this.updateBuilder,
     required this.onShareLogs,
     required this.onGitHub,
-    required this.onDiscord,
     this.onOnboarding,
   });
   final AsyncValue<PackageInfo> packageInfo;
@@ -39,7 +38,7 @@ class MobileAboutScreen extends StatefulWidget {
   final ValueChanged<bool> onAutoCheckChanged;
   final Future<void> Function(bool) onLogsChanged;
   final int Function() reportCount;
-  final Future<void> Function() onReports, onShareLogs, onGitHub, onDiscord;
+  final Future<void> Function() onReports, onShareLogs, onGitHub;
   final Future<UpdateInfo?> Function() onCheck;
   final Widget Function(UpdateInfo, VoidCallback onDismiss) updateBuilder;
   @override
@@ -196,12 +195,6 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                       icon: icons.manga,
                       onTap: widget.onOnboarding,
                     ),
-                  NodeLaneRow(
-                    title: l.app_upstream_community,
-                    subtitle: 'Mangayomi · Discord',
-                    icon: icons.chat,
-                    onTap: () => _run(widget.onDiscord),
-                  ),
                 ],
               ),
               NodeLaneDisclosure(

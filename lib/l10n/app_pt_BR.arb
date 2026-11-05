@@ -440,7 +440,7 @@
   "genre_search_source": "Explorar na fonte",
   "source_not_added": "A fonte não está instalada!",
   "load_own_subtitles": "Carregar suas próprias legendas...",
-  "unsupported_repo": "Você tentou adicionar um repositório sem suporte. Consulte o servidor do Discord para obter suporte!",
+  "unsupported_repo": "Não foi possível adicionar este repositório de fontes. Verifique o endereço do repositório ou entre em contato com seu responsável.",
   "downloaded_only": "Apenas baixados",
   "downloaded_only_description": "Mostrar apenas entradas baixadas na sua biblioteca",
   "concurrent_downloads": "Downloads simultâneos",

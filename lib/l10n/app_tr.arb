@@ -440,7 +440,7 @@
   "genre_search_source": "Kaynağı keşfet",
   "source_not_added": "Kaynak yüklenmedi!",
   "load_own_subtitles": "Kendi altyazılarınızı yükleyin...",
-  "unsupported_repo": "Desteklenmeyen bir depo eklemeye çalıştınız. Lütfen destek için discord sunucusunu kontrol edin!",
+  "unsupported_repo": "Bu kaynak deposu eklenemedi. Depo adresini kontrol edin veya deponun bakımını yapan kişiyle iletişime geçin.",
   "downloaded_only": "Sadece indirilmiş",
   "downloaded_only_description": "Kütüphanenizde yalnızca indirilmiş girişleri göster",
   "concurrent_downloads": "Eş zamanlı indirmeler",

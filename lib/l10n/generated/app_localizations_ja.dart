@@ -49,9 +49,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'ライブラリ';
 
   @override
@@ -2025,7 +2022,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'サポートされていないリポジトリを追加しようとしています。サポートについてはDiscordサーバーを確認してください！';
+      'このソースリポジトリを追加できませんでした。リポジトリのアドレスを確認するか、管理者にお問い合わせください。';
 
   @override
   String get end_of_chapter => 'チャプターの終わり';

@@ -49,9 +49,6 @@ class AppLocalizationsAs extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'পুথিভঁৰাল';
 
   @override
@@ -2059,7 +2056,7 @@ class AppLocalizationsAs extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'আপুনি এক অসমৰ্থিত ৰিপজিটৰী যোগ কৰিবলৈ চেষ্টা কৰিছে। সমৰ্থনৰ বাবে ডিস্ক\'ৰ্ড চাৰ্ভাৰ পৰীক্ষা কৰক!';
+      'এই উৎস ৰিপজিটৰী যোগ কৰিব পৰা নগ’ল। ৰিপজিটৰীৰ ঠিকনা পৰীক্ষা কৰক বা ইয়াৰ ৰক্ষণাবেক্ষণকাৰীৰ সৈতে যোগাযোগ কৰক।';
 
   @override
   String get end_of_chapter => 'অধ্যায়ৰ শেষ';

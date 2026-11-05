@@ -49,9 +49,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'المكتبة';
 
   @override
@@ -2071,7 +2068,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'لقد حاولت إضافة مستودع غير مدعوم. يرجى التحقق من خادم الخلاف للحصول على الدعم!';
+      'تعذّرت إضافة مستودع المصادر هذا. تحقّق من عنوان المستودع أو تواصل مع القائم على صيانته.';
 
   @override
   String get end_of_chapter => 'نهاية الفصل';

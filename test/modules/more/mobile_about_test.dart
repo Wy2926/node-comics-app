@@ -124,7 +124,6 @@ void main() {
     ),
     onShareLogs: onShare ?? () async {},
     onGitHub: () async {},
-    onDiscord: () async {},
   );
 
   testWidgets(
@@ -287,9 +286,9 @@ void main() {
       expect(logs, isFalse);
       expect(autoCheck, isTrue);
       expect(find.text('Share app logs'), findsNothing);
-      final discord = find.text('Mangayomi · Discord');
-      await reveal(tester, discord, delta: -200);
-      expect(tester.getRect(discord).bottom, lessThan(706));
+      final repository = find.text('Wy2926/node-comics-app');
+      await reveal(tester, repository, delta: -200);
+      expect(tester.getRect(repository).bottom, lessThan(706));
       expect(tester.takeException(), isNull);
     },
   );

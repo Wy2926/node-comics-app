@@ -419,7 +419,7 @@
   "load_own_subtitles": "独自の字幕を読み込む...",
   "search_subtitles": "オンラインで字幕を検索...",
   "extension_notes": "注：{notes}",
-  "unsupported_repo": "サポートされていないリポジトリを追加しようとしています。サポートについてはDiscordサーバーを確認してください！",
+  "unsupported_repo": "このソースリポジトリを追加できませんでした。リポジトリのアドレスを確認するか、管理者にお問い合わせください。",
   "end_of_chapter": "チャプターの終わり",
   "chapter_completed": "チャプター完了",
   "continue_to_next_chapter": "次のチャプターを読むにはスクロールを続けてください",

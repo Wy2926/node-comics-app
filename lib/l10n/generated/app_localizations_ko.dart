@@ -49,9 +49,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => '보관함';
 
   @override
@@ -2020,7 +2017,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      '지원되지 않는 저장소를 추가하려고 했습니다. 도움이 필요하면 디스코드 서버를 확인하세요!';
+      '이 소스 저장소를 추가할 수 없습니다. 저장소 주소를 확인하거나 관리자에게 문의하세요.';
 
   @override
   String get end_of_chapter => '이번 화 끝';

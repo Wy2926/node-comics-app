@@ -49,9 +49,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'पुस्तकालय';
 
   @override
@@ -2063,7 +2060,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'आपने एक असमर्थित रिपोजिटरी जोड़ने का प्रयास किया है। कृपया समर्थन के लिए डिस्कॉर्ड सर्वर की जांच करें!';
+      'यह स्रोत रिपॉजिटरी जोड़ी नहीं जा सकी। रिपॉजिटरी का पता जाँचें या उसके रखरखावकर्ता से संपर्क करें।';
 
   @override
   String get end_of_chapter => 'अध्याय का अंत';

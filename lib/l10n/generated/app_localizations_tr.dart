@@ -49,9 +49,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'Kütüphane';
 
   @override
@@ -2069,7 +2066,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'Desteklenmeyen bir depo eklemeye çalıştınız. Lütfen destek için discord sunucusunu kontrol edin!';
+      'Bu kaynak deposu eklenemedi. Depo adresini kontrol edin veya deponun bakımını yapan kişiyle iletişime geçin.';
 
   @override
   String get end_of_chapter => 'Bölüm sonu';

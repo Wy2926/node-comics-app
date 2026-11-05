@@ -49,9 +49,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'ชั้นหนังสือ';
 
   @override
@@ -2059,7 +2056,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'คุณพยายามเพิ่มที่เก็บข้อมูลที่ไม่รองรับ โปรดตรวจสอบเซิร์ฟเวอร์ Discord เพื่อรับการสนับสนุน!';
+      'ไม่สามารถเพิ่มคลังแหล่งข้อมูลนี้ได้ โปรดตรวจสอบที่อยู่ของคลังหรือติดต่อผู้ดูแล';
 
   @override
   String get end_of_chapter => 'จบตอน';

@@ -46,9 +46,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get app_diagnostics => '诊断与日志';
 
   @override
-  String get app_upstream_community => '上游社区';
-
-  @override
   String get library => '书架';
 
   @override
@@ -2000,7 +1997,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get unsupported_repo => '您试图添加不支持的版本库。请查看 discord 服务器以获得支持！';
+  String get unsupported_repo => '无法添加此来源仓库。请检查仓库地址，或联系该仓库的维护者。';
 
   @override
   String get end_of_chapter => '章节结束';

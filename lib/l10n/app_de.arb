@@ -687,7 +687,7 @@
   "sources_cleared": "Quellen gelöscht!",
   "add_repo": "Repository hinzufügen?",
   "extension_notes": "Hinweis: {notes}",
-  "unsupported_repo": "Du hast gerade versucht, ein ungültiges Repository hinzuzufügen. Bitte schau mal beim Discord Server vorbei!",
+  "unsupported_repo": "Dieses Quellen-Repository konnte nicht hinzugefügt werden. Prüfe die Adresse oder kontaktiere die Person, die das Repository betreut.",
   "end_of_chapter": "Ende des Kapitels",
   "chapter_completed": "Kapitel abgeschlossen",
   "continue_to_next_chapter": "Scrolle weiter, um an das nächste Kapitel zu gelangen",

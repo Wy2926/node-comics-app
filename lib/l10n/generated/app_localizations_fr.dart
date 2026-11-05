@@ -49,9 +49,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get app_diagnostics => 'Diagnostics and logs';
 
   @override
-  String get app_upstream_community => 'Upstream community';
-
-  @override
   String get library => 'Bibliothèque';
 
   @override
@@ -2084,7 +2081,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get unsupported_repo =>
-      'Vous avez essayé d\'ajouter un dépôt qui n\'est pas pris en charge. Veuillez consulter le serveur discord pour obtenir de l\'aide!';
+      'Impossible d’ajouter ce dépôt de sources. Vérifiez son adresse ou contactez la personne qui le maintient.';
 
   @override
   String get end_of_chapter => 'Fin du chapitre';
