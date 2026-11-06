@@ -1,15 +1,33 @@
 name: Build & Release
+run-name: Release ${{ inputs.tag }} (${{ inputs.platform }})
 
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, e.g. v0.1.0
+        required: true
+        type: string
+      platform:
+        description: Platform to build and publish
+        required: true
+        type: choice
+        default: macos
+        options:
+          - macos
+          - ios
+          - windows
+          - linux
+          - android
+          - android-tv
+          - all
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}
-  cancel-in-progress: true
+  group: nodelane-release-${{ inputs.tag }}
+  cancel-in-progress: false
 
 env:
+  RELEASE_TAG: ${{ inputs.tag }}
   ZSIGN_VERSION: "0.7"
 
 jobs:
@@ -18,19 +36,29 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      commit: ${{ steps.version.outputs.commit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
 
       - name: Match release tag to app version
+        id: version
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_PLATFORM: ${{ inputs.platform }}
         run: |
           python3 - <<'PY'
           import os
           import re
+          import subprocess
           from pathlib import Path
 
+          if os.environ['RELEASE_PLATFORM'] not in {
+              'macos', 'ios', 'windows', 'linux', 'android', 'android-tv', 'all',
+          }:
+              raise SystemExit('Select a supported release platform')
           match = re.search(
               r'^version:\s*((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))\+([1-9]\d*)\s*$',
               Path('pubspec.yaml').read_text(encoding='utf-8'),
@@ -42,17 +70,23 @@ jobs:
           tag = os.environ['RELEASE_TAG']
           if tag != f'v{version}':
               raise SystemExit(f'Release tag {tag} does not match app version v{version}')
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f'commit={commit}\n')
           print(f'Validated NodeLane {version}+{build} for {tag}')
           PY
 
   build-and-release-android-apks:
     needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'android'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -97,27 +131,30 @@ jobs:
           export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
           flutter build apk --release --split-per-abi --verbose
           cd build/app/outputs/flutter-apk
-          mv app-arm64-v8a-release.apk nodelane-comics-${{ github.ref_name }}-android-arm64-v8a.apk
-          mv app-armeabi-v7a-release.apk nodelane-comics-${{ github.ref_name }}-android-armeabi-v7a.apk
-          mv app-x86_64-release.apk nodelane-comics-${{ github.ref_name }}-android-x86_64.apk
+          mv app-arm64-v8a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-arm64-v8a.apk
+          mv app-armeabi-v7a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-armeabi-v7a.apk
+          mv app-x86_64-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-x86_64.apk
 
       - name: upload artifact android apks
         uses: actions/upload-artifact@v4
         with:
-          name: nodelane-comics-${{ github.ref_name }}-android
-          path: "build/app/outputs/flutter-apk/nodelane-comics-${{ github.ref_name }}-android-*.apk"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-android
+          path: "build/app/outputs/flutter-apk/nodelane-comics-${{ env.RELEASE_TAG }}-android-*.apk"
           if-no-files-found: error
 
   # Android TV uses the shared NodeLane icon and localized Leanback banners.
   # Keep the separate artifact names used by the TV update selector.
   build-and-release-android-tv:
     needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'android-tv'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -165,25 +202,28 @@ jobs:
           export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
           flutter build apk --release --split-per-abi --verbose
           cd build/app/outputs/flutter-apk
-          mv app-arm64-v8a-release.apk nodelane-comics-${{ github.ref_name }}-android-tv-arm64-v8a.apk
-          mv app-armeabi-v7a-release.apk nodelane-comics-${{ github.ref_name }}-android-tv-armeabi-v7a.apk
-          mv app-x86_64-release.apk nodelane-comics-${{ github.ref_name }}-android-tv-x86_64.apk
+          mv app-arm64-v8a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-arm64-v8a.apk
+          mv app-armeabi-v7a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-armeabi-v7a.apk
+          mv app-x86_64-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-x86_64.apk
 
       - name: upload artifact android tv apks
         uses: actions/upload-artifact@v4
         with:
-          name: nodelane-comics-${{ github.ref_name }}-android-tv
-          path: "build/app/outputs/flutter-apk/nodelane-comics-${{ github.ref_name }}-android-tv-*.apk"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-android-tv
+          path: "build/app/outputs/flutter-apk/nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-*.apk"
           if-no-files-found: error
 
   build-and-release-ios-ipa:
     needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'ios'
     permissions:
       contents: write
     runs-on: macos-26
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -228,23 +268,26 @@ jobs:
           mv build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
           ./zsign -f -k ./certificate.p12 -p "$P12_PASSWORD" -m ./profile.mobileprovision ./build/ios/iphoneos/Payload/Runner.app
           cd build/ios/iphoneos
-          zip -r nodelane-comics-${{ github.ref_name }}-ios.ipa Payload
+          zip -r nodelane-comics-${{ env.RELEASE_TAG }}-ios.ipa Payload
 
       - name: Upload artifact iOS IPA
         uses: actions/upload-artifact@v4
         with:
-          name: nodelane-comics-${{ github.ref_name }}-ios
-          path: "build/ios/iphoneos/nodelane-comics-${{ github.ref_name }}-ios.ipa"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-ios
+          path: "build/ios/iphoneos/nodelane-comics-${{ env.RELEASE_TAG }}-ios.ipa"
           if-no-files-found: error
 
   build-and-release-macos-dmg:
     needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'macos'
     permissions:
       contents: write
     runs-on: macos-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -268,18 +311,21 @@ jobs:
       - name: upload artifact macos dmg
         uses: actions/upload-artifact@v4
         with:
-          name: nodelane-comics-${{ github.ref_name }}-macos
-          path: "build/macos/dmg/nodelane-comics-${{ github.ref_name }}-macos.dmg"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-macos
+          path: "build/macos/dmg/nodelane-comics-${{ env.RELEASE_TAG }}-macos.dmg"
           if-no-files-found: error
 
   build-and-release-windows-exe_zip:
     needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'windows'
     permissions:
       contents: write
     runs-on: windows-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -304,33 +350,36 @@ jobs:
           # Rename and move installer exe
           $installer = Get-ChildItem -Path "build/windows/x64/installer/Release/*.exe" | Select-Object -First 1
           if ($installer) {
-            Move-Item -Path $installer.FullName -Destination "dist/nodelane-comics-${{ github.ref_name }}-windows.exe" -Force
+            Move-Item -Path $installer.FullName -Destination "dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.exe" -Force
           } else {
             Write-Error "Installer executable not found in build/windows/x64/installer/Release/"
           }
 
           # Create zip of runner release
-          $tempZip = Join-Path $env:RUNNER_TEMP "nodelane-comics-${{ github.ref_name }}-windows.zip"
+          $tempZip = Join-Path $env:RUNNER_TEMP "nodelane-comics-${{ env.RELEASE_TAG }}-windows.zip"
           Compress-Archive -Path "build/windows/x64/runner/Release/*" -DestinationPath $tempZip -Force
-          Move-Item -Path $tempZip -Destination "dist/nodelane-comics-${{ github.ref_name }}-windows.zip" -Force
+          Move-Item -Path $tempZip -Destination "dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.zip" -Force
 
       - name: upload artifact windows exe_zip
         uses: actions/upload-artifact@v4
         with:
-          name: nodelane-comics-${{ github.ref_name }}-windows-zip
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-windows-zip
           path: |
-            dist/nodelane-comics-${{ github.ref_name }}-windows.exe
-            dist/nodelane-comics-${{ github.ref_name }}-windows.zip
+            dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.exe
+            dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.zip
           if-no-files-found: error
 
   build-and-release-linux-zip_AppImage_RPM:
     needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'linux'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: Install dependencies
         run: |
@@ -360,7 +409,7 @@ jobs:
         uses: thedoctor0/zip-release@main
         with:
           type: "zip"
-          filename: nodelane-comics-${{ github.ref_name }}-linux.zip
+          filename: nodelane-comics-${{ env.RELEASE_TAG }}-linux.zip
           directory: build/linux/x64/release/bundle
 
       - name: Prepare Arch Linux recipe
@@ -412,7 +461,7 @@ jobs:
       - name: Create AppImage
         run: |
           # Move Zip-file outside the bundle dir to avoid including it in the AppImage
-          mv build/linux/x64/release/bundle/nodelane-comics-${{ github.ref_name }}-linux.zip build/linux/x64/release/
+          mv build/linux/x64/release/bundle/nodelane-comics-${{ env.RELEASE_TAG }}-linux.zip build/linux/x64/release/
           # Create fresh AppDir structure
           rm -rf AppDir
           mkdir -p AppDir/usr/bin
@@ -470,7 +519,7 @@ jobs:
             --executable AppDir/usr/bin/nodelane-comics \
             $EXCLUDE_ARGS \
             --output appimage
-          mv ./*.AppImage build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.AppImage
+          mv ./*.AppImage build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.AppImage
 
       - name: Create RPM Package
         run: |
@@ -521,27 +570,30 @@ jobs:
           EOF
 
           rpmbuild --define "_topdir $(pwd)/rpm_build" -ba rpm_build/SPECS/nodelane-comics.spec
-          mv rpm_build/RPMS/x86_64/*.rpm build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.rpm
+          mv rpm_build/RPMS/x86_64/*.rpm build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.rpm
 
       - name: upload artifact linux zip
         uses: actions/upload-artifact@v4
         with:
-          name: nodelane-comics-${{ github.ref_name }}-linux-zip
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-linux-zip
           path: |
-            build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.zip
-            build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.AppImage
-            build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-linux.rpm
-            build/linux/x64/release/nodelane-comics-${{ github.ref_name }}-archlinux.tar.gz
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.zip
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.AppImage
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.rpm
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-archlinux.tar.gz
           if-no-files-found: error
 
   build-and-release-linux-deb:
     needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'linux'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: Install dependencies
         run: |
@@ -578,20 +630,26 @@ jobs:
           APP_VERSION=$(sed -n 's/^version: //p' pubspec.yaml)
           INSTALLED_SIZE=$(du -sk "$PACKAGE_DIR/opt" "$PACKAGE_DIR/usr" | awk '{size += $1} END {print size}')
           printf 'Version: %s\nInstalled-Size: %s\n' "$APP_VERSION" "$INSTALLED_SIZE" >> "$PACKAGE_DIR/DEBIAN/control"
-          dpkg-deb --build --root-owner-group "$PACKAGE_DIR" dist/nodelane-comics-${{ github.ref_name }}-linux.deb
+          dpkg-deb --build --root-owner-group "$PACKAGE_DIR" dist/nodelane-comics-${{ env.RELEASE_TAG }}-linux.deb
 
       - name: upload artifact linux deb
         uses: actions/upload-artifact@v4
         with:
-          name: nodelane-comics-${{ github.ref_name }}-linux-deb
-          path: dist/nodelane-comics-${{ github.ref_name }}-linux.deb
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-linux-deb
+          path: dist/nodelane-comics-${{ env.RELEASE_TAG }}-linux.deb
           if-no-files-found: error
 
   publish-release:
+    if: >-
+      ${{ !cancelled() &&
+          needs.validate-release-version.result == 'success' &&
+          !contains(needs.*.result, 'failure') &&
+          !contains(needs.*.result, 'cancelled') }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
     needs:
+      - validate-release-version
       - build-and-release-android-apks
       - build-and-release-android-tv
       - build-and-release-ios-ipa
@@ -600,22 +658,41 @@ jobs:
       - build-and-release-linux-zip_AppImage_RPM
       - build-and-release-linux-deb
     steps:
-      - name: Download all build artifacts
+      - name: Download selected platform artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: nodelane-comics-${{ github.ref_name }}-*
+          pattern: nodelane-comics-${{ env.RELEASE_TAG }}-*
           merge-multiple: true
           path: release-assets
 
-      - name: Publish GitHub Release
+      - name: Upload assets to GitHub Release
+        id: release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "release-assets/nodelane-comics-${{ github.ref_name }}-*"
+          tag: ${{ env.RELEASE_TAG }}
+          artifacts: "release-assets/nodelane-comics-${{ env.RELEASE_TAG }}-*"
           generateReleaseNotes: true
           allowUpdates: true
+          artifactErrorsFailBuild: true
+          draft: true
+          omitDraftDuringUpdate: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+
+      - name: Publish after successful upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ steps.release.outputs.id }}
+        run: |
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
+            -F draft=false -f make_latest=legacy --silent
 
   ios-source-build:
+    if: >-
+      ${{ !cancelled() &&
+          needs.publish-release.result == 'success' &&
+          needs.build-and-release-ios-ipa.result == 'success' }}
     permissions:
       contents: write
-    needs: publish-release
+    needs: [publish-release, build-and-release-ios-ipa]
     uses: ./.github/workflows/update_sideloading_source.yml

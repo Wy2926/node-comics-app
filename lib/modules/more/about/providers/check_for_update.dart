@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -40,7 +41,7 @@ Future<UpdateInfo?> checkForUpdate(Ref ref) async {
   return _getUpdateIfAvailable();
 }
 
-/// Compares the running version against the latest release.
+/// Compares the running version against the latest release for this platform.
 /// Returns [UpdateInfo] when an update is available and assets for the current
 /// platform are ready, or `null` when already up-to-date or assets are still building.
 Future<UpdateInfo?> _getUpdateIfAvailable() async {
@@ -55,25 +56,22 @@ Future<UpdateInfo?> _getUpdateIfAvailable() async {
   if (compareVersions(info.version, latest.$1) >= 0) {
     return null;
   }
-  if (!_hasPlatformAssets(latest.$4)) {
-    return null;
-  }
   return latest;
 }
 
 /// Validates that release assets for the current platform are present.
 /// Avoids notifying users while CI build workflows are still running.
-bool _hasPlatformAssets(List<dynamic> assets) {
+bool _hasPlatformAssets(
+  List<String> assets, {
+  required String platform,
+  required bool androidTv,
+}) {
   if (assets.isEmpty) return false;
 
-  final assetUrls = assets
-      .whereType<String>()
-      .map((url) => url.toLowerCase())
-      .toList();
-  if (assetUrls.isEmpty) return false;
+  final assetUrls = assets.map((url) => url.toLowerCase()).toList();
 
-  if (Platform.isAndroid) {
-    if (isTv) {
+  if (platform == 'android') {
+    if (androidTv) {
       return assetUrls.any(
         (url) => url.endsWith('.apk') && url.contains('android-tv'),
       );
@@ -81,18 +79,18 @@ bool _hasPlatformAssets(List<dynamic> assets) {
     return assetUrls.any(
       (url) => url.endsWith('.apk') && !url.contains('android-tv'),
     );
-  } else if (Platform.isIOS) {
+  } else if (platform == 'ios') {
     return assetUrls.any((url) => url.endsWith('.ipa'));
-  } else if (Platform.isMacOS) {
+  } else if (platform == 'macos') {
     return assetUrls.any((url) => url.endsWith('.dmg') || url.endsWith('.pkg'));
-  } else if (Platform.isWindows) {
+  } else if (platform == 'windows') {
     return assetUrls.any(
       (url) =>
           url.endsWith('.exe') ||
           url.endsWith('.msix') ||
           (url.endsWith('.zip') && url.contains('windows')),
     );
-  } else if (Platform.isLinux) {
+  } else if (platform == 'linux') {
     return assetUrls.any(
       (url) =>
           url.endsWith('.appimage') ||
@@ -108,47 +106,73 @@ bool _hasPlatformAssets(List<dynamic> assets) {
 Future<UpdateInfo?> performManualUpdateCheck() => _getUpdateIfAvailable();
 
 @visibleForTesting
-Future<UpdateInfo?> fetchLatestAppRelease({http.Client? client}) async {
+Future<UpdateInfo?> fetchLatestAppRelease({
+  http.Client? client,
+  String? platform,
+  bool? androidTv,
+}) async {
   try {
     final request =
         client ?? MClient.init(reqcopyWith: {'useDartHttpClient': true});
-    final res = await request
-        .get(
-          Uri.parse(NodeLaneBrand.releasesApi),
-          headers: {'Accept': 'application/vnd.github.v3+json'},
-        )
-        .timeout(const Duration(seconds: 20));
-    if (res.statusCode == 404) return null;
-    if (res.statusCode != 200) {
-      if (kDebugMode) {
-        log('GitHub releases check failed with status: ${res.statusCode}');
+    final target = platform ?? Platform.operatingSystem;
+    final tv = androidTv ?? (target == 'android' && isTv);
+    final timer = Stopwatch()..start();
+    final versionPattern = RegExp(
+      r'^[vV]?((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$',
+    );
+    UpdateInfo? latest;
+    for (var page = 1; ; page++) {
+      final remaining = const Duration(seconds: 20) - timer.elapsed;
+      if (remaining <= Duration.zero) {
+        throw TimeoutException('Release check timed out');
       }
-      throw const FormatException('Release check failed');
-    }
-    final release = jsonDecode(res.body) as Map<String, dynamic>;
-    final tagName =
-        (release['tag_name'] as String?) ?? (release['name'] as String?) ?? '';
-    final cleanVersion = tagName
-        .trim()
-        .replaceFirst(RegExp(r'^[vV]'), '')
-        .split(RegExp(r'[-+]'))
-        .first;
-    if (cleanVersion.isEmpty) {
-      throw const FormatException('Missing release version');
-    }
+      final res = await request
+          .get(
+            Uri.parse(NodeLaneBrand.releasesApi)
+                .replace(queryParameters: {'per_page': '100', 'page': '$page'}),
+            headers: {'Accept': 'application/vnd.github+json'},
+          )
+          .timeout(remaining);
+      if (res.statusCode == 404 && page == 1) return null;
+      if (res.statusCode != 200) {
+        throw const FormatException('Release check failed');
+      }
+      final releases = jsonDecode(res.body);
+      if (releases is! List) {
+        throw const FormatException('Expected a release list');
+      }
+      for (final release in releases) {
+        if (release is! Map<String, dynamic>) {
+          throw const FormatException('Invalid release');
+        }
+        if (release['draft'] == true || release['prerelease'] == true) continue;
+        final version = versionPattern
+            .firstMatch(release['tag_name'] as String? ?? '')
+            ?.group(1);
+        if (version == null) continue;
 
-    final body = (release['body'] as String?) ?? '';
-    final htmlUrl = (release['html_url'] as String?) ?? '';
-    final rawAssets = release['assets'] as List<dynamic>? ?? [];
-    final assets = rawAssets
-        .map(
-          (asset) => (asset as Map<String, dynamic>)['browser_download_url']
-              ?.toString(),
-        )
-        .whereType<String>()
-        .toList();
+        final rawAssets = release['assets'] as List<dynamic>? ?? [];
+        final assets = rawAssets
+            .where((asset) => asset['state'] == 'uploaded')
+            .map((asset) => asset['browser_download_url'] as String?)
+            .whereType<String>()
+            .toList();
+        if (!_hasPlatformAssets(assets, platform: target, androidTv: tv)) {
+          continue;
+        }
+        // Releases may be published per platform or backported out of order.
+        if (latest == null || compareVersions(version, latest.$1) > 0) {
+          latest = (
+            version,
+            (release['body'] as String?) ?? '',
+            (release['html_url'] as String?) ?? '',
+            assets,
+          );
+        }
+      }
 
-    return (cleanVersion, body, htmlUrl, assets);
+      if (releases.length < 100) return latest;
+    }
   } catch (e, st) {
     if (kDebugMode) {
       log('Error fetching latest release: $e\n$st');

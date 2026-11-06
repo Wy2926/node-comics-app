@@ -53,6 +53,8 @@ flutter build macos --release
 python3 -B tool/package_macos_dmg.py
 ```
 
+源码与安装包共用本仓库。发行入口为 Actions → **Build & Release**：填写已有的 `v<应用版本>` 标签并选择平台，默认 `macos`；推送标签本身不再触发全平台发布。详细规则及公开下载、iOS 签名的验收边界见[应用更新](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。
+
 ## 既有 NodeLane 能力
 
 同级 `node-comics` 仓库提供现有浏览器插件和翻译后端。设计时先从其 README 导航，按需核对翻译契约、渠道、网页原位翻译和网站适配文档及代码。该仓库作为参考，不随手机 App 构建隐式引入。
