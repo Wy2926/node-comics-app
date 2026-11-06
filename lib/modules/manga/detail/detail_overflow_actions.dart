@@ -28,12 +28,12 @@ Future<void> handleDetailOverflowAction({
   required WidgetRef ref,
   required Manga manga,
   required bool isLocalArchive,
-  required void Function(bool) checkForUpdate,
+  required Future<void> Function() onRefresh,
 }) async {
   final l10n = l10nLocalizations(context)!;
   switch (value) {
     case 0:
-      checkForUpdate(true);
+      await onRefresh();
       break;
     case 1:
       showCategorySelectionDialog(

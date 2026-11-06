@@ -40,6 +40,7 @@ import 'package:mangayomi/utils/riverpod.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_loading.dart';
 
 class MangaDetailView extends ConsumerStatefulWidget {
   final Function(bool) isExtended;
@@ -49,7 +50,8 @@ class MangaDetailView extends ConsumerStatefulWidget {
   final Widget? readingAction;
   final Manga? manga;
   final bool sourceExist;
-  final Function(bool) checkForUpdate;
+  final bool loading;
+  final Future<void> Function() onRefresh;
   final ItemType itemType;
 
   const MangaDetailView({
@@ -61,8 +63,9 @@ class MangaDetailView extends ConsumerStatefulWidget {
     this.readingAction,
     required this.sourceExist,
     required this.manga,
-    required this.checkForUpdate,
+    required this.onRefresh,
     required this.itemType,
+    this.loading = false,
   });
 
   @override
@@ -114,7 +117,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     ref: ref,
     manga: widget.manga!,
     isLocalArchive: isLocalArchive,
-    checkForUpdate: widget.checkForUpdate,
+    onRefresh: widget.onRefresh,
   );
 
   @override
@@ -166,7 +169,10 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
             return ErrorText(error);
           },
           loading: () {
-            return _buildWidget(chapters: widget.manga!.chapters.toList());
+            return _buildWidget(
+              chapters: widget.manga!.chapters.toList(),
+              catalogLoading: true,
+            );
           },
         ),
       ),
@@ -191,7 +197,11 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     ref.read(processDownloadsProvider());
   }
 
-  Widget _buildWidget({required List<Chapter> chapters}) {
+  Widget _buildWidget({
+    required List<Chapter> chapters,
+    bool catalogLoading = false,
+  }) {
+    final loading = widget.loading || catalogLoading;
     final chapterList = ref.watch(chaptersListStateProvider);
     if (isMobile && !isTv) {
       return AbsorbPointer(
@@ -216,6 +226,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
               slivers: [
                 SliverToBoxAdapter(
                   child: MangaInfoHeader(
+                    loading: loading,
                     manga: widget.manga!,
                     isLocalArchive: isLocalArchive,
                     titleDescription: widget.titleDescription!,
@@ -251,7 +262,16 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                     ),
                   ),
                 ),
-                if (chapters.isEmpty)
+                if (chapters.isEmpty && loading)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: NodeLaneTokens.detailGutter,
+                      ),
+                      child: MobileChapterListLoading(),
+                    ),
+                  )
+                else if (chapters.isEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.all(32),

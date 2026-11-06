@@ -29,12 +29,14 @@ enum _DuplicateLibraryAction { addAnyway, migrate }
 class MangaDetailsView extends ConsumerStatefulWidget {
   final Manga manga;
   final bool sourceExist;
-  final Function(bool) checkForUpdate;
+  final bool loading;
+  final Future<void> Function() onRefresh;
   const MangaDetailsView({
     super.key,
     required this.sourceExist,
     required this.manga,
-    required this.checkForUpdate,
+    required this.onRefresh,
+    this.loading = false,
   });
 
   @override
@@ -168,19 +170,43 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     final page = Scaffold(
       floatingActionButton: mobile ? null : _readingAction(false),
       body: MangaDetailView(
+        loading: widget.loading,
         readingAction: mobile ? _readingAction(true) : null,
         titleDescription: mobile
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.manga_author(
-                      (widget.manga.author?.trim().isNotEmpty ?? false)
-                          ? widget.manga.author!
-                          : l10n.unknown,
+                  if (widget.loading &&
+                      !(widget.manga.author?.trim().isNotEmpty ?? false))
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: NodeLaneTokens.space4,
+                      ),
+                      child: NodeLaneSkeleton(
+                        height: NodeLaneTokens.space12,
+                        width: 96,
+                      ),
+                    )
+                  else
+                    Text(
+                      l10n.manga_author(
+                        (widget.manga.author?.trim().isNotEmpty ?? false)
+                            ? widget.manga.author!
+                            : l10n.unknown,
+                      ),
                     ),
-                  ),
-                  Text(getMangaStatusName(widget.manga.status, context)),
+                  if (widget.loading && widget.manga.status == Status.unknown)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: NodeLaneTokens.space4,
+                      ),
+                      child: NodeLaneSkeleton(
+                        height: NodeLaneTokens.space12,
+                        width: 64,
+                      ),
+                    )
+                  else
+                    Text(getMangaStatusName(widget.manga.status, context)),
                   if (!isLocalArchive)
                     Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
@@ -308,7 +334,7 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
           ref.read(isExtendedStateProvider.notifier).update(value);
         },
         sourceExist: widget.sourceExist,
-        checkForUpdate: widget.checkForUpdate,
+        onRefresh: widget.onRefresh,
         itemType: widget.manga.itemType,
       ),
     );

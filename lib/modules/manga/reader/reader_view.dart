@@ -47,6 +47,9 @@ import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
 import 'package:mangayomi/modules/manga/reader/providers/manga_reader_provider.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart'
+    show resolveCoverImage;
+import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_entry_state.dart';
 import 'package:mangayomi/utils/system_ui.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -63,41 +66,59 @@ class MangaReaderView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = l10nLocalizations(context)!;
     final chapterData = ref.watch(mangaReaderProvider(chapterId));
-    if (chapterData.isRefreshing || chapterData.isReloading) {
-      return scaffoldWith(context, const ProgressCenter());
+    final chapter = ref.watch(readerChapterProvider(chapterId)).asData?.value;
+    final manga = chapter?.manga.value;
+    Future<void> retry() async {
+      if (chapter != null) {
+        await ChapterCache().remove(chapter);
+        if (!context.mounted) return;
+        ref.invalidate(getChapterPagesProvider(chapter: chapter));
+      }
+      if (!context.mounted) return;
+      if (chapter == null) ref.invalidate(readerChapterProvider(chapterId));
+      ref.invalidate(mangaReaderProvider(chapterId));
     }
-    return chapterData.when(
-      loading: () => scaffoldWith(context, const ProgressCenter()),
-      error: (error, _) {
-        if (chapterData.isRefreshing || chapterData.isReloading) {
-          return scaffoldWith(context, const ProgressCenter());
-        }
-        return scaffoldWith(
-          context,
-          ErrorState(
-            detail: error.toString(),
-            onRetry: () async {
-              final chapter = await chapterRepository.findById(chapterId);
-              if (chapter != null) {
-                await ChapterCache().remove(chapter);
-                ref.invalidate(getChapterPagesProvider(chapter: chapter));
-              }
-              ref.invalidate(mangaReaderProvider(chapterId));
-            },
-          ),
+
+    Widget entryState({String? failure, Object? error}) {
+      if (isMobile && !isTv) {
+        return MobileReaderEntryState(
+          cover: manga == null ? null : resolveCoverImage(manga, ref),
+          bookTitle: manga?.name,
+          chapterTitle: chapter?.name,
+          failureMessage: failure,
+          onRetry: failure == null ? null : retry,
+          onBack: () {
+            restoreSystemUI();
+            Navigator.of(context).pop();
+          },
         );
-      },
+      }
+      return scaffoldWith(
+        context,
+        failure == null
+            ? const ProgressCenter()
+            : ErrorState(
+                message: failure,
+                detail: error?.toString(),
+                onRetry: retry,
+              ),
+        restoreUi: failure != null,
+      );
+    }
+
+    return chapterData.when(
+      skipLoadingOnRefresh: false,
+      skipLoadingOnReload: false,
+      loading: () => entryState(),
+      error: (error, _) =>
+          entryState(failure: l10n.reader_loading_failed, error: error),
       data: (data) {
         final chapter = data.chapter;
         final model = data.pages;
 
         if (model.pageUrls.isEmpty &&
             !(chapter.manga.value?.isLocalArchive ?? false)) {
-          return scaffoldWith(
-            context,
-            Center(child: Text(l10n.error_no_pages_available)),
-            restoreUi: true,
-          );
+          return entryState(failure: l10n.reader_no_pages);
         }
 
         return MangaChapterPageGallery(

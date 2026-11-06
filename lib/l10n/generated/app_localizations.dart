@@ -8501,6 +8501,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The subtitle service returned an unsupported response or file.'**
   String get subtitle_response_invalid;
+
+  /// No description provided for @detail_loading_chapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading chapters…'**
+  String get detail_loading_chapters;
+
+  /// No description provided for @reader_opening_chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening chapter'**
+  String get reader_opening_chapter;
+
+  /// No description provided for @reader_open_chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Open chapter'**
+  String get reader_open_chapter;
+
+  /// No description provided for @reader_loading_pages.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting chapter images…'**
+  String get reader_loading_pages;
+
+  /// No description provided for @reader_loading_pages_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading will start automatically when ready.'**
+  String get reader_loading_pages_hint;
+
+  /// No description provided for @reader_loading_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this chapter'**
+  String get reader_loading_failed;
+
+  /// No description provided for @reader_loading_retry_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again.'**
+  String get reader_loading_retry_hint;
+
+  /// No description provided for @reader_no_pages.
+  ///
+  /// In en, this message translates to:
+  /// **'No images found for this chapter'**
+  String get reader_no_pages;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/manga_info_header.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_loading.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_actions.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -18,9 +19,11 @@ class DetailOverviewPreview extends StatefulWidget {
     this.onRead = _noop,
     this.onLibrary = _noop,
     this.statusPlaceholder = false,
+    this.loading = false,
   });
   final VoidCallback onRead, onLibrary;
   final bool statusPlaceholder;
+  final bool loading;
   @override
   State<DetailOverviewPreview> createState() => _DetailOverviewPreviewState();
 }
@@ -104,12 +107,12 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                         ),
                         actions: MobileDetailPrimaryActions(
                           reading: FilledButton.icon(
-                            label: const Text('继续阅读'),
+                            label: Text(widget.loading ? '加载章节…' : '继续阅读'),
                             icon: Icon(
                               icons.manga,
                               size: NodeLaneTokens.iconSize,
                             ),
-                            onPressed: widget.onRead,
+                            onPressed: widget.loading ? null : widget.onRead,
                           ),
                           library: NodeLaneSecondaryButton(
                             icon: icons.check,
@@ -161,11 +164,12 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                           children: [
                             Expanded(
                               child: Text(
-                                '章节 · 12',
+                                widget.loading ? '章节' : '章节 · 12',
                                 style: colors.detailSectionTitle,
                               ),
                             ),
                             NodeLaneIconButton(
+                              busy: widget.loading,
                               icon: icons.filter,
                               tooltip: '筛选',
                               onPressed: () {},
@@ -180,29 +184,32 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                       ),
                       sliver: SliverList.list(
                         children: [
-                          for (final title in [
-                            '第12话  海风的回信',
-                            '第11话  潮汐之间',
-                            '第10话  夏末的灯塔',
-                          ])
-                            MobileChapterTile(
-                              title: title,
-                              metadata: '10月28日 · 海岸汉化组',
-                              read: false,
-                              bookmarked: false,
-                              selecting: false,
-                              selected: false,
-                              onTap: () {},
-                              onLongPress: () {},
-                              trailing: SizedBox(
-                                width: 44,
-                                height: 44,
-                                child: Icon(
-                                  icons.download,
-                                  color: colors.accent,
+                          if (widget.loading)
+                            const MobileChapterListLoading()
+                          else
+                            for (final title in [
+                              '第12话  海风的回信',
+                              '第11话  潮汐之间',
+                              '第10话  夏末的灯塔',
+                            ])
+                              MobileChapterTile(
+                                title: title,
+                                metadata: '10月28日 · 海岸汉化组',
+                                read: false,
+                                bookmarked: false,
+                                selecting: false,
+                                selected: false,
+                                onTap: () {},
+                                onLongPress: () {},
+                                trailing: SizedBox(
+                                  width: 44,
+                                  height: 44,
+                                  child: Icon(
+                                    icons.download,
+                                    color: colors.accent,
+                                  ),
                                 ),
                               ),
-                            ),
                         ],
                       ),
                     ),

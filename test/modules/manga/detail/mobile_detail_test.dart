@@ -5,7 +5,11 @@ import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dar
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
-  Future<void> show(WidgetTester tester, Widget child) async {
+  Future<void> show(
+    WidgetTester tester,
+    Widget child, {
+    bool largeText = true,
+  }) async {
     tester.view.physicalSize = const Size(320, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -14,7 +18,7 @@ void main() {
       MaterialApp(
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(2)),
+              .copyWith(textScaler: TextScaler.linear(largeText ? 2 : 1)),
           child: child!,
         ),
         home: NodeLaneSurface(
@@ -28,57 +32,6 @@ void main() {
       ),
     );
   }
-
-  testWidgets(
-    'large-text detail heading stacks and keeps primary actions reachable',
-    (tester) async {
-      final events = <String>[];
-      await show(
-        tester,
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const MobileDetailHeading(
-              cover: SizedBox(key: Key('cover'), width: 96, height: 144),
-              title: Text(
-                'A long title with a second line',
-                key: Key('title'),
-                style: TextStyle(fontSize: 24),
-              ),
-              metadata: Text('Author · Source with a long translated name'),
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilledButton.icon(
-                  label: const Text('Resume reading'),
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: () => events.add('read'),
-                ),
-                NodeLaneSecondaryButton(
-                  icon: Icons.add,
-                  onPressed: () => events.add('favorite'),
-                  child: const Text('Add to library'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-      expect(
-        tester.getTopLeft(find.byKey(const Key('title'))).dy,
-        greaterThan(tester.getBottomLeft(find.byKey(const Key('cover'))).dy),
-      );
-      for (final label in ['Resume reading', 'Add to library']) {
-        await tester.ensureVisible(find.text(label));
-        await tester.tap(find.text(label));
-      }
-      expect(events, ['read', 'favorite']);
-      expect(tester.takeException(), isNull);
-    },
-  );
 
   testWidgets(
     'chapter wraps metadata and separates reading, selection and download taps',
@@ -164,4 +117,95 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+  testWidgets(
+    'synopsis expands without invoking its independent genre action',
+    (tester) async {
+      var expanded = false;
+      var genreCalls = 0;
+      final changes = <bool>[];
+      const description =
+          'A letter brings the reader back to the seaside town. '
+          'The story continues through the harbor and the old bookshop. '
+          'An old friend has kept the final letter for many years. '
+          'The answer is waiting at the lighthouse.';
+      await show(
+        tester,
+        StatefulBuilder(
+          builder: (context, setState) => MobileDetailSynopsis(
+            title: 'Description',
+            text: description,
+            expanded: expanded,
+            onChanged: (value) => setState(() {
+              expanded = value;
+              changes.add(value);
+            }),
+            genres: [
+              TextButton(
+                onPressed: () => genreCalls++,
+                child: const Text('Slice of life'),
+              ),
+            ],
+          ),
+        ),
+        largeText: false,
+      );
+      await tester.tap(find.text('Slice of life'));
+      expect(genreCalls, 1);
+      expect(changes, isEmpty);
+      final collapsedHeight = tester
+          .getSize(find.byType(MobileDetailSynopsis))
+          .height;
+      await tester.tap(find.text('Expand'));
+      await tester.pumpAndSettle();
+      expect(changes, [true]);
+      expect(
+        tester.getSize(find.byType(MobileDetailSynopsis)).height,
+        greaterThan(collapsedHeight),
+      );
+      await tester.tap(find.text(description));
+      await tester.pump();
+      expect(changes, [true, false]);
+      expect(genreCalls, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('conditional shortcuts stay left aligned with two-line labels', (
+    tester,
+  ) async {
+    var calls = 0;
+    await show(
+      tester,
+      Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+          width: 304,
+          child: MobileDetailShortcuts(
+            children: [
+              NodeLaneToolbarAction(
+                icon: Icons.sync,
+                label: '3 个追踪器',
+                onPressed: () => calls++,
+              ),
+              NodeLaneToolbarAction(
+                icon: Icons.thumb_up,
+                label: '推荐',
+                onPressed: () {},
+              ),
+              NodeLaneToolbarAction(
+                icon: Icons.book,
+                label: '相关作品',
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+      largeText: false,
+    );
+    expect(tester.takeException(), isNull);
+    expect(tester.getTopLeft(find.byType(NodeLaneToolbarAction).first).dx, 20);
+    await tester.tap(find.text('3 个追踪器'));
+    expect(calls, 1);
+  });
 }

@@ -4580,4 +4580,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get subtitle_response_invalid => '字幕服务返回了不支持的响应或文件。';
+
+  @override
+  String get detail_loading_chapters => '加载章节…';
+
+  @override
+  String get reader_opening_chapter => '正在打开章节';
+
+  @override
+  String get reader_open_chapter => '打开章节';
+
+  @override
+  String get reader_loading_pages => '正在获取本话图片…';
+
+  @override
+  String get reader_loading_pages_hint => '加载完成后自动进入阅读';
+
+  @override
+  String get reader_loading_failed => '暂时无法加载';
+
+  @override
+  String get reader_loading_retry_hint => '请检查网络后重试';
+
+  @override
+  String get reader_no_pages => '本话暂无可阅读图片';
 }

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_entry_state.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
@@ -44,6 +47,56 @@ void main() {
       ),
     );
   }
+
+  testWidgets('chapter entry retains context and bounds retry while leaving', (
+    tester,
+  ) async {
+    final retry = Completer<void>();
+    var retries = 0, backs = 0;
+    String? failure;
+    late StateSetter change;
+    await mount(
+      tester,
+      StatefulBuilder(
+        builder: (context, setState) {
+          change = setState;
+          return MobileReaderEntryState(
+            bookTitle: 'A long comic title with retained context',
+            chapterTitle: 'Chapter 12 — The letter from the sea',
+            failureMessage: failure,
+            onRetry: () {
+              retries++;
+              return retry.future;
+            },
+            onBack: () => backs++,
+          );
+        },
+      ),
+      height: 800,
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    final title = find.text('A long comic title with retained context');
+    final before = tester.getTopLeft(title);
+    expect(find.text('Getting chapter images…'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Retry'), findsNothing);
+    change(() => failure = 'Could not load this chapter');
+    await tester.pump();
+    expect(tester.getTopLeft(title), before);
+    final button = find.widgetWithText(FilledButton, 'Retry');
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.tap(button);
+    expect(retries, 1);
+    await tester.pump();
+    expect(find.text('Chapter 12 — The letter from the sea'), findsOneWidget);
+    expect(button, findsNothing);
+    await tester.tap(find.byTooltip('Back'));
+    expect(backs, 1);
+    await tester.pumpWidget(const SizedBox.shrink());
+    retry.complete();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'reader chrome keeps page geometry and yields hidden taps and semantics',

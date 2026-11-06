@@ -4837,4 +4837,30 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get subtitle_response_invalid =>
       'The subtitle service returned an unsupported response or file.';
+
+  @override
+  String get detail_loading_chapters => 'Loading chapters…';
+
+  @override
+  String get reader_opening_chapter => 'Opening chapter';
+
+  @override
+  String get reader_open_chapter => 'Open chapter';
+
+  @override
+  String get reader_loading_pages => 'Getting chapter images…';
+
+  @override
+  String get reader_loading_pages_hint =>
+      'Reading will start automatically when ready.';
+
+  @override
+  String get reader_loading_failed => 'Could not load this chapter';
+
+  @override
+  String get reader_loading_retry_hint =>
+      'Check your connection and try again.';
+
+  @override
+  String get reader_no_pages => 'No images found for this chapter';
 }

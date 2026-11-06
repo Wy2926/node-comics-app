@@ -35,6 +35,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_loading.dart';
 
 /// The detail page's info block: cover, title, favourite/webview/tracker
 /// actions, description (collapsible), genre chips and the
@@ -44,6 +45,7 @@ import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dar
 class MangaInfoHeader extends ConsumerStatefulWidget {
   final Manga manga;
   final bool isLocalArchive;
+  final bool loading;
   final Widget titleDescription;
   final Widget action;
   final int chapterLength;
@@ -59,6 +61,7 @@ class MangaInfoHeader extends ConsumerStatefulWidget {
     required this.chapterLength,
     this.readingAction,
     this.onShowFilterMenu,
+    this.loading = false,
   });
 
   @override
@@ -281,8 +284,16 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
         ),
       ),
       actions: MobileDetailPrimaryActions(
-        reading:
-            !ref.watch(isLongPressedStateProvider) && widget.chapterLength > 0
+        reading: widget.loading && widget.chapterLength == 0
+            ? FilledButton.icon(
+                onPressed: null,
+                icon: Icon(
+                  NodeLaneIcons.of(context).manga,
+                  size: NodeLaneTokens.iconSize,
+                ),
+                label: Text(l10n.detail_loading_chapters),
+              )
+            : !ref.watch(isLongPressedStateProvider) && widget.chapterLength > 0
             ? widget.readingAction
             : null,
         library: widget.action,
@@ -299,6 +310,8 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                 for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
               ],
             )
+          : widget.loading
+          ? const MobileDetailSynopsisLoading()
           : null,
       more: NodeLaneDisclosure(
         title: l10n.more,
@@ -333,7 +346,11 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
             children: [
               Expanded(
                 child: Text(
-                  widget.manga.itemType != ItemType.anime
+                  widget.loading && widget.chapterLength == 0
+                      ? widget.manga.itemType == ItemType.anime
+                            ? l10n.episodes
+                            : l10n.chapters
+                      : widget.manga.itemType != ItemType.anime
                       ? '${l10n.chapters} · ${widget.chapterLength}'
                       : '${l10n.episodes} · ${widget.chapterLength}',
                   style: colors.detailSectionTitle,
@@ -349,8 +366,11 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                   icon: NodeLaneIcons.of(context).add,
                 ),
               NodeLaneIconButton(
+                busy: widget.loading,
                 icon: NodeLaneIcons.of(context).filter,
-                tooltip: l10n.filter,
+                tooltip: widget.loading
+                    ? l10n.detail_loading_chapters
+                    : l10n.filter,
                 onPressed: widget.onShowFilterMenu,
                 active: filtering,
               ),
@@ -451,6 +471,14 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
               width: NodeLaneTokens.detailCoverWidth,
               height: NodeLaneTokens.detailCoverHeight,
               fit: BoxFit.cover,
+              frameBuilder: (_, child, frame, synchronous) =>
+                  synchronous || frame != null
+                  ? child
+                  : const NodeLaneSkeleton(
+                      width: NodeLaneTokens.detailCoverWidth,
+                      height: NodeLaneTokens.detailCoverHeight,
+                      radius: NodeLaneTokens.coverRadius,
+                    ),
               errorBuilder: (_, _, _) => Container(
                 width: NodeLaneTokens.detailCoverWidth,
                 height: NodeLaneTokens.detailCoverHeight,

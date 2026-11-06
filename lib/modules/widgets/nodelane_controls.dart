@@ -7,6 +7,32 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Shared presentation only. Controllers, navigation and writes stay outside.
+class NodeLaneSkeleton extends StatelessWidget {
+  const NodeLaneSkeleton({
+    super.key,
+    required this.height,
+    this.width,
+    this.radius = NodeLaneTokens.controlRadius,
+    this.color,
+  });
+
+  final double height, radius;
+  final double? width;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color ?? NodeLaneTokens.of(context).line,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    ),
+  );
+}
+
 class NodeLanePageHeading extends StatelessWidget {
   const NodeLanePageHeading({
     super.key,

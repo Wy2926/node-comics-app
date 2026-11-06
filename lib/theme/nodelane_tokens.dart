@@ -45,6 +45,7 @@ class NodeLaneTokens {
   // Measured against the 390-point detail overview in the iOS concept.
   static const detailGutter = 16.0, detailToolbarHeight = 44.0;
   static const detailCoverWidth = 132.0, detailCoverHeight = 188.0;
+  static const readerEntryCoverWidth = 96.0, readerEntryCoverHeight = 136.0;
   static const chapterRowHeight = 72.0;
   static const defaultMobileAccent = Color(0xff006eff);
   // Reader concept: all overlays use the same geometry, type and controls.

@@ -1,11 +1,14 @@
 import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/reader/managers/chapter_preload_manager.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
+import 'package:mangayomi/modules/manga/reader/providers/manga_reader_provider.dart';
 
 final ch1 = Chapter(id: 101, mangaId: 1, name: 'Chapter 1', url: '/c1');
 final ch2 = Chapter(id: 102, mangaId: 1, name: 'Chapter 2', url: '/c2');
@@ -45,6 +48,49 @@ ReaderPageIndexMath doublePage(List<UChapDataPreload> pages) =>
     );
 
 void main() {
+  test(
+    'chapter context survives page failure and is shared during retry',
+    () async {
+      final firstRequest = Completer<GetChapterPagesModel>();
+      var lookups = 0, requests = 0;
+      final pages = _model([]);
+      final container = ProviderContainer(
+        overrides: [
+          readerChapterProvider(ch1.id!).overrideWith((ref) async {
+            lookups++;
+            return ch1;
+          }),
+          getChapterPagesProvider(chapter: ch1).overrideWith((ref) {
+            ref.keepAlive();
+            requests++;
+            return requests == 1 ? firstRequest.future : Future.value(pages);
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(mangaReaderProvider(ch1.id!), (_, _) {});
+      final failure = expectLater(
+        container.read(mangaReaderProvider(ch1.id!).future),
+        throwsA(isA<StateError>()),
+      );
+      expect(
+        await container.read(readerChapterProvider(ch1.id!).future),
+        same(ch1),
+      );
+      firstRequest.completeError(StateError('source temporarily unavailable'));
+      await failure;
+      expect(
+        container.read(readerChapterProvider(ch1.id!)).requireValue,
+        same(ch1),
+      );
+      container.invalidate(getChapterPagesProvider(chapter: ch1));
+      container.invalidate(mangaReaderProvider(ch1.id!));
+      final ready = await container.read(mangaReaderProvider(ch1.id!).future);
+      expect(ready.chapter, same(ch1));
+      expect(ready.pages, same(pages));
+      expect((lookups, requests), (1, 2));
+    },
+  );
   group('page counter in double-page mode', () {
     test('a page of the next chapter is labelled from its own spread', () {
       // Chapter 1 has 5 pages, then the transition, then chapter 2. Chapter
@@ -90,6 +136,130 @@ void main() {
         doublePage(chapterPages(ch1, 4)).chapterPageLabel(9, 999, 4),
         '10',
       );
+    });
+  });
+
+  group('spread boundaries and mode changes', () {
+    test(
+      'chapters and transitions stay separate with either first-page mode',
+      () {
+        final pages = [
+          ...chapterPages(ch1, 3),
+          transition(),
+          ...chapterPages(ch2, 2),
+        ];
+        for (final singleFirst in [false, true]) {
+          final math = ReaderPageIndexMath(
+            isDoublePageActive: true,
+            singleFirst: singleFirst,
+            pageCount: pages.length,
+            pages: pages,
+          );
+          expect(
+            math.spreads,
+            singleFirst
+                ? const [
+                    DoublePageSpread(0),
+                    DoublePageSpread(1, 2),
+                    DoublePageSpread(3),
+                    DoublePageSpread(4),
+                    DoublePageSpread(5),
+                  ]
+                : const [
+                    DoublePageSpread(0, 1),
+                    DoublePageSpread(2),
+                    DoublePageSpread(3),
+                    DoublePageSpread(4, 5),
+                  ],
+          );
+          expect(
+            List.generate(6, math.actualToPageViewIndex),
+            singleFirst ? [0, 1, 1, 2, 3, 4] : [0, 0, 1, 2, 3, 3],
+          );
+          expect(
+            List.generate(math.pageViewPageCount, math.pageViewToActualIndex),
+            singleFirst ? [0, 1, 3, 4, 5] : [0, 2, 3, 4],
+          );
+          expect(math.currentIndexLabel(3, 3), isEmpty);
+          expect(math.currentIndexLabel(4, 2), singleFirst ? '1' : '1-2');
+        }
+        expect(
+          ReaderPageIndexMath.buildSpreads([page(ch1, 0), page(ch2, 0)]),
+          const [DoublePageSpread(0), DoublePageSpread(1)],
+        );
+      },
+    );
+
+    test('wide pages stay single without changing neighboring page labels', () {
+      final math = doublePage(chapterPages(ch1, 4, wideAt: 1));
+      expect(math.spreads, const [
+        DoublePageSpread(0),
+        DoublePageSpread(1),
+        DoublePageSpread(2, 3),
+      ]);
+      expect(List.generate(4, math.actualToPageViewIndex), [0, 1, 2, 2]);
+      expect(List.generate(3, math.pageViewToActualIndex), [0, 1, 2]);
+      expect(List.generate(4, (index) => math.currentIndexLabel(index, 4)), [
+        '1',
+        '2',
+        '3-4',
+        '3-4',
+      ]);
+      expect(
+        ReaderPageIndexMath.buildSpreads([
+          page(ch1, 0, wide: true),
+          page(ch1, 1, wide: true),
+          page(ch1, 2),
+        ]),
+        const [DoublePageSpread(0), DoublePageSpread(1), DoublePageSpread(2)],
+      );
+    });
+
+    test('synthetic spreads handle empty catalogs and a single first page', () {
+      for (final singleFirst in [false, true]) {
+        for (final count in [0, 1, 5]) {
+          final math = ReaderPageIndexMath(
+            isDoublePageActive: true,
+            singleFirst: singleFirst,
+            pageCount: count,
+          );
+          final expected = count == 0
+              ? const <DoublePageSpread>[]
+              : count == 1
+              ? const [DoublePageSpread(0)]
+              : singleFirst
+              ? const [
+                  DoublePageSpread(0),
+                  DoublePageSpread(1, 2),
+                  DoublePageSpread(3, 4),
+                ]
+              : const [
+                  DoublePageSpread(0, 1),
+                  DoublePageSpread(2, 3),
+                  DoublePageSpread(4),
+                ];
+          expect(math.spreads, expected);
+          expect(math.pageViewPageCount, expected.length);
+          expect(math.pageViewToActualIndex(0), 0);
+          expect(math.actualToPageViewIndex(0), 0);
+        }
+      }
+    });
+
+    test('mode changes retain the active page in the second chapter', () {
+      final pages = [
+        ...chapterPages(ch1, 4),
+        transition(),
+        ...chapterPages(ch2, 4),
+      ];
+      const activeIndex = 6;
+      final math = doublePage(pages);
+      final spread = math.actualToPageViewIndex(activeIndex);
+      expect(spread, 3);
+      expect(math.spreads[spread], const DoublePageSpread(5, 6));
+      final restored = math.pageViewToActualIndex(spread);
+      expect(restored, 5);
+      expect(pages[restored].chapter?.id, ch2.id);
     });
   });
 
