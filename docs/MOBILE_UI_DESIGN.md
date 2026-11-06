@@ -13,7 +13,7 @@ iOS 与 Android 手机共用视觉令牌和基础控件；常规字号已在两�
 | 令牌 | 手机约定 |
 | --- | --- |
 | 画布／表面 | 浅色近白纸面、深色炭灰；书籍封面保持原色 |
-| 文字 | 沿用字体偏好；大标题 34、分组／面板标题 20、正文 16、书名／控件 15、次要信息 13、图注 12；遵循系统文字缩放 |
+| 文字 | 沿用字体偏好；页面 34、面板 20、阅读抽屉标题 22、设置名 17、正文／输入 16、书名／控件／值 15、说明 14、次要信息 13、徽章／图注 12；遵循系统文字缩放 |
 | 强调色 | 默认 NodeLane 蓝；继承已有用户主题的强调色，不改变状态色含义 |
 | 间距 | 4 / 8 / 12 / 16 / 20 / 24；手机页面边距 20 |
 | 圆角 | 手机输入／分段／菜单使用 24 胶囊圆角，文字按钮使用胶囊形状、工具栏按钮使用圆形；封面 10、容器 18、模态外壳 24 |
@@ -29,6 +29,46 @@ iOS 与 Android 手机共用视觉令牌和基础控件；常规字号已在两�
 - `NodeLaneRow` 统一设置行、选择项与卡片按钮；`.card` 是同一实现的独立表面配置，支持懒列表首尾圆角。行高最小 56、目录卡片 72，主文字 17、辅助文字 14、右侧值 15、图标 24、箭头 20。具体设置的名称在左、当前值在右，标题下方仅放说明并占满内容宽度；长值最多两行，完整内容在原选择页或编辑框查看。分类导航不显示其中某个设置的值。`NodeLaneSliderRow` 共用同一标题／值布局，滑块数值不拼入标题；存储压缩级别也复用该组件。所有分组及卡片表面由 `NodeLaneGroupSurface` 绘制。
 - 小说与播放器的普通设置选择行共用 `MobileSettingsChoice`，统一当前值、搜索选择页及取消／同值不写入行为；偏好读写仍由各页面的原 provider 负责。页面、弹层的按钮与输入主题只由 `nodeLaneModalTheme`／`NodeLaneTokens` 定义。文字按钮 15、点击区至少 44；工具栏及菜单触发器共用图标按钮几何与表面。业务组件不得另写圆角、字号或输入装饰覆盖。
 - 书架、章节和迁移页面也复用这些基础组件，不维护平行实现或无调用的兼容别名。
+
+### 基础组件清单与设计板
+
+现有实现按 **10 个视觉家族**整理；基础控件、组合入口与构造配置属于同一套系统。常规控件集中在 [`nodelane_controls.dart`](../lib/modules/widgets/nodelane_controls.dart)，令牌和 Flutter 控件主题集中在 [`nodelane_tokens.dart`](../lib/theme/nodelane_tokens.dart)。
+
+| 家族 | 现有入口 | 设计覆盖 |
+| --- | --- | --- |
+| 表面与容器 | `NodeLaneSurface`、`NodeLaneGroupSurface`、`NodeLaneGroupDivider`、[`NodeLaneGlassSurface`](../lib/modules/widgets/nodelane_glass_surface.dart) | 页面画布、实体分组、分割线、输入和浮动材质 |
+| 标题与视觉标识 | `NodeLanePageHeading`、`NodeLaneSectionHeading`、`NodeLaneCatalogHeading`、`NodeLaneReaderHeading`；[`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)、[`NodeLaneBrandMark`](../lib/modules/widgets/nodelane_brand_mark.dart)、`NodeLaneWebsiteIcon` | 页面／分组／弹层标题、语义图标、应用／账号标识、网站图标 |
+| 输入 | `NodeLaneTextField` 与 `.search` 配置 | 搜索、单行地址、名称、密码、多行正文／代码；框外名称、清空和显隐 |
+| 按钮与工具操作 | `NodeLaneIconButton`、`NodeLaneMenuButton`、`NodeLaneCloseButton`、`NodeLaneToolbarAction`、`NodeLaneSecondaryButton`；共享主题下的 `FilledButton`／`TextButton`／`OutlinedButton` | 主次操作、圆形工具、更多菜单、关闭、图标加文字、禁用／忙碌／破坏性状态；不另建主按钮实现 |
+| 设置行与展开 | `NodeLaneRow`、`NodeLaneSwitchRow`、`NodeLaneDisclosure` | 标题左／值右、下方说明、全行点击、开关、低频内容动画展开 |
+| 选择与数值 | `NodeLaneSegments`、`NodeLaneTabSegments`、`NodeLaneChoiceRow`、`NodeLaneSwitch`、`NodeLaneSliderRow`、`NodeLaneNumberRow`／`NodeLaneNumberPicker` | 分段、标签控制器适配、行内选择、开关、滑块、原位浮动数字滚轮 |
+| 卡片与徽章 | `NodeLaneRow.card`、`NodeLaneChoiceCard`、`NodeLaneCoverBadge` | 卡片按钮、视觉布局选项、未读／下载数量及选中状态 |
+| 抽屉与对话框 | [`NodeLaneSheetSurface`、`NodeLaneDialog`、`NodeLaneAlertDialog`、`NodeLaneModalActions`、`NodeLaneDialogAction`](../lib/modules/widgets/nodelane_modal.dart)；[`NodeLaneCatalogSheet`／`showNodeLaneCatalogSheet`](../lib/modules/widgets/nodelane_catalog_widgets.dart)、`showNodeLaneConfirmation` | 内容高度／列表抽屉、确认、编辑、固定操作区；`NodeLaneReaderSurface` 组合共享外壳 |
+| 提示、空态与加载 | [`NodeLaneNotice`／`showNodeLaneNotice`](../lib/modules/widgets/nodelane_notice.dart)、[`NodeLaneEmptyState`](../lib/modules/widgets/nodelane_empty_state.dart)、`NodeLaneSkeleton` | 临时／页内提示、进度、错误及恢复操作、居中空态、内容轮廓占位 |
+| 顶栏与导航 | `nodeLaneAppBar`、`NodeLanePinnedHeader`、[`NodeLaneMobileNavigation`／`NodeLaneFlutterTabBar`](../lib/modules/main_view/widgets/nodelane_mobile_navigation.dart) | 顶栏、搜索吸顶、底栏选中／角标／安全区；iOS 保留原生底栏 |
+
+业务组合继续保留自身职责：`MobileBookshelfCard` 负责作品布局和元信息；`MobileBrowserAddressField` 负责地址编辑、展示与校验；`MobileMediaMenu` 负责媒体切换；`MobileSettingsChoice` 负责设置选项入口。它们复用上表的样式与控件，不另建颜色或尺寸系统。`NodeLaneModalScope`／`NodeLaneReaderScope`／`NodeLaneRevealScope` 和通知句柄、避让测量属于主题或交互基础设施，不单独设计一套视觉。
+
+设计板分别整理[颜色、材质与层次](design/mobile-foundations-materials.png)和[输入、操作、选择及弹层](design/mobile-foundations-components.png)。它们以当前实现为依据，图像是视觉参考，数值以令牌和本文为准；不代表新增功能或另一轮视觉改动已经落地。
+
+| 色彩角色 | 浅色 | 深色 |
+| --- | --- | --- |
+| 画布／实体分组／次级填色 | `#F5F6FA`／`#FFFFFF`／`#EBEEF4` | `#13171D`／`#1E242C`／`#292F39` |
+| 正文与常规图标／辅助信息 | `#171A21`／`#697180` | `#F0F3F8`／`#A9B4C4` |
+| 分割线 | `#E7EAF0` | `#353E4A` |
+| 输入底色／细边 | `#FFFFFF`／`#DDE2E9` | `#303844`／`#46505F` |
+
+强调色来自用户主题，默认移动端蓝色为 `#006EFF`；轻选中态是强调色以 11% 混入实体表面。纯黑模式沿用黑色画布与 `#0A0A0A` 表面。普通图标使用正文色，蓝色用于操作、选中与进度，错误色表达错误或破坏性操作。
+
+| 层次 | 当前材质 |
+| --- | --- |
+| 页面与内容分组 | 实色画布、实体分组；无模糊、无投影，以底色与间距区分 |
+| 输入 | 填色透明度 92%、细边 0.75、局部模糊 8；投影偏移 `(0, 2)`、模糊 4，黑色透明度浅色 4%／深色 12% |
+| 浮动工具／导航 | 局部模糊 16；启用投影时偏移 `(0, 4)`、模糊 12，黑色透明度浅色 6%／深色 16% |
+| 分组抽屉／对话框 | 画布色 97%→95% 的高遮盖度；内容和安全区决定高度，模态遮罩为黑色 54%，不叠加强投影 |
+| 菜单／数字浮层 | 菜单沿用共享主题的细边与 elevation 6；数字滚轮复用玻璃表面，原位浮出且没有模态遮罩 |
+
+高对比度时玻璃表面改用实色并移除其阴影，保持几何与点击区。两张图由本机配置的 OpenAI 官方 API、`gpt-image-2.6-sunburst`、imagegen CLI `generate-batch` 生成，组件板经 `edit` 校对，规格为 1536×1024；[材质提示词](design/mobile-foundations-materials.prompts.txt)与[组件提示词](design/mobile-foundations-components.prompts.txt)保留完整输入。示例标签、网址与数值仅用于设计说明，不接入运行界面，也不引入字体或图标资产。
 
 iOS 方向依据 [Apple Materials 指南](https://developer.apple.com/design/human-interface-guidelines/materials)：浮动工具按钮、搜索与弹层使用共享 `NodeLaneGlassSurface`，内容列表保持清晰的实体分组。Flutter 层采用有界模糊、薄边和底色模拟玻璃材质，高对比度下使用实色；这不是原生 `UIGlassEffect`，不声称具备系统折射或形变效果。iOS 底部导航继续使用原生 UIKit；Android 使用同令牌的 Flutter 悬浮底栏。弹层采用较高遮盖度的常规材质，避免原生底栏与页面内容透出明显分界；没有新增网络依赖、字体或图标包。
 
