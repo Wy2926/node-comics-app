@@ -5,6 +5,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:mangayomi/services/mobile_source_catalog.dart';
+
 import 'package:app_links/app_links.dart';
 import 'package:archive/archive.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -280,6 +282,7 @@ class _MyAppState extends ConsumerState<MyApp>
         if (!mounted) return;
         unawaited(autoUpdateLibraryIfDue(ref));
         unawaited(autoSyncIfDue(ref));
+        unawaited(refreshOfficialCatalogIfDue(ref));
       });
     });
 
@@ -318,6 +321,7 @@ class _MyAppState extends ConsumerState<MyApp>
       // time.
       unawaited(autoUpdateLibraryIfDue(ref));
       unawaited(autoSyncIfDue(ref));
+      unawaited(refreshOfficialCatalogIfDue(ref));
     }
   }
 

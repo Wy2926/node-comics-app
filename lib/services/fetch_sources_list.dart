@@ -23,6 +23,7 @@ Future<void> fetchSourcesList({
   required bool autoUpdateExtensions,
   required ItemType itemType,
   required Repo? repo,
+  bool Function()? canContinueUpdates,
 }) async {
   final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
   final url = repo?.jsonUrl;
@@ -165,6 +166,8 @@ Future<void> fetchSourcesList({
       throw StateError('此来源已不在目录中，已保留已安装版本');
     }
   } else {
+    var failedUpdates = 0;
+    var interrupted = false;
     for (var source in sourceList) {
       final existingSource = await sourceRepository.findByIdAsync(source.id!);
       if (existingSource == null) {
@@ -178,14 +181,28 @@ Future<void> fetchSourcesList({
           existingSource.isAdded! &&
           compareVersions(existingSource.version!, source.version!) < 0;
       if (!shouldUpdate) continue;
+      await sourceRepository.save(existingSource..versionLast = source.version);
       if (autoUpdateExtensions) {
-        await _updateSource(source, androidProxyServer, repo, itemType);
-      } else {
-        await sourceRepository.save(
-          existingSource..versionLast = source.version,
-        );
+        if (canContinueUpdates?.call() == false) {
+          interrupted = true;
+          continue;
+        }
+        try {
+          await _updateSource(source, androidProxyServer, repo, itemType);
+        } catch (_) {
+          failedUpdates++;
+        }
       }
     }
+    await checkIfSourceIsObsolete(
+      allCatalogSources ?? sourceList,
+      repo!,
+      itemType,
+    );
+    if (failedUpdates > 0 || interrupted) {
+      throw StateError('部分扩展尚未更新，已保留原版本，可重试');
+    }
+    return;
   }
 
   await checkIfSourceIsObsolete(

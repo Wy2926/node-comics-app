@@ -79,8 +79,10 @@ class _MobileRepositoryManagerState
       );
       await refreshed;
       if (!mounted) return;
+      if (widget.itemType == ItemType.manga) {
+        await ref.read(nodeLaneCatalogRefreshProvider).refresh(force: true);
+      }
       ref.invalidate(nodeLaneCatalogLoadProvider(widget.itemType));
-      await ref.read(nodeLaneCatalogLoadProvider(widget.itemType).future);
     } catch (_) {
       if (mounted) {
         setState(() => refreshError = '目录刷新失败，已保留缓存，可重试。');

@@ -15,7 +15,9 @@ void main() {
     'id': 86001001,
     'name': 'Comix',
     'baseUrl': 'https://comix.to',
-    'sourceCodeUrl': 'http://127.0.0.1:8787/packages/comix/0.2.0.js',
+    'sourceCodeUrl': Uri.parse(nodeLaneCatalogUrl)
+        .resolve('../packages/comix/0.2.0.js')
+        .toString(),
     'nodelane': {
       'schema': 1,
       'repositoryId': nodeLaneRepositoryId,

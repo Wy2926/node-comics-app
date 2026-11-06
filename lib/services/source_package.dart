@@ -83,11 +83,7 @@ bool canReplaceSource(Source existing, Source incoming, String indexUrl) {
   if (old != null) {
     return old.repositoryId == next.repositoryId && old.slug == next.slug;
   }
-  // One-time migration of the original local Comix prototype.
-  return existing.id == 86001001 &&
-      incoming.id == 86001001 &&
-      existing.baseUrl == 'https://comix.to' &&
-      existing.repo?.jsonUrl == 'http://127.0.0.1:8787/index.json';
+  return false;
 }
 
 void validatePackageLocation(Source source, String indexUrl) {

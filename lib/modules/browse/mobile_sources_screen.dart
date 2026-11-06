@@ -156,8 +156,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       );
       await refresh;
       if (!mounted) return;
+      if (requestedType == ItemType.manga) {
+        await ref.read(nodeLaneCatalogRefreshProvider).refresh(force: true);
+      }
       ref.invalidate(nodeLaneCatalogLoadProvider(requestedType));
-      await ref.read(nodeLaneCatalogLoadProvider(requestedType).future);
     } catch (_) {
       if (mounted &&
           type == requestedType &&
