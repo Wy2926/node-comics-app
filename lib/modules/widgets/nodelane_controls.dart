@@ -1347,6 +1347,7 @@ class NodeLaneTextField extends StatefulWidget {
       onChanged: onChanged,
       validator: validator,
       onFieldSubmitted: onSubmitted,
+      onTapOutside: _search ? (_) => inputFocus.unfocus() : null,
       style: code
           ? t.readerSecondary.copyWith(fontFamily: 'monospace', color: t.ink)
           : t.body,

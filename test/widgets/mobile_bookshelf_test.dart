@@ -434,7 +434,7 @@ void main() {
   );
 
   testWidgets(
-    'narrow shelf keeps search, clear and import reachable with large text',
+    'shelf search dismisses on outside touch without losing the query or action access',
     (tester) async {
       tester.view.physicalSize = const Size(320, 700);
       tester.view.devicePixelRatio = 1;
@@ -472,9 +472,30 @@ void main() {
           scale: 2,
         ),
       );
+      final field = find.byType(TextField);
+      final input = tester.widget<EditableText>(find.byType(EditableText));
+      await tester.tap(field);
+      await tester.pump();
+      expect(input.focusNode.hasFocus, isTrue);
+      expect(tester.testTextInput.isVisible, isTrue);
+      await tester.tapAt(const Offset(160, 600));
+      await tester.pump();
+      expect(input.focusNode.hasFocus, isFalse);
+      expect(tester.testTextInput.isVisible, isFalse);
+
       await tester.enterText(find.byType(TextField), '月');
       await tester.pump();
+      await tester.dragFrom(const Offset(160, 600), const Offset(0, -100));
+      await tester.pump();
+      expect(input.focusNode.hasFocus, isFalse);
+      expect(tester.testTextInput.isVisible, isFalse);
+      expect(controller.text, '月');
+
+      await tester.tap(field);
+      await tester.pump();
       await tester.tap(find.byIcon(Icons.cancel_rounded));
+      await tester.pump();
+      expect(input.focusNode.hasFocus, isTrue);
       await tester.tap(find.byTooltip('导入'));
       await tester.tap(find.byTooltip('筛选'));
       expect(controller.text, isEmpty);
