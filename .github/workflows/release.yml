@@ -260,16 +260,16 @@ jobs:
         run: flutter pub get
 
       - name: build macos
-        run: |
-          flutter build macos --release --verbose
-          brew install create-dmg
-          create-dmg --volname nodelane-comics-${{ github.ref_name }}-macos --window-pos 200 120 --window-size 800 450 --icon-size 100 --app-drop-link 600 185 nodelane-comics-${{ github.ref_name }}-macos.dmg build/macos/Build/Products/Release/nodelane-comics.app
+        run: flutter build macos --release --verbose
+
+      - name: Package macOS DMG
+        run: python3 -B tool/package_macos_dmg.py
 
       - name: upload artifact macos dmg
         uses: actions/upload-artifact@v4
         with:
           name: nodelane-comics-${{ github.ref_name }}-macos
-          path: "nodelane-comics-${{ github.ref_name }}-macos.dmg"
+          path: "build/macos/dmg/nodelane-comics-${{ github.ref_name }}-macos.dmg"
           if-no-files-found: error
 
   build-and-release-windows-exe_zip:

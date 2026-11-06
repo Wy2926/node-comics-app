@@ -46,6 +46,13 @@ flutter build ios --debug --no-codesign
 
 这些是各平台运行入口，实际验证范围按任务授权执行，不代表完整功能验收。应用 GitHub、反馈及更新查询统一指向项目仓库；各平台身份、图标、安装验证及发行待办见[手机界面与视觉令牌](docs/MOBILE_UI_DESIGN.md#关于与应用更新)。iOS Release IPA 已通过个人签名真机安装及启动，正式发行、覆盖更新与部署尚未验收。
 
+macOS 本地 DMG 与发行流水线使用同一打包入口，产物位于 `build/macos/dmg/`：
+
+```sh
+flutter build macos --release
+python3 -B tool/package_macos_dmg.py
+```
+
 ## 既有 NodeLane 能力
 
 同级 `node-comics` 仓库提供现有浏览器插件和翻译后端。设计时先从其 README 导航，按需核对翻译契约、渠道、网页原位翻译和网站适配文档及代码。该仓库作为参考，不随手机 App 构建隐式引入。
