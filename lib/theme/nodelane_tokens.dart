@@ -27,6 +27,7 @@ class NodeLaneTokens {
   static const glassBlur = 16.0, glassStroke = .75;
   static const searchOpacity = .92, searchBlur = 8.0;
   static const searchShadowBlur = 4.0, searchShadowOffset = 2.0;
+  static const floatingShadowBlur = 12.0, floatingShadowOffset = 4.0;
   static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
   static const emptyStateIconSize = 48.0, progressTrackHeight = 3.0;
   static const numberPickerWidth = 184.0;
@@ -86,7 +87,9 @@ class NodeLaneTokens {
     vertical: space8,
   );
   static const modalRadius = 24.0;
-  static const modalActionHeight = 48.0;
+  static const buttonHeight = 48.0;
+  static const closeSurfaceSize = 32.0;
+  static const sheetHandleSize = Size(44, 4);
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
   static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
@@ -134,8 +137,11 @@ class NodeLaneTokens {
     );
   }
 
-  Color get accentSoft =>
-      Color.alphaBlend(accent.withValues(alpha: .11), surface);
+  Color get accentOverlay => accent.withValues(alpha: .11);
+  Color get accentSoft => Color.alphaBlend(accentOverlay, surface);
+
+  Color get switchTrack =>
+      Color.alphaBlend(muted.withValues(alpha: .28), surface);
 
   OutlinedBorder get buttonShape => const StadiumBorder();
 
@@ -249,11 +255,10 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
   final colors = NodeLaneTokens.fromTheme(base);
   final dialogShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(NodeLaneTokens.modalRadius),
-    side: BorderSide(color: colors.line),
   );
   final buttonStyle = ButtonStyle(
     minimumSize: const WidgetStatePropertyAll(
-      Size(NodeLaneTokens.minTapTarget, NodeLaneTokens.minTapTarget),
+      Size(NodeLaneTokens.minTapTarget, NodeLaneTokens.buttonHeight),
     ),
     shape: WidgetStatePropertyAll(colors.buttonShape),
     textStyle: WidgetStatePropertyAll(colors.label),
@@ -283,7 +288,12 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
         ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(foregroundColor: colors.accent)
-          .merge(buttonStyle),
+          .merge(buttonStyle)
+          .copyWith(
+            minimumSize: const WidgetStatePropertyAll(
+              Size.square(NodeLaneTokens.minTapTarget),
+            ),
+          ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -331,7 +341,7 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
       titleTextStyle: base.textTheme.titleLarge?.merge(
         NodeLaneTokens.modalTitleStyle.copyWith(color: colors.ink),
       ),
-      contentTextStyle: base.textTheme.bodyMedium?.copyWith(color: colors.ink),
+      contentTextStyle: colors.readerSecondary,
       actionsPadding: NodeLaneTokens.modalActionsPadding,
       barrierColor: Colors.black54,
     ),
@@ -346,11 +356,10 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(NodeLaneTokens.modalRadius),
         ),
-        side: BorderSide(color: colors.line),
       ),
       clipBehavior: Clip.antiAlias,
       dragHandleColor: colors.muted,
-      dragHandleSize: const Size(32, 4),
+      dragHandleSize: NodeLaneTokens.sheetHandleSize,
     ),
     popupMenuTheme: base.popupMenuTheme.copyWith(
       color: colors.surface,
@@ -359,7 +368,7 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
-        side: BorderSide(color: colors.line),
+        side: BorderSide(color: colors.line, width: NodeLaneTokens.glassStroke),
       ),
       menuPadding: const EdgeInsets.all(6),
       textStyle: base.textTheme.bodyLarge?.copyWith(color: colors.ink),

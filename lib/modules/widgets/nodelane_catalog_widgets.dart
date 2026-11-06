@@ -15,8 +15,8 @@ class NodeLaneWebsiteIcon extends StatelessWidget {
     final t = NodeLaneTokens.of(context);
     final fallback = Icon(
       icon ?? NodeLaneIcons.of(context).web,
-      color: t.accent,
-      size: 24,
+      color: t.ink,
+      size: NodeLaneTokens.iconSize,
     );
     return ClipRRect(
       borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
@@ -26,8 +26,8 @@ class NodeLaneWebsiteIcon extends StatelessWidget {
             ? fallback
             : cachedNetworkImage(
                 imageUrl: url!,
-                width: 40,
-                height: 40,
+                width: NodeLaneTokens.websiteIconSize,
+                height: NodeLaneTokens.websiteIconSize,
                 fit: BoxFit.contain,
                 errorWidget: fallback,
                 useCustomNetworkImage: false,

@@ -73,8 +73,8 @@ class NodeLaneReaderHeading extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Center(
                 child: Container(
-                  width: 44,
-                  height: 4,
+                  width: NodeLaneTokens.sheetHandleSize.width,
+                  height: NodeLaneTokens.sheetHandleSize.height,
                   decoration: BoxDecoration(
                     color: colors.muted.withValues(alpha: .3),
                     borderRadius: BorderRadius.circular(2),
@@ -104,7 +104,7 @@ class NodeLaneReaderHeading extends StatelessWidget {
                     header: true,
                     child: Text(
                       title,
-                      style: colors.readerTitle,
+                      style: colors.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

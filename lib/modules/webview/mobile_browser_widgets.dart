@@ -353,24 +353,9 @@ class MobileBrowserTabCard extends StatelessWidget {
                     Positioned(
                       top: NodeLaneTokens.space8,
                       left: NodeLaneTokens.space8,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: t.accent,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          child: Text(
-                            '当前',
-                            style: t.caption.copyWith(
-                              color: t.onAccent,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                      child: const NodeLaneCoverBadge(
+                        '当前',
+                        tone: NodeLaneBadgeTone.accent,
                       ),
                     ),
                   Positioned(

@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart'
-    show
-        CupertinoPicker,
-        CupertinoPickerDefaultSelectionOverlay,
-        CupertinoSwitch;
+import 'package:flutter/cupertino.dart' show CupertinoPicker, CupertinoSwitch;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -527,9 +523,8 @@ class NodeLaneSecondaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
     final style = FilledButton.styleFrom(
-      backgroundColor: t.soft,
-      foregroundColor: t.ink,
-      iconColor: t.ink,
+      backgroundColor: t.accentSoft,
+      foregroundColor: t.accent,
     );
     if (icon != null) {
       return FilledButton.icon(
@@ -564,11 +559,15 @@ class NodeLaneSwitch extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
 
   @override
-  Widget build(BuildContext context) => CupertinoSwitch(
-    value: value,
-    onChanged: onChanged,
-    activeTrackColor: NodeLaneTokens.of(context).accent,
-  );
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    return CupertinoSwitch(
+      value: value,
+      onChanged: onChanged,
+      activeTrackColor: t.accent,
+      inactiveTrackColor: t.switchTrack,
+    );
+  }
 }
 
 /// A switch is the same row as other controls, including its full-row target.
@@ -902,9 +901,19 @@ class _NodeLaneNumberWheelState extends State<_NodeLaneNumberWheel> {
             scrollController: _scroll,
             itemExtent: extent,
             childCount: _count,
+            diameterRatio: 2,
+            squeeze: 1,
             changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
-            selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-              background: t.accent.withValues(alpha: .12),
+            selectionOverlay: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.space4,
+              ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: t.accentOverlay,
+                  borderRadius: t.inputRadius,
+                ),
+              ),
             ),
             onSelectedItemChanged: (index) {
               final value = widget.min + index * widget.step;
@@ -918,7 +927,11 @@ class _NodeLaneNumberWheelState extends State<_NodeLaneNumberWheel> {
                 child: Text(
                   widget.label?.call(value) ?? '$value',
                   style: t.readerLabel.copyWith(
-                    color: widget.enabled ? t.ink : t.muted,
+                    color: !widget.enabled
+                        ? t.muted
+                        : index == _index
+                        ? t.accent
+                        : t.ink,
                   ),
                 ),
               );
@@ -1250,15 +1263,18 @@ class NodeLaneCloseButton extends StatelessWidget {
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
-      constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+      constraints: const BoxConstraints.tightFor(
+        width: NodeLaneTokens.minTapTarget,
+        height: NodeLaneTokens.minTapTarget,
+      ),
       padding: const EdgeInsets.all(6),
       style: IconButton.styleFrom(
-        minimumSize: const Size(44, 44),
+        minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       icon: Container(
-        width: 32,
-        height: 32,
+        width: NodeLaneTokens.closeSurfaceSize,
+        height: NodeLaneTokens.closeSurfaceSize,
         decoration: BoxDecoration(
           color: backgroundColor ?? t.soft,
           shape: BoxShape.circle,
@@ -1385,7 +1401,7 @@ class NodeLaneTextField extends StatefulWidget {
                     ),
                     child: Icon(
                       icons.search,
-                      size: NodeLaneTokens.smallIconSize,
+                      size: NodeLaneTokens.iconSize,
                       color: t.muted,
                     ),
                   )
@@ -1442,7 +1458,6 @@ class NodeLaneTextField extends StatefulWidget {
       children: [
         Padding(
           padding: const EdgeInsetsDirectional.only(
-            start: NodeLaneTokens.space4,
             bottom: NodeLaneTokens.space8,
           ),
           child: GestureDetector(

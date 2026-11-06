@@ -139,7 +139,7 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                       message: query.isEmpty ? null : l10n.search_empty_hint,
                       action: query.isEmpty
                           ? null
-                          : FilledButton.tonal(
+                          : NodeLaneSecondaryButton(
                               onPressed: _clear,
                               child: Text(l10n.search_clear),
                             ),

@@ -249,7 +249,7 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                         icon: icons.search,
                         title: l.settings_search_empty,
                         message: l.search_empty_hint,
-                        action: FilledButton.tonal(
+                        action: NodeLaneSecondaryButton(
                           onPressed: _clear,
                           child: Text(l.search_clear),
                         ),

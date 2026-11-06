@@ -52,7 +52,7 @@ class NodeLaneAlertDialog extends StatelessWidget {
                     contentPadding == NodeLaneTokens.modalContentPadding
                 ? const EdgeInsets.all(NodeLaneTokens.space20)
                 : contentPadding,
-            child: DefaultTextStyle(style: t.body, child: content!),
+            child: DefaultTextStyle(style: t.readerSecondary, child: content!),
           ),
       ],
     );
@@ -111,7 +111,7 @@ class NodeLaneModalActions extends StatelessWidget {
           MediaQuery.textScalerOf(context).scale(15) > 20;
       Widget sized(Widget action) => ConstrainedBox(
         constraints: const BoxConstraints(
-          minHeight: NodeLaneTokens.modalActionHeight,
+          minHeight: NodeLaneTokens.buttonHeight,
         ),
         child: action,
       );

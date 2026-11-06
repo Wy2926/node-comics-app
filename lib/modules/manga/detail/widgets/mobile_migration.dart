@@ -461,7 +461,7 @@ class _MobileMigrationPreviewPageState
             ],
             if (onRetry != null) ...[
               const SizedBox(height: 12),
-              FilledButton.tonal(
+              NodeLaneSecondaryButton(
                 onPressed: onRetry,
                 child: Text(context.l10n.retry),
               ),

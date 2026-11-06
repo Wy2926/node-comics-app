@@ -56,7 +56,7 @@ class NodeLaneGlassSurface extends StatelessWidget {
               ? MediaQuery.highContrastOf(context)
                     ? t.muted
                     : t.searchLine
-              : glass
+              : glass && !grouped
               ? Colors.white.withValues(alpha: dark ? .16 : .8)
               : t.line,
         ),
@@ -74,12 +74,12 @@ class NodeLaneGlassSurface extends StatelessWidget {
                   ),
                   blurRadius: input
                       ? NodeLaneTokens.searchShadowBlur
-                      : NodeLaneTokens.space12,
+                      : NodeLaneTokens.floatingShadowBlur,
                   offset: Offset(
                     0,
                     input
                         ? NodeLaneTokens.searchShadowOffset
-                        : NodeLaneTokens.space4,
+                        : NodeLaneTokens.floatingShadowOffset,
                   ),
                 ),
               ]

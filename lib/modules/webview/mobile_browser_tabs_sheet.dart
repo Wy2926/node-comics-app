@@ -55,7 +55,6 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
             ),
           ),
         FilledButton.icon(
-          style: FilledButton.styleFrom(minimumSize: const Size(44, 48)),
           onPressed:
               entries.length < BrowserSessionStore.maxTabs && closing.isEmpty
               ? () => Navigator.pop(context, '')
