@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/eval/model/filter.dart';
@@ -80,13 +81,16 @@ void main() {
       expect(find.text('冒险'), findsOneWidget);
       expect(find.text('全部'), findsOneWidget);
       await tester.enterText(find.byType(TextFormField), 'Untranslated query');
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(NodeLaneSwitch));
       await tester.pumpAndSettle();
       locale.value = const Locale('en');
       await tester.pumpAndSettle();
       expect(find.text('Genres'), findsOneWidget);
       expect(find.text('Adventure'), findsOneWidget);
-      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+      expect(
+        tester.widget<NodeLaneSwitch>(find.byType(NodeLaneSwitch)).value,
+        isTrue,
+      );
       expect(find.text('Untranslated query'), findsOneWidget);
       await tester.ensureVisible(find.text('Status'));
       await tester.tap(find.text('Status'));

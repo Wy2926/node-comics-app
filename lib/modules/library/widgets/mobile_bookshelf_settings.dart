@@ -388,8 +388,7 @@ class _DisplayState extends ConsumerState<_Display> {
         const SizedBox(height: NodeLaneTokens.space8),
         NodeLaneGroupSurface(
           children: [
-            _switchRow(
-              context,
+            NodeLaneSwitchRow(
               title: itemType == ItemType.anime
                   ? l10n.show_continue_watching_buttons
                   : l10n.show_continue_reading_buttons,
@@ -422,30 +421,26 @@ class _DisplayState extends ConsumerState<_Display> {
           NodeLaneCatalogHeading(l10n.badges),
           NodeLaneGroupSurface(
             children: [
-              _switchRow(
-                context,
+              NodeLaneSwitchRow(
                 title: l10n.bookshelf_download_count,
                 icon: icons.download,
                 value: ref.watch(downloaded),
                 onChanged: (v) => ref.read(downloaded.notifier).set(v),
               ),
-              _switchRow(
-                context,
+              NodeLaneSwitchRow(
                 title: l10n.language,
                 icon: icons.translate,
                 value: ref.watch(language),
                 onChanged: (v) => ref.read(language.notifier).set(v),
               ),
-              _switchRow(
-                context,
+              NodeLaneSwitchRow(
                 title: l10n.source,
                 icon: icons.web,
                 value: ref.watch(librarySourceBadgeProvider),
                 onChanged: (v) =>
                     ref.read(librarySourceBadgeProvider.notifier).set(v),
               ),
-              _switchRow(
-                context,
+              NodeLaneSwitchRow(
                 title: l10n.local_source,
                 icon: icons.folderOutline,
                 value: ref.watch(local),
@@ -463,15 +458,13 @@ class _DisplayState extends ConsumerState<_Display> {
           NodeLaneCatalogHeading(l10n.bookshelf_layout),
           NodeLaneGroupSurface(
             children: [
-              _switchRow(
-                context,
+              NodeLaneSwitchRow(
                 title: l10n.show_category_tabs,
                 icon: icons.categories,
                 value: ref.watch(categories),
                 onChanged: (v) => ref.read(categories.notifier).set(v),
               ),
-              _switchRow(
-                context,
+              NodeLaneSwitchRow(
                 title: l10n.show_numbers_of_items,
                 icon: icons.count,
                 value: ref.watch(counts),
@@ -484,19 +477,6 @@ class _DisplayState extends ConsumerState<_Display> {
     );
   }
 }
-
-Widget _switchRow(
-  BuildContext context, {
-  required String title,
-  required IconData icon,
-  required bool value,
-  required ValueChanged<bool> onChanged,
-}) => NodeLaneRow(
-  title: title,
-  icon: icon,
-  onTap: () => onChanged(!value),
-  trailing: Switch.adaptive(value: value, onChanged: onChanged),
-);
 
 /// Small illustrations of the four existing modes, not another control renderer.
 class _LayoutPreview extends StatelessWidget {

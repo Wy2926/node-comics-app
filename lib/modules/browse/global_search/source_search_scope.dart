@@ -63,7 +63,7 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
                 title: '仅搜索常用来源',
                 icon: icons.pin,
                 subtitle: '开启后，只搜索已勾选的常用来源',
-                trailing: Switch.adaptive(
+                trailing: NodeLaneSwitch(
                   value: pinnedOnly,
                   onChanged: (v) => setState(() => pinnedOnly = v),
                 ),

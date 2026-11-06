@@ -138,7 +138,6 @@ class _MobileBackupPasswordDialogState
                       icon: _obscure
                           ? NodeLaneIcons.of(context).visible
                           : NodeLaneIcons.of(context).incognito,
-                      style: NodeLaneIconButtonStyle.field,
                     ),
                   ),
                   if (_setup && _obscure)

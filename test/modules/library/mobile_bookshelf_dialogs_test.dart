@@ -83,9 +83,9 @@ void main() {
         ),
       );
       expect(find.text('EPUB'), findsOneWidget);
-      await tester.ensureVisible(find.byType(Switch));
+      await tester.ensureVisible(find.byType(NodeLaneSwitch));
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(NodeLaneSwitch));
       await tester.tap(find.text('Choose files'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Choose files'));

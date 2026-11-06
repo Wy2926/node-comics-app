@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -219,7 +221,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Draft');
       await tester.ensureVisible(find.text('Adventure'));
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(NodeLaneSwitch));
       await tester.pump();
       expect((initial[0] as TextFilter).state, 'Initial');
       expect(

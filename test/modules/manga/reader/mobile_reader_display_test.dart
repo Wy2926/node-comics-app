@@ -257,10 +257,10 @@ void main() {
         ),
       );
       await open(tester);
-      final crop = find.byType(SwitchListTile);
+      final crop = find.byType(NodeLaneSwitchRow);
       await tester.ensureVisible(crop);
       expect(find.text('Applies to all comics.'), findsOneWidget);
-      tester.widget<SwitchListTile>(crop).onChanged!(true);
+      tester.widget<NodeLaneSwitchRow>(crop).onChanged!(true);
       await tester.pumpAndSettle();
       await tester.runAsync(() => dbWriteQueue.run(() {}));
       expect(settingsRepository.current.cropBorders, isTrue);

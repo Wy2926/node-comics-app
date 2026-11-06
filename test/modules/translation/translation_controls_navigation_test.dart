@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -174,8 +176,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('登录后开启翻译'), findsNothing);
       expect(controller.enabled, isFalse);
-      final toggle = tester.widget<SwitchListTile>(
-        find.widgetWithText(SwitchListTile, '翻译当前阅读范围'),
+      final toggle = tester.widget<NodeLaneSwitchRow>(
+        find.widgetWithText(NodeLaneSwitchRow, '翻译当前阅读范围'),
       );
       expect(toggle.onChanged, isNotNull);
       await tester.tap(find.text('翻译目标语言'));

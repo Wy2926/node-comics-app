@@ -115,9 +115,9 @@ void main() {
       await tester.tap(find.text('Open random entry'));
       await tester.tap(find.text('Search options'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byType(Switch));
+      await tester.ensureVisible(find.byType(NodeLaneSwitch));
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(NodeLaneSwitch));
       expect(actions, [5, 0, 1, 4]);
       expect(tester.takeException(), isNull);
     },

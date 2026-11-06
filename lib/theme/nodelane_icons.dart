@@ -1,217 +1,133 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
-/// Semantic icon roles. iOS content uses the already bundled Cupertino font;
-/// the native tab bar continues to render SF Symbols in UIKit independently.
+/// Shared semantic glyphs use the bundled Cupertino font on every platform.
+/// The native iOS tab bar renders the equivalent SF Symbols independently.
 class NodeLaneIcons {
-  const NodeLaneIcons._(this._cupertino);
-  final bool _cupertino;
+  const NodeLaneIcons._();
 
-  static NodeLaneIcons of(BuildContext context) => NodeLaneIcons._(
-    Theme.of(context).platform == TargetPlatform.iOS ||
-        Theme.of(context).platform == TargetPlatform.macOS,
-  );
+  static NodeLaneIcons of(BuildContext context) => const NodeLaneIcons._();
 
-  IconData _pick(IconData ios, IconData material) =>
-      _cupertino ? ios : material;
-  IconData get manga => _pick(CupertinoIcons.book, Icons.auto_stories_outlined);
-  IconData get mangaSelected =>
-      _pick(CupertinoIcons.book_fill, Icons.auto_stories_rounded);
-  IconData get anime =>
-      _pick(CupertinoIcons.play_circle, Icons.play_circle_outline_rounded);
-  IconData get novel => _pick(CupertinoIcons.doc_text, Icons.menu_book_rounded);
-  IconData get add => _pick(CupertinoIcons.plus, Icons.add_rounded);
-  IconData get more => _pick(CupertinoIcons.ellipsis, Icons.more_horiz_rounded);
-  IconData get filter =>
-      _pick(CupertinoIcons.line_horizontal_3_decrease, Icons.tune_rounded);
-  IconData get search => _pick(CupertinoIcons.search, Icons.search_rounded);
-  IconData get clear =>
-      _pick(CupertinoIcons.clear_circled_solid, Icons.cancel_rounded);
-  IconData get down =>
-      _pick(CupertinoIcons.chevron_down, Icons.expand_more_rounded);
-  IconData get up =>
-      _pick(CupertinoIcons.chevron_up, Icons.expand_less_rounded);
-  IconData get forward =>
-      _pick(CupertinoIcons.chevron_forward, Icons.chevron_right_rounded);
-  IconData get check => _pick(CupertinoIcons.check_mark, Icons.check_rounded);
-  IconData get close => _pick(CupertinoIcons.xmark, Icons.close_rounded);
-  IconData get webLink => _pick(CupertinoIcons.link, Icons.link);
-  IconData get external =>
-      _pick(CupertinoIcons.arrow_up_right_square, Icons.open_in_new);
-  IconData get recommend =>
-      _pick(CupertinoIcons.hand_thumbsup, Icons.thumb_up_outlined);
-  IconData get web => _pick(CupertinoIcons.globe, Icons.public_rounded);
-  IconData get browser =>
-      _pick(CupertinoIcons.square_on_square, Icons.tab_outlined);
-  IconData get browserStart =>
-      _pick(CupertinoIcons.macwindow, Icons.web_asset_outlined);
-  IconData get code =>
-      _pick(CupertinoIcons.chevron_left_slash_chevron_right, Icons.code);
-  IconData get cookies =>
-      _pick(CupertinoIcons.circle_grid_hex, Icons.cookie_outlined);
-  IconData get clipboard =>
-      _pick(CupertinoIcons.doc_on_clipboard, Icons.content_paste);
-  IconData get lock => _pick(CupertinoIcons.lock_fill, Icons.lock_outline);
-  IconData get repository =>
-      _pick(CupertinoIcons.cube_box, Icons.storage_outlined);
-  IconData get extensions =>
-      _pick(CupertinoIcons.square_grid_2x2, Icons.extension_outlined);
-  IconData get folderOutline =>
-      _pick(CupertinoIcons.folder, Icons.folder_outlined);
-  IconData get folder =>
-      _pick(CupertinoIcons.folder_fill, Icons.folder_outlined);
-  IconData get settings => _pick(CupertinoIcons.gear, Icons.settings_outlined);
-  IconData get translate =>
-      _pick(CupertinoIcons.textformat, Icons.translate_rounded);
-  IconData get account =>
-      _pick(CupertinoIcons.person_fill, Icons.person_rounded);
-  IconData get accountOutline =>
-      _pick(CupertinoIcons.person, Icons.person_outline);
-  IconData get copy => _pick(CupertinoIcons.doc_on_doc, Icons.copy_outlined);
-  IconData get security => _pick(CupertinoIcons.lock, Icons.lock_outline);
-  IconData get cloud => _pick(CupertinoIcons.cloud, Icons.cloud_outlined);
-  IconData get backup =>
-      _pick(CupertinoIcons.cloud_upload, Icons.cloud_upload_outlined);
-  IconData get restore =>
-      _pick(CupertinoIcons.cloud_download, Icons.cloud_download_outlined);
-  IconData get download =>
-      _pick(CupertinoIcons.arrow_down_to_line, Icons.download_outlined);
-  IconData get downloadQueue =>
-      _pick(CupertinoIcons.tray_arrow_down, Icons.file_download_outlined);
-  IconData get incognito =>
-      _pick(CupertinoIcons.eyeglasses, Icons.visibility_off_outlined);
-  IconData get reorder =>
-      _pick(CupertinoIcons.line_horizontal_3, Icons.drag_handle_rounded);
-  IconData get visible => _pick(CupertinoIcons.eye, Icons.visibility_outlined);
-  IconData get categories =>
-      _pick(CupertinoIcons.layers_alt, Icons.label_outline_rounded);
-  IconData get storage =>
-      _pick(CupertinoIcons.archivebox, Icons.storage_outlined);
-  IconData get statistics =>
-      _pick(CupertinoIcons.chart_bar, Icons.query_stats_outlined);
-  IconData get calendar =>
-      _pick(CupertinoIcons.calendar, Icons.calendar_month_outlined);
-  IconData get info => _pick(CupertinoIcons.info, Icons.info_outline_rounded);
-  IconData get history => _pick(CupertinoIcons.clock, Icons.history_rounded);
-  IconData get stop =>
-      _pick(CupertinoIcons.stop_circle, Icons.stop_circle_outlined);
-  IconData get latest =>
-      _pick(CupertinoIcons.sparkles, Icons.new_releases_outlined);
-  IconData get pin => _pick(CupertinoIcons.pin, Icons.push_pin_outlined);
-  IconData get pinSelected =>
-      _pick(CupertinoIcons.pin_fill, Icons.push_pin_rounded);
-  IconData get ascending => _pick(CupertinoIcons.arrow_up, Icons.arrow_upward);
-  IconData get descending =>
-      _pick(CupertinoIcons.arrow_down, Icons.arrow_downward);
-  IconData get count => _pick(CupertinoIcons.number, Icons.numbers);
-  IconData get refresh => _pick(CupertinoIcons.refresh, Icons.refresh);
-  IconData get shuffle => _pick(CupertinoIcons.shuffle, Icons.shuffle_rounded);
-  IconData get delete =>
-      _pick(CupertinoIcons.trash, Icons.delete_outline_rounded);
-  IconData get back => _pick(CupertinoIcons.chevron_back, Icons.arrow_back);
-  IconData get share => _pick(CupertinoIcons.share, Icons.ios_share_outlined);
-  IconData get migrate =>
-      _pick(CupertinoIcons.arrow_right_arrow_left, Icons.swap_horiz_rounded);
-  IconData get export =>
-      _pick(CupertinoIcons.arrow_up_doc, Icons.file_upload_outlined);
-  IconData get groups => _pick(CupertinoIcons.person_2, Icons.groups_outlined);
-  IconData get bookmark =>
-      _pick(CupertinoIcons.bookmark_fill, Icons.bookmark_rounded);
-  IconData get selected =>
-      _pick(CupertinoIcons.checkmark_circle_fill, Icons.check_circle);
-  IconData get unselected =>
-      _pick(CupertinoIcons.circle, Icons.radio_button_unchecked);
-  IconData get unread => _pick(CupertinoIcons.circle_fill, Icons.circle);
-  IconData get downloaded =>
-      _pick(CupertinoIcons.checkmark_circle, Icons.check_circle_outline);
-  IconData get error =>
-      _pick(CupertinoIcons.exclamationmark_circle, Icons.error_outline);
-  IconData get edit => _pick(CupertinoIcons.pencil, Icons.edit_outlined);
-  IconData get tracking =>
-      _pick(CupertinoIcons.arrow_2_circlepath, Icons.sync_outlined);
-  IconData get related =>
-      _pick(CupertinoIcons.book, Icons.account_tree_outlined);
-  IconData get bookmarkOutline =>
-      _pick(CupertinoIcons.bookmark, Icons.bookmark_border_rounded);
-  IconData get chapters =>
-      _pick(CupertinoIcons.list_bullet, Icons.format_list_bulleted_rounded);
-  IconData get adjustments =>
-      _pick(CupertinoIcons.slider_horizontal_3, Icons.tune_rounded);
-  IconData get previousChapter =>
-      _pick(CupertinoIcons.backward_end_fill, Icons.skip_previous_rounded);
-  IconData get nextChapter =>
-      _pick(CupertinoIcons.forward_end_fill, Icons.skip_next_rounded);
-  IconData get locate => _pick(CupertinoIcons.scope, Icons.my_location);
-  IconData get timer => _pick(CupertinoIcons.timer, Icons.timer_outlined);
-  IconData get crop => _pick(CupertinoIcons.crop, Icons.crop_rounded);
-  IconData get pageLayout =>
-      _pick(CupertinoIcons.rectangle_grid_1x2, Icons.view_week_outlined);
-  IconData get palette =>
-      _pick(CupertinoIcons.paintbrush, Icons.palette_outlined);
-  IconData get pageNumber =>
-      _pick(CupertinoIcons.doc_text, Icons.format_list_numbered_rounded);
-  IconData get brightness =>
-      _pick(CupertinoIcons.sun_max, Icons.light_mode_outlined);
-  IconData get animation => _pick(CupertinoIcons.film, Icons.animation_rounded);
-  IconData get navigation =>
-      _pick(CupertinoIcons.compass, Icons.explore_outlined);
-  IconData get flash => _pick(CupertinoIcons.bolt, Icons.flash_on_outlined);
-  IconData get contrast =>
-      _pick(CupertinoIcons.circle_lefthalf_fill, Icons.contrast_rounded);
-  IconData get grayscale => _pick(CupertinoIcons.drop, Icons.tonality_rounded);
-  IconData get image => _pick(CupertinoIcons.photo, Icons.image_outlined);
-  IconData get saveImage =>
-      _pick(CupertinoIcons.square_arrow_down, Icons.file_download_outlined);
-  IconData get reset =>
-      _pick(CupertinoIcons.arrow_counterclockwise, Icons.replay);
-  IconData get readingLeft => _pick(CupertinoIcons.arrow_left, Icons.west);
-  IconData get readingRight => _pick(CupertinoIcons.arrow_right, Icons.east);
-  IconData get continuousVertical =>
-      _pick(CupertinoIcons.arrow_up_down_square, Icons.swap_vert);
-  IconData get horizontalPages =>
-      _pick(CupertinoIcons.square_split_2x1, Icons.view_week_outlined);
+  IconData get library => CupertinoIcons.book;
+  IconData get librarySelected => CupertinoIcons.book_fill;
+  IconData get updates => CupertinoIcons.bell;
+  IconData get updatesSelected => CupertinoIcons.bell_fill;
+  IconData get browserSelected => CupertinoIcons.square_fill_on_square_fill;
+  IconData get manga => CupertinoIcons.book;
+  IconData get mangaSelected => CupertinoIcons.book_fill;
+  IconData get anime => CupertinoIcons.play_circle;
+  IconData get novel => CupertinoIcons.doc_text;
+  IconData get add => CupertinoIcons.plus;
+  IconData get more => CupertinoIcons.ellipsis;
+  IconData get filter => CupertinoIcons.line_horizontal_3_decrease;
+  IconData get search => CupertinoIcons.search;
+  IconData get clear => CupertinoIcons.clear_circled_solid;
+  IconData get down => CupertinoIcons.chevron_down;
+  IconData get up => CupertinoIcons.chevron_up;
+  IconData get forward => CupertinoIcons.chevron_forward;
+  IconData get check => CupertinoIcons.check_mark;
+  IconData get close => CupertinoIcons.xmark;
+  IconData get webLink => CupertinoIcons.link;
+  IconData get external => CupertinoIcons.arrow_up_right_square;
+  IconData get recommend => CupertinoIcons.hand_thumbsup;
+  IconData get web => CupertinoIcons.globe;
+  IconData get browser => CupertinoIcons.square_on_square;
+  IconData get browserStart => CupertinoIcons.macwindow;
+  IconData get code => CupertinoIcons.chevron_left_slash_chevron_right;
+  IconData get cookies => CupertinoIcons.circle_grid_hex;
+  IconData get clipboard => CupertinoIcons.doc_on_clipboard;
+  IconData get lock => CupertinoIcons.lock_fill;
+  IconData get repository => CupertinoIcons.cube_box;
+  IconData get extensions => CupertinoIcons.square_grid_2x2;
+  IconData get folderOutline => CupertinoIcons.folder;
+  IconData get folder => CupertinoIcons.folder_fill;
+  IconData get settings => CupertinoIcons.gear;
+  IconData get translate => CupertinoIcons.textformat;
+  IconData get account => CupertinoIcons.person_fill;
+  IconData get accountOutline => CupertinoIcons.person;
+  IconData get copy => CupertinoIcons.doc_on_doc;
+  IconData get security => CupertinoIcons.lock;
+  IconData get cloud => CupertinoIcons.cloud;
+  IconData get backup => CupertinoIcons.cloud_upload;
+  IconData get restore => CupertinoIcons.cloud_download;
+  IconData get download => CupertinoIcons.arrow_down_to_line;
+  IconData get downloadQueue => CupertinoIcons.tray_arrow_down;
+  IconData get incognito => CupertinoIcons.eyeglasses;
+  IconData get reorder => CupertinoIcons.line_horizontal_3;
+  IconData get visible => CupertinoIcons.eye;
+  IconData get categories => CupertinoIcons.layers_alt;
+  IconData get storage => CupertinoIcons.archivebox;
+  IconData get statistics => CupertinoIcons.chart_bar;
+  IconData get calendar => CupertinoIcons.calendar;
+  IconData get info => CupertinoIcons.info;
+  IconData get history => CupertinoIcons.clock;
+  IconData get stop => CupertinoIcons.stop_circle;
+  IconData get latest => CupertinoIcons.sparkles;
+  IconData get pin => CupertinoIcons.pin;
+  IconData get pinSelected => CupertinoIcons.pin_fill;
+  IconData get ascending => CupertinoIcons.arrow_up;
+  IconData get descending => CupertinoIcons.arrow_down;
+  IconData get count => CupertinoIcons.number;
+  IconData get refresh => CupertinoIcons.refresh;
+  IconData get shuffle => CupertinoIcons.shuffle;
+  IconData get delete => CupertinoIcons.trash;
+  IconData get back => CupertinoIcons.chevron_back;
+  IconData get share => CupertinoIcons.share;
+  IconData get migrate => CupertinoIcons.arrow_right_arrow_left;
+  IconData get export => CupertinoIcons.arrow_up_doc;
+  IconData get groups => CupertinoIcons.person_2;
+  IconData get bookmark => CupertinoIcons.bookmark_fill;
+  IconData get selected => CupertinoIcons.checkmark_circle_fill;
+  IconData get unselected => CupertinoIcons.circle;
+  IconData get unread => CupertinoIcons.circle_fill;
+  IconData get downloaded => CupertinoIcons.checkmark_circle;
+  IconData get error => CupertinoIcons.exclamationmark_circle;
+  IconData get edit => CupertinoIcons.pencil;
+  IconData get tracking => CupertinoIcons.arrow_2_circlepath;
+  IconData get related => CupertinoIcons.book;
+  IconData get bookmarkOutline => CupertinoIcons.bookmark;
+  IconData get chapters => CupertinoIcons.list_bullet;
+  IconData get adjustments => CupertinoIcons.slider_horizontal_3;
+  IconData get previousChapter => CupertinoIcons.backward_end_fill;
+  IconData get nextChapter => CupertinoIcons.forward_end_fill;
+  IconData get locate => CupertinoIcons.scope;
+  IconData get timer => CupertinoIcons.timer;
+  IconData get crop => CupertinoIcons.crop;
+  IconData get pageLayout => CupertinoIcons.rectangle_grid_1x2;
+  IconData get palette => CupertinoIcons.paintbrush;
+  IconData get pageNumber => CupertinoIcons.doc_text;
+  IconData get brightness => CupertinoIcons.sun_max;
+  IconData get animation => CupertinoIcons.film;
+  IconData get navigation => CupertinoIcons.compass;
+  IconData get flash => CupertinoIcons.bolt;
+  IconData get contrast => CupertinoIcons.circle_lefthalf_fill;
+  IconData get grayscale => CupertinoIcons.drop;
+  IconData get image => CupertinoIcons.photo;
+  IconData get saveImage => CupertinoIcons.square_arrow_down;
+  IconData get reset => CupertinoIcons.arrow_counterclockwise;
+  IconData get readingLeft => CupertinoIcons.arrow_left;
+  IconData get readingRight => CupertinoIcons.arrow_right;
+  IconData get continuousVertical => CupertinoIcons.arrow_up_down_square;
+  IconData get horizontalPages => CupertinoIcons.square_split_2x1;
 
-  IconData get memory => _pick(CupertinoIcons.cube, Icons.memory_outlined);
-  IconData get headphones =>
-      _pick(CupertinoIcons.headphones, Icons.headphones_outlined);
-  IconData get audio =>
-      _pick(CupertinoIcons.speaker_2, Icons.audiotrack_outlined);
-  IconData get subtitles =>
-      _pick(CupertinoIcons.captions_bubble, Icons.subtitles_outlined);
-  IconData get font =>
-      _pick(CupertinoIcons.textformat_size, Icons.text_fields_rounded);
-  IconData get alignLeft =>
-      _pick(CupertinoIcons.text_alignleft, Icons.format_align_left);
-  IconData get lineSpacing => _pick(
-    CupertinoIcons.arrow_up_arrow_down,
-    Icons.format_line_spacing_rounded,
-  );
-  IconData get percent => _pick(CupertinoIcons.percent, Icons.percent_rounded);
-  IconData get speech => _pick(
-    CupertinoIcons.person_crop_rectangle,
-    Icons.record_voice_over_outlined,
-  );
-  IconData get chat =>
-      _pick(CupertinoIcons.chat_bubble, Icons.chat_bubble_outline_rounded);
-  IconData get night => _pick(CupertinoIcons.moon, Icons.dark_mode_outlined);
-  IconData get unlock =>
-      _pick(CupertinoIcons.lock_open, Icons.lock_open_rounded);
-  IconData get wifi => _pick(CupertinoIcons.wifi, Icons.wifi_rounded);
-  IconData get rotate =>
-      _pick(CupertinoIcons.rotate_right, Icons.screen_rotation_outlined);
-  IconData get zoomOut =>
-      _pick(CupertinoIcons.zoom_out, Icons.zoom_out_rounded);
-  IconData get speed => _pick(CupertinoIcons.speedometer, Icons.speed_rounded);
-  IconData get fastForward =>
-      _pick(CupertinoIcons.forward, Icons.fast_forward_outlined);
-  IconData get fullscreen => _pick(
-    CupertinoIcons.arrow_up_left_arrow_down_right,
-    Icons.fullscreen_rounded,
-  );
-  IconData get favorite =>
-      _pick(CupertinoIcons.star, Icons.star_border_rounded);
-  IconData get signIn =>
-      _pick(CupertinoIcons.square_arrow_right, Icons.login_rounded);
-  IconData get signOut =>
-      _pick(CupertinoIcons.square_arrow_left, Icons.logout_rounded);
+  IconData get memory => CupertinoIcons.cube;
+  IconData get headphones => CupertinoIcons.headphones;
+  IconData get audio => CupertinoIcons.speaker_2;
+  IconData get subtitles => CupertinoIcons.captions_bubble;
+  IconData get font => CupertinoIcons.textformat_size;
+  IconData get alignLeft => CupertinoIcons.text_alignleft;
+  IconData get lineSpacing => CupertinoIcons.arrow_up_arrow_down;
+  IconData get percent => CupertinoIcons.percent;
+  IconData get speech => CupertinoIcons.person_crop_rectangle;
+  IconData get chat => CupertinoIcons.chat_bubble;
+  IconData get night => CupertinoIcons.moon;
+  IconData get unlock => CupertinoIcons.lock_open;
+  IconData get wifi => CupertinoIcons.wifi;
+  IconData get rotate => CupertinoIcons.rotate_right;
+  IconData get zoomOut => CupertinoIcons.zoom_out;
+  IconData get speed => CupertinoIcons.speedometer;
+  IconData get fastForward => CupertinoIcons.forward;
+  IconData get fullscreen => CupertinoIcons.arrow_up_left_arrow_down_right;
+  IconData get favorite => CupertinoIcons.star;
+  IconData get signIn => CupertinoIcons.square_arrow_right;
+  IconData get signOut => CupertinoIcons.square_arrow_left;
 }

@@ -225,7 +225,7 @@ void main() {
       expect(downloaded.writes, [true]);
       final toggle = find.descendant(
         of: find.byType(DownloadedOnlyWidget),
-        matching: find.byType(Switch),
+        matching: find.byType(NodeLaneSwitch),
       );
       await tester.ensureVisible(toggle);
       await tester.pumpAndSettle();

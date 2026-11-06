@@ -110,8 +110,8 @@ class _MobileRepositoryManagerState
             children: [
               if (!builtIn)
                 NodeLaneGroupSurface(
-                  child: SwitchListTile.adaptive(
-                    title: const Text('显示此仓库的来源'),
+                  child: NodeLaneSwitchRow(
+                    title: '显示此仓库的来源',
                     value: current.hidden != true,
                     onChanged: (value) => sheetRef
                         .read(

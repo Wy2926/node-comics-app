@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart'
-    show CupertinoPicker, CupertinoPickerDefaultSelectionOverlay;
+    show
+        CupertinoPicker,
+        CupertinoPickerDefaultSelectionOverlay,
+        CupertinoSwitch;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -550,6 +553,24 @@ class NodeLaneSectionHeading extends StatelessWidget {
   );
 }
 
+/// One switch appearance across platforms, including standalone trailing controls.
+class NodeLaneSwitch extends StatelessWidget {
+  const NodeLaneSwitch({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) => CupertinoSwitch(
+    value: value,
+    onChanged: onChanged,
+    activeTrackColor: NodeLaneTokens.of(context).accent,
+  );
+}
+
 /// A switch is the same row as other controls, including its full-row target.
 class NodeLaneSwitchRow extends StatelessWidget {
   const NodeLaneSwitchRow({
@@ -574,13 +595,7 @@ class NodeLaneSwitchRow extends StatelessWidget {
       icon: icon,
       enabled: onChanged != null,
       onTap: onChanged == null ? null : () => onChanged!(!value),
-      trailing: Switch.adaptive(
-        value: value,
-        onChanged: onChanged,
-        activeTrackColor: NodeLaneTokens.of(context).accent,
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: EdgeInsets.zero,
-      ),
+      trailing: NodeLaneSwitch(value: value, onChanged: onChanged),
     ),
   );
 }
@@ -985,7 +1000,7 @@ class _NodeLaneSliderRowState extends State<NodeLaneSliderRow> {
             const SizedBox(height: NodeLaneTokens.space4),
             Text(widget.subtitle!, style: t.readerSecondary),
           ],
-          Slider.adaptive(
+          Slider(
             value: _draft,
             min: widget.min,
             max: widget.max,
@@ -1059,7 +1074,7 @@ AppBar nodeLaneAppBar(
       : null,
 );
 
-enum NodeLaneIconButtonStyle { plain, tonal, field }
+enum NodeLaneIconButtonStyle { plain, glass }
 
 class NodeLaneIconButton extends StatelessWidget {
   const NodeLaneIconButton({
@@ -1067,7 +1082,7 @@ class NodeLaneIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
-    this.style = NodeLaneIconButtonStyle.tonal,
+    this.style = NodeLaneIconButtonStyle.glass,
     this.active = false,
     this.destructive = false,
     this.busy = false,
@@ -1081,7 +1096,6 @@ class NodeLaneIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _iconButtonSurface(
-      context,
       style: style,
       child: IconButton(
         tooltip: tooltip,
@@ -1097,7 +1111,6 @@ class NodeLaneIconButton extends StatelessWidget {
             : Icon(icon, size: NodeLaneTokens.iconSize),
         style: _iconButtonStyle(
           context,
-          style: style,
           active: active,
           destructive: destructive,
         ),
@@ -1169,8 +1182,7 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
       );
     }
     return _iconButtonSurface(
-      context,
-      style: NodeLaneIconButtonStyle.tonal,
+      style: NodeLaneIconButtonStyle.glass,
       child: PopupMenuButton<T>(
         enabled: enabled,
         tooltip: tooltip,
@@ -1185,12 +1197,10 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
 
 ButtonStyle _iconButtonStyle(
   BuildContext context, {
-  NodeLaneIconButtonStyle style = NodeLaneIconButtonStyle.tonal,
   bool active = false,
   bool destructive = false,
 }) {
   final t = NodeLaneTokens.of(context);
-  final glass = t.usesGlass && style != NodeLaneIconButtonStyle.plain;
   return IconButton.styleFrom(
     minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1199,23 +1209,12 @@ ButtonStyle _iconButtonStyle(
         : active
         ? t.accent
         : t.ink,
-    backgroundColor: glass
-        ? Colors.transparent
-        : switch (style) {
-            NodeLaneIconButtonStyle.plain => Colors.transparent,
-            NodeLaneIconButtonStyle.tonal => t.accentSoft,
-            NodeLaneIconButtonStyle.field => active ? t.accentSoft : t.soft,
-          },
-    shape: style == NodeLaneIconButtonStyle.field && !glass
-        ? RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-          )
-        : const CircleBorder(),
+    backgroundColor: Colors.transparent,
+    shape: const CircleBorder(),
   );
 }
 
-Widget _iconButtonSurface(
-  BuildContext context, {
+Widget _iconButtonSurface({
   required NodeLaneIconButtonStyle style,
   required Widget child,
 }) => Center(
@@ -1223,9 +1222,7 @@ Widget _iconButtonSurface(
   heightFactor: 1,
   child: SizedBox.square(
     dimension: NodeLaneTokens.minTapTarget,
-    child:
-        NodeLaneTokens.of(context).usesGlass &&
-            style != NodeLaneIconButtonStyle.plain
+    child: style != NodeLaneIconButtonStyle.plain
         ? NodeLaneGlassSurface(
             borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
             elevated: true,
@@ -1425,21 +1422,19 @@ class NodeLaneTextField extends StatefulWidget {
                       )),
           )
           .copyWith(
-            fillColor: t.usesGlass ? Colors.transparent : null,
-            border: t.usesGlass ? InputBorder.none : null,
-            enabledBorder: t.usesGlass ? InputBorder.none : null,
-            focusedBorder: t.usesGlass ? InputBorder.none : null,
-            disabledBorder: t.usesGlass ? InputBorder.none : null,
+            fillColor: Colors.transparent,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
           ),
     );
-    final input = t.usesGlass
-        ? NodeLaneGlassSurface(
-            borderRadius: t.inputRadius,
-            input: true,
-            elevated: true,
-            child: field,
-          )
-        : field;
+    final input = NodeLaneGlassSurface(
+      borderRadius: t.inputRadius,
+      input: true,
+      elevated: true,
+      child: field,
+    );
     if (label?.isNotEmpty != true) return input;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1509,13 +1504,7 @@ class NodeLaneSegments<T> extends StatelessWidget {
             : compact
             ? colors.detailChipSurface
             : colors.soft,
-        borderRadius: BorderRadius.circular(
-          colors.usesGlass
-              ? NodeLaneTokens.capsuleRadius
-              : prominent || pill
-              ? 22
-              : NodeLaneTokens.controlRadius,
-        ),
+        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
       ),
       child: Padding(
         padding: EdgeInsets.all(
@@ -1535,12 +1524,8 @@ class NodeLaneSegments<T> extends StatelessWidget {
                         ? colors.accent
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(
-                      colors.usesGlass
-                          ? NodeLaneTokens.capsuleRadius -
-                                NodeLaneTokens.segmentInset
-                          : prominent || pill
-                          ? 20
-                          : NodeLaneTokens.segmentRadius,
+                      NodeLaneTokens.capsuleRadius -
+                          NodeLaneTokens.segmentInset,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(

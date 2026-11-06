@@ -25,7 +25,7 @@ class NodeLaneGlassSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
-    final glass = t.usesGlass && !MediaQuery.highContrastOf(context);
+    final glass = !MediaQuery.highContrastOf(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final fill = input
         ? t.searchSurface

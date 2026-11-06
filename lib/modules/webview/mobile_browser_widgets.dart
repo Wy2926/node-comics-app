@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 
 import 'browser_url.dart';
 
@@ -488,120 +489,116 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    final addressBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(
-        widget.compact
-            ? NodeLaneTokens.capsuleRadius
-            : NodeLaneTokens.controlRadius,
-      ),
-      borderSide: BorderSide.none,
-    );
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: ValueListenableBuilder(
-            valueListenable: input,
-            builder: (context, _, _) => TextField(
-              controller: input,
-              focusNode: focus,
-              style: widget.compact
-                  ? t.readerValue.copyWith(color: t.ink)
-                  : t.readerLabel,
-              textAlign: widget.compact && !focus.hasFocus
-                  ? TextAlign.center
-                  : TextAlign.start,
-              textAlignVertical: TextAlignVertical.center,
-              keyboardType: TextInputType.url,
-              textInputAction: TextInputAction.go,
-              autocorrect: false,
-              enableSuggestions: false,
-              textCapitalization: TextCapitalization.none,
-              smartDashesType: SmartDashesType.disabled,
-              smartQuotesType: SmartQuotesType.disabled,
-              onSubmitted: (_) => _submit(),
-              onEditingComplete: () {},
-              onChanged: (_) {
-                if (invalid) setState(() => invalid = false);
-              },
-              onTapOutside: (_) => focus.unfocus(),
-              decoration: t
-                  .inputDecoration(
-                    '输入或粘贴网址',
-                    prefixIcon: Icon(
-                      widget.compact && widget.url.startsWith('https:')
-                          ? icons.lock
-                          : icons.web,
-                      size: widget.compact
-                          ? NodeLaneTokens.smallIconSize
-                          : NodeLaneTokens.iconSize,
-                      color: t.muted,
-                    ),
-                    suffixIcon: IconButton(
-                      tooltip: widget.compact
-                          ? (focus.hasFocus ? '清空网址' : '刷新')
-                          : (input.text.isEmpty ? '粘贴网址' : '打开网址'),
-                      style: _barIconStyle(t.muted),
-                      icon: Icon(
-                        widget.compact
-                            ? (focus.hasFocus ? icons.clear : icons.refresh)
-                            : (input.text.isEmpty
-                                  ? icons.clipboard
-                                  : icons.forward),
+          child: NodeLaneGlassSurface(
+            borderRadius: t.inputRadius,
+            input: true,
+            elevated: true,
+            child: ValueListenableBuilder(
+              valueListenable: input,
+              builder: (context, _, _) => TextField(
+                controller: input,
+                focusNode: focus,
+                style: widget.compact
+                    ? t.readerValue.copyWith(color: t.ink)
+                    : t.body,
+                textAlign: widget.compact && !focus.hasFocus
+                    ? TextAlign.center
+                    : TextAlign.start,
+                textAlignVertical: TextAlignVertical.center,
+                keyboardType: TextInputType.url,
+                textInputAction: TextInputAction.go,
+                autocorrect: false,
+                enableSuggestions: false,
+                textCapitalization: TextCapitalization.none,
+                smartDashesType: SmartDashesType.disabled,
+                smartQuotesType: SmartQuotesType.disabled,
+                onSubmitted: (_) => _submit(),
+                onEditingComplete: () {},
+                onChanged: (_) {
+                  if (invalid) setState(() => invalid = false);
+                },
+                onTapOutside: (_) => focus.unfocus(),
+                decoration: t
+                    .inputDecoration(
+                      '输入或粘贴网址',
+                      prefixIcon: Icon(
+                        widget.compact && widget.url.startsWith('https:')
+                            ? icons.lock
+                            : icons.web,
                         size: widget.compact
                             ? NodeLaneTokens.smallIconSize
                             : NodeLaneTokens.iconSize,
+                        color: t.muted,
                       ),
-                      onPressed: widget.compact
-                          ? (focus.hasFocus ? input.clear : widget.onReload)
-                          : () async {
-                              if (input.text.isNotEmpty) {
-                                _submit();
-                                return;
-                              }
-                              final data = await Clipboard.getData(
-                                Clipboard.kTextPlain,
-                              );
-                              if (!mounted || data?.text == null) return;
-                              input.text = data!.text!.trim();
-                              focus.requestFocus();
-                            },
+                      suffixIcon: IconButton(
+                        tooltip: widget.compact
+                            ? (focus.hasFocus ? '清空网址' : '刷新')
+                            : (input.text.isEmpty ? '粘贴网址' : '打开网址'),
+                        style: _barIconStyle(t.muted),
+                        icon: Icon(
+                          widget.compact
+                              ? (focus.hasFocus ? icons.clear : icons.refresh)
+                              : (input.text.isEmpty
+                                    ? icons.clipboard
+                                    : icons.forward),
+                          size: widget.compact
+                              ? NodeLaneTokens.smallIconSize
+                              : NodeLaneTokens.iconSize,
+                        ),
+                        onPressed: widget.compact
+                            ? (focus.hasFocus ? input.clear : widget.onReload)
+                            : () async {
+                                if (input.text.isNotEmpty) {
+                                  _submit();
+                                  return;
+                                }
+                                final data = await Clipboard.getData(
+                                  Clipboard.kTextPlain,
+                                );
+                                if (!mounted || data?.text == null) return;
+                                input.text = data!.text!.trim();
+                                focus.requestFocus();
+                              },
+                      ),
+                    )
+                    .copyWith(
+                      fillColor: Colors.transparent,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      constraints: BoxConstraints(
+                        minHeight: widget.compact
+                            ? NodeLaneTokens.browserAddressHeight
+                            : NodeLaneTokens.searchHeight,
+                      ),
+                      prefixIconConstraints: BoxConstraints.tightFor(
+                        width: widget.compact
+                            ? NodeLaneTokens.websiteIconSize
+                            : NodeLaneTokens.searchHeight,
+                        height: widget.compact
+                            ? NodeLaneTokens.browserAddressHeight
+                            : NodeLaneTokens.searchHeight,
+                      ),
+                      suffixIconConstraints: BoxConstraints.tightFor(
+                        width: NodeLaneTokens.minTapTarget,
+                        height: widget.compact
+                            ? NodeLaneTokens.browserAddressHeight
+                            : NodeLaneTokens.searchHeight,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: NodeLaneTokens.space8,
+                      ),
+                      hintStyle: widget.compact
+                          ? t.readerSecondary
+                          : t.body.copyWith(color: t.muted),
+                      errorText: invalid ? '请输入有效的网址' : null,
+                      errorMaxLines: 2,
                     ),
-                  )
-                  .copyWith(
-                    border: addressBorder,
-                    enabledBorder: addressBorder,
-                    focusedBorder: addressBorder.copyWith(
-                      borderSide: BorderSide(color: t.accent, width: 1.5),
-                    ),
-                    constraints: BoxConstraints(
-                      minHeight: widget.compact
-                          ? NodeLaneTokens.browserAddressHeight
-                          : NodeLaneTokens.searchHeight,
-                    ),
-                    prefixIconConstraints: BoxConstraints.tightFor(
-                      width: widget.compact
-                          ? NodeLaneTokens.websiteIconSize
-                          : NodeLaneTokens.searchHeight,
-                      height: widget.compact
-                          ? NodeLaneTokens.browserAddressHeight
-                          : NodeLaneTokens.searchHeight,
-                    ),
-                    suffixIconConstraints: BoxConstraints.tightFor(
-                      width: NodeLaneTokens.minTapTarget,
-                      height: widget.compact
-                          ? NodeLaneTokens.browserAddressHeight
-                          : NodeLaneTokens.searchHeight,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: NodeLaneTokens.space8,
-                    ),
-                    hintStyle: widget.compact
-                        ? t.readerSecondary
-                        : t.readerLabel.copyWith(color: t.muted),
-                    errorText: invalid ? '请输入有效的网址' : null,
-                    errorMaxLines: 2,
-                  ),
+              ),
             ),
           ),
         ),
@@ -642,10 +639,10 @@ class MobileBrowserTabsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
-    return IconButton(
+    final button = IconButton(
       tooltip: '标签页 · $count',
       onPressed: onPressed,
-      style: _barIconStyle(t.ink, background: tonal ? t.soft : null),
+      style: _barIconStyle(t.ink),
       icon: SizedBox(
         width: NodeLaneTokens.iconSize,
         height: NodeLaneTokens.iconSize,
@@ -660,7 +657,7 @@ class MobileBrowserTabsButton extends StatelessWidget {
                 child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: tonal ? t.soft : t.surface,
+                    color: t.surface,
                     borderRadius: BorderRadius.circular(
                       NodeLaneTokens.controlRadius / 2,
                     ),
@@ -681,6 +678,13 @@ class MobileBrowserTabsButton extends StatelessWidget {
         ),
       ),
     );
+    return tonal
+        ? NodeLaneGlassSurface(
+            borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+            elevated: true,
+            child: button,
+          )
+        : button;
   }
 }
 

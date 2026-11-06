@@ -497,7 +497,7 @@ class _EnhancementSlider extends StatelessWidget {
           child: SizedBox(
             height: 32,
             child: SliderTheme(
-              data: readerSliderTheme(context)
+              data: nodeLaneSliderTheme(Theme.of(context))
                   .copyWith(thumbColor: NodeLaneTokens.of(context).line),
               child: Slider(
                 padding: EdgeInsets.zero,

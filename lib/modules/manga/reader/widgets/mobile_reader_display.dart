@@ -242,18 +242,9 @@ class _ReaderDisplaySheetState extends ConsumerState<_ReaderDisplaySheet> {
                       ],
                       const SizedBox(height: 16),
                       NodeLaneGroupSurface(
-                        child: SwitchListTile.adaptive(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
-                          title: Text(
-                            l10n.crop_borders,
-                            style: colors.readerLabel,
-                          ),
-                          subtitle: Text(
-                            l10n.reader_display_crop_scope,
-                            style: colors.readerSecondary,
-                          ),
+                        child: NodeLaneSwitchRow(
+                          title: l10n.crop_borders,
+                          subtitle: l10n.reader_display_crop_scope,
                           value: crop,
                           onChanged: (value) => _close(value),
                         ),

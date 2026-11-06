@@ -166,7 +166,7 @@ class MobileReaderProgress extends StatelessWidget {
     final colors = NodeLaneTokens.of(context);
     final icons = NodeLaneIcons.of(context);
     return SliderTheme(
-      data: readerSliderTheme(context),
+      data: nodeLaneSliderTheme(Theme.of(context)),
       child: Column(
         children: [
           Text(

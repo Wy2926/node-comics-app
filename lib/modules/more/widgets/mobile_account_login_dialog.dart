@@ -176,7 +176,6 @@ class _MobileAccountLoginDialogState extends State<MobileAccountLoginDialog> {
                               icon: _revealed.contains(widget.fields[index].id)
                                   ? NodeLaneIcons.of(context).incognito
                                   : NodeLaneIcons.of(context).visible,
-                              style: NodeLaneIconButtonStyle.field,
                             ),
                     ),
                 ],

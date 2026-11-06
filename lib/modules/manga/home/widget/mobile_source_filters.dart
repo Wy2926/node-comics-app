@@ -211,7 +211,7 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                       children: [
                         NodeLaneRow(
                           title: label(f.name),
-                          trailing: Switch.adaptive(
+                          trailing: NodeLaneSwitch(
                             value: f.state,
                             onChanged: (v) => setState(() => f.state = v),
                           ),

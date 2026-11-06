@@ -117,7 +117,7 @@ class _MobileBookshelfImportSheetState
                     NodeLaneRow(
                       title: l10n.split_epub_chapters,
                       subtitle: l10n.split_epub_chapters_description,
-                      trailing: Switch.adaptive(
+                      trailing: NodeLaneSwitch(
                         value: _splitChapters,
                         onChanged: _busy
                             ? null

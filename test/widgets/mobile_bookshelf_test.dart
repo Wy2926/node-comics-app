@@ -8,6 +8,7 @@ import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_empty.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_header.dart';
 import 'package:mangayomi/modules/main_view/widgets/nodelane_mobile_navigation.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -30,6 +31,69 @@ Widget app(Widget child, {double scale = 1, bool dark = false}) => MaterialApp(
 );
 
 void main() {
+  testWidgets(
+    'floating tabs keep safe area, RTL targets and accessible badges',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      String? selected;
+      Widget navigation(bool highContrast) => app(
+        MediaQuery(
+          data: MediaQueryData(
+            size: const Size(320, 700),
+            viewPadding: const EdgeInsets.only(bottom: 24),
+            padding: const EdgeInsets.only(bottom: 24),
+            textScaler: const TextScaler.linear(2),
+            highContrast: highContrast,
+            disableAnimations: true,
+          ),
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: NodeLaneMobileNavigation(
+                routes: const [
+                  '/MangaLibrary',
+                  '/updates',
+                  '/browse',
+                  '/browser',
+                  '/more',
+                ],
+                location: '/MangaLibrary',
+                visible: true,
+                nativeIos: false,
+                badges: const {'/updates': 120},
+                onSelected: (value) => selected = value,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(navigation(false));
+      await tester.pumpAndSettle();
+      final rect = tester.getRect(find.byType(NodeLaneGlassSurface));
+      expect(rect.left, 16);
+      expect(rect.right, 304);
+      expect(rect.bottom, 700 - 24 - 8);
+      expect(
+        tester.getCenter(find.text('书架')).dx,
+        greaterThan(tester.getCenter(find.text('更多')).dx),
+      );
+      expect(find.text('99+'), findsOneWidget);
+      expect(tester.getSemantics(find.bySemanticsLabel('更新')).value, '120');
+      await tester.tap(find.text('来源'));
+      expect(selected, '/browse');
+      await tester.pumpWidget(navigation(true));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(find.byType(NodeLaneGlassSurface)), rect);
+      expect(find.byType(BackdropFilter), findsNothing);
+      await tester.tap(find.text('更多'));
+      expect(selected, '/more');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   test('display mode owns density and narrow screens keep usable cards', () {
     expect(mobileBookshelfColumns(350, comfortable: true), 2);
     expect(mobileBookshelfColumns(350, comfortable: false), 3);
@@ -519,7 +583,9 @@ void main() {
 
       await tester.tap(field);
       await tester.pump();
-      await tester.tap(find.byIcon(Icons.cancel_rounded));
+      await tester.tap(
+        find.byIcon(NodeLaneIcons.of(tester.element(field)).clear),
+      );
       await tester.pump();
       expect(input.focusNode.hasFocus, isTrue);
       await tester.tap(find.byTooltip('导入'));
@@ -632,7 +698,7 @@ void main() {
       await render();
       expect(
         tester
-            .widget<AndroidMobileTabBar>(find.byType(AndroidMobileTabBar))
+            .widget<NodeLaneFlutterTabBar>(find.byType(NodeLaneFlutterTabBar))
             .items
             .length,
         5,

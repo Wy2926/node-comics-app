@@ -193,7 +193,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
     }
     final toggle = checked == null
         ? null
-        : Switch.adaptive(
+        : NodeLaneSwitch(
             value: checked,
             onChanged: saving
                 ? null

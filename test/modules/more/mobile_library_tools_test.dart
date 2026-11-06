@@ -406,12 +406,17 @@ void main() {
       await tap(tester, find.text('Open'));
       Finder toggle(String label) => find.descendant(
         of: find.widgetWithText(NodeLaneRow, label),
-        matching: find.byType(Switch),
+        matching: find.byType(NodeLaneSwitch),
       );
       await reveal(tester, toggle('Show in library'));
-      expect(tester.widget<Switch>(toggle('Show in library')).value, isTrue);
       expect(
-        tester.widget<Switch>(toggle('Include in library updates')).value,
+        tester.widget<NodeLaneSwitch>(toggle('Show in library')).value,
+        isTrue,
+      );
+      expect(
+        tester
+            .widget<NodeLaneSwitch>(toggle('Include in library updates'))
+            .value,
         isTrue,
       );
       await tap(tester, toggle('Show in library'));

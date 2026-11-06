@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -245,7 +247,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Beta');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Beta').last);
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(NodeLaneSwitch));
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
       expect(result!.ids, {1});

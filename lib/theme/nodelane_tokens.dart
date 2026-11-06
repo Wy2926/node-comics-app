@@ -15,12 +15,10 @@ class NodeLaneTokens {
     required this.searchLine,
     required this.accent,
     required this.onAccent,
-    this.usesGlass = false,
   });
 
   final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
   final Color searchSurface, searchLine;
-  final bool usesGlass;
   static const disclosureDuration = Duration(milliseconds: 200);
   static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
   static const space16 = 16.0, space20 = 20.0, space24 = 24.0;
@@ -65,7 +63,7 @@ class NodeLaneTokens {
   static const readerSheetShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(modalRadius)),
   );
-  static const segmentInset = 3.0, segmentRadius = 10.0;
+  static const segmentInset = 3.0;
   static const pagePadding = EdgeInsets.fromLTRB(
     gutter,
     space8,
@@ -87,12 +85,15 @@ class NodeLaneTokens {
     horizontal: space16,
     vertical: space8,
   );
-  static const modalRadius = 24.0, menuRadius = 16.0;
+  static const modalRadius = 24.0;
   static const modalActionHeight = 48.0;
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
   static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
   static const browserTabGap = 12.0;
+  static const navigationHeight = 64.0, navigationRadius = 32.0;
+  static const navigationInset = 6.0, navigationLabelSize = 12.0;
+  static const navigationLabelHeight = 1.3;
   static const browserAddressHeight = 44.0, browserBackWidth = 64.0;
   static const browserTranslationWidth = 132.0, browserDisplayWidth = 176.0;
   static const dialogMaxWidth = 480.0;
@@ -130,21 +131,15 @@ class NodeLaneTokens {
       searchLine: dark ? const Color(0xff46505f) : const Color(0xffdde2e9),
       accent: theme.colorScheme.primary,
       onAccent: theme.colorScheme.onPrimary,
-      usesGlass: theme.platform == TargetPlatform.iOS,
     );
   }
 
   Color get accentSoft =>
       Color.alphaBlend(accent.withValues(alpha: .11), surface);
 
-  OutlinedBorder get buttonShape => usesGlass
-      ? const StadiumBorder()
-      : RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(controlRadius),
-        );
+  OutlinedBorder get buttonShape => const StadiumBorder();
 
-  BorderRadius get inputRadius =>
-      BorderRadius.circular(usesGlass ? capsuleRadius : controlRadius);
+  BorderRadius get inputRadius => BorderRadius.circular(capsuleRadius);
 
   TextStyle get pageTitle => TextStyle(
     fontSize: 34,
@@ -232,6 +227,22 @@ class NodeLaneTokens {
   );
 }
 
+SliderThemeData nodeLaneSliderTheme(ThemeData theme) {
+  final colors = NodeLaneTokens.fromTheme(theme);
+  return theme.sliderTheme.copyWith(
+    trackHeight: NodeLaneTokens.readerSliderTrack,
+    activeTrackColor: colors.accent,
+    inactiveTrackColor: colors.line,
+    thumbColor: colors.accent,
+    overlayColor: colors.accent.withValues(alpha: .12),
+    trackShape: const RoundedRectSliderTrackShape(),
+    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+    overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+    showValueIndicator: ShowValueIndicator.never,
+    tickMarkShape: SliderTickMarkShape.noTickMark,
+  );
+}
+
 /// Applied at the mobile app root so overlays on any navigator share tokens.
 /// Route ownership, dismissal, scrolling and save semantics stay with callers.
 ThemeData nodeLaneModalTheme(ThemeData base) {
@@ -250,6 +261,7 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
   );
   final input = colors.inputDecoration('');
   return base.copyWith(
+    sliderTheme: nodeLaneSliderTheme(base),
     iconTheme: base.iconTheme.copyWith(
       color: colors.ink,
       size: NodeLaneTokens.iconSize,
@@ -346,11 +358,7 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
       elevation: 6,
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-          colors.usesGlass
-              ? NodeLaneTokens.capsuleRadius
-              : NodeLaneTokens.menuRadius,
-        ),
+        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
         side: BorderSide(color: colors.line),
       ),
       menuPadding: const EdgeInsets.all(6),

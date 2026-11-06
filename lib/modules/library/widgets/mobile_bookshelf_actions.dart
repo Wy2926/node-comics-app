@@ -94,7 +94,7 @@ class _MobileBookshelfMenuState extends State<MobileBookshelfMenu> {
                 NodeLaneRow(
                   title: l10n.bookshelf_ignore_filters,
                   subtitle: l10n.bookshelf_ignore_filters_hint,
-                  trailing: Switch.adaptive(
+                  trailing: NodeLaneSwitch(
                     value: widget.ignoreFilters,
                     onChanged: (_) => widget.onSelected(4),
                   ),

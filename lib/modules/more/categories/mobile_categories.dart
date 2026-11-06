@@ -413,7 +413,7 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
                                       ..hide = !(category.hide ?? false),
                                   ),
                                 ),
-                                trailing: Switch.adaptive(
+                                trailing: NodeLaneSwitch(
                                   value: !(category.hide ?? false),
                                   onChanged: (value) => _run(
                                     () => widget.onSave(
@@ -432,7 +432,7 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
                                           !(category.shouldUpdate ?? true),
                                   ),
                                 ),
-                                trailing: Switch.adaptive(
+                                trailing: NodeLaneSwitch(
                                   value: category.shouldUpdate ?? true,
                                   onChanged: (value) => _run(
                                     () => widget.onSave(

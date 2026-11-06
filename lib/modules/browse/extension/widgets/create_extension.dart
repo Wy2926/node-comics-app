@@ -126,7 +126,7 @@ class _CreateExtensionState extends State<CreateExtension> {
               ),
               NodeLaneRow(
                 title: 'NSFW',
-                trailing: Switch.adaptive(
+                trailing: NodeLaneSwitch(
                   value: _isNsfw,
                   onChanged: (v) => setState(() => _isNsfw = v),
                 ),

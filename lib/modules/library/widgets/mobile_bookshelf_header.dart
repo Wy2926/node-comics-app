@@ -72,7 +72,6 @@ class MobileBookshelfHeader extends StatelessWidget {
                     tooltip: filterLabel,
                     onPressed: onFilter,
                     icon: icons.adjustments,
-                    style: NodeLaneIconButtonStyle.field,
                     active: filtered,
                   ),
                 ],

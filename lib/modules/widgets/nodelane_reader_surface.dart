@@ -29,7 +29,6 @@ class NodeLaneReaderSurface extends StatelessWidget {
           return NodeLaneReaderScope(
             child: Theme(
               data: base.copyWith(
-                sliderTheme: readerSliderTheme(context),
                 listTileTheme: base.listTileTheme.copyWith(
                   minTileHeight: NodeLaneTokens.readerRowHeight,
                   horizontalTitleGap: NodeLaneTokens.space12,
@@ -44,22 +43,6 @@ class NodeLaneReaderSurface extends StatelessWidget {
       ),
     );
   }
-}
-
-SliderThemeData readerSliderTheme(BuildContext context) {
-  final colors = NodeLaneTokens.of(context);
-  return SliderTheme.of(context).copyWith(
-    trackHeight: NodeLaneTokens.readerSliderTrack,
-    activeTrackColor: colors.accent,
-    inactiveTrackColor: colors.line,
-    thumbColor: colors.accent,
-    overlayColor: colors.accent.withValues(alpha: .12),
-    trackShape: const RoundedRectSliderTrackShape(),
-    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-    overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-    showValueIndicator: ShowValueIndicator.never,
-    tickMarkShape: SliderTickMarkShape.noTickMark,
-  );
 }
 
 /// One drag handle, a fixed heading and a 44-point close target for all sheets.

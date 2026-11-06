@@ -145,13 +145,9 @@ class TranslationControlsContent extends StatelessWidget {
                   state.noText ||
                   state.actions.isNotEmpty;
             }).toList();
-            final scopeControl = SwitchListTile.adaptive(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              title: Text('翻译当前阅读范围', style: colors.readerLabel),
-              subtitle: Text(
-                browser ? '处理当前及相邻图片' : '按当前页和随后两页处理',
-                style: colors.readerSecondary,
-              ),
+            final scopeControl = NodeLaneSwitchRow(
+              title: '翻译当前阅读范围',
+              subtitle: browser ? '处理当前及相邻图片' : '按当前页和随后两页处理',
               value: controller.enabled,
               onChanged: controller.runtime == null
                   ? null
