@@ -41,7 +41,7 @@ final class L10nLocaleStateProvider
   }
 }
 
-String _$l10nLocaleStateHash() => r'88eafcec2dd0039018f12e8275d287c48d7dbae0';
+String _$l10nLocaleStateHash() => r'214ad526de591328048cdf35c8a463eaa8284615';
 
 abstract class _$L10nLocaleState extends $Notifier<Locale> {
   Locale build();

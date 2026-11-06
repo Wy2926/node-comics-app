@@ -10,6 +10,18 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get app_update_allow_install => '请在系统设置中允许安装应用，然后返回点击安装。';
+
+  @override
+  String get app_update_waiting => '等待系统继续下载…';
+
+  @override
+  String get app_update_cancel_download => '取消下载';
+
+  @override
+  String get app_update_remove_package => '删除安装包';
+
+  @override
   String get app_name => 'NodeLane漫译';
 
   @override

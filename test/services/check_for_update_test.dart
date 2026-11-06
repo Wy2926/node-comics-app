@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/utils/nodelane_brand.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
+import 'package:mangayomi/services/app_update_downloads.dart';
 
 Map<String, dynamic> release(String version, String filename) => {
   'tag_name': 'v$version',
@@ -23,6 +24,43 @@ Map<String, dynamic> release(String version, String filename) => {
 };
 
 void main() {
+  test('APK selection respects ABI priority and never crosses phone/TV or incompatible ABIs', () {
+    const phone = 'https://example.invalid/android-arm64-v8a.apk';
+    const tv = 'https://example.invalid/android-tv-arm64-v8a.apk';
+    const x86 = 'https://example.invalid/android-x86_64.apk';
+    const universal = 'https://example.invalid/android-universal.apk';
+    expect(
+      selectAndroidUpdateAsset(
+        [x86, phone, tv],
+        ['arm64-v8a', 'armeabi-v7a'],
+        androidTv: false,
+      ),
+      phone,
+    );
+    expect(
+      selectAndroidUpdateAsset([phone, tv], ['arm64-v8a'], androidTv: true),
+      tv,
+    );
+    expect(
+      selectAndroidUpdateAsset([tv, x86], ['arm64-v8a'], androidTv: false),
+      isNull,
+    );
+    expect(selectAndroidUpdateAsset([x86], ['x86'], androidTv: false), isNull);
+    expect(selectAndroidUpdateAsset([x86], ['x86_64'], androidTv: false), x86);
+    expect(
+      selectAndroidUpdateAsset([phone], ['arm64-v8a'], androidTv: true),
+      isNull,
+    );
+    expect(
+      selectAndroidUpdateAsset(
+        [x86, universal],
+        ['arm64-v8a'],
+        androidTv: false,
+      ),
+      universal,
+    );
+  });
+
   test('each platform finds its highest stable uploaded release', () async {
     final pending = release('9.0.0', 'app.ipa');
     (pending['assets'] as List).single['state'] = 'starter';

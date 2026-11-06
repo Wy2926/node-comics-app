@@ -12,6 +12,7 @@ import 'package:mangayomi/modules/more/about/mobile_app_update_view.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:mangayomi/services/app_update_downloads.dart';
 // ignore: depend_on_referenced_packages
 import 'package:url_launcher_platform_interface/link.dart';
 // The existing platform plugin is replaced only for the owner lifecycle test.
@@ -43,31 +44,84 @@ class _Launcher extends UrlLauncherPlatform {
   }
 }
 
+class _Downloads implements AppUpdateDownloads {
+  UpdateDownload? task;
+  Completer<UpdateDownload>? pending;
+  int starts = 0, cancels = 0, queries = 0, installs = 0;
+  String? requestedNotes;
+  bool installFails = false, queryFails = false;
+  @override
+  Future<UpdateDownload?> current() async {
+    queries++;
+    if (queryFails) throw StateError('download service unavailable');
+    return task;
+  }
+
+  @override
+  Future<UpdateDownload> start({
+    required String version,
+    required List<String> assets,
+    required String title,
+    required String notes,
+  }) async {
+    starts++;
+    requestedNotes = notes;
+    return task = await pending!.future;
+  }
+
+  @override
+  Future<void> cancel(UpdateDownload download) async {
+    cancels++;
+    task = null;
+  }
+
+  @override
+  Future<UpdateInstallResult> install(UpdateDownload download) async {
+    installs++;
+    if (installFails) throw StateError('installation unavailable');
+    return UpdateInstallResult.permissionRequired;
+  }
+}
+
 void main() {
+  setUp(() {
+    PackageInfo.setMockInitialValues(
+      appName: _package.appName,
+      packageName: _package.packageName,
+      version: _package.version,
+      buildNumber: _package.buildNumber,
+      buildSignature: '',
+    );
+  });
+
   Future<void> start(
     WidgetTester tester,
     Widget child, {
     double scale = 2.5,
     double height = 740,
     double width = 360,
+    AppUpdateDownloads? downloads,
   }) async {
     tester.view.physicalSize = Size(width, height);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      MaterialApp(
-        navigatorObservers: [BotToastNavigatorObserver()],
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(scale),
-            padding: const EdgeInsets.only(top: 24, bottom: 34),
+      ProviderScope(
+        overrides: [appUpdateDownloadsProvider.overrideWithValue(downloads)],
+        child: MaterialApp(
+          navigatorObservers: [BotToastNavigatorObserver()],
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(scale),
+              padding: const EdgeInsets.only(top: 24, bottom: 34),
+            ),
+            child: BotToastInit()(context, child),
           ),
-          child: BotToastInit()(context, child),
+          home: child,
         ),
-        home: child,
       ),
     );
     await tester.pumpAndSettle();
@@ -98,6 +152,7 @@ void main() {
     Future<void> Function()? onReports,
     required Future<UpdateInfo?> Function() onCheck,
     required Future<void> Function(UpdateInfo) onUpdate,
+    Future<UpdateInfo?> Function()? onRestore,
   }) => MobileAboutScreen(
     packageInfo: packageInfo ?? AsyncData(_package),
     onRetryPackageInfo: onRetry ?? () {},
@@ -108,6 +163,7 @@ void main() {
     reportCount: reportCount ?? () => 0,
     onReports: onReports ?? () async {},
     onCheck: onCheck,
+    onRestoreUpdate: onRestore,
     updateBuilder: (update, onDismiss) => MobileAppUpdateView(
       currentVersion: _package.version,
       targetVersion: update.$1,
@@ -201,7 +257,6 @@ void main() {
       await tester.tap(find.text('View update'));
       await tester.pumpAndSettle();
       expect(opened, [_update]);
-      expect(identical(opened.single.$4, _update.$4), isTrue);
       expect(tester.takeException(), isNull);
     },
   );
@@ -294,7 +349,7 @@ void main() {
   );
 
   testWidgets(
-    'update dialog keeps cancel reachable while notes and transfer states change',
+    'update dialog keeps actions reachable without a separate background button',
     (tester) async {
       var busy = false, installing = false, hasError = false, android = false;
       var received = 0, total = 0, continued = 0, canceled = 0;
@@ -345,6 +400,7 @@ void main() {
       });
       await tester.pump();
       expect(find.byType(FilledButton), findsNothing);
+      expect(cancel, findsNothing);
       expect(
         tester
             .widget<LinearProgressIndicator>(
@@ -374,8 +430,7 @@ void main() {
             .value,
         isNull,
       );
-      await tester.tap(cancel);
-      expect(canceled, 1);
+      expect(cancel, findsNothing);
       rebuild(() {
         busy = false;
         installing = false;
@@ -383,153 +438,267 @@ void main() {
         notes = '';
       });
       await tester.pumpAndSettle();
+      await tester.tap(cancel);
+      expect(canceled, 1);
       expect(find.text('Failed!'), findsOneWidget);
       await reveal(tester, find.text('Release notes'));
       await tester.tap(find.text('Release notes'));
       await tester.pumpAndSettle();
       expect(find.text('No release notes provided.'), findsOneWidget);
-      await tester.tap(find.widgetWithText(FilledButton, 'Download'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Retry'));
       expect(continued, 2);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'update owner cancels delayed browser completion without popping its parent and allows retry',
+    'local update restores without a network check; restoration errors do not block checking',
     (tester) async {
-      PackageInfo.setMockInitialValues(
-        appName: 'Preview',
-        packageName: 'example.preview',
-        version: _package.version,
-        buildNumber: '1',
-        buildSignature: '',
-      );
-      final oldLauncher = UrlLauncherPlatform.instance;
-      final launcher = _Launcher();
-      UrlLauncherPlatform.instance = launcher;
-      addTearDown(() => UrlLauncherPlatform.instance = oldLauncher);
+      var checks = 0;
       await start(
         tester,
-        ProviderScope(
-          child: Builder(
-            builder: (context) => Scaffold(
-              body: TextButton(
-                onPressed: () => showDialog<void>(
-                  context: context,
-                  builder: (_) =>
-                      const DownloadFileScreen(updateAvailable: _update),
-                ),
-                child: const Text('Open sample'),
-              ),
-            ),
-          ),
+        about(
+          onRestore: () async => _update,
+          onCheck: () async {
+            checks++;
+            throw StateError('offline');
+          },
+          onUpdate: (_) async {},
         ),
         scale: 1,
-        width: 800,
       );
-      await tester.tap(find.text('Open sample'));
+      expect(find.textContaining('1.0.0'), findsOneWidget);
+      await tester.tap(find.text('Release notes'));
       await tester.pumpAndSettle();
-      final primary = find.byType(FilledButton);
-      await tester.tap(primary);
-      await tester.pump();
-      expect(find.byType(FilledButton), findsNothing);
-      expect(launcher.calls, [
-        (_update.$3, PreferredLaunchMode.externalApplication),
-      ]);
-      await tester.tap(find.text('Cancel'));
-      // Complete during the closing transition, when mounted is still true.
-      launcher.result.complete(true);
+      expect(find.text(_update.$2), findsOneWidget);
+      expect(checks, 0);
+      await tester.pumpWidget(const SizedBox());
+      await start(
+        tester,
+        about(
+          onRestore: () async => throw StateError('platform unavailable'),
+          onCheck: () async {
+            checks++;
+            return null;
+          },
+          onUpdate: (_) async {},
+        ),
+        scale: 1,
+      );
+      await tester.tap(find.text('Check for update'));
       await tester.pumpAndSettle();
-      expect(find.text('Open sample'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      launcher.result = Completer<bool>();
-      await tester.tap(find.text('Open sample'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byType(FilledButton));
-      await tester.pump();
-      launcher.result.completeError(StateError('private launch detail'));
-      await tester.pumpAndSettle();
-      expect(find.byType(FilledButton), findsOneWidget);
-      expect(find.textContaining('private launch detail'), findsNothing);
-      launcher.result = Completer<bool>();
-      await tester.tap(find.byType(FilledButton));
-      await tester.pump();
-      launcher.result.complete(true);
-      await tester.pumpAndSettle();
-      expect(launcher.calls, hasLength(3));
-      expect(find.text('Open sample'), findsOneWidget);
-      expect(tester.takeException(), isNull);
+      expect(checks, 1);
+      expect(
+        find.text('No installable update found. You can try again later.'),
+        findsOneWidget,
+      );
     },
   );
+
   testWidgets(
-    'inline update owner cancels locally and retries without closing About',
+    'download survives dismissal, restores after background, and only explicit cancellation removes it',
     (tester) async {
-      PackageInfo.setMockInitialValues(
-        appName: 'NodeLane Comics',
-        packageName: 'example.preview',
-        version: _package.version,
-        buildNumber: '1',
-        buildSignature: '',
-      );
-      final oldLauncher = UrlLauncherPlatform.instance;
-      final launcher = _Launcher();
-      UrlLauncherPlatform.instance = launcher;
-      addTearDown(() => UrlLauncherPlatform.instance = oldLauncher);
+      final downloads = _Downloads()..pending = Completer<UpdateDownload>();
       var visible = true;
+      var shownUpdate = _update;
       late StateSetter rebuild;
       await start(
         tester,
-        ProviderScope(
-          child: StatefulBuilder(
-            builder: (context, setState) {
-              rebuild = setState;
-              return Scaffold(
-                body: ListView(
-                  children: [
-                    const Text('About owner'),
-                    if (visible)
-                      DownloadFileScreen(
-                        updateAvailable: _update,
-                        embedded: true,
-                        onDismiss: () => setState(() => visible = false),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
+        StatefulBuilder(
+          builder: (context, setState) {
+            rebuild = setState;
+            return Scaffold(
+              body: ListView(
+                children: [
+                  if (visible)
+                    DownloadFileScreen(
+                      updateAvailable: shownUpdate,
+                      embedded: true,
+                      onDismiss: () => setState(() => visible = false),
+                    ),
+                ],
+              ),
+            );
+          },
         ),
         scale: 1,
+        downloads: downloads,
       );
-      expect(find.byType(Dialog), findsNothing);
-      await tester.tap(find.text('View update'));
+      await tester.tap(find.text('Download'));
+      await tester.tap(find.text('Download'));
       await tester.pump();
-      expect(launcher.calls, hasLength(1));
-      expect(find.text('View update'), findsNothing);
-      await tester.tap(find.text('Cancel'));
-      launcher.result.complete(true);
-      await tester.pumpAndSettle();
-      expect(find.text('About owner'), findsOneWidget);
-      expect(find.byType(DownloadFileScreen), findsNothing);
-      launcher.result = Completer<bool>();
-      rebuild(() => visible = true);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('View update'));
+      expect(downloads.starts, 1);
+      expect(downloads.requestedNotes, _update.$2);
+      expect(find.text('Continue in background'), findsNothing);
+      rebuild(() => visible = false);
       await tester.pump();
-      launcher.result.completeError(StateError('private launch details'));
+      downloads.pending!.complete(
+        const UpdateDownload(
+          version: '1.0.0',
+          url: 'https://example.invalid/app.apk',
+          phase: UpdateDownloadPhase.downloading,
+          notes: 'Sample release notes',
+          received: 100,
+          total: 1000,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(downloads.cancels, 0);
+      expect(downloads.task, isNotNull);
+      rebuild(() {
+        shownUpdate = ('1.0.0', '', '', <dynamic>[]);
+        visible = true;
+      });
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('10%'), findsOneWidget);
+      await tester.tap(find.text('Release notes'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.text('Sample release notes'), findsOneWidget);
+      downloads.queryFails = true;
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      expect(find.text('Retry'), findsOneWidget);
+      final failedQueries = downloads.queries;
+      await tester.pump(const Duration(seconds: 3));
+      expect(downloads.queries, failedQueries);
+      downloads.queryFails = false;
+      await tester.tap(find.text('Retry'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Retry'), findsNothing);
+      expect(downloads.starts, 1);
+      for (final state in [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+      }
+      final before = downloads.queries;
+      await tester.pump(const Duration(seconds: 5));
+      expect(downloads.queries, before);
+      downloads.task = const UpdateDownload(
+        version: '1.0.0',
+        url: 'https://example.invalid/app.apk',
+        phase: UpdateDownloadPhase.ready,
+        notes: 'Sample release notes',
+        received: 1000,
+        total: 1000,
+      );
+      for (final state in [
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+      }
+      await tester.pumpAndSettle();
+      expect(find.text('Install'), findsOneWidget);
+      downloads.installFails = true;
+      await tester.tap(find.text('Install'));
       await tester.pumpAndSettle();
       expect(find.text('Failed!'), findsOneWidget);
-      expect(find.textContaining('private launch'), findsNothing);
-      launcher.result = Completer<bool>();
-      await tester.tap(find.text('View update'));
-      await tester.pump();
-      launcher.result.complete(true);
+      expect(downloads.task, isNotNull);
+      downloads.installFails = false;
+      await tester.tap(find.text('Install'));
       await tester.pumpAndSettle();
-      expect(find.text('Release page opened'), findsOneWidget);
-      expect(find.text('About owner'), findsOneWidget);
-      expect(find.byType(Dialog), findsNothing);
-      expect(launcher.calls, hasLength(3));
+      expect(downloads.installs, 2);
+      expect(find.textContaining('Allow app installation'), findsOneWidget);
+      expect(downloads.cancels, 0);
+      await tester.tap(find.text('Remove downloaded package'));
+      await tester.pumpAndSettle();
+      expect(downloads.cancels, 1);
+      expect(downloads.task, isNull);
+      expect(find.text('Download'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
+
+  for (final embedded in [false, true]) {
+    testWidgets(
+      'browser update (${embedded ? 'inline' : 'dialog'}) ignores dismissed results and recovers from failure',
+      (tester) async {
+        final oldLauncher = UrlLauncherPlatform.instance;
+        final launcher = _Launcher();
+        UrlLauncherPlatform.instance = launcher;
+        addTearDown(() => UrlLauncherPlatform.instance = oldLauncher);
+        var visible = false;
+        await start(
+          tester,
+          StatefulBuilder(
+            builder: (context, setState) => Scaffold(
+              body: ListView(
+                children: [
+                  const Text('About owner'),
+                  TextButton(
+                    onPressed: () {
+                      if (embedded) {
+                        setState(() => visible = true);
+                      } else {
+                        showDialog<void>(
+                          context: context,
+                          builder: (_) => const DownloadFileScreen(
+                            updateAvailable: _update,
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('Open update'),
+                  ),
+                  if (visible)
+                    DownloadFileScreen(
+                      updateAvailable: _update,
+                      embedded: true,
+                      onDismiss: () => setState(() => visible = false),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          scale: 1,
+          width: embedded ? 360 : 800,
+        );
+        await tester.tap(find.text('Open update'));
+        await tester.pumpAndSettle();
+        expect(find.byType(Dialog), embedded ? findsNothing : findsOneWidget);
+        await tester.tap(find.text('View update'));
+        await tester.pump();
+        expect(find.text('View update'), findsNothing);
+        expect(launcher.calls, [
+          (_update.$3, PreferredLaunchMode.externalApplication),
+        ]);
+        await tester.tap(find.text('Cancel'));
+        // Completion during dismissal must not pop the containing About page.
+        launcher.result.complete(true);
+        await tester.pumpAndSettle();
+        expect(find.text('About owner'), findsOneWidget);
+        expect(find.byType(DownloadFileScreen), findsNothing);
+
+        launcher.result = Completer<bool>();
+        await tester.tap(find.text('Open update'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('View update'));
+        await tester.pump();
+        launcher.result.completeError(StateError('private launch detail'));
+        await tester.pumpAndSettle();
+        expect(find.text('Failed!'), findsOneWidget);
+        expect(find.textContaining('private launch'), findsNothing);
+        launcher.result = Completer<bool>();
+        await tester.tap(find.text('View update'));
+        await tester.pump();
+        launcher.result.complete(true);
+        await tester.pumpAndSettle();
+        expect(launcher.calls, hasLength(3));
+        expect(find.text('About owner'), findsOneWidget);
+        expect(find.byType(Dialog), findsNothing);
+        expect(
+          find.byType(DownloadFileScreen),
+          embedded ? findsOneWidget : findsNothing,
+        );
+        if (embedded) expect(find.text('Release page opened'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

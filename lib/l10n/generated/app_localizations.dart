@@ -128,6 +128,30 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @app_update_allow_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow app installation in system settings, then return and tap Install.'**
+  String get app_update_allow_install;
+
+  /// No description provided for @app_update_waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the system to resume the download…'**
+  String get app_update_waiting;
+
+  /// No description provided for @app_update_cancel_download.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get app_update_cancel_download;
+
+  /// No description provided for @app_update_remove_package.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove downloaded package'**
+  String get app_update_remove_package;
+
   /// No description provided for @app_name.
   ///
   /// In en, this message translates to:

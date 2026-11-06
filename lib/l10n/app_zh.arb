@@ -1,4 +1,8 @@
 {
+  "app_update_allow_install": "请在系统设置中允许安装应用，然后返回点击安装。",
+  "app_update_waiting": "等待系统继续下载…",
+  "app_update_cancel_download": "取消下载",
+  "app_update_remove_package": "删除安装包",
   "app_name": "NodeLane漫译",
   "settings_search_empty": "未找到相关设置",
   "search_empty_hint": "试试其他关键词，或清除搜索查看全部内容。",

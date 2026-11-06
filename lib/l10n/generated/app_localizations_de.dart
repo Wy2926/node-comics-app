@@ -10,6 +10,20 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
+  String get app_update_allow_install =>
+      'Allow app installation in system settings, then return and tap Install.';
+
+  @override
+  String get app_update_waiting =>
+      'Waiting for the system to resume the download…';
+
+  @override
+  String get app_update_cancel_download => 'Cancel download';
+
+  @override
+  String get app_update_remove_package => 'Remove downloaded package';
+
+  @override
   String get app_name => 'NodeLane Comics';
 
   @override

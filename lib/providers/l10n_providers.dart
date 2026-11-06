@@ -9,13 +9,19 @@ part 'l10n_providers.g.dart';
 class L10nLocaleState extends _$L10nLocaleState {
   @override
   Locale build() {
-    final locale = _getLocale();
-    return Locale(locale.languageCode ?? "en", locale.countryCode ?? "");
-  }
-
-  L10nLocale _getLocale() {
-    return settingsRepository.current.locale ??
-        L10nLocale(languageCode: "en", countryCode: "");
+    final saved = settingsRepository.current.locale;
+    if (saved?.languageCode case final language?) {
+      return Locale(language, saved?.countryCode);
+    }
+    final supported = AppLocalizations.supportedLocales;
+    // Match system preferences, then English. Never fall back to the first
+    // alphabetically generated locale or an unrelated country's language.
+    return basicLocaleListResolution([
+      ...WidgetsBinding.instance.platformDispatcher.locales.where(
+        (locale) => supported.any((s) => s.languageCode == locale.languageCode),
+      ),
+      const Locale('en'),
+    ], supported);
   }
 
   void setLocale(Locale locale) async {

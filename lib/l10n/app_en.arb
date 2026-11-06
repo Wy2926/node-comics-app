@@ -1,4 +1,8 @@
 {
+  "app_update_allow_install": "Allow app installation in system settings, then return and tap Install.",
+  "app_update_waiting": "Waiting for the system to resume the download…",
+  "app_update_cancel_download": "Cancel download",
+  "app_update_remove_package": "Remove downloaded package",
   "app_name": "NodeLane Comics",
   "settings_search_empty": "No matching settings",
   "search_empty_hint": "Try another keyword, or clear the search to see everything.",

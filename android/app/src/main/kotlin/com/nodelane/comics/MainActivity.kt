@@ -6,17 +6,13 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.StandardMethodCodec
 import io.flutter.embedding.android.FlutterFragmentActivity
-import androidx.core.content.FileProvider
 import android.app.UiModeManager
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.os.Build
-import android.net.Uri
-import java.io.File
 
 class MainActivity: FlutterFragmentActivity() {
+    private var appUpdates: AppUpdateDownloads? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -42,23 +38,7 @@ class MainActivity: FlutterFragmentActivity() {
             }
         }
 
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            "com.kodjodevf.mangayomi.apk_install",
-            StandardMethodCodec.INSTANCE,
-            flutterEngine.dartExecutor.binaryMessenger.makeBackgroundTaskQueue()
-        ).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "installApk" -> {
-                    val filePath = call.argument<String>("filePath")
-                    installApk(filePath)
-                    result.success(null)
-                }
-                else -> {
-                    result.notImplemented()
-                }
-            }
-        }
+        appUpdates = AppUpdateDownloads(this, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -88,18 +68,9 @@ class MainActivity: FlutterFragmentActivity() {
         return packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
     }
 
-    private fun installApk(filePath: String?) {
-        if (filePath == null) return
-        val file = File(filePath)
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        val apkUri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-        } else {
-            Uri.fromFile(file)
-        }
-        intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
-        startActivity(intent)
+    override fun cleanUpFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        appUpdates?.close()
+        appUpdates = null
+        super.cleanUpFlutterEngine(flutterEngine)
     }
 }

@@ -6,7 +6,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// One update presentation, embedded in About or hosted by the startup dialog.
-/// Fetching, downloading and opening the release stay with the existing owner.
+/// No platform or transfer dependency; the owner supplies capabilities/state.
 class MobileAppUpdateView extends StatelessWidget {
   const MobileAppUpdateView({
     super.key,
@@ -23,6 +23,10 @@ class MobileAppUpdateView extends StatelessWidget {
     required this.onCancel,
     this.embedded = false,
     this.openedInBrowser = false,
+    this.readyToInstall = false,
+    this.waiting = false,
+    this.permissionRequired = false,
+    this.onCancelDownload,
   });
   final String currentVersion, targetVersion, notes;
   final bool downloadOnDevice,
@@ -30,9 +34,13 @@ class MobileAppUpdateView extends StatelessWidget {
       installing,
       hasError,
       embedded,
-      openedInBrowser;
+      openedInBrowser,
+      readyToInstall,
+      waiting,
+      permissionRequired;
   final int received, total;
   final VoidCallback onContinue, onCancel;
+  final VoidCallback? onCancelDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +121,11 @@ class MobileAppUpdateView extends StatelessWidget {
             ),
           ),
         ),
-        if (busy || hasError || openedInBrowser)
+        if (busy ||
+            hasError ||
+            openedInBrowser ||
+            readyToInstall ||
+            permissionRequired)
           Padding(
             padding: NodeLaneTokens.groupPadding,
             child: Semantics(
@@ -122,14 +134,20 @@ class MobileAppUpdateView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    hasError
+                    permissionRequired
+                        ? l.app_update_allow_install
+                        : hasError
                         ? l.failed
                         : busy
                         ? installing
                               ? l.preparing_installation
                               : downloadOnDevice
-                              ? l.downloading_update
+                              ? waiting
+                                    ? l.app_update_waiting
+                                    : l.downloading_update
                               : l.open_in_browser
+                        : readyToInstall
+                        ? l.downloaded
                         : l.app_update_opened,
                     style: t.readerSecondary.copyWith(
                       color: hasError
@@ -169,16 +187,37 @@ class MobileAppUpdateView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!busy)
+          if (!busy || hasError)
             FilledButton(
               onPressed: onContinue,
-              child: Text(downloadOnDevice ? l.download : l.app_update_view),
+              child: Text(
+                downloadOnDevice
+                    ? readyToInstall
+                          ? l.install
+                          : hasError
+                          ? l.retry
+                          : l.download
+                    : l.app_update_view,
+              ),
             ),
-          if (!embedded || busy) ...[
+          if (onCancelDownload != null) ...[
+            const SizedBox(height: NodeLaneTokens.space8),
+            TextButton(
+              onPressed: onCancelDownload,
+              child: Text(
+                readyToInstall
+                    ? l.app_update_remove_package
+                    : l.app_update_cancel_download,
+              ),
+            ),
+          ],
+          if ((!embedded || busy) && !(downloadOnDevice && busy)) ...[
             const SizedBox(height: NodeLaneTokens.space8),
             TextButton(
               onPressed: onCancel,
-              child: Text(busy ? l.cancel : l.app_update_later),
+              child: Text(
+                !downloadOnDevice && busy ? l.cancel : l.app_update_later,
+              ),
             ),
           ],
           if (!downloadOnDevice && !busy) ...[

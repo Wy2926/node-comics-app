@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +32,7 @@ class MobileAboutScreen extends StatefulWidget {
     required this.onShareLogs,
     required this.onGitHub,
     this.onOnboarding,
+    this.onRestoreUpdate,
   });
   final AsyncValue<PackageInfo> packageInfo;
   final VoidCallback onRetryPackageInfo;
@@ -40,15 +43,53 @@ class MobileAboutScreen extends StatefulWidget {
   final int Function() reportCount;
   final Future<void> Function() onReports, onShareLogs, onGitHub;
   final Future<UpdateInfo?> Function() onCheck;
+  final Future<UpdateInfo?> Function()? onRestoreUpdate;
   final Widget Function(UpdateInfo, VoidCallback onDismiss) updateBuilder;
   @override
   State<MobileAboutScreen> createState() => _MobileAboutScreenState();
 }
 
-class _MobileAboutScreenState extends State<MobileAboutScreen> {
+class _MobileAboutScreenState extends State<MobileAboutScreen>
+    with WidgetsBindingObserver {
   bool _checking = false, _logging = false, _sharing = false;
   _CheckResult _result = _CheckResult.none;
   UpdateInfo? _update;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_restore());
+  }
+
+  Future<UpdateInfo?> _localUpdate() async {
+    try {
+      return await widget.onRestoreUpdate?.call();
+    } catch (_) {
+      // An unavailable platform download service must not block release checks.
+      return null;
+    }
+  }
+
+  Future<void> _restore() async {
+    final update = await _localUpdate();
+    if (mounted && !_checking && _update == null && update != null) {
+      setState(() => _update = update);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _update == null) {
+      unawaited(_restore());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   Future<void> _check() async {
     if (_checking) return;
@@ -57,7 +98,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
       _result = _CheckResult.none;
     });
     try {
-      final update = await widget.onCheck();
+      final update = await _localUpdate() ?? await widget.onCheck();
       if (!mounted) return;
       setState(() {
         _update = update;

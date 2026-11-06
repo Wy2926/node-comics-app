@@ -1,31 +1,29 @@
-import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/more/about/mobile_about_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/get_package_info.dart';
 import 'package:mangayomi/modules/more/about/providers/logs_state.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
-import 'package:go_router/go_router.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/services/crash_report.dart';
-import 'package:mangayomi/providers/storage_provider.dart';
-import 'package:mangayomi/utils/nodelane_brand.dart';
+import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/providers/storage_provider.dart';
+import 'package:mangayomi/services/app_update_downloads.dart';
+import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/utils/log/logger.dart';
-import 'package:mangayomi/utils/share.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/utils/share.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'mobile_about_screen.dart';
-
-import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 
 class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
@@ -35,6 +33,18 @@ class AboutScreen extends ConsumerWidget {
     final l10n = l10nLocalizations(context);
     final checkForUpdates = ref.watch(checkForAppUpdatesProvider);
     final enableLogs = ref.watch(logsStateProvider);
+    final downloads = ref.watch(appUpdateDownloadsProvider);
+    Future<UpdateInfo?> restoreUpdate() async {
+      try {
+        final download = await downloads?.current();
+        return download == null
+            ? null
+            : (download.version, download.notes, '', <dynamic>[download.url]);
+      } catch (_) {
+        return null;
+      }
+    }
+
     if (isMobile && !isTv) {
       return MobileAboutScreen(
         onOnboarding: () =>
@@ -57,6 +67,7 @@ class AboutScreen extends ConsumerWidget {
           await context.push('/errorReports');
         },
         onCheck: performManualUpdateCheck,
+        onRestoreUpdate: downloads == null ? null : restoreUpdate,
         updateBuilder: (update, onDismiss) => DownloadFileScreen(
           key: ValueKey(update.$1),
           updateAvailable: update,
@@ -103,10 +114,11 @@ class AboutScreen extends ConsumerWidget {
                         onTap: () async {
                           showNodeLaneNotice(l10n.searching_for_updates);
                           try {
-                            final updateInfo = await performManualUpdateCheck();
+                            final updateInfo =
+                                await restoreUpdate() ??
+                                await performManualUpdateCheck();
                             if (updateInfo != null) {
                               showNodeLaneNotice(l10n.new_update_available);
-                              await Future.delayed(const Duration(seconds: 1));
                               if (context.mounted) {
                                 showDialog(
                                   context: context,
@@ -116,10 +128,13 @@ class AboutScreen extends ConsumerWidget {
                                 );
                               }
                             } else {
-                              showNodeLaneNotice(l10n.no_new_updates_available);
+                              showNodeLaneNotice(l10n.update_check_no_result);
                             }
                           } catch (_) {
-                            showNodeLaneNotice(l10n.no_new_updates_available);
+                            showNodeLaneNotice(
+                              l10n.app_update_failed,
+                              kind: NodeLaneNoticeKind.error,
+                            );
                           }
                         },
                         title: Text(l10n.check_for_update),
