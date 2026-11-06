@@ -31,6 +31,11 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_macos_pods File.dirname(File.realpath(__FILE__))
+
+  # Cached podspecs can skip the plugin's make step. Prepare its pinned
+  # frameworks before CocoaPods discovers them, and stop if preparation fails.
+  media_kit_path = File.join(__dir__, 'Flutter/ephemeral/.symlinks/plugins/media_kit_libs_macos_video/macos')
+  Pod::Executable.execute_command('make', ['-C', media_kit_path])
 end
 
 post_install do |installer|

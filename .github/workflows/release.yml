@@ -253,15 +253,14 @@ jobs:
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: flutter pub get
         run: flutter pub get
 
       - name: build macos
         run: |
-          cd macos
-          pod update
-          cd ..
           flutter build macos --release --verbose
           brew install create-dmg
           create-dmg --volname nodelane-comics-${{ github.ref_name }}-macos --window-pos 200 120 --window-size 800 450 --icon-size 100 --app-drop-link 600 185 nodelane-comics-${{ github.ref_name }}-macos.dmg build/macos/Build/Products/Release/nodelane-comics.app

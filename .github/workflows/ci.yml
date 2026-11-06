@@ -198,6 +198,8 @@ jobs:
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: Install flutter_rust_bridge_codegen
         run: cargo install 'flutter_rust_bridge_codegen'
@@ -206,11 +208,7 @@ jobs:
         run: flutter pub get
 
       - name: Build debug macOS
-        run: |
-          cd macos
-          pod update
-          cd ..
-          flutter build macos --debug --verbose
+        run: flutter build macos --debug --verbose
 
       - name: Upload macOS debug artifact
         uses: actions/upload-artifact@v4
