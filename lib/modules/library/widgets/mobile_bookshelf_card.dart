@@ -76,21 +76,35 @@ class MobileBookshelfCard extends StatelessWidget {
   String _count(int count) => count > 999 ? '999+' : '$count';
 
   /// Reserve two title lines and one metadata band, including download-only
-  /// configurations. Selection never changes the grid's cover positions.
+  /// configurations. [_captionStrut] keeps fallback fonts within these line
+  /// boxes. Selection never changes the grid's cover positions.
   static double captionHeight(BuildContext context, {required bool metadata}) {
     final t = NodeLaneTokens.of(context);
     final scale = MediaQuery.textScalerOf(context);
+    final lineHeight = MediaQuery.maybeLineHeightScaleFactorOverrideOf(context);
     return NodeLaneTokens.space8 +
-        (scale.scale(t.label.fontSize!) * t.label.height!).ceilToDouble() * 2 +
+        (scale.scale(t.label.fontSize!) * (lineHeight ?? t.label.height!))
+                .ceilToDouble() *
+            2 +
         (metadata
             ? NodeLaneTokens.space4 +
                   math.max(
                     NodeLaneTokens.badgeHeight,
-                    (scale.scale(t.caption.fontSize!) * t.caption.height!)
+                    (scale.scale(t.caption.fontSize!) *
+                            (lineHeight ?? t.caption.height!))
                         .ceilToDouble(),
                   )
             : 0);
   }
+
+  // Mixed-script fallback fonts can otherwise add ascent/descent beyond the
+  // token line height. Keep the user's font, with one shared line-box rule.
+  static StrutStyle _captionStrut(BuildContext context, TextStyle style) =>
+      StrutStyle.fromTextStyle(
+        DefaultTextStyle.of(context).style.merge(style),
+        leading: 0,
+        forceStrutHeight: true,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -213,6 +227,7 @@ class MobileBookshelfCard extends StatelessWidget {
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
       style: t.label,
+      strutStyle: _captionStrut(context, t.label),
     );
     final description = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,6 +282,7 @@ class MobileBookshelfCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: t.caption,
+                    strutStyle: _captionStrut(context, t.caption),
                   ),
                 ),
               if (identity.isNotEmpty && downloaded != null)

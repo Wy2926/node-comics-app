@@ -248,71 +248,97 @@ void main() {
   );
 
   testWidgets(
-    'responsive extents fit long names and counts at larger text sizes',
+    'responsive cards fit titles, metadata and accessibility text settings',
     (tester) async {
-      for (final scale in [1.0, 2.0, 2.5]) {
-        for (final list in [false, true]) {
-          for (final local in [false, true]) {
-            await tester.pumpWidget(
-              app(
-                Builder(
-                  builder: (context) {
-                    final columns = mobileBookshelfColumns(
-                      280,
-                      comfortable: false,
-                      textScaler: MediaQuery.textScalerOf(context),
-                    );
-                    final width =
-                        (280 - (columns - 1) * NodeLaneTokens.shelfGap) /
-                        columns;
-                    return Align(
-                      alignment: Alignment.topLeft,
-                      child: SizedBox(
-                        width: list ? 280 : width,
-                        height: list
-                            ? null
-                            : width * NodeLaneTokens.coverAspectRatio +
-                                  MobileBookshelfCard.captionHeight(
-                                    context,
-                                    metadata: true,
-                                  ),
-                        child: MobileBookshelfCard(
-                          title: '书名比较长时仍然保留最多两行',
-                          image: coverImage,
-                          selected: false,
-                          list: list,
-                          isLocal: local,
-                          source: '示例来源',
-                          language: 'zh',
-                          unreadCount: 1234,
-                          downloadCount: 2345,
-                          onTap: () {},
-                          onLongPress: () {},
-                          continueButton: NodeLaneIconButton(
-                            icon: Icons.book,
-                            tooltip: '继续',
-                            onPressed: () {},
-                          ),
+      for (final (scale, list, local, metadata, lineHeight) in [
+        (1.0, false, false, false, null),
+        (1.0, false, false, false, 2.0),
+        (1.3, false, false, true, null),
+        (2.0, false, true, true, 2.0),
+        (2.5, false, false, true, null),
+        (1.0, true, false, true, null),
+        (1.0, true, true, true, null),
+        (2.0, true, true, true, null),
+        (2.5, true, false, true, null),
+      ]) {
+        final title = metadata ? '书名比较长时仍然保留最多两行' : '던전을 그리는 화가';
+        await tester.pumpWidget(
+          app(
+            MediaQuery(
+              data: MediaQueryData(
+                textScaler: TextScaler.linear(scale),
+                lineHeightScaleFactorOverride: lineHeight,
+              ),
+              child: Builder(
+                builder: (context) {
+                  final columns = mobileBookshelfColumns(
+                    280,
+                    comfortable: false,
+                    textScaler: MediaQuery.textScalerOf(context),
+                  );
+                  // Match the compact emulator card for the title-only regression.
+                  final width = metadata
+                      ? (280 - (columns - 1) * NodeLaneTokens.shelfGap) /
+                            columns
+                      : 114.5;
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: list ? 280 : width,
+                      height: list
+                          ? null
+                          : width * NodeLaneTokens.coverAspectRatio +
+                                MobileBookshelfCard.captionHeight(
+                                  context,
+                                  metadata: metadata,
+                                ),
+                      child: MobileBookshelfCard(
+                        title: title,
+                        image: coverImage,
+                        selected: false,
+                        list: list,
+                        isLocal: local,
+                        source: metadata ? '示例来源' : null,
+                        language: metadata ? 'zh' : null,
+                        unreadCount: 1234,
+                        downloadCount: metadata ? 2345 : 0,
+                        onTap: () {},
+                        onLongPress: () {},
+                        continueButton: NodeLaneIconButton(
+                          icon: Icons.book,
+                          tooltip: '继续',
+                          onPressed: () {},
                         ),
                       ),
-                    );
-                  },
-                ),
-                scale: scale,
-                dark: scale > 1,
+                    ),
+                  );
+                },
               ),
-            );
-            await tester.pumpAndSettle();
-            expect(
-              tester.takeException(),
-              isNull,
-              reason: 'scale=$scale list=$list local=$local',
-            );
-            expect(
-              tester.getSize(find.byType(NodeLaneIconButton)),
-              const Size(44, 44),
-            );
-          }
+            ),
+            dark: scale > 1,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester.takeException(),
+          isNull,
+          reason:
+              'scale=$scale list=$list local=$local metadata=$metadata lineHeight=$lineHeight',
+        );
+        expect(
+          tester.getSize(find.byType(NodeLaneIconButton)),
+          const Size(44, 44),
+        );
+        final titleRect = tester.getRect(find.text(title));
+        final cardRect = tester.getRect(find.byType(MobileBookshelfCard));
+        expect(titleRect.bottom, lessThanOrEqualTo(cardRect.bottom));
+        if (!list) {
+          final coverRect = tester.getRect(find.byType(Image));
+          expect(titleRect.top - coverRect.bottom, NodeLaneTokens.space8);
+          expect(
+            coverRect.height,
+            closeTo(coverRect.width * NodeLaneTokens.coverAspectRatio, .001),
+          );
         }
       }
     },
