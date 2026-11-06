@@ -101,14 +101,24 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     final requestedThirdParty = thirdParty;
     setState(() => busy.add(source.id!));
     try {
-      await fetchSourcesList(
-        id: source.id,
-        refresh: true,
-        androidProxyServer: ref.read(androidProxyServerStateProvider),
-        autoUpdateExtensions: false,
-        itemType: source.itemType,
-        repo: source.repo,
-      );
+      final proxy = ref.read(androidProxyServerStateProvider);
+      if (source.isAdded == true && source.sourceCode?.isNotEmpty == true) {
+        await fetchSourcesList(
+          id: source.id,
+          androidProxyServer: proxy,
+          autoUpdateExtensions: false,
+          itemType: source.itemType,
+          repo: source.repo,
+        );
+      } else {
+        await installSource(
+          source,
+          proxy,
+          source.repo!,
+          source.itemType,
+          priority: true,
+        );
+      }
       final loaded = await sourceRepository.findByIdAsync(source.id!);
       if (loaded == null || loaded.sourceCode?.isNotEmpty != true) {
         throw StateError('加载失败');
@@ -148,18 +158,18 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     final requestedType = type, requestedThirdParty = thirdParty;
     _notice?.dismiss();
     try {
-      final refresh = ref.refresh(
-        fetchItemSourcesListProvider(
-          reFresh: true,
-          itemType: requestedType,
-        ).future,
-      );
-      await refresh;
-      if (!mounted) return;
-      if (requestedType == ItemType.manga) {
+      if (requestedThirdParty) {
+        final refresh = ref.refresh(
+          fetchItemSourcesListProvider(
+            reFresh: true,
+            itemType: requestedType,
+          ).future,
+        );
+        await refresh;
+      } else if (requestedType == ItemType.manga) {
         await ref.read(nodeLaneCatalogRefreshProvider).refresh(force: true);
+        if (mounted) ref.invalidate(nodeLaneCatalogLoadProvider(requestedType));
       }
-      ref.invalidate(nodeLaneCatalogLoadProvider(requestedType));
     } catch (_) {
       if (mounted &&
           type == requestedType &&
@@ -181,8 +191,13 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     context.push('/globalSearch', extra: (query.text.trim(), type));
   }
 
-  Future<void> _pin(Source source) =>
-      sourceRepository.save(source..isPinned = !(source.isPinned ?? false));
+  Future<void> _pin(Source source) => sourceRepository.writeTransaction(() {
+    final current = sourceRepository.getById(source.id!);
+    if (current == null) return;
+    current.isPinned = !(current.isPinned ?? false);
+    current.updatedAt = DateTime.now().millisecondsSinceEpoch;
+    sourceRepository.putAllSync([current]);
+  });
   void _sourceActions(Source source) {
     showNodeLaneCatalogSheet<void>(
       context,
@@ -273,7 +288,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
           ? null
           : managing
           ? () => _pin(source)
-          : installed && (thirdParty || !update)
+          : installed
           ? () => _open(source)
           : () => _fetch(source, open: true),
       onLongPress: () => _sourceActions(source),
@@ -299,10 +314,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   }
 
   Future<void> _updateInstalled() async {
+    final official = ref.read(nodeLaneCatalogRepositoryProvider(type));
     final updates = sourceRepository
         .getInstalledByItemType(type)
         .where(
           (source) =>
+              !isNodeLaneCatalogSource(source, official) &&
               source.isObsolete != true &&
               compareVersions(source.version ?? '', source.versionLast ?? '') <
                   0,

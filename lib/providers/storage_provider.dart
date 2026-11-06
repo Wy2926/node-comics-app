@@ -252,15 +252,13 @@ class StorageProvider {
     }
   }
 
-  Future<Isar> initDB(String? path, {bool inspector = false}) async {
-    Directory? dir;
-    if (path == null) {
-      dir = await getDatabaseDirectory();
-    } else {
-      dir = Directory(path);
-    }
-
-    final isar = await Isar.open(
+  /// Opens the existing schema without running app-start defaults or migrations.
+  Future<Isar> openDB(
+    String directory, {
+    String name = 'nodelane-comics',
+    bool inspector = false,
+  }) async {
+    return Isar.open(
       [
         MangaSchema,
         ChangedPartSchema,
@@ -280,10 +278,21 @@ class StorageProvider {
         BackupPasswordFallbackSchema,
         TrackerLibraryCacheSchema,
       ],
-      directory: dir!.path,
-      name: "nodelane-comics",
+      directory: directory,
+      name: name,
       inspector: inspector,
     );
+  }
+
+  Future<Isar> initDB(String? path, {bool inspector = false}) async {
+    Directory? dir;
+    if (path == null) {
+      dir = await getDatabaseDirectory();
+    } else {
+      dir = Directory(path);
+    }
+
+    final isar = await openDB(dir!.path, inspector: inspector);
     try {
       final settings = await isar.settings.get(227);
       if (settings == null) {

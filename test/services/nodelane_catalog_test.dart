@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:mangayomi/services/source_catalog_refresh.dart';
 import 'package:mangayomi/services/source_package.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,10 +14,15 @@ import 'package:http/testing.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/main.dart' as app;
+import 'package:mangayomi/providers/storage_provider.dart';
+import 'package:mangayomi/services/isolate_service.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/proto/mihon_extension_store.pb.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
+import 'package:mangayomi/repositories/settings_repository.dart';
+import 'package:mangayomi/modules/more/settings/security/providers/security_state_provider.dart';
 import 'package:mangayomi/services/extension_store_service.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
@@ -37,7 +44,7 @@ void main() {
       url: url,
       stateFile: () async => file,
       now: () => now,
-      update: () async {
+      update: (_) async {
         calls++;
         await gate?.future;
         if (fail) throw StateError('offline');
@@ -45,27 +52,27 @@ void main() {
     );
     var refresh = updater();
     gate = Completer<void>();
-    final first = refresh.refresh();
-    final second = refresh.refresh(force: true);
+    final first = refresh.refreshAndInstall();
+    final second = refresh.refreshAndInstall(force: true);
     gate.complete();
     await Future.wait([first, second]);
     expect(calls, 1);
     gate = null;
     refresh = updater(); // Process restart keeps the receipt.
-    await refresh.refresh();
+    await refresh.refreshAndInstall();
     expect(calls, 1);
     now = now.add(const Duration(hours: 12));
     fail = true;
-    await expectLater(refresh.refresh(), throwsStateError);
-    await refresh.refresh();
+    await expectLater(refresh.refreshAndInstall(), throwsStateError);
+    await refresh.refreshAndInstall();
     expect(calls, 2);
     fail = false;
-    await refresh.refresh(force: true);
+    await refresh.refreshAndInstall(force: true);
     expect(calls, 3);
-    await updater('https://two.test/stable/index.json').refresh();
+    await updater('https://two.test/stable/index.json').refreshAndInstall();
     expect(calls, 4);
     await file.writeAsString('broken');
-    await updater().refresh();
+    await updater().refreshAndInstall();
     expect(calls, 5);
   });
 
@@ -89,24 +96,24 @@ void main() {
           url: nodeLaneCatalogUrl,
           stateFile: location,
           now: () => now,
-          update: () async {
+          update: (_) async {
             calls++;
             if (offline) throw StateError('offline');
           },
         );
-        await refresh.refresh();
-        await refresh.refresh();
+        await refresh.refreshAndInstall();
+        await refresh.refreshAndInstall();
         expect(calls, 1);
-        await refresh.refresh(force: true);
+        await refresh.refreshAndInstall(force: true);
         expect(calls, 2);
         now = now.add(const Duration(hours: 12));
         offline = true;
-        await expectLater(refresh.refresh(), throwsStateError);
-        await refresh.refresh();
+        await expectLater(refresh.refreshAndInstall(), throwsStateError);
+        await refresh.refreshAndInstall();
         expect(calls, 3);
         now = now.add(const Duration(minutes: 15));
         offline = false;
-        await refresh.refresh();
+        await refresh.refreshAndInstall();
         expect(calls, 4);
       }
     },
@@ -134,7 +141,39 @@ void main() {
     );
   });
 
-  test('plain official catalogs resolve HTTPS and development packages without changing source ID', () async {
+  test('catalog readiness does not wait for packages; interruption resumes without failure cooldown', () async {
+    final directory = await Directory.systemTemp.createTemp('catalog_ready_');
+    addTearDown(() => directory.delete(recursive: true));
+    final file = File('${directory.path}/receipt.json');
+    final package = Completer<void>();
+    var calls = 0;
+    final refresh = SourceCatalogRefresh(
+      url: nodeLaneCatalogUrl,
+      stateFile: () async => file,
+      update: (ready) async {
+        calls++;
+        ready();
+        if (calls == 1) await package.future;
+      },
+    );
+    await refresh.refresh();
+    await refresh.refresh(force: true);
+    expect(calls, 1);
+    expect(jsonDecode(await file.readAsString()), {'url': nodeLaneCatalogUrl});
+    final paused = expectLater(
+      refresh.completion,
+      throwsA(isA<SourceInstallationPaused>()),
+    );
+    package.completeError(const SourceInstallationPaused());
+    await paused;
+    await refresh.refreshAndInstall();
+    expect(calls, 2);
+    expect(jsonDecode(await file.readAsString())['success'], isA<int>());
+    await refresh.refreshAndInstall();
+    expect(calls, 2);
+  });
+
+  test('shared catalog parser accepts whitespace JSON and binary stores and resolves package URLs', () async {
     final catalog = jsonEncode([
       {
         'id': 86001001,
@@ -144,6 +183,7 @@ void main() {
         'sourceCodeLanguage': 1,
         'itemType': 0,
         'version': '0.2.0',
+        'appMinVerReq': '0.1.0',
         'nodelane': {
           'schema': 1,
           'repositoryId': 'net.nodelane.extensions',
@@ -155,16 +195,23 @@ void main() {
         },
       },
     ]);
+    // This valid binary prefix contains a newline tag and a "{" length byte.
+    final binaryStore = NetworkExtensionStore(
+      name: List.filled(123, 'A').join(),
+    );
     final client = InterceptedClient.build(
-      client: MockClient(
-        (request) async => http.Response(
+      client: MockClient((request) async {
+        if (request.url.path.endsWith('.pb')) {
+          return http.Response.bytes(binaryStore.writeToBuffer(), 200);
+        }
+        return http.Response(
           request.url.path.endsWith('repo.json')
               ? '{"name":"NodeLane 官方"}'
-              : catalog,
+              : '\n\t $catalog',
           200,
           headers: {'content-type': 'application/json; charset=utf-8'},
-        ),
-      ),
+        );
+      }),
       interceptors: [],
     );
     addTearDown(client.close);
@@ -184,6 +231,11 @@ void main() {
       expect(source.baseUrl, 'https://comix.to');
       expect(source.sourceCodeLanguage, SourceCodeLanguage.javascript);
     }
+    final binary = await ExtensionStoreService.fetchStore(
+      'https://third-party.test/index.pb',
+      client,
+    );
+    expect(binary?.name, binaryStore.name);
   });
 
   group('catalog reconciliation', () {
@@ -201,10 +253,16 @@ void main() {
       }
     });
     setUp(() async {
+      PackageInfo.setMockInitialValues(
+        appName: 'NodeLane',
+        packageName: 'test',
+        version: '0.1.0',
+        buildNumber: '1',
+        buildSignature: '',
+      );
       directory = await Directory.systemTemp.createTemp('nodelane_catalog_');
-      app.isar = await Isar.open(
-        [SourceSchema, SettingsSchema],
-        directory: directory.path,
+      app.isar = await StorageProvider().openDB(
+        directory.path,
         name: directory.path.hashCode.toString(),
       );
       await sourceRepository.putAll([
@@ -226,6 +284,7 @@ void main() {
       ]);
     });
     tearDown(() async {
+      await getIsolateService.stop();
       await app.isar.close(deleteFromDisk: true);
       await directory.delete(recursive: true);
     });
@@ -249,18 +308,83 @@ void main() {
       await checkIfSourceIsObsolete([Source(id: 1)], official, ItemType.manga);
       expect(sourceRepository.getById(1)?.isObsolete, isFalse);
     });
-    test('automatic updates isolate failures, skip unchanged and uninstalled plugins, and stop new downloads in background', () async {
-      PackageInfo.setMockInitialValues(
-        appName: 'NodeLane',
-        packageName: 'test',
-        version: '0.1.0',
-        buildNumber: '1',
-        buildSignature: '',
+
+    test('installation CPU work stays off the UI isolate and a timed-out worker is replaced', () async {
+      final executor = GetIsolateService(
+        responseTimeout: const Duration(seconds: 2),
       );
+      addTearDown(executor.stop);
+      var ticks = 0;
+      final timer = Timer.periodic(
+        const Duration(milliseconds: 50),
+        (_) => ticks++,
+      );
+      addTearDown(timer.cancel);
+      final stuck = Source(
+        id: 70,
+        sourceCode: '''
+void main(dynamic source) { while (true) {} }
+''',
+      );
+      await expectLater(
+        executor.get<Map<String, String>>(
+          source: stuck,
+          serviceType: 'prepareInstallation',
+        ),
+        throwsA(isA<TimeoutException>()),
+      );
+      expect(ticks, greaterThan(2));
+      final healthy = Source(
+        id: 71,
+        sourceCode: '''
+class DefaultExtension extends MProvider {
+  getHeaders() { return {"X-Fixture": "ready"}; }
+}
+''',
+      )..sourceCodeLanguage = SourceCodeLanguage.javascript;
+      expect(
+        await executor.get<Map<String, String>>(
+          source: healthy,
+          serviceType: 'prepareInstallation',
+        ),
+        {'X-Fixture': 'ready'},
+      );
+    });
+
+    test('QuickJS initialization is interrupted and subsequent installation still succeeds', () async {
+      final source = Source(
+        id: 72,
+        sourceCode: '''
+class DefaultExtension extends MProvider { getHeaders() { while (true) {} } }
+''',
+      )..sourceCodeLanguage = SourceCodeLanguage.javascript;
+      await expectLater(
+        getIsolateService.get<Map<String, String>>(
+          source: source,
+          serviceType: 'prepareInstallation',
+        ),
+        throwsA(predicate((error) => error.toString().contains('interrupted'))),
+      );
+      source.sourceCode = 'class DefaultExtension extends MProvider { getHeaders() { return {}; } }';
+      expect(
+        await getIsolateService.get<Map<String, String>>(
+          source: source,
+          serviceType: 'prepareInstallation',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('catalog publishes first; manual and automatic installs share one queue, preserve edits and resume pending work', () async {
       final overrides = HttpOverrides.current;
       HttpOverrides.global = null;
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final gates = {1: Completer<void>(), 4: Completer<void>()};
+      final started = {1: Completer<void>(), 4: Completer<void>()};
       addTearDown(() async {
+        for (final gate in gates.values) {
+          if (!gate.isCompleted) gate.complete();
+        }
         await server.close(force: true);
         HttpOverrides.global = overrides;
       });
@@ -269,31 +393,29 @@ void main() {
         await sourceRepository.save(
           sourceRepository.getById(id)!
             ..repo = repo
-            ..version = '0.0.1'
-            ..isAdded = true
-            ..sourceCode = 'old-$id',
+            ..version = '0.0.1',
         );
       }
       const code =
           'class DefaultExtension extends MProvider { getHeaders() { return {}; } }';
-      var corruptFirst = true, foreground = true;
-      var version = '1.0.0';
-      final downloads = <int, int>{};
+      final downloads = <int>[];
       server.listen((request) async {
         if (request.uri.path.startsWith('/packages/')) {
           final id = int.parse(request.uri.pathSegments.last);
-          downloads.update(id, (count) => count + 1, ifAbsent: () => 1);
-          request.response.write(id == 1 && corruptFirst ? 'bad' : code);
+          downloads.add(id);
+          started[id]?.complete();
+          await gates[id]?.future;
+          request.response.write(code);
         } else if (request.uri.path == '/repo.json') {
           request.response.write('{"name":"Fixture"}');
         } else {
           request.response.write(
             jsonEncode([
-              for (final id in [1, 2, 4])
+              for (final id in [1, 2, 4, 5])
                 {
                   'id': id,
                   'name': 'Fixture $id',
-                  'version': version,
+                  'version': '1.0.0',
                   'baseUrl': 'https://example.test',
                   'sourceCodeUrl': 'packages/$id',
                   'itemType': 0,
@@ -313,41 +435,298 @@ void main() {
         }
         await request.response.close();
       });
-      Future<void> refresh() => fetchSourcesList(
-        refresh: true,
+      var foreground = true;
+      final ready = Completer<void>();
+      final batch = fetchSourcesList(
         androidProxyServer: '',
         autoUpdateExtensions: true,
+        installMissingExtensions: true,
+        itemType: ItemType.manga,
+        repo: repo,
+        canContinueUpdates: () => foreground,
+        onCatalogReady: ready.complete,
+      );
+      final paused = expectLater(
+        batch,
+        throwsA(isA<SourceInstallationPaused>()),
+      );
+      await ready.future;
+      expect(sourceRepository.getById(5)?.name, 'Fixture 5');
+      expect(sourceRepository.getById(1)?.sourceCode, 'installed');
+      await started[1]!.future;
+      final manual = installSource(
+        sourceRepository.getById(4)!,
+        '',
+        repo,
+        ItemType.manga,
+        priority: true,
+      );
+      final repeated = installSource(
+        sourceRepository.getById(4)!,
+        '',
+        repo,
+        ItemType.manga,
+        priority: true,
+      );
+      // Edits made while the package is in flight must survive its final write.
+      await sourceRepository.save(
+        sourceRepository.getById(1)!
+          ..isPinned = false
+          ..isActive = false
+          ..lastUsed = true,
+      );
+      gates[1]!.complete();
+      await started[4]!.future;
+      foreground = false;
+      gates[4]!.complete();
+      await Future.wait([manual, repeated]);
+      await paused;
+      expect(downloads, [1, 4]);
+      final installed = sourceRepository.getById(1)!;
+      expect(installed.sourceCode, code);
+      expect(
+        [installed.isPinned, installed.isActive, installed.lastUsed],
+        [false, false, true],
+      );
+      expect(sourceRepository.getById(2)?.isAdded, isFalse);
+      expect(sourceRepository.getById(5)?.isAdded, isFalse);
+      foreground = true;
+      await fetchSourcesList(
+        androidProxyServer: '',
+        autoUpdateExtensions: true,
+        installMissingExtensions: true,
         itemType: ItemType.manga,
         repo: repo,
         canContinueUpdates: () => foreground,
       );
-      await expectLater(refresh(), throwsStateError);
-      expect(sourceRepository.getById(1)?.sourceCode, 'old-1');
-      expect(sourceRepository.getById(2)?.version, '1.0.0');
-      expect(sourceRepository.getById(4)?.isAdded, isFalse);
-      expect(sourceRepository.getById(3)?.sourceCode, 'third-party');
-      expect(downloads, {1: 1, 2: 1});
-      corruptFirst = false;
-      await refresh();
-      await refresh();
-      expect(downloads, {1: 2, 2: 1});
-      expect(sourceRepository.getById(1)?.isPinned, isTrue);
-      version = '1.0.1';
-      foreground = false;
-      await expectLater(refresh(), throwsStateError);
-      expect(downloads, {1: 2, 2: 1});
-      foreground = true;
-      await refresh();
-      expect(downloads, {1: 3, 2: 2});
-    });
-    test('local HTTP and integrity failures preserve installed code before a successful retry', () async {
-      PackageInfo.setMockInitialValues(
-        appName: 'NodeLane',
-        packageName: 'test',
-        version: '0.1.0',
-        buildNumber: '1',
-        buildSignature: '',
+      expect(downloads, [1, 4, 2, 5]);
+      await installSource(
+        sourceRepository.getById(4)!,
+        '',
+        repo,
+        ItemType.manga,
       );
+      expect(downloads, [1, 4, 2, 5]);
+      expect(sourceRepository.getById(3)?.sourceCode, 'third-party');
+      // Recheck user changes and repository ownership after the last await.
+      for (final id in [1, 4]) {
+        gates[id] = Completer<void>();
+        started[id] = Completer<void>();
+        final incoming = Source.fromJson(sourceRepository.getById(id)!.toJson())
+          ..version = '1.0.1';
+        final rejected = expectLater(
+          installSource(incoming, '', repo, ItemType.manga),
+          throwsStateError,
+        );
+        await started[id]!.future;
+        final current = sourceRepository.getById(id)!;
+        if (id == 1) {
+          current
+            ..isAdded = false
+            ..sourceCode = '';
+        } else {
+          current.repo = thirdParty;
+        }
+        await sourceRepository.save(current);
+        gates[id]!.complete();
+        await rejected;
+        expect(sourceRepository.getById(id)?.sourceCode, current.sourceCode);
+        expect(
+          sourceRepository.getById(id)?.repo?.jsonUrl,
+          current.repo?.jsonUrl,
+        );
+      }
+    });
+    for (final isOfficial in [false, true]) {
+      testWidgets(
+        '${isOfficial ? "official" : "third-party"} sync respects installation policy, isolates failures and resumes without repeating downloads',
+        (tester) async {
+          await tester.runAsync(() async {
+            await settingsRepository.save(
+              Settings(
+                id: 227,
+                checkForExtensionUpdates: false,
+                autoExtensionsUpdates: false,
+              ),
+            );
+            const pathChannel = MethodChannel(
+              'plugins.flutter.io/path_provider',
+            );
+            tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+              pathChannel,
+              (_) async => directory.path,
+            );
+            final overrides = HttpOverrides.current;
+            HttpOverrides.global = null;
+            final server = await HttpServer.bind(
+              InternetAddress.loopbackIPv4,
+              0,
+            );
+            addTearDown(() async {
+              await server.close(force: true);
+              HttpOverrides.global = overrides;
+              tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+                pathChannel,
+                null,
+              );
+              tester.binding.handleAppLifecycleStateChanged(
+                AppLifecycleState.resumed,
+              );
+            });
+            final repo = Repo(
+              jsonUrl: 'http://127.0.0.1:${server.port}/index.json',
+            );
+            for (final id in [1, 2]) {
+              await sourceRepository.save(
+                sourceRepository.getById(id)!
+                  ..repo = repo
+                  ..version = '0.0.1'
+                  ..isAdded = id == 1 || !isOfficial
+                  ..isActive = id != 2
+                  ..sourceCode = id == 1 || !isOfficial ? 'old-$id' : '',
+              );
+            }
+            const code =
+                'class DefaultExtension extends MProvider { getHeaders() { return {}; } }';
+            var corrupt = true, foreground = true, newEntry = false;
+            var version = '1.0.0';
+            var catalogRequests = 0;
+            final downloads = <int, int>{};
+            server.listen((request) async {
+              if (request.uri.path.startsWith('/packages/')) {
+                final id = int.parse(request.uri.pathSegments.last);
+                downloads.update(id, (count) => count + 1, ifAbsent: () => 1);
+                request.response.write(
+                  corrupt && (id == 1 || id == 4) ? 'bad' : code,
+                );
+              } else if (request.uri.path == '/repo.json') {
+                request.response.write('{"name":"Fixture"}');
+              } else {
+                catalogRequests++;
+                request.response.write(
+                  jsonEncode([
+                    for (final id in [1, 2, 4, if (newEntry) 6])
+                      {
+                        'id': id,
+                        'name': 'Fixture $id',
+                        'version': version,
+                        'appMinVerReq': '0.1.0',
+                        'baseUrl': 'https://example.test',
+                        'sourceCodeUrl': 'packages/$id',
+                        'itemType': 0,
+                        'sourceCodeLanguage': 1,
+                        'nodelane': {
+                          'schema': 1,
+                          'repositoryId': 'net.nodelane.extensions',
+                          'slug': 'fixture-$id',
+                          'sha256': sha256
+                              .convert(utf8.encode(code))
+                              .toString(),
+                          'size': utf8.encode(code).length,
+                          'requestHosts': ['example.test'],
+                          'requires': <String>[],
+                        },
+                      },
+                  ]),
+                );
+              }
+              await request.response.close();
+            });
+            final container = ProviderContainer(
+              overrides: [
+                nodeLaneCatalogRepositoryProvider(ItemType.manga)
+                    .overrideWithValue(repo),
+              ],
+            );
+            addTearDown(container.dispose);
+            late WidgetRef widgetRef;
+            await tester.pumpWidget(
+              UncontrolledProviderScope(
+                container: container,
+                child: Consumer(
+                  builder: (_, ref, _) {
+                    widgetRef = ref;
+                    ref.watch(appUnlockedStateProvider);
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            );
+            tester.binding.handleAppLifecycleStateChanged(
+              AppLifecycleState.resumed,
+            );
+            Future<void> refresh({bool autoUpdate = true}) => isOfficial
+                ? container
+                      .read(nodeLaneCatalogRefreshProvider)
+                      .refreshAndInstall(force: true)
+                : fetchSourcesList(
+                    androidProxyServer: '',
+                    autoUpdateExtensions: autoUpdate,
+                    itemType: ItemType.manga,
+                    repo: repo,
+                    canContinueUpdates: () => foreground,
+                  );
+            if (isOfficial) {
+              // Launch/resume ignores both third-party switches; errors remain quiet.
+              await refreshOfficialCatalogIfDue(widgetRef);
+            } else {
+              await refresh(autoUpdate: false);
+              expect(downloads, isEmpty);
+              expect(sourceRepository.getById(1)?.versionLast, '1.0.0');
+              await expectLater(refresh(), throwsStateError);
+            }
+            expect(sourceRepository.getById(1)?.sourceCode, 'old-1');
+            expect(sourceRepository.getById(2)?.version, '1.0.0');
+            expect(sourceRepository.getById(4)?.isAdded, isFalse);
+            expect(sourceRepository.getById(3)?.sourceCode, 'third-party');
+            expect(downloads, {1: 1, 2: 1, if (isOfficial) 4: 1});
+            corrupt = false;
+            await refresh();
+            await refresh();
+            expect(downloads, {1: 2, 2: 1, if (isOfficial) 4: 2});
+            expect(sourceRepository.getById(1)?.isPinned, isTrue);
+            expect(sourceRepository.getById(2)?.isActive, isFalse);
+            expect(sourceRepository.getById(4)?.isAdded, isOfficial);
+            version = '1.0.1';
+            newEntry = true;
+            foreground = false;
+            tester.binding.handleAppLifecycleStateChanged(
+              AppLifecycleState.paused,
+            );
+            await expectLater(
+              refresh(),
+              throwsA(isA<SourceInstallationPaused>()),
+            );
+            expect(downloads, {1: 2, 2: 1, if (isOfficial) 4: 2});
+            expect(sourceRepository.getById(6)?.isAdded, isFalse);
+            foreground = true;
+            tester.binding.handleAppLifecycleStateChanged(
+              AppLifecycleState.resumed,
+            );
+            await refresh();
+            expect(downloads, {
+              1: 3,
+              2: 2,
+              if (isOfficial) ...{4: 3, 6: 1},
+            });
+            expect(sourceRepository.getById(6)?.isAdded, isOfficial);
+            expect(
+              settingsRepository.current.checkForExtensionUpdates,
+              isFalse,
+            );
+            expect(settingsRepository.current.autoExtensionsUpdates, isFalse);
+            if (isOfficial) {
+              container.read(appUnlockedStateProvider.notifier).lock();
+              final before = catalogRequests;
+              await refreshOfficialCatalogIfDue(widgetRef);
+              expect(catalogRequests, before);
+            }
+            await tester.pumpWidget(const SizedBox.shrink());
+          });
+        },
+      );
+    }
+    test('unsupported app versions, damaged catalogs and HTTP failures preserve installed code before retry', () async {
       final overrides = HttpOverrides.current;
       HttpOverrides.global = null;
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -364,12 +743,14 @@ void main() {
       await sourceRepository.save(installed);
       var offline = false;
       var pluginAvailable = false;
-      var corrupt = false;
       var damagedCatalog = false;
       var version = '0.2.0';
+      var minimumAppVersion = '0.1.0';
+      var catalogRequests = 0;
       const pluginCode =
           'class DefaultExtension extends MProvider { getHeaders() { return {"X-Fixture": "中文 · 漫画"}; } }';
       server.listen((request) async {
+        if (request.uri.path == '/index.json') catalogRequests++;
         request.response.headers.contentType = ContentType.json;
         if (request.uri.path == '/comix.js' && pluginAvailable && !offline) {
           // Match Python's static server: JavaScript with no charset.
@@ -377,7 +758,7 @@ void main() {
             HttpHeaders.contentTypeHeader,
             'text/javascript',
           );
-          request.response.add(utf8.encode(corrupt ? 'bad' : pluginCode));
+          request.response.add(utf8.encode(pluginCode));
         } else if (offline || request.uri.path == '/comix.js') {
           request.response.statusCode = HttpStatus.serviceUnavailable;
         } else if (request.uri.path == '/repo.json') {
@@ -390,6 +771,7 @@ void main() {
                 'sourceCodeUrl': 'comix.js',
                 'sourceCodeLanguage': 1,
                 'version': version,
+                'appMinVerReq': minimumAppVersion,
                 'nodelane': {
                   'schema': 1,
                   'repositoryId': 'net.nodelane.extensions',
@@ -408,7 +790,6 @@ void main() {
       });
       Future<void> refresh({int? id}) => fetchSourcesList(
         id: id,
-        refresh: true,
         androidProxyServer: '',
         autoUpdateExtensions: false,
         itemType: ItemType.manga,
@@ -423,22 +804,34 @@ void main() {
       expect(moved.isPinned, isTrue);
       expect(moved.sourceCode, 'installed');
       expect(moved.versionLast, '0.2.0');
+      minimumAppVersion = '0.2.0';
+      await expectLater(
+        refresh(),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'reason',
+            contains('需要更新 App'),
+          ),
+        ),
+      );
+      expect(sourceRepository.getById(1)?.sourceCode, 'installed');
+      expect(sourceRepository.getById(1)?.isObsolete, isFalse);
+      minimumAppVersion = '0.1.0';
       damagedCatalog = true;
       await expectLater(refresh(), throwsStateError);
       expect(sourceRepository.getById(1)?.sourceCode, 'installed');
       expect(sourceRepository.getById(1)?.isObsolete, isFalse);
       damagedCatalog = false;
       offline = true;
+      final before = catalogRequests;
       await expectLater(refresh(), throwsStateError);
+      expect(catalogRequests, before + 1);
       expect(sourceRepository.getById(1)?.isObsolete, isFalse);
       expect(sourceRepository.getById(3)?.isObsolete, isTrue);
       offline = false;
       pluginAvailable = true;
-      corrupt = true;
-      await expectLater(refresh(id: 1), throwsStateError);
-      expect(sourceRepository.getById(1)?.sourceCode, 'installed');
-      corrupt = false;
-      await Future.wait([refresh(id: 1), refresh(id: 1)]);
+      await refresh(id: 1);
       expect(sourceRepository.getById(1)?.sourceCode, pluginCode);
       expect(
         jsonDecode(sourceRepository.getById(1)!.headers!)['X-Fixture'],
@@ -454,4 +847,12 @@ void main() {
       expect(sourceRepository.getById(1)?.version, '0.2.0');
     });
   });
+}
+
+// Most reconciliation assertions need installed code, not just catalog metadata.
+extension on SourceCatalogRefresh {
+  Future<void> refreshAndInstall({bool force = false}) async {
+    await refresh(force: force);
+    await this.completion;
+  }
 }

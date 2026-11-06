@@ -58,10 +58,24 @@ class ExtensionStoreService {
       var bytes = _decompressIfGzipped(response.bodyBytes);
       if (bytes.isEmpty) return null;
 
-      final firstByte = bytes[0];
+      final firstByte = bytes
+          .skipWhile(
+            (byte) =>
+                byte == 0x20 || byte == 0x09 || byte == 0x0A || byte == 0x0D,
+          )
+          .firstOrNull;
+      dynamic decoded;
+      if (firstByte == 0x5B || firstByte == 0x7B) {
+        try {
+          decoded = jsonDecode(utf8.decode(bytes));
+        } on FormatException {
+          // Protobuf tags and lengths can resemble whitespace-prefixed JSON.
+          // Keep the original bytes for the binary parser below.
+        }
+      }
 
-      // 1. Legacy JSON array: Starts with '[' (0x5B)
-      if (firstByte == 0x5B) {
+      // 1. Legacy JSON array
+      if (decoded is List) {
         String? repoName;
         String? repoWebsite;
         final baseUrlMatch = RegExp(r'^(.*)/[^/]+\.json$')
@@ -96,26 +110,19 @@ class ExtensionStoreService {
         }
         return _parseLegacyJsonStore(
           currentUrl,
-          bytes,
+          decoded,
           name: repoName,
           website: repoWebsite,
         );
       }
 
-      // 2. JSON object: Starts with '{' (0x7B)
-      if (firstByte == 0x7B) {
-        final text = utf8.decode(bytes);
-        final jsonMap = jsonDecode(text);
-        if (jsonMap is Map<String, dynamic>) {
-          // Check for index_v2 redirect in legacy repo JSON
-          if (jsonMap['index_v2'] != null &&
-              (jsonMap['index_v2'] as String).isNotEmpty) {
-            return await fetchStore(jsonMap['index_v2'] as String, client);
-          }
-
-          // Try parsing JSON NetworkExtensionStore
-          return await _parseJsonNetworkStore(currentUrl, jsonMap, client);
+      // 2. JSON object
+      if (decoded is Map<String, dynamic>) {
+        if (decoded['index_v2'] != null &&
+            (decoded['index_v2'] as String).isNotEmpty) {
+          return await fetchStore(decoded['index_v2'] as String, client);
         }
+        return await _parseJsonNetworkStore(currentUrl, decoded, client);
       }
 
       // 3. Binary Protobuf: NetworkExtensionStore
@@ -325,14 +332,11 @@ class ExtensionStoreService {
 
   static ExtensionStoreFetchResult? _parseLegacyJsonStore(
     String indexUrl,
-    List<int> bytes, {
+    List<dynamic> jsonList, {
     String? name,
     String? website,
   }) {
     try {
-      final jsonList = jsonDecode(utf8.decode(bytes));
-      if (jsonList is! List) return null;
-
       // A packaged catalog is one snapshot. Never silently drop a malformed
       // row and then mark its installed source obsolete during reconciliation.
       if (indexUrl == nodeLaneCatalogUrl ||

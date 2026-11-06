@@ -26,14 +26,6 @@ class SourceRepository {
     return sourcesFilter.findAllSync();
   }
 
-  Future<List<Source>> getNonLocalByItemType(ItemType itemType) => isar.sources
-      .filter()
-      .idIsNotNull()
-      .itemTypeEqualTo(itemType)
-      .and()
-      .isLocalEqualTo(false)
-      .findAll();
-
   Source? findByNameAndLang(String? name, String? lang) =>
       isar.sources.filter().nameEqualTo(name).langEqualTo(lang).findFirstSync();
 
@@ -140,8 +132,10 @@ class SourceRepository {
   List<Source> getByItemType(ItemType itemType) =>
       isar.sources.filter().itemTypeEqualTo(itemType).findAllSync();
 
-  Stream<List<Source>> watchByItemType(ItemType itemType) =>
-      isar.sources.filter().itemTypeEqualTo(itemType).watch(fireImmediately: true);
+  Stream<List<Source>> watchByItemType(ItemType itemType) => isar.sources
+      .filter()
+      .itemTypeEqualTo(itemType)
+      .watch(fireImmediately: true);
 
   Stream<List<Source>> watchActiveByItemType(ItemType itemType) => isar.sources
       .where()
@@ -185,24 +179,28 @@ class SourceRepository {
   // restoreRepository) — it doesn't queue on its own.
   void putAllSync(List<Source> sources) => isar.sources.putAllSync(sources);
 
+  void deleteAllSync(List<int> ids) => isar.sources.deleteAllSync(ids);
+
   void clearSync() => isar.sources.clearSync();
 
   // Marks source as the last one tapped into within itemType, so it sorts
   // first next time; every other source of that itemType loses the flag.
   Future<void> markLastUsed(ItemType itemType, int? sourceId) =>
-      dbWriteQueue.run(() => isar.writeTxn(() async {
-        final sources = await isar.sources
-            .filter()
-            .idIsNotNull()
-            .itemTypeEqualTo(itemType)
-            .findAll();
-        final updated = sources.map((src) {
-          return src
-            ..lastUsed = src.id == sourceId
-            ..updatedAt = DateTime.now().millisecondsSinceEpoch;
-        }).toList();
-        await isar.sources.putAll(updated);
-      }));
+      dbWriteQueue.run(
+        () => isar.writeTxn(() async {
+          final sources = await isar.sources
+              .filter()
+              .idIsNotNull()
+              .itemTypeEqualTo(itemType)
+              .findAll();
+          final updated = sources.map((src) {
+            return src
+              ..lastUsed = src.id == sourceId
+              ..updatedAt = DateTime.now().millisecondsSinceEpoch;
+          }).toList();
+          await isar.sources.putAll(updated);
+        }),
+      );
 
   Future<void> putAll(List<Source> sources) => dbWriteQueue.run(
     () => isar.writeTxnSync(() => isar.sources.putAllSync(sources)),
@@ -251,6 +249,9 @@ class SourceRepository {
   // Escape hatch for source-rooted transactions too specific to name.
   Future<T> transaction<T>(FutureOr<T> Function() body) =>
       dbWriteQueue.run(body);
+
+  Future<T> writeTransaction<T>(T Function() body) =>
+      dbWriteQueue.run(() => isar.writeTxnSync(body));
 }
 
 final sourceRepository = SourceRepository();

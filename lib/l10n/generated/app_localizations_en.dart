@@ -1384,14 +1384,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get video_subtitle => 'Subtitle';
 
   @override
-  String get check_for_extension_updates => 'Check for extension updates';
+  String get check_for_extension_updates =>
+      'Check for third-party extension updates';
 
   @override
-  String get auto_extensions_updates => 'Auto extension updates';
+  String get auto_extensions_updates => 'Auto-update third-party extensions';
 
   @override
   String get auto_extensions_updates_subtitle =>
-      'Will automatically update the extension when a new version is available.';
+      'Automatically update installed third-party extensions. Official plugins are always installed and updated automatically.';
 
   @override
   String get check_for_app_updates => 'Check for app updates on startup';

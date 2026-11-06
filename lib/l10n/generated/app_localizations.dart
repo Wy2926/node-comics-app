@@ -2554,19 +2554,19 @@ abstract class AppLocalizations {
   /// No description provided for @check_for_extension_updates.
   ///
   /// In en, this message translates to:
-  /// **'Check for extension updates'**
+  /// **'Check for third-party extension updates'**
   String get check_for_extension_updates;
 
   /// No description provided for @auto_extensions_updates.
   ///
   /// In en, this message translates to:
-  /// **'Auto extension updates'**
+  /// **'Auto-update third-party extensions'**
   String get auto_extensions_updates;
 
   /// No description provided for @auto_extensions_updates_subtitle.
   ///
   /// In en, this message translates to:
-  /// **'Will automatically update the extension when a new version is available.'**
+  /// **'Automatically update installed third-party extensions. Official plugins are always installed and updated automatically.'**
   String get auto_extensions_updates_subtitle;
 
   /// No description provided for @check_for_app_updates.

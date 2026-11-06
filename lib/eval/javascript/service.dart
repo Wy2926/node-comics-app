@@ -12,6 +12,7 @@ import 'package:mangayomi/eval/javascript/extractors.dart';
 import 'package:mangayomi/eval/javascript/http.dart';
 import 'package:mangayomi/eval/javascript/preferences.dart';
 import 'package:mangayomi/eval/javascript/utils.dart';
+import 'package:mangayomi/eval/javascript/source_runtime.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/eval/model/m_pages.dart';
@@ -23,25 +24,31 @@ import 'package:mangayomi/models/video.dart';
 import '../interface.dart';
 
 class JsExtensionService implements ExtensionService {
-  late JavascriptRuntime runtime;
+  late SourceJavascriptRuntime runtime;
   @override
   late Source source;
   bool _isInitialized = false;
-  late JsDomSelector _jsDomSelector;
+  JsDomSelector? _jsDomSelector;
+  bool _hasRuntime = false;
 
-  JsExtensionService(this.source);
+  JsExtensionService(this.source, {this.executionTimeout});
+  final Duration? executionTimeout;
 
   void _init() {
     if (_isInitialized) return;
-    runtime = getJavascriptRuntime();
-    JsHttpClient(runtime, package: SourcePackage.of(source)).init();
-    _jsDomSelector = JsDomSelector(runtime)..init();
-    JsUtils(runtime).init();
-    JsVideosExtractors(runtime).init();
-    JsPreferences(runtime, source).init();
-    final sourceJson = jsonEncode(source.toMSource().toJson());
+    runtime = SourceJavascriptRuntime(
+      timeout: executionTimeout?.inMilliseconds,
+    );
+    _hasRuntime = true;
+    try {
+      JsHttpClient(runtime, package: SourcePackage.of(source)).init();
+      _jsDomSelector = JsDomSelector(runtime)..init();
+      JsUtils(runtime).init();
+      JsVideosExtractors(runtime).init();
+      JsPreferences(runtime, source).init();
+      final sourceJson = jsonEncode(source.toMSource().toJson());
 
-    runtime.evaluate('''
+      runtime.evaluate('''
 const NodeLane = Object.freeze({capabilities: Object.freeze(${jsonEncode(nodeLaneHostCapabilities.toList())})});
 class MProvider {
     get source() {
@@ -88,25 +95,31 @@ async function jsonStringify(fn) {
     return JSON.stringify(await fn());
 }
 ''');
-    // evaluate() reports a failure by returning a result with isError set; it
-    // does not throw. Ignoring that meant a source which failed to evaluate
-    // still set _isInitialized, so `extention` was never created and every
-    // later call answered its default. That is what "Video list is empty"
-    // was: not an empty list from the source, but a source that never loaded.
-    // See #873.
-    _throwIfError(
-      runtime.evaluate('''${source.sourceCode}
+      // evaluate() reports a failure by returning a result with isError set; it
+      // does not throw. Ignoring that meant a source which failed to evaluate
+      // still set _isInitialized, so `extention` was never created and every
+      // later call answered its default. That is what "Video list is empty"
+      // was: not an empty list from the source, but a source that never loaded.
+      // See #873.
+      _throwIfError(
+        runtime.evaluate('''${source.sourceCode}
 var extention = new DefaultExtension();
 '''),
-      'loading the source',
-    );
-    _isInitialized = true;
+        'loading the source',
+      );
+      _isInitialized = true;
+    } catch (_) {
+      dispose();
+      rethrow;
+    }
   }
 
   @override
   void dispose() {
-    if (!_isInitialized) return;
-    _jsDomSelector.dispose();
+    _jsDomSelector?.dispose();
+    _jsDomSelector = null;
+    if (_hasRuntime) runtime.dispose();
+    _hasRuntime = false;
     _isInitialized = false;
   }
 
@@ -195,9 +208,11 @@ var extention = new DefaultExtension();
   @override
   Future<String> getHtmlContent(String name, String url) async {
     _init();
-    final res = (await runtime.handlePromise(
-      await runtime.evaluateAsync(
-        'jsonStringify(() => extention.getHtmlContent(${jsonEncode(name)}, ${jsonEncode(url)}))',
+    final res = (await runtime.run(
+      () async => runtime.handlePromise(
+        await runtime.evaluateAsync(
+          'jsonStringify(() => extention.getHtmlContent(${jsonEncode(name)}, ${jsonEncode(url)}))',
+        ),
       ),
     )).stringResult;
     return res;
@@ -206,9 +221,11 @@ var extention = new DefaultExtension();
   @override
   Future<String> cleanHtmlContent(String html) async {
     _init();
-    final res = (await runtime.handlePromise(
-      await runtime.evaluateAsync(
-        'jsonStringify(() => extention.cleanHtmlContent(${jsonEncode(html)}))',
+    final res = (await runtime.run(
+      () async => runtime.handlePromise(
+        await runtime.evaluateAsync(
+          'jsonStringify(() => extention.cleanHtmlContent(${jsonEncode(html)}))',
+        ),
       ),
     )).stringResult;
     return res;
@@ -264,7 +281,7 @@ var extention = new DefaultExtension();
     );
     _throwIfError(evaluated, call);
 
-    final promised = await runtime.handlePromise(evaluated);
+    final promised = await runtime.run(() => runtime.handlePromise(evaluated));
     _throwIfError(promised, call);
 
     return jsonDecode(promised.stringResult) as T;

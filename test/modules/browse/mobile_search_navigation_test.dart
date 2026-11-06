@@ -69,6 +69,71 @@ void main() {
     await directory.delete(recursive: true);
   });
 
+  testWidgets(
+    'installed official website opens its usable version while an update is available',
+    (tester) async {
+      final installed = Source.fromJson(source.toJson())
+        ..version = '1.0.0'
+        ..versionLast = '2.0.0';
+      final container = ProviderContainer(
+        overrides: [
+          nodeLaneCatalogRepositoryProvider(ItemType.manga)
+              .overrideWithValue(repo),
+          nodeLaneCatalogLoadProvider(ItemType.manga)
+              .overrideWith((ref) async {}),
+          fetchItemSourcesListProvider(
+            reFresh: false,
+            itemType: ItemType.manga,
+          ).overrideWith((ref) async {}),
+          mobileCatalogEntriesProvider(ItemType.manga)
+              .overrideWith((ref) => Stream.value([installed])),
+        ],
+      );
+      final router = GoRouter(
+        initialLocation: '/browse',
+        routes: [
+          GoRoute(
+            path: '/browse',
+            builder: (_, _) => const MobileSourcesScreen(),
+          ),
+          GoRoute(
+            path: '/mangaHome',
+            builder: (_, state) {
+              final (opened, latest) = state.extra! as (Source, bool);
+              expect(opened.sourceCode, 'existing');
+              expect(opened.version, '1.0.0');
+              expect(latest, isFalse);
+              return const Scaffold(body: Text('Opened existing website'));
+            },
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(router.dispose);
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              locale: const Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              theme: ThemeData(platform: TargetPlatform.iOS),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('local'));
+        await tester.pumpAndSettle();
+        expect(find.text('Opened existing website'), findsOneWidget);
+        await database.sources.count();
+        await tester.pumpWidget(const SizedBox());
+        expect(tester.takeException(), isNull);
+      });
+    },
+  );
+
   for (final entry in ['menu', 'empty state', 'keyboard']) {
     testWidgets(
       '$entry carries the query through view-all, reuses page one, and preserves it for pagination and back',

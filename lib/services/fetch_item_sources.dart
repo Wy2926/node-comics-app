@@ -19,7 +19,6 @@ Future<void> fetchItemSourcesList(
       try {
         await fetchSourcesList(
           repo: repo,
-          refresh: reFresh,
           id: id,
           androidProxyServer: ref.watch(androidProxyServerStateProvider),
           autoUpdateExtensions: ref.watch(autoUpdateExtensionsStateProvider),

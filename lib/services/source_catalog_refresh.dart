@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:mangayomi/services/source_package.dart';
 
 /// One refresh per official endpoint, shared by launch, resume and manual
 /// refresh. Persist only scheduling metadata; installed code stays in Isar.
@@ -13,16 +16,42 @@ class SourceCatalogRefresh {
 
   final String url;
   final Future<File> Function() stateFile;
-  final Future<void> Function() update;
+  final Future<void> Function(void Function() catalogReady) update;
   final DateTime Function() now;
   Future<void>? _pending;
+  Future<void> _completion = Future.value();
+  Completer<void>? _ready;
   Map<String, dynamic> _receipt = {};
   bool _loaded = false;
 
-  Future<void> refresh({bool force = false}) =>
-      _pending ??= _run(force).whenComplete(() => _pending = null);
+  /// Pages wait for metadata only; installation continues on the shared queue.
+  Future<void> refresh({bool force = false}) {
+    if (_pending != null) return _ready!.future;
+    final ready = _ready = Completer<void>();
+    _completion = _pending = _run(
+      force,
+      ready,
+    ).whenComplete(() => _pending = null);
+    // Background package failures must not become uncaught UI errors.
+    _completion.ignore();
+    return ready.future;
+  }
 
-  Future<void> _run(bool force) async {
+  Future<void> get completion => _completion;
+
+  Future<void> _run(bool force, Completer<void> ready) async {
+    try {
+      await _updateIfDue(force, () {
+        if (!ready.isCompleted) ready.complete();
+      });
+      if (!ready.isCompleted) ready.complete();
+    } catch (error, stack) {
+      if (!ready.isCompleted) ready.completeError(error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> _updateIfDue(bool force, void Function() catalogReady) async {
     final timestamp = now().millisecondsSinceEpoch;
     File? file;
     try {
@@ -63,9 +92,17 @@ class SourceCatalogRefresh {
       }
     }
 
-    final receipt = {'url': url, 'attempt': timestamp};
-    await save(receipt);
-    await update();
-    await save({...receipt, 'success': now().millisecondsSinceEpoch});
+    // A process exit or foreground pause is incomplete work, not a failure.
+    // Only completed attempts establish a cooldown.
+    await save({'url': url});
+    try {
+      await update(catalogReady);
+      await save({'url': url, 'success': now().millisecondsSinceEpoch});
+    } on SourceInstallationPaused {
+      rethrow;
+    } catch (_) {
+      await save({'url': url, 'attempt': now().millisecondsSinceEpoch});
+      rethrow;
+    }
   }
 }

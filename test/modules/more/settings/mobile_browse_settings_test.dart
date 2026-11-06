@@ -83,15 +83,15 @@ void main() {
       }
       expect(repositories, ItemType.values);
       expect(find.text('Extension service'), findsNothing);
-      await reveal(tester, 'Check for extension updates');
-      await tester.tap(find.text('Check for extension updates'));
+      await reveal(tester, 'Check for third-party extension updates');
+      await tester.tap(find.text('Check for third-party extension updates'));
       await tester.pumpAndSettle();
-      expect(find.text('Auto extension updates'), findsNothing);
+      expect(find.text('Auto-update third-party extensions'), findsNothing);
       expect(container.read(autoUpdateExtensionsStateProvider), isTrue);
-      await tester.tap(find.text('Check for extension updates'));
+      await tester.tap(find.text('Check for third-party extension updates'));
       await tester.pumpAndSettle();
-      await reveal(tester, 'Auto extension updates');
-      await tester.tap(find.text('Auto extension updates'));
+      await reveal(tester, 'Auto-update third-party extensions');
+      await tester.tap(find.text('Auto-update third-party extensions'));
       await tester.pumpAndSettle();
       expect(
         (container.read(

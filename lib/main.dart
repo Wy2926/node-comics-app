@@ -327,6 +327,11 @@ class _MyAppState extends ConsumerState<MyApp>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(appUnlockedStateProvider, (previous, unlocked) {
+      if (previous == false && unlocked) {
+        unawaited(refreshOfficialCatalogIfDue(ref));
+      }
+    });
     final followSystem = ref.watch(followSystemThemeStateProvider);
     final forcedDark = ref.watch(themeModeStateProvider);
     final themeMode = followSystem

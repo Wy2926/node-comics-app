@@ -1349,13 +1349,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get video_subtitle => '字幕';
 
   @override
-  String get check_for_extension_updates => '检查扩展更新';
+  String get check_for_extension_updates => '检查第三方扩展更新';
 
   @override
-  String get auto_extensions_updates => '自动扩展更新';
+  String get auto_extensions_updates => '自动更新第三方扩展';
 
   @override
-  String get auto_extensions_updates_subtitle => '当有新版本可用时，将自动更新扩展。';
+  String get auto_extensions_updates_subtitle => '自动更新已安装的第三方扩展。官方插件始终自动安装和更新。';
 
   @override
   String get check_for_app_updates => '启动时检查应用更新';

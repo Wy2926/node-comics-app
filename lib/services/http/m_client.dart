@@ -63,6 +63,7 @@ class MClient {
   }
 
   static InterceptedClient init({
+    http.Client? transport,
     MSource? source,
     Map<String, dynamic>? reqcopyWith,
     rhttp.ClientSettings? settings,
@@ -100,7 +101,9 @@ class MClient {
         : settings;
 
     return InterceptedClient.build(
-      client: httpClient(settings: clientSettings, reqcopyWith: reqcopyWith),
+      client:
+          transport ??
+          httpClient(settings: clientSettings, reqcopyWith: reqcopyWith),
       retryPolicy: ResolveCloudFlareChallenge(showCloudFlareError),
       interceptors: [
         MCookieManager(reqcopyWith, useDefaultUserAgent: useDefaultUserAgent),

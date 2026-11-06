@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:mangayomi/services/source_package.dart';
-
+import 'package:http/io_client.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
@@ -13,335 +14,363 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/services/isolate_service.dart';
 import 'package:mangayomi/services/extension_store_service.dart';
+import 'package:mangayomi/services/source_package.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:mangayomi/utils/log/logger.dart';
 
 Future<void> fetchSourcesList({
   int? id,
-  required bool refresh,
   required String androidProxyServer,
   required bool autoUpdateExtensions,
+  bool installMissingExtensions = false,
   required ItemType itemType,
   required Repo? repo,
   bool Function()? canContinueUpdates,
+  void Function()? onCatalogReady,
 }) async {
-  final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
   final url = repo?.jsonUrl;
-  if (url == null) return;
-
-  if (repo != null &&
-      (repo.name == null ||
-          repo.name!.isEmpty ||
-          repo.name == '.dist' ||
-          repo.name == 'dist')) {
-    final uri = Uri.tryParse(url);
-    if (uri != null &&
-        uri.host == 'raw.githubusercontent.com' &&
-        uri.pathSegments.length >= 2) {
-      repo.name = uri.pathSegments[1];
-    }
-  }
-
-  final info = await PackageInfo.fromPlatform();
-
-  List<Source> sourceList = [];
-  List<Source>? allCatalogSources;
-
-  // Try parsing with ExtensionStoreService (.pb, NetworkExtensionStore JSON, or legacy min.json)
-  final storeResult = await ExtensionStoreService.fetchStore(url, http);
-  if (storeResult != null && storeResult.sources.isNotEmpty) {
-    allCatalogSources = storeResult.sources
-        .where((s) => s.itemType == itemType)
-        .toList();
-    sourceList = storeResult.sources
-        .where(
-          (source) =>
-              source.itemType == itemType &&
-              (source.sourceCodeLanguage == SourceCodeLanguage.aidoku ||
-                  source.sourceCodeLanguage == SourceCodeLanguage.lnreader ||
-                  source.appMinVerReq == null ||
-                  source.appMinVerReq!.isEmpty ||
-                  compareVersions(info.version, source.appMinVerReq!) > -1),
-        )
-        .toList();
-  } else {
-    // Fallback parsing for non-Mihon direct JSON lists (LNReader or custom format)
-    try {
-      final req = await http.get(Uri.parse(url));
-      if (req.statusCode == 200) {
-        final decoded = jsonDecode(req.body);
-        if (decoded is List) {
-          sourceList = decoded
-              .expand((e) sync* {
-                if (e['id'] is String &&
-                    e['name'] != null &&
-                    e['site'] != null &&
-                    e['lang'] != null &&
-                    e['version'] != null &&
-                    e['url'] != null &&
-                    e['iconUrl'] != null) {
-                  final src = Source.fromJson(e)
-                    ..apiUrl = ''
-                    ..appMinVerReq = ''
-                    ..dateFormat = ''
-                    ..dateFormatLocale = ''
-                    ..hasCloudflare = false
-                    ..headers = ''
-                    ..isActive = true
-                    ..isAdded = false
-                    ..isFullData = false
-                    ..isNsfw = false
-                    ..isPinned = false
-                    ..lastUsed = false
-                    ..sourceCode = ''
-                    ..typeSource = ''
-                    ..versionLast = e['version'] ?? '0.0.1'
-                    ..isObsolete = false
-                    ..isLocal = false
-                    ..lang = _convertLang(e)
-                    ..baseUrl = e['site']
-                    ..sourceCodeUrl = e['url']
-                    ..sourceCodeLanguage = SourceCodeLanguage.lnreader
-                    ..itemType = ItemType.novel
-                    ..notes = "Performance might be poor due to limited engine";
-                  src.id =
-                      'lnreader-plugin-"${src.name}"."${src.lang}"'.hashCode;
-                  yield src;
-                } else {
-                  yield Source.fromJson(e);
-                }
-              })
-              .where(
-                (source) =>
-                    source.itemType == itemType &&
-                    (source.appMinVerReq == null ||
-                        source.appMinVerReq!.isEmpty ||
-                        compareVersions(info.version, source.appMinVerReq!) >
-                            -1),
-              )
-              .toList();
-        }
-      }
-    } catch (e, st) {
-      // A failure here drops sources from the list with no sign of why.
-      AppLogger.log(
-        'fetchSourcesList: filtering sources failed: $e\n$st',
-        logLevel: LogLevel.error,
-      );
-    }
-  }
-
-  // A failed/empty response must not erase cached catalog entries as obsolete.
-  if (sourceList.isEmpty) throw StateError('目录为空或暂时无法读取');
-
-  final catalogIds = <int>{};
-  for (final source in allCatalogSources ?? sourceList) {
-    if (source.id == null || !catalogIds.add(source.id!)) {
-      throw StateError('来源目录包含无效或重复 ID，未修改已有来源');
-    }
-  }
-  // Validate ownership before mutating any record from this catalog.
-  for (final source in allCatalogSources ?? sourceList) {
-    validatePackageLocation(source, url);
-    final existing = source.id == null
-        ? null
-        : sourceRepository.getById(source.id!);
-    if (existing != null && !canReplaceSource(existing, source, url)) {
-      throw StateError('来源 ID 与另一仓库冲突，未修改已安装来源');
-    }
-  }
-  sourceList = sourceList
-      .where((source) => SourcePackage.of(source)?.compatible ?? true)
-      .toList();
-  if (sourceList.isEmpty) throw StateError('此目录需要更新 App，已保留已安装版本');
-
-  if (id != null) {
-    final matchingSource = sourceList.firstWhere(
-      (source) => source.id == id,
-      orElse: () => Source(),
-    );
-    if (matchingSource.id != null && matchingSource.sourceCodeUrl!.isNotEmpty) {
-      await _updateSource(matchingSource, androidProxyServer, repo, itemType);
-    } else {
-      throw StateError('此来源已不在目录中，已保留已安装版本');
-    }
-  } else {
-    var failedUpdates = 0;
-    var interrupted = false;
-    for (var source in sourceList) {
-      final existingSource = await sourceRepository.findByIdAsync(source.id!);
-      if (existingSource == null) {
-        await _addNewSource(source, repo, itemType);
-        continue;
-      }
-      if (existingSource.repo?.jsonUrl != repo!.jsonUrl) {
-        await sourceRepository.save(existingSource..repo = repo);
-      }
-      final shouldUpdate =
-          existingSource.isAdded! &&
-          compareVersions(existingSource.version!, source.version!) < 0;
-      if (!shouldUpdate) continue;
-      await sourceRepository.save(existingSource..versionLast = source.version);
-      if (autoUpdateExtensions) {
-        if (canContinueUpdates?.call() == false) {
-          interrupted = true;
-          continue;
-        }
-        try {
-          await _updateSource(source, androidProxyServer, repo, itemType);
-        } catch (_) {
-          failedUpdates++;
-        }
-      }
-    }
-    await checkIfSourceIsObsolete(
-      allCatalogSources ?? sourceList,
-      repo!,
-      itemType,
-    );
-    if (failedUpdates > 0 || interrupted) {
-      throw StateError('部分扩展尚未更新，已保留原版本，可重试');
-    }
+  if (url == null) {
+    onCatalogReady?.call();
     return;
   }
+  final http = _downloadClient();
+  try {
+    if (repo != null &&
+        (repo.name == null ||
+            repo.name!.isEmpty ||
+            repo.name == '.dist' ||
+            repo.name == 'dist')) {
+      final uri = Uri.tryParse(url);
+      if (uri != null &&
+          uri.host == 'raw.githubusercontent.com' &&
+          uri.pathSegments.length >= 2) {
+        repo.name = uri.pathSegments[1];
+      }
+    }
 
-  await checkIfSourceIsObsolete(
-    allCatalogSources ?? sourceList,
-    repo!,
-    itemType,
+    final storeResult = await ExtensionStoreService.fetchStore(
+      url,
+      http,
+    ).timeout(_networkDeadline);
+    var sourceList =
+        storeResult?.sources
+            .where((source) => source.itemType == itemType)
+            .toList() ??
+        <Source>[];
+
+    // A failed/empty response must not erase cached catalog entries as obsolete.
+    if (sourceList.isEmpty) throw StateError('目录为空或暂时无法读取');
+    final allCatalogSources = sourceList;
+
+    final catalogIds = <int>{};
+    for (final source in allCatalogSources) {
+      if (source.id == null || !catalogIds.add(source.id!)) {
+        throw StateError('来源目录包含无效或重复 ID，未修改已有来源');
+      }
+      validatePackageLocation(source, url);
+    }
+    final appVersion = (await PackageInfo.fromPlatform()).version;
+    sourceList = sourceList
+        .where(
+          (source) =>
+              (source.sourceCodeLanguage == SourceCodeLanguage.aidoku ||
+                  source.sourceCodeLanguage == SourceCodeLanguage.lnreader ||
+                  compareVersions(appVersion, source.appMinVerReq ?? '') >=
+                      0) &&
+              (SourcePackage.of(source)?.compatible ?? true),
+        )
+        .toList();
+    if (sourceList.isEmpty) throw StateError('此目录需要更新 App，已保留已安装版本');
+
+    // Publish the complete catalog in one transaction before starting any package.
+    final candidates = await sourceRepository.writeTransaction(() {
+      for (final source in allCatalogSources) {
+        final existing = sourceRepository.getById(source.id!);
+        if (existing != null && !canReplaceSource(existing, source, url)) {
+          throw StateError('来源 ID 与另一仓库冲突，未修改已有来源');
+        }
+      }
+      final entries = <Source>[];
+      final install = <Source>[];
+      for (final source in sourceList) {
+        final existing = sourceRepository.getById(source.id!);
+        final installed =
+            existing?.isAdded == true &&
+            existing?.sourceCode?.isNotEmpty == true;
+        final hasUpdate =
+            installed &&
+            compareVersions(existing!.version!, source.version!) < 0;
+        if (!installed) {
+          entries.add(
+            _catalogEntry(source, repo, itemType)
+              ..isActive = existing?.isActive ?? true
+              ..isPinned = existing?.isPinned ?? false
+              ..lastUsed = existing?.lastUsed ?? false,
+          );
+        } else if (hasUpdate || existing!.repo?.jsonUrl != url) {
+          existing.repo = repo;
+          if (compareVersions(existing.versionLast ?? '', source.version!) <
+              0) {
+            existing.versionLast = source.version;
+          }
+          entries.add(existing);
+        }
+        if (id == source.id ||
+            id == null &&
+                (installed
+                    ? hasUpdate && autoUpdateExtensions
+                    : installMissingExtensions)) {
+          install.add(source);
+        }
+      }
+      sourceRepository.putAllSync(entries);
+      return install;
+    });
+    await checkIfSourceIsObsolete(allCatalogSources, repo!, itemType);
+    onCatalogReady?.call();
+    if (id != null && candidates.isEmpty) {
+      throw StateError('此来源已不在目录中，已保留已安装版本');
+    }
+    var failed = false, paused = false;
+    await Future.wait(
+      candidates.map((source) async {
+        try {
+          await installSource(
+            source,
+            androidProxyServer,
+            repo,
+            itemType,
+            priority: id != null,
+            canContinue: canContinueUpdates,
+          );
+        } on SourceInstallationPaused {
+          paused = true;
+        } catch (_) {
+          failed = true;
+        }
+      }),
+    );
+    if (paused) throw const SourceInstallationPaused();
+    if (failed) throw StateError('部分扩展尚未安装或更新，已保留可用版本，可重试');
+  } finally {
+    http.close();
+  }
+}
+
+const _networkDeadline = Duration(seconds: 25);
+InterceptedClient _downloadClient() => MClient.init(
+  // Distribution already uses Dart HTTP. Give each operation ownership without
+  // changing the transport or closing MClient's shared source-reading client.
+  transport: IOClient(HttpClient()..connectionTimeout = _networkDeadline),
+  reqcopyWith: const {'useDartHttpClient': true},
+  showCloudFlareError: false,
+);
+
+class _SourceInstallation {
+  _SourceInstallation(
+    this.source,
+    this.proxy,
+    this.repo,
+    this.type,
+    this.canContinue,
+  );
+  final Source source;
+  final String proxy;
+  final Repo repo;
+  final ItemType type;
+  final bool Function()? canContinue;
+  final result = Completer<void>();
+  Object get key => (
+    repo.jsonUrl,
+    source.id,
+    source.version,
+    SourcePackage.of(source)?.hash ?? source.sourceCodeUrl,
   );
 }
 
-final _installations = <int, Future<void>>{};
+final _installations = <Object, _SourceInstallation>{};
+final _installationQueue = <_SourceInstallation>[];
+bool _installing = false;
 
-Future<void> _updateSource(
+/// Shared by catalog automation and explicit installation. No UI or policy reads.
+Future<void> installSource(
   Source source,
   String proxy,
-  Repo? repo,
-  ItemType type,
-) async {
-  final id = source.id!;
-  final previous = _installations[id];
-  final future = () async {
-    try {
-      await previous;
-    } catch (_) {
-      /* A failed attempt must not block retry. */
+  Repo repo,
+  ItemType type, {
+  bool priority = false,
+  bool Function()? canContinue,
+}) {
+  final task = _SourceInstallation(
+    Source.fromJson(source.toJson()),
+    proxy,
+    repo,
+    type,
+    canContinue,
+  );
+  final existing = _installations[task.key];
+  if (existing != null) {
+    if (priority && _installationQueue.remove(existing)) {
+      _installationQueue.insert(0, existing);
     }
-    await _installSource(source, proxy, repo, type);
-  }();
-  _installations[id] = future;
-  try {
-    await future;
-  } finally {
-    if (identical(_installations[id], future)) _installations.remove(id);
+    return existing.result.future;
   }
+  _installations[task.key] = task;
+  if (priority) {
+    _installationQueue.insert(0, task);
+  } else {
+    _installationQueue.add(task);
+  }
+  task.result.future.ignore();
+  unawaited(_drainInstallations());
+  return task.result.future;
+}
+
+Future<void> _drainInstallations() async {
+  if (_installing) return;
+  _installing = true;
+  try {
+    while (_installationQueue.isNotEmpty) {
+      final task = _installationQueue.removeAt(0);
+      try {
+        if (task.canContinue?.call() == false) {
+          throw const SourceInstallationPaused();
+        }
+        if (!_alreadyInstalled(task.source, task.repo)) {
+          await _installSource(task.source, task.proxy, task.repo, task.type);
+        }
+        task.result.complete();
+      } catch (error, stack) {
+        task.result.completeError(error, stack);
+      } finally {
+        _installations.remove(task.key);
+      }
+    }
+  } finally {
+    _installing = false;
+  }
+}
+
+bool _alreadyInstalled(Source source, Repo repo) {
+  validatePackageLocation(source, repo.jsonUrl!);
+  final existing = sourceRepository.getById(source.id!);
+  if (existing == null) return false;
+  if (!canReplaceSource(existing, source, repo.jsonUrl!)) {
+    throw StateError('来源归属已改变，未覆盖已有来源');
+  }
+  if (existing.isAdded != true || existing.sourceCode?.isNotEmpty != true) {
+    return false;
+  }
+  final version = compareVersions(existing.version ?? '', source.version!);
+  if (version > 0) throw StateError('拒绝安装较旧版本');
+  if (version != 0) return false;
+  final installed = SourcePackage.of(existing),
+      incoming = SourcePackage.of(source);
+  if (installed != null && installed.hash != incoming?.hash) {
+    throw StateError('同版本插件内容已改变，已保留已安装版本');
+  }
+  return true;
 }
 
 Future<void> _installSource(
   Source source,
   String androidProxyServer,
-  Repo? repo,
+  Repo repo,
   ItemType itemType,
 ) async {
-  final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
-  // MClient owns and pools its underlying transport; an individual install
-  // must not close it and break subsequent catalog requests.
-  final bytes = await downloadSourcePackage(http, source);
-  final sourceCode =
-      (source.sourceCodeLanguage == SourceCodeLanguage.mihon ||
-          source.sourceCodeLanguage == SourceCodeLanguage.aidoku)
-      ? base64.encode(bytes)
-      : utf8.decode(bytes);
+  final wasInstalled = sourceRepository.getById(source.id!)?.isAdded == true;
+  final http = _downloadClient();
+  try {
+    final bytes = await downloadSourcePackage(
+      http,
+      source,
+    ).timeout(_networkDeadline);
+    final sourceCode =
+        (source.sourceCodeLanguage == SourceCodeLanguage.mihon ||
+            source.sourceCodeLanguage == SourceCodeLanguage.aidoku)
+        ? base64.encode(bytes)
+        : utf8.decode(bytes);
 
-  Map<String, String> headers = {};
-  bool? supportLatest;
-  FilterList? filterList;
-  List<SourcePreference>? preferenceList;
-  source.sourceCode = sourceCode;
-  if (source.sourceCodeLanguage == SourceCodeLanguage.mihon) {
-    headers = await fetchHeadersDalvik(http, source, androidProxyServer);
-    supportLatest = await fetchSupportLatestDalvik(
-      http,
-      source,
-      androidProxyServer,
-    );
-    filterList = await fetchFilterListDalvik(http, source, androidProxyServer);
-    preferenceList = await fetchPreferencesDalvik(
-      http,
-      source,
-      androidProxyServer,
-    );
-  } else if (source.sourceCodeLanguage == SourceCodeLanguage.aidoku) {
-    final service = AidokuExtensionService(source);
-    try {
-      headers = service.getHeaders();
-      supportLatest = service.supportsLatest;
-      filterList = await service.fetchFilterList();
-    } finally {
-      service.dispose();
+    Map<String, String> headers = {};
+    bool? supportLatest;
+    FilterList? filterList;
+    List<SourcePreference>? preferenceList;
+    source.sourceCode = sourceCode;
+    if (source.sourceCodeLanguage == SourceCodeLanguage.mihon) {
+      headers = await fetchHeadersDalvik(
+        http,
+        source,
+        androidProxyServer,
+      ).timeout(_networkDeadline);
+      supportLatest = await fetchSupportLatestDalvik(
+        http,
+        source,
+        androidProxyServer,
+      ).timeout(_networkDeadline);
+      filterList = await fetchFilterListDalvik(
+        http,
+        source,
+        androidProxyServer,
+      ).timeout(_networkDeadline);
+      preferenceList = await fetchPreferencesDalvik(
+        http,
+        source,
+        androidProxyServer,
+      ).timeout(_networkDeadline);
+    } else if (source.sourceCodeLanguage == SourceCodeLanguage.aidoku) {
+      final service = AidokuExtensionService(source);
+      try {
+        headers = service.getHeaders();
+        supportLatest = service.supportsLatest;
+        filterList = await service.fetchFilterList();
+      } finally {
+        service.dispose();
+      }
+    } else {
+      headers = await getIsolateService.get<Map<String, String>>(
+        source: source,
+        serviceType: 'prepareInstallation',
+      );
     }
-  } else {
-    headers = await getIsolateService.get<Map<String, String>>(
-      source: source,
-      serviceType: 'getHeaders',
-    );
-  }
 
-  final existing = source.id != null
-      ? sourceRepository.getById(source.id!)
-      : null;
-  if (existing != null &&
-      existing.isAdded == true &&
-      compareVersions(existing.version ?? '0.0.0', source.version!) > 0) {
-    throw StateError('拒绝安装较旧版本；恢复旧实现请发布新版本号');
-  }
-  final updatedSource = Source()
-    ..headers = jsonEncode(headers)
-    ..supportLatest = supportLatest
-    ..filterList = filterList != null ? jsonEncode(filterList.toJson()) : null
-    ..preferenceList = preferenceList != null
-        ? jsonEncode(preferenceList.map((e) => e.toJson()).toList())
-        : null
-    ..isAdded = true
-    ..isActive = existing?.isActive ?? true
-    ..isPinned = existing?.isPinned ?? false
-    ..lastUsed = existing?.lastUsed ?? false
-    ..sourceCode = sourceCode
-    ..sourceCodeUrl = source.sourceCodeUrl
-    ..packageInfoJson = source.packageInfoJson
-    ..id = source.id
-    ..apiUrl = source.apiUrl
-    ..baseUrl = source.baseUrl
-    ..dateFormat = source.dateFormat
-    ..dateFormatLocale = source.dateFormatLocale
-    ..hasCloudflare = source.hasCloudflare
-    ..iconUrl = source.iconUrl
-    ..typeSource = source.typeSource
-    ..lang = source.lang
-    ..isNsfw = source.isNsfw
-    ..name = source.name
-    ..version = source.version
-    ..versionLast = source.version
-    ..itemType = itemType
-    ..isFullData = source.isFullData ?? false
-    ..appMinVerReq = source.appMinVerReq
-    ..sourceCodeLanguage = source.sourceCodeLanguage
-    ..additionalParams = source.additionalParams ?? ""
-    ..isObsolete = false
-    ..notes = source.notes
-    ..repo = repo
-    ..updatedAt = DateTime.now().millisecondsSinceEpoch;
+    await sourceRepository.writeTransaction(() {
+      if (_alreadyInstalled(source, repo)) return;
+      final existing = sourceRepository.getById(source.id!);
+      if (existing == null) throw StateError('来源已被移除，已取消安装');
+      if (wasInstalled && existing.isAdded != true) {
+        throw StateError('来源已被卸载，已取消更新');
+      }
+      final updatedSource = _catalogEntry(source, repo, itemType)
+        ..headers = jsonEncode(headers)
+        ..supportLatest = supportLatest
+        ..filterList = filterList != null
+            ? jsonEncode(filterList.toJson())
+            : null
+        ..preferenceList = preferenceList != null
+            ? jsonEncode(preferenceList.map((e) => e.toJson()).toList())
+            : null
+        ..isAdded = true
+        ..isActive = existing.isActive ?? true
+        ..isPinned = existing.isPinned ?? false
+        ..lastUsed = existing.lastUsed ?? false
+        ..sourceCode = sourceCode
+        ..versionLast =
+            compareVersions(existing.versionLast ?? '', source.version!) > 0
+            ? existing.versionLast
+            : source.version;
 
-  await sourceRepository.save(updatedSource);
+      sourceRepository.putAllSync([updatedSource]);
+    });
+  } finally {
+    http.close();
+  }
 }
 
-Future<void> _addNewSource(Source source, Repo? repo, ItemType itemType) async {
+Source _catalogEntry(Source source, Repo? repo, ItemType itemType) {
   final newSource = Source()
     ..sourceCodeUrl = source.sourceCodeUrl
     ..packageInfoJson = source.packageInfoJson
     ..id = source.id
-    ..sourceCode = source.sourceCode
+    ..sourceCode = ''
     ..apiUrl = source.apiUrl
     ..baseUrl = source.baseUrl
     ..dateFormat = source.dateFormat
@@ -358,11 +387,12 @@ Future<void> _addNewSource(Source source, Repo? repo, ItemType itemType) async {
     ..sourceCodeLanguage = source.sourceCodeLanguage
     ..isFullData = source.isFullData ?? false
     ..appMinVerReq = source.appMinVerReq
+    ..additionalParams = source.additionalParams ?? ''
     ..isObsolete = false
     ..notes = source.notes
     ..repo = repo
     ..updatedAt = DateTime.now().millisecondsSinceEpoch;
-  await sourceRepository.save(newSource);
+  return newSource;
 }
 
 Future<void> checkIfSourceIsObsolete(
@@ -370,44 +400,27 @@ Future<void> checkIfSourceIsObsolete(
   Repo repo,
   ItemType itemType,
 ) async {
-  if (sourceList.isEmpty) return;
-
-  final sources = await sourceRepository.getNonLocalByItemType(itemType);
-
-  if (sources.isEmpty) return;
-
-  final sourceIds = sourceList
-      .where((e) => e.id != null)
-      .map((e) => e.id!)
-      .toSet();
-
+  final sourceIds = sourceList.map((source) => source.id).nonNulls.toSet();
   if (sourceIds.isEmpty) return;
-
-  final toUpdate = <Source>[];
-  final toDelete = <int>[];
-  for (var source in sources) {
-    // Refreshing one catalog must not clear another catalog's obsolete state.
-    if (source.repo?.jsonUrl != repo.jsonUrl) continue;
-    final isNowObsolete = !sourceIds.contains(source.id);
-
-    if (!(source.isAdded ?? false) && isNowObsolete) {
-      // Not installed and gone from the repo: nothing to install, so
-      // remove the dead row instead of leaving it in the browse list.
-      toDelete.add(source.id!);
-      continue;
+  await sourceRepository.writeTransaction(() {
+    final toUpdate = <Source>[];
+    final toDelete = <int>[];
+    for (final source in sourceRepository.getByItemType(itemType)) {
+      if (source.isLocal == true || source.repo?.jsonUrl != repo.jsonUrl) {
+        continue;
+      }
+      final obsolete = !sourceIds.contains(source.id);
+      if (source.isAdded != true && obsolete) {
+        toDelete.add(source.id!);
+      } else if (source.isObsolete != obsolete) {
+        source.isObsolete = obsolete;
+        source.updatedAt = DateTime.now().millisecondsSinceEpoch;
+        toUpdate.add(source);
+      }
     }
-    if (source.isObsolete != isNowObsolete) {
-      source.isObsolete = isNowObsolete;
-      source.updatedAt = DateTime.now().millisecondsSinceEpoch;
-      toUpdate.add(source);
-    }
-  }
-  if (toUpdate.isNotEmpty) {
-    await sourceRepository.putAll(toUpdate);
-  }
-  if (toDelete.isNotEmpty) {
-    await sourceRepository.deleteAll(toDelete);
-  }
+    sourceRepository.putAllSync(toUpdate);
+    sourceRepository.deleteAllSync(toDelete);
+  });
 }
 
 int compareVersions(String version1, String version2) {
@@ -613,8 +626,4 @@ Future<List<SourcePreference>?> fetchPreferencesDalvik(
   } catch (_) {
     return null;
   }
-}
-
-String _convertLang(dynamic e) {
-  return ExtensionStoreService.convertLnreaderLang(e);
 }

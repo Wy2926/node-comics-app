@@ -11,6 +11,7 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/services/source_catalog_config.dart';
 import 'package:mangayomi/services/source_catalog_refresh.dart';
+import 'package:mangayomi/services/source_package.dart';
 import 'package:mangayomi/modules/more/settings/security/providers/security_state_provider.dart';
 export 'package:mangayomi/services/source_catalog_config.dart'
     show nodeLaneCatalogUrl;
@@ -36,42 +37,52 @@ final nodeLaneCatalogRefreshProvider = Provider<SourceCatalogRefresh>((ref) {
     stateFile: () async => File(
       '${(await getApplicationSupportDirectory()).path}/nodelane-catalog-refresh.json',
     ),
-    update: () async {
+    update: (catalogReady) async {
       final repo = ref.read(nodeLaneCatalogRepositoryProvider(ItemType.manga));
       if (repo == null) return;
       await fetchSourcesList(
-        refresh: true,
         androidProxyServer: ref.read(androidProxyServerStateProvider),
-        autoUpdateExtensions:
-            ref.read(checkForExtensionsUpdateStateProvider) &&
-            ref.read(autoUpdateExtensionsStateProvider),
+        autoUpdateExtensions: true,
+        installMissingExtensions: true,
         itemType: ItemType.manga,
         repo: repo,
+        onCatalogReady: catalogReady,
         canContinueUpdates: () =>
-            WidgetsBinding.instance.lifecycleState !=
-                AppLifecycleState.paused &&
-            WidgetsBinding.instance.lifecycleState !=
-                AppLifecycleState.hidden &&
-            WidgetsBinding.instance.lifecycleState !=
-                AppLifecycleState.detached &&
-            ref.read(appUnlockedStateProvider),
+            _foreground && ref.read(appUnlockedStateProvider),
       );
     },
   );
 });
 
 Future<void> refreshOfficialCatalogIfDue(WidgetRef ref) async {
-  if (!ref.read(appUnlockedStateProvider) ||
-      !ref.read(checkForExtensionsUpdateStateProvider)) {
-    return;
-  }
+  if (!_foreground || !ref.read(appUnlockedStateProvider)) return;
+  final refresh = ref.read(nodeLaneCatalogRefreshProvider);
   try {
-    await ref.read(nodeLaneCatalogRefreshProvider).refresh();
+    await refresh.refresh();
+    await refresh.completion;
+  } on SourceInstallationPaused {
+    // Resume may arrive while the interrupted batch is finishing. Once it has
+    // settled, allow that same foreground event to resume the missing packages.
+    if (_foreground &&
+        ref.context.mounted &&
+        ref.read(appUnlockedStateProvider)) {
+      try {
+        await refresh.refresh();
+        await refresh.completion;
+      } catch (_) {}
+    }
   } catch (_) {
     // Background failures retain the cache and retry after the short cooldown.
     // A manual refresh uses the same operation and surfaces its error in the UI.
   }
 }
+
+bool get _foreground => switch (WidgetsBinding.instance.lifecycleState) {
+  AppLifecycleState.paused ||
+  AppLifecycleState.hidden ||
+  AppLifecycleState.detached => false,
+  _ => true,
+};
 
 final nodeLaneCatalogLoadProvider = FutureProvider.family<void, ItemType>((
   ref,

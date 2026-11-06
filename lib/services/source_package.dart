@@ -7,6 +7,10 @@ import 'package:http/http.dart' as http;
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/services/source_catalog_config.dart';
 
+class SourceInstallationPaused implements Exception {
+  const SourceInstallationPaused();
+}
+
 class SourcePackage {
   final String repositoryId;
   final String slug;
