@@ -58,7 +58,6 @@ void main() {
     var readCalls = 0, libraryCalls = 0;
     await tester.pumpWidget(
       DetailOverviewPreview(
-        statusPlaceholder: true,
         onRead: () => readCalls++,
         onLibrary: () => libraryCalls++,
       ),
@@ -68,7 +67,7 @@ void main() {
     final library = tester.getRect(find.widgetWithText(FilledButton, '已在书架'));
     expect(read.width, library.width);
     expect(read.top, library.top);
-    expect(library.right, 374);
+    expect(library.right, 370);
     expect(tester.getTopLeft(find.text('第12话  海风的回信')).dy, lessThan(720));
     await tester.tap(find.text('继续阅读'));
     await tester.tap(find.text('已在书架'));
@@ -76,7 +75,6 @@ void main() {
     final titlePosition = tester.getTopLeft(find.text('海岸来信'));
     await tester.pumpWidget(
       DetailOverviewPreview(
-        statusPlaceholder: true,
         loading: true,
         onRead: () => readCalls++,
         onLibrary: () => libraryCalls++,

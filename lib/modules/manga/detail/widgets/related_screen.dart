@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -69,8 +71,10 @@ class _RelatedScreenState extends State<RelatedScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.related_titles)),
+    final page = Scaffold(
+      appBar: isMobile && !isTv
+          ? nodeLaneAppBar(context, title: l10n.related_titles)
+          : AppBar(title: Text(l10n.related_titles)),
       body: _isLoading
           ? const NodeLaneEmptyState.loading()
           : _errorMessage.isNotEmpty
@@ -106,6 +110,7 @@ class _RelatedScreenState extends State<RelatedScreen> {
                   _card(context, data![index], index),
             ),
     );
+    return isMobile && !isTv ? NodeLaneSurface(child: page) : page;
   }
 
   Widget _card(BuildContext context, RelatedTitle related, int index) {

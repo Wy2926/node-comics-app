@@ -17,6 +17,7 @@ import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
 Widget _app(Widget body) => MaterialApp(
@@ -129,6 +130,7 @@ void main() {
       _phone(tester);
       tester.view.physicalSize = const Size(320, 740);
       var visible = true;
+      var scale = 1.0;
       late StateSetter change;
       final actions = <int>[];
       await tester.pumpWidget(
@@ -137,8 +139,10 @@ void main() {
             builder: (context, setState) {
               change = setState;
               return MediaQuery(
-                data: MediaQuery.of(context)
-                    .copyWith(viewPadding: const EdgeInsets.only(bottom: 34)),
+                data: MediaQuery.of(context).copyWith(
+                  viewPadding: const EdgeInsets.only(bottom: 34),
+                  textScaler: TextScaler.linear(scale),
+                ),
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: visible
@@ -159,18 +163,46 @@ void main() {
       await tester.tap(find.text('Mark read'));
       expect(find.text('Remove'), findsNothing);
       final position = tester.getCenter(find.text('More'));
+      final toolbarTop = tester
+          .getTopLeft(find.byType(NodeLaneGlassSurface))
+          .dy;
       expect(position.dy, lessThan(740 - 34));
       await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
+      expect(find.text('Invert selection'), findsNothing);
+      expect(
+        tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
+        lessThanOrEqualTo(toolbarTop - 8),
+      );
       await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+      expect(actions, [10, 11, 3]);
+      tester.view.physicalSize = const Size(320, 360);
+      change(() => scale = 2);
+      await tester.pumpAndSettle();
+      final compactToolbarTop = tester
+          .getTopLeft(find.byType(NodeLaneGlassSurface))
+          .dy;
+      final compactMore = tester.getCenter(find.text('More'));
+      await tester.tap(find.text('More'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
+        lessThanOrEqualTo(compactToolbarTop - 8),
+      );
+      await tester.ensureVisible(find.text('Remove'));
+      await tester.pumpAndSettle();
+      expect(find.text('Remove').hitTestable(), findsOneWidget);
+      await tester.tapAt(compactMore);
       await tester.pumpAndSettle();
       expect(actions, [10, 11, 3]);
       change(() => visible = false);
       await tester.pumpAndSettle();
-      await tester.tapAt(position);
+      await tester.tapAt(compactMore);
       expect(actions, [10, 11, 3]);
       expect(tester.takeException(), isNull);
     },
+    variant: TargetPlatformVariant({TargetPlatform.iOS}),
   );
 
   testWidgets(

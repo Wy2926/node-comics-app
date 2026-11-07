@@ -104,91 +104,90 @@ class MobileGlobalSourceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-      child: NodeLaneGroupSurface(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      padding: const EdgeInsets.fromLTRB(
+        NodeLaneTokens.gutter,
+        0,
+        NodeLaneTokens.gutter,
+        NodeLaneTokens.space24,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: onOpen,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: t.readerLabel.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (language.isNotEmpty)
-                            Text(language, style: t.readerSecondary),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (onOpen != null && !loading && count > 0)
-                    TextButton(
-                      onPressed: onOpen,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('查看全部'),
-                          Icon(icons.forward, size: 16),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (loading)
-                Row(
-                  children: [
-                    SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: t.accent,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text('正在搜索…', style: t.readerSecondary),
-                  ],
-                )
-              else if (status != null)
-                status!
-              else
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final width = ((constraints.maxWidth - 12) / 2).clamp(
-                      100.0,
-                      180.0,
-                    );
-                    final height =
-                        width * 1.42 +
-                        10 +
-                        MediaQuery.textScalerOf(context).scale(15) * 1.3 * 2;
-                    return SizedBox(
-                      height: height,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: count,
-                        separatorBuilder: (_, _) => const SizedBox(width: 12),
-                        itemBuilder: (context, i) => SizedBox(
-                          width: width,
-                          child: itemBuilder(context, i),
+              Expanded(
+                child: InkWell(
+                  onTap: onOpen,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: t.readerLabel.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    );
-                  },
+                      if (language.isNotEmpty)
+                        Text(language, style: t.secondary),
+                    ],
+                  ),
+                ),
+              ),
+              if (onOpen != null && !loading && count > 0)
+                TextButton(
+                  onPressed: onOpen,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('查看全部'),
+                      Icon(icons.forward, size: NodeLaneTokens.smallIconSize),
+                    ],
+                  ),
                 ),
             ],
           ),
-        ),
+          const SizedBox(height: NodeLaneTokens.space12),
+          if (loading)
+            Row(
+              children: [
+                SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: t.accent,
+                  ),
+                ),
+                const SizedBox(width: NodeLaneTokens.space12),
+                Text('正在搜索…', style: t.readerSecondary),
+              ],
+            )
+          else if (status != null)
+            status!
+          else
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final width = ((constraints.maxWidth - 12) / 2).clamp(
+                  100.0,
+                  180.0,
+                );
+                final height =
+                    width * NodeLaneTokens.coverAspectRatio +
+                    10 +
+                    MediaQuery.textScalerOf(context).scale(15) * 1.3 * 2;
+                return SizedBox(
+                  height: height,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: count,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(width: NodeLaneTokens.space12),
+                    itemBuilder: (context, i) =>
+                        SizedBox(width: width, child: itemBuilder(context, i)),
+                  ),
+                );
+              },
+            ),
+        ],
       ),
     );
   }

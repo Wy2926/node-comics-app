@@ -123,7 +123,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
   }
 
   Widget _mobileView(BuildContext context) {
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final icons = NodeLaneIcons.of(context);
     final developerMode = ref.watch(developerModeStateProvider);
     return MobileBrowsePage(
       title: '来源详情',
@@ -137,99 +137,62 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
         children: [
           if (source.sourceCodeLanguage == SourceCodeLanguage.mihon)
             const ExtensionServerWarningBanner(),
-          NodeLaneGroupSurface(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox.square(
-                      dimension: NodeLaneTokens.websiteIconSize,
-                      child: NodeLaneWebsiteIcon(url: source.iconUrl),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            source.name ?? '',
-                            style: t.readerLabel.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '第三方 · ${source.repo?.name ?? (source.isLocal == true ? '本地扩展' : '来源适配器')}',
-                            style: t.readerSecondary,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '版本 ${source.version ?? ''} · ${completeLanguageName(source.lang ?? '')}',
-                            style: t.readerSecondary,
-                          ),
-                          if (source.isNsfw == true)
-                            Text(
-                              'NSFW (18+)',
-                              style: t.readerSecondary.copyWith(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (source.repo?.website?.isNotEmpty == true)
-                NodeLaneRow(
-                  title: '仓库网站',
-                  icon: icons.external,
-                  onTap: () =>
-                      _launchInBrowser(Uri.parse(source.repo!.website!)),
-                ),
-            ],
+          NodeLaneRow.card(
+            title: source.name ?? '',
+            subtitle: [
+              completeLanguageName(source.lang ?? ''),
+              if (source.version?.isNotEmpty == true) 'v${source.version}',
+              if (source.isNsfw == true) '18+',
+            ].where((value) => value.isNotEmpty).join(' · '),
+            leading: NodeLaneWebsiteIcon(url: source.iconUrl),
           ),
+          if (source.repo?.website?.isNotEmpty == true) ...[
+            const SizedBox(height: NodeLaneTokens.space24),
+            NodeLaneRow.card(
+              title: '仓库网站',
+              icon: icons.external,
+              onTap: () => _launchInBrowser(Uri.parse(source.repo!.website!)),
+            ),
+          ],
           if (sourcePreference?.isNotEmpty == true) ...[
             const NodeLaneCatalogHeading('来源提供的设置'),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text('选项由当前来源提供', style: t.readerSecondary),
-            ),
             SourcePreferenceWidget(
               sourcePreference: sourcePreference!,
               source: source,
             ),
           ],
-          const NodeLaneCatalogHeading('高级操作'),
-          NodeLaneGroupSurface(
-            children: [
-              if (developerMode)
+          const SizedBox(height: NodeLaneTokens.space24),
+          NodeLaneDisclosure(
+            title: '高级操作',
+            icon: icons.extensions,
+            child: Column(
+              children: [
+                if (developerMode)
+                  NodeLaneRow(
+                    title: context.l10n.edit_code,
+                    icon: icons.code,
+                    onTap: _editCode,
+                  ),
+                if (developerMode && source.isLocal == true)
+                  NodeLaneRow(
+                    title: '编辑来源信息',
+                    icon: icons.edit,
+                    onTap: _editMetadata,
+                  ),
                 NodeLaneRow(
-                  title: context.l10n.edit_code,
-                  icon: icons.code,
-                  onTap: _editCode,
+                  title: '清除此网站 Cookie',
+                  subtitle: '下次访问可能需要重新登录',
+                  icon: icons.cookies,
+                  onTap: _busy ? null : _clearCookies,
                 ),
-              if (developerMode && source.isLocal == true)
                 NodeLaneRow(
-                  title: '编辑来源信息',
-                  icon: icons.edit,
-                  onTap: _editMetadata,
+                  title: '卸载来源',
+                  icon: icons.delete,
+                  destructive: true,
+                  onTap: _busy ? null : _confirmUninstall,
                 ),
-              NodeLaneRow(
-                title: '清除此网站 Cookie',
-                subtitle: '下次访问可能需要重新登录',
-                icon: icons.cookies,
-                onTap: _busy ? null : _clearCookies,
-              ),
-              NodeLaneRow(
-                title: '卸载来源',
-                icon: icons.delete,
-                destructive: true,
-                onTap: _busy ? null : _confirmUninstall,
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

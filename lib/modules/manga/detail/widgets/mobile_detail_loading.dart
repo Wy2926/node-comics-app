@@ -62,7 +62,7 @@ class MobileDetailLoadingPage extends StatelessWidget {
                   ),
                 ),
                 const Padding(
-                  padding: EdgeInsets.all(NodeLaneTokens.detailGutter),
+                  padding: EdgeInsets.all(NodeLaneTokens.gutter),
                   child: MobileChapterListLoading(),
                 ),
               ],

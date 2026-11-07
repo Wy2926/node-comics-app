@@ -23,6 +23,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final Manga manga;
   final ItemType itemType;
   final bool isLocalArchive;
+  final double toolbarHeight;
 
   /// Every chapter currently shown, needed for "select all" - not
   /// derivable from a provider, it's whatever _buildWidget's own sort/filter
@@ -45,14 +46,11 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onDownload,
     required this.onShowFilterMenu,
     required this.onOverflowAction,
+    this.toolbarHeight = kToolbarHeight,
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(
-    isMobile && !isTv && itemType == ItemType.manga
-        ? NodeLaneTokens.detailToolbarHeight
-        : kToolbarHeight,
-  );
+  Size get preferredSize => Size.fromHeight(toolbarHeight);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -61,14 +59,74 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isLongPressed = ref.watch(isLongPressedStateProvider);
     final chapterList = ref.watch(chaptersListStateProvider);
     final mobileManga = mobile && itemType == ItemType.manga;
+
+    void cancelSelection() {
+      ref.read(chaptersListStateProvider.notifier).clear();
+      ref.read(isLongPressedStateProvider.notifier).update(false);
+    }
+
+    void selectAll() {
+      for (final chapter in chapters) {
+        ref.read(chaptersListStateProvider.notifier).selectAll(chapter);
+      }
+    }
+
+    void invertSelection() {
+      final allSelected = chapters.length == chapterList.length;
+      for (final chapter in chapters) {
+        ref.read(chaptersListStateProvider.notifier).selectSome(chapter);
+      }
+      if (allSelected && !mobileManga) {
+        ref.read(isLongPressedStateProvider.notifier).update(false);
+      }
+    }
+
+    if (mobileManga) {
+      if (isLongPressed) {
+        return nodeLaneSelectionAppBar(
+          context,
+          title: l10n.chapter_selected_count(chapterList.length),
+          cancelLabel: l10n.cancel,
+          selectAllLabel: l10n.bookshelf_select_all,
+          invertLabel: l10n.bookshelf_invert_selection,
+          onCancel: cancelSelection,
+          onSelectAll: chapters.isEmpty ? null : selectAll,
+          onInvert: chapters.isEmpty ? null : invertSelection,
+        );
+      }
+      return nodeLaneAppBar(
+        context,
+        title: ref.watch(offsetProvider.select((value) => value > 200))
+            ? manga.name ?? ''
+            : '',
+        titleStyle: NodeLaneTokens.of(context).readerLabel,
+        actions: [
+          if (!isLocalArchive) ...[
+            DownloadQuickMenu(
+              itemType: itemType,
+              manga: manga,
+              hasChapters: chapters.isNotEmpty,
+              onDownload: onDownload,
+            ),
+            const SizedBox(width: NodeLaneTokens.space8),
+          ],
+          MobileMangaDetailActionsButton(
+            bookTitle: manga.name ?? '',
+            localArchive: isLocalArchive,
+            favorite: manga.favorite ?? false,
+            onSelected: onOverflowAction,
+          ),
+        ],
+      );
+    }
+
     final checkCategoryList =
-        mobileManga ||
         (ref
-                .watch(getMangaCategorieStreamProvider(itemType: itemType))
-                .asData
-                ?.value
-                .isNotEmpty ??
-            false);
+            .watch(getMangaCategorieStreamProvider(itemType: itemType))
+            .asData
+            ?.value
+            .isNotEmpty ??
+        false);
     final isNotFiltering = ref.watch(
       chapterFilterResultStateProvider(manga: manga),
     );
@@ -77,110 +135,34 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ? Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: AppBar(
-              toolbarHeight: mobileManga
-                  ? NodeLaneTokens.detailToolbarHeight
-                  : null,
-              title: Text(
-                mobileManga
-                    ? l10n.chapter_selected_count(chapterList.length)
-                    : chapterList.length.toString(),
-                style: mobileManga
-                    ? NodeLaneTokens.of(context).readerLabel
-                    : null,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              backgroundColor: mobileManga
-                  ? NodeLaneTokens.of(context).surface
-                  : context.primaryColor.withValues(alpha: 0.2),
+              title: Text(chapterList.length.toString()),
+              backgroundColor: context.primaryColor.withValues(alpha: 0.2),
               leading: IconButton(
                 tooltip: l10n.cancel,
-                onPressed: () {
-                  ref.read(chaptersListStateProvider.notifier).clear();
-                  ref
-                      .read(isLongPressedStateProvider.notifier)
-                      .update(!isLongPressed);
-                },
+                onPressed: cancelSelection,
                 icon: Icon(
                   mobile ? NodeLaneIcons.of(context).close : Icons.clear,
                 ),
               ),
               actions: [
                 IconButton(
-                  tooltip: mobileManga
-                      ? null
-                      : MaterialLocalizations.of(context).selectAllButtonLabel,
-                  onPressed: () {
-                    for (var chapter in chapters) {
-                      ref
-                          .read(chaptersListStateProvider.notifier)
-                          .selectAll(chapter);
-                    }
-                  },
-                  icon: mobileManga
-                      ? Text(
-                          l10n.bookshelf_select_all,
-                          style: const TextStyle(fontSize: 14),
-                        )
-                      : const Icon(Icons.select_all),
+                  tooltip: MaterialLocalizations.of(context)
+                      .selectAllButtonLabel,
+                  onPressed: selectAll,
+                  icon: const Icon(Icons.select_all),
                 ),
                 IconButton(
-                  tooltip: mobileManga ? null : l10n.bookshelf_invert_selection,
-                  onPressed: () {
-                    if (chapters.length == chapterList.length) {
-                      for (var chapter in chapters) {
-                        ref
-                            .read(chaptersListStateProvider.notifier)
-                            .selectSome(chapter);
-                      }
-                      ref
-                          .read(isLongPressedStateProvider.notifier)
-                          .update(false);
-                    } else {
-                      for (var chapter in chapters) {
-                        ref
-                            .read(chaptersListStateProvider.notifier)
-                            .selectSome(chapter);
-                      }
-                    }
-                  },
-                  icon: mobileManga
-                      ? Text(
-                          l10n.bookshelf_invert_selection,
-                          style: const TextStyle(fontSize: 14),
-                        )
-                      : const Icon(Icons.flip_to_back_rounded),
+                  tooltip: l10n.bookshelf_invert_selection,
+                  onPressed: invertSelection,
+                  icon: const Icon(Icons.flip_to_back_rounded),
                 ),
               ],
             ),
           )
         : AppBar(
-            toolbarHeight: mobileManga
-                ? NodeLaneTokens.detailToolbarHeight
-                : null,
-            leadingWidth: mobileManga
-                ? NodeLaneTokens.detailGutter + NodeLaneTokens.minTapTarget
-                : null,
-            actionsPadding: mobileManga
-                ? const EdgeInsets.only(right: NodeLaneTokens.detailGutter)
-                : null,
-            centerTitle: mobileManga ? true : null,
             elevation: 0,
             scrolledUnderElevation: 0,
             surfaceTintColor: Colors.transparent,
-            leading: mobileManga
-                ? Padding(
-                    padding: const EdgeInsets.only(
-                      left: NodeLaneTokens.detailGutter,
-                    ),
-                    child: NodeLaneIconButton(
-                      tooltip: MaterialLocalizations.of(context)
-                          .backButtonTooltip,
-                      onPressed: () => Navigator.maybePop(context),
-                      icon: NodeLaneIcons.of(context).back,
-                    ),
-                  )
-                : null,
             title: ref.watch(offsetProvider.select((val) => val > 200))
                 ? Text(
                     manga.name!,
@@ -203,7 +185,6 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   hasChapters: chapters.isNotEmpty,
                   onDownload: onDownload,
                 ),
-                if (mobileManga) const SizedBox(width: NodeLaneTokens.space8),
               ],
               if (!mobile)
                 IconButton(
@@ -247,13 +228,6 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       },
                     );
                   },
-                )
-              else if (mobileManga)
-                MobileMangaDetailActionsButton(
-                  bookTitle: manga.name ?? '',
-                  localArchive: isLocalArchive,
-                  favorite: manga.favorite ?? false,
-                  onSelected: onOverflowAction,
                 )
               else
                 PopupMenuButton(

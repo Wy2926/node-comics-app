@@ -90,12 +90,9 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
       child: PopScope(
         canPop: !_busy,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              widget.editing ? l10n.edit_categories : l10n.categories,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          appBar: nodeLaneAppBar(
+            context,
+            title: widget.editing ? l10n.edit_categories : l10n.categories,
             actions: [
               NodeLaneIconButton(
                 tooltip: l10n.add_category,
@@ -130,12 +127,7 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
                       }),
               ),
             ],
-            bottom: _busy && (ModalRoute.isCurrentOf(context) ?? true)
-                ? const PreferredSize(
-                    preferredSize: Size.fromHeight(2),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  )
-                : null,
+            busy: _busy && (ModalRoute.isCurrentOf(context) ?? true),
           ),
           body: SafeArea(
             top: false,
@@ -315,18 +307,10 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
       child: PopScope(
         canPop: !_busy,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              l10n.category,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            bottom: _busy && (ModalRoute.isCurrentOf(context) ?? true)
-                ? const PreferredSize(
-                    preferredSize: Size.fromHeight(2),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  )
-                : null,
+          appBar: nodeLaneAppBar(
+            context,
+            title: l10n.category,
+            busy: _busy && (ModalRoute.isCurrentOf(context) ?? true),
           ),
           body: SafeArea(
             top: false,

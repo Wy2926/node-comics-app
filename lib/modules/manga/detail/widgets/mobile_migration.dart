@@ -1,3 +1,4 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
@@ -206,10 +207,10 @@ class _MobileMigrationPreviewPageState
         title: _tracking
             ? l10n.track_library_add_confirm
             : l10n.migrate_confirm,
-        leading: IconButton(
+        leading: NodeLaneIconButton(
           tooltip: l10n.cancel,
           onPressed: _saving ? null : _close,
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: NodeLaneIcons.of(context).back,
         ),
         body: _writeError != null
             ? SingleChildScrollView(

@@ -313,7 +313,7 @@ class _MobileScanlatorFilterPageState extends State<MobileScanlatorFilterPage> {
         .toList();
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(title: Text(l10n.filter_scanlator_groups)),
+        appBar: nodeLaneAppBar(context, title: l10n.filter_scanlator_groups),
         body: SafeArea(
           top: false,
           child: Column(

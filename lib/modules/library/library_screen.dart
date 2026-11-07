@@ -203,7 +203,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
 
     final searchQuery = _textEditingController.text;
 
-    List<Manga> selectionEntries = const [];
     final content = Scaffold(
       body: mangaAll.when(
         data: (man) {
@@ -319,16 +318,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               final currentTab = showCategoryTabs && tabs.isNotEmpty
                   ? tabs[_tabIndex.clamp(0, tabs.length - 1)]
                   : null;
-              selectionEntries = currentTab == null
+              final selectionEntries = currentTab == null
                   ? numberOfItemsList
                   : numberOfItemsList
                         .where((entry) => _inShelfTab(entry, currentTab))
                         .toList();
               final appBar = LibraryAppBar(
-                mobileHeaderHeight: MobileBookshelfHeader.preferredHeight(
-                  context,
-                ),
-                selectionMode: ref.watch(isLongPressedStateProvider),
+                mobileHeaderHeight: ref.watch(isLongPressedStateProvider)
+                    ? nodeLaneAppBarHeight(context)
+                    : MobileBookshelfHeader.preferredHeight(context),
                 itemType: widget.itemType,
                 isNotFiltering: isNotFiltering,
                 showNumbersOfItems: showNumbersOfItems,
@@ -386,7 +384,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       bottomNavigationBar:
           isMobile && !isTv && !ref.watch(isLongPressedStateProvider)
           ? null
-          : _buildBottomBar(selectionEntries),
+          : _buildBottomBar(),
     );
     return isMobile && !isTv ? NodeLaneSurface(child: content) : content;
   }
@@ -467,7 +465,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     );
   }
 
-  Widget _buildBottomBar(List<Manga> selectionEntries) {
+  Widget _buildBottomBar() {
     return Builder(
       builder: (context) {
         final mangaIds = ref.watch(mangasListStateProvider);
@@ -503,12 +501,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               switch (action) {
                 case 0:
                   mark(false);
-                case 1:
-                  for (final entry in selectionEntries) {
-                    ref
-                        .read(mangasListStateProvider.notifier)
-                        .selectSome(entry);
-                  }
                 case 2:
                   final selected = targets();
                   ref.read(isLongPressedStateProvider.notifier).update(false);

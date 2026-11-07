@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -71,13 +72,7 @@ class _MobileCreateBackupState extends State<MobileCreateBackup> {
       child: PopScope(
         canPop: !_busy,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              l10n.create_backup,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          appBar: nodeLaneAppBar(context, title: l10n.create_backup),
           body: SafeArea(
             top: false,
             child: ListView(

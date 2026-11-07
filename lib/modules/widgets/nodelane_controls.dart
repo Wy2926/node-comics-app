@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsRole;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoPicker, CupertinoSwitch;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
@@ -1100,6 +1102,12 @@ class _NodeLaneSliderRowState extends State<NodeLaneSliderRow> {
   }
 }
 
+double nodeLaneAppBarHeight(BuildContext context) =>
+    (MediaQuery.textScalerOf(context).scale(22) * 1.3 + 16).clamp(
+      kToolbarHeight,
+      double.infinity,
+    );
+
 AppBar nodeLaneAppBar(
   BuildContext context, {
   required String title,
@@ -1108,6 +1116,7 @@ AppBar nodeLaneAppBar(
   VoidCallback? onBack,
   TextStyle? titleStyle,
   String? semanticTitle,
+  Widget? leading,
 }) => AppBar(
   title: Text(
     title,
@@ -1117,22 +1126,21 @@ AppBar nodeLaneAppBar(
   ),
   titleTextStyle: titleStyle ?? NodeLaneTokens.of(context).readerTitle,
   centerTitle: true,
-  toolbarHeight: (MediaQuery.textScalerOf(context).scale(22) * 1.3 + 16).clamp(
-    kToolbarHeight,
-    double.infinity,
-  ),
+  toolbarHeight: nodeLaneAppBarHeight(context),
   automaticallyImplyLeading: false,
-  leadingWidth: 64,
-  leading: onBack != null || Navigator.of(context).canPop()
+  leadingWidth: NodeLaneTokens.gutter + NodeLaneTokens.minTapTarget,
+  leading: leading != null || onBack != null || Navigator.of(context).canPop()
       ? Padding(
           padding: const EdgeInsets.only(left: NodeLaneTokens.space20),
-          child: NodeLaneIconButton(
-            icon: NodeLaneIcons.of(context).back,
-            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-            onPressed: busy
-                ? null
-                : onBack ?? () => Navigator.maybePop(context),
-          ),
+          child:
+              leading ??
+              NodeLaneIconButton(
+                icon: NodeLaneIcons.of(context).back,
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: busy
+                    ? null
+                    : onBack ?? () => Navigator.maybePop(context),
+              ),
         )
       : null,
   actions: [
@@ -1146,6 +1154,237 @@ AppBar nodeLaneAppBar(
         )
       : null,
 );
+
+/// Shelf-style selection navigation. Selection state stays with the page.
+AppBar nodeLaneSelectionAppBar(
+  BuildContext context, {
+  required String title,
+  required String cancelLabel,
+  required String selectAllLabel,
+  required String invertLabel,
+  required VoidCallback onCancel,
+  required VoidCallback? onSelectAll,
+  required VoidCallback? onInvert,
+}) => AppBar(
+  automaticallyImplyLeading: false,
+  toolbarHeight: nodeLaneAppBarHeight(context),
+  titleSpacing: NodeLaneTokens.gutter,
+  title: LayoutBuilder(
+    builder: (context, constraints) {
+      final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+      double textWidth(String text, TextStyle style) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout();
+        final width = painter.width;
+        painter.dispose();
+        return width;
+      }
+
+      final buttonStyle = TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space8),
+        textStyle: t.label,
+      );
+      final labelsWidth = [cancelLabel, selectAllLabel, invertLabel]
+          .fold<double>(
+            0,
+            (width, label) =>
+                width +
+                (textWidth(label, t.label) + NodeLaneTokens.space16).clamp(
+                  NodeLaneTokens.minTapTarget,
+                  double.infinity,
+                ),
+          );
+      final compact =
+          labelsWidth +
+              textWidth(title, t.readerLabel) +
+              NodeLaneTokens.space16 >
+          constraints.maxWidth;
+      Widget action(String label, IconData icon, VoidCallback? onPressed) =>
+          compact
+          ? NodeLaneIconButton(
+              icon: icon,
+              tooltip: label,
+              style: NodeLaneIconButtonStyle.plain,
+              onPressed: onPressed,
+            )
+          : TextButton(
+              style: buttonStyle,
+              onPressed: onPressed,
+              child: Text(label),
+            );
+      return Row(
+        children: [
+          TextButton(
+            style: buttonStyle,
+            onPressed: onCancel,
+            child: Text(cancelLabel),
+          ),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: t.readerLabel,
+            ),
+          ),
+          action(selectAllLabel, icons.selected, onSelectAll),
+          action(invertLabel, icons.invertSelection, onInvert),
+        ],
+      );
+    },
+  ),
+);
+
+/// Shared shelf/detail selection surface: frequent actions and one More menu.
+class NodeLaneSelectionBar<T> extends StatelessWidget {
+  const NodeLaneSelectionBar({
+    super.key,
+    required this.actions,
+    required this.moreLabel,
+    required this.moreItems,
+    required this.onMore,
+    this.busy = false,
+  });
+  final List<Widget> actions;
+  final String moreLabel;
+  final List<PopupMenuEntry<T>> moreItems;
+  final ValueChanged<T> onMore;
+  final bool busy;
+
+  Future<void> _showMore(BuildContext context) async {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final overlay = navigator.overlay!.context.findRenderObject()! as RenderBox;
+    final toolbar = context.findRenderObject()! as RenderBox;
+    final anchorTop = toolbar.localToGlobal(Offset.zero, ancestor: overlay).dy;
+    final themes = InheritedTheme.capture(from: context, to: navigator.context);
+    final menuTheme = PopupMenuTheme.of(context);
+    final result = await showDialog<T>(
+      context: context,
+      useSafeArea: false,
+      barrierColor: Colors.transparent,
+      builder: (context) => themes.wrap(
+        LayoutBuilder(
+          builder: (context, constraints) => Padding(
+            // Reserve the whole toolbar below the menu, regardless of item height.
+            padding: EdgeInsets.fromLTRB(
+              NodeLaneTokens.space16,
+              MediaQuery.paddingOf(context).top + NodeLaneTokens.space8,
+              NodeLaneTokens.space16,
+              (constraints.maxHeight - anchorTop + NodeLaneTokens.space8).clamp(
+                0,
+                constraints.maxHeight,
+              ),
+            ),
+            child: Align(
+              alignment: AlignmentDirectional.bottomEnd,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: NodeLaneTokens.menuMaxWidth,
+                ),
+                child: IntrinsicWidth(
+                  child: Material(
+                    color: menuTheme.color,
+                    surfaceTintColor: menuTheme.surfaceTintColor,
+                    elevation: menuTheme.elevation ?? 6,
+                    shadowColor: menuTheme.shadowColor,
+                    shape: menuTheme.shape,
+                    clipBehavior: Clip.antiAlias,
+                    child: Semantics(
+                      container: true,
+                      role: SemanticsRole.menu,
+                      scopesRoute: true,
+                      namesRoute: true,
+                      explicitChildNodes: true,
+                      label: moreLabel,
+                      child: SingleChildScrollView(
+                        padding: menuTheme.menuPadding,
+                        child: ListBody(children: moreItems),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    if (result != null && context.mounted) onMore(result);
+  }
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    maintainBottomViewPadding: true,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: NodeLaneTokens.space16,
+        vertical: NodeLaneTokens.space8,
+      ),
+      child: NodeLaneGlassSurface(
+        elevated: true,
+        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+        child: Builder(
+          builder: (barContext) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (busy && ModalRoute.of(context)?.isCurrent == true)
+                const LinearProgressIndicator(minHeight: 2),
+              Row(
+                children: [
+                  for (final action in actions) Expanded(child: action),
+                  Expanded(
+                    child: NodeLaneToolbarAction(
+                      label: moreLabel,
+                      icon: NodeLaneIcons.of(context).more,
+                      enabled: !busy && moreItems.isNotEmpty,
+                      onPressed: () => _showMore(barContext),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// Menu item geometry and semantic colors shared by contextual action bars.
+PopupMenuItem<T> nodeLaneSelectionMenuItem<T>(
+  BuildContext context, {
+  required T value,
+  required String label,
+  required IconData icon,
+  bool enabled = true,
+  bool destructive = false,
+}) {
+  final t = NodeLaneTokens.of(context);
+  final color = !enabled
+      ? t.muted
+      : destructive
+      ? Theme.of(context).colorScheme.error
+      : t.ink;
+  return PopupMenuItem<T>(
+    value: value,
+    enabled: enabled,
+    height: NodeLaneTokens.menuItemHeight,
+    child: Row(
+      children: [
+        Icon(icon, size: NodeLaneTokens.smallIconSize, color: color),
+        const SizedBox(width: NodeLaneTokens.space12),
+        Flexible(
+          child: Text(label, style: t.readerLabel.copyWith(color: color)),
+        ),
+      ],
+    ),
+  );
+}
 
 enum NodeLaneIconButtonStyle { plain, glass }
 

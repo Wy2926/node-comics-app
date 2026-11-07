@@ -1,3 +1,4 @@
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
@@ -118,14 +119,14 @@ class _MassMigrationRunnerScreenState
       child: MobileBrowsePage(
         title: l10n.mass_migration_title,
         leading: busy || summary
-            ? IconButton(
+            ? NodeLaneIconButton(
                 tooltip: summary
                     ? l10n.mass_migration_exit
                     : MaterialLocalizations.of(context).backButtonTooltip,
                 onPressed: busy ? null : _exitMassMigrationFlow,
-                icon: Icon(
-                  summary ? Icons.close_rounded : Icons.arrow_back_rounded,
-                ),
+                icon: summary
+                    ? NodeLaneIcons.of(context).close
+                    : NodeLaneIcons.of(context).back,
               )
             : null,
         body: switch (_phase) {

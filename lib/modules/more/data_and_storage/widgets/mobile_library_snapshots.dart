@@ -55,18 +55,10 @@ class _MobileLibrarySnapshotsState
       child: PopScope(
         canPop: !_busy,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              l10n.library_snapshot_history,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            bottom: _busy
-                ? const PreferredSize(
-                    preferredSize: Size.fromHeight(2),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  )
-                : null,
+          appBar: nodeLaneAppBar(
+            context,
+            title: l10n.library_snapshot_history,
+            busy: _busy,
           ),
           body: SafeArea(
             top: false,

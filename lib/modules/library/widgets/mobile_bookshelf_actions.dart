@@ -3,7 +3,6 @@ import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -106,105 +105,50 @@ class MobileBookshelfSelectionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n, icons = NodeLaneIcons.of(context);
-    Widget menuLabel(String label, IconData icon, {bool destructive = false}) =>
-        Row(
-          children: [
-            Icon(
-              icon,
-              size: NodeLaneTokens.smallIconSize,
-              color: destructive ? Theme.of(context).colorScheme.error : null,
-            ),
-            const SizedBox(width: NodeLaneTokens.space12),
-            Flexible(
-              child: Text(
-                label,
-                style: destructive
-                    ? TextStyle(color: Theme.of(context).colorScheme.error)
-                    : null,
-              ),
-            ),
-          ],
-        );
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        child: NodeLaneGlassSurface(
-          elevated: true,
-          borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
-          child: Row(
-            children: [
-              Expanded(
-                child: NodeLaneToolbarAction(
-                  label: l10n.categories,
-                  icon: icons.folderOutline,
-                  enabled: hasSelection,
-                  onPressed: onCategories,
-                ),
-              ),
-              Expanded(
-                child: NodeLaneToolbarAction(
-                  label: anime
-                      ? l10n.bookshelf_mark_watched
-                      : l10n.bookshelf_mark_read,
-                  icon: anime ? icons.anime : icons.manga,
-                  enabled: hasSelection,
-                  onPressed: onRead,
-                ),
-              ),
-              Expanded(
-                child: PopupMenuButton<int>(
-                  useRootNavigator: true,
-                  tooltip: l10n.more,
-                  onSelected: onMore,
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: 0,
-                      enabled: hasSelection,
-                      height: NodeLaneTokens.menuItemHeight,
-                      child: menuLabel(
-                        anime
-                            ? l10n.bookshelf_mark_unwatched
-                            : l10n.bookshelf_mark_unread,
-                        icons.unread,
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 1,
-                      height: NodeLaneTokens.menuItemHeight,
-                      child: menuLabel(
-                        l10n.bookshelf_invert_selection,
-                        icons.selected,
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 2,
-                      enabled: hasSelection,
-                      height: NodeLaneTokens.menuItemHeight,
-                      child: menuLabel(l10n.migrate, icons.migrate),
-                    ),
-                    const PopupMenuDivider(),
-                    PopupMenuItem(
-                      value: 3,
-                      enabled: hasSelection,
-                      height: NodeLaneTokens.menuItemHeight,
-                      child: menuLabel(
-                        l10n.remove,
-                        icons.delete,
-                        destructive: true,
-                      ),
-                    ),
-                  ],
-                  child: NodeLaneToolbarAction(
-                    label: l10n.more,
-                    icon: icons.more,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    return NodeLaneSelectionBar<int>(
+      moreLabel: l10n.more,
+      onMore: onMore,
+      actions: [
+        NodeLaneToolbarAction(
+          label: l10n.categories,
+          icon: icons.folderOutline,
+          enabled: hasSelection,
+          onPressed: onCategories,
         ),
-      ),
+        NodeLaneToolbarAction(
+          label: anime ? l10n.bookshelf_mark_watched : l10n.bookshelf_mark_read,
+          icon: anime ? icons.anime : icons.manga,
+          enabled: hasSelection,
+          onPressed: onRead,
+        ),
+      ],
+      moreItems: [
+        nodeLaneSelectionMenuItem(
+          context,
+          value: 0,
+          label: anime
+              ? l10n.bookshelf_mark_unwatched
+              : l10n.bookshelf_mark_unread,
+          icon: icons.unread,
+          enabled: hasSelection,
+        ),
+        nodeLaneSelectionMenuItem(
+          context,
+          value: 2,
+          label: l10n.migrate,
+          icon: icons.migrate,
+          enabled: hasSelection,
+        ),
+        const PopupMenuDivider(),
+        nodeLaneSelectionMenuItem(
+          context,
+          value: 3,
+          label: l10n.remove,
+          icon: icons.delete,
+          destructive: true,
+          enabled: hasSelection,
+        ),
+      ],
     );
   }
 }

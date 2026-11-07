@@ -43,8 +43,6 @@ class NodeLaneTokens {
   static const badgeHeight = 22.0, badgeIconSize = 14.0;
   static const tagHeight = 32.0;
   static const choicePreviewHeight = 40.0;
-  // Measured against the 390-point detail overview in the iOS concept.
-  static const detailGutter = 16.0, detailToolbarHeight = 44.0;
   static const detailCoverWidth = 132.0, detailCoverHeight = 188.0;
   static const readerEntryCoverWidth = 96.0, readerEntryCoverHeight = 136.0;
   static const chapterRowHeight = 72.0;
@@ -93,6 +91,7 @@ class NodeLaneTokens {
   static const closeSurfaceSize = 32.0;
   static const sheetHandleSize = Size(44, 4);
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
+  static const menuMaxWidth = 280.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
   static const catalogTabsWidth = 200.0;
   static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
@@ -424,6 +423,9 @@ class NodeLaneSurface extends StatelessWidget {
           labelStyle: colors.label,
         ),
         appBarTheme: base.appBarTheme.copyWith(
+          centerTitle: true,
+          titleTextStyle: colors.readerTitle,
+          scrolledUnderElevation: 0,
           backgroundColor: colors.canvas,
           foregroundColor: colors.ink,
           surfaceTintColor: Colors.transparent,

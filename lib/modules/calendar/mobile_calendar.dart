@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -65,16 +67,13 @@ class _MobileCalendarState extends State<MobileCalendar> {
             .format(date);
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.calendar,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+        appBar: nodeLaneAppBar(
+          context,
+          title: l10n.calendar,
           actions: [
-            IconButton(
+            NodeLaneIconButton(
               tooltip: l10n.help,
-              icon: const Icon(Icons.info_outline_rounded),
+              icon: NodeLaneIcons.of(context).info,
               onPressed: () => showDialog<void>(
                 context: context,
                 builder: (context) => NodeLaneAlertDialog(

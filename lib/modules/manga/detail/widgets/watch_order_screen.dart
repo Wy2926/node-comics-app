@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -140,8 +142,13 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
-      appBar: AppBar(title: Text(isSequels ? l10n.sequels : l10n.watch_order)),
+    final page = Scaffold(
+      appBar: isMobile && !isTv
+          ? nodeLaneAppBar(
+              context,
+              title: isSequels ? l10n.sequels : l10n.watch_order,
+            )
+          : AppBar(title: Text(isSequels ? l10n.sequels : l10n.watch_order)),
       body: Padding(
         padding: EdgeInsetsGeometry.all(5),
         child: _isLoading
@@ -166,6 +173,7 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
               ),
       ),
     );
+    return isMobile && !isTv ? NodeLaneSurface(child: page) : page;
   }
 
   Widget _buildSequels() {

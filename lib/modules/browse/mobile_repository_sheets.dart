@@ -256,7 +256,7 @@ class _MobileRepositoryManagerState
     return widget.asPage
         ? NodeLaneSurface(
             child: Scaffold(
-              appBar: AppBar(title: Text('第三方仓库', style: t.readerTitle)),
+              appBar: nodeLaneAppBar(context, title: '第三方仓库'),
               body: list,
             ),
           )

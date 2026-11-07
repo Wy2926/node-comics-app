@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -208,6 +209,9 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         absorbing: _chapterActionBusy,
         child: Scaffold(
           appBar: DetailAppBar(
+            toolbarHeight: widget.itemType == ItemType.manga
+                ? nodeLaneAppBarHeight(context)
+                : kToolbarHeight,
             manga: widget.manga!,
             itemType: widget.itemType,
             isLocalArchive: isLocalArchive,
@@ -238,7 +242,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                 ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: NodeLaneTokens.detailGutter,
+                    horizontal: NodeLaneTokens.gutter,
                   ),
                   sliver: SuperSliverList.builder(
                     itemCount: chapters.length,
@@ -266,7 +270,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                   const SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: NodeLaneTokens.detailGutter,
+                        horizontal: NodeLaneTokens.gutter,
                       ),
                       child: MobileChapterListLoading(),
                     ),
@@ -598,7 +602,9 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         .read(chaptersListStateProvider)
         .where((chapter) => chapter.mangaId == widget.manga!.id)
         .toList(growable: false);
-    if (selected.isEmpty || !ref.read(isLongPressedStateProvider)) return;
+    if (!ref.read(isLongPressedStateProvider) || selected.isEmpty) {
+      return;
+    }
     setState(() => _chapterActionBusy = true);
     var completed = false;
     try {

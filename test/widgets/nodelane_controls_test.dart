@@ -36,6 +36,61 @@ Widget _app(
 );
 
 void main() {
+  testWidgets(
+    'selection header keeps all and invert adjacent on narrow screens',
+    (tester) async {
+      _phone(tester);
+      tester.view.physicalSize = const Size(320, 740);
+      for (final scale in [1.0, 2.0]) {
+        for (final direction in TextDirection.values) {
+          final actions = <String>[];
+          final all = scale == 1 ? '全选' : 'Select all';
+          final invert = scale == 1 ? '反选' : 'Invert selection';
+          await tester.pumpWidget(
+            _app(
+              Directionality(
+                textDirection: direction,
+                child: Builder(
+                  builder: (context) => Scaffold(
+                    appBar: nodeLaneSelectionAppBar(
+                      context,
+                      title: scale == 1 ? '已选180章' : '180 selected',
+                      cancelLabel: '取消',
+                      selectAllLabel: all,
+                      invertLabel: invert,
+                      onCancel: () => actions.add('cancel'),
+                      onSelectAll: () => actions.add('all'),
+                      onInvert: () => actions.add('invert'),
+                    ),
+                  ),
+                ),
+              ),
+              scale: scale,
+            ),
+          );
+          await tester.pumpAndSettle();
+          final allButton = scale == 1 ? find.text(all) : find.byTooltip(all);
+          final invertButton = scale == 1
+              ? find.text(invert)
+              : find.byTooltip(invert);
+          expect(
+            tester.getCenter(allButton).dy,
+            tester.getCenter(invertButton).dy,
+          );
+          expect(
+            tester.getCenter(allButton).dx < tester.getCenter(invertButton).dx,
+            direction == TextDirection.ltr,
+          );
+          await tester.tap(allButton);
+          await tester.tap(invertButton);
+          await tester.tap(find.text('取消'));
+          expect(actions, ['all', 'invert', 'cancel']);
+          expect(tester.takeException(), isNull);
+        }
+      }
+    },
+  );
+
   testWidgets('progress menu keeps cancellation available during work', (
     tester,
   ) async {

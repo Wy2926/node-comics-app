@@ -49,7 +49,7 @@ class MobileSourceCatalog extends StatelessWidget {
             tooltip: '在浏览器打开',
             onPressed: onBrowser,
           ),
-          const SizedBox(width: NodeLaneTokens.space4),
+          const SizedBox(width: NodeLaneTokens.space8),
         ],
         NodeLaneIconButton(
           icon: icons.more,
@@ -57,7 +57,6 @@ class MobileSourceCatalog extends StatelessWidget {
           onPressed: onOptions,
           active: filtering,
         ),
-        const SizedBox(width: NodeLaneTokens.space12),
       ],
       body: LayoutBuilder(
         builder: (context, constraints) => Column(

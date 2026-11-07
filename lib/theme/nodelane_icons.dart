@@ -77,6 +77,7 @@ class NodeLaneIcons {
   IconData get groups => CupertinoIcons.person_2;
   IconData get bookmark => CupertinoIcons.bookmark_fill;
   IconData get selected => CupertinoIcons.checkmark_circle_fill;
+  IconData get invertSelection => CupertinoIcons.arrow_2_squarepath;
   IconData get unselected => CupertinoIcons.circle;
   IconData get unread => CupertinoIcons.circle_fill;
   IconData get downloaded => CupertinoIcons.checkmark_circle;

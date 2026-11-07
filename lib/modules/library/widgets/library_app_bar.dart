@@ -23,7 +23,6 @@ import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
@@ -53,7 +52,6 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final ValueChanged<bool> onIgnoreFiltersChanged;
   final TickerProvider vsync;
   final double mobileHeaderHeight;
-  final bool selectionMode;
 
   const LibraryAppBar({
     super.key,
@@ -74,14 +72,11 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onIgnoreFiltersChanged,
     required this.vsync,
     required this.mobileHeaderHeight,
-    this.selectionMode = false,
   });
 
   @override
   Size get preferredSize => Size.fromHeight(
-    isMobile && !isTv && !selectionMode
-        ? mobileHeaderHeight
-        : AppBar().preferredSize.height,
+    isMobile && !isTv ? mobileHeaderHeight : AppBar().preferredSize.height,
   );
 
   /// The library menu actions, shared by the popup off-TV and the centred TV
@@ -394,42 +389,31 @@ class _SelectionAppBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLongPressed = ref.watch(isLongPressedStateProvider);
     if (isMobile && !isTv) {
-      final t = NodeLaneTokens.of(context), l10n = context.l10n;
-      return AppBar(
-        automaticallyImplyLeading: false,
-        titleSpacing: NodeLaneTokens.gutter,
-        backgroundColor: t.canvas,
-        surfaceTintColor: Colors.transparent,
-        title: Row(
-          children: [
-            TextButton(
-              onPressed: () {
-                ref.read(mangasListStateProvider.notifier).clear();
-                ref.read(isLongPressedStateProvider.notifier).update(false);
+      final l10n = context.l10n;
+      return nodeLaneSelectionAppBar(
+        context,
+        title: l10n.bookshelf_selected_count(mangaIdsList.length),
+        cancelLabel: l10n.cancel,
+        selectAllLabel: l10n.bookshelf_select_all,
+        invertLabel: l10n.bookshelf_invert_selection,
+        onCancel: () {
+          ref.read(mangasListStateProvider.notifier).clear();
+          ref.read(isLongPressedStateProvider.notifier).update(false);
+        },
+        onSelectAll: data.isEmpty
+            ? null
+            : () {
+                for (final entry in data) {
+                  ref.read(mangasListStateProvider.notifier).selectAll(entry);
+                }
               },
-              child: Text(l10n.cancel),
-            ),
-            Expanded(
-              child: Text(
-                l10n.bookshelf_selected_count(mangaIdsList.length),
-                textAlign: TextAlign.center,
-                style: t.readerLabel,
-              ),
-            ),
-            TextButton(
-              onPressed: data.isEmpty
-                  ? null
-                  : () {
-                      for (final entry in data) {
-                        ref
-                            .read(mangasListStateProvider.notifier)
-                            .selectAll(entry);
-                      }
-                    },
-              child: Text(l10n.bookshelf_select_all),
-            ),
-          ],
-        ),
+        onInvert: data.isEmpty
+            ? null
+            : () {
+                for (final entry in data) {
+                  ref.read(mangasListStateProvider.notifier).selectSome(entry);
+                }
+              },
       );
     }
 

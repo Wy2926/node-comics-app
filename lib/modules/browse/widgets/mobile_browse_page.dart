@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -25,28 +24,11 @@ class MobileBrowsePage extends StatelessWidget {
     final colors = NodeLaneTokens.of(context);
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: AppBar(
-          leading:
-              leading ??
-              NodeLaneIconButton(
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.maybePop(context),
-                icon: NodeLaneIcons.of(context).back,
-              ),
-          // AppBar caps title scaling; reserve two lines without applying
-          // the much larger accessibility body-text scale to the whole bar.
-          toolbarHeight:
-              56 +
-              (MediaQuery.textScalerOf(context).scale(20) - 20).clamp(0, 16),
-          centerTitle: false,
-          title: Text(
-            title,
-            maxLines: 2,
-            softWrap: true,
-            overflow: TextOverflow.ellipsis,
-            style: colors.readerTitle,
-          ),
-          actions: actions,
+        appBar: nodeLaneAppBar(
+          context,
+          title: title,
+          leading: leading,
+          actions: actions ?? const [],
         ),
         body: SafeArea(top: false, child: body),
         bottomNavigationBar: bottomAction == null
@@ -59,7 +41,10 @@ class MobileBrowsePage extends StatelessWidget {
                 child: SafeArea(
                   top: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NodeLaneTokens.gutter,
+                      vertical: NodeLaneTokens.space12,
+                    ),
                     child: bottomAction,
                   ),
                 ),

@@ -18,11 +18,9 @@ class DetailOverviewPreview extends StatefulWidget {
     super.key,
     this.onRead = _noop,
     this.onLibrary = _noop,
-    this.statusPlaceholder = false,
     this.loading = false,
   });
   final VoidCallback onRead, onLibrary;
-  final bool statusPlaceholder;
   final bool loading;
   @override
   State<DetailOverviewPreview> createState() => _DetailOverviewPreviewState();
@@ -49,38 +47,29 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
           final icons = NodeLaneIcons.of(context);
           return RepaintBoundary(
             child: Scaffold(
+              appBar: nodeLaneAppBar(
+                context,
+                title: '',
+                onBack: () {},
+                actions: [
+                  MobileMangaDownloadActionsButton(
+                    bookTitle: '海岸来信',
+                    hasChapters: true,
+                    onSelected: (_) async {},
+                  ),
+                  const SizedBox(width: NodeLaneTokens.space8),
+                  MobileMangaDetailActionsButton(
+                    bookTitle: '海岸来信',
+                    localArchive: false,
+                    favorite: true,
+                    onSelected: (_) async {},
+                  ),
+                ],
+              ),
               body: SafeArea(
+                top: false,
                 child: CustomScrollView(
                   slivers: [
-                    if (widget.statusPlaceholder)
-                      const SliverToBoxAdapter(child: SizedBox(height: 50)),
-                    SliverToBoxAdapter(
-                      child: SizedBox(
-                        height: 44,
-                        child: Row(
-                          children: [
-                            NodeLaneIconButton(
-                              tooltip: '返回',
-                              onPressed: () {},
-                              icon: icons.back,
-                            ),
-                            const Spacer(),
-                            MobileMangaDownloadActionsButton(
-                              bookTitle: '海岸来信',
-                              hasChapters: true,
-                              onSelected: (_) async {},
-                            ),
-                            const SizedBox(width: NodeLaneTokens.space8),
-                            MobileMangaDetailActionsButton(
-                              bookTitle: '海岸来信',
-                              localArchive: false,
-                              favorite: true,
-                              onSelected: (_) async {},
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                     SliverToBoxAdapter(
                       child: MobileDetailOverview(
                         heading: MobileDetailHeading(
@@ -180,7 +169,7 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: NodeLaneTokens.detailGutter,
+                        horizontal: NodeLaneTokens.gutter,
                       ),
                       sliver: SliverList.list(
                         children: [

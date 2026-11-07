@@ -210,9 +210,7 @@ class _RestorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NodeLaneSurface(
     child: Scaffold(
-      appBar: AppBar(
-        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
+      appBar: nodeLaneAppBar(context, title: title),
       body: SafeArea(top: false, child: child),
     ),
   );

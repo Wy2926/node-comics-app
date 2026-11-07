@@ -1,3 +1,5 @@
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -70,8 +72,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.recommendations)),
+    final page = Scaffold(
+      appBar: isMobile && !isTv
+          ? nodeLaneAppBar(context, title: l10n.recommendations)
+          : AppBar(title: Text(l10n.recommendations)),
       body: _isLoading
           ? const NodeLaneEmptyState.loading()
           : _errorMessage.isNotEmpty
@@ -111,6 +115,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               },
             ),
     );
+    return isMobile && !isTv ? NodeLaneSurface(child: page) : page;
   }
 
   Widget _card(BuildContext context, RecommendationResult rec, int index) {

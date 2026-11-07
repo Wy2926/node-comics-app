@@ -17,8 +17,11 @@ class MobileDetailOverview extends StatelessWidget {
   final Widget? synopsis;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: NodeLaneTokens.detailGutter,
+    padding: const EdgeInsets.fromLTRB(
+      NodeLaneTokens.gutter,
+      NodeLaneTokens.space8,
+      NodeLaneTokens.gutter,
+      0,
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -240,18 +243,28 @@ class MobileChapterTile extends StatelessWidget {
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 16,
+                        width:
+                            NodeLaneTokens.badgeIconSize +
+                            NodeLaneTokens.space16,
                         child: ExcludeSemantics(
-                          child: Icon(
-                            selecting
-                                ? selected
-                                      ? icons.selected
-                                      : icons.unselected
-                                : icons.unread,
-                            size: selecting ? 20 : 10,
-                            color: read && !selected
-                                ? colors.muted.withValues(alpha: .55)
-                                : colors.accent,
+                          child: Center(
+                            child: selecting
+                                ? NodeLaneCoverBadge(
+                                    '',
+                                    icon: selected
+                                        ? icons.selected
+                                        : icons.unselected,
+                                    tone: selected
+                                        ? NodeLaneBadgeTone.accent
+                                        : NodeLaneBadgeTone.neutral,
+                                  )
+                                : Icon(
+                                    icons.unread,
+                                    size: 10,
+                                    color: read
+                                        ? colors.muted.withValues(alpha: .55)
+                                        : colors.accent,
+                                  ),
                           ),
                         ),
                       ),
