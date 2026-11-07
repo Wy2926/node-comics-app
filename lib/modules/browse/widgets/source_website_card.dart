@@ -23,12 +23,14 @@ class SourceWebsiteCard extends StatelessWidget {
     required this.onOpen,
     required this.onDetails,
     required this.onLongPress,
+    this.selected,
   });
 
   final Source source;
   final SourceCardAction action;
   final VoidCallback? onAction, onOpen;
-  final VoidCallback onDetails, onLongPress;
+  final VoidCallback? onDetails, onLongPress;
+  final bool? selected;
 
   @override
   Widget build(BuildContext context) {
@@ -119,13 +121,25 @@ class SourceWebsiteCard extends StatelessWidget {
             ),
           ],
         );
-        final actionWidget = _SourceAction(action: action, onPressed: onAction);
-        return Material(
+        final actionWidget = selected == null
+            ? _SourceAction(action: action, onPressed: onAction)
+            : NodeLaneIconButton(
+                icon: selected! ? icons.selected : icons.unselected,
+                tooltip: selected! ? '取消选择' : '选择来源',
+                active: selected!,
+                onPressed: onOpen,
+                style: NodeLaneIconButtonStyle.plain,
+              );
+        final card = Material(
           color: free ? t.sourceFreeSurface : t.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(NodeLaneTokens.groupRadius),
             side: BorderSide(
-              color: free ? t.sourceFreeOutline : t.line,
+              color: selected == true
+                  ? t.accent
+                  : free
+                  ? t.sourceFreeOutline
+                  : t.line,
               width: NodeLaneTokens.glassStroke,
             ),
           ),
@@ -330,6 +344,7 @@ class SourceWebsiteCard extends StatelessWidget {
             ),
           ),
         );
+        return Semantics(selected: selected, child: card);
       },
     );
   }

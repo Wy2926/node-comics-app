@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/eval/model/m_pages.dart';
+import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/models/chapter.dart';
@@ -21,6 +22,8 @@ import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart
 import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
+import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/services/get_popular.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
@@ -48,7 +51,14 @@ void main() {
     await Isar.initializeIsarCore(download: true);
     directory = await Directory.systemTemp.createTemp('source-search-flow-');
     database = await Isar.open(
-      [SourceSchema, SettingsSchema, MangaSchema, ChapterSchema],
+      [
+        SourceSchema,
+        SettingsSchema,
+        MangaSchema,
+        ChapterSchema,
+        SourcePreferenceSchema,
+        SourcePreferenceStringValueSchema,
+      ],
       directory: directory.path,
       name: 'source_search_flow',
     );
@@ -71,6 +81,89 @@ void main() {
   tearDownAll(() async {
     await database.close(deleteFromDisk: true);
     await directory.delete(recursive: true);
+  });
+
+  testWidgets('batch actions persist and release the shared selection mode', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      await database.writeTxn(
+        () async => database.sources.putAll([
+          for (var id = 201; id <= 203; id++)
+            Source.fromJson(source.toJson())
+              ..id = id
+              ..name = 'Batch $id'
+              ..isAdded = id != 203,
+        ]),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          nodeLaneCatalogRepositoryProvider(ItemType.manga)
+              .overrideWithValue(null),
+          nodeLaneCatalogLoadProvider(ItemType.manga)
+              .overrideWith((ref) async {}),
+          fetchItemSourcesListProvider(
+            reFresh: false,
+            itemType: ItemType.manga,
+          ).overrideWith((ref) async {}),
+          mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
+            (ref) => database.sources
+                .filter()
+                .idBetween(201, 203)
+                .watch(fireImmediately: true),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            locale: const Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const MobileSourcesScreen(),
+          ),
+        ),
+      );
+      await container.read(mobileCatalogEntriesProvider(ItemType.manga).future);
+      await tester.pumpAndSettle();
+      Future<void> tap(Finder finder) async {
+        await tester.tap(finder);
+        await database.sources.count();
+        await tester.pumpAndSettle();
+      }
+
+      await tap(find.text('第三方'));
+      for (final action in ['设为常用', '取消常用', '卸载']) {
+        await tap(find.byTooltip('来源操作'));
+        await tap(find.text('批量管理'));
+        await tap(find.text('全选'));
+        if (action == '取消常用') await tap(find.text('更多'));
+        await tap(find.text(action));
+        if (action == '卸载') {
+          expect(find.text('卸载 2 个来源？'), findsOneWidget);
+          await tap(find.widgetWithText(NodeLaneDialogAction, '取消'));
+          expect(database.sources.getSync(201)!.isAdded, isTrue);
+          await tap(find.text('卸载'));
+          await tap(find.widgetWithText(NodeLaneDialogAction, '卸载'));
+          expect(database.sources.getSync(201)!.sourceCode, isEmpty);
+          expect(database.sources.getSync(202)!.isAdded, isFalse);
+        } else {
+          expect([
+            for (var id = 201; id <= 203; id++)
+              database.sources.getSync(id)!.isPinned,
+          ], everyElement(action == '设为常用'));
+        }
+        expect(container.read(isLongPressedStateProvider), isFalse);
+      }
+      expect(database.sources.getSync(101)!.isAdded, isTrue);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await database.writeTxn(
+        () async => database.sources.deleteAll([201, 202, 203]),
+      );
+    });
   });
 
   testWidgets(

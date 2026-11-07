@@ -6,12 +6,14 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
+import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
@@ -36,6 +38,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   final query = TextEditingController();
   ItemType type = ItemType.manga;
   bool thirdParty = false, managing = false;
+  final selected = <int>{};
+  bool _bulkBusy = false;
+  bool get selecting => thirdParty && ref.read(isLongPressedStateProvider);
   final busy = <int>{};
   final failedActions = <int, ({bool open, bool latest})>{};
   final languages = <(ItemType, bool), Set<String>>{};
@@ -164,7 +169,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   }
 
   Future<void> _refreshCatalog() async {
-    if (_refreshing) return;
+    if (_refreshing || _bulkBusy) return;
     _refreshing = true;
     final requestedType = type, requestedThirdParty = thirdParty;
     _notice?.dismiss();
@@ -202,13 +207,120 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     context.push('/globalSearch', extra: (query.text.trim(), type));
   }
 
-  Future<void> _pin(Source source) => sourceRepository.writeTransaction(() {
-    final current = sourceRepository.getById(source.id!);
-    if (current == null) return;
-    current.isPinned = !(current.isPinned ?? false);
-    current.updatedAt = DateTime.now().millisecondsSinceEpoch;
-    sourceRepository.putAllSync([current]);
-  });
+  Future<void> _pin(Source source, {bool? pinned}) =>
+      sourceRepository.writeTransaction(() {
+        final current = sourceRepository.getById(source.id!);
+        if (current == null) return;
+        current.isPinned = pinned ?? !(current.isPinned ?? false);
+        current.updatedAt = DateTime.now().millisecondsSinceEpoch;
+        sourceRepository.putAllSync([current]);
+      });
+
+  void _finishSelection() {
+    selected.clear();
+    ref.read(isLongPressedStateProvider.notifier).update(false);
+  }
+
+  void _startSelection() {
+    if (_bulkBusy) return;
+    FocusScope.of(context).unfocus();
+    selected.clear();
+    ref.read(isLongPressedStateProvider.notifier).update(true);
+  }
+
+  void _toggleSelection(Source source) {
+    if (_bulkBusy || source.id == null || busy.contains(source.id)) return;
+    setState(() {
+      if (!selected.remove(source.id)) selected.add(source.id!);
+    });
+    if (selected.isEmpty) _finishSelection();
+  }
+
+  Future<void> _applySelection(List<Source> targets, {bool? pinned}) async {
+    if (_bulkBusy || targets.isEmpty) return;
+    final requestedType = type;
+    final official = ref.read(nodeLaneCatalogRepositoryProvider(requestedType));
+    if (pinned == null &&
+        !await showNodeLaneConfirmation(
+          context,
+          title: '卸载 ${targets.length} 个来源？',
+          message: '将卸载所选的已安装来源并清除其来源设置，保留书架作品和下载。',
+          confirmLabel: '卸载',
+          destructive: true,
+        )) {
+      return;
+    }
+    if (!mounted || !selecting || type != requestedType) {
+      return;
+    }
+    _notice?.dismiss();
+    setState(() => _bulkBusy = true);
+    var failed = 0;
+    try {
+      for (final target in targets) {
+        if (!mounted) return;
+        try {
+          final current = sourceRepository.getById(target.id!);
+          if (current != null &&
+              current.itemType == requestedType &&
+              !isNodeLaneCatalogSource(current, official)) {
+            if (pinned != null) {
+              await _pin(current, pinned: pinned);
+            } else if (current.isAdded == true) {
+              await sourceRepository.uninstall(ref, current);
+            }
+          }
+          selected.remove(target.id);
+          failedActions.remove(target.id);
+        } catch (_) {
+          failed++;
+        }
+      }
+      if (failed > 0) {
+        _showFailure('$failed 个来源操作失败，已保留选择，请重试。');
+      } else if (mounted) {
+        _finishSelection();
+      }
+    } finally {
+      if (mounted) setState(() => _bulkBusy = false);
+    }
+  }
+
+  Widget _selectionBar(List<Source> sources) {
+    final targets = sources.where((s) => selected.contains(s.id)).toList();
+    final installed = targets.where((s) => s.isAdded == true).toList();
+    final icons = NodeLaneIcons.of(context);
+    return NodeLaneSelectionBar<bool>(
+      busy: _bulkBusy,
+      moreLabel: context.l10n.more,
+      onMore: (pinned) => _applySelection(targets, pinned: pinned),
+      actions: [
+        NodeLaneToolbarAction(
+          label: '设为常用',
+          icon: icons.pin,
+          enabled: !_bulkBusy && targets.any((s) => s.isPinned != true),
+          onPressed: () => _applySelection(targets, pinned: true),
+        ),
+        NodeLaneToolbarAction(
+          label: '卸载',
+          icon: icons.delete,
+          destructive: true,
+          enabled: !_bulkBusy && installed.isNotEmpty,
+          onPressed: () => _applySelection(installed),
+        ),
+      ],
+      moreItems: [
+        nodeLaneSelectionMenuItem(
+          context,
+          value: false,
+          label: '取消常用',
+          icon: icons.pinSelected,
+          enabled: targets.any((s) => s.isPinned == true),
+        ),
+      ],
+    );
+  }
+
   void _sourceActions(Source source) {
     showNodeLaneCatalogSheet<void>(
       context,
@@ -317,11 +429,19 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       }
     }
 
+    final onOpen = selecting
+        ? _bulkBusy || loading
+              ? null
+              : () => _toggleSelection(source)
+        : loading && !installed
+        ? null
+        : open;
     return SourceWebsiteCard(
       key: ValueKey('source-${source.id}'),
       source: source,
       action: action,
-      onOpen: loading && !installed ? null : open,
+      selected: selecting ? selected.contains(source.id) : null,
+      onOpen: onOpen,
       onAction: loading
           ? null
           : () {
@@ -336,8 +456,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                   open();
               }
             },
-      onDetails: () => showSourceWebsiteInfo(context, source),
-      onLongPress: () => _sourceActions(source),
+      onDetails: selecting
+          ? null
+          : () => showSourceWebsiteInfo(context, source),
+      onLongPress: selecting ? onOpen : () => _sourceActions(source),
     );
   }
 
@@ -350,6 +472,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         if (value == 'search') _searchContents();
         if (value == 'filter') _languageFilter(catalog);
         if (value == 'update') _updateInstalled();
+        if (value == 'manage') {
+          _startSelection();
+        }
         if (value == 'create') context.push('/createExtension');
         if (value == 'local') {
           _open(Source(name: 'local', lang: '', itemType: type));
@@ -359,6 +484,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         for (final (value, title, icon) in [
           ('search', '搜作品', icons.search),
           ('filter', '语言筛选', icons.filter),
+          if (thirdParty && catalog.isNotEmpty)
+            ('manage', '批量管理', icons.selected),
           if (thirdParty) ('update', '更新已安装来源', icons.refresh),
           if (ref.read(developerModeStateProvider))
             ('create', context.l10n.create_extension, icons.code),
@@ -424,6 +551,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(isLongPressedStateProvider);
     final hidden = ref.watch(hideItemsStateProvider);
     final types = ItemType.values
         .where(
@@ -440,6 +568,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       if (next == null) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
+        if (selecting) _finishSelection();
         setState(() {
           type = next.type;
           thirdParty = next.kind == BrowseTabKind.extensions;
@@ -495,85 +624,128 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
             .toList()
           ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     final groups = <(String, List<Source>)>[
-      if (!thirdParty) ('常用', all.where((s) => s.isPinned == true).toList()),
+      ('常用', all.where((s) => s.isPinned == true).toList()),
       if (!thirdParty) ('全部网站', all.where((s) => s.isPinned != true).toList()),
-      if (thirdParty) ('已安装', all.where((s) => s.isAdded == true).toList()),
-      if (thirdParty) ('可安装', all.where((s) => s.isAdded != true).toList()),
+      if (thirdParty)
+        (
+          '已安装',
+          all.where((s) => s.isAdded == true && s.isPinned != true).toList(),
+        ),
+      if (thirdParty)
+        (
+          '可安装',
+          all.where((s) => s.isAdded != true && s.isPinned != true).toList(),
+        ),
     ]..removeWhere((group) => group.$2.isEmpty);
-    return NodeLaneSurface(
+    final selectable = all
+        .where((s) => s.id != null && !busy.contains(s.id))
+        .map((s) => s.id!)
+        .toSet();
+    selected.retainAll(selectable);
+    final page = NodeLaneSurface(
       child: Scaffold(
+        bottomNavigationBar: selecting
+            ? NodeLaneNoticeAvoidance(child: _selectionBar(all))
+            : null,
+        appBar: selecting
+            ? nodeLaneSelectionAppBar(
+                context,
+                title: '已选择 ${selected.length} 项',
+                cancelLabel: context.l10n.cancel,
+                selectAllLabel: context.l10n.bookshelf_select_all,
+                invertLabel: context.l10n.bookshelf_invert_selection,
+                onCancel: _finishSelection,
+                onSelectAll: _bulkBusy || selectable.isEmpty
+                    ? null
+                    : () => setState(() {
+                        selected.addAll(selectable);
+                      }),
+                onInvert: _bulkBusy || selectable.isEmpty
+                    ? null
+                    : () => setState(() {
+                        final inverted = selectable.difference(selected);
+                        selected
+                          ..clear()
+                          ..addAll(inverted);
+                      }),
+              )
+            : null,
         body: SafeArea(
           bottom: false,
           child: LayoutBuilder(
             builder: (context, constraints) => Column(
               children: [
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: constraints.maxHeight * .65,
-                  ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: NodeLaneTokens.headerPadding,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          NodeLanePageHeading.toolbar(
-                            mediaMenu: MobileMediaMenu(
-                              value: type,
-                              availableTypes: types,
-                              onChanged: (value) {
-                                FocusScope.of(context).unfocus();
-                                setState(() {
-                                  type = value;
-                                  managing = false;
-                                  query.clear();
-                                  _notice?.dismiss();
-                                });
-                              },
+                if (!selecting)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: constraints.maxHeight * .65,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: NodeLaneTokens.headerPadding,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            NodeLanePageHeading.toolbar(
+                              mediaMenu: MobileMediaMenu(
+                                value: type,
+                                availableTypes: types,
+                                onChanged: (value) {
+                                  FocusScope.of(context).unfocus();
+                                  setState(() {
+                                    type = value;
+                                    managing = false;
+                                    query.clear();
+                                    _notice?.dismiss();
+                                  });
+                                },
+                              ),
+                              actions: [_menu(catalog)],
                             ),
-                            actions: [_menu(catalog)],
-                          ),
-                          const SizedBox(height: NodeLaneTokens.space16),
-                          SizedBox(
-                            width:
-                                NodeLaneTokens.catalogTabsWidth *
-                                (MediaQuery.textScalerOf(context).scale(15) /
-                                        15)
-                                    .clamp(1, 2),
-                            child: NodeLaneSegments<bool>(
-                              value: thirdParty,
-                              pill: true,
-                              segments: const [
-                                ButtonSegment(
-                                  value: false,
-                                  label: Text('NodeLane'),
-                                ),
-                                ButtonSegment(value: true, label: Text('第三方')),
-                              ],
-                              onChanged: (value) {
-                                FocusScope.of(context).unfocus();
-                                setState(() {
-                                  thirdParty = value;
-                                  managing = false;
-                                  _notice?.dismiss();
-                                  query.clear();
-                                });
-                              },
+                            const SizedBox(height: NodeLaneTokens.space16),
+                            SizedBox(
+                              width:
+                                  NodeLaneTokens.catalogTabsWidth *
+                                  (MediaQuery.textScalerOf(context).scale(15) /
+                                          15)
+                                      .clamp(1, 2),
+                              child: NodeLaneSegments<bool>(
+                                value: thirdParty,
+                                pill: true,
+                                segments: const [
+                                  ButtonSegment(
+                                    value: false,
+                                    label: Text('NodeLane'),
+                                  ),
+                                  ButtonSegment(
+                                    value: true,
+                                    label: Text('第三方'),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  FocusScope.of(context).unfocus();
+                                  setState(() {
+                                    thirdParty = value;
+                                    managing = false;
+                                    _notice?.dismiss();
+                                    query.clear();
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: NodeLaneTokens.space16),
-                          NodeLaneTextField.search(
-                            controller: query,
-                            hint: '网站名或作品名',
-                            clearLabel: context.l10n.search_clear,
-                            onSubmitted: (_) => _searchContents(),
-                            onChanged: (_) => setState(() {}),
-                          ),
-                        ],
+                            const SizedBox(height: NodeLaneTokens.space16),
+                            NodeLaneTextField.search(
+                              controller: query,
+                              hint: '网站名或作品名',
+                              clearLabel: context.l10n.search_clear,
+                              onSubmitted: (_) => _searchContents(),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: _refreshCatalog,
@@ -610,14 +782,14 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                             sliver: SliverToBoxAdapter(
                               child: NodeLaneCatalogHeading(
                                 groups[groupIndex].$1,
-                                action: groupIndex == 0
+                                action: groupIndex == 0 && !selecting
                                     ? thirdParty
                                           ? '管理仓库'
                                           : managing
                                           ? '完成'
                                           : '管理'
                                     : null,
-                                onAction: groupIndex == 0
+                                onAction: groupIndex == 0 && !selecting
                                     ? thirdParty
                                           ? () => showMobileRepositories(
                                               context,
@@ -651,7 +823,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                           SliverToBoxAdapter(
                             child: SizedBox(
                               height:
-                                  pageBottomInsets(context).bottom +
+                                  (selecting
+                                      ? 0
+                                      : pageBottomInsets(context).bottom) +
                                   NodeLaneTokens.space24,
                             ),
                           ),
@@ -664,6 +838,13 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
           ),
         ),
       ),
+    );
+    return PopScope(
+      canPop: !selecting && !_bulkBusy,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && selecting && !_bulkBusy) _finishSelection();
+      },
+      child: IgnorePointer(ignoring: _bulkBusy, child: page),
     );
   }
 }
