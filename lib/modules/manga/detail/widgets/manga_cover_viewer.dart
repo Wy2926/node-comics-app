@@ -9,7 +9,7 @@ import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/tracker_search_widget.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
@@ -55,7 +55,7 @@ void showMangaCoverViewer(
                   );
                 },
                 loadingBuilder: (context, event) {
-                  return const ProgressCenter();
+                  return const NodeLaneEmptyState.loading();
                 },
               ),
             ),

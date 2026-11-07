@@ -1,10 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/modules/browse/extension/edit_code.dart';
+import 'package:mangayomi/modules/more/settings/appearance/providers/app_font_family.dart';
+import 'package:mangayomi/utils/log/log.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/extension_code_selection_toolbar.dart';
 import 'package:re_editor/re_editor.dart';
 
 void main() {
+  testWidgets(
+    'editor survives resize, clears visible logs and releases its subscription',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(820, 1000);
+      addTearDown(tester.view.reset);
+      for (var i = 0; i < 2; i++) {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [appFontFamilyProvider.overrideWith(_DefaultFont.new)],
+            child: MaterialApp(
+              locale: const Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const CodeEditorPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        Logger.add(LoggerLevel.info, 'Editor test log');
+        await tester.pumpAndSettle();
+        expect(find.text('Editor test log'), findsOneWidget);
+        await tester.tap(find.byTooltip('Clear logs'));
+        await tester.pumpAndSettle();
+        expect(find.text('Editor test log'), findsNothing);
+        tester.view.physicalSize = const Size(390, 844);
+        await tester.pumpAndSettle();
+        expect(find.byType(CodeEditor), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        Logger.add(LoggerLevel.info, 'After closing editor');
+        await tester.pump();
+        expect(tester.takeException(), isNull);
+        tester.view.physicalSize = const Size(820, 1000);
+      }
+      Logger.clear();
+    },
+  );
+
   testWidgets('the mobile code selection toolbar copies the selected code', (
     tester,
   ) async {
@@ -117,4 +161,9 @@ void main() {
     expect(controller.selectedText, 'extensionCode');
     expect(find.text('Copy'), findsOneWidget);
   });
+}
+
+class _DefaultFont extends AppFontFamily {
+  @override
+  (String?, String?) build() => (null, null);
 }

@@ -53,8 +53,7 @@ import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_audio_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_decoder_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_state_provider.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/services/aniskip.dart';
@@ -126,7 +125,7 @@ class _AnimePlayerViewState extends riv.ConsumerState<AnimePlayerView> {
           },
         ),
       ),
-      body: const ProgressCenter(),
+      body: const NodeLaneEmptyState.loading(),
     );
   }
 
@@ -204,9 +203,9 @@ class _AnimePlayerViewState extends riv.ConsumerState<AnimePlayerView> {
           ),
           // The back button above already claims TV focus, so the retry must
           // not also ask for it; it stays reachable with the d-pad.
-          body: ErrorState(
+          body: NodeLaneEmptyState.error(
             autofocusRetry: false,
-            detail: error.toString(),
+            message: error.toString(),
             onRetry: () =>
                 ref.invalidate(getVideoListProvider(episode: episode)),
           ),

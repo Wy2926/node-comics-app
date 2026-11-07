@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/repositories/custom_button_repository.dart';
 import 'package:mangayomi/models/custom_button.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/custom_buttons_provider.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -145,7 +145,7 @@ class _CustomButtonScreenState extends ConsumerState<CustomButtonScreen> {
           );
         },
         loading: () {
-          return const ProgressCenter();
+          return const NodeLaneEmptyState.loading();
         },
       ),
       floatingActionButton: FloatingActionButton.extended(

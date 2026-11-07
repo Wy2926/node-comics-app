@@ -9,7 +9,7 @@ import 'package:mangayomi/modules/calendar/widgets/upcoming_calendar.dart';
 import 'package:mangayomi/modules/calendar/widgets/upcoming_item.dart'
     as widgets;
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/utils/fetch_interval.dart';
@@ -122,7 +122,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           );
         },
-        loading: () => const ProgressCenter(),
+        loading: () => const NodeLaneEmptyState.loading(),
       ),
     );
   }

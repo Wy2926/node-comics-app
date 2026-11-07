@@ -10,7 +10,7 @@ import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/floating_navigation_bar_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/loading_icon.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/modules/main_view/nav_shrink.dart';
@@ -482,9 +482,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           // sat on a blank splash forever with nothing to act on. Show what
           // happened and let the user run it again.
           error: (error, _) => Scaffold(
-            body: ErrorState(
-              message: l10n.startup_failed,
-              detail: error.toString(),
+            body: NodeLaneEmptyState.error(
+              title: l10n.startup_failed,
+              message: error.toString(),
               onRetry: () => ref.invalidate(migrationProvider),
             ),
           ),

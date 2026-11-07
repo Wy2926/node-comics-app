@@ -5,8 +5,7 @@ import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/modules/tracker_library/tracker_library_screen.dart';
 import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/discovery/media_catalog_resolver.dart';
 import 'package:mangayomi/services/discovery/media_lookup_context.dart';
@@ -146,12 +145,12 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
       body: Padding(
         padding: EdgeInsetsGeometry.all(5),
         child: _isLoading
-            ? const ProgressCenter()
+            ? const NodeLaneEmptyState.loading()
             : Builder(
                 builder: (context) {
                   if (_errorMessage.isNotEmpty) {
-                    return ErrorState(
-                      detail: _errorMessage,
+                    return NodeLaneEmptyState.error(
+                      message: _errorMessage,
                       onRetry: () {
                         setState(() {
                           _isLoading = true;
@@ -788,7 +787,7 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
                     );
                   },
                   loadingBuilder: (context, event) {
-                    return const ProgressCenter();
+                    return const NodeLaneEmptyState.loading();
                   },
                 ),
               ),

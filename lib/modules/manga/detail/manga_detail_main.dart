@@ -5,7 +5,7 @@ import 'package:mangayomi/modules/manga/detail/manga_details_view.dart';
 import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_providers.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_loading.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -104,5 +104,5 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
 
   Widget _loadingPage() => isMobile && !isTv
       ? const MobileDetailLoadingPage()
-      : const ProgressCenter();
+      : const NodeLaneEmptyState.loading();
 }

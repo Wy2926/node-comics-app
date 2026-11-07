@@ -13,7 +13,6 @@ import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/models/track_search.dart';
-import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
 import 'package:mangayomi/modules/more/settings/track/providers/track_providers.dart';
 import 'package:mangayomi/modules/tracker_library/tracker_library_section.dart';
@@ -22,7 +21,8 @@ import 'package:mangayomi/modules/tracker_library/tracker_section_screen.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
-import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 enum TrackerProviders {
   myAnimeList(syncId: 1, name: "MAL"),
@@ -47,10 +47,12 @@ class TrackerLibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
-  late final _textEditingController = TextEditingController();
-  late String _query = "";
-  late bool _isSearch = false;
-  List<TrackLibrarySection> _sections = [];
+  late final _textEditingController = TextEditingController(
+    text: widget.presetInput,
+  );
+  late String _query = widget.presetInput?.trim() ?? '';
+  late final _preferencesStream = trackRepository.watchAllNotRefreshing();
+  int _refreshGeneration = 0;
   List<TrackPreference> _preferences = [];
 
   @override
@@ -69,7 +71,7 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
         ) ??
         TrackerProviders.myAnimeList;
     final itemType = lastLocation.$2 ? ItemType.manga : ItemType.anime;
-    _sections = switch (trackerProvider.syncId) {
+    final sections = switch (trackerProvider.syncId) {
       1 => _sectionsMAL(trackerProvider.syncId, itemType),
       2 => _sectionsAL(trackerProvider.syncId, itemType),
       3 => _sectionsKitsu(trackerProvider.syncId, itemType),
@@ -77,11 +79,11 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
       5 => _sectionsTrakt(trackerProvider.syncId, itemType),
       _ => [],
     };
-    if (_isSearch && _query.isNotEmpty) {
-      _sections.insert(
+    if (_query.isNotEmpty) {
+      sections.insert(
         0,
         TrackLibrarySection(
-          name: "Search results",
+          name: l10n.search,
           syncId: trackerProvider.syncId,
           func: _fetchSearch(trackerProvider.syncId, _query, itemType),
           itemType: itemType,
@@ -90,118 +92,108 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: _TrackerLibraryTitle(
-          text:
-              (trackerProvider.syncId == TrackerProviders.simkl.syncId ||
-                  trackerProvider.syncId == TrackerProviders.trakt.syncId)
-              ? trackerProvider.name
-              : "${trackerProvider.name} | ${itemType.localized(l10n)}",
-          syncId: trackerProvider.syncId,
-        ),
-        leading: !_isSearch ? null : Container(),
-        actions: [
-          _isSearch
-              ? SeachFormTextField(
-                  onFieldSubmitted: (submit) {
-                    setState(() {
-                      if (submit.isNotEmpty) {
-                        _query = submit;
-                      }
-                    });
-                  },
-                  onChanged: (value) {},
-                  onSuffixPressed: () {
-                    _query = "";
-                    _textEditingController.clear();
-                    setState(() {});
-                  },
-                  onPressed: () {
-                    setState(() {
-                      _isSearch = false;
-                      _query = "";
-                      _textEditingController.clear();
-                    });
-                  },
-                  controller: _textEditingController,
-                )
-              : IconButton(
-                  splashRadius: 20,
-                  onPressed: () {
-                    setState(() {
-                      _isSearch = true;
-                    });
-                  },
-                  icon: Icon(Icons.search, color: Theme.of(context).hintColor),
-                ),
-          IconButton(
-            splashRadius: 20,
-            onPressed: () async => await _resetData(trackerProvider, itemType),
-            icon: Icon(
-              Icons.refresh_outlined,
-              color: Theme.of(context).hintColor,
-            ),
-          ),
-          IconButton(
-            splashRadius: 20,
-            onPressed: () {
-              _openSwitchProviderDialog(l10n);
-            },
-            icon: CircleAvatar(
-              radius: 14,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: trackInfos(trackerProvider.syncId).$3,
-                ),
-                width: 60,
-                height: 70,
-                child: Image.asset(
-                  trackInfos(trackerProvider.syncId).$1,
-                  height: 30,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-        child: StreamBuilder(
-          stream: trackRepository.watchAllNotRefreshing(),
-          builder: (context, snapshot) {
-            _preferences = snapshot.hasData ? snapshot.data ?? [] : [];
-            return _preferences.any((p) => p.syncId == trackerProvider.syncId)
-                ? RefreshIndicator(
-                    onRefresh: () async {
-                      await _resetData(trackerProvider, itemType);
-                    },
-                    child: SuperListView.builder(
-                      itemCount: _sections.length,
-                      extentPrecalculationPolicy: SuperPrecalculationPolicy(),
-                      itemBuilder: (context, index) {
-                        final section = _sections[index];
-                        return SizedBox(
-                          height: 260,
-                          child: TrackerSectionScreen(
-                            key: ValueKey(section.name),
-                            section: section,
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Text(l10n.track_library_not_logged)],
+    final icons = NodeLaneIcons.of(context);
+    return NodeLaneSurface(
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: StreamBuilder(
+            stream: _preferencesStream,
+            builder: (context, snapshot) {
+              _preferences = snapshot.data ?? [];
+              final connected = _preferences.any(
+                (p) => p.syncId == trackerProvider.syncId,
+              );
+              return RefreshIndicator(
+                onRefresh: () => _resetData(trackerProvider, itemType),
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: NodeLaneTokens.headerPadding,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            NodeLanePageHeading(
+                              title: l10n.tracking,
+                              actions: [
+                                NodeLaneIconButton(
+                                  icon: icons.tracking,
+                                  tooltip: l10n.track_library_switch,
+                                  onPressed: () => _switchTracker(l10n),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: NodeLaneTokens.space12),
+                            _TrackerLibraryTitle(
+                              text:
+                                  (trackerProvider.syncId ==
+                                          TrackerProviders.simkl.syncId ||
+                                      trackerProvider.syncId ==
+                                          TrackerProviders.trakt.syncId)
+                                  ? trackerProvider.name
+                                  : '${trackerProvider.name} · ${itemType.localized(l10n)}',
+                              syncId: trackerProvider.syncId,
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  );
-          },
+                    ),
+                    NodeLanePinnedHeader(
+                      child: NodeLaneTextField.search(
+                        controller: _textEditingController,
+                        hint: l10n.search,
+                        onSubmitted: (value) =>
+                            setState(() => _query = value.trim()),
+                        onChanged: (value) {
+                          if (value.isEmpty && _query.isNotEmpty) {
+                            setState(() => _query = '');
+                          }
+                        },
+                        onClear: () {
+                          _textEditingController.clear();
+                          setState(() => _query = '');
+                        },
+                      ),
+                    ),
+                    if (connected)
+                      SliverPadding(
+                        padding: NodeLaneTokens.pagePadding,
+                        sliver: SliverList.builder(
+                          itemCount: sections.length,
+                          itemBuilder: (context, index) {
+                            final section = sections[index];
+                            return TrackerSectionScreen(
+                              key: ValueKey((
+                                trackerProvider.syncId,
+                                section.itemType,
+                                section.name,
+                                section.isSearch ? _query : '',
+                                _refreshGeneration,
+                              )),
+                              section: section,
+                            );
+                          },
+                        ),
+                      )
+                    else
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: NodeLaneEmptyState(
+                            icon: icons.tracking,
+                            title: l10n.track_library_not_logged,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -227,7 +219,7 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
     await trackerLibraryCacheRepository.deleteByPrefix(
       "${trackerProvider.syncId}-${itemType.name}-",
     );
-    setState(() {});
+    if (mounted) setState(() => _refreshGeneration++);
   }
 
   List<TrackLibrarySection> _sectionsTrakt(int syncId, ItemType itemType) {
@@ -672,11 +664,6 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
         .fetchWatchlistData();
   }
 
-  void _openSwitchProviderDialog(AppLocalizations l10n) => _switchTracker(l10n);
-
-  void _openSwitchTypeDialog(AppLocalizations l10n, int syncId) =>
-      _switchTracker(l10n, syncId: syncId);
-
   Future<void> _switchTracker(AppLocalizations l10n, {int? syncId}) async {
     final choice = await showNodeLaneCatalogSheet<(int, bool?)>(
       context,
@@ -725,7 +712,7 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
     if (manga == null &&
         provider != TrackerProviders.simkl.syncId &&
         provider != TrackerProviders.trakt.syncId) {
-      _openSwitchTypeDialog(l10n, provider);
+      await _switchTracker(l10n, syncId: provider);
     } else {
       ref.read(lastTrackerLibraryLocationStateProvider.notifier).set((
         provider,
@@ -752,26 +739,26 @@ class _TrackerLibraryTitle extends ConsumerWidget {
     final preference = ref.watch(tracksProvider(syncId: syncId));
     final label = preference?.accountLabel;
 
-    if (preference == null || label == null) return Text(text);
+    final t = NodeLaneTokens.of(context);
+    if (preference == null || label == null) {
+      return Text(text, style: t.readerLabel);
+    }
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TrackerAccountAvatar(preference: preference, radius: 14),
-        const SizedBox(width: 10),
+        TrackerAccountAvatar(
+          preference: preference,
+          radius: NodeLaneTokens.space16,
+        ),
+        const SizedBox(width: NodeLaneTokens.space12),
         Flexible(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(text, overflow: TextOverflow.ellipsis),
-              Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
+              Text(text, style: t.readerLabel, overflow: TextOverflow.ellipsis),
+              Text(label, overflow: TextOverflow.ellipsis, style: t.secondary),
             ],
           ),
         ),

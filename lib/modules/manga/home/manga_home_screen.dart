@@ -25,7 +25,7 @@ import 'package:mangayomi/modules/library/providers/library_state_provider.dart'
 import 'package:mangayomi/modules/manga/home/providers/state_provider.dart';
 import 'package:mangayomi/modules/manga/home/widget/filter_widget.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/get_filter_list.dart';
 import 'package:mangayomi/services/get_latest_updates.dart';
@@ -967,7 +967,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           // the list mode has no fixed cell shape to stand in for, so it keeps
           // the spinner.
           ? (displayType == DisplayType.list
-                ? const ProgressCenter()
+                ? const NodeLaneEmptyState.loading()
                 : Consumer(
                     builder: (context, ref, child) => CoverGridSkeleton(
                       gridSize: ref.watch(
@@ -1108,7 +1108,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                   ),
                   // This screen keeps its own recovery actions above (refresh
                   // with the right provider, and a webview for Cloudflare), so
-                  // only the cause is demoted here to match ErrorState.
+                  // only the cause is demoted here to match the shared failure state.
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(

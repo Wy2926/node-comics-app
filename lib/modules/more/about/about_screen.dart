@@ -12,7 +12,7 @@ import 'package:mangayomi/modules/more/about/providers/logs_state.dart';
 import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/services/app_update_downloads.dart';
@@ -178,7 +178,7 @@ class AboutScreen extends ConsumerWidget {
               ),
             ),
             error: (error, stackTrace) => ErrorWidget(error),
-            loading: () => const ProgressCenter(),
+            loading: () => const NodeLaneEmptyState.loading(),
           ),
     );
   }

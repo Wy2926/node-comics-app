@@ -18,7 +18,7 @@ import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
@@ -154,7 +154,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           data: selectionEntries ?? data,
         ),
         error: (error, _) => ErrorText(error),
-        loading: () => const ProgressCenter(),
+        loading: () => const NodeLaneEmptyState.loading(),
       );
     }
 

@@ -9,7 +9,7 @@ import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart'
 import 'package:mangayomi/modules/more/categories/widgets/custom_textfield.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
@@ -182,7 +182,7 @@ class _CategoriesTabState extends ConsumerState<CategoriesTab> {
           );
         },
         loading: () {
-          return const ProgressCenter();
+          return const NodeLaneEmptyState.loading();
         },
       ),
       floatingActionButton: FloatingActionButton.extended(

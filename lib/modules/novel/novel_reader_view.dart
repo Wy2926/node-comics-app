@@ -31,7 +31,7 @@ import 'package:mangayomi/modules/novel/widgets/novel_reader_settings_sheet.dart
 import 'package:mangayomi/modules/novel/widgets/mobile_novel_controls.dart';
 import 'package:mangayomi/modules/novel/widgets/mobile_novel_session_settings.dart';
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/get_html_content.dart';
 import 'package:mangayomi/src/rust/api/epub.dart';
@@ -968,21 +968,19 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                   ],
                 );
               },
-              loading: () => scaffoldWith(
-                context,
-                Center(child: CircularProgressIndicator()),
-              ),
+              loading: () =>
+                  scaffoldWith(context, const NodeLaneEmptyState.loading()),
               error: (err, stack) {
                 if (widget.result.isRefreshing || widget.result.isReloading) {
                   return scaffoldWith(
                     context,
-                    Center(child: CircularProgressIndicator()),
+                    const NodeLaneEmptyState.loading(),
                   );
                 }
                 return scaffoldWith(
                   context,
-                  ErrorState(
-                    detail: err.toString(),
+                  NodeLaneEmptyState.error(
+                    message: err.toString(),
                     onRetry: () => ref.invalidate(
                       getHtmlContentProvider(chapter: widget.chapter),
                     ),

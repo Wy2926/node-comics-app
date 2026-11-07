@@ -20,7 +20,7 @@ import 'package:mangayomi/modules/mass_migration/services/mass_migration_service
 import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/services/get_detail.dart';
@@ -342,9 +342,9 @@ class _MigrationSourceSearchScreenState
               : Builder(
                   builder: (context) {
                     if (_errorMessage.isNotEmpty) {
-                      return ErrorState(
+                      return NodeLaneEmptyState.error(
                         compact: true,
-                        detail: _errorMessage,
+                        message: _errorMessage,
                         onRetry: () => _init(retry: true),
                       );
                     }

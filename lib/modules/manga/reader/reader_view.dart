@@ -6,7 +6,7 @@ import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/services/downloaded_chapter.dart';
 import 'package:mangayomi/modules/manga/archive_reader/providers/archive_reader_providers.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
@@ -46,7 +46,6 @@ import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
 import 'package:mangayomi/modules/manga/reader/providers/manga_reader_provider.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart'
     show resolveCoverImage;
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_entry_state.dart';
@@ -96,10 +95,10 @@ class MangaReaderView extends ConsumerWidget {
       return scaffoldWith(
         context,
         failure == null
-            ? const ProgressCenter()
-            : ErrorState(
-                message: failure,
-                detail: error?.toString(),
+            ? const NodeLaneEmptyState.loading()
+            : NodeLaneEmptyState.error(
+                title: failure,
+                message: error?.toString(),
                 onRetry: retry,
               ),
         restoreUi: failure != null,

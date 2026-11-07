@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 
@@ -11,7 +13,7 @@ class TrackerAccountAvatar extends StatelessWidget {
   const TrackerAccountAvatar({
     super.key,
     required this.preference,
-    this.radius = 16,
+    this.radius = NodeLaneTokens.space16,
   });
 
   final TrackPreference preference;
@@ -21,17 +23,22 @@ class TrackerAccountAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = preference.avatarUrl;
     final name = preference.accountLabel;
-    final background = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final t = NodeLaneTokens.of(context);
+    final background = t.soft;
 
     if (url == null || url.isEmpty) {
       return CircleAvatar(
         radius: radius,
         backgroundColor: background,
         child: name == null
-            ? Icon(Icons.person_rounded, size: radius)
+            ? Icon(
+                NodeLaneIcons.of(context).account,
+                size: radius,
+                color: t.ink,
+              )
             : Text(
                 name.characters.first.toUpperCase(),
-                style: TextStyle(fontSize: radius, fontWeight: FontWeight.bold),
+                style: t.label.copyWith(fontSize: radius, color: t.ink),
               ),
       );
     }

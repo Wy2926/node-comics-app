@@ -11,7 +11,7 @@ import 'package:mangayomi/modules/library/providers/library_state_provider.dart'
 import 'package:mangayomi/modules/library/widgets/library_gridview_widget.dart';
 import 'package:mangayomi/modules/library/widgets/library_listview_widget.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -210,7 +210,7 @@ class LibraryBody extends ConsumerWidget {
         );
       },
       error: (error, _) => ErrorText(error),
-      loading: () => const ProgressCenter(),
+      loading: () => const NodeLaneEmptyState.loading(),
     );
   }
 }

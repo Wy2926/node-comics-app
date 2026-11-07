@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -35,6 +36,42 @@ Widget _app(
 );
 
 void main() {
+  testWidgets('failure retry stays reachable in a short large-text panel', (
+    tester,
+  ) async {
+    _phone(tester);
+    var attempts = 0;
+    await tester.pumpWidget(
+      _app(
+        SizedBox(
+          height: 180,
+          child: NodeLaneEmptyState.error(
+            title: 'Request failed',
+            message: 'Technical cause ' * 30,
+            compact: true,
+            onRetry: () => attempts++,
+          ),
+        ),
+        scale: 2.5,
+      ),
+    );
+    await tester.ensureVisible(find.text('Retry'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Retry'));
+    expect(attempts, 1);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(
+      _app(
+        NodeLaneEmptyState.error(
+          onRetry: () => attempts++,
+          autofocusRetry: true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(Focus.of(tester.element(find.text('Retry'))).hasFocus, isTrue);
+  });
+
   testWidgets('mobile platforms share control geometry, materials and glyphs', (
     tester,
   ) async {

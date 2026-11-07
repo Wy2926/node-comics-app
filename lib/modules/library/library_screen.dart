@@ -28,7 +28,7 @@ import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.
 import 'package:mangayomi/modules/widgets/bottom_select_bar.dart';
 import 'package:mangayomi/modules/widgets/category_selection_dialog.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -103,7 +103,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     return settingsStream.when(
       data: (settings) => _buildWithSettings(settings),
       error: (error, _) => ErrorText(error),
-      loading: () => const ProgressCenter(),
+      loading: () => const NodeLaneEmptyState.loading(),
     );
   }
 
@@ -366,11 +366,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               );
             },
             error: (error, _) => ErrorText(error),
-            loading: () => const ProgressCenter(),
+            loading: () => const NodeLaneEmptyState.loading(),
           );
         },
         error: (error, _) => ErrorText(error),
-        loading: () => const ProgressCenter(),
+        loading: () => const NodeLaneEmptyState.loading(),
       ),
       // Even a zero-height bottom bar makes Scaffold strip the shell's bottom
       // padding. Omit it when inactive so the final row clears the native bar.
@@ -882,7 +882,7 @@ void addTorrent(BuildContext context, {Manga? manga}) {
                                     height: 50,
                                     width: 50,
                                     child: const Center(
-                                      child: ProgressCenter(),
+                                      child: NodeLaneEmptyState.loading(),
                                     ),
                                   ),
                                 ),

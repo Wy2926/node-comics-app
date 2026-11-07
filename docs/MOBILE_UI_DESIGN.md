@@ -44,8 +44,12 @@ iOS 与 Android 手机共用视觉令牌和基础控件；常规字号已在两�
 | 选择与数值 | `NodeLaneSegments`、`NodeLaneTabSegments`、`NodeLaneChoiceRow`、`NodeLaneSwitch`、`NodeLaneSliderRow`、`NodeLaneNumberRow`／`NodeLaneNumberPicker` | 分段、标签控制器适配、行内选择、开关、滑块、原位浮动数字滚轮 |
 | 卡片与徽章 | `NodeLaneRow.card`、`NodeLaneChoiceCard`、`NodeLaneCoverBadge` | 卡片按钮、视觉布局选项、未读／下载数量及选中状态 |
 | 抽屉与对话框 | [`NodeLaneSheetSurface`、`NodeLaneDialog`、`NodeLaneAlertDialog`、`NodeLaneModalActions`、`NodeLaneDialogAction`](../lib/modules/widgets/nodelane_modal.dart)；[`NodeLaneCatalogSheet`／`showNodeLaneCatalogSheet`](../lib/modules/widgets/nodelane_catalog_widgets.dart)、`showNodeLaneConfirmation` | 内容高度／列表抽屉、确认、编辑、固定操作区；`NodeLaneReaderSurface` 组合共享外壳 |
-| 提示、空态与加载 | [`NodeLaneNotice`／`showNodeLaneNotice`](../lib/modules/widgets/nodelane_notice.dart)、[`NodeLaneEmptyState`](../lib/modules/widgets/nodelane_empty_state.dart)、`NodeLaneSkeleton` | 临时／页内提示、进度、错误及恢复操作、居中空态、内容轮廓占位 |
+| 提示、空态与加载 | [`NodeLaneNotice`／`showNodeLaneNotice`](../lib/modules/widgets/nodelane_notice.dart)、[`NodeLaneEmptyState`](../lib/modules/widgets/nodelane_empty_state.dart)、`NodeLaneSkeleton` | 临时／页内提示、进度、错误及恢复操作、居中空态、可滚动失败及重试、请求加载、内容轮廓占位 |
 | 顶栏与导航 | `nodeLaneAppBar`、`NodeLanePinnedHeader`、[`NodeLaneMobileNavigation`／`NodeLaneFlutterTabBar`](../lib/modules/main_view/widgets/nodelane_mobile_navigation.dart) | 顶栏、搜索吸顶、底栏选中／角标／安全区；iOS 保留原生底栏 |
+
+通用失败与无内容轮廓的请求加载分别使用 `NodeLaneEmptyState.error`／`.loading`，不再维护旧 `ErrorState`、`ProgressCenter`。失败内容在短面板和大字号下可滚动，保留原重试回调及电视焦点行为；实体内容的加载继续使用 `NodeLaneSkeleton`。
+
+插件代码编辑器保留编辑、自动保存和宽屏调试能力；外壳、表单、按钮、筛选抽屉、结果状态及日志容器复用共享组件。代码语法高亮沿用现有编辑器依赖并区分深浅主题，执行与筛选后执行共用单个入口，处理中禁止重复提交。
 
 业务组合继续保留自身职责：`MobileBookshelfCard` 负责作品布局和元信息；`MobileBrowserAddressField` 负责地址编辑、展示与校验；`MobileMediaMenu` 负责媒体切换；`MobileSettingsChoice` 负责设置选项入口。它们复用上表的样式与控件，不另建颜色或尺寸系统。`NodeLaneModalScope`／`NodeLaneReaderScope`／`NodeLaneRevealScope` 和通知句柄、避让测量属于主题或交互基础设施，不单独设计一套视觉。
 
@@ -693,6 +697,8 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 - 追踪页保留阅读后更新开关和原五个服务及登录方式。账号卡片显示已存的可读名称，登录／退出使用明确按钮；点击名称不会退出账号。退出仍确认并仅操作对应服务 ID，登录完成与否以原账号订阅为准；发起授权期间阻止重复操作和离页。账号管理改为可换行的列表，空列表说明先连接服务，选中仍携带原完整账号进入原详情路由。
 - 同步地址和 Kitsu 表单共享输入、等待与失败反馈视图，具体服务回调由各页面提供。保留地址原文、Kitsu 邮箱去首尾空格及密码原样传递规则；空输入禁用提交，密码默认隐藏并可显式查看。提交时禁用重复操作，失败保留草稿，取消不提交或保存自动填充，成功才结束密码自动填充上下文。控制器和焦点随弹窗释放，未改变认证协议或账号存储。
 
+追踪书库使用共享大标题、吸顶搜索框、来源切换按钮、实体卡片及评分／已入库徽章。搜索通过键盘提交、框内清空；列表下拉刷新。分组按实际内容高度布局，加载复用骨架，空态与失败复用 `NodeLaneEmptyState`；分组身份包含服务、媒体、搜索词及刷新代次，普通重建不重新请求。切换后返回的旧结果不写入界面，搜索结果不进入普通分组缓存；入库标记仅匹配当前追踪服务。
+
 ## 追踪条目、编辑与搜索
 
 - 账号条目页保留原漫画／动画标签与控制器，Simkl、Trakt 仍只有动画。各媒体页保留一个原账号数据流，搜索只筛选已订阅的本地标题，失败可手动重试；按服务、媒体和作品保存列表／展开状态。相同作品编号仍合并为一个条目，优先使用已有本地关联；未关联记录显示说明，不再强制解包空的本地 ID。
@@ -792,7 +798,7 @@ Trakt 手机与桌面登录入口已隐藏，失去入口的旧登录、换码�
 | 官方来源 | S2READ 的安装／更新、搜索、完整目录、上传日期刷新、实际章节首尾页与下一章，以及后台和重进后的阅读位置已在 iOS 模拟器验证 | Comix 章节仍需站点验证码；真实 CF、下载和来源特有筛选分别验收，详见 [来源契约](SOURCE_PLUGINS.md) |
 | 多标签网页 | iOS 验证开始页、原位输入、标签管理、加载失败重试、前后台位置保持及进程重启后的网页／空标签恢复；DOM 夹具覆盖分块图片、过期消息及隐藏释放 | 动态站点、真实译图／计费任务、源站登录、清除登录和系统回收恢复；显示选项切换不代表真实译图验收 |
 | 设置、账号与引导 | iOS 验证导航、输入、展开、取消和部分偏好重启保留；数字滚轮浮出／外部关闭、长代理地址单行输入与取消、登录表单层次已复核；已有账号的读取、刷新与摘要已核对，其他套餐与失败使用模拟数据 | 重新登录／退出、购买、真实翻译服务、目录授权与扫描、备份恢复；系统认证仅验证调起与取消，未验收成功启锁 |
-| 迁移、追踪、备份与维护 | 使用视图预览、内存仓库或临时数据库验证选择、确认、失败反馈和返回；常规入口验证只读状态与取消 | 真实持久化迁移、进度恢复、追踪写入、同步、备份加解密、回滚及文件失败恢复 |
+| 迁移、追踪、备份与维护 | 使用视图预览、内存仓库或临时数据库验证选择、确认、失败反馈和返回；iOS 追踪书库验证空态与入口切换，临时数据库覆盖分组重建、刷新、迟到搜索及服务隔离；编辑器测试覆盖清空日志、窗口尺寸切换与重新打开后的订阅释放 | 真实追踪列表与插件服务执行、持久化迁移、进度恢复、追踪写入、同步、备份加解密、回滚及文件失败恢复 |
 | 下载、播放器与听书 | 下载队列的展示、排序和任务回调有模拟覆盖；播放器设置使用替身，小说样例已验证实际语音暂停／停止和同进程恢复 | 真实下载重试、原生目录、真实音视频轨道／字幕／解码、完整 EPUB 与在线小说；下载队列触摸拖动仍需真机验收 |
 | 更新与诊断 | iOS 验证关于、错误报告展示和更新检查；Android API 36 arm64 验证本地后台下载、任务恢复、失败重试与系统覆盖安装；模拟 HTTP 覆盖分平台版本选择、TV 隔离、分页失败和重试；订阅覆盖重复生成及失败保留；发行工作流通过语法与选择条件模拟 | 远端构建与发布、公开下载、订阅客户端安装／更新；记录清除、反馈发送和外部失败回退 |
 | 平台与性能 | 界面按 iOS 模拟器、常规字号推进；iPhone 17／iOS 27.0.1 已验证个人签名 IPA 安装及首次启动；Android API 36 arm64 验证身份、资源、覆盖安装启动、统一控件、Flutter 底栏切页与深浅色、更新安装包共享及后台更新流程；macOS 27 Apple Silicon 已验证本地 DMG 安装、覆盖更新、偏好保留、Release 启动及品牌展示 | iOS 真机完整功能、续签与覆盖更新；Android 真机、完整功能、其他 API／ABI 与 TV 运行；macOS Intel、较旧系统、公开下载后的 Gatekeeper、签名公证及远端发行 CI；完整读屏、原生 Reduce Transparency 联动、长书架内存／帧率／耗电与发布部署尚未验收 |

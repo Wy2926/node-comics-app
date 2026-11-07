@@ -9,7 +9,7 @@ import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
@@ -385,7 +385,7 @@ void showImportLocalDialog(BuildContext context, ItemType itemType) {
                               ),
                               height: 50,
                               width: 50,
-                              child: const Center(child: ProgressCenter()),
+                              child: const NodeLaneEmptyState.loading(),
                             ),
                           ),
                         ),

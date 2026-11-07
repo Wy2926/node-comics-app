@@ -7,7 +7,7 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/browse/sources/widgets/source_list_tile.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/language.dart';
@@ -219,8 +219,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
             ),
           );
         },
-        error: (error, _) => ErrorState(
-          detail: error.toString(),
+        error: (error, _) => NodeLaneEmptyState.error(
+          message: error.toString(),
           onRetry: () =>
               ref.invalidate(getSourcesStreamProvider(widget.itemType)),
         ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:marquee/marquee.dart';
@@ -511,7 +511,7 @@ class ChapterListTileWidget extends ConsumerWidget {
                     );
                   },
                   loadingBuilder: (context, event) {
-                    return const ProgressCenter();
+                    return const NodeLaneEmptyState.loading();
                   },
                 ),
               ),

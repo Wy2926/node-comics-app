@@ -15,7 +15,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
@@ -360,7 +360,7 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
         return ErrorText(error);
       },
       loading: () {
-        return const ProgressCenter();
+        return const NodeLaneEmptyState.loading();
       },
     );
   }

@@ -7,7 +7,7 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/utils/language.dart';
@@ -173,7 +173,7 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
               child: Text(context.l10n.refresh),
             ),
           ),
-          loading: () => const ProgressCenter(),
+          loading: () => const NodeLaneEmptyState.loading(),
         ),
       ),
     );

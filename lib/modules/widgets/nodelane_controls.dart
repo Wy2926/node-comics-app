@@ -514,10 +514,12 @@ class NodeLaneSecondaryButton extends StatelessWidget {
     required this.child,
     this.onPressed,
     this.icon,
+    this.autofocus = false,
   });
   final Widget child;
   final VoidCallback? onPressed;
   final IconData? icon;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -528,13 +530,19 @@ class NodeLaneSecondaryButton extends StatelessWidget {
     );
     if (icon != null) {
       return FilledButton.icon(
+        autofocus: autofocus,
         style: style,
         onPressed: onPressed,
         icon: Icon(icon, size: NodeLaneTokens.iconSize),
         label: child,
       );
     }
-    return FilledButton(style: style, onPressed: onPressed, child: child);
+    return FilledButton(
+      autofocus: autofocus,
+      style: style,
+      onPressed: onPressed,
+      child: child,
+    );
   }
 }
 

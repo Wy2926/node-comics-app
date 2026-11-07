@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/discovery/media_lookup_context.dart';
 import 'package:mangayomi/services/recommendation.dart';
@@ -74,10 +73,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.recommendations)),
       body: _isLoading
-          ? const ProgressCenter()
+          ? const NodeLaneEmptyState.loading()
           : _errorMessage.isNotEmpty
-          ? ErrorState(
-              detail: _errorMessage,
+          ? NodeLaneEmptyState.error(
+              message: _errorMessage,
               onRetry: () {
                 setState(() {
                   _isLoading = true;

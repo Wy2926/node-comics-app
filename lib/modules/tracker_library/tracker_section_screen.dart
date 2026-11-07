@@ -5,11 +5,14 @@ import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/tracker_library/tracker_library_card.dart';
 import 'package:mangayomi/modules/tracker_library/tracker_library_section.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/repositories/tracker_library_cache_repository.dart';
-import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class TrackerSectionScreen extends StatefulWidget {
   final TrackLibrarySection section;
@@ -36,27 +39,20 @@ class _TrackerSectionScreenState extends State<TrackerSectionScreen> {
 
   void _subscribeToTracks() {
     _trackStreamSub = trackRepository
-        .watchByItemTypeWithMangaId(widget.section.itemType)
+        .watchByItemTypeAndSyncId(
+          widget.section.itemType,
+          widget.section.syncId,
+        )
         .listen((tracks) {
           if (mounted) {
             setState(() {
               _trackIndex = {
                 for (final t in tracks)
-                  if (t.mediaId != null) t.mediaId!: t,
+                  if (t.mediaId != null && t.mangaId != null) t.mediaId!: t,
               };
             });
           }
         });
-  }
-
-  @override
-  void didUpdateWidget(covariant TrackerSectionScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.section.itemType != widget.section.itemType) {
-      _trackStreamSub.cancel();
-      _subscribeToTracks();
-    }
-    _fetchData();
   }
 
   @override
@@ -67,95 +63,95 @@ class _TrackerSectionScreenState extends State<TrackerSectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = l10nLocalizations(context)!;
-    return Scaffold(
-      body: IntrinsicHeight(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    final l10n = context.l10n;
+    Widget content;
+    if (_isLoading) {
+      content = SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
           children: [
-            ListTile(dense: true, title: Text(widget.section.name)),
-            _isLoading
-                ? const SizedBox(
-                    height: 60,
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                : Builder(
-                    builder: (context) {
-                      if (_errorMessage.isNotEmpty) {
-                        return ErrorState(
-                          compact: true,
-                          detail: _errorMessage,
-                          onRetry: () {
-                            setState(() {
-                              _isLoading = true;
-                              _errorMessage = "";
-                            });
-                            _fetchData();
-                          },
-                        );
-                      }
-                      if (_tracks.isNotEmpty) {
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              for (final track in _tracks)
-                                TrackerLibraryImageCard(
-                                  track: track,
-                                  itemType: widget.section.itemType,
-                                  libraryTrack: _trackIndex[track.mediaId],
-                                ),
-                            ],
-                          ),
-                        );
-                      }
-                      return SizedBox(
-                        height: 60,
-                        child: Center(child: Text(l10n.no_result)),
-                      );
-                    },
-                  ),
+            for (var i = 0; i < 3; i++) ...[
+              if (i > 0) const SizedBox(width: NodeLaneTokens.space12),
+              const NodeLaneSkeleton(
+                width: NodeLaneTokens.detailCoverWidth,
+                height: NodeLaneTokens.detailCoverHeight,
+                radius: NodeLaneTokens.groupRadius,
+              ),
+            ],
           ],
         ),
+      );
+    } else if (_errorMessage.isNotEmpty) {
+      content = NodeLaneEmptyState.error(
+        compact: true,
+        message: _errorMessage,
+        onRetry: () {
+          setState(() {
+            _isLoading = true;
+            _errorMessage = '';
+          });
+          _fetchData();
+        },
+      );
+    } else if (_tracks.isEmpty) {
+      content = NodeLaneEmptyState(
+        icon: NodeLaneIcons.of(context).tracking,
+        title: l10n.no_result,
+      );
+    } else {
+      content = SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < _tracks.length; i++) ...[
+              if (i > 0) const SizedBox(width: NodeLaneTokens.space12),
+              TrackerLibraryImageCard(
+                track: _tracks[i],
+                itemType: widget.section.itemType,
+                libraryTrack: _trackIndex[_tracks[i].mediaId],
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NodeLaneTokens.space24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [NodeLaneCatalogHeading(widget.section.name), content],
       ),
     );
   }
 
   Future<void> _fetchData() async {
-    final key =
-        "${widget.section.syncId}-${widget.section.itemType.name}-${widget.section.name}";
-    if (await _checkCache(key)) return;
+    final section = widget.section;
+    final key = '${section.syncId}-${section.itemType.name}-${section.name}';
     try {
-      _errorMessage = "";
-      _tracks = await widget.section.func() ?? [];
-      await trackerLibraryCacheRepository.put(key, _tracks);
-      if (mounted) {
-        setState(() => _isLoading = false);
+      final cached = section.isSearch
+          ? null
+          : await trackerLibraryCacheRepository.get(key);
+      if (!mounted) return;
+      final tracks = cached ?? await section.func() ?? <TrackSearch>[];
+      if (!mounted) return;
+      if (cached == null && !section.isSearch) {
+        await trackerLibraryCacheRepository.put(key, tracks);
       }
-    } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _tracks = tracks;
+          _errorMessage = '';
+          _isLoading = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = error.toString();
           _isLoading = false;
         });
       }
     }
-  }
-
-  Future<bool> _checkCache(String key) async {
-    if (widget.section.isSearch) return false;
-    final cached = await trackerLibraryCacheRepository.get(key);
-    if (cached == null) return false;
-    _errorMessage = "";
-    _tracks = cached;
-    if (mounted) setState(() => _isLoading = false);
-    return true;
-  }
-}
-
-class SuperPrecalculationPolicy extends ExtentPrecalculationPolicy {
-  @override
-  bool shouldPrecalculateExtents(ExtentPrecalculationContext context) {
-    return context.numberOfItems < 100;
   }
 }
