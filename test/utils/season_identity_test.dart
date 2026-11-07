@@ -32,6 +32,30 @@ void main() {
     );
   });
 
+  test(
+    'missing numbers are counted within each season, never across seasons',
+    () {
+      expect(
+        recognition.missingChapterCount('Show', [
+          'Season 1 Episode 1',
+          'Season 1 Episode 3',
+          'Season 2 Episode 2',
+          'Season 2 Episode 4',
+        ]),
+        2,
+      );
+      expect(
+        recognition.missingChapterCount('Show', [
+          'Season 1 Episode 1',
+          'Season 1 Episode 2',
+          'Season 2 Episode 10',
+          'Season 2 Episode 11',
+        ]),
+        0,
+      );
+    },
+  );
+
   String? identity(String show, String name, [String? scanlator]) =>
       recognition.chapterIdentityKey(show, name, scanlator);
 

@@ -235,14 +235,10 @@ extension MangaExtensions on Manga {
     return list.where((c) => sortKeys[c.id] == null).length;
   }
 
-  /// Count of whole numbers missing from the recognized chapter sequence —
-  /// e.g. chapters 1, 2, 4, 5 present means 1 (chapter 3) is missing. Decimal
-  /// extras (12.5) are floored into their whole chapter, since they aren't
-  /// part of the main numbering. Season-bucketed keys are unbucketed back to
-  /// their raw episode number first, since gaps only make sense within one
-  /// season's own numbering, not across a season * 100000 jump.
+  /// Estimate numbering gaps in the full imported catalog. Display filters
+  /// (read, bookmarked, downloaded, scanlator) cannot make a chapter missing.
   int missingChapterCount() => ChapterRecognition().missingChapterCount(
     name ?? '',
-    getFilteredChapters().map((chapter) => chapter.name ?? ''),
+    chapters.map((chapter) => chapter.name ?? ''),
   );
 }

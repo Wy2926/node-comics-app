@@ -125,6 +125,27 @@ void main() {
     return manga.getChapterListForReading();
   }
 
+  test('hidden read chapters do not become missing catalog chapters', () async {
+    final chapters = await refresh([
+      for (var i = 1; i <= 3; i++) entry('Chapter $i', 'chapter-$i'),
+    ]);
+    saveProgress(chapters.singleWhere((c) => c.name == 'Chapter 2'));
+    database.writeTxnSync(() {
+      database.settings.putSync(
+        database.settings.getSync(227)!
+          ..chapterFilterUnreadList = [
+            ChapterFilterUnread(mangaId: 1, type: 1),
+          ],
+      );
+    });
+    final manga = database.mangas.getSync(1)!..chapters.loadSync();
+    expect(manga.getFilteredChapters().map((c) => c.name), [
+      'Chapter 1',
+      'Chapter 3',
+    ]);
+    expect(manga.missingChapterCount(), 0);
+  });
+
   test(
     'reading progress cannot replace sorted neighbours with raw link order',
     () async {

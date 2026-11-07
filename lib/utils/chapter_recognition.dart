@@ -40,23 +40,30 @@ class ChapterRecognition {
     return (ep ?? 0).toInt();
   }
 
-  /// Annuals have their own numbering, often a year. They do not create
-  /// gaps in the regular series; sorting and progress identities stay intact.
+  /// Estimate internal whole-number gaps per season, not catalog completeness.
+  /// Annuals have a separate sequence, often a year; decimal parts share their
+  /// whole-number slot. Neither creates gaps in the regular series. Unknown
+  /// names and numbers outside each observed range cannot establish a gap.
+  /// Sorting and progress identities are independent of this estimate.
   int missingChapterCount(String mangaTitle, Iterable<String> chapterNames) {
-    final numbers = <int>{};
+    final seasons = <int, Set<int>>{};
     for (final chapterName in chapterNames) {
       final label = chapterName
           .toLowerCase()
           .replaceAll(mangaTitle.toLowerCase(), '')
           .trim();
       if (_annualIssue.hasMatch(label)) continue;
-      final (_, ep) = rawSeasonAndNumber(mangaTitle, chapterName);
-      if (ep != null) numbers.add(ep.floor());
+      final (season, ep) = rawSeasonAndNumber(mangaTitle, chapterName);
+      if (ep != null) seasons.putIfAbsent(season, () => {}).add(ep.floor());
     }
-    if (numbers.length < 2) return 0;
-    final lowest = numbers.reduce((a, b) => a < b ? a : b);
-    final highest = numbers.reduce((a, b) => a > b ? a : b);
-    return (highest - lowest + 1) - numbers.length;
+    var missing = 0;
+    for (final numbers in seasons.values) {
+      if (numbers.length < 2) continue;
+      final lowest = numbers.reduce((a, b) => a < b ? a : b);
+      final highest = numbers.reduce((a, b) => a > b ? a : b);
+      missing += (highest - lowest + 1) - numbers.length;
+    }
+    return missing;
   }
 
   /// Numeric grouping key for cross-release progress matching, with an optional
