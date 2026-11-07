@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_card.dart';
-import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_empty.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_header.dart';
 import 'package:mangayomi/modules/main_view/widgets/nodelane_mobile_navigation.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -111,7 +113,7 @@ void main() {
 
   for (final mode in ['list', 'comfortable', 'compact', 'cover']) {
     testWidgets(
-      '$mode resolves local identity once and places downloads in its information band',
+      '$mode keeps one local identity and a separate download count',
       (tester) async {
         final list = mode == 'list', coverOnly = mode == 'cover';
         await tester.pumpWidget(
@@ -145,7 +147,7 @@ void main() {
         await tester.pumpAndSettle();
         final card = find.byType(MobileBookshelfCard);
         final folder = NodeLaneIcons.of(tester.element(card)).folderOutline;
-        expect(find.byIcon(folder), findsOneWidget);
+        expect(find.byIcon(folder), coverOnly ? findsOneWidget : findsNothing);
         expect(find.textContaining('Local', findRichText: true), findsNothing);
         expect(find.textContaining('LOCAL', findRichText: true), findsNothing);
         final metadata = find.byWidgetPredicate(
@@ -158,8 +160,8 @@ void main() {
           (w) => w is NodeLaneCoverBadge && w.label == '3',
         );
         final cover = tester.getRect(find.byType(Image));
-        if (coverOnly) {
-          expect(tester.getRect(download).bottom, lessThan(cover.center.dy));
+        if (!list) {
+          expect(tester.getRect(download).bottom, lessThan(cover.bottom));
         } else {
           expect(
             tester.getCenter(metadata).dy,
@@ -218,10 +220,10 @@ void main() {
         app(
           Center(
             child: SizedBox(
-              width: 106,
-              height: 250,
+              width: 350,
               child: MobileBookshelfCard(
                 title: '雨后的街角',
+                list: true,
                 image: coverImage,
                 selected: false,
                 source: '  很长的示例来源  ',
@@ -293,13 +295,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('999+'), findsNWidgets(2));
+      expect(find.textContaining('999+'), findsNWidgets(2));
       expect(find.bySemanticsLabel(RegExp(r': 1234')), findsOneWidget);
       expect(find.bySemanticsLabel(RegExp(r': 2345')), findsOneWidget);
       final before = tester.getRect(find.byType(Image));
       change(() => selecting = true);
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCoverBadge), findsNothing);
+      expect(find.byType(NodeLaneCoverBadge), findsOneWidget);
+      expect(find.text('999+'), findsNothing);
       expect(find.byTooltip('继续'), findsNothing);
       expect(
         find.byWidgetPredicate((w) => w is Text && w.semanticsLabel == '本地'),
@@ -351,7 +354,7 @@ void main() {
                       width: list ? 280 : width,
                       height: list
                           ? null
-                          : width * NodeLaneTokens.coverAspectRatio +
+                          : width * NodeLaneTokens.shelfCoverAspectRatio +
                                 MobileBookshelfCard.captionHeight(
                                   context,
                                   metadata: metadata,
@@ -398,10 +401,16 @@ void main() {
         expect(titleRect.bottom, lessThanOrEqualTo(cardRect.bottom));
         if (!list) {
           final coverRect = tester.getRect(find.byType(Image));
-          expect(titleRect.top - coverRect.bottom, NodeLaneTokens.space8);
+          expect(
+            titleRect.top - coverRect.bottom,
+            closeTo(NodeLaneTokens.space8, .001),
+          );
           expect(
             coverRect.height,
-            closeTo(coverRect.width * NodeLaneTokens.coverAspectRatio, .001),
+            closeTo(
+              coverRect.width * NodeLaneTokens.shelfCoverAspectRatio,
+              .001,
+            ),
           );
         }
       }
@@ -536,26 +545,28 @@ void main() {
         app(
           Align(
             alignment: Alignment.topCenter,
-            child: SizedBox(
-              height: MobileBookshelfHeader.preferredHeight(2),
-              child: MobileBookshelfHeader(
-                title: '书架',
-                searchLabel: '搜索',
-                importLabel: '导入',
-                filterLabel: '筛选',
-                controller: controller,
-                onSearchChanged: () => changes++,
-                onImport: () => imports++,
-                onFilter: () => filters++,
-                mediaMenu: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  child: Text('漫画', style: TextStyle(fontSize: 13)),
+            child: Builder(
+              builder: (context) => SizedBox(
+                height: MobileBookshelfHeader.preferredHeight(context),
+                child: MobileBookshelfHeader(
+                  searchLabel: '搜索',
+                  importLabel: '导入',
+                  filterLabel: '筛选',
+                  controller: controller,
+                  onSearchChanged: () => changes++,
+                  onImport: () => imports++,
+                  onFilter: () => filters++,
+                  mediaMenu: MobileMediaMenu(
+                    value: ItemType.manga,
+                    availableTypes: ItemType.values,
+                    onChanged: (_) {},
+                  ),
+                  menu: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.more_horiz),
+                  ),
+                  filtered: true,
                 ),
-                menu: IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.more_horiz),
-                ),
-                filtered: true,
               ),
             ),
           ),
@@ -592,6 +603,53 @@ void main() {
       await tester.tap(find.byTooltip('筛选'));
       expect(controller.text, isEmpty);
       expect((changes, imports, filters), (2, 1, 1));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'category pills keep taps and page swipes in sync at large text',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        app(
+          DefaultTabController(
+            length: 3,
+            child: Column(
+              children: [
+                const NodeLaneTabSegments(
+                  scrollable: true,
+                  labels: ['全部 12', '收藏 8', '计划阅读 4'],
+                ),
+                const Expanded(
+                  child: TabBarView(
+                    children: [
+                      Center(child: Text('全部内容')),
+                      Center(child: Text('收藏内容')),
+                      Center(child: Text('计划内容')),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          scale: 2,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final controller = tester.widget<TabBar>(find.byType(TabBar)).controller!;
+      await tester.ensureVisible(find.text('收藏 8'));
+      await tester.tap(find.text('收藏 8'));
+      await tester.pumpAndSettle();
+      expect(controller.index, 1);
+      expect(find.text('收藏内容'), findsOneWidget);
+      await tester.drag(find.byType(TabBarView), const Offset(-280, 0));
+      await tester.pumpAndSettle();
+      expect(controller.index, 2);
+      expect(find.text('计划内容'), findsOneWidget);
+      expect(tester.getRect(find.text('计划阅读 4')).right, lessThanOrEqualTo(320));
       expect(tester.takeException(), isNull);
     },
   );
@@ -644,12 +702,14 @@ void main() {
         SizedBox(
           height: 200,
           width: 320,
-          child: MobileBookshelfEmpty(
+          child: NodeLaneEmptyState(
+            scrollable: true,
+            icon: Icons.book,
             title: '书架还是空的',
-            primaryLabel: '导入',
-            onPrimary: () => imports++,
-            secondaryLabel: '浏览',
-            onSecondary: () {},
+            action: FilledButton(
+              onPressed: () => imports++,
+              child: const Text('导入'),
+            ),
           ),
         ),
         scale: 2,

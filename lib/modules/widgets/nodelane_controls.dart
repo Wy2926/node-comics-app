@@ -39,31 +39,54 @@ class NodeLanePageHeading extends StatelessWidget {
     this.mediaMenu,
     this.actions = const [],
   });
-  final String title;
+  const NodeLanePageHeading.toolbar({
+    super.key,
+    required this.mediaMenu,
+    this.actions = const [],
+  }) : title = null;
+
+  final String? title;
   final Widget? mediaMenu;
   final List<Widget> actions;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Expanded(
-            child: Semantics(
-              header: true,
-              child: Text(title, style: NodeLaneTokens.of(context).pageTitle),
+  Widget build(BuildContext context) => title == null
+      ? Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: mediaMenu,
+              ),
             ),
-          ),
-          ...actions,
-        ],
-      ),
-      if (mediaMenu != null) ...[
-        const SizedBox(height: NodeLaneTokens.space4),
-        mediaMenu!,
-      ],
-    ],
-  );
+            if (actions.isNotEmpty)
+              const SizedBox(width: NodeLaneTokens.space8),
+            ...actions,
+          ],
+        )
+      : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      title!,
+                      style: NodeLaneTokens.of(context).pageTitle,
+                    ),
+                  ),
+                ),
+                ...actions,
+              ],
+            ),
+            if (mediaMenu != null) ...[
+              const SizedBox(height: NodeLaneTokens.space4),
+              mediaMenu!,
+            ],
+          ],
+        );
 }
 
 class NodeLaneGroupSurface extends StatelessWidget {
@@ -1626,25 +1649,78 @@ class NodeLaneTabSegments extends StatelessWidget {
     required this.labels,
     this.prominent = false,
     this.labelStyle,
+    this.controller,
+    this.scrollable = false,
   });
   final List<String> labels;
   final bool prominent;
   final TextStyle? labelStyle;
+  final TabController? controller;
+  final bool scrollable;
   @override
   Widget build(BuildContext context) {
-    final controller = DefaultTabController.of(context);
+    final controller = this.controller ?? DefaultTabController.of(context);
+    final t = NodeLaneTokens.of(context);
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, _) => NodeLaneSegments<int>(
-        value: controller.index,
-        prominent: prominent,
-        labelStyle: labelStyle,
-        segments: [
-          for (var i = 0; i < labels.length; i++)
-            ButtonSegment(value: i, label: Text(labels[i])),
-        ],
-        onChanged: controller.animateTo,
-      ),
+      builder: (context, _) => scrollable
+          ? TabBar(
+              controller: controller,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              dividerColor: Colors.transparent,
+              indicator: const BoxDecoration(),
+              labelPadding: const EdgeInsetsDirectional.only(
+                end: NodeLaneTokens.space12,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.gutter,
+              ),
+              tabs: [
+                for (var i = 0; i < labels.length; i++)
+                  Tab(
+                    height:
+                        (MediaQuery.textScalerOf(context)
+                                        .scale(t.label.fontSize!) *
+                                    t.label.height! +
+                                NodeLaneTokens.space16)
+                            .clamp(
+                              NodeLaneTokens.minTapTarget,
+                              double.infinity,
+                            ),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: NodeLaneTokens.space16,
+                          vertical: NodeLaneTokens.space8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: i == controller.index ? t.accentSoft : t.soft,
+                          borderRadius: BorderRadius.circular(
+                            NodeLaneTokens.capsuleRadius,
+                          ),
+                        ),
+                        child: Text(
+                          labels[i],
+                          style: (labelStyle ?? t.label).copyWith(
+                            color: i == controller.index ? t.accent : t.ink,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            )
+          : NodeLaneSegments<int>(
+              value: controller.index,
+              prominent: prominent,
+              labelStyle: labelStyle,
+              segments: [
+                for (var i = 0; i < labels.length; i++)
+                  ButtonSegment(value: i, label: Text(labels[i])),
+              ],
+              onChanged: controller.animateTo,
+            ),
     );
   }
 }

@@ -1,4 +1,6 @@
 {
+  "bookshelf_all": "All",
+  "bookshelf_search": "Search library",
   "app_update_allow_install": "Allow app installation in system settings, then return and tap Install.",
   "app_update_waiting": "Waiting for the system to resume the download…",
   "app_update_cancel_download": "Cancel download",

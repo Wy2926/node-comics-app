@@ -1,4 +1,6 @@
 {
+  "bookshelf_all": "全部",
+  "bookshelf_search": "搜索书架",
   "app_update_allow_install": "请在系统设置中允许安装应用，然后返回点击安装。",
   "app_update_waiting": "等待系统继续下载…",
   "app_update_cancel_download": "取消下载",

@@ -74,8 +74,7 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
                       metadata:
                           widget.sourceBadge ||
                           widget.language ||
-                          widget.localSource ||
-                          widget.downloadedChapter,
+                          widget.localSource,
                     );
               return GridView.builder(
                 key: PageStorageKey('mobile-shelf-${widget.itemType}'),
@@ -91,9 +90,9 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: columns,
                   crossAxisSpacing: NodeLaneTokens.shelfGap,
-                  mainAxisSpacing: NodeLaneTokens.space20,
+                  mainAxisSpacing: NodeLaneTokens.space24,
                   mainAxisExtent:
-                      coverWidth * NodeLaneTokens.coverAspectRatio +
+                      coverWidth * NodeLaneTokens.shelfCoverAspectRatio +
                       captionHeight,
                 ),
                 itemCount: widget.entriesManga.length,

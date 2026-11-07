@@ -14,6 +14,7 @@ class NodeLaneEmptyState extends StatelessWidget {
     required this.title,
     this.message,
     this.action,
+    this.scrollable = false,
   }) : _failure = false,
        _loading = false,
        compact = false,
@@ -30,6 +31,7 @@ class NodeLaneEmptyState extends StatelessWidget {
     this.autofocusRetry,
   }) : icon = null,
        action = null,
+       scrollable = false,
        _failure = true,
        _loading = false;
 
@@ -39,6 +41,7 @@ class NodeLaneEmptyState extends StatelessWidget {
       title = null,
       message = null,
       action = null,
+      scrollable = false,
       onRetry = null,
       autofocusRetry = null,
       compact = false,
@@ -51,6 +54,7 @@ class NodeLaneEmptyState extends StatelessWidget {
   final Widget? action;
   final VoidCallback? onRetry;
   final bool compact, _failure, _loading;
+  final bool scrollable;
   final bool? autofocusRetry;
 
   @override
@@ -118,6 +122,21 @@ class NodeLaneEmptyState extends StatelessWidget {
         ],
       ),
     );
+    if (scrollable) {
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+              minWidth: constraints.maxWidth,
+            ),
+            child: Center(child: content),
+          ),
+        ),
+      );
+    }
     return _failure
         ? Center(
             child: SingleChildScrollView(

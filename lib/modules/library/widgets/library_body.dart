@@ -12,14 +12,15 @@ import 'package:mangayomi/modules/library/widgets/library_gridview_widget.dart';
 import 'package:mangayomi/modules/library/widgets/library_listview_widget.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'library_dialogs.dart';
-import 'mobile_bookshelf_empty.dart';
 
 /// Displays the library body content for a given category (or uncategorized).
 ///
@@ -132,33 +133,57 @@ class LibraryBody extends ConsumerWidget {
                 (allMangaStream.asData?.value.isNotEmpty ?? false) ||
                 searchQuery.isNotEmpty;
             final searching = searchQuery.isNotEmpty;
-            return MobileBookshelfEmpty(
+            return NodeLaneEmptyState(
+              scrollable: true,
+              icon: filtered
+                  ? NodeLaneIcons.of(context).search
+                  : NodeLaneIcons.of(context).manga,
               title: filtered
                   ? l10n.bookshelf_no_match_title
                   : l10n.bookshelf_empty_title,
-              subtitle: filtered
+              message: filtered
                   ? l10n.bookshelf_no_match_hint
                   : l10n.bookshelf_empty_hint,
-              filtered: filtered,
-              primaryLabel: filtered
-                  ? (searching ? l10n.bookshelf_clear_query : l10n.filter)
-                  : l10n.bookshelf_browse_sources,
-              onPrimary: filtered
-                  ? (searching
-                        ? onClearSearch ?? () {}
-                        : onAdjustFilters ?? () {})
-                  : () {
-                      ref
-                          .read(browseInitialTabProvider.notifier)
-                          .request(BrowseTab(itemType, BrowseTabKind.sources));
-                      context.go('/browse');
-                    },
-              secondaryLabel: filtered
-                  ? (searching ? l10n.filter : null)
-                  : l10n.import_local_file,
-              onSecondary: filtered
-                  ? onAdjustFilters
-                  : () => showImportLocalDialog(context, itemType),
+              action: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FilledButton(
+                    onPressed: filtered
+                        ? (searching
+                              ? onClearSearch ?? () {}
+                              : onAdjustFilters ?? () {})
+                        : () {
+                            ref
+                                .read(browseInitialTabProvider.notifier)
+                                .request(
+                                  BrowseTab(itemType, BrowseTabKind.sources),
+                                );
+                            context.go('/browse');
+                          },
+                    child: Text(
+                      filtered
+                          ? (searching
+                                ? l10n.bookshelf_clear_query
+                                : l10n.filter)
+                          : l10n.bookshelf_browse_sources,
+                    ),
+                  ),
+                  if (!filtered || (searching && onAdjustFilters != null)) ...[
+                    const SizedBox(height: NodeLaneTokens.space8),
+                    if (filtered)
+                      TextButton(
+                        onPressed: onAdjustFilters,
+                        child: Text(l10n.filter),
+                      )
+                    else
+                      NodeLaneSecondaryButton(
+                        onPressed: () =>
+                            showImportLocalDialog(context, itemType),
+                        child: Text(l10n.import_local_file),
+                      ),
+                  ],
+                ],
+              ),
             );
           }
           return Center(child: Text(l10n.empty_library));
@@ -222,15 +247,6 @@ class CategoryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isMobile && !isTv) {
-      return Text(
-        '$count',
-        style: const TextStyle(
-          fontSize: NodeLaneTokens.captionSize,
-          height: 1.3,
-        ),
-      );
-    }
     return CircleAvatar(
       backgroundColor: Theme.of(context).focusColor,
       radius: 8,

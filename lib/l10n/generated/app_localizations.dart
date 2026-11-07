@@ -128,6 +128,18 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @bookshelf_all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get bookshelf_all;
+
+  /// No description provided for @bookshelf_search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search library'**
+  String get bookshelf_search;
+
   /// No description provided for @app_update_allow_install.
   ///
   /// In en, this message translates to:

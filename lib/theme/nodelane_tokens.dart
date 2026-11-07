@@ -34,7 +34,8 @@ class NodeLaneTokens {
   static const avatarSize = 64.0, searchHeight = 48.0;
   static const brandMarkSize = 80.0, brandCompactMarkSize = 40.0;
   static const accountHeroAvatarSize = 96.0, accountHeroIconSize = 56.0;
-  static const coverAspectRatio = 1.43, shelfGap = 14.0;
+  static const coverAspectRatio = 1.43;
+  static const shelfCoverAspectRatio = 1.08, shelfGap = space12;
   static const bookTitleSize = 15.0, captionSize = 12.0;
   static const shelfComfortableWidth = 168.0, shelfCompactWidth = 96.0;
   static const shelfThumbnailWidth = 64.0, shelfThumbnailHeight = 92.0;

@@ -9,7 +9,7 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 
 /// Action identities stay with the existing library owner.
-class MobileBookshelfMenu extends StatefulWidget {
+class MobileBookshelfMenu extends StatelessWidget {
   const MobileBookshelfMenu({
     super.key,
     required this.hasEntries,
@@ -21,37 +21,33 @@ class MobileBookshelfMenu extends StatefulWidget {
   final bool hasEntries, updating, ignoreFilters, anime;
   final ValueChanged<int> onSelected;
   @override
-  State<MobileBookshelfMenu> createState() => _MobileBookshelfMenuState();
-}
-
-class _MobileBookshelfMenuState extends State<MobileBookshelfMenu> {
-  bool _searchOptions = false;
-  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n, icons = NodeLaneIcons.of(context);
     return NodeLaneCatalogSheet(
       title: l10n.bookshelf_actions,
-      heightFactor: .66,
+      heightFactor: .9,
+      fitContent: true,
       child: ListView(
+        shrinkWrap: true,
         padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
         children: [
           NodeLaneGroupSurface(
             children: [
               NodeLaneRow(
-                enabled: widget.updating || widget.hasEntries,
-                title: widget.updating
+                enabled: updating || hasEntries,
+                title: updating
                     ? l10n.bookshelf_stop_update
                     : l10n.update_library,
-                icon: widget.updating ? icons.stop : icons.refresh,
-                onTap: widget.updating || widget.hasEntries
-                    ? () => widget.onSelected(widget.updating ? 5 : 0)
+                icon: updating ? icons.stop : icons.refresh,
+                onTap: updating || hasEntries
+                    ? () => onSelected(updating ? 5 : 0)
                     : null,
               ),
               NodeLaneRow(
                 title: l10n.bookshelf_select_entries,
-                enabled: widget.hasEntries,
+                enabled: hasEntries,
                 icon: icons.selected,
-                onTap: widget.hasEntries ? () => widget.onSelected(6) : null,
+                onTap: hasEntries ? () => onSelected(6) : null,
               ),
             ],
           ),
@@ -60,47 +56,33 @@ class _MobileBookshelfMenuState extends State<MobileBookshelfMenu> {
             children: [
               NodeLaneRow(
                 title: l10n.open_random_entry,
-                enabled: widget.hasEntries,
+                enabled: hasEntries,
                 icon: icons.shuffle,
-                onTap: widget.hasEntries ? () => widget.onSelected(1) : null,
+                onTap: hasEntries ? () => onSelected(1) : null,
               ),
               NodeLaneRow(
                 title: l10n.bookshelf_manage_categories,
                 icon: icons.categories,
-                onTap: () => widget.onSelected(7),
+                onTap: () => onSelected(7),
               ),
-              if (widget.anime)
+              if (anime)
                 NodeLaneRow(
                   title: l10n.torrent_stream,
                   icon: icons.webLink,
-                  onTap: () => widget.onSelected(3),
+                  onTap: () => onSelected(3),
                 ),
             ],
           ),
           const SizedBox(height: NodeLaneTokens.space16),
-          NodeLaneGroupSurface(
-            children: [
-              NodeLaneRow(
-                title: l10n.bookshelf_search_options,
-                subtitle: l10n.bookshelf_ignore_filters,
-                icon: icons.search,
-                trailing: RotatedBox(
-                  quarterTurns: _searchOptions ? 2 : 0,
-                  child: Icon(icons.down, size: NodeLaneTokens.smallIconSize),
-                ),
-                onTap: () => setState(() => _searchOptions = !_searchOptions),
-              ),
-              if (_searchOptions)
-                NodeLaneRow(
-                  title: l10n.bookshelf_ignore_filters,
-                  subtitle: l10n.bookshelf_ignore_filters_hint,
-                  trailing: NodeLaneSwitch(
-                    value: widget.ignoreFilters,
-                    onChanged: (_) => widget.onSelected(4),
-                  ),
-                  onTap: () => widget.onSelected(4),
-                ),
-            ],
+          NodeLaneDisclosure(
+            title: l10n.bookshelf_search_options,
+            icon: icons.search,
+            child: NodeLaneSwitchRow(
+              title: l10n.bookshelf_ignore_filters,
+              subtitle: l10n.bookshelf_ignore_filters_hint,
+              value: ignoreFilters,
+              onChanged: (_) => onSelected(4),
+            ),
           ),
         ],
       ),

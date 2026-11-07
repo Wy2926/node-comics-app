@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 
-/// Shared by library, browse, history and updates; no navigation state is owned here.
+/// Shared by library, browse and updates; no navigation state is owned here.
 class MobileMediaMenu extends StatelessWidget {
   const MobileMediaMenu({
     super.key,
@@ -20,14 +21,10 @@ class MobileMediaMenu extends StatelessWidget {
   final ValueChanged<ItemType> onChanged;
   final Widget? Function(ItemType)? badgeBuilder;
 
-  static IconData _icon(
-    BuildContext context,
-    ItemType type, {
-    bool filled = false,
-  }) {
+  static IconData _icon(BuildContext context, ItemType type) {
     final icons = NodeLaneIcons.of(context);
     return switch (type) {
-      ItemType.manga => filled ? icons.mangaSelected : icons.manga,
+      ItemType.manga => icons.manga,
       ItemType.anime => icons.anime,
       ItemType.novel => icons.novel,
     };
@@ -59,56 +56,30 @@ class MobileMediaMenu extends StatelessWidget {
               padding: EdgeInsets.zero,
               child: Semantics(
                 selected: type == value,
-                child: Container(
-                  constraints: const BoxConstraints(
-                    minHeight: NodeLaneTokens.menuItemHeight,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    border: type == types.last
-                        ? null
-                        : Border(bottom: BorderSide(color: colors.line)),
-                    borderRadius: BorderRadius.circular(
-                      NodeLaneTokens.controlRadius,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _icon(context, type),
-                        size: 22,
-                        color: type == value ? colors.accent : colors.muted,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          type.localized(l10n),
-                          style: TextStyle(
-                            color: colors.ink,
-                            fontSize: 15,
-                            fontWeight: type == value
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
+                child: NodeLaneRow(
+                  title: type.localized(l10n),
+                  icon: _icon(context, type),
+                  selected: type == value,
+                  accented: type == value,
+                  trailing: badgeBuilder == null
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ?badgeBuilder?.call(type),
+                            const SizedBox(width: NodeLaneTokens.space12),
+                            SizedBox.square(
+                              dimension: NodeLaneTokens.iconSize,
+                              child: type == value
+                                  ? Icon(
+                                      NodeLaneIcons.of(context).check,
+                                      color: colors.accent,
+                                      size: NodeLaneTokens.iconSize,
+                                    )
+                                  : null,
+                            ),
+                          ],
                         ),
-                      ),
-                      ?badgeBuilder?.call(type),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        width: 20,
-                        child: type == value
-                            ? Icon(
-                                NodeLaneIcons.of(context).check,
-                                color: colors.accent,
-                                size: 20,
-                              )
-                            : null,
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),
@@ -119,16 +90,19 @@ class MobileMediaMenu extends StatelessWidget {
             constraints: const BoxConstraints(
               minHeight: NodeLaneTokens.minTapTarget,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: NodeLaneTokens.space12,
+              vertical: NodeLaneTokens.space8,
+            ),
             decoration: BoxDecoration(
-              color: colors.accentSoft,
+              color: colors.soft,
               borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  _icon(context, value, filled: true),
+                  _icon(context, value),
                   color: colors.accent,
                   size: NodeLaneTokens.smallIconSize,
                 ),
@@ -136,23 +110,21 @@ class MobileMediaMenu extends StatelessWidget {
                 Flexible(
                   child: Text(
                     value.localized(l10n),
-                    style: TextStyle(
-                      color: colors.ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: colors.label,
                   ),
                 ),
                 if (badgeBuilder != null) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: NodeLaneTokens.space8),
                   ?badgeBuilder?.call(value),
                 ],
                 if (types.length > 1) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: NodeLaneTokens.space8),
                   Icon(
                     NodeLaneIcons.of(context).down,
-                    color: colors.muted,
-                    size: 18,
+                    color: colors.ink,
+                    size: NodeLaneTokens.smallIconSize,
                   ),
                 ],
               ],

@@ -10,6 +10,12 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get bookshelf_all => '全部';
+
+  @override
+  String get bookshelf_search => '搜索书架';
+
+  @override
   String get app_update_allow_install => '请在系统设置中允许安装应用，然后返回点击安装。';
 
   @override

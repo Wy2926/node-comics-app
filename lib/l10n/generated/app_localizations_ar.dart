@@ -10,6 +10,12 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get bookshelf_all => 'All';
+
+  @override
+  String get bookshelf_search => 'Search library';
+
+  @override
   String get app_update_allow_install =>
       'Allow app installation in system settings, then return and tap Install.';
 

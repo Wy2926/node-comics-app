@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_sheet.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +21,7 @@ import 'package:mangayomi/modules/library/providers/isar_providers.dart';
 import 'package:mangayomi/modules/library/providers/library_filter_provider.dart';
 import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
 import 'package:mangayomi/modules/library/widgets/library_app_bar.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_header.dart';
 import 'package:mangayomi/modules/library/widgets/library_body.dart';
 import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
@@ -34,6 +36,13 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/library/widgets/library_settings_sheet.dart';
+
+typedef _ShelfTab = ({String label, int? categoryId, bool uncategorized});
+
+bool _inShelfTab(Manga entry, _ShelfTab tab) => tab.uncategorized
+    ? entry.categories?.isEmpty ?? true
+    : tab.categoryId == null ||
+          (entry.categories?.contains(tab.categoryId) ?? false);
 
 /// Coordinates the existing library state, category tabs and media-specific actions.
 class LibraryScreen extends ConsumerStatefulWidget {
@@ -279,91 +288,91 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                 ),
               );
 
-              Widget badgeForCategory(int? categoryId) => CategoryBadge(
-                count: numberOfItemsList
-                    .where(
-                      (entry) => categoryId == null
-                          ? entry.categories == null ||
-                                entry.categories!.isEmpty
-                          : entry.categories?.contains(categoryId) ?? false,
-                    )
-                    .length,
+              final mobile = isMobile && !isTv;
+              final visibleCategories = [...data]
+                ..sort((a, b) => (a.pos ?? 0).compareTo(b.pos ?? 0));
+              visibleCategories.removeWhere(
+                (category) => category.hide ?? false,
               );
-
-              selectionEntries = numberOfItemsList;
-              if (data.isNotEmpty && showCategoryTabs) {
-                final visibleCategories = [...data]
-                  ..sort((a, b) => (a.pos ?? 0).compareTo(b.pos ?? 0));
-                visibleCategories.removeWhere(
-                  (category) => category.hide ?? false,
-                );
-                final hasDefault = withoutCategory.isNotEmpty;
-                final tabCount =
-                    visibleCategories.length + (hasDefault ? 1 : 0);
-                if (tabCount > 0) {
-                  final index = _tabIndex.clamp(0, tabCount - 1);
-                  final categoryId = hasDefault && index == 0
-                      ? null
-                      : visibleCategories[index - (hasDefault ? 1 : 0)].id;
-                  selectionEntries = numberOfItemsList
-                      .where(
-                        (entry) => categoryId == null
-                            ? entry.categories?.isEmpty ?? true
-                            : entry.categories?.contains(categoryId) ?? false,
-                      )
-                      .toList();
-                }
-              }
-
-              if (data.isNotEmpty && showCategoryTabs) {
-                return _buildWithCategories(
-                  data: data,
-                  withoutCategory: withoutCategory,
-                  man: man,
-                  selectionEntries: selectionEntries,
-                  settings: settings,
-                  showNumbersOfItems: showNumbersOfItems,
-                  isNotFiltering: isNotFiltering,
-                  numberOfItems: numberOfItemsList.length,
-                  bodyForCategory: bodyForCategory,
-                  badgeForCategory: badgeForCategory,
-                  downloadFilterType: downloadFilterType,
-                  downloadedOnly: downloadedOnly,
-                );
-              }
-
-              return Scaffold(
-                appBar: LibraryAppBar(
-                  textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
-                  selectionMode: ref.watch(isLongPressedStateProvider),
-                  itemType: widget.itemType,
-                  isNotFiltering: isNotFiltering,
-                  showNumbersOfItems: showNumbersOfItems,
-                  numberOfItems: numberOfItemsList.length,
-                  entries: man,
-                  selectionEntries: selectionEntries,
-                  isCategory: false,
-                  categoryId: null,
-                  settings: settings,
-                  isSearch: _isSearch,
-                  ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
-                  textEditingController: _textEditingController,
-                  onSearchToggle: () => setState(() => _isSearch = !_isSearch),
-                  onSearchClear: () {
-                    _searchDebounce?.cancel();
-                    _searchDebounce = Timer(
-                      const Duration(milliseconds: 300),
-                      () {
-                        if (mounted) setState(() {});
-                      },
-                    );
-                  },
-                  onIgnoreFiltersChanged: (val) =>
-                      setState(() => _ignoreFiltersOnSearch = val),
-                  vsync: this,
+              final tabs = <_ShelfTab>[
+                if (mobile)
+                  (
+                    label: context.l10n.bookshelf_all,
+                    categoryId: null,
+                    uncategorized: false,
+                  ),
+                if (showCategoryTabs && data.isNotEmpty) ...[
+                  if (withoutCategory.isNotEmpty)
+                    (
+                      label: context.l10n.default0,
+                      categoryId: null,
+                      uncategorized: true,
+                    ),
+                  for (final category in visibleCategories)
+                    (
+                      label: category.name ?? '',
+                      categoryId: category.id,
+                      uncategorized: false,
+                    ),
+                ],
+              ];
+              final currentTab = showCategoryTabs && tabs.isNotEmpty
+                  ? tabs[_tabIndex.clamp(0, tabs.length - 1)]
+                  : null;
+              selectionEntries = currentTab == null
+                  ? numberOfItemsList
+                  : numberOfItemsList
+                        .where((entry) => _inShelfTab(entry, currentTab))
+                        .toList();
+              final appBar = LibraryAppBar(
+                mobileHeaderHeight: MobileBookshelfHeader.preferredHeight(
+                  context,
                 ),
-                body: bodyForCategory(),
+                selectionMode: ref.watch(isLongPressedStateProvider),
+                itemType: widget.itemType,
+                isNotFiltering: isNotFiltering,
+                showNumbersOfItems: showNumbersOfItems,
+                numberOfItems: numberOfItemsList.length,
+                entries: man,
+                selectionEntries: selectionEntries,
+                isCategory:
+                    currentTab != null &&
+                    (currentTab.uncategorized || currentTab.categoryId != null),
+                categoryId: currentTab?.categoryId,
+                settings: settings,
+                isSearch: _isSearch,
+                ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
+                textEditingController: _textEditingController,
+                onSearchToggle: () => setState(() => _isSearch = !_isSearch),
+                onSearchClear: () {
+                  _searchDebounce?.cancel();
+                  _searchDebounce = Timer(
+                    const Duration(milliseconds: 300),
+                    () {
+                      if (mounted) setState(() {});
+                    },
+                  );
+                },
+                onIgnoreFiltersChanged: (val) =>
+                    setState(() => _ignoreFiltersOnSearch = val),
+                vsync: this,
               );
+              if (showCategoryTabs && tabs.isNotEmpty) {
+                return _buildWithCategories(
+                  tabs: tabs,
+                  appBar: appBar,
+                  bodyForCategory: bodyForCategory,
+                  counts: showNumbersOfItems
+                      ? [
+                          for (final tab in tabs)
+                            numberOfItemsList
+                                .where((entry) => _inShelfTab(entry, tab))
+                                .length,
+                        ]
+                      : null,
+                );
+              }
+              return Scaffold(appBar: appBar, body: bodyForCategory());
             },
             error: (error, _) => ErrorText(error),
             loading: () => const NodeLaneEmptyState.loading(),
@@ -383,186 +392,79 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   }
 
   Widget _buildWithCategories({
-    required List data,
-    required List<Manga> withoutCategory,
-    required List<Manga> man,
-    required List<Manga> selectionEntries,
-    required Settings settings,
-    required bool showNumbersOfItems,
-    required bool isNotFiltering,
-    required int numberOfItems,
+    required List<_ShelfTab> tabs,
+    required PreferredSizeWidget appBar,
     required Widget Function({int? categoryId, bool withoutCategories})
     bodyForCategory,
-    required Widget Function(int? categoryId) badgeForCategory,
-    required int downloadFilterType,
-    required bool downloadedOnly,
+    required List<int>? counts,
   }) {
-    final sortedData = [...data]
-      ..sort((a, b) => (a.pos ?? 0).compareTo(b.pos ?? 0));
-    final entr = sortedData.where((e) => !(e.hide ?? false)).toList();
-    int tabCount = withoutCategory.isNotEmpty ? entr.length + 1 : entr.length;
-
-    if (tabCount <= 0) {
-      return bodyForCategory();
-    }
-
-    // Manage TabController
-    if (tabCount > 0 &&
-        (tabBarController == null || tabBarController!.length != tabCount)) {
-      int newTabIndex = _tabIndex;
-      if (newTabIndex >= tabCount) newTabIndex = tabCount - 1;
-      // Retire the old one after this frame rather than here. Disposing a
-      // TabController sets its animation to null, and the TabBar built in the
-      // previous frame is still holding this one: its _IndicatorPainter reads
-      // `controller.animation!.value` on the next paint and dies on the null
-      // check. That is #923, reported from the library screen with exactly
-      // that frame at the top of the stack.
+    final tabCount = tabs.length;
+    if (tabBarController == null || tabBarController!.length != tabCount) {
+      final index = _tabIndex.clamp(0, tabCount - 1);
+      // Old TabBar/TabBarView may still paint this frame; release afterwards.
       _retireTabController(tabBarController);
       tabBarController = TabController(
         length: tabCount,
         vsync: this,
-        initialIndex: newTabIndex,
+        initialIndex: index,
       );
-      _tabIndex = newTabIndex;
+      _tabIndex = index;
       tabBarController!.addListener(() {
         if (_tabIndex != tabBarController!.index) {
           setState(() => _tabIndex = tabBarController!.index);
         }
       });
     }
-
-    return DefaultTabController(
-      length: entr.length,
-      child: Scaffold(
-        appBar: LibraryAppBar(
-          textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
-          selectionMode: ref.watch(isLongPressedStateProvider),
-          itemType: widget.itemType,
-          isNotFiltering: isNotFiltering,
-          showNumbersOfItems: showNumbersOfItems,
-          numberOfItems: numberOfItems,
-          entries: man,
-          selectionEntries: selectionEntries,
-          isCategory: true,
-          categoryId: withoutCategory.isNotEmpty && _tabIndex == 0
-              ? null
-              : entr[withoutCategory.isNotEmpty ? _tabIndex - 1 : _tabIndex]
-                    .id!,
-          settings: settings,
-          isSearch: _isSearch,
-          ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
-          textEditingController: _textEditingController,
-          onSearchToggle: () => setState(() => _isSearch = !_isSearch),
-          onSearchClear: () {
-            _searchDebounce?.cancel();
-            _searchDebounce = Timer(const Duration(milliseconds: 300), () {
-              if (mounted) setState(() {});
-            });
-          },
-          onIgnoreFiltersChanged: (val) =>
-              setState(() => _ignoreFiltersOnSearch = val),
-          vsync: this,
-        ),
-        // A single category doesn't need the tab bar + TabBarView. The
-        // TabBarView (a PageView) blocks directional d-pad focus from crossing
-        // into/out of the grid - which is why the anime tab couldn't reach the
-        // grid while Browse (a direct grid) works. So for one category, render
-        // the grid directly like Browse; keep the tabs only for 2+ categories.
-        body: tabCount <= 1
-            ? (withoutCategory.isEmpty && entr.isNotEmpty
-                  ? bodyForCategory(categoryId: entr.first.id!)
-                  : bodyForCategory())
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCategoryTabs(
-                    entr: entr,
-                    withoutCategory: withoutCategory,
-                    showNumbersOfItems: showNumbersOfItems,
-                    badgeForCategory: badgeForCategory,
+    final mobile = isMobile && !isTv;
+    Widget body(_ShelfTab tab) => bodyForCategory(
+      categoryId: tab.categoryId,
+      withoutCategories: tab.uncategorized,
+    );
+    return Scaffold(
+      appBar: appBar,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (mobile)
+            NodeLaneTabSegments(
+              controller: tabBarController,
+              scrollable: true,
+              labels: [
+                for (var i = 0; i < tabs.length; i++)
+                  counts == null
+                      ? tabs[i].label
+                      : '${tabs[i].label} ${counts[i]}',
+              ],
+            )
+          else if (tabCount > 1)
+            TabBar(
+              controller: tabBarController,
+              isScrollable: true,
+              tabs: [
+                for (var i = 0; i < tabs.length; i++)
+                  Row(
+                    children: [
+                      Tab(text: tabs[i].label),
+                      if (counts != null) ...[
+                        const SizedBox(width: NodeLaneTokens.space4),
+                        CategoryBadge(count: counts[i]),
+                      ],
+                    ],
                   ),
-                  Flexible(
-                    child: TabBarView(
-                      controller: tabBarController,
-                      children: _buildCategoryBodies(
-                        entr: entr,
-                        withoutCategory: withoutCategory,
-                        bodyForCategory: bodyForCategory,
-                      ),
-                    ),
+              ],
+            ),
+          Expanded(
+            // A single tab stays a direct grid for TV directional focus.
+            child: tabCount == 1
+                ? body(tabs.single)
+                : TabBarView(
+                    controller: tabBarController,
+                    children: [for (final tab in tabs) body(tab)],
                   ),
-                ],
-              ),
+          ),
+        ],
       ),
     );
-  }
-
-  Widget _buildCategoryTabs({
-    required List entr,
-    required List<Manga> withoutCategory,
-    required bool showNumbersOfItems,
-    required Widget Function(int? categoryId) badgeForCategory,
-  }) {
-    final l10n = l10nLocalizations(context)!;
-    final mobile = isMobile && !isTv;
-    final colors = NodeLaneTokens.of(context);
-    return TabBar(
-      isScrollable: true,
-      controller: tabBarController,
-      tabAlignment: mobile ? TabAlignment.start : null,
-      dividerColor: mobile ? Colors.transparent : null,
-      padding: mobile
-          ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
-          : null,
-      indicatorSize: mobile ? TabBarIndicatorSize.tab : null,
-      indicatorPadding: mobile
-          ? const EdgeInsets.symmetric(horizontal: 4, vertical: 6)
-          : EdgeInsets.zero,
-      indicator: mobile
-          ? BoxDecoration(
-              color: colors.accentSoft,
-              borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
-            )
-          : null,
-      labelStyle: mobile ? colors.label : null,
-      labelColor: mobile ? colors.accent : null,
-      unselectedLabelColor: mobile ? colors.muted : null,
-      tabs: [
-        if (withoutCategory.isNotEmpty)
-          Row(
-            children: [
-              Tab(text: l10n.default0),
-              if (showNumbersOfItems) ...[
-                const SizedBox(width: 4),
-                badgeForCategory(null),
-              ],
-            ],
-          ),
-        for (var i = 0; i < entr.length; i++)
-          Row(
-            children: [
-              Tab(text: entr[i].name),
-              if (showNumbersOfItems) ...[
-                const SizedBox(width: 4),
-                badgeForCategory(entr[i].id!),
-              ],
-            ],
-          ),
-      ],
-    );
-  }
-
-  List<Widget> _buildCategoryBodies({
-    required List entr,
-    required List<Manga> withoutCategory,
-    required Widget Function({int? categoryId, bool withoutCategories})
-    bodyForCategory,
-  }) {
-    return [
-      if (withoutCategory.isNotEmpty) bodyForCategory(withoutCategories: true),
-      for (var i = 0; i < entr.length; i++)
-        bodyForCategory(categoryId: entr[i].id!),
-    ];
   }
 
   Widget _buildBottomBar(List<Manga> selectionEntries) {

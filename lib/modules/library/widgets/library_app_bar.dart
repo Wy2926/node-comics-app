@@ -52,7 +52,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback onSearchClear;
   final ValueChanged<bool> onIgnoreFiltersChanged;
   final TickerProvider vsync;
-  final double textScale;
+  final double mobileHeaderHeight;
   final bool selectionMode;
 
   const LibraryAppBar({
@@ -73,14 +73,14 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onSearchClear,
     required this.onIgnoreFiltersChanged,
     required this.vsync,
-    this.textScale = 1,
+    required this.mobileHeaderHeight,
     this.selectionMode = false,
   });
 
   @override
   Size get preferredSize => Size.fromHeight(
     isMobile && !isTv && !selectionMode
-        ? MobileBookshelfHeader.preferredHeight(textScale)
+        ? mobileHeaderHeight
         : AppBar().preferredSize.height,
   );
 
@@ -166,8 +166,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ItemType.novel: '/NovelLibrary',
       };
       return MobileBookshelfHeader(
-        title: l10n.library,
-        searchLabel: l10n.search,
+        searchLabel: l10n.bookshelf_search,
         importLabel: l10n.import,
         filterLabel: l10n.filter,
         controller: textEditingController,

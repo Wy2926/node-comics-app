@@ -75,8 +75,7 @@ class MobileBookshelfCard extends StatelessWidget {
   final Widget? continueButton;
   String _count(int count) => count > 999 ? '999+' : '$count';
 
-  /// Reserve two title lines and one metadata band, including download-only
-  /// configurations. [_captionStrut] keeps fallback fonts within these line
+  /// Reserve two title lines and one identity line. [_captionStrut] keeps fallback fonts within these line
   /// boxes. Selection never changes the grid's cover positions.
   static double captionHeight(BuildContext context, {required bool metadata}) {
     final t = NodeLaneTokens.of(context);
@@ -88,12 +87,9 @@ class MobileBookshelfCard extends StatelessWidget {
             2 +
         (metadata
             ? NodeLaneTokens.space4 +
-                  math.max(
-                    NodeLaneTokens.badgeHeight,
-                    (scale.scale(t.caption.fontSize!) *
-                            (lineHeight ?? t.caption.height!))
-                        .ceilToDouble(),
-                  )
+                  (scale.scale(t.secondary.fontSize!) *
+                          (lineHeight ?? t.secondary.height!))
+                      .ceilToDouble()
             : 0);
   }
 
@@ -134,9 +130,7 @@ class MobileBookshelfCard extends StatelessWidget {
         ? NodeLaneCoverBadge(
             _count(downloadCount),
             icon: icons.download,
-            tone: coverOnly
-                ? NodeLaneBadgeTone.neutral
-                : NodeLaneBadgeTone.soft,
+            tone: list ? NodeLaneBadgeTone.soft : NodeLaneBadgeTone.neutral,
             semanticsLabel: '${l10n.downloaded}: $downloadCount',
           )
         : null;
@@ -166,7 +160,7 @@ class MobileBookshelfCard extends StatelessWidget {
               ),
             ),
           ),
-          if (selected) ColoredBox(color: t.accent.withValues(alpha: .11)),
+          if (selected) ColoredBox(color: t.accentOverlay),
           if (selected)
             DecoratedBox(
               decoration: BoxDecoration(
@@ -178,11 +172,12 @@ class MobileBookshelfCard extends StatelessWidget {
             PositionedDirectional(
               top: NodeLaneTokens.space8,
               end: NodeLaneTokens.space8,
-              child: Icon(
-                selected ? icons.selected : icons.unselected,
-                size: NodeLaneTokens.iconSize,
-                color: selected ? t.accent : t.surface,
-                shadows: const [Shadow(blurRadius: 2, color: Colors.black54)],
+              child: NodeLaneCoverBadge(
+                '',
+                icon: selected ? icons.selected : icons.unselected,
+                tone: selected
+                    ? NodeLaneBadgeTone.accent
+                    : NodeLaneBadgeTone.neutral,
               ),
             ),
           if (!list && !selecting)
@@ -190,27 +185,45 @@ class MobileBookshelfCard extends StatelessWidget {
               top: NodeLaneTokens.space8,
               start: NodeLaneTokens.space8,
               end: NodeLaneTokens.space8,
-              child: Wrap(
-                alignment:
-                    localBadge != null || (coverOnly && downloaded != null)
-                    ? WrapAlignment.spaceBetween
-                    : WrapAlignment.end,
-                spacing: NodeLaneTokens.space4,
-                runSpacing: NodeLaneTokens.space8,
-                children: [
-                  if (localBadge != null || (coverOnly && downloaded != null))
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ?localBadge,
-                        if (localBadge != null && downloaded != null)
-                          const SizedBox(height: NodeLaneTokens.space8),
-                        if (coverOnly && downloaded != null) downloaded,
-                      ],
-                    ),
-                  ?unread,
-                ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final descriptive =
+                      !coverOnly &&
+                      constraints.maxWidth >=
+                          MediaQuery.textScalerOf(context).scale(
+                            NodeLaneTokens.shelfComfortableWidth -
+                                NodeLaneTokens.space16,
+                          );
+                  return Wrap(
+                    alignment: localBadge == null && unread == null
+                        ? WrapAlignment.end
+                        : WrapAlignment.spaceBetween,
+                    spacing: NodeLaneTokens.space4,
+                    runSpacing: NodeLaneTokens.space8,
+                    children: [
+                      if (localBadge != null || unread != null)
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ?localBadge,
+                            if (localBadge != null && unread != null)
+                              const SizedBox(height: NodeLaneTokens.space8),
+                            if (unread != null)
+                              descriptive
+                                  ? NodeLaneCoverBadge(
+                                      '${unreadLabel ?? l10n.unread} ${_count(unreadCount)}',
+                                      tone: NodeLaneBadgeTone.accent,
+                                      semanticsLabel:
+                                          '${unreadLabel ?? l10n.unread}: $unreadCount',
+                                    )
+                                  : unread,
+                          ],
+                        ),
+                      ?downloaded,
+                    ],
+                  );
+                },
               ),
             ),
           if (!list && continueButton != null && !selecting)
@@ -252,42 +265,24 @@ class MobileBookshelfCard extends StatelessWidget {
           )
         else
           titleLabel,
-        if (identity.isNotEmpty || downloaded != null) ...[
+        if (identity.isNotEmpty || (list && downloaded != null)) ...[
           const SizedBox(height: NodeLaneTokens.space4),
           Row(
             children: [
               if (identity.isNotEmpty)
                 Flexible(
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        if (isLocal)
-                          WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Padding(
-                              padding: const EdgeInsetsDirectional.only(
-                                end: NodeLaneTokens.space4,
-                              ),
-                              child: Icon(
-                                icons.folderOutline,
-                                size: NodeLaneTokens.badgeIconSize,
-                                color: t.muted,
-                              ),
-                            ),
-                          ),
-                        TextSpan(text: identity),
-                      ],
-                    ),
+                  child: Text(
+                    identity,
                     semanticsLabel: identity,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: t.caption,
-                    strutStyle: _captionStrut(context, t.caption),
+                    style: t.secondary,
+                    strutStyle: _captionStrut(context, t.secondary),
                   ),
                 ),
-              if (identity.isNotEmpty && downloaded != null)
+              if (list && identity.isNotEmpty && downloaded != null)
                 const SizedBox(width: NodeLaneTokens.space4),
-              ?downloaded,
+              if (list && downloaded != null) downloaded,
             ],
           ),
         ],
@@ -338,7 +333,7 @@ class MobileBookshelfCard extends StatelessWidget {
                   Expanded(child: cover)
                 else
                   AspectRatio(
-                    aspectRatio: 1 / NodeLaneTokens.coverAspectRatio,
+                    aspectRatio: 1 / NodeLaneTokens.shelfCoverAspectRatio,
                     child: cover,
                   ),
                 if (!coverOnly)
