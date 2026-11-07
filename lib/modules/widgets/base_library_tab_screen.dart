@@ -10,7 +10,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
-import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
@@ -25,6 +25,7 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
 
   /// Screen-specific title
   String get title;
+  String get searchLabel => context.l10n.search;
 
   /// Build the content of each tab
   Widget buildTab(ItemType type);
@@ -228,24 +229,35 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
                     maxHeight: constraints.maxHeight * .65,
                   ),
                   child: SingleChildScrollView(
-                    child: MobileActivityHeader(
-                      title: title,
-                      mediaMenu: MobileMediaMenu(
-                        value: selectedType,
-                        availableTypes: visibleTabTypes,
-                        badgeBuilder: buildMobileMediaBadge,
-                        onChanged: (type) {
-                          FocusScope.of(context).unfocus();
-                          tabController.index = visibleTabTypes.indexOf(type);
-                        },
+                    child: Padding(
+                      padding: NodeLaneTokens.headerPadding,
+                      child: Column(
+                        children: [
+                          NodeLanePageHeading.toolbar(
+                            mediaMenu: MobileMediaMenu(
+                              value: selectedType,
+                              availableTypes: visibleTabTypes,
+                              badgeBuilder: buildMobileMediaBadge,
+                              onChanged: (type) {
+                                FocusScope.of(context).unfocus();
+                                tabController.index = visibleTabTypes.indexOf(
+                                  type,
+                                );
+                              },
+                            ),
+                            actions: visibleTabTypes.isEmpty
+                                ? const []
+                                : buildExtraActions(context),
+                          ),
+                          const SizedBox(height: NodeLaneTokens.space16),
+                          NodeLaneTextField.search(
+                            controller: textEditingController,
+                            hint: searchLabel,
+                            clearLabel: l10n.reset,
+                            onChanged: (_) => setState(() {}),
+                          ),
+                        ],
                       ),
-                      actions: visibleTabTypes.isEmpty
-                          ? const []
-                          : buildExtraActions(context),
-                      controller: textEditingController,
-                      searchLabel: l10n.search,
-                      clearLabel: l10n.reset,
-                      onSearchChanged: () => setState(() {}),
                     ),
                   ),
                 ),

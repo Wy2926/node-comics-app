@@ -19,6 +19,7 @@
   "app_diagnostics": "Diagnostics and logs",
   "@@locale": "en",
   "library": "Library",
+  "updates_search": "Search updates",
   "updates": "Updates",
   "history": "History",
   "browse": "Browse",

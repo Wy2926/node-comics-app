@@ -72,6 +72,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get library => 'ライブラリ';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => '更新';
 
   @override

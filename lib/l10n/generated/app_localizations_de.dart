@@ -72,6 +72,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get library => 'Bibliothek';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'Aktualisierungen';
 
   @override

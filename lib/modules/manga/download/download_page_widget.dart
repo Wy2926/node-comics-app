@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -115,6 +116,9 @@ class ChapterPageDownload extends ConsumerWidget {
           initialData: initialDownload != null ? [initialDownload] : const [],
           stream: downloadRepository.watchByChapterId(chapter.id),
           builder: (context, snapshot) {
+            if (mobile) {
+              return _mobileControl(context, ref, snapshot.data?.firstOrNull);
+            }
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               final entries = snapshot.data!;
               final download = entries.first;
@@ -125,13 +129,9 @@ class ChapterPageDownload extends ConsumerWidget {
                   popUpAnimationStyle: popupAnimationStyle,
                   child: Icon(
                     size: 25,
-                    mobile
-                        ? NodeLaneIcons.of(context).downloaded
-                        : Icons.check_circle,
-                    color: mobile
-                        ? NodeLaneTokens.of(context).muted
-                        : Theme.of(context).iconTheme.color!
-                              .withValues(alpha: 0.7),
+                    Icons.check_circle,
+                    color: Theme.of(context).iconTheme.color!
+                        .withValues(alpha: 0.7),
                   ),
                   onSelected: (value) {
                     if (value == 0) {
@@ -153,9 +153,7 @@ class ChapterPageDownload extends ConsumerWidget {
                 return PopupMenuButton<int>(
                   popUpAnimationStyle: popupAnimationStyle,
                   child: Icon(
-                    mobile
-                        ? NodeLaneIcons.of(context).error
-                        : Icons.error_outline_outlined,
+                    Icons.error_outline_outlined,
                     color: Colors.red,
                     size: 25,
                   ),
@@ -205,9 +203,7 @@ class ChapterPageDownload extends ConsumerWidget {
                         Align(
                           alignment: Alignment.center,
                           child: Icon(
-                            mobile
-                                ? NodeLaneIcons.of(context).download
-                                : Icons.arrow_downward_sharp,
+                            Icons.arrow_downward_sharp,
                             color: progress > 0.5
                                 ? Theme.of(context).scaffoldBackgroundColor
                                 : Theme.of(context).iconTheme.color!
@@ -233,7 +229,7 @@ class ChapterPageDownload extends ConsumerWidget {
                 // Started / queued with zero progress yet
                 return PopupMenuButton<int>(
                   popUpAnimationStyle: popupAnimationStyle,
-                  child: _DownloadProgressIcon(isLoading: true, mobile: mobile),
+                  child: _DownloadProgressIcon(isLoading: true),
                   onSelected: (value) {
                     if (value == 0) {
                       _cancelTasks(downloadId: download.id);
@@ -253,29 +249,99 @@ class ChapterPageDownload extends ConsumerWidget {
 
               // 4. Queued / paused but not started
               return IconButton(
-                tooltip: mobile ? l10n.download : null,
                 splashRadius: 5,
                 iconSize: 17,
                 onPressed: () {
                   _downloadChapter(context, ref);
                 },
-                icon: _DownloadProgressIcon(isLoading: false, mobile: mobile),
+                icon: _DownloadProgressIcon(isLoading: false),
               );
             }
 
             // 5. Not downloaded
             return IconButton(
-              tooltip: mobile ? l10n.download : null,
               splashRadius: 5,
               iconSize: 17,
               onPressed: () {
                 _downloadChapter(context, ref);
               },
-              icon: _DownloadProgressIcon(isLoading: false, mobile: mobile),
+              icon: _DownloadProgressIcon(isLoading: false),
             );
           },
         ),
       ),
+    );
+  }
+
+  Widget _mobileControl(
+    BuildContext context,
+    WidgetRef ref,
+    Download? download,
+  ) {
+    final l10n = context.l10n, icons = NodeLaneIcons.of(context);
+    final completed = download?.isDownload == true;
+    final active = !completed && download?.isStartDownload == true;
+    final failed = !completed && !active && (download?.failed ?? 0) > 0;
+    if (!completed && !active && !failed) {
+      return NodeLaneIconButton(
+        tooltip: l10n.download,
+        icon: icons.download,
+        onPressed: () => _downloadChapter(context, ref),
+      );
+    }
+    final succeeded = download?.succeeded ?? 0, total = download?.total ?? 0;
+    PopupMenuItem<VoidCallback> action(
+      String label,
+      IconData icon,
+      VoidCallback onTap, {
+      bool destructive = false,
+    }) => PopupMenuItem(
+      value: onTap,
+      padding: EdgeInsets.zero,
+      child: NodeLaneRow(title: label, icon: icon, destructive: destructive),
+    );
+    return NodeLaneMenuButton<VoidCallback>(
+      tooltip: completed
+          ? l10n.downloaded
+          : failed
+          ? l10n.retry
+          : l10n.download,
+      icon: completed
+          ? icons.downloaded
+          : failed
+          ? icons.error
+          : icons.download,
+      busy: active,
+      progress: succeeded > 0 && total > 0
+          ? (succeeded / total).clamp(0.0, 1.0)
+          : null,
+      onSelected: (callback) => callback(),
+      itemBuilder: (_) => completed
+          ? [
+              action(l10n.send, icons.share, () => _sendFile(context)),
+              action(
+                l10n.delete,
+                icons.delete,
+                () => chapter.deleteDownloadedFiles(),
+                destructive: true,
+              ),
+            ]
+          : [
+              action(
+                active && succeeded == 0 ? l10n.start_downloading : l10n.retry,
+                icons.download,
+                () => _downloadChapter(
+                  context,
+                  ref,
+                  useWifi: active ? false : null,
+                ),
+              ),
+              action(
+                l10n.cancel,
+                icons.close,
+                () => _cancelTasks(downloadId: download!.id),
+              ),
+            ],
     );
   }
 
@@ -287,35 +353,26 @@ class ChapterPageDownload extends ConsumerWidget {
 class _DownloadProgressIcon extends StatelessWidget {
   final bool isLoading;
 
-  const _DownloadProgressIcon({required this.isLoading, this.mobile = false});
-  final bool mobile;
+  const _DownloadProgressIcon({required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
-    final color = mobile
-        ? NodeLaneTokens.of(context).accent
-        : Theme.of(context).iconTheme.color!.withValues(alpha: 0.7);
+    final color = Theme.of(context).iconTheme.color!.withValues(alpha: 0.7);
     return Stack(
       children: [
         Align(
           alignment: Alignment.center,
-          child: Icon(
-            size: mobile ? 22 : 18,
-            mobile
-                ? NodeLaneIcons.of(context).download
-                : Icons.arrow_downward_sharp,
-            color: color,
-          ),
+          child: Icon(size: 18, Icons.arrow_downward_sharp, color: color),
         ),
         Align(
           alignment: Alignment.center,
           child: SizedBox(
-            height: mobile ? 34 : 20,
-            width: mobile ? 34 : 20,
+            height: 20,
+            width: 20,
             child: CircularProgressIndicator(
               value: isLoading ? null : 1,
               color: color,
-              strokeWidth: mobile ? 1.2 : 2,
+              strokeWidth: 2,
             ),
           ),
         ),

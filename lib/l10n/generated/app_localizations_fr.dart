@@ -72,6 +72,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get library => 'Bibliothèque';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'Nouveautés';
 
   @override

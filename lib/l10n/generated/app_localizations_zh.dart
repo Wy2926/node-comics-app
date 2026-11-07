@@ -67,6 +67,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get library => '书架';
 
   @override
+  String get updates_search => '搜索更新';
+
+  @override
   String get updates => '更新';
 
   @override

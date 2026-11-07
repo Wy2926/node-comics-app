@@ -72,6 +72,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get library => 'Perpustakaan';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'Pembaruan';
 
   @override

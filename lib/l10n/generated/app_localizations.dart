@@ -242,6 +242,12 @@ abstract class AppLocalizations {
   /// **'Library'**
   String get library;
 
+  /// No description provided for @updates_search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search updates'**
+  String get updates_search;
+
   /// No description provided for @updates.
   ///
   /// In en, this message translates to:

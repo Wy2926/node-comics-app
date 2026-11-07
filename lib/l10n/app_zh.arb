@@ -19,6 +19,7 @@
   "app_diagnostics": "诊断与日志",
   "@@locale": "zh",
   "library": "书架",
+  "updates_search": "搜索更新",
   "updates": "更新",
   "history": "历史",
   "browse": "浏览",

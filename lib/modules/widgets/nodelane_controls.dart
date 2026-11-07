@@ -165,10 +165,13 @@ class NodeLaneRow extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.subtitleMaxLines,
+    this.metadata,
     this.value,
     this.valueLeading,
     this.icon,
     this.leading,
+    this.onLeadingTap,
+    this.leadingLabel,
     this.leadingSize = const Size.square(NodeLaneTokens.websiteIconSize),
     this.minHeight,
     this.trailing,
@@ -192,10 +195,13 @@ class NodeLaneRow extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.subtitleMaxLines,
+    this.metadata,
     this.value,
     this.valueLeading,
     this.icon,
     this.leading,
+    this.onLeadingTap,
+    this.leadingLabel,
     this.leadingSize = const Size.square(NodeLaneTokens.websiteIconSize),
     this.minHeight,
     this.trailing,
@@ -218,6 +224,11 @@ class NodeLaneRow extends StatelessWidget {
 
   /// Supporting explanation; current selections belong in [value].
   final String? subtitle;
+
+  /// A secondary annotation below the description, such as an activity time.
+  final String? metadata;
+  final VoidCallback? onLeadingTap;
+  final String? leadingLabel;
 
   /// Current selection, aligned to the trailing side of the title.
   final String? value;
@@ -249,6 +260,12 @@ class NodeLaneRow extends StatelessWidget {
         : accented
         ? t.accent
         : t.ink;
+    final leadingContent = leading == null
+        ? null
+        : IconTheme(
+            data: IconThemeData(size: NodeLaneTokens.iconSize, color: color),
+            child: Center(child: leading!),
+          );
     final content = InkWell(
       onTap: enabled ? onTap : null,
       onLongPress: enabled ? onLongPress : null,
@@ -272,15 +289,23 @@ class NodeLaneRow extends StatelessWidget {
                     if (leading != null)
                       SizedBox.fromSize(
                         size: leadingSize,
-                        child: ExcludeSemantics(
-                          child: IconTheme(
-                            data: IconThemeData(
-                              size: NodeLaneTokens.iconSize,
-                              color: color,
-                            ),
-                            child: Center(child: leading!),
-                          ),
-                        ),
+                        child: onLeadingTap == null
+                            ? ExcludeSemantics(child: leadingContent!)
+                            : Semantics(
+                                button: true,
+                                label: leadingLabel ?? title,
+                                child: Tooltip(
+                                  message: leadingLabel ?? title,
+                                  excludeFromSemantics: true,
+                                  child: InkWell(
+                                    onTap: enabled ? onLeadingTap : null,
+                                    borderRadius: BorderRadius.circular(
+                                      NodeLaneTokens.coverRadius,
+                                    ),
+                                    child: leadingContent,
+                                  ),
+                                ),
+                              ),
                       )
                     else
                       Icon(icon, size: NodeLaneTokens.iconSize, color: color),
@@ -308,6 +333,10 @@ class NodeLaneRow extends StatelessWidget {
                                 ? null
                                 : TextOverflow.ellipsis,
                           ),
+                        ],
+                        if (metadata?.isNotEmpty == true) ...[
+                          const SizedBox(height: NodeLaneTokens.space4),
+                          Text(metadata!, style: t.secondary),
                         ],
                       ],
                     ),
@@ -1145,13 +1174,7 @@ class NodeLaneIconButton extends StatelessWidget {
         tooltip: tooltip,
         onPressed: busy ? null : onPressed,
         icon: busy
-            ? SizedBox.square(
-                dimension: NodeLaneTokens.smallIconSize,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  semanticsLabel: tooltip,
-                ),
-              )
+            ? _iconButtonProgress()
             : Icon(icon, size: NodeLaneTokens.iconSize),
         style: _iconButtonStyle(
           context,
@@ -1172,6 +1195,8 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     required this.itemBuilder,
     required this.onSelected,
     this.enabled = true,
+    this.busy = false,
+    this.progress,
   }) : label = null;
 
   const NodeLaneMenuButton.label({
@@ -1181,7 +1206,9 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     required this.itemBuilder,
     required this.onSelected,
     this.enabled = true,
-  }) : icon = null;
+  }) : icon = null,
+       busy = false,
+       progress = null;
 
   final IconData? icon;
   final String? label;
@@ -1189,6 +1216,9 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
   final PopupMenuItemBuilder<T> itemBuilder;
   final PopupMenuItemSelected<T> onSelected;
   final bool enabled;
+  // Menus stay available during work so a pending operation can be cancelled.
+  final bool busy;
+  final double? progress;
 
   @override
   Widget build(BuildContext context) {
@@ -1230,7 +1260,9 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
       child: PopupMenuButton<T>(
         enabled: enabled,
         tooltip: tooltip,
-        icon: Icon(icon, size: NodeLaneTokens.iconSize),
+        icon: busy
+            ? _iconButtonProgress(value: progress)
+            : Icon(icon, size: NodeLaneTokens.iconSize),
         style: _iconButtonStyle(context),
         itemBuilder: itemBuilder,
         onSelected: onSelected,
@@ -1238,6 +1270,11 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     );
   }
 }
+
+Widget _iconButtonProgress({double? value}) => SizedBox.square(
+  dimension: NodeLaneTokens.smallIconSize,
+  child: CircularProgressIndicator(value: value, strokeWidth: 2),
+);
 
 ButtonStyle _iconButtonStyle(
   BuildContext context, {

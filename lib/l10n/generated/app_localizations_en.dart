@@ -72,6 +72,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get library => 'Library';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'Updates';
 
   @override

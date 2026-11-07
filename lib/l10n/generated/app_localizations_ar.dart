@@ -72,6 +72,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get library => 'المكتبة';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'التحديثات';
 
   @override

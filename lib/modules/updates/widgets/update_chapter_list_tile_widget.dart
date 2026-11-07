@@ -13,17 +13,24 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/widgets/deferred_cover_image.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
-import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 class UpdateChapterListTileWidget extends ConsumerWidget {
   final Chapter chapter;
   final Manga manga;
   final bool sourceExist;
+  final bool first, last;
+  final String? date;
   const UpdateChapterListTileWidget({
     required this.chapter,
     required this.manga,
     required this.sourceExist,
+    this.first = true,
+    this.last = true,
+    this.date,
     super.key,
   });
 
@@ -116,40 +123,80 @@ class UpdateChapterListTileWidget extends ConsumerWidget {
       );
     }
     if (isMobile) {
-      return MobileActivityCard(
-        title: manga.name ?? '',
-        chapter: chapter.name ?? '',
-        muted: chapter.isRead ?? false,
-        readLabel: context.l10n.read,
-        detailLabel: manga.name ?? '',
-        onRead: () => chapter.pushToReaderView(context, ignoreIsRead: true),
-        onDetail: () => context.push('/manga-reader/detail', extra: manga.id),
-        trailing: sourceExist ? ChapterPageDownload(chapter: chapter) : null,
-        cover: DeferredCoverImage(
-          width: 60,
-          height: 90,
-          builder: (context) => Image(
-            image: manga.customCoverImage != null
-                ? MemoryImage(manga.customCoverImage as Uint8List)
-                : coverProvider(
-                    toImgUrl(
-                      manga.customCoverFromTracker ?? manga.imageUrl ?? '',
-                    ),
-                    headers: ref.watch(
-                      headersProvider(
-                        source: manga.source!,
-                        lang: manga.lang!,
-                        sourceId: manga.sourceId,
+      final t = NodeLaneTokens.of(context);
+      final time = date == null ? null : dateFormatHour(date!, context);
+      return Padding(
+        padding: EdgeInsets.fromLTRB(
+          NodeLaneTokens.gutter,
+          0,
+          NodeLaneTokens.gutter,
+          last ? NodeLaneTokens.space16 : 0,
+        ),
+        child: NodeLaneRow.card(
+          title: manga.name ?? '',
+          subtitle: chapter.name ?? '',
+          subtitleMaxLines: 2,
+          metadata: [
+            if (chapter.isRead ?? false)
+              manga.itemType == ItemType.anime
+                  ? context.l10n.statistics_watched
+                  : context.l10n.reader_chapter_read,
+            ?time,
+          ].join(' · '),
+          first: first,
+          last: last,
+          onTap: () => chapter.pushToReaderView(context, ignoreIsRead: true),
+          onLeadingTap: () =>
+              context.push('/manga-reader/detail', extra: manga.id),
+          leadingLabel: manga.name ?? '',
+          leadingSize: const Size.square(NodeLaneTokens.activityCoverSize),
+          trailing: sourceExist
+              ? ChapterPageDownload(chapter: chapter, mobile: true)
+              : const SizedBox.shrink(),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
+            child: DeferredCoverImage(
+              width: NodeLaneTokens.activityCoverSize,
+              height: NodeLaneTokens.activityCoverSize,
+              builder: (context) => Image(
+                image: manga.customCoverImage != null
+                    ? ResizeImage.resizeIfNeeded(
+                        (NodeLaneTokens.activityCoverSize *
+                                MediaQuery.devicePixelRatioOf(context))
+                            .ceil(),
+                        null,
+                        MemoryImage(
+                          Uint8List.fromList(manga.customCoverImage!),
+                        ),
+                      )
+                    : coverProvider(
+                        toImgUrl(
+                          manga.customCoverFromTracker ?? manga.imageUrl ?? '',
+                        ),
+                        headers: ref.watch(
+                          headersProvider(
+                            source: manga.source ?? '',
+                            lang: manga.lang ?? '',
+                            sourceId: manga.sourceId,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-            width: 60,
-            height: 90,
-            fit: BoxFit.cover,
+                width: NodeLaneTokens.activityCoverSize,
+                height: NodeLaneTokens.activityCoverSize,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => NodeLaneSkeleton(
+                  width: NodeLaneTokens.activityCoverSize,
+                  height: NodeLaneTokens.activityCoverSize,
+                  radius: NodeLaneTokens.coverRadius,
+                  color: t.soft,
+                ),
+              ),
+            ),
           ),
         ),
       );
     }
+
     return Material(
       borderRadius: BorderRadius.circular(5),
       color: Colors.transparent,

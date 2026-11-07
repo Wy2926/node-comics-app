@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
   testWidgets(
-    'activity header restores after keyboard and card actions stay separate',
+    'update search and grouped row targets stay usable with large text and keyboard',
     (tester) async {
       tester.view.physicalSize = const Size(320, 800);
       tester.view.devicePixelRatio = 1;
@@ -22,8 +23,7 @@ void main() {
           home: Scaffold(
             body: Column(
               children: [
-                MobileActivityHeader(
-                  title: 'History',
+                NodeLanePageHeading.toolbar(
                   mediaMenu: const Text('Manga'),
                   actions: [
                     IconButton(
@@ -35,23 +35,26 @@ void main() {
                       icon: const Icon(Icons.delete_sweep),
                     ),
                   ],
+                ),
+                NodeLaneTextField.search(
                   controller: controller,
-                  searchLabel: 'Search',
+                  hint: 'Search updates',
                   clearLabel: 'Clear',
-                  onSearchChanged: () {},
                 ),
                 Expanded(
                   child: ListView(
                     children: [
-                      MobileActivityCard(
+                      NodeLaneRow.card(
                         title: 'A long book title',
-                        chapter: 'A longer chapter title',
+                        subtitle: 'A longer chapter title',
                         metadata: '10:35',
-                        cover: const ColoredBox(color: Colors.blue),
-                        readLabel: 'Resume',
-                        detailLabel: 'Details',
-                        onRead: () => reads++,
-                        onDetail: () => details++,
+                        leading: const ColoredBox(color: Colors.blue),
+                        leadingLabel: 'Details',
+                        leadingSize: const Size.square(
+                          NodeLaneTokens.activityCoverSize,
+                        ),
+                        onTap: () => reads++,
+                        onLeadingTap: () => details++,
                         trailing: IconButton(
                           tooltip: 'Remove',
                           onPressed: () => removes++,
@@ -74,15 +77,15 @@ void main() {
       await tester.tap(find.text('A long book title'));
       expect(reads, 1);
       await tester.enterText(find.byType(TextField), 'sample');
+      await tester.pump();
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       await tester.pumpAndSettle();
-      expect(find.text('History'), findsNothing);
+      expect(find.text('Manga'), findsOneWidget);
       await tester.tap(find.byTooltip('Clear'));
       await tester.pump();
       expect(controller.text, isEmpty);
       tester.view.viewInsets = FakeViewPadding.zero;
       await tester.pumpAndSettle();
-      expect(find.text('History'), findsOneWidget);
       expect(find.text('Manga'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

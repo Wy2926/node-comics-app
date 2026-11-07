@@ -36,6 +36,33 @@ Widget _app(
 );
 
 void main() {
+  testWidgets('progress menu keeps cancellation available during work', (
+    tester,
+  ) async {
+    _phone(tester);
+    var cancelled = false;
+    await tester.pumpWidget(
+      _app(
+        NodeLaneMenuButton<int>(
+          icon: Icons.download,
+          tooltip: 'Download',
+          busy: true,
+          progress: .4,
+          itemBuilder: (_) => [
+            const PopupMenuItem(value: 0, child: Text('Cancel download')),
+          ],
+          onSelected: (_) => cancelled = true,
+        ),
+      ),
+    );
+    await tester.tap(find.byTooltip('Download'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel download'));
+    await tester.pumpAndSettle();
+    expect(cancelled, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('failure retry stays reachable in a short large-text panel', (
     tester,
   ) async {

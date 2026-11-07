@@ -72,6 +72,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get library => 'Библиотека';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'Обновления';
 
   @override

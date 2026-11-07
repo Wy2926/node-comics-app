@@ -72,6 +72,9 @@ class AppLocalizationsAs extends AppLocalizations {
   String get library => 'পুথিভঁৰাল';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'আপডেট';
 
   @override

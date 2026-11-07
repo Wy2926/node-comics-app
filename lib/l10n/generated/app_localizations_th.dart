@@ -72,6 +72,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get library => 'ชั้นหนังสือ';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'อัพเดท';
 
   @override

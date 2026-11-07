@@ -72,6 +72,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get library => 'Kütüphane';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => 'Güncellemeler';
 
   @override

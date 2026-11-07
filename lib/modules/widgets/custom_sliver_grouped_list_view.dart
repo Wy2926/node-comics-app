@@ -10,7 +10,7 @@ export 'package:grouped_list/src/grouped_list_order.dart';
 
 @immutable
 class CustomSliverGroupedListView<T, E> extends StatefulWidget {
-  /// Items of which [itemBuilder] or [indexedItemBuilder] produce the list.
+  /// Items of which [itemBuilder] or [groupedItemBuilder] produce the list.
   final List<T> elements;
 
   /// Defines which elements are grouped together.
@@ -48,10 +48,10 @@ class CustomSliverGroupedListView<T, E> extends StatefulWidget {
   /// 0 <= element < elements.length.
   final Widget Function(BuildContext context, T element)? itemBuilder;
 
-  /// Called to build children for the list with
-  /// 0 <= element, index < elements.length
-  final Widget Function(BuildContext context, T element, int index)?
-  indexedItemBuilder;
+  /// Group edges let lazy rows share one rounded surface without eagerly
+  /// building an entire date group.
+  final Widget Function(BuildContext context, T element, bool first, bool last)?
+  groupedItemBuilder;
 
   /// Whether the order of the list is ascending or descending.
   ///
@@ -79,13 +79,13 @@ class CustomSliverGroupedListView<T, E> extends StatefulWidget {
     this.groupSeparatorBuilder,
     this.groupHeaderBuilder,
     this.itemBuilder,
-    this.indexedItemBuilder,
+    this.groupedItemBuilder,
     this.itemComparator,
     this.order = GroupedListOrder.ASC,
     this.sort = true,
     this.separator = const SizedBox.shrink(),
     this.footer,
-  }) : assert(itemBuilder != null || indexedItemBuilder != null),
+  }) : assert(itemBuilder != null || groupedItemBuilder != null),
        assert(groupSeparatorBuilder != null || groupHeaderBuilder != null);
 
   @override
@@ -145,12 +145,15 @@ class _CustomSliverGroupedListViewState<T, E>
             }
             return widget.separator;
           }
-          return widget.indexedItemBuilder == null
+          return widget.groupedItemBuilder == null
               ? widget.itemBuilder!(context, _sortedElements[actualIndex])
-              : widget.indexedItemBuilder!(
+              : widget.groupedItemBuilder!(
                   context,
                   _sortedElements[actualIndex],
-                  actualIndex,
+                  actualIndex == 0 ||
+                      _groupKeys[actualIndex] != _groupKeys[actualIndex - 1],
+                  actualIndex == _sortedElements.length - 1 ||
+                      _groupKeys[actualIndex] != _groupKeys[actualIndex + 1],
                 );
         },
       ),

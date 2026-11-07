@@ -39,6 +39,7 @@ class NodeLaneTokens {
   static const bookTitleSize = 15.0, captionSize = 12.0;
   static const shelfComfortableWidth = 168.0, shelfCompactWidth = 96.0;
   static const shelfThumbnailWidth = 64.0, shelfThumbnailHeight = 92.0;
+  static const activityCoverSize = 72.0;
   static const badgeHeight = 22.0, badgeIconSize = 14.0;
   static const tagHeight = 32.0;
   static const choicePreviewHeight = 40.0;

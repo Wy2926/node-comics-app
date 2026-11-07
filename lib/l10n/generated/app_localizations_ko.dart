@@ -72,6 +72,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get library => '보관함';
 
   @override
+  String get updates_search => 'Search updates';
+
+  @override
   String get updates => '업데이트';
 
   @override

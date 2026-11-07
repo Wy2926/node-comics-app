@@ -18,7 +18,8 @@ import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/modules/widgets/mobile_activity_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
@@ -33,6 +34,9 @@ class UpdatesScreen extends ConsumerStatefulWidget {
 class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
   @override
   String get title => l10nLocalizations(context)!.updates;
+
+  @override
+  String get searchLabel => context.l10n.updates_search;
 
   @override
   Widget buildTab(ItemType type) {
@@ -78,6 +82,7 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
             child: UpdateTab(
               key: PageStorageKey('updates-${type.name}'),
               onResetQuery: () => setState(textEditingController.clear),
+              onRefresh: _updateLibrary,
               itemType: type,
               query: textEditingController.text,
             ),
@@ -106,31 +111,47 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
   List<Widget> buildExtraActions(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
 
-    return [
-      // While an update is running this is the way to stop it, the same as on
-      // the library screen. Watching the provider rather than this screen's own
-      // flag means the button is also correct for an update started elsewhere.
-      if (ref.watch(libraryUpdateProvider.select((s) => s.running)))
-        IconButton(
-          splashRadius: 20,
-          tooltip: l10n.cancel,
-          icon: Icon(
-            Icons.stop_circle_outlined,
-            color: Theme.of(context).hintColor,
-          ),
-          onPressed: () =>
-              ref.read(libraryUpdateProvider.notifier).requestCancel(),
-        )
-      else
-        IconButton(
-          splashRadius: 20,
-          tooltip: l10n.refresh,
-          icon: Icon(
-            Icons.refresh_outlined,
-            color: Theme.of(context).hintColor,
-          ),
-          onPressed: _updateLibrary,
+    final running = ref.watch(libraryUpdateProvider.select((s) => s.running));
+    void refreshOrCancel() => running
+        ? ref.read(libraryUpdateProvider.notifier).requestCancel()
+        : _updateLibrary();
+    if (isMobile && !isTv) {
+      final icons = NodeLaneIcons.of(context);
+      return [
+        NodeLaneIconButton(
+          tooltip: running ? l10n.cancel : l10n.refresh,
+          icon: running ? icons.stop : icons.refresh,
+          onPressed: refreshOrCancel,
         ),
+        const SizedBox(width: NodeLaneTokens.space8),
+        NodeLaneMenuButton<int>(
+          icon: icons.more,
+          tooltip: l10n.more,
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: 0,
+              padding: EdgeInsets.zero,
+              child: NodeLaneRow(
+                title: l10n.remove_everything,
+                icon: icons.delete,
+                destructive: true,
+              ),
+            ),
+          ],
+          onSelected: (_) => _confirmClearUpdates(),
+        ),
+      ];
+    }
+    return [
+      IconButton(
+        splashRadius: 20,
+        tooltip: running ? l10n.cancel : l10n.refresh,
+        icon: Icon(
+          running ? Icons.stop_circle_outlined : Icons.refresh_outlined,
+          color: Theme.of(context).hintColor,
+        ),
+        onPressed: refreshOrCancel,
+      ),
       IconButton(
         splashRadius: 20,
         tooltip: l10n.remove_everything,
@@ -138,35 +159,39 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
           Icons.delete_sweep_outlined,
           color: Theme.of(context).hintColor,
         ),
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (dialogContext) => NodeLaneAlertDialog(
-              title: Text(l10n.remove_everything),
-              content: Text(l10n.remove_all_update_msg),
-              actions: [
-                NodeLaneDialogAction(
-                  label: l10n.cancel,
-                  secondary: true,
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                ),
-                NodeLaneDialogAction(
-                  label: l10n.ok,
-                  destructive: true,
-                  onPressed: () async {
-                    Navigator.of(dialogContext).pop();
-                    await _clearUpdates();
-                  },
-                ),
-              ],
-            ),
-          );
-        },
+        onPressed: _confirmClearUpdates,
       ),
     ];
   }
 
+  void _confirmClearUpdates() {
+    final l10n = context.l10n;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => NodeLaneAlertDialog(
+        title: Text(l10n.remove_everything),
+        content: Text(l10n.remove_all_update_msg),
+        actions: [
+          NodeLaneDialogAction(
+            label: l10n.cancel,
+            secondary: true,
+            onPressed: () => Navigator.of(dialogContext).pop(),
+          ),
+          NodeLaneDialogAction(
+            label: l10n.ok,
+            destructive: true,
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await _clearUpdates();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _updateLibrary() async {
+    if (ref.read(libraryUpdateProvider).running) return;
     final itemType = getCurrentItemType();
     final mangaList = await mangaRepository
         .getFavoritesNonLocalArchiveByItemType(itemType);
@@ -193,9 +218,11 @@ class UpdateTab extends ConsumerStatefulWidget {
   final String query;
   final ItemType itemType;
   final VoidCallback? onResetQuery;
+  final Future<void> Function() onRefresh;
   const UpdateTab({
     required this.itemType,
     required this.query,
+    required this.onRefresh,
     this.onResetQuery,
     super.key,
   });
@@ -220,7 +247,7 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
         search: widget.query,
       ),
     );
-    return update.when(
+    final content = update.when(
       data: (entries) {
         // Resolve chapter/manga once here instead of per row in itemBuilder.
         final chapterByUpdateId = <int, Chapter>{};
@@ -235,7 +262,9 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
             .toSet()
             .toList();
         final mangaById = {
-          for (final m in mangaRepository.getAllByIds(mangaIds)) m?.id!: m!,
+          for (final m
+              in mangaRepository.getAllByIds(mangaIds).whereType<Manga>())
+            m.id!: m,
         };
 
         // Both maps above skip an entry that no longer resolves, and the
@@ -251,7 +280,7 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
         }).toList();
 
         int? lastUpdated;
-        for (final c in chapterByUpdateId.values) {
+        for (final c in mobile ? <Chapter>[] : chapterByUpdateId.values) {
           final value = mangaById[c.mangaId]?.lastUpdate;
           if (value != null && (lastUpdated == null || value > lastUpdated)) {
             lastUpdated = value;
@@ -260,12 +289,14 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
         if (resolved.isNotEmpty) {
           return CustomScrollView(
             key: PageStorageKey('updates-list-${widget.itemType.name}'),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               if (lastUpdated != null)
                 SliverPadding(
                   padding: EdgeInsets.only(
-                    left: mobile ? 24 : 10,
-                    right: mobile ? 24 : 10,
+                    left: 10,
+                    right: 10,
                     top: 10,
                     bottom: 20,
                   ),
@@ -281,13 +312,8 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
                           ),
                         ),
                         style: TextStyle(
-                          fontSize: mobile ? 13 : null,
-                          fontStyle: mobile
-                              ? FontStyle.normal
-                              : FontStyle.italic,
-                          color: mobile
-                              ? NodeLaneTokens.of(context).muted
-                              : context.secondaryColor,
+                          fontStyle: FontStyle.italic,
+                          color: context.secondaryColor,
                         ),
                       ),
                     ]),
@@ -304,7 +330,12 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
                 ),
                 groupSeparatorBuilder: (String groupByValue) => Padding(
                   padding: mobile
-                      ? const EdgeInsets.fromLTRB(24, 12, 24, 10)
+                      ? const EdgeInsets.fromLTRB(
+                          NodeLaneTokens.gutter,
+                          NodeLaneTokens.space8,
+                          NodeLaneTokens.gutter,
+                          NodeLaneTokens.space12,
+                        )
                       : const EdgeInsets.only(bottom: 8, left: 12),
                   child: Text(
                     dateFormat(
@@ -314,21 +345,22 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
                       ref: ref,
                     ),
                     style: mobile
-                        ? TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: NodeLaneTokens.of(context).muted,
-                          )
+                        ? NodeLaneTokens.of(context).readerLabel
+                              .copyWith(color: NodeLaneTokens.of(context).muted)
                         : null,
                   ),
                 ),
-                itemBuilder: (context, element) {
+                groupedItemBuilder: (context, element, first, last) {
                   final chapter = chapterByUpdateId[element.id]!;
                   final manga = mangaById[chapter.mangaId]!;
                   return UpdateChapterListTileWidget(
                     chapter: chapter,
                     manga: manga,
                     sourceExist: true,
+                    date: element.date,
+                    first: first,
+                    last: last,
+                    key: ValueKey(element.id),
                   );
                 },
                 itemComparator: (item1, item2) =>
@@ -338,20 +370,27 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
               if (mobile)
                 SliverToBoxAdapter(
                   child: SizedBox(
-                    height: pageBottomInsets(context).bottom + 16,
+                    height:
+                        pageBottomInsets(context).bottom +
+                        NodeLaneTokens.space16,
                   ),
                 ),
             ],
           );
         }
         if (mobile) {
-          return MobileActivityEmpty(
-            icon: Icons.update_rounded,
-            message: widget.query.isEmpty
+          return NodeLaneEmptyState(
+            icon: NodeLaneIcons.of(context).updates,
+            title: widget.query.isEmpty
                 ? l10n.no_recent_updates
                 : l10n.no_result,
-            resetLabel: l10n.reset,
-            onReset: widget.query.isEmpty ? null : widget.onResetQuery,
+            scrollable: true,
+            action: widget.query.isEmpty || widget.onResetQuery == null
+                ? null
+                : NodeLaneSecondaryButton(
+                    onPressed: widget.onResetQuery,
+                    child: Text(l10n.reset),
+                  ),
           );
         }
         return Center(child: Text(l10n.no_recent_updates));
@@ -363,6 +402,9 @@ class _UpdateTabState extends ConsumerState<UpdateTab>
         return const NodeLaneEmptyState.loading();
       },
     );
+    return mobile
+        ? RefreshIndicator(onRefresh: widget.onRefresh, child: content)
+        : content;
   }
 }
 
@@ -372,6 +414,12 @@ Widget _updateNumbers(WidgetRef ref, ItemType itemType) {
     builder: (context, snapshot) {
       final count = snapshot.data?.length ?? 0;
       if (count == 0) return const SizedBox.shrink();
+      if (isMobile && !isTv) {
+        return NodeLaneCoverBadge(
+          count.toString(),
+          tone: NodeLaneBadgeTone.soft,
+        );
+      }
       return Badge(
         backgroundColor: Theme.of(context).focusColor,
         label: Text(
