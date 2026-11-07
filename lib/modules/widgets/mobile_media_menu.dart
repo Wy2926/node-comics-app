@@ -19,6 +19,8 @@ class MobileMediaMenu extends StatelessWidget {
   final ItemType value;
   final Iterable<ItemType> availableTypes;
   final ValueChanged<ItemType> onChanged;
+
+  /// Optional menu-row counts; the toolbar trigger stays identical on all pages.
   final Widget? Function(ItemType)? badgeBuilder;
 
   static IconData _icon(BuildContext context, ItemType type) {
@@ -115,10 +117,6 @@ class MobileMediaMenu extends StatelessWidget {
                     style: colors.label,
                   ),
                 ),
-                if (badgeBuilder != null) ...[
-                  const SizedBox(width: NodeLaneTokens.space8),
-                  ?badgeBuilder?.call(value),
-                ],
                 if (types.length > 1) ...[
                   const SizedBox(width: NodeLaneTokens.space8),
                   Icon(

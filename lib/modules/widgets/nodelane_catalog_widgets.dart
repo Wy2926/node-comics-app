@@ -20,18 +20,21 @@ class NodeLaneWebsiteIcon extends StatelessWidget {
     );
     return ClipRRect(
       borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
-      child: ColoredBox(
-        color: t.soft,
-        child: url == null || url!.isEmpty
-            ? fallback
-            : cachedNetworkImage(
-                imageUrl: url!,
-                width: NodeLaneTokens.websiteIconSize,
-                height: NodeLaneTokens.websiteIconSize,
-                fit: BoxFit.contain,
-                errorWidget: fallback,
-                useCustomNetworkImage: false,
-              ),
+      child: SizedBox.square(
+        dimension: NodeLaneTokens.websiteIconSize,
+        child: ColoredBox(
+          color: t.soft,
+          child: url == null || url!.isEmpty
+              ? Center(child: fallback)
+              : cachedNetworkImage(
+                  imageUrl: url!,
+                  width: NodeLaneTokens.websiteIconSize,
+                  height: NodeLaneTokens.websiteIconSize,
+                  fit: BoxFit.contain,
+                  errorWidget: Center(child: fallback),
+                  useCustomNetworkImage: false,
+                ),
+        ),
       ),
     );
   }
@@ -51,31 +54,50 @@ class NodeLaneCatalogHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: t.readerLabel.copyWith(fontWeight: FontWeight.w600),
-            ),
-          ),
-          if (action != null)
-            TextButton(
-              onPressed: onAction,
-              style: TextButton.styleFrom(
-                minimumSize: const Size(44, 44),
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-              ),
-              child: Text(
-                action!,
-                style: t.readerSecondary.copyWith(
-                  color: t.accent,
-                  fontWeight: FontWeight.w600,
+      padding: const EdgeInsets.only(
+        top: NodeLaneTokens.space8,
+        bottom: NodeLaneTokens.space8,
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: NodeLaneTokens.minTapTarget,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Semantics(
+                header: true,
+                child: Text(
+                  title,
+                  style: t.readerLabel.copyWith(
+                    color: t.muted,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-        ],
+            if (action != null)
+              TextButton(
+                onPressed: onAction,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(
+                    NodeLaneTokens.minTapTarget,
+                    NodeLaneTokens.minTapTarget,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: NodeLaneTokens.space4,
+                  ),
+                ),
+                child: Text(
+                  action!,
+                  style: t.label.copyWith(
+                    color: t.accent,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

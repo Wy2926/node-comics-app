@@ -10,6 +10,7 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
@@ -17,7 +18,6 @@ import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -126,6 +126,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       if (mounted &&
           open &&
           type == source.itemType &&
+          thirdParty == requestedThirdParty &&
           GoRouter.of(context).routeInformationProvider.value.uri.path ==
               '/browse') {
         _open(loaded, latest: latest);
@@ -203,9 +204,11 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       context,
       NodeLaneCatalogSheet(
         title: source.name ?? '',
-        heightFactor: .5,
+        heightFactor: .9,
+        fitContent: true,
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          shrinkWrap: true,
+          padding: NodeLaneTokens.pagePadding,
           children: [
             NodeLaneGroupSurface(
               children: [
@@ -222,7 +225,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                   icon: NodeLaneIcons.of(context).latest,
                   onTap: () {
                     Navigator.of(context, rootNavigator: true).pop();
-                    if (source.isAdded == true) {
+                    if (source.isAdded == true &&
+                        source.sourceCode?.isNotEmpty == true) {
                       _open(source, latest: true);
                     } else {
                       _fetch(source, open: true, latest: true);
@@ -264,21 +268,22 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   }
 
   Widget _row(Source source, int index, int length) {
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final icons = NodeLaneIcons.of(context);
     final installed =
         source.isAdded == true && source.sourceCode?.isNotEmpty == true;
     final update =
         installed &&
         source.isObsolete != true &&
         compareVersions(source.version ?? '', source.versionLast ?? '') < 0;
+    final version = installed
+        ? source.version
+        : source.versionLast ?? source.version;
     return NodeLaneRow.card(
       key: ValueKey('source-${source.id}'),
       title: source.name ?? '',
-      subtitle: [
-        if (thirdParty && source.repo?.name?.isNotEmpty == true)
-          source.repo!.name!,
+      metadata: [
         completeLanguageName((source.lang ?? '').toLowerCase()),
-        if (!thirdParty) source.itemType.localized(context.l10n),
+        if (thirdParty && version?.isNotEmpty == true) version!,
         if (source.isNsfw == true) 'NSFW',
       ].join(' · '),
       leading: NodeLaneWebsiteIcon(url: source.iconUrl),
@@ -293,23 +298,90 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
           : () => _fetch(source, open: true),
       onLongPress: () => _sourceActions(source),
       trailing: busy.contains(source.id)
-          ? SizedBox.square(
-              dimension: 22,
-              child: CircularProgressIndicator(strokeWidth: 2, color: t.accent),
+          ? NodeLaneIconButton(
+              icon: icons.download,
+              tooltip: '正在加载网站',
+              onPressed: null,
+              busy: true,
+              style: NodeLaneIconButtonStyle.plain,
             )
           : managing
           ? NodeLaneIconButton(
               tooltip: source.isPinned == true ? '取消常用' : '固定到常用',
               onPressed: () => _pin(source),
               style: NodeLaneIconButtonStyle.plain,
+              active: source.isPinned == true,
               icon: source.isPinned == true ? icons.pinSelected : icons.pin,
             )
           : thirdParty && (!installed || update)
           ? NodeLaneSecondaryButton(
               onPressed: () => _fetch(source),
-              child: Text(update ? '更新' : '安装'),
+              child: Text(update ? context.l10n.update : context.l10n.install),
             )
           : null,
+    );
+  }
+
+  Widget _menu(List<Source> catalog) {
+    final icons = NodeLaneIcons.of(context);
+    return NodeLaneMenuButton<String>(
+      tooltip: '来源操作',
+      icon: icons.more,
+      onSelected: (value) {
+        if (value == 'search') _searchContents();
+        if (value == 'filter') _languageFilter(catalog);
+        if (value == 'update') _updateInstalled();
+        if (value == 'create') context.push('/createExtension');
+        if (value == 'local') {
+          _open(Source(name: 'local', lang: '', itemType: type));
+        }
+      },
+      itemBuilder: (_) => [
+        for (final (value, title, icon) in [
+          ('search', '搜作品', icons.search),
+          ('filter', '语言筛选', icons.filter),
+          if (thirdParty) ('update', '更新已安装来源', icons.refresh),
+          if (ref.read(developerModeStateProvider))
+            ('create', context.l10n.create_extension, icons.code),
+          ('local', context.l10n.local_source, icons.folderOutline),
+        ])
+          PopupMenuItem(
+            value: value,
+            padding: EdgeInsets.zero,
+            height: NodeLaneTokens.menuItemHeight,
+            child: NodeLaneRow(title: title, icon: icon),
+          ),
+      ],
+    );
+  }
+
+  Widget _emptyState({required bool loading, required bool searching}) {
+    if (loading) return const NodeLaneEmptyState.loading();
+    final icons = NodeLaneIcons.of(context);
+    return Center(
+      child: NodeLaneEmptyState(
+        icon: searching ? icons.search : icons.web,
+        title: searching ? '没有匹配的网站' : '暂无可用网站',
+        message: searching ? '在已安装来源中搜索作品' : null,
+        action: NodeLaneSecondaryButton(
+          onPressed: searching
+              ? _searchContents
+              : thirdParty
+              ? () => showMobileRepositories(context, type)
+              : () => setState(() {
+                  thirdParty = true;
+                  managing = false;
+                  _notice?.dismiss();
+                }),
+          child: Text(
+            searching
+                ? '跨来源搜索'
+                : thirdParty
+                ? '管理仓库'
+                : '查看第三方',
+          ),
+        ),
+      ),
     );
   }
 
@@ -352,6 +424,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         setState(() {
           type = next.type;
           thirdParty = next.kind == BrowseTabKind.extensions;
+          managing = false;
         });
         ref.read(browseInitialTabProvider.notifier).clear();
       });
@@ -377,7 +450,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     });
     final repositories = ref.watch(extensionsRepoStateProvider(type));
     final showNsfw = ref.watch(showNSFWStateProvider);
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final catalog = (sources.value ?? <Source>[])
         .where(
           (s) =>
@@ -408,238 +480,165 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       if (!thirdParty) ('全部网站', all.where((s) => s.isPinned != true).toList()),
       if (thirdParty) ('已安装', all.where((s) => s.isAdded == true).toList()),
       if (thirdParty) ('可安装', all.where((s) => s.isAdded != true).toList()),
-    ];
+    ]..removeWhere((group) => group.$2.isEmpty);
     return NodeLaneSurface(
       child: Scaffold(
         body: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: Text('来源', style: t.pageTitle)),
-                        MobileMediaMenu(
-                          value: type,
-                          availableTypes: types,
-                          onChanged: (value) => setState(() {
-                            type = value;
-                            query.clear();
-                            _notice?.dismiss();
-                          }),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    NodeLaneSegments<bool>(
-                      value: thirdParty,
-                      segments: const [
-                        ButtonSegment(value: false, label: Text('NodeLane')),
-                        ButtonSegment(value: true, label: Text('第三方')),
-                      ],
-                      onChanged: (value) => setState(() {
-                        thirdParty = value;
-                        managing = false;
-                        _notice?.dismiss();
-                        query.clear();
-                      }),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: NodeLaneTextField.search(
+          child: LayoutBuilder(
+            builder: (context, constraints) => Column(
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: constraints.maxHeight * .65,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: NodeLaneTokens.headerPadding,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          NodeLanePageHeading.toolbar(
+                            mediaMenu: MobileMediaMenu(
+                              value: type,
+                              availableTypes: types,
+                              onChanged: (value) {
+                                FocusScope.of(context).unfocus();
+                                setState(() {
+                                  type = value;
+                                  managing = false;
+                                  query.clear();
+                                  _notice?.dismiss();
+                                });
+                              },
+                            ),
+                            actions: [_menu(catalog)],
+                          ),
+                          const SizedBox(height: NodeLaneTokens.space16),
+                          SizedBox(
+                            width:
+                                NodeLaneTokens.catalogTabsWidth *
+                                (MediaQuery.textScalerOf(context).scale(15) /
+                                        15)
+                                    .clamp(1, 2),
+                            child: NodeLaneSegments<bool>(
+                              value: thirdParty,
+                              pill: true,
+                              segments: const [
+                                ButtonSegment(
+                                  value: false,
+                                  label: Text('NodeLane'),
+                                ),
+                                ButtonSegment(value: true, label: Text('第三方')),
+                              ],
+                              onChanged: (value) {
+                                FocusScope.of(context).unfocus();
+                                setState(() {
+                                  thirdParty = value;
+                                  managing = false;
+                                  _notice?.dismiss();
+                                  query.clear();
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: NodeLaneTokens.space16),
+                          NodeLaneTextField.search(
                             controller: query,
                             hint: '网站名或作品名',
-                            clearLabel: '清除',
+                            clearLabel: context.l10n.search_clear,
                             onSubmitted: (_) => _searchContents(),
                             onChanged: (_) => setState(() {}),
                           ),
-                        ),
-                        const SizedBox(width: NodeLaneTokens.space8),
-                        NodeLaneMenuButton<String>(
-                          tooltip: '来源操作',
-                          icon: icons.more,
-                          onSelected: (value) {
-                            if (value == 'search') _searchContents();
-                            if (value == 'filter') {
-                              _languageFilter(catalog);
-                            }
-                            if (value == 'update') _updateInstalled();
-                            if (value == 'create') {
-                              context.push('/createExtension');
-                            }
-                            if (value == 'local') {
-                              _open(
-                                Source(name: 'local', lang: '', itemType: type),
-                              );
-                            }
-                          },
-                          itemBuilder: (_) => [
-                            const PopupMenuItem(
-                              height: NodeLaneTokens.menuItemHeight,
-                              value: 'search',
-                              child: Text('搜作品'),
-                            ),
-                            PopupMenuItem(
-                              height: NodeLaneTokens.menuItemHeight,
-                              value: 'filter',
-                              child: Text('语言筛选'),
-                            ),
-                            if (thirdParty)
-                              const PopupMenuItem(
-                                height: NodeLaneTokens.menuItemHeight,
-                                value: 'update',
-                                child: Text('更新已安装来源'),
-                              ),
-                            if (ref.read(developerModeStateProvider))
-                              const PopupMenuItem(
-                                height: NodeLaneTokens.menuItemHeight,
-                                value: 'create',
-                                child: Text('创建扩展'),
-                              ),
-                            PopupMenuItem(
-                              height: NodeLaneTokens.menuItemHeight,
-                              value: 'local',
-                              child: Text('本地来源'),
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _refreshCatalog,
-                  child: CustomScrollView(
-                    key: PageStorageKey('catalog-${type.name}-$thirdParty'),
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      if (thirdParty)
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          sliver: SliverToBoxAdapter(
-                            child: NodeLaneCatalogHeading(
-                              '第三方来源',
-                              action: '管理仓库',
-                              onAction: () =>
-                                  showMobileRepositories(context, type),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _refreshCatalog,
+                    child: CustomScrollView(
+                      key: PageStorageKey('catalog-${type.name}-$thirdParty'),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      slivers: [
+                        if (all.isEmpty)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                bottom: pageBottomInsets(context).bottom,
+                              ),
+                              child: _emptyState(
+                                loading:
+                                    (!thirdParty && loading.isLoading) ||
+                                    sources.isLoading,
+                                searching: keyword.isNotEmpty,
+                              ),
                             ),
                           ),
-                        ),
-                      if (all.isEmpty)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child:
-                                (!thirdParty && loading.isLoading) ||
-                                    sources.isLoading
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : Column(
-                                    children: [
-                                      Text(
-                                        keyword.isEmpty ? '暂无可用网站' : '没有匹配的网站',
-                                        style: t.readerLabel,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      if (keyword.isNotEmpty) ...[
-                                        Text(
-                                          '在已安装来源中搜索作品',
-                                          textAlign: TextAlign.center,
-                                          style: t.readerSecondary,
-                                        ),
-                                        const SizedBox(
-                                          height: NodeLaneTokens.space16,
-                                        ),
-                                        FilledButton.icon(
-                                          onPressed: _searchContents,
-                                          icon: Icon(
-                                            icons.search,
-                                            size: NodeLaneTokens.smallIconSize,
-                                          ),
-                                          label: const Text('跨来源搜索'),
-                                        ),
-                                      ] else
-                                        TextButton(
-                                          onPressed: () =>
-                                              showMobileAddRepository(
-                                                context,
-                                                type,
-                                              ),
-                                          child: const Text('添加第三方仓库'),
-                                        ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      for (final group in groups) ...[
-                        if (group.$2.isNotEmpty ||
-                            group.$1 == '常用' && all.isNotEmpty)
+                        for (
+                          var groupIndex = 0;
+                          groupIndex < groups.length;
+                          groupIndex++
+                        ) ...[
                           SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: NodeLaneTokens.gutter,
+                            ),
                             sliver: SliverToBoxAdapter(
                               child: NodeLaneCatalogHeading(
-                                group.$1,
-                                action: group.$1 == '常用'
-                                    ? managing
+                                groups[groupIndex].$1,
+                                action: groupIndex == 0
+                                    ? thirdParty
+                                          ? '管理仓库'
+                                          : managing
                                           ? '完成'
                                           : '管理'
                                     : null,
-                                onAction: () =>
-                                    setState(() => managing = !managing),
+                                onAction: groupIndex == 0
+                                    ? thirdParty
+                                          ? () => showMobileRepositories(
+                                              context,
+                                              type,
+                                            )
+                                          : () => setState(
+                                              () => managing = !managing,
+                                            )
+                                    : null,
                               ),
                             ),
                           ),
-                        if (group.$1 == '常用' &&
-                            group.$2.isEmpty &&
-                            all.isNotEmpty)
                           SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            sliver: SliverToBoxAdapter(
-                              child: Text(
-                                '长按网站可固定到常用',
-                                style: t.readerSecondary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: NodeLaneTokens.gutter,
+                            ),
+                            sliver: SliverList.builder(
+                              itemCount: groups[groupIndex].$2.length,
+                              itemBuilder: (_, i) => _row(
+                                groups[groupIndex].$2[i],
+                                i,
+                                groups[groupIndex].$2.length,
                               ),
                             ),
                           ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          sliver: SliverList.builder(
-                            itemCount: group.$2.length,
-                            itemBuilder: (_, i) =>
-                                _row(group.$2[i], i, group.$2.length),
-                          ),
-                        ),
-                      ],
-                      if (thirdParty)
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                          sliver: SliverToBoxAdapter(
-                            child: NodeLaneRow.card(
-                              title: '添加仓库',
-                              leading: Icon(icons.add, color: t.accent),
-                              onTap: () =>
-                                  showMobileAddRepository(context, type),
+                        ],
+                        if (all.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: SizedBox(
+                              height:
+                                  pageBottomInsets(context).bottom +
+                                  NodeLaneTokens.space24,
                             ),
                           ),
-                        ),
-                      SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: pageBottomInsets(context).bottom + 24,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

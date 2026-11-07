@@ -94,6 +94,7 @@ class NodeLaneTokens {
   static const sheetHandleSize = Size(44, 4);
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
+  static const catalogTabsWidth = 200.0;
   static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
   static const browserTabGap = 12.0;
   static const navigationHeight = 64.0, navigationRadius = 32.0;

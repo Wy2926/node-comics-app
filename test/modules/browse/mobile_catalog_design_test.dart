@@ -1,4 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
 
@@ -55,8 +56,9 @@ void main() {
   Future<void> mount(
     WidgetTester tester,
     Widget child,
-    ProviderContainer container,
-  ) async {
+    ProviderContainer container, {
+    double scale = 1,
+  }) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -67,7 +69,14 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          builder: BotToastInit(),
+          builder: (context, child) => BotToastInit()(
+            context,
+            MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
+              child: child!,
+            ),
+          ),
           navigatorObservers: [BotToastNavigatorObserver()],
           theme: ThemeData(
             platform: TargetPlatform.iOS,
@@ -80,77 +89,111 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
-    'directory rows open directly while third party exposes install/update',
-    (tester) async {
-      final container = ProviderContainer(
-        overrides: [
-          extensionsRepoStateProvider(ItemType.manga).overrideWith(_Repos.new),
-          hideItemsStateProvider.overrideWith(_Hidden.new),
-          showNSFWStateProvider.overrideWith(_Nsfw.new),
-          nodeLaneCatalogRepositoryProvider(ItemType.manga)
-              .overrideWithValue(repo),
-          nodeLaneCatalogLoadProvider(ItemType.manga)
-              .overrideWith((ref) async {}),
-          fetchItemSourcesListProvider(
-            reFresh: false,
-            itemType: ItemType.manga,
-          ).overrideWith((ref) async {}),
-          mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
-            (ref) => Stream.value([
-              Source(
-                id: 1,
-                name: 'MangaDex',
-                lang: 'en',
-                repo: repo,
-                isPinned: true,
-                isAdded: true,
-                sourceCode: 'existing',
-                version: '1.0.0',
-                versionLast: '2.0.0',
-              ),
-              Source(id: 2, name: 'WEBTOON', lang: 'en', repo: repo),
-              Source(
-                id: 3,
-                name: 'Community Installed',
-                lang: 'en',
-                repo: community,
-                isAdded: true,
-                sourceCode: 'existing',
-                version: '1.0.0',
-                versionLast: '2.0.0',
-              ),
-              Source(
-                id: 4,
-                name: 'Community Available',
-                lang: 'en',
-                repo: community,
-              ),
-            ]),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-      await mount(tester, const MobileSourcesScreen(), container);
-      expect(find.text('MangaDex'), findsOneWidget);
-      expect(find.text('安装'), findsNothing);
-      expect(find.text('更新'), findsNothing);
-      expect(find.textContaining('NodeLane 官方'), findsNothing);
-      expect(find.textContaining('127.0.0.1'), findsNothing);
-      expect(find.text('Community Available'), findsNothing);
-      await tester.tap(find.text('第三方'));
-      await tester.pumpAndSettle();
-      expect(find.text('MangaDex'), findsNothing);
-      expect(find.text('WEBTOON'), findsNothing);
-      expect(find.text('Community Available'), findsOneWidget);
-      expect(find.text('安装'), findsOneWidget);
-      expect(find.text('更新'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'missing');
-      await tester.pumpAndSettle();
-      expect(find.text('没有匹配的网站'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
+  for (final scale in [1.0, 2.0]) {
+    testWidgets(
+      'directory actions and search stay reachable at text scale $scale',
+      (tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            extensionsRepoStateProvider(ItemType.manga)
+                .overrideWith(_Repos.new),
+            hideItemsStateProvider.overrideWith(_Hidden.new),
+            showNSFWStateProvider.overrideWith(_Nsfw.new),
+            nodeLaneCatalogRepositoryProvider(ItemType.manga)
+                .overrideWithValue(repo),
+            nodeLaneCatalogLoadProvider(ItemType.manga)
+                .overrideWith((ref) async {}),
+            fetchItemSourcesListProvider(
+              reFresh: false,
+              itemType: ItemType.manga,
+            ).overrideWith((ref) async {}),
+            mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
+              (ref) => Stream.value([
+                Source(
+                  id: 1,
+                  name: 'MangaDex',
+                  lang: 'en',
+                  repo: repo,
+                  isPinned: true,
+                  isAdded: true,
+                  sourceCode: 'existing',
+                  version: '1.0.0',
+                  versionLast: '2.0.0',
+                ),
+                Source(id: 2, name: 'WEBTOON', lang: 'en', repo: repo),
+                Source(
+                  id: 3,
+                  name: 'Community Installed',
+                  lang: 'en',
+                  repo: community,
+                  isAdded: true,
+                  sourceCode: 'existing',
+                  version: '1.0.0',
+                  versionLast: '2.0.0',
+                ),
+                Source(
+                  id: 4,
+                  name: 'Community Available',
+                  lang: 'en',
+                  repo: community,
+                ),
+              ]),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        await mount(
+          tester,
+          const MobileSourcesScreen(),
+          container,
+          scale: scale,
+        );
+        expect(find.text('MangaDex'), findsOneWidget);
+        expect(find.text('来源'), findsNothing);
+        expect(find.text('漫画'), findsOneWidget); // Only the media switcher.
+        expect(find.textContaining(' · 漫画'), findsNothing);
+        expect(find.text('长按网站可固定到常用'), findsNothing);
+        expect(find.text('管理'), findsOneWidget);
+        await tester.tap(find.text('管理'));
+        await tester.pumpAndSettle();
+        expect(find.byTooltip('取消常用'), findsOneWidget);
+        expect(find.byTooltip('固定到常用'), findsOneWidget);
+        await tester.tap(find.text('完成'));
+        await tester.pumpAndSettle();
+        await tester.longPress(find.text('MangaDex'));
+        await tester.pumpAndSettle();
+        expect(find.text('最新内容'), findsOneWidget);
+        expect(find.text('来源设置'), findsOneWidget);
+        Navigator.of(tester.element(find.text('最新内容'))).pop();
+        await tester.pumpAndSettle();
+        expect(find.text('安装'), findsNothing);
+        expect(find.text('更新'), findsNothing);
+        expect(find.textContaining('NodeLane 官方'), findsNothing);
+        expect(find.textContaining('127.0.0.1'), findsNothing);
+        expect(find.text('Community Available'), findsNothing);
+        await tester.tap(find.text('第三方'));
+        await tester.pumpAndSettle();
+        expect(find.text('MangaDex'), findsNothing);
+        expect(find.text('WEBTOON'), findsNothing);
+        expect(find.text('Community Available'), findsOneWidget);
+        expect(find.text('安装'), findsOneWidget);
+        expect(find.text('更新'), findsOneWidget);
+        expect(find.text('管理仓库'), findsOneWidget);
+        expect(find.text('第三方来源'), findsNothing);
+        expect(find.text('添加仓库'), findsNothing);
+        expect(find.text('English · 1.0.0'), findsOneWidget);
+        await tester.enterText(find.byType(TextField), 'missing');
+        await tester.pumpAndSettle();
+        expect(find.text('没有匹配的网站'), findsOneWidget);
+        tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('跨来源搜索'));
+        await tester.pumpAndSettle();
+        expect(find.text('跨来源搜索').hitTestable(), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   testWidgets('a trailing source action never opens its row', (tester) async {
     var opened = 0, installed = 0;
     final container = ProviderContainer();
@@ -268,7 +311,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('语言筛选'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('English'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NodeLaneCatalogSheet),
+          matching: find.text('English'),
+        ),
+      );
       await tester.tap(find.text('日本語'));
       await tester.tap(find.text('应用'));
       await tester.pumpAndSettle();

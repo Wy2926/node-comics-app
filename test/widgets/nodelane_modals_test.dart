@@ -53,8 +53,11 @@ void main() {
                     value: ItemType.manga,
                     availableTypes: ItemType.values,
                     onChanged: changes.add,
-                    badgeBuilder: (type) =>
-                        type == ItemType.novel ? const Text('7') : null,
+                    badgeBuilder: (type) => switch (type) {
+                      ItemType.manga => const Text('3'),
+                      ItemType.novel => const Text('7'),
+                      ItemType.anime => null,
+                    },
                   ),
                 ),
               ),
@@ -63,6 +66,7 @@ void main() {
           observer: root,
         ),
       );
+      expect(find.text('3'), findsNothing);
       try {
         expect(
           tester
@@ -81,6 +85,7 @@ void main() {
         expect(find.byType(PopupMenuItem<ItemType>), findsNWidgets(3));
         expect(root.pushed.last, isA<PopupRoute<dynamic>>());
         expect(nested.pushed, hasLength(1));
+        expect(find.text('3'), findsOneWidget);
         expect(find.text('7'), findsOneWidget);
       }
 
