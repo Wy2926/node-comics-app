@@ -292,30 +292,9 @@ class SubsamplingScaleImageView extends StatefulWidget {
   /// Optional preload data for caching resolved file path.
   final UChapDataPreload? preloadData;
 
-  /// Callback called on every loading state change.
-  /// Returns a custom widget for [LoadState.loading] and [LoadState.failed] states,
-  /// or null to use the default behavior.
-  ///
-  /// Example :
-  /// ```dart
-  /// loadStateChanged: (state) {
-  ///   if (state.loadState == LoadState.failed) {
-  ///     return GestureDetector(
-  ///       onTap: state.reLoadImage,
-  ///       child: const Icon(Icons.error),
-  ///     );
-  ///   }
-  ///   if (state.loadState == LoadState.loading) {
-  ///     final progress = state.loadingProgress?.expectedTotalBytes != null
-  ///       ? state.loadingProgress!.cumulativeBytesLoaded /
-  ///         state.loadingProgress!.expectedTotalBytes!
-  ///       : 0.0;
-  ///     return CircularProgressIndicator(value: progress > 0 ? progress : null);
-  ///   }
-  ///   return null; // standard display
-  /// }
-  /// ```
-  final Widget? Function(SubsamplingImageState state)? loadStateChanged;
+  /// Reader-owned loading and failure presentation. Returning null leaves
+  /// the image area empty until its view state is initialized.
+  final Widget? Function(SubsamplingImageState state) loadStateChanged;
 
   // ── Rotation and gestures ───────────────────────────────────────────────────────
 
@@ -400,7 +379,7 @@ class SubsamplingScaleImageView extends StatefulWidget {
     required this.image,
     this.resolvedFilePath,
     this.preloadData,
-    this.loadStateChanged,
+    required this.loadStateChanged,
     this.rotation = 0,
     this.panEnabled = true,
     this.zoomEnabled = true,
@@ -1540,32 +1519,8 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
 
         // Displays custom state widget if image is not ready
         if (_loadState != LoadState.completed || !_isInitialized) {
-          final stateWidget = widget.loadStateChanged?.call(_makeImageState());
-          if (stateWidget != null) return stateWidget;
-
-          // Default UI
-          return switch (_loadState) {
-            LoadState.loading => Center(
-              child: _loadingProgress?.expectedTotalBytes != null
-                  ? CircularProgressIndicator(
-                      value:
-                          _loadingProgress!.cumulativeBytesLoaded /
-                          _loadingProgress!.expectedTotalBytes!,
-                    )
-                  : const CircularProgressIndicator(),
-            ),
-            LoadState.failed => Center(
-              child: GestureDetector(
-                onTap: () => _loadFromProvider(evictCache: true),
-                child: const Icon(
-                  Icons.broken_image_outlined,
-                  color: Colors.grey,
-                  size: 48,
-                ),
-              ),
-            ),
-            LoadState.completed => const SizedBox.shrink(),
-          };
+          return widget.loadStateChanged(_makeImageState()) ??
+              const SizedBox.shrink();
         }
 
         return GestureDetector(

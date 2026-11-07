@@ -2094,22 +2094,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعذّرت إضافة مستودع المصادر هذا. تحقّق من عنوان المستودع أو تواصل مع القائم على صيانته.';
 
   @override
-  String get end_of_chapter => 'نهاية الفصل';
-
-  @override
-  String get chapter_completed => 'اكتمل الفصل';
-
-  @override
-  String get continue_to_next_chapter => 'استمر في التمرير لقراءة الفصل التالي';
-
-  @override
-  String get no_next_chapter => 'لا يوجد فصل تالٍ';
-
-  @override
   String get you_have_finished_reading => 'لقد انتهيت من القراءة';
-
-  @override
-  String get return_to_the_list_of_chapters => 'العودة إلى قائمة الفصول';
 
   @override
   String get hwdec => 'فك تشفير الأجهزة';

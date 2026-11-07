@@ -31,7 +31,8 @@ void main() {
   test(
     'one request keeps a waiting slot then replaces it with the next image',
     () async {
-      final manager = ChapterPreloadManager()..initialize([page(current, 0)]);
+      final manager = ChapterPreloadManager()
+        ..initialize([for (var i = 0; i < 3; i++) page(current, i)]);
       final request = Completer<GetChapterPagesModel>();
       var calls = 0;
       Future<GetChapterPagesModel> fetch(Chapter chapter, bool retry) {
@@ -59,10 +60,11 @@ void main() {
       );
       request.complete(model([page(next, 0), page(next, 1)]));
       expect(await first, isTrue);
-      expect(manager.pages.contains(boundary), isFalse);
+      expect(manager.pages.any((page) => page.isTransitionPage), isFalse);
+      expect(manager.pages.map((page) => page.chapter?.id), [1, 1, 1, 2, 2]);
       expect(boundary.nextChapterState, isNull);
       expect(boundary.onRetryChapter, isNull);
-      expect(manager.pages.map((p) => p.pageIndex), [0, 1, 2]);
+      expect(manager.pages.map((p) => p.pageIndex), [0, 1, 2, 3, 4]);
       await manager.loadNextChapter(
         current,
         findNextChapter: () => next,
@@ -228,7 +230,7 @@ void main() {
                         paged: mode == ReaderMode.ltr,
                       )
                     else
-                      const Text('Next chapter image'),
+                      const SizedBox.expand(child: Text('Next chapter image')),
                     Positioned.fill(
                       child: ReaderInteractiveHitTestBlocker(
                         child: GestureDetector(
@@ -249,16 +251,22 @@ void main() {
       expect(find.text('Could not load the next chapter'), findsOneWidget);
       await tester.ensureVisible(find.text('Retry'));
       await tester.pump();
+      final retryPosition = tester.getCenter(find.text('Retry'));
+      await tester.tapAt(const Offset(10, 10));
+      expect(overlayTaps, 1);
       await tester.tap(find.text('Retry'));
       await tester.pump();
       expect(calls, 2);
-      expect(overlayTaps, 0);
+      expect(overlayTaps, 1);
       expect(find.text('Loading next chapter…'), findsOneWidget);
       expect(find.text('Retry'), findsNothing);
       pending.complete(model([page(next, 0)]));
       await tester.pump();
       expect(find.text('Loading next chapter…'), findsNothing);
       expect(find.text('Next chapter image'), findsOneWidget);
+      // Removing the retry widget releases its reserved hit-test region.
+      await tester.tapAt(retryPosition);
+      expect(overlayTaps, 2);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       await manager.dispose();

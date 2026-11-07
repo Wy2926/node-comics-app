@@ -2082,22 +2082,7 @@ class AppLocalizationsTh extends AppLocalizations {
       'ไม่สามารถเพิ่มคลังแหล่งข้อมูลนี้ได้ โปรดตรวจสอบที่อยู่ของคลังหรือติดต่อผู้ดูแล';
 
   @override
-  String get end_of_chapter => 'จบตอน';
-
-  @override
-  String get chapter_completed => 'ตอนเสร็จสิ้น';
-
-  @override
-  String get continue_to_next_chapter => 'เลื่อนต่อเพื่ออ่านตอนถัดไป';
-
-  @override
-  String get no_next_chapter => 'ไม่มีตอนถัดไป';
-
-  @override
   String get you_have_finished_reading => 'คุณอ่านจบแล้ว';
-
-  @override
-  String get return_to_the_list_of_chapters => 'กลับไปที่รายการตอน';
 
   @override
   String get hwdec => 'ตัวถอดรหัสฮาร์ดแวร์';

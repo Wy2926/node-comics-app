@@ -2043,22 +2043,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '이 소스 저장소를 추가할 수 없습니다. 저장소 주소를 확인하거나 관리자에게 문의하세요.';
 
   @override
-  String get end_of_chapter => '이번 화 끝';
-
-  @override
-  String get chapter_completed => '화 완료됨';
-
-  @override
-  String get continue_to_next_chapter => '계속 스크롤하여 다음 화 읽기';
-
-  @override
-  String get no_next_chapter => '다음 화 없음';
-
-  @override
   String get you_have_finished_reading => '다 읽었습니다';
-
-  @override
-  String get return_to_the_list_of_chapters => '회차 목록으로 돌아가기';
 
   @override
   String get hwdec => '하드웨어 디코더';

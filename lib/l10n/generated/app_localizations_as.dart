@@ -2082,24 +2082,7 @@ class AppLocalizationsAs extends AppLocalizations {
       'এই উৎস ৰিপজিটৰী যোগ কৰিব পৰা নগ’ল। ৰিপজিটৰীৰ ঠিকনা পৰীক্ষা কৰক বা ইয়াৰ ৰক্ষণাবেক্ষণকাৰীৰ সৈতে যোগাযোগ কৰক।';
 
   @override
-  String get end_of_chapter => 'অধ্যায়ৰ শেষ';
-
-  @override
-  String get chapter_completed => 'অধ্যায় সম্পূৰ্ণ';
-
-  @override
-  String get continue_to_next_chapter =>
-      'পৰৱৰ্তী অধ্যায় পঢ়িবলৈ স্ক্ৰ\'ল কৰি থাকক';
-
-  @override
-  String get no_next_chapter => 'কোনো পৰৱৰ্তী অধ্যায় নাই';
-
-  @override
   String get you_have_finished_reading => 'আপুনি পঢ়া শেষ কৰিলে';
-
-  @override
-  String get return_to_the_list_of_chapters =>
-      'অধ্যায়সমূহৰ তালিকালৈ উভতি যাওক';
 
   @override
   String get hwdec => 'হাৰ্ডৱেৰ ডিক\'ডাৰ';

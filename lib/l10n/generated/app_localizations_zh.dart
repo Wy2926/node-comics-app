@@ -2021,22 +2021,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unsupported_repo => '无法添加此来源仓库。请检查仓库地址，或联系该仓库的维护者。';
 
   @override
-  String get end_of_chapter => '章节结束';
-
-  @override
-  String get chapter_completed => '章节完成';
-
-  @override
-  String get continue_to_next_chapter => '继续滚动阅读下一章';
-
-  @override
-  String get no_next_chapter => '没有下一章';
-
-  @override
   String get you_have_finished_reading => '您已读完';
-
-  @override
-  String get return_to_the_list_of_chapters => '返回章节列表';
 
   @override
   String get hwdec => '硬件解码器';

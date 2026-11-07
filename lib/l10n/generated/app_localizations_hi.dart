@@ -2086,23 +2086,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'यह स्रोत रिपॉजिटरी जोड़ी नहीं जा सकी। रिपॉजिटरी का पता जाँचें या उसके रखरखावकर्ता से संपर्क करें।';
 
   @override
-  String get end_of_chapter => 'अध्याय का अंत';
-
-  @override
-  String get chapter_completed => 'अध्याय पूर्ण';
-
-  @override
-  String get continue_to_next_chapter =>
-      'अगला अध्याय पढ़ने के लिए स्क्रॉल करना जारी रखें';
-
-  @override
-  String get no_next_chapter => 'कोई अगला अध्याय नहीं';
-
-  @override
   String get you_have_finished_reading => 'आपने पढ़ना समाप्त कर लिया है';
-
-  @override
-  String get return_to_the_list_of_chapters => 'अध्यायों की सूची में वापस जाएं';
 
   @override
   String get hwdec => 'हार्डवेयर डिकोडर';

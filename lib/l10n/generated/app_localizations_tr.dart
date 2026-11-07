@@ -2092,23 +2092,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu kaynak deposu eklenemedi. Depo adresini kontrol edin veya deponun bakımını yapan kişiyle iletişime geçin.';
 
   @override
-  String get end_of_chapter => 'Bölüm sonu';
-
-  @override
-  String get chapter_completed => 'Bölüm tamamlandı';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Bir sonraki bölümü okumak için kaydırmaya devam edin';
-
-  @override
-  String get no_next_chapter => 'Sonraki bölüm yok';
-
-  @override
   String get you_have_finished_reading => 'Okumayı bitirdiniz';
-
-  @override
-  String get return_to_the_list_of_chapters => 'Bölüm listesine dön';
 
   @override
   String get hwdec => 'Donanım kod çözücü';

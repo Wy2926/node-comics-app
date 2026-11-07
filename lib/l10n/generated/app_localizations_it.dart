@@ -2105,24 +2105,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Impossibile aggiungere questo repository di fonti. Controlla l’indirizzo del repository o contatta chi lo gestisce.';
 
   @override
-  String get end_of_chapter => 'Fine del capitolo';
-
-  @override
-  String get chapter_completed => 'Capitolo completato';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Continua a scorrere per leggere il prossimo capitolo';
-
-  @override
-  String get no_next_chapter => 'Nessun capitolo successivo';
-
-  @override
   String get you_have_finished_reading => 'Hai finito di leggere';
-
-  @override
-  String get return_to_the_list_of_chapters =>
-      'Ritorna all\'elenco dei capitoli';
 
   @override
   String get hwdec => 'Decodificatore hardware';

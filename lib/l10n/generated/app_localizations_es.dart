@@ -2106,24 +2106,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se ha podido añadir este repositorio de fuentes. Comprueba su dirección o contacta con su responsable.';
 
   @override
-  String get end_of_chapter => 'Fin del capítulo';
-
-  @override
-  String get chapter_completed => 'Capítulo completado';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Continúa desplazándote para leer el siguiente capítulo';
-
-  @override
-  String get no_next_chapter => 'No hay siguiente capítulo';
-
-  @override
   String get you_have_finished_reading => 'Has terminado de leer';
-
-  @override
-  String get return_to_the_list_of_chapters =>
-      'Regresar a la lista de capítulos';
 
   @override
   String get hwdec => 'Decodificador de hardware';
@@ -6945,24 +6928,7 @@ class AppLocalizationsEs419 extends AppLocalizationsEs {
       'No se pudo agregar este repositorio de fuentes. Revisa su dirección o contacta a su responsable.';
 
   @override
-  String get end_of_chapter => 'Fin del capítulo';
-
-  @override
-  String get chapter_completed => 'Capítulo completado';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Continúa desplazándote para leer el siguiente capítulo';
-
-  @override
-  String get no_next_chapter => 'No hay siguiente capítulo';
-
-  @override
   String get you_have_finished_reading => 'Has terminado de leer';
-
-  @override
-  String get return_to_the_list_of_chapters =>
-      'Regresar a la lista de capítulos';
 
   @override
   String get hwdec => 'Decodificador de hardware';

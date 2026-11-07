@@ -2088,23 +2088,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Repositori sumber ini tidak dapat ditambahkan. Periksa alamat repositori atau hubungi pengelolanya.';
 
   @override
-  String get end_of_chapter => 'Akhir bab';
-
-  @override
-  String get chapter_completed => 'Bab selesai';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Lanjutkan gulir untuk membaca bab berikutnya';
-
-  @override
-  String get no_next_chapter => 'Tidak ada bab berikutnya';
-
-  @override
   String get you_have_finished_reading => 'Anda telah selesai membaca';
-
-  @override
-  String get return_to_the_list_of_chapters => 'Kembali ke daftar bab';
 
   @override
   String get hwdec => 'Dekoder perangkat keras';

@@ -2099,24 +2099,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dieses Quellen-Repository konnte nicht hinzugefügt werden. Prüfe die Adresse oder kontaktiere die Person, die das Repository betreut.';
 
   @override
-  String get end_of_chapter => 'Ende des Kapitels';
-
-  @override
-  String get chapter_completed => 'Kapitel abgeschlossen';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Scrolle weiter, um an das nächste Kapitel zu gelangen';
-
-  @override
-  String get no_next_chapter => 'Keine weiteren Kapiteln';
-
-  @override
   String get you_have_finished_reading => 'Du hast es fertig gelesen';
-
-  @override
-  String get return_to_the_list_of_chapters =>
-      'Gehe zur Auflistung der Kapiteln';
 
   @override
   String get hwdec => 'Hardware Decoder';

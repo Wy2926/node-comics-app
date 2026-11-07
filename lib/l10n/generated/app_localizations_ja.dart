@@ -2048,22 +2048,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'このソースリポジトリを追加できませんでした。リポジトリのアドレスを確認するか、管理者にお問い合わせください。';
 
   @override
-  String get end_of_chapter => 'チャプターの終わり';
-
-  @override
-  String get chapter_completed => 'チャプター完了';
-
-  @override
-  String get continue_to_next_chapter => '次のチャプターを読むにはスクロールを続けてください';
-
-  @override
-  String get no_next_chapter => '次のチャプターはありません';
-
-  @override
   String get you_have_finished_reading => '読了しました';
-
-  @override
-  String get return_to_the_list_of_chapters => 'チャプターリストに戻る';
 
   @override
   String get hwdec => 'ハードウェアデコーダー';

@@ -13,10 +13,7 @@ import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subs
 import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:photo_view/photo_view.dart';
 
-/// Unified double page view for both paged and continuous reading modes.
-///
-/// This replaces both `DoubleColummView` and `DoubleColummVerticalView`
-/// to eliminate code duplication (previously ~80% identical code).
+/// Shared double-page view for paged and continuous reading modes.
 class DoublePageView extends StatefulWidget {
   /// The two pages to display side by side.
   final List<UChapDataPreload?> pages;
@@ -55,21 +52,6 @@ class DoublePageView extends StatefulWidget {
 
   /// Callback when a wide single page is loaded.
   final void Function(int index)? onWideSinglePageLoaded;
-
-  const DoublePageView({
-    super.key,
-    required this.pages,
-    required this.backgroundColor,
-    this.onLongPressData,
-    this.onFailedToLoadImage,
-    this.isPagedMode = true,
-    this.addTopPadding = true,
-    this.scrollDirection = Axis.horizontal,
-    this.onZoomChanged,
-    this.onControllerChanged,
-    this.onImageLoaded,
-    this.onWideSinglePageLoaded,
-  });
 
   /// Creates a paged mode double page view.
   const DoublePageView.paged({
@@ -215,29 +197,13 @@ class _DoublePageViewState extends State<DoublePageView>
 
   @override
   Widget build(BuildContext context) {
-    // Check for transition pages
-    if (_isTransitionPage()) {
-      return _buildTransitionPage();
+    final boundary = widget.pages.firstWhereOrNull(
+      (page) => page?.isTransitionPage ?? false,
+    );
+    if (boundary != null) {
+      return ReaderChapterBoundary(data: boundary, paged: widget.isPagedMode);
     }
-
     return widget.isPagedMode ? _buildPagedMode() : _buildVerticalMode();
-  }
-
-  bool _isTransitionPage() {
-    return widget.pages.any((p) => p?.isTransitionPage ?? false);
-  }
-
-  Widget _buildTransitionPage() {
-    final transitionPage = widget.pages.firstWhereOrNull(
-      (p) => p?.isTransitionPage ?? false,
-    );
-
-    if (transitionPage == null) return const SizedBox.shrink();
-
-    return ReaderChapterBoundary(
-      data: transitionPage,
-      paged: widget.isPagedMode,
-    );
   }
 
   Widget _buildPagedMode() {

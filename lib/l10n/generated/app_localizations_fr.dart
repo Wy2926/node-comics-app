@@ -2107,24 +2107,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d’ajouter ce dépôt de sources. Vérifiez son adresse ou contactez la personne qui le maintient.';
 
   @override
-  String get end_of_chapter => 'Fin du chapitre';
-
-  @override
-  String get chapter_completed => 'Chapitre terminé';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Continuez à faire défiler pour lire le chapitre suivant';
-
-  @override
-  String get no_next_chapter => 'Pas de prochain chapitre';
-
-  @override
   String get you_have_finished_reading => 'Vous avez terminé la lecture';
-
-  @override
-  String get return_to_the_list_of_chapters =>
-      'Retournez à la liste des chapitres';
 
   @override
   String get hwdec => 'Décodeur matériel';

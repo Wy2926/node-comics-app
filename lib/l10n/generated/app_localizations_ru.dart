@@ -2113,23 +2113,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось добавить этот репозиторий источников. Проверьте его адрес или свяжитесь с его сопровождающим.';
 
   @override
-  String get end_of_chapter => 'Конец главы';
-
-  @override
-  String get chapter_completed => 'Глава завершена';
-
-  @override
-  String get continue_to_next_chapter =>
-      'Продолжайте прокручивать, чтобы прочитать следующую главу';
-
-  @override
-  String get no_next_chapter => 'Нет следующей главы';
-
-  @override
   String get you_have_finished_reading => 'Вы закончили чтение';
-
-  @override
-  String get return_to_the_list_of_chapters => 'Вернуться к списку глав';
 
   @override
   String get hwdec => 'Аппаратный декодер';

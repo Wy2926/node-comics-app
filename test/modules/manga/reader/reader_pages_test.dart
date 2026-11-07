@@ -302,21 +302,6 @@ void main() {
       },
     );
 
-    test('ready chapters connect without a transition page', () async {
-      final manager = ChapterPreloadManager()..initialize(chapterPages(ch1, 3));
-
-      final added = await manager.loadNextChapter(
-        ch1,
-        findNextChapter: () => ch2,
-        loadPages: (_, _) async => _model(chapterPages(ch2, 2)),
-      );
-
-      expect(added, isTrue);
-      expect(manager.pages.any((page) => page.isTransitionPage), isFalse);
-      expect(manager.pages.sublist(3).map((p) => p.chapter?.id), [102, 102]);
-      expect(manager.pages.sublist(3).map((p) => p.pageIndex), [3, 4]);
-    });
-
     test(
       'only the chapters around the current one keep their images',
       () async {
