@@ -8567,6 +8567,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No images found for this chapter'**
   String get reader_no_pages;
+
+  /// No description provided for @reader_loading_next.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading next chapter…'**
+  String get reader_loading_next;
+
+  /// No description provided for @reader_next_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the next chapter'**
+  String get reader_next_failed;
+
+  /// No description provided for @reader_image_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading image…'**
+  String get reader_image_loading;
+
+  /// No description provided for @reader_image_failure_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can keep reading other pages.'**
+  String get reader_image_failure_hint;
 }
 
 class _AppLocalizationsDelegate

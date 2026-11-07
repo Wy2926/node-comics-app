@@ -4613,4 +4613,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reader_no_pages => '本话暂无可阅读图片';
+
+  @override
+  String get reader_loading_next => '正在加载下一章…';
+
+  @override
+  String get reader_next_failed => '下一章暂时无法加载';
+
+  @override
+  String get reader_image_loading => '正在加载图片…';
+
+  @override
+  String get reader_image_failure_hint => '其他页面仍可继续阅读';
 }

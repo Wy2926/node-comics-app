@@ -18,8 +18,6 @@ class UChapDataPreload {
   GetChapterPagesModel? chapterUrlModel;
   int? pageIndex;
   bool isTransitionPage;
-  Chapter? nextChapter;
-  String? mangaName;
   bool? isLastChapter;
 
   // Present only on the pending chapter boundary; cleared on success/disposal.
@@ -55,8 +53,6 @@ class UChapDataPreload {
     this.chapterUrlModel,
     this.pageIndex, {
     this.isTransitionPage = false,
-    this.nextChapter,
-    this.mangaName,
     this.isLastChapter = false,
     this.srcRect,
     this.localImagePath,
@@ -72,8 +68,6 @@ class UChapDataPreload {
 
   UChapDataPreload.transition({
     required Chapter currentChapter,
-    required this.nextChapter,
-    required String this.mangaName,
     required int this.pageIndex,
     this.isLastChapter = false,
   }) : chapter = currentChapter,

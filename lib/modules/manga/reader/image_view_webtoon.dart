@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
 import 'package:mangayomi/modules/manga/reader/image_view_vertical.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/transition_view_vertical.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -576,8 +576,16 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
     bool dualPageRotateToFitInvert,
   ) {
     Widget item;
+    var actualIndex = index;
     if (widget.isDoublePageMode && !widget.isHorizontalContinuous) {
-      item = _buildDoublePageItem(context, index, singleFirst);
+      final spreads = ReaderPageIndexMath.buildSpreads(
+        widget.pages,
+        singleFirst: singleFirst,
+      );
+      if (index >= spreads.length) return const SizedBox.shrink();
+      final spread = spreads[index];
+      actualIndex = spread.firstIndex;
+      item = _buildDoublePageItem(spread);
     } else {
       final currentPage = widget.pages[index];
       final uniqueKey = ValueKey(currentPage.widgetKey(index));
@@ -591,6 +599,21 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
           dualPageRotateToFitInvert,
         ),
       );
+    }
+
+    if (!widget.isHorizontalContinuous) {
+      final page = widget.pages[actualIndex];
+      if (!page.isTransitionPage &&
+          actualIndex > 0 &&
+          widget.pages[actualIndex - 1].chapter?.id != page.chapter?.id) {
+        item = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ReaderChapterHeading(name: page.chapter?.name ?? ''),
+            item,
+          ],
+        );
+      }
     }
 
     if (widget.showPageGaps &&
@@ -619,7 +642,10 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
         : 0;
 
     if (currentPage.isTransitionPage) {
-      return TransitionViewVertical(data: currentPage);
+      return ReaderChapterBoundary(
+        data: currentPage,
+        horizontal: widget.isHorizontalContinuous,
+      );
     }
 
     int rotation = 0;
@@ -652,22 +678,8 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
     );
   }
 
-  Widget _buildDoublePageItem(
-    BuildContext context,
-    int index,
-    bool singleFirst,
-  ) {
+  Widget _buildDoublePageItem(DoublePageSpread spread) {
     final pageLength = widget.pages.length;
-    final spreads = ReaderPageIndexMath.buildSpreads(
-      widget.pages,
-      singleFirst: singleFirst,
-    );
-
-    if (index >= spreads.length) {
-      return const SizedBox.shrink();
-    }
-
-    final spread = spreads[index];
     final index1 = spread.firstIndex;
     final index2 = spread.secondIndex;
 

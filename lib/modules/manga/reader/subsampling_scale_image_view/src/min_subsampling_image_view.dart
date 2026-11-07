@@ -6,14 +6,13 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/circular_progress_indicator_animate_rotate.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
 
 class MinSubsamplingImage extends ConsumerStatefulWidget {
   final UChapDataPreload data;
@@ -396,15 +395,23 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
         : double.infinity;
 
     if (_isLoading && _uiImage == null) {
-      final double progress = _loadingProgress?.expectedTotalBytes != null
+      final double? progress = _loadingProgress?.expectedTotalBytes != null
           ? _loadingProgress!.cumulativeBytesLoaded /
                 _loadingProgress!.expectedTotalBytes!
-          : 0;
+          : null;
       return Container(
         color: getBackgroundColor(backgroundColor),
         height: placeholderHeight,
         width: placeholderWidth,
-        child: CircularProgressIndicatorAnimateRotate(progress: progress),
+        child: Center(
+          child: SingleChildScrollView(
+            child: ReaderContentStatus(
+              message: context.l10n.reader_image_loading,
+              loading: true,
+              progress: progress,
+            ),
+          ),
+        ),
       );
     }
 
@@ -414,38 +421,17 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
         color: getBackgroundColor(backgroundColor),
         height: placeholderHeight,
         width: placeholderWidth,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              l10n.image_loading_error,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+        child: Center(
+          child: SingleChildScrollView(
+            child: ReaderContentStatus(
+              message: l10n.image_loading_error,
+              description: l10n.reader_image_failure_hint,
+              onRetry: () {
+                widget.failedToLoadImage(false);
+                _loadImage(refresh: true, evictCache: true);
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ReaderInteractiveRegion(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                  ),
-                  onPressed: () {
-                    widget.failedToLoadImage(false);
-                    _loadImage(refresh: true, evictCache: true);
-                  },
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(l10n.retry),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }

@@ -8,11 +8,9 @@ import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subs
     as ssiv;
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/circular_progress_indicator_animate_rotate.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/image_actions_dialog.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/transition_view_paged.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -284,7 +282,9 @@ class ReaderPagedItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (page.isTransitionPage) return TransitionViewPaged(data: page);
+    if (page.isTransitionPage) {
+      return ReaderChapterBoundary(data: page, paged: true);
+    }
 
     return ImageViewPaged(
       data: page,
@@ -302,16 +302,24 @@ class ReaderPagedItem extends ConsumerWidget {
       loadStateChanged: (state) {
         if (state.loadState == ssiv.LoadState.loading) {
           final ImageChunkEvent? loadingProgress = state.loadingProgress;
-          final double progress = loadingProgress?.expectedTotalBytes != null
+          final double? progress = loadingProgress?.expectedTotalBytes != null
               ? loadingProgress!.cumulativeBytesLoaded /
                     loadingProgress.expectedTotalBytes!
-              : 0;
+              : null;
           return Container(
             color:
                 getBackgroundColor(backgroundColor) ??
                 Theme.of(context).scaffoldBackgroundColor,
             height: context.height(0.8),
-            child: CircularProgressIndicatorAnimateRotate(progress: progress),
+            child: Center(
+              child: SingleChildScrollView(
+                child: ReaderContentStatus(
+                  message: context.l10n.reader_image_loading,
+                  loading: true,
+                  progress: progress,
+                ),
+              ),
+            ),
           );
         }
         if (state.loadState == ssiv.LoadState.completed) {
@@ -326,38 +334,17 @@ class ReaderPagedItem extends ConsumerWidget {
                 getBackgroundColor(backgroundColor) ??
                 Theme.of(context).scaffoldBackgroundColor,
             height: context.height(0.8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  l10n.image_loading_error,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+            child: Center(
+              child: SingleChildScrollView(
+                child: ReaderContentStatus(
+                  message: l10n.image_loading_error,
+                  description: l10n.reader_image_failure_hint,
+                  onRetry: () {
+                    state.reLoadImage();
+                    onFailedToLoadImage(index, false);
+                  },
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ReaderInteractiveRegion(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 20,
-                        ),
-                      ),
-                      onPressed: () {
-                        state.reLoadImage();
-                        onFailedToLoadImage(index, false);
-                      },
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: Text(l10n.retry),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           );
         }

@@ -79,22 +79,6 @@ class ChapterPreloadManager {
     }
   }
 
-  /// Adds a transition page between chapters.
-  UChapDataPreload createTransitionPage({
-    required Chapter currentChapter,
-    required Chapter? nextChapter,
-    required String mangaName,
-    bool isLastChapter = false,
-  }) {
-    return UChapDataPreload.transition(
-      currentChapter: currentChapter,
-      nextChapter: nextChapter,
-      mangaName: mangaName,
-      pageIndex: _pages.length,
-      isLastChapter: isLastChapter,
-    );
-  }
-
   /// Keeps a stable boundary at the end while the next chapter is fetched.
   /// Failed/empty requests wait for an explicit retry, not every scroll frame.
   Future<bool> loadNextChapter(
@@ -113,10 +97,9 @@ class ChapterPreloadManager {
 
     final boundary = tail.nextChapterState != null
         ? tail
-        : createTransitionPage(
+        : UChapDataPreload.transition(
             currentChapter: currentChapter,
-            nextChapter: null,
-            mangaName: currentChapter.manga.value?.name ?? '',
+            pageIndex: _pages.length,
           );
     if (!identical(boundary, tail)) _pages.add(boundary);
     final generation = _requestGeneration;
@@ -128,7 +111,6 @@ class ChapterPreloadManager {
 
     try {
       final next = findNextChapter();
-      boundary.nextChapter = next;
       if (next == null) {
         boundary.isLastChapter = true;
         boundary.nextChapterState = null;
@@ -145,6 +127,9 @@ class ChapterPreloadManager {
         throw StateError('Invalid next chapter pages');
       }
 
+      // Replace the pending item at the same index. Ready chapters have no
+      // interstitial page, including in single/double-page reading modes.
+      _pages.removeLast();
       final startIndex = _pages.length;
       for (final entry in data.uChapDataPreload.asMap().entries) {
         entry.value.pageIndex = startIndex + entry.key;

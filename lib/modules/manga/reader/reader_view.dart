@@ -1184,8 +1184,8 @@ class _MangaChapterPageGalleryState
       // ── Next-chapter preloading: trigger when near the end ──
       final distToEnd = pagesLength - 1 - last;
       if (distToEnd <= pagePreloadAmount) {
-        // A short final chapter can fit below its transition while the first
-        // visible item still belongs to the previous chapter. Load after the
+        // A short final chapter can fit below the previous chapter while
+        // the first visible item still belongs to that chapter. Load after the
         // visible tail so this boundary cannot prevent further scrolling.
         final visibleEnd = _pageViewToActualIndex(
           last.clamp(0, pagesLength - 1),
@@ -1276,7 +1276,25 @@ class _MangaChapterPageGalleryState
     initializePreloadManager(
       _chapterUrlModel,
       onPagesUpdated: () {
-        if (mounted) setState(() {});
+        if (!mounted) return;
+        setState(() {});
+        // A waiting slot can become the next chapter's first image without
+        // scrolling. Reconcile progress after the new list has been laid out.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final mode = ref.read(_currentReaderMode);
+          if (mode == null) return;
+          if (mode.isContinuous) {
+            _readProgressListener();
+          } else if (_extendedController.hasClients &&
+              _currentIndex != null &&
+              _currentIndex! < _pageViewPageCount) {
+            final actual = _pageViewToActualIndex(_currentIndex!);
+            if (pages[actual].chapter?.id != chapter.id) {
+              unawaited(_onPageChanged(_currentIndex!));
+            }
+          }
+        });
       },
     );
 

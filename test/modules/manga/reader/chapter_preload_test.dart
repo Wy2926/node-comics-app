@@ -7,7 +7,7 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/reader/managers/chapter_preload_manager.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/chapter_transition_page.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
 
@@ -29,7 +29,7 @@ GetChapterPagesModel model(List<UChapDataPreload> pages) =>
 
 void main() {
   test(
-    'one request and stable boundary while loading, then append once',
+    'one request keeps a waiting slot then replaces it with the next image',
     () async {
       final manager = ChapterPreloadManager()..initialize([page(current, 0)]);
       final request = Completer<GetChapterPagesModel>();
@@ -59,10 +59,10 @@ void main() {
       );
       request.complete(model([page(next, 0), page(next, 1)]));
       expect(await first, isTrue);
-      expect(manager.pages[1], same(boundary));
+      expect(manager.pages.contains(boundary), isFalse);
       expect(boundary.nextChapterState, isNull);
       expect(boundary.onRetryChapter, isNull);
-      expect(manager.pages.map((p) => p.pageIndex), [0, 1, 2, 3]);
+      expect(manager.pages.map((p) => p.pageIndex), [0, 1, 2]);
       await manager.loadNextChapter(
         current,
         findNextChapter: () => next,
@@ -111,8 +111,8 @@ void main() {
         expect(boundary.onRetryChapter, isNull);
         pendingRetry.complete(model([page(next, 0)]));
         await Future<void>.delayed(Duration.zero);
-        expect(manager.pages, hasLength(3));
-        expect(manager.pages[1], same(boundary));
+        expect(manager.pages, hasLength(2));
+        expect(manager.pages.contains(boundary), isFalse);
         expect(manager.pages.last.chapter, same(next));
         expect(boundary.nextChapterState, isNull);
         retry(); // A callback retained by an old widget cannot append twice.
@@ -222,14 +222,13 @@ void main() {
                 final boundary = manager.pages[1];
                 return Stack(
                   children: [
-                    ChapterTransitionPage(
-                      currentChapter: current,
-                      nextChapter: boundary.nextChapter,
-                      mangaName: 'Comic',
-                      readerMode: mode,
-                      nextChapterState: boundary.nextChapterState,
-                      onRetryChapter: boundary.onRetryChapter,
-                    ),
+                    if (boundary.isTransitionPage)
+                      ReaderChapterBoundary(
+                        data: boundary,
+                        paged: mode == ReaderMode.ltr,
+                      )
+                    else
+                      const Text('Next chapter image'),
                     Positioned.fill(
                       child: ReaderInteractiveHitTestBlocker(
                         child: GestureDetector(
@@ -247,18 +246,19 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('Could not load this chapter'), findsOneWidget);
+      expect(find.text('Could not load the next chapter'), findsOneWidget);
       await tester.ensureVisible(find.text('Retry'));
       await tester.pump();
       await tester.tap(find.text('Retry'));
       await tester.pump();
       expect(calls, 2);
       expect(overlayTaps, 0);
-      expect(find.text('Getting chapter images…'), findsOneWidget);
+      expect(find.text('Loading next chapter…'), findsOneWidget);
       expect(find.text('Retry'), findsNothing);
       pending.complete(model([page(next, 0)]));
       await tester.pump();
-      expect(find.text('Getting chapter images…'), findsNothing);
+      expect(find.text('Loading next chapter…'), findsNothing);
+      expect(find.text('Next chapter image'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       await manager.dispose();

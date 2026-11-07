@@ -1980,5 +1980,9 @@
   "reader_loading_pages_hint": "Reading will start automatically when ready.",
   "reader_loading_failed": "Could not load this chapter",
   "reader_loading_retry_hint": "Check your connection and try again.",
-  "reader_no_pages": "No images found for this chapter"
+  "reader_no_pages": "No images found for this chapter",
+  "reader_loading_next": "Loading next chapter…",
+  "reader_next_failed": "Could not load the next chapter",
+  "reader_image_loading": "Loading image…",
+  "reader_image_failure_hint": "You can keep reading other pages."
 }

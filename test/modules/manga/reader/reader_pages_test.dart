@@ -22,13 +22,6 @@ List<UChapDataPreload> chapterPages(Chapter ch, int count, {int? wideAt}) => [
   for (var i = 0; i < count; i++) page(ch, i, wide: i == wideAt),
 ];
 
-UChapDataPreload transition() => UChapDataPreload.transition(
-  currentChapter: ch1,
-  nextChapter: ch2,
-  mangaName: 'Manga',
-  pageIndex: 0,
-);
-
 GetChapterPagesModel _model(List<UChapDataPreload> pages) =>
     GetChapterPagesModel(
       path: null,
@@ -93,14 +86,8 @@ void main() {
   );
   group('page counter in double-page mode', () {
     test('a page of the next chapter is labelled from its own spread', () {
-      // Chapter 1 has 5 pages, then the transition, then chapter 2. Chapter
-      // 2's page 6 (index 5) used to be looked up at slot 5, the transition,
-      // and the counter came out blank.
-      final pages = [
-        ...chapterPages(ch1, 5),
-        transition(),
-        ...chapterPages(ch2, 8),
-      ];
+      // Labels use the chapter-local page number, not a global list slot.
+      final pages = [...chapterPages(ch1, 5), ...chapterPages(ch2, 8)];
 
       final math = doublePage(pages);
 
@@ -111,7 +98,6 @@ void main() {
     test('a wide page earlier in the list does not shift the next chapter', () {
       final pages = [
         ...chapterPages(ch1, 6, wideAt: 2),
-        transition(),
         ...chapterPages(ch2, 6),
       ];
 
@@ -140,55 +126,45 @@ void main() {
   });
 
   group('spread boundaries and mode changes', () {
-    test(
-      'chapters and transitions stay separate with either first-page mode',
-      () {
-        final pages = [
-          ...chapterPages(ch1, 3),
-          transition(),
-          ...chapterPages(ch2, 2),
-        ];
-        for (final singleFirst in [false, true]) {
-          final math = ReaderPageIndexMath(
-            isDoublePageActive: true,
-            singleFirst: singleFirst,
-            pageCount: pages.length,
-            pages: pages,
-          );
-          expect(
-            math.spreads,
-            singleFirst
-                ? const [
-                    DoublePageSpread(0),
-                    DoublePageSpread(1, 2),
-                    DoublePageSpread(3),
-                    DoublePageSpread(4),
-                    DoublePageSpread(5),
-                  ]
-                : const [
-                    DoublePageSpread(0, 1),
-                    DoublePageSpread(2),
-                    DoublePageSpread(3),
-                    DoublePageSpread(4, 5),
-                  ],
-          );
-          expect(
-            List.generate(6, math.actualToPageViewIndex),
-            singleFirst ? [0, 1, 1, 2, 3, 4] : [0, 0, 1, 2, 3, 3],
-          );
-          expect(
-            List.generate(math.pageViewPageCount, math.pageViewToActualIndex),
-            singleFirst ? [0, 1, 3, 4, 5] : [0, 2, 3, 4],
-          );
-          expect(math.currentIndexLabel(3, 3), isEmpty);
-          expect(math.currentIndexLabel(4, 2), singleFirst ? '1' : '1-2');
-        }
-        expect(
-          ReaderPageIndexMath.buildSpreads([page(ch1, 0), page(ch2, 0)]),
-          const [DoublePageSpread(0), DoublePageSpread(1)],
+    test('chapters stay separate with either first-page mode', () {
+      final pages = [...chapterPages(ch1, 3), ...chapterPages(ch2, 2)];
+      for (final singleFirst in [false, true]) {
+        final math = ReaderPageIndexMath(
+          isDoublePageActive: true,
+          singleFirst: singleFirst,
+          pageCount: pages.length,
+          pages: pages,
         );
-      },
-    );
+        expect(
+          math.spreads,
+          singleFirst
+              ? const [
+                  DoublePageSpread(0),
+                  DoublePageSpread(1, 2),
+                  DoublePageSpread(3),
+                  DoublePageSpread(4),
+                ]
+              : const [
+                  DoublePageSpread(0, 1),
+                  DoublePageSpread(2),
+                  DoublePageSpread(3, 4),
+                ],
+        );
+        expect(
+          List.generate(5, math.actualToPageViewIndex),
+          singleFirst ? [0, 1, 1, 2, 3] : [0, 0, 1, 2, 2],
+        );
+        expect(
+          List.generate(math.pageViewPageCount, math.pageViewToActualIndex),
+          singleFirst ? [0, 1, 3, 4] : [0, 2, 3],
+        );
+        expect(math.currentIndexLabel(3, 2), singleFirst ? '1' : '1-2');
+      }
+      expect(
+        ReaderPageIndexMath.buildSpreads([page(ch1, 0), page(ch2, 0)]),
+        const [DoublePageSpread(0), DoublePageSpread(1)],
+      );
+    });
 
     test('wide pages stay single without changing neighboring page labels', () {
       final math = doublePage(chapterPages(ch1, 4, wideAt: 1));
@@ -247,18 +223,14 @@ void main() {
     });
 
     test('mode changes retain the active page in the second chapter', () {
-      final pages = [
-        ...chapterPages(ch1, 4),
-        transition(),
-        ...chapterPages(ch2, 4),
-      ];
-      const activeIndex = 6;
+      final pages = [...chapterPages(ch1, 4), ...chapterPages(ch2, 4)];
+      const activeIndex = 5;
       final math = doublePage(pages);
       final spread = math.actualToPageViewIndex(activeIndex);
-      expect(spread, 3);
-      expect(math.spreads[spread], const DoublePageSpread(5, 6));
+      expect(spread, 2);
+      expect(math.spreads[spread], const DoublePageSpread(4, 5));
       final restored = math.pageViewToActualIndex(spread);
-      expect(restored, 5);
+      expect(restored, 4);
       expect(pages[restored].chapter?.id, ch2.id);
     });
   });
@@ -296,7 +268,41 @@ void main() {
   });
 
   group('preloading', () {
-    test('the next chapter follows a transition page', () async {
+    test(
+      'waiting spread becomes next image without moving earlier spreads',
+      () async {
+        for (final singleFirst in [false, true]) {
+          final manager = ChapterPreloadManager()
+            ..initialize(chapterPages(ch1, 3));
+          final response = Completer<GetChapterPagesModel>();
+          final loading = manager.loadNextChapter(
+            ch1,
+            findNextChapter: () => ch2,
+            loadPages: (_, _) => response.future,
+          );
+          final before = ReaderPageIndexMath.buildSpreads(
+            manager.pages,
+            singleFirst: singleFirst,
+          );
+          final waitingIndex = before.length - 1;
+          response.complete(_model(chapterPages(ch2, 2)));
+          await loading;
+          final after = ReaderPageIndexMath.buildSpreads(
+            manager.pages,
+            singleFirst: singleFirst,
+          );
+          expect(after.take(waitingIndex), before.take(waitingIndex));
+          expect(after[waitingIndex].firstIndex, before.last.firstIndex);
+          expect(
+            manager.pages[after[waitingIndex].firstIndex].chapter,
+            same(ch2),
+          );
+          await manager.dispose();
+        }
+      },
+    );
+
+    test('ready chapters connect without a transition page', () async {
       final manager = ChapterPreloadManager()..initialize(chapterPages(ch1, 3));
 
       final added = await manager.loadNextChapter(
@@ -306,9 +312,9 @@ void main() {
       );
 
       expect(added, isTrue);
-      expect(manager.pages[3].isTransitionPage, isTrue);
-      expect(manager.pages.sublist(4).map((p) => p.chapter?.id), [102, 102]);
-      expect(manager.pages.sublist(4).map((p) => p.pageIndex), [4, 5]);
+      expect(manager.pages.any((page) => page.isTransitionPage), isFalse);
+      expect(manager.pages.sublist(3).map((p) => p.chapter?.id), [102, 102]);
+      expect(manager.pages.sublist(3).map((p) => p.pageIndex), [3, 4]);
     });
 
     test(

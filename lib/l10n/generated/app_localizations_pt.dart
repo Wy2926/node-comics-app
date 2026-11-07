@@ -4897,6 +4897,18 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get reader_no_pages => 'No images found for this chapter';
+
+  @override
+  String get reader_loading_next => 'Loading next chapter…';
+
+  @override
+  String get reader_next_failed => 'Could not load the next chapter';
+
+  @override
+  String get reader_image_loading => 'Loading image…';
+
+  @override
+  String get reader_image_failure_hint => 'You can keep reading other pages.';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
