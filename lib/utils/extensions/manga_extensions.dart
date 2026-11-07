@@ -241,18 +241,8 @@ extension MangaExtensions on Manga {
   /// part of the main numbering. Season-bucketed keys are unbucketed back to
   /// their raw episode number first, since gaps only make sense within one
   /// season's own numbering, not across a season * 100000 jump.
-  int missingChapterCount() {
-    final list = getFilteredChapters();
-    final mangaTitle = name ?? '';
-    final recognition = ChapterRecognition();
-    final numbers = <int>{};
-    for (final c in list) {
-      final (_, ep) = recognition.rawSeasonAndNumber(mangaTitle, c.name ?? '');
-      if (ep != null) numbers.add(ep.floor());
-    }
-    if (numbers.length < 2) return 0;
-    final lowest = numbers.reduce((a, b) => a < b ? a : b);
-    final highest = numbers.reduce((a, b) => a > b ? a : b);
-    return (highest - lowest + 1) - numbers.length;
-  }
+  int missingChapterCount() => ChapterRecognition().missingChapterCount(
+    name ?? '',
+    getFilteredChapters().map((chapter) => chapter.name ?? ''),
+  );
 }

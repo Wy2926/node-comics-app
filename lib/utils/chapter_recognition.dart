@@ -16,6 +16,10 @@ class ChapterRecognition {
     r"(?<=ch\.) *([0-9]+)(\.[0-9]+)?(\.?[a-z]+)?",
   );
   static final _bareNumber = RegExp(r"([0-9]+)(\.[0-9]+)?(\.?[a-z]+)?");
+  static final _annualIssue = RegExp(
+    r'^#?\s*(?:annual\b|(?:19|20)\d{2}\s+annual\b)',
+    caseSensitive: false,
+  );
 
   // Dedup so a repeatedly-rebuilt chapter list doesn't spam the log file
   // with the same unrecognized name on every rebuild.
@@ -34,6 +38,25 @@ class ChapterRecognition {
   int parseEpisodeNumber(String mangaTitle, String chapterName) {
     final (_, ep) = rawSeasonAndNumber(mangaTitle, chapterName);
     return (ep ?? 0).toInt();
+  }
+
+  /// Annuals have their own numbering, often a year. They do not create
+  /// gaps in the regular series; sorting and progress identities stay intact.
+  int missingChapterCount(String mangaTitle, Iterable<String> chapterNames) {
+    final numbers = <int>{};
+    for (final chapterName in chapterNames) {
+      final label = chapterName
+          .toLowerCase()
+          .replaceAll(mangaTitle.toLowerCase(), '')
+          .trim();
+      if (_annualIssue.hasMatch(label)) continue;
+      final (_, ep) = rawSeasonAndNumber(mangaTitle, chapterName);
+      if (ep != null) numbers.add(ep.floor());
+    }
+    if (numbers.length < 2) return 0;
+    final lowest = numbers.reduce((a, b) => a < b ? a : b);
+    final highest = numbers.reduce((a, b) => a > b ? a : b);
+    return (highest - lowest + 1) - numbers.length;
   }
 
   /// Numeric grouping key for cross-release progress matching, with an optional

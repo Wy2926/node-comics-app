@@ -6,6 +6,32 @@ import 'package:mangayomi/utils/chapter_recognition.dart';
 void main() {
   final recognition = ChapterRecognition();
 
+  test('annual numbering does not create gaps in the regular series', () {
+    final regular = [for (var n = 1; n <= 25; n++) '#$n', '#1.1'];
+    for (final annual in ['#Annual 2025', 'Annual #1', '2025 Annual']) {
+      expect(recognition.missingChapterCount('Comic', [...regular, annual]), 0);
+      expect(
+        recognition.missingChapterCount('Comic', [
+          ...regular.where((name) => name != '#12'),
+          'Comic $annual',
+        ]),
+        1,
+      );
+    }
+    expect(
+      recognition.missingChapterCount('Annual Tales', ['#0', '#1', '#3']),
+      1,
+    );
+    expect(recognition.missingChapterCount('Comic', ['#2023', '#2025']), 1);
+    expect(
+      recognition.missingChapterCount('Comic', [
+        'Chapter 1: Annual festival',
+        '#3',
+      ]),
+      1,
+    );
+  });
+
   String? identity(String show, String name, [String? scanlator]) =>
       recognition.chapterIdentityKey(show, name, scanlator);
 
