@@ -205,7 +205,9 @@ void main() {
       }
       expect(
         tester
-            .widget<ListTile>(find.widgetWithText(ListTile, 'Right to Left'))
+            .widget<NodeLaneRow>(
+              find.widgetWithText(NodeLaneRow, 'Right to Left'),
+            )
             .onTap,
         isNull,
       );
@@ -214,7 +216,7 @@ void main() {
       expect(changes, isEmpty);
       await open(tester);
       final choose = tester
-          .widget<ListTile>(find.widgetWithText(ListTile, 'Vertical'))
+          .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'Vertical'))
           .onTap!;
       choose();
       choose();
@@ -335,7 +337,7 @@ void main() {
       await open(tester);
       change(() => showReader = false);
       await tester.pump();
-      await tester.tap(find.widgetWithText(ListTile, 'Vertical'));
+      await tester.tap(find.widgetWithText(NodeLaneRow, 'Vertical'));
       await tester.pumpAndSettle();
       expect(changes, 0);
       expect(find.text('Reader closed'), findsOneWidget);

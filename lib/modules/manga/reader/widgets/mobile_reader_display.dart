@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -40,15 +40,9 @@ class _MobileReaderDisplayButtonState
     if (_open || !mounted || ModalRoute.of(context)?.isCurrent != true) return;
     setState(() => _open = true);
     try {
-      final choice = await showModalBottomSheet<Object>(
-        context: context,
-        useRootNavigator: true,
-        isScrollControlled: true,
-        useSafeArea: true,
-        backgroundColor: Colors.transparent,
-        showDragHandle: false,
-        shape: NodeLaneTokens.readerSheetShape,
-        builder: (_) => _ReaderDisplaySheet(
+      final choice = await showNodeLaneCatalogSheet<Object>(
+        context,
+        _ReaderDisplaySheet(
           bookTitle: widget.bookTitle,
           currentReaderModeProvider: widget.currentReaderModeProvider,
           readPageMode: () => widget.readPageMode(),
@@ -116,7 +110,8 @@ class _ReaderDisplaySheetState extends ConsumerState<_ReaderDisplaySheet> {
     final mode = ref.watch(widget.currentReaderModeProvider);
     final crop = ref.watch(cropBordersStateProvider);
     final automatic = ref.watch(doublePageAutoStateProvider);
-    final size = MediaQuery.sizeOf(context);
+    // Re-read the reader's effective page layout when the viewport changes.
+    MediaQuery.sizeOf(context);
     final pageMode = mode?.isHorizontalContinuous == true
         ? PageMode.onePage
         : widget.readPageMode();
@@ -124,137 +119,82 @@ class _ReaderDisplaySheetState extends ConsumerState<_ReaderDisplaySheet> {
         widget.canChangePageMode &&
         mode != null &&
         !mode.isHorizontalContinuous;
-    return NodeLaneReaderSurface(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: size.height * NodeLaneTokens.readerDisplayFraction,
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              NodeLaneReaderHeading(
-                title: l10n.display,
-                closeLabel: l10n.close,
-                onClose: () => _close(),
+    return NodeLaneCatalogSheet(
+      title: l10n.display,
+      subtitle: l10n.reader_display_scope,
+      fitContent: true,
+      heightFactor: NodeLaneTokens.readerDisplayFraction,
+      onClose: () => _close(),
+      child: SingleChildScrollView(
+        padding: NodeLaneTokens.pagePadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.bookTitle.isNotEmpty) ...[
+              Text(widget.bookTitle, style: colors.readerLabel),
+              const SizedBox(height: NodeLaneTokens.space12),
+            ],
+            Semantics(
+              container: true,
+              label: l10n.reading_mode,
+              child: NodeLaneGroupSurface(
+                children: [
+                  for (final option in ReaderMode.values)
+                    Semantics(
+                      inMutuallyExclusiveGroup: true,
+                      child: NodeLaneGroupSurface(
+                        selected: mode == option,
+                        child: NodeLaneRow(
+                          key: ValueKey(option),
+                          title: getReaderModeName(option, context),
+                          icon: getReaderModeIcon(option, context),
+                          selected: mode == option,
+                          onTap: mode == option ? null : () => _close(option),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        widget.bookTitle,
-                        style: colors.readerLabel.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.reader_display_scope,
-                        style: colors.readerSecondary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(l10n.reading_mode, style: colors.sectionTitle),
-                      const SizedBox(height: 8),
-                      NodeLaneGroupSurface(
-                        child: Column(
-                          children: [
-                            for (
-                              var i = 0;
-                              i < ReaderMode.values.length;
-                              i++
-                            ) ...[
-                              if (i > 0)
-                                Divider(
-                                  height: 1,
-                                  indent: 16,
-                                  color: colors.line,
-                                ),
-                              Semantics(
-                                selected: mode == ReaderMode.values[i],
-                                child: ListTile(
-                                  key: ValueKey(ReaderMode.values[i]),
-                                  minTileHeight:
-                                      NodeLaneTokens.readerModeRowHeight,
-                                  dense: true,
-                                  visualDensity: VisualDensity.standard,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  title: Text(
-                                    getReaderModeName(
-                                      ReaderMode.values[i],
-                                      context,
-                                    ),
-                                    style: colors.readerLabel,
-                                  ),
-                                  trailing: mode == ReaderMode.values[i]
-                                      ? Icon(
-                                          NodeLaneIcons.of(context).check,
-                                          color: colors.accent,
-                                          size: 24,
-                                        )
-                                      : null,
-                                  onTap: mode == ReaderMode.values[i]
-                                      ? null
-                                      : () => _close(ReaderMode.values[i]),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      NodeLaneSegments<PageMode>(
-                        pill: true,
-                        labelStyle: colors.readerLabel,
-                        segments: [
-                          ButtonSegment(
-                            value: PageMode.onePage,
-                            label: Text(l10n.single_page),
-                          ),
-                          ButtonSegment(
-                            value: PageMode.doublePage,
-                            label: Text(l10n.double_page),
-                          ),
-                        ],
-                        value: pageMode,
-                        onChanged: canChangePages
-                            ? (value) {
-                                if (value != widget.readPageMode()) {
-                                  _close(value);
-                                }
-                              }
-                            : null,
-                      ),
-                      if (mode?.isHorizontalContinuous == true ||
-                          automatic) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          mode?.isHorizontalContinuous == true
-                              ? l10n.reader_display_single_only
-                              : l10n.reader_display_manual_pages,
-                          style: colors.readerSecondary,
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      NodeLaneGroupSurface(
-                        child: NodeLaneSwitchRow(
-                          title: l10n.crop_borders,
-                          subtitle: l10n.reader_display_crop_scope,
-                          value: crop,
-                          onChanged: (value) => _close(value),
-                        ),
-                      ),
-                    ],
-                  ),
+            ),
+            const SizedBox(height: NodeLaneTokens.space16),
+            NodeLaneSegments<PageMode>(
+              segments: [
+                ButtonSegment(
+                  value: PageMode.onePage,
+                  label: Text(l10n.single_page),
                 ),
+                ButtonSegment(
+                  value: PageMode.doublePage,
+                  label: Text(l10n.double_page),
+                ),
+              ],
+              value: pageMode,
+              onChanged: canChangePages
+                  ? (value) {
+                      if (value != widget.readPageMode()) _close(value);
+                    }
+                  : null,
+            ),
+            if (mode?.isHorizontalContinuous == true || automatic) ...[
+              const SizedBox(height: NodeLaneTokens.space8),
+              Text(
+                mode?.isHorizontalContinuous == true
+                    ? l10n.reader_display_single_only
+                    : l10n.reader_display_manual_pages,
+                style: colors.readerSecondary,
               ),
             ],
-          ),
+            const SizedBox(height: NodeLaneTokens.space16),
+            NodeLaneGroupSurface(
+              child: NodeLaneSwitchRow(
+                title: l10n.crop_borders,
+                subtitle: l10n.reader_display_crop_scope,
+                icon: NodeLaneIcons.of(context).crop,
+                value: crop,
+                onChanged: (value) => _close(value),
+              ),
+            ),
+          ],
         ),
       ),
     );

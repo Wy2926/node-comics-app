@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+
+IconData getReaderModeIcon(ReaderMode mode, BuildContext context) {
+  final icons = NodeLaneIcons.of(context);
+  return switch (mode) {
+    ReaderMode.vertical => icons.manga,
+    ReaderMode.ltr => icons.readingRight,
+    ReaderMode.rtl => icons.readingLeft,
+    ReaderMode.verticalContinuous => icons.continuousVertical,
+    ReaderMode.webtoon => icons.pageLayout,
+    ReaderMode.horizontalContinuous => icons.manga,
+    ReaderMode.horizontalContinuousRTL => icons.horizontalPages,
+  };
+}
 
 String getReaderModeName(ReaderMode readerMode, BuildContext context) {
   return switch (readerMode) {

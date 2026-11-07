@@ -49,7 +49,7 @@ class NodeLaneTokens {
   static const defaultMobileAccent = Color(0xff006eff);
   // Reader concept: all overlays use the same geometry, type and controls.
   static const readerSheetFraction = .78, readerDisplayFraction = .86;
-  static const readerRowHeight = 62.0, readerModeRowHeight = 48.0;
+  static const readerRowHeight = 62.0;
   static const readerChapterHeight = 68.0, readerActionHeight = 64.0;
   static const readerImageActionHeight = 72.0;
   static const readerFilterRowHeight = 56.0;

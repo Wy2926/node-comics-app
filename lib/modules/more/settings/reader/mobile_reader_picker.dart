@@ -6,7 +6,6 @@ import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'reader_settings_labels.dart';
@@ -154,21 +153,12 @@ MobileSettingOption<T> readerSettingOption<T>(
   T value,
   String label,
 ) {
-  final icons = NodeLaneIcons.of(context);
   final l10n = context.l10n;
   return MobileSettingOption(
     value,
     label,
     leading: switch (value) {
-      ReaderMode mode => Icon(switch (mode) {
-        ReaderMode.vertical => icons.manga,
-        ReaderMode.ltr => icons.readingRight,
-        ReaderMode.rtl => icons.readingLeft,
-        ReaderMode.verticalContinuous => icons.continuousVertical,
-        ReaderMode.webtoon => icons.pageLayout,
-        ReaderMode.horizontalContinuous => icons.manga,
-        ReaderMode.horizontalContinuousRTL => icons.horizontalPages,
-      }),
+      ReaderMode mode => Icon(getReaderModeIcon(mode, context)),
       ScaleType type => ReaderScaleIllustration(type: type),
       BackgroundColor color => ReaderBackgroundSwatch(value: color),
       _ => null,

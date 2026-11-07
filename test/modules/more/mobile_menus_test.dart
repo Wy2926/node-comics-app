@@ -13,6 +13,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
   void phone(WidgetTester tester) {
@@ -84,13 +85,18 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.byType(TextField), 250);
+    expect(find.text('More'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.byType(TextField),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     final list = find.byType(CustomScrollView);
     await tester.drag(list, const Offset(0, -650));
     await tester.pumpAndSettle();
     final pinnedTop = tester.getTopLeft(find.byType(TextField)).dy;
-    expect(pinnedTop, greaterThanOrEqualTo(24 + kToolbarHeight));
+    expect(pinnedTop, closeTo(24 + NodeLaneTokens.space8, .5));
     await tester.drag(list, const Offset(0, -300));
     await tester.pumpAndSettle();
     expect(
@@ -212,7 +218,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(MobileNodeLaneAccountSummary), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Downloaded only'), 250);
+      await tester.scrollUntilVisible(
+        find.text('Downloaded only'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       // The account card can push this group beyond the initial viewport.
       // Read its auto-dispose notifiers only after the switches are mounted.

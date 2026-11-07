@@ -49,16 +49,9 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l = context.l10n,
-        t = NodeLaneTokens.of(context),
-        icons = NodeLaneIcons.of(context);
+    final l = context.l10n, icons = NodeLaneIcons.of(context);
     final hidden = ref.watch(hideItemsStateProvider);
     final query = _query.trim().toLowerCase();
-    final toolbarHeight =
-        (MediaQuery.textScalerOf(context).scale(22) * 1.3 + 16).clamp(
-          kToolbarHeight,
-          double.infinity,
-        );
     ({String terms, Widget child}) entry(
       String title,
       Widget child, [
@@ -191,37 +184,11 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
     return NodeLaneSurface(
       child: Scaffold(
         body: SafeArea(
-          top: false,
           bottom: false,
           child: CustomScrollView(
             key: const PageStorageKey('mobile-more'),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
-              SliverAppBar(
-                pinned: true,
-                automaticallyImplyLeading: false,
-                toolbarHeight: toolbarHeight,
-                expandedHeight: toolbarHeight + 32,
-                backgroundColor: t.canvas,
-                scrolledUnderElevation: 0,
-                flexibleSpace: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final collapsed =
-                        constraints.maxHeight <=
-                        toolbarHeight + MediaQuery.paddingOf(context).top + 1;
-                    return FlexibleSpaceBar(
-                      centerTitle: collapsed,
-                      titlePadding: EdgeInsetsDirectional.only(
-                        start: collapsed ? 0 : NodeLaneTokens.space20,
-                        bottom: NodeLaneTokens.space16,
-                      ),
-                      expandedTitleScale:
-                          t.pageTitle.fontSize! / t.readerTitle.fontSize!,
-                      title: Text(l.more, style: t.readerTitle),
-                    );
-                  },
-                ),
-              ),
               const SliverPadding(
                 padding: EdgeInsets.fromLTRB(20, 8, 20, 8),
                 sliver: SliverToBoxAdapter(
