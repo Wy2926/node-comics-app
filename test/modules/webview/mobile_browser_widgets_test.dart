@@ -76,7 +76,11 @@ void main() {
     },
   );
 
-  Future<void> mount(WidgetTester tester, Widget child) async {
+  Future<void> mount(
+    WidgetTester tester,
+    Widget child, {
+    double scale = 1,
+  }) async {
     tester.view.physicalSize = const Size(320, 600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -88,7 +92,7 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(1),
+            textScaler: TextScaler.linear(scale),
             padding: const EdgeInsets.only(top: 24, bottom: 24),
             viewPadding: const EdgeInsets.only(top: 24, bottom: 24),
           ),
@@ -311,7 +315,7 @@ void main() {
   });
 
   testWidgets(
-    'start page is unfocused and shortcuts expand without duplicate tab lists',
+    'start page keeps tabs beside the address and opens shared website rows',
     (tester) async {
       final opened = <String>[];
       await mount(
@@ -323,18 +327,37 @@ void main() {
           ],
           tabCount: 2,
           onOpen: (url, _) => opened.add(url),
-          onNew: () {},
+          onManage: () {},
           onTabs: () {},
         ),
+        scale: 2,
       );
       expect(tester.testTextInput.isVisible, isFalse);
-      expect(find.text('Site 4'), findsNothing);
+      expect(find.byTooltip('新建标签页'), findsNothing);
+      expect(find.byTooltip('返回'), findsNothing);
+      expect(find.text('浏览器'), findsNothing);
+      expect(find.text('展开'), findsNothing);
       expect(find.textContaining('已打开'), findsNothing);
-      await tester.tap(find.text('展开'));
+      expect(
+        tester.getRect(find.byType(MobileBrowserTabsButton)).left,
+        greaterThan(
+          tester.getRect(find.byType(MobileBrowserAddressField)).right,
+        ),
+      );
+      await tester.scrollUntilVisible(
+        find.text('Site 4'),
+        160,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(find.text('Site 4'), findsOneWidget);
       await tester.tap(find.text('Site 4'));
       expect(opened, ['https://example.org/4']);
+      await tester.scrollUntilVisible(
+        find.byType(MobileBrowserAddressField),
+        -160,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.enterText(find.byType(TextField), 'example.org/typed');
       await tester.testTextInput.receiveAction(TextInputAction.go);
       await tester.pumpAndSettle();

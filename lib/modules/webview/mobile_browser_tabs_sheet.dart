@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -42,13 +43,14 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
   Widget build(BuildContext context) => NodeLaneCatalogSheet(
     title: '标签页 · ${entries.length}',
     heightFactor: .8,
+    fitContent: true,
     bottom: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         if (error != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: NodeLaneTokens.space12),
             child: Text(
               error!,
               style: NodeLaneTokens.of(context).readerSecondary,
@@ -60,15 +62,25 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
               ? () => Navigator.pop(context, '')
               : null,
           icon: Icon(NodeLaneIcons.of(context).add),
-          label: Text(entries.length < 12 ? '新建标签页' : '已打开 12 个标签页'),
+          label: Text(
+            entries.length < BrowserSessionStore.maxTabs
+                ? '新建标签页'
+                : '已打开 12 个标签页',
+          ),
         ),
       ],
     ),
     child: entries.isEmpty
-        ? const Center(child: Text('还没有打开的标签页'))
+        ? NodeLaneEmptyState(
+            icon: NodeLaneIcons.of(context).browserStart,
+            title: '还没有打开的标签页',
+          )
         : GridView.builder(
+            shrinkWrap: true,
             controller: scroll,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(
+              horizontal: NodeLaneTokens.gutter,
+            ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: NodeLaneTokens.browserTabGap,

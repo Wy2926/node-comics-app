@@ -6,7 +6,7 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 
 import 'browser_url.dart';
 
-// Both browser entry points use the existing pinned-source preferences.
+// The shared start page uses the existing pinned-source preferences.
 final browserPinnedSourcesProvider = Provider<List<Source>>((ref) {
   final showNsfw = ref.watch(showNSFWStateProvider);
   final hiddenRepositories = {

@@ -3,9 +3,9 @@ import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 
 import 'browser_url.dart';
 
@@ -306,16 +306,9 @@ class MobileBrowserTabCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    return Material(
-      color: t.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(NodeLaneTokens.groupRadius),
-        side: BorderSide(
-          color: selected ? t.accent : t.line,
-          width: selected ? 2 : .5,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
+    return NodeLaneGroupSurface(
+      selected: selected,
+      outlined: true,
       child: InkWell(
         onTap: onSelect,
         child: Column(
@@ -334,7 +327,11 @@ class MobileBrowserTabCard extends StatelessWidget {
                         cacheWidth: 360,
                         errorBuilder: (_, _, _) => ColoredBox(
                           color: t.soft,
-                          child: Icon(icons.web, size: 36, color: t.muted),
+                          child: Icon(
+                            icons.web,
+                            size: NodeLaneTokens.websiteIconSize,
+                            color: t.muted,
+                          ),
                         ),
                       ),
                     )
@@ -371,7 +368,7 @@ class MobileBrowserTabCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(NodeLaneTokens.space12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -381,12 +378,12 @@ class MobileBrowserTabCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: t.readerLabel,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: NodeLaneTokens.space4),
                   Text(
                     url.isEmpty ? '尚未打开网页' : Uri.tryParse(url)?.host ?? '',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: t.readerSecondary,
+                    style: t.secondary,
                   ),
                 ],
               ),
@@ -478,111 +475,52 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: NodeLaneGlassSurface(
-            borderRadius: t.inputRadius,
-            input: true,
-            elevated: true,
-            child: ValueListenableBuilder(
-              valueListenable: input,
-              builder: (context, _, _) => TextField(
-                controller: input,
-                focusNode: focus,
-                style: widget.compact
-                    ? t.readerValue.copyWith(color: t.ink)
-                    : t.body,
-                textAlign: widget.compact && !focus.hasFocus
-                    ? TextAlign.center
-                    : TextAlign.start,
-                textAlignVertical: TextAlignVertical.center,
-                keyboardType: TextInputType.url,
-                textInputAction: TextInputAction.go,
-                autocorrect: false,
-                enableSuggestions: false,
-                textCapitalization: TextCapitalization.none,
-                smartDashesType: SmartDashesType.disabled,
-                smartQuotesType: SmartQuotesType.disabled,
-                onSubmitted: (_) => _submit(),
-                onEditingComplete: () {},
-                onChanged: (_) {
-                  if (invalid) setState(() => invalid = false);
-                },
-                onTapOutside: (_) => focus.unfocus(),
-                decoration: t
-                    .inputDecoration(
-                      '输入或粘贴网址',
-                      prefixIcon: Icon(
-                        widget.compact && widget.url.startsWith('https:')
-                            ? icons.lock
-                            : icons.web,
-                        size: widget.compact
-                            ? NodeLaneTokens.smallIconSize
-                            : NodeLaneTokens.iconSize,
-                        color: t.muted,
-                      ),
-                      suffixIcon: IconButton(
-                        tooltip: widget.compact
-                            ? (focus.hasFocus ? '清空网址' : '刷新')
-                            : (input.text.isEmpty ? '粘贴网址' : '打开网址'),
-                        style: _barIconStyle(t.muted),
-                        icon: Icon(
-                          widget.compact
-                              ? (focus.hasFocus ? icons.clear : icons.refresh)
-                              : (input.text.isEmpty
-                                    ? icons.clipboard
-                                    : icons.forward),
-                          size: widget.compact
-                              ? NodeLaneTokens.smallIconSize
-                              : NodeLaneTokens.iconSize,
-                        ),
-                        onPressed: widget.compact
-                            ? (focus.hasFocus ? input.clear : widget.onReload)
-                            : () async {
-                                if (input.text.isNotEmpty) {
-                                  _submit();
-                                  return;
-                                }
-                                final data = await Clipboard.getData(
-                                  Clipboard.kTextPlain,
-                                );
-                                if (!mounted || data?.text == null) return;
-                                input.text = data!.text!.trim();
-                                focus.requestFocus();
-                              },
-                      ),
-                    )
-                    .copyWith(
-                      fillColor: Colors.transparent,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      constraints: BoxConstraints(
-                        minHeight: widget.compact
-                            ? NodeLaneTokens.browserAddressHeight
-                            : NodeLaneTokens.searchHeight,
-                      ),
-                      prefixIconConstraints: BoxConstraints.tightFor(
-                        width: widget.compact
-                            ? NodeLaneTokens.websiteIconSize
-                            : NodeLaneTokens.searchHeight,
-                        height: widget.compact
-                            ? NodeLaneTokens.browserAddressHeight
-                            : NodeLaneTokens.searchHeight,
-                      ),
-                      suffixIconConstraints: BoxConstraints.tightFor(
-                        width: NodeLaneTokens.minTapTarget,
-                        height: widget.compact
-                            ? NodeLaneTokens.browserAddressHeight
-                            : NodeLaneTokens.searchHeight,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: NodeLaneTokens.space8,
-                      ),
-                      hintStyle: widget.compact
-                          ? t.readerSecondary
-                          : t.body.copyWith(color: t.muted),
-                      errorText: invalid ? '请输入有效的网址' : null,
-                      errorMaxLines: 2,
-                    ),
+          child: ValueListenableBuilder(
+            valueListenable: input,
+            builder: (context, _, _) => NodeLaneTextField(
+              controller: input,
+              focusNode: focus,
+              compact: widget.compact,
+              hint: '输入或粘贴网址',
+              textAlign: widget.compact && !focus.hasFocus
+                  ? TextAlign.center
+                  : TextAlign.start,
+              leading: widget.compact && widget.url.startsWith('https:')
+                  ? icons.lock
+                  : icons.web,
+              keyboardType: TextInputType.url,
+              textInputAction: TextInputAction.go,
+              autocorrect: false,
+              enableSuggestions: false,
+              onSubmitted: (_) => _submit(),
+              onEditingComplete: () {},
+              onTapOutside: (_) => focus.unfocus(),
+              onChanged: (_) {
+                if (invalid) setState(() => invalid = false);
+              },
+              errorText: invalid ? '请输入有效的网址' : null,
+              trailing: NodeLaneIconButton(
+                tooltip: widget.compact
+                    ? (focus.hasFocus ? '清空网址' : '刷新')
+                    : (input.text.isEmpty ? '粘贴网址' : '打开网址'),
+                style: NodeLaneIconButtonStyle.plain,
+                icon: widget.compact
+                    ? (focus.hasFocus ? icons.clear : icons.refresh)
+                    : (input.text.isEmpty ? icons.clipboard : icons.forward),
+                onPressed: widget.compact
+                    ? (focus.hasFocus ? input.clear : widget.onReload)
+                    : () async {
+                        if (input.text.isNotEmpty) {
+                          _submit();
+                          return;
+                        }
+                        final data = await Clipboard.getData(
+                          Clipboard.kTextPlain,
+                        );
+                        if (!mounted || data?.text == null) return;
+                        input.text = data!.text!.trim();
+                        focus.requestFocus();
+                      },
               ),
             ),
           ),
@@ -624,11 +562,13 @@ class MobileBrowserTabsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
-    final button = IconButton(
+    return NodeLaneIconButton(
       tooltip: '标签页 · $count',
       onPressed: onPressed,
-      style: _barIconStyle(t.ink),
-      icon: SizedBox(
+      style: tonal
+          ? NodeLaneIconButtonStyle.glass
+          : NodeLaneIconButtonStyle.plain,
+      iconWidget: SizedBox(
         width: NodeLaneTokens.iconSize,
         height: NodeLaneTokens.iconSize,
         child: Stack(
@@ -649,11 +589,15 @@ class MobileBrowserTabsButton extends StatelessWidget {
                     border: Border.all(color: t.ink, width: 1.5),
                   ),
                   child: front
-                      ? Text(
-                          '$count',
-                          style: t.caption.copyWith(
-                            color: t.ink,
-                            fontWeight: FontWeight.w600,
+                      ? FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '$count',
+                            maxLines: 1,
+                            style: t.caption.copyWith(
+                              color: t.ink,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         )
                       : null,
@@ -663,13 +607,6 @@ class MobileBrowserTabsButton extends StatelessWidget {
         ),
       ),
     );
-    return tonal
-        ? NodeLaneGlassSurface(
-            borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
-            elevated: true,
-            child: button,
-          )
-        : button;
   }
 }
 
@@ -686,35 +623,23 @@ class MobileBrowserLoadError extends StatelessWidget {
     final t = NodeLaneTokens.of(context);
     return Material(
       color: t.canvas,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(NodeLaneTokens.space24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                NodeLaneIcons.of(context).web,
-                color: t.muted,
-                size: NodeLaneTokens.websiteIconSize,
-              ),
-              const SizedBox(height: NodeLaneTokens.space16),
-              Text('网页暂时无法打开', style: t.title, textAlign: TextAlign.center),
-              const SizedBox(height: NodeLaneTokens.space8),
-              Text(
-                '检查网络，或确认网址是否正确。',
-                style: t.readerSecondary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: NodeLaneTokens.space24),
-              FilledButton.icon(
-                onPressed: onRetry,
-                icon: Icon(NodeLaneIcons.of(context).refresh),
-                label: const Text('重试'),
-              ),
-              const SizedBox(height: NodeLaneTokens.space8),
-              TextButton(onPressed: onEditAddress, child: const Text('编辑网址')),
-            ],
-          ),
+      child: NodeLaneEmptyState(
+        icon: NodeLaneIcons.of(context).web,
+        title: '网页暂时无法打开',
+        message: '检查网络，或确认网址是否正确。',
+        scrollable: true,
+        action: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: NodeLaneTokens.space8,
+          runSpacing: NodeLaneTokens.space8,
+          children: [
+            NodeLaneSecondaryButton(
+              onPressed: onRetry,
+              icon: NodeLaneIcons.of(context).refresh,
+              child: const Text('重试'),
+            ),
+            TextButton(onPressed: onEditAddress, child: const Text('编辑网址')),
+          ],
         ),
       ),
     );

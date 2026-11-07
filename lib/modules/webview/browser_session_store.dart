@@ -93,4 +93,20 @@ class BrowserSessionStore extends ChangeNotifier {
     }
     return save(remaining);
   }
+
+  Future<bool> createBlank() async {
+    if (entries.length >= maxTabs) return false;
+    await save([
+      for (final entry in entries) {...entry, 'active': false},
+      {'id': translationUuid(), 'url': '', 'title': '', 'active': true},
+    ]);
+    return true;
+  }
+
+  Future<void> select(String id) {
+    if (!entries.any((entry) => entry['id'] == id)) return Future.value();
+    return save([
+      for (final entry in entries) {...entry, 'active': entry['id'] == id},
+    ]);
+  }
 }

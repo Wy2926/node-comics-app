@@ -6,11 +6,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 
 import 'browser_session_store.dart';
-import 'browser_pinned_sources_provider.dart';
-import 'mobile_browser_start_page.dart';
 import 'mobile_browser_tabs_sheet.dart';
 
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -116,11 +116,9 @@ class MobileComicBrowser extends ConsumerStatefulWidget {
     required this.url,
     required this.title,
     this.tabId,
-    this.newTab = false,
   });
   final String url, title;
   final String? tabId;
-  final bool newTab;
   @override
   ConsumerState<MobileComicBrowser> createState() => _MobileComicBrowserState();
 }
@@ -133,6 +131,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   Timer? _warmTimer, _saveTimer;
   bool foreground = true, ready = false;
   bool _leaving = false, _showingTabs = false, _clearingLogins = false;
+  bool _savedOnExit = false;
   late final service = ref.read(translationServiceProvider);
   BrowserTab? get current => tabs.where((tab) => tab.id == active).firstOrNull;
   List<Map<String, dynamic>> get _entries => [
@@ -168,23 +167,21 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       }
       return;
     }
-    final existing = widget.newTab
-        ? null
-        : tabs
-              .where(
-                (tab) => widget.tabId == null
-                    ? tab.url == widget.url
-                    : tab.id == widget.tabId,
-              )
-              .firstOrNull;
+    final existing = tabs
+        .where(
+          (tab) => widget.tabId == null
+              ? tab.url == widget.url
+              : tab.id == widget.tabId,
+        )
+        .firstOrNull;
     var tab = existing;
     // A URL from the start page or a source can fill a blank tab in place.
-    if (tab == null && !widget.newTab && isBrowserUrl(widget.url)) {
+    if (tab == null && isBrowserUrl(widget.url)) {
       tab = tabs.where((item) => item.isBlank).firstOrNull;
-      if (tab != null) {
-        tab.visited(widget.url);
-        tab.title = widget.title;
-      }
+    }
+    if (tab?.isBlank == true && isBrowserUrl(widget.url)) {
+      tab!.visited(widget.url);
+      tab.title = widget.title;
     }
     if (tab == null && tabs.length < BrowserSessionStore.maxTabs) {
       tab = BrowserTab(
@@ -203,6 +200,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     active = tab.id;
     ready = true;
     _attach();
+    if (tab.isBlank) {
+      await _returnToStart();
+      return;
+    }
     setState(() {});
     _save();
   }
@@ -288,6 +289,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
     _saveTimer?.cancel();
     await browserSessionStore.save(_entries).catchError((_) {});
+    _savedOnExit = true;
     await WidgetsBinding.instance.endOfFrame;
     if (mounted) Navigator.of(context).pop();
   }
@@ -296,6 +298,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     if (active == tab.id) return;
     _addressFocus.unfocus();
     final previous = current;
+    if (tab.isBlank) {
+      active = tab.id;
+      warm = previous?.isBlank == false ? previous!.id : null;
+      _attach();
+      unawaited(_returnToStart(previous));
+      return;
+    }
     if (previous != null) {
       unawaited(_capturePreview(previous));
       unawaited(_captureAnchor(previous));
@@ -309,6 +318,22 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _warmTimer = Timer(const Duration(seconds: 30), () {
       if (mounted) setState(() => warm = null);
     });
+  }
+
+  /// Blank tabs belong to the root start page, with the app's native navigation.
+  /// Keep metadata and position; no second start-page route or WebView survives.
+  Future<void> _returnToStart([BrowserTab? previous]) async {
+    if (_leaving) return;
+    setState(() => _leaving = true);
+    _saveTimer?.cancel();
+    _warmTimer?.cancel();
+    if (previous != null) {
+      await Future.wait([_captureAnchor(previous), _capturePreview(previous)]);
+    }
+    if (!mounted) return;
+    await browserSessionStore.save(_entries).catchError((_) {});
+    _savedOnExit = true;
+    if (mounted) context.go('/browser');
   }
 
   void _new(String url) {
@@ -338,17 +363,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _showTabs();
   }
 
-  void _openAddress(String url, [String title = '']) {
+  void _openAddress(String url) {
     final tab = current;
     if (tab == null || !isBrowserUrl(url)) return;
-    if (tab.isBlank) {
-      tab.visited(url);
-      tab.title = title;
-      setState(() {});
-      _save();
-    } else {
-      tab.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
-    }
+    tab.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
   }
 
   Future<void> _showTabs() async {
@@ -377,6 +395,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         final tab = tabs.where((e) => e.id == action).firstOrNull;
         if (tab != null) _select(tab);
       }
+      if (current?.isBlank == true) await _returnToStart();
     } finally {
       _showingTabs = false;
     }
@@ -460,7 +479,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _warmTimer?.cancel();
     _saveTimer?.cancel();
     _addressFocus.dispose();
-    if (ready) {
+    if (ready && !_savedOnExit) {
       browserSessionStore.save(_entries).catchError((_) {});
     }
     for (final tab in tabs) {
@@ -493,8 +512,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                 ),
               Expanded(
                 key: const ValueKey('browser-content'),
-                child: !ready
-                    ? const Center(child: CircularProgressIndicator())
+                child: !ready || tab?.isBlank == true
+                    ? const NodeLaneEmptyState.loading()
                     : Stack(
                         fit: StackFit.expand,
                         children: [
@@ -516,22 +535,6 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                 save: _save,
                                 newTab: _new,
                                 editAddress: _addressFocus.requestFocus,
-                              ),
-                            ),
-                          if (tab?.isBlank == true)
-                            Positioned.fill(
-                              child: MobileBrowserStartPage(
-                                key: ValueKey(tab!.id),
-                                sources: ref.watch(
-                                  browserPinnedSourcesProvider,
-                                ),
-                                tabCount: tabs.length,
-                                onOpen: _openAddress,
-                                onNew: () => _new(''),
-                                onTabs: _showTabs,
-                                onClose: _leave,
-                                bottomInset: MediaQuery.paddingOf(context)
-                                    .bottom,
                               ),
                             ),
                         ],

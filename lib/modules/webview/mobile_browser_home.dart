@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +20,11 @@ class MobileBrowserHome extends ConsumerStatefulWidget {
 }
 
 class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
-  bool ready = false, opening = false;
+  bool ready = false, opening = false, showingTabs = false;
+
+  Map<String, dynamic>? get _blank => browserSessionStore.entries
+      .where((entry) => entry['active'] == true && entry['url'] == '')
+      .firstOrNull;
 
   @override
   void initState() {
@@ -28,59 +34,70 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
     });
   }
 
-  Future<void> _open(
-    String url,
-    String title, {
-    String? tabId,
-    bool newTab = false,
-  }) async {
+  Future<void> _open(String url, String title, {String? tabId}) async {
     if (opening || !ready) return;
     opening = true;
     FocusScope.of(context).unfocus();
     try {
-      await context.push(
-        '/mangawebview',
-        extra: {'url': url, 'title': title, 'tabId': ?tabId, 'newTab': newTab},
+      unawaited(
+        context.push(
+          '/mangawebview',
+          extra: {'url': url, 'title': title, 'tabId': ?tabId ?? _blank?['id']},
+        ),
       );
+      // Guard the transition, not the lifetime of a route that can return via go().
+      await WidgetsBinding.instance.endOfFrame;
     } finally {
       opening = false;
     }
   }
 
   Future<void> _new() async {
-    if (browserSessionStore.entries.length >= BrowserSessionStore.maxTabs) {
+    if (!await browserSessionStore.createBlank() && mounted) {
       showNodeLaneNotice('最多保留 12 个标签页，请先关闭一个。');
-      await _tabs();
-      return;
     }
-    await _open('', '', newTab: true);
   }
 
   Future<void> _tabs() async {
-    final action = await showNodeLaneCatalogSheet<String>(
-      context,
-      MobileBrowserTabsSheet(
-        entries: browserSessionStore.entries,
-        onClose: (id) async {
-          await browserSessionStore.close(id);
-          return browserSessionStore.entries;
-        },
-      ),
-    );
-    if (!mounted || action == null) return;
-    if (action.isEmpty) {
-      await _new();
-      return;
-    }
-    final entry = browserSessionStore.entries
-        .where((e) => e['id'] == action)
-        .firstOrNull;
-    if (entry != null) {
-      await _open(
-        entry['url'] as String,
-        entry['title'] as String? ?? '',
-        tabId: entry['id'] as String,
+    if (!ready || opening || showingTabs) return;
+    showingTabs = true;
+    FocusScope.of(context).unfocus();
+    try {
+      final action = await showNodeLaneCatalogSheet<String>(
+        context,
+        MobileBrowserTabsSheet(
+          entries: browserSessionStore.entries,
+          onClose: (id) async {
+            await browserSessionStore.close(id);
+            return browserSessionStore.entries;
+          },
+        ),
       );
+      if (!mounted || action == null) return;
+      if (action.isEmpty) {
+        await _new();
+        return;
+      }
+      final entry = browserSessionStore.entries
+          .where((e) => e['id'] == action)
+          .firstOrNull;
+      if (entry != null) {
+        if (entry['url'] == '') {
+          await browserSessionStore.select(action);
+          return;
+        }
+        await _open(
+          entry['url'] as String,
+          entry['title'] as String? ?? '',
+          tabId: entry['id'] as String,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        showNodeLaneNotice('标签状态保存失败，请重试。', kind: NodeLaneNoticeKind.error);
+      }
+    } finally {
+      showingTabs = false;
     }
   }
 
@@ -90,11 +107,12 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
       body: ListenableBuilder(
         listenable: browserSessionStore,
         builder: (context, _) => MobileBrowserStartPage(
+          key: ValueKey(_blank?['id']),
           sources: ref.watch(browserPinnedSourcesProvider),
           tabCount: browserSessionStore.entries.length,
           onOpen: _open,
-          onNew: ready ? _new : null,
           onTabs: ready ? _tabs : null,
+          onManage: () => context.go('/browse'),
           bottomInset: pageBottomInsets(context).bottom,
         ),
       ),

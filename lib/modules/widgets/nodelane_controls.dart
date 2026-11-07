@@ -1152,15 +1152,17 @@ enum NodeLaneIconButtonStyle { plain, glass }
 class NodeLaneIconButton extends StatelessWidget {
   const NodeLaneIconButton({
     super.key,
-    required this.icon,
+    this.icon,
+    this.iconWidget,
     required this.tooltip,
     required this.onPressed,
     this.style = NodeLaneIconButtonStyle.glass,
     this.active = false,
     this.destructive = false,
     this.busy = false,
-  });
-  final IconData icon;
+  }) : assert((icon == null) != (iconWidget == null));
+  final IconData? icon;
+  final Widget? iconWidget;
   final String tooltip;
   final VoidCallback? onPressed;
   final NodeLaneIconButtonStyle style;
@@ -1175,7 +1177,7 @@ class NodeLaneIconButton extends StatelessWidget {
         onPressed: busy ? null : onPressed,
         icon: busy
             ? _iconButtonProgress()
-            : Icon(icon, size: NodeLaneTokens.iconSize),
+            : iconWidget ?? Icon(icon, size: NodeLaneTokens.iconSize),
         style: _iconButtonStyle(
           context,
           active: active,
@@ -1384,6 +1386,12 @@ class NodeLaneTextField extends StatefulWidget {
     this.obscureText = false,
     this.trailing,
     this.validator,
+    this.leading,
+    this.compact = false,
+    this.textAlign = TextAlign.start,
+    this.errorText,
+    this.onEditingComplete,
+    this.onTapOutside,
   }) : assert(controller == null || initialValue == null),
        _search = false;
 
@@ -1398,6 +1406,12 @@ class NodeLaneTextField extends StatefulWidget {
     this.enabled = true,
     this.autofocus = false,
   }) : validator = null,
+       leading = null,
+       compact = false,
+       textAlign = TextAlign.start,
+       errorText = null,
+       onEditingComplete = null,
+       onTapOutside = null,
        focusNode = null,
        autofillHints = null,
        obscureText = false,
@@ -1428,6 +1442,12 @@ class NodeLaneTextField extends StatefulWidget {
   final Iterable<String>? autofillHints;
   final Widget? trailing;
   final FormFieldValidator<String>? validator;
+  final IconData? leading;
+  final bool compact;
+  final TextAlign textAlign;
+  final String? errorText;
+  final VoidCallback? onEditingComplete;
+  final TapRegionCallback? onTapOutside;
 
   @override
   State<NodeLaneTextField> createState() => _NodeLaneTextFieldState();
@@ -1450,26 +1470,33 @@ class NodeLaneTextField extends StatefulWidget {
       textInputAction: textInputAction,
       minLines: minLines,
       maxLines: maxLines,
+      textAlign: textAlign,
       textAlignVertical: TextAlignVertical.center,
       onChanged: onChanged,
       validator: validator,
       onFieldSubmitted: onSubmitted,
-      onTapOutside: _search ? (_) => inputFocus.unfocus() : null,
+      onEditingComplete: onEditingComplete,
+      onTapOutside:
+          onTapOutside ?? (_search ? (_) => inputFocus.unfocus() : null),
       style: code
           ? t.readerSecondary.copyWith(fontFamily: 'monospace', color: t.ink)
+          : compact
+          ? t.readerValue.copyWith(color: t.ink)
           : t.body,
       decoration: t
           .inputDecoration(
             hint,
-            prefixIcon: _search
+            prefixIcon: _search || leading != null
                 ? Padding(
                     padding: const EdgeInsetsDirectional.only(
                       start: NodeLaneTokens.space16,
                       end: NodeLaneTokens.space12,
                     ),
                     child: Icon(
-                      icons.search,
-                      size: NodeLaneTokens.iconSize,
+                      leading ?? icons.search,
+                      size: compact
+                          ? NodeLaneTokens.smallIconSize
+                          : NodeLaneTokens.iconSize,
                       color: t.muted,
                     ),
                   )
@@ -1511,6 +1538,32 @@ class NodeLaneTextField extends StatefulWidget {
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             disabledBorder: InputBorder.none,
+            errorText: errorText,
+            errorMaxLines: 2,
+            constraints: compact
+                ? const BoxConstraints(
+                    minHeight: NodeLaneTokens.browserAddressHeight,
+                  )
+                : null,
+            prefixIconConstraints: compact
+                ? const BoxConstraints(
+                    minWidth: NodeLaneTokens.websiteIconSize,
+                    minHeight: NodeLaneTokens.browserAddressHeight,
+                  )
+                : null,
+            suffixIconConstraints: compact
+                ? const BoxConstraints(
+                    minWidth: NodeLaneTokens.minTapTarget,
+                    minHeight: NodeLaneTokens.browserAddressHeight,
+                  )
+                : null,
+            contentPadding: compact
+                ? const EdgeInsets.symmetric(
+                    horizontal: NodeLaneTokens.space12,
+                    vertical: NodeLaneTokens.space8,
+                  )
+                : null,
+            hintStyle: compact ? t.readerValue.copyWith(color: t.muted) : null,
           ),
     );
     final input = NodeLaneGlassSurface(
