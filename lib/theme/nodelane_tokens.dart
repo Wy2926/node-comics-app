@@ -94,6 +94,18 @@ class NodeLaneTokens {
   static const menuMaxWidth = 280.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
   static const catalogTabsWidth = 200.0;
+  // Source cards share geometry across directories, metadata and action states.
+  static const sourceCardTopInset = space8;
+  static const sourceCardIdentityHeight = websiteIconSize;
+  static const sourceCardClassificationHeight = minTapTarget;
+  static const sourceCardFooterHeight = minTapTarget;
+  static const sourceCardHeight =
+      sourceCardTopInset +
+      sourceCardIdentityHeight +
+      sourceCardClassificationHeight +
+      sourceCardFooterHeight;
+  static const sourceAdultCornerWidth = 52.0, sourceAdultCornerHeight = 32.0;
+  static const sourceCornerCut = 20.0;
   static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
   static const browserTabGap = 12.0;
   static const navigationHeight = 64.0, navigationRadius = 32.0;
@@ -141,6 +153,19 @@ class NodeLaneTokens {
 
   Color get accentOverlay => accent.withValues(alpha: .11);
   Color get accentSoft => Color.alphaBlend(accentOverlay, surface);
+
+  Color get sourceFreeSurface =>
+      Color.alphaBlend(accent.withValues(alpha: .03), surface);
+  Color get sourceFreeOutline => accent.withValues(alpha: .35);
+  Color get sourcePaidBand =>
+      Color.alphaBlend(soft.withValues(alpha: .65), surface);
+  Color get sourceAdultSurface => ink;
+  Color get sourceAdultInk => surface;
+  TextStyle get sourceTitle =>
+      readerLabel.copyWith(fontWeight: FontWeight.w600, height: 1.2);
+  TextStyle get sourceMetadata => secondary.copyWith(height: 1.2);
+  TextStyle get sourceFooter =>
+      readerSecondary.copyWith(fontWeight: FontWeight.w600, height: 1.2);
 
   Color get switchTrack =>
       Color.alphaBlend(muted.withValues(alpha: .28), surface);

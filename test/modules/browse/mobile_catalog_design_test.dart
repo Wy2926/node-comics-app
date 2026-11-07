@@ -1,4 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
@@ -15,6 +14,7 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
+import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
 import 'package:mangayomi/modules/browse/mobile_repository_sheets.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
@@ -181,7 +181,9 @@ void main() {
         expect(find.text('管理仓库'), findsOneWidget);
         expect(find.text('第三方来源'), findsNothing);
         expect(find.text('添加仓库'), findsNothing);
-        expect(find.text('English · 1.0.0'), findsOneWidget);
+        expect(find.byType(SourceWebsiteCard), findsNWidgets(2));
+        expect(find.text('English · 1.0.0'), findsNothing);
+        expect(find.text('收费未标注'), findsNWidgets(2));
         await tester.enterText(find.byType(TextField), 'missing');
         await tester.pumpAndSettle();
         expect(find.text('没有匹配的网站'), findsOneWidget);
@@ -194,28 +196,6 @@ void main() {
       },
     );
   }
-  testWidgets('a trailing source action never opens its row', (tester) async {
-    var opened = 0, installed = 0;
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    await mount(
-      tester,
-      NodeLaneRow.card(
-        title: 'Website',
-        leading: const Icon(Icons.public),
-        onTap: () => opened++,
-        trailing: TextButton(
-          onPressed: () => installed++,
-          child: const Text('安装'),
-        ),
-      ),
-      container,
-    );
-    await tester.tap(find.text('安装'));
-    expect([opened, installed], [0, 1]);
-    await tester.tap(find.text('Website'));
-    expect([opened, installed], [1, 1]);
-  });
   testWidgets(
     'catalog failures float once without moving the cached directory',
     (tester) async {

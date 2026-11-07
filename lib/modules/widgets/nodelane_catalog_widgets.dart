@@ -19,7 +19,7 @@ class NodeLaneWebsiteIcon extends StatelessWidget {
       size: NodeLaneTokens.iconSize,
     );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
+      borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
       child: SizedBox.square(
         dimension: NodeLaneTokens.websiteIconSize,
         child: ColoredBox(

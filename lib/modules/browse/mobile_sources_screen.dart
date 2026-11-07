@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
@@ -36,6 +37,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   ItemType type = ItemType.manga;
   bool thirdParty = false, managing = false;
   final busy = <int>{};
+  final failedActions = <int, ({bool open, bool latest})>{};
   final languages = <(ItemType, bool), Set<String>>{};
   bool _refreshing = false;
   NodeLaneNoticeHandle? _notice;
@@ -99,7 +101,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   }) async {
     if (source.id == null || busy.contains(source.id)) return;
     final requestedThirdParty = thirdParty;
-    setState(() => busy.add(source.id!));
+    setState(() {
+      busy.add(source.id!);
+      failedActions.remove(source.id);
+    });
     try {
       final proxy = ref.read(androidProxyServerStateProvider);
       if (source.isAdded == true && source.sourceCode?.isNotEmpty == true) {
@@ -132,6 +137,11 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         _open(loaded, latest: latest);
       }
     } catch (_) {
+      if (mounted) {
+        setState(
+          () => failedActions[source.id!] = (open: open, latest: latest),
+        );
+      }
       if (mounted &&
           type == source.itemType &&
           thirdParty == requestedThirdParty) {
@@ -213,6 +223,14 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
             NodeLaneGroupSurface(
               children: [
                 NodeLaneRow(
+                  title: '来源资料',
+                  icon: NodeLaneIcons.of(context).info,
+                  onTap: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    showSourceWebsiteInfo(context, source);
+                  },
+                ),
+                NodeLaneRow(
                   title: source.isPinned == true ? '取消常用' : '固定到常用',
                   icon: NodeLaneIcons.of(context).pin,
                   onTap: () {
@@ -267,58 +285,59 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     );
   }
 
-  Widget _row(Source source, int index, int length) {
-    final icons = NodeLaneIcons.of(context);
+  Widget _card(Source source) {
     final installed =
         source.isAdded == true && source.sourceCode?.isNotEmpty == true;
     final update =
         installed &&
         source.isObsolete != true &&
         compareVersions(source.version ?? '', source.versionLast ?? '') < 0;
-    final version = installed
-        ? source.version
-        : source.versionLast ?? source.version;
-    return NodeLaneRow.card(
+    final loading = busy.contains(source.id);
+    final failed = failedActions[source.id];
+    final action = loading
+        ? SourceCardAction.loading
+        : managing
+        ? source.isPinned == true
+              ? SourceCardAction.unpin
+              : SourceCardAction.pin
+        : failed != null
+        ? SourceCardAction.retry
+        : thirdParty && !installed
+        ? SourceCardAction.install
+        : thirdParty && update
+        ? SourceCardAction.update
+        : SourceCardAction.open;
+    void open() {
+      if (managing) {
+        _pin(source);
+      } else if (installed) {
+        _open(source);
+      } else if (!loading) {
+        _fetch(source, open: true);
+      }
+    }
+
+    return SourceWebsiteCard(
       key: ValueKey('source-${source.id}'),
-      title: source.name ?? '',
-      metadata: [
-        completeLanguageName((source.lang ?? '').toLowerCase()),
-        if (thirdParty && version?.isNotEmpty == true) version!,
-        if (source.isNsfw == true) 'NSFW',
-      ].join(' · '),
-      leading: NodeLaneWebsiteIcon(url: source.iconUrl),
-      first: index == 0,
-      last: index == length - 1,
-      onTap: busy.contains(source.id)
+      source: source,
+      action: action,
+      onOpen: loading && !installed ? null : open,
+      onAction: loading
           ? null
-          : managing
-          ? () => _pin(source)
-          : installed
-          ? () => _open(source)
-          : () => _fetch(source, open: true),
+          : () {
+              switch (action) {
+                case SourceCardAction.retry:
+                  _fetch(source, open: failed!.open, latest: failed.latest);
+                case SourceCardAction.install || SourceCardAction.update:
+                  _fetch(source);
+                case SourceCardAction.pin || SourceCardAction.unpin:
+                  _pin(source);
+                default:
+                  open();
+              }
+            },
+      onDetails: () => showSourceWebsiteInfo(context, source),
       onLongPress: () => _sourceActions(source),
-      trailing: busy.contains(source.id)
-          ? NodeLaneIconButton(
-              icon: icons.download,
-              tooltip: '正在加载网站',
-              onPressed: null,
-              busy: true,
-              style: NodeLaneIconButtonStyle.plain,
-            )
-          : managing
-          ? NodeLaneIconButton(
-              tooltip: source.isPinned == true ? '取消常用' : '固定到常用',
-              onPressed: () => _pin(source),
-              style: NodeLaneIconButtonStyle.plain,
-              active: source.isPinned == true,
-              icon: source.isPinned == true ? icons.pinSelected : icons.pin,
-            )
-          : thirdParty && (!installed || update)
-          ? NodeLaneSecondaryButton(
-              onPressed: () => _fetch(source),
-              child: Text(update ? context.l10n.update : context.l10n.install),
-            )
-          : null,
     );
   }
 
@@ -617,10 +636,13 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                             ),
                             sliver: SliverList.builder(
                               itemCount: groups[groupIndex].$2.length,
-                              itemBuilder: (_, i) => _row(
-                                groups[groupIndex].$2[i],
-                                i,
-                                groups[groupIndex].$2.length,
+                              itemBuilder: (_, i) => Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: i == groups[groupIndex].$2.length - 1
+                                      ? 0
+                                      : NodeLaneTokens.space12,
+                                ),
+                                child: _card(groups[groupIndex].$2[i]),
                               ),
                             ),
                           ),

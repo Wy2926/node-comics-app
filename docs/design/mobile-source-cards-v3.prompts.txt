@@ -1,0 +1,34 @@
+Use case: ui-mockup
+Asset type: NodeLane source website card design system, 1536x1024 landscape, crisp original UI concept artwork.
+Input image1 is the source-card concept to edit. Retain its new card design: integrated dark18+ corner, full-width pricing footer, pale-blue free surface, neutral paid surfaces, typography, monochrome favicons and plain text classification line. Replace its BOARD COMPOSITION completely. Remove the phone preview, navigation, external anatomy legend and all differently scaled examples.
+
+Create a PURE COMPONENT GALLERY with EXACTLY SIX CARDS in a perfectly regular TWO COLUMN by THREE ROW grid. The six cards are six clones of ONE rectangle, each EXACTLY THE SAME WIDTH AND HEIGHT, and all typography/icons at the SAME SCALE. There are no other cards or mobile screenshots. The grid's two columns are equal width, row heights equal, horizontal and vertical gaps equal. Straight perfectly aligned left/right edges. Do not make the right column narrower or the adult card shorter. No magnified insets. Geometry takes priority over decorative composition.
+
+Canvas #F5F6FA, 1536x1024. Top-left outside grid large title "NodeLane · 来源卡片" with small subtitle "用卡片结构表达属性". A small top-right text note "统一尺寸 · 统一基线". Center the grid below the header. Each card is approximately560px wide and218px high in the rendered image, corresponding to350x136 logical points at uniform1.6 scale. All six cards use this EXACT same rectangle. Horizontal gap64px. Row gap72px includes a short caption above each card. Keep modest margins and the whole six-card grid uncropped. Footer note outside cards along bottom, legible. Do not stretch or shrink cards individually to fill available space.
+
+The ONE component anatomy: radius18 logical pt,16pt padding. Upper content92pt high, integrated full-width footer44pt high, total136pt. Favicon40pt square at16,16; website title17semibold at68,16; language13 at68,42; classification13 at16,73 or aligned to title if necessary BUT SAME ALIGNMENT IN ALL SIX. Card footer contains pricing icon+label14 atleft16, and ONE action14 at right with44pt minimum target. Pricing is NOT repeated in the metadata. No extra status text, no varied internal padding. SF Pro/PingFang Simplified Chinese, identical weight/size throughout. No logos from real services, all fictional examples.
+
+Shared palette: page#F5F6FA, ink#171A21, muted#697180, divider#E7EAF0, soft#EBEEF4, accent#006EFF. Free cards have almost-white blue tint upper#F8FAFF, light-blue footer#E4EFFF, subtle thin blue-tinted outline. Non-free cards have white upper content, neutral gray footer#F0F2F6, subtle neutral outline. These are flat surfaces, NO gradients, shadows, glow, glass or raised effects on cards. Price information occupies the full-bleed bottom band integrated with the outer lower rounded corners. No pill behind it. No giant isolated button.
+
+Adult feature: ONLY adult-marked cards have an attached dark-ink upper-right CORNER PANEL, FLUSH to the card top and right edges and inheriting the outer corner radius. Lower-left edge diagonal chamfer; text white horizontal "18+". Approximately52x32 logicalpt. Not a floating badge, not a pill, not a ribbon sticking out, not rotated. No overlap with title. This corner is independent of pricing, so it can appear on free OR paid cards. It does not affect width or height or overall card color. No red warning styling.
+
+Classification: clean text with separators, NEVER capsules/chips/backgrounds. Content dimensions remain distinct: "日漫 / 页漫", "韩漫 / 条漫 / 原创", "同人 / 页漫 / +2". +N is small blue text. No giant decorative category letters, no cover art.
+
+Six cards in this exact grid order. Short muted captions are OUTSIDE card rectangles, all caption baselines aligned within each row:
+ROW1 LEFT caption "01 免费". Name "青叶漫画", leaf favicon, language "简体中文", classification "日漫 / 页漫". Free blue-tinted surface and full-width blue-soft footer. Left footer open-book-outline and "免费阅读" in blue. Right footer "进入" and chevron. No18+ corner.
+ROW1 RIGHT caption "02 部分收费". Name "星河条漫", star favicon, language "简体中文", classification "韩漫 / 条漫 / 原创". White surface and full-width neutral footer. Left footer small half-filled circle and "部分收费". Right footer "进入" and chevron. No18+ corner. The circle is a simple category symbol, not a quantitative chart; no percentages or proportional split surfaces.
+ROW2 LEFT caption "03 18+ · 免费". Name "夜航书屋", open-book favicon, language "简体中文", classification "同人 / 页漫 / +2". EXACT SAME FREE SURFACE AND FOOTER AS01, plus integrated18+ corner. Footer "免费阅读" left, "进入" and chevron right.
+ROW2 RIGHT caption "04 18+ · 付费". Name "墨色书屋", open-book favicon, language "多语言", classification "同人 / 页漫 / +3". White upper, neutral full-width footer, integrated18+ corner. Footer lock-outline and "付费阅读" left, "进入" and chevron right. Card remains available, not dimmed or disabled. No purchase or subscribe control.
+ROW3 LEFT caption "05 未标注". Name "无名书屋", globe favicon, language "简体中文", classification "分类未标注". White card, near-white footer, subtle dashed separator ONLY along footer top edge. Question-circle and "收费未标注" at left. "安装" at right, WITHOUT chevron or additional button wrapper. No18+ corner, no all-ages claim, no guessed labels.
+ROW3 RIGHT caption "06 安装失败". Name "远山漫画", mountain favicon, language "繁体中文", classification "国漫 / 页漫". EXACT SAME FREE SURFACE AND FOOTER AS01. Footer "免费阅读" at left. Right action is ONE small circular-arrow icon plus "重试", WITHOUT extra chevron or spinner. No18+ corner. Do not add error/status text to the card because the outside caption explains the state. Most importantly it is EXACTLY the same136pt height; failure does not grow the card.
+
+Bottom margin outside cards, one small restrained line: "圆角 18 · 内边距 16 · 标准卡片 350 × 136". Below or opposite: "设计概念 · 网站与属性均为示例". Do not add the obsolete phone preview, the earlier anatomy table, page tabs or extra examples. No comic art, photographs, explicit imagery, commercial promotions, ratings, health promises, colored tag pills, random bright accents or invented website claims. Produce a beautifully spaced, precise, balanced, modern UI component board. The viewer should instantly see the CORNER for18+, the whole BOTTOM SURFACE for pricing, and the FIXED ACTION POSITION for state, with all SIX rectangles absolutely identical in size.
+
+--- 生成信息（不属于提示词） ---
+方式：OpenAI 官方 API，经本机 ~/.codex/tools/imagegen/run.py edit 调用技能原 CLI。
+模型：gpt-image-2.6-sunburst；1536x1024；quality high；PNG；no-augment。
+产物：mobile-source-cards-v3.png。
+视觉依据：NodeLane 现有颜色、圆角、字体与间距令牌；图中尺寸为拟议逻辑规格，生图不作为像素级实现依据。提示词按当前实现维护；已有概念图只作几何与颜色参照，18+ 仅由 isNsfw 决定，未知分类文案以当前代码为准。
+结构：六张同尺度卡片；独立成人角标、收费底带、分类文字行与固定操作位。
+素材来源：API 原创生成的界面概念；网站名、图标和属性均为示例，未导入第三方素材文件。项目现有许可与第三方声明保持不变。
+验证边界：已人工检查同尺度对照、中文、成人与收费组合、未知资料和重试状态。本图为设计概念，非运行截图；当前实现与平台验证边界见 ../MOBILE_UI_DESIGN.md。

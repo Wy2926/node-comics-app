@@ -99,6 +99,13 @@ Future<void> fetchSourcesList({
         final hasUpdate =
             installed &&
             compareVersions(existing!.version!, source.version!) < 0;
+        final freshMetadata =
+            existing == null ||
+            compareVersions(
+                  source.version ?? '',
+                  existing.versionLast ?? existing.version ?? '',
+                ) >=
+                0;
         if (!installed) {
           entries.add(
             _catalogEntry(source, repo, itemType)
@@ -106,8 +113,16 @@ Future<void> fetchSourcesList({
               ..isPinned = existing?.isPinned ?? false
               ..lastUsed = existing?.lastUsed ?? false,
           );
-        } else if (hasUpdate || existing!.repo?.jsonUrl != url) {
+        } else if (hasUpdate ||
+            existing!.repo?.jsonUrl != url ||
+            freshMetadata &&
+                (existing.catalogMetadataJson != source.catalogMetadataJson ||
+                    existing.isNsfw != source.isNsfw)) {
           existing.repo = repo;
+          if (freshMetadata) {
+            existing.catalogMetadataJson = source.catalogMetadataJson;
+            existing.isNsfw = source.isNsfw;
+          }
           if (compareVersions(existing.versionLast ?? '', source.version!) <
               0) {
             existing.versionLast = source.version;
@@ -340,6 +355,10 @@ Future<void> _installSource(
         throw StateError('来源已被卸载，已取消更新');
       }
       final updatedSource = _catalogEntry(source, repo, itemType)
+        // A directory refresh may have supplied newer descriptive metadata
+        // while this package was downloading. Keep that current snapshot.
+        ..catalogMetadataJson = existing.catalogMetadataJson
+        ..isNsfw = existing.isNsfw
         ..headers = jsonEncode(headers)
         ..supportLatest = supportLatest
         ..filterList = filterList != null
@@ -369,6 +388,7 @@ Source _catalogEntry(Source source, Repo? repo, ItemType itemType) {
   final newSource = Source()
     ..sourceCodeUrl = source.sourceCodeUrl
     ..packageInfoJson = source.packageInfoJson
+    ..catalogMetadataJson = source.catalogMetadataJson
     ..id = source.id
     ..sourceCode = ''
     ..apiUrl = source.apiUrl

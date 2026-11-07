@@ -5,6 +5,7 @@ import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/eval/model/m_source.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
+import 'package:mangayomi/models/source_catalog_metadata.dart';
 part 'source.g.dart';
 
 @collection
@@ -34,6 +35,13 @@ class Source {
 
   /// Versioned distribution metadata. Null for legacy third-party sources.
   String? packageInfoJson;
+
+  /// Optional directory descriptions. Not tied to the installed code version.
+  String? catalogMetadataJson;
+
+  @ignore
+  SourceCatalogMetadata get catalogMetadata =>
+      SourceCatalogMetadata.decode(catalogMetadataJson);
 
   String? typeSource;
 
@@ -108,6 +116,7 @@ class Source {
     this.apiUrl = "",
     this.sourceCodeUrl = "",
     this.packageInfoJson,
+    this.catalogMetadataJson,
     this.version = "0.0.1",
     this.versionLast = "0.0.1",
     this.sourceCode = '',
@@ -158,6 +167,9 @@ class Source {
     packageInfoJson = json['nodelane'] == null
         ? null
         : jsonEncode(json['nodelane']);
+    catalogMetadataJson = json['catalogMetadata'] is Map
+        ? jsonEncode(json['catalogMetadata'])
+        : null;
     typeSource = json['typeSource'];
     version = json['version'];
     versionLast = json['versionLast'];
@@ -197,6 +209,8 @@ class Source {
     'sourceCode': sourceCode,
     'sourceCodeUrl': sourceCodeUrl,
     if (packageInfoJson != null) 'nodelane': jsonDecode(packageInfoJson!),
+    if (catalogMetadataJson != null)
+      'catalogMetadata': jsonDecode(catalogMetadataJson!),
     'typeSource': typeSource,
     'version': version,
     'versionLast': versionLast,

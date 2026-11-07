@@ -1,8 +1,12 @@
 import 'dart:io';
+import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
@@ -130,6 +134,149 @@ void main() {
         await database.sources.count();
         await tester.pumpWidget(const SizedBox());
         expect(tester.takeException(), isNull);
+      });
+    },
+  );
+
+  testWidgets(
+    'failed update keeps card geometry and installed content; retry repeats only the failed action',
+    (tester) async {
+      await tester.runAsync(() async {
+        final overrides = HttpOverrides.current;
+        HttpOverrides.global = null;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        final gate = Completer<void>(), started = Completer<void>();
+        final localRepo = Repo(
+          jsonUrl: 'http://127.0.0.1:${server.port}/index.json',
+        );
+        final installed = Source(
+          id: 102,
+          name: 'Retry fixture',
+          lang: 'en',
+          isAdded: true,
+          sourceCode: 'existing',
+          repo: localRepo,
+          version: '1.0.0',
+          versionLast: '2.0.0',
+        );
+        var requests = 0;
+        PackageInfo.setMockInitialValues(
+          appName: 'NodeLane',
+          packageName: 'test',
+          version: '0.1.0',
+          buildNumber: '1',
+          buildSignature: '',
+        );
+        await database.writeTxn(() async => database.sources.put(installed));
+        server.listen((request) async {
+          if (request.uri.path == '/index.json') {
+            requests++;
+            if (requests == 1) {
+              started.complete();
+              await gate.future;
+              request.response.statusCode = 503;
+            } else {
+              request.response.write(jsonEncode([installed.toJson()]));
+            }
+          } else if (request.uri.path == '/repo.json') {
+            request.response.write('{"name":"Fixture"}');
+          } else {
+            request.response.statusCode = 404;
+          }
+          await request.response.close();
+        });
+        final container = ProviderContainer(
+          overrides: [
+            nodeLaneCatalogRepositoryProvider(ItemType.manga)
+                .overrideWithValue(null),
+            nodeLaneCatalogLoadProvider(ItemType.manga)
+                .overrideWith((ref) async {}),
+            fetchItemSourcesListProvider(
+              reFresh: false,
+              itemType: ItemType.manga,
+            ).overrideWith((ref) async {}),
+            mobileCatalogEntriesProvider(ItemType.manga)
+                .overrideWith((ref) => Stream.value([installed])),
+          ],
+        );
+        final router = GoRouter(
+          initialLocation: '/browse',
+          observers: [BotToastNavigatorObserver()],
+          routes: [
+            GoRoute(
+              path: '/browse',
+              builder: (_, _) => const MobileSourcesScreen(),
+            ),
+            GoRoute(
+              path: '/mangaHome',
+              builder: (_, state) {
+                final (opened, _) = state.extra! as (Source, bool);
+                expect(opened.sourceCode, 'existing');
+                return const Scaffold(body: Text('Existing website'));
+              },
+            ),
+          ],
+        );
+        try {
+          tester.view.physicalSize = const Size(390, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            UncontrolledProviderScope(
+              container: container,
+              child: MaterialApp.router(
+                routerConfig: router,
+                builder: BotToastInit(),
+                locale: const Locale('zh'),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                theme: ThemeData(platform: TargetPlatform.iOS),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('第三方'));
+          await tester.pumpAndSettle();
+          final card = find.byKey(const ValueKey('source-102'));
+          final before = tester.getRect(card);
+          await tester.tap(find.text('更新'));
+          await tester.pump();
+          await started.future.timeout(const Duration(seconds: 5));
+          expect(tester.getRect(card), before);
+          gate.complete();
+          Future<void> until(bool Function() done) async {
+            for (var i = 0; i < 100 && !done(); i++) {
+              await Future<void>.delayed(const Duration(milliseconds: 20));
+              await tester.pump();
+            }
+            expect(done(), isTrue);
+          }
+
+          await until(() => find.text('重试').evaluate().isNotEmpty);
+          expect(tester.getRect(card), before);
+          expect(database.sources.getSync(102)!.sourceCode, 'existing');
+          await tester.tap(find.text('重试'));
+          await until(
+            () =>
+                requests == 2 &&
+                find.text('重试').evaluate().isEmpty &&
+                find.byType(CircularProgressIndicator).evaluate().isEmpty,
+          );
+          expect(router.routeInformationProvider.value.uri.path, '/browse');
+          expect(tester.getRect(card), before);
+          await tester.tap(find.text('Retry fixture'));
+          await tester.pumpAndSettle();
+          expect(find.text('Existing website'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        } finally {
+          if (!gate.isCompleted) gate.complete();
+          await tester.pumpWidget(const SizedBox());
+          router.dispose();
+          container.dispose();
+          await database.writeTxn(() async => database.sources.delete(102));
+          await server.close(force: true);
+          HttpOverrides.global = overrides;
+        }
       });
     },
   );

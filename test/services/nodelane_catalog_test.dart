@@ -20,6 +20,7 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/proto/mihon_extension_store.pb.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/models/source_catalog_metadata.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/modules/more/settings/security/providers/security_state_provider.dart';
@@ -375,6 +376,85 @@ class DefaultExtension extends MProvider { getHeaders() { while (true) {} } }
       );
     });
 
+    test('metadata refresh persists without code updates and rejects older catalog descriptions', () async {
+      final overrides = HttpOverrides.current;
+      HttpOverrides.global = null;
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() async {
+        await server.close(force: true);
+        HttpOverrides.global = overrides;
+      });
+      final repo = Repo(jsonUrl: 'http://127.0.0.1:${server.port}/index.json');
+      await sourceRepository.save(
+        sourceRepository.getById(1)!
+          ..repo = repo
+          ..isActive = false
+          ..lastUsed = true
+          ..version = '1.0.0'
+          ..versionLast = '1.0.0',
+      );
+      var pricing = 'free', version = '1.0.0';
+      var downloads = 0;
+      server.listen((request) async {
+        if (request.uri.path == '/index.json') {
+          request.response.write(
+            jsonEncode([
+              for (final id in [1, 4])
+                {
+                  'id': id,
+                  'name': 'Fixture $id',
+                  'version': version,
+                  'baseUrl': 'https://example.test',
+                  'sourceCodeUrl': 'plugin.js',
+                  'itemType': 0,
+                  'sourceCodeLanguage': 1,
+                  'isNsfw': false,
+                  'catalogMetadata': {
+                    'schema': 1,
+                    'pricing': pricing,
+                    'regions': ['kr'],
+                    'formats': ['vertical'],
+                  },
+                },
+            ]),
+          );
+        } else if (request.uri.path == '/repo.json') {
+          request.response.write('{"name":"Fixture"}');
+        } else {
+          downloads++;
+          request.response.statusCode = 500;
+        }
+        await request.response.close();
+      });
+      Future<void> refresh() => fetchSourcesList(
+        androidProxyServer: '',
+        autoUpdateExtensions: true,
+        itemType: ItemType.manga,
+        repo: repo,
+      );
+      await refresh();
+      expect(sourceRepository.getById(4)!.catalogMetadata.formats, [
+        'vertical',
+      ]);
+      pricing = 'partial';
+      await refresh();
+      final source = sourceRepository.getById(1)!;
+      expect(source.catalogMetadata.pricing, SourcePricing.partial);
+      expect(source.isNsfw, isFalse);
+      expect(source.sourceCode, 'installed');
+      expect(source.isPinned, isTrue);
+      expect(source.isActive, isFalse);
+      expect(source.lastUsed, isTrue);
+      version = '0.9.0';
+      pricing = 'free';
+      await refresh();
+      expect(
+        sourceRepository.getById(1)!.catalogMetadata.pricing,
+        SourcePricing.partial,
+      );
+      expect(downloads, 0);
+    });
+
     test('catalog publishes first; manual and automatic installs share one queue, preserve edits and resume pending work', () async {
       final overrides = HttpOverrides.current;
       HttpOverrides.global = null;
@@ -473,7 +553,11 @@ class DefaultExtension extends MProvider { getHeaders() { while (true) {} } }
         sourceRepository.getById(1)!
           ..isPinned = false
           ..isActive = false
-          ..lastUsed = true,
+          ..lastUsed = true
+          ..catalogMetadataJson = jsonEncode({
+            'schema': 1,
+            'pricing': 'partial',
+          }),
       );
       gates[1]!.complete();
       await started[4]!.future;
@@ -484,6 +568,7 @@ class DefaultExtension extends MProvider { getHeaders() { while (true) {} } }
       expect(downloads, [1, 4]);
       final installed = sourceRepository.getById(1)!;
       expect(installed.sourceCode, code);
+      expect(installed.catalogMetadata.pricing, SourcePricing.partial);
       expect(
         [installed.isPinned, installed.isActive, installed.lastUsed],
         [false, false, true],

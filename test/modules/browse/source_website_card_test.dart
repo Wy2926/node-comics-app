@@ -1,0 +1,163 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/models/source_catalog_metadata.dart';
+import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+Source _source(SourcePricing pricing, {bool adult = false}) => Source(
+  name: '一个较长的来源名称，用于验证同一尺寸与文字保持',
+  lang: 'zh',
+  isNsfw: adult,
+  catalogMetadataJson: jsonEncode(
+    SourceCatalogMetadata(
+      regions: const ['jp', 'kr', 'cn', 'western'],
+      formats: const ['page', 'vertical'],
+      creations: const ['original', 'fan'],
+      pricing: pricing,
+    ).toJson(),
+  ),
+);
+
+void main() {
+  Future<void> mount(
+    WidgetTester tester,
+    Widget child, {
+    double scale = 1,
+    double width = 350,
+    Brightness brightness = Brightness.light,
+    TextDirection direction = TextDirection.ltr,
+  }) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(
+          brightness: brightness,
+          colorSchemeSeed: NodeLaneTokens.defaultMobileAccent,
+        ),
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
+          child: Directionality(textDirection: direction, child: child!),
+        ),
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(width: width, child: child),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+  }
+
+  for (final layout in [(350.0, 1.0), (280.0, 2.0), (350.0, 3.0)]) {
+    for (final brightness in Brightness.values) {
+      testWidgets(
+        'card dimensions survive pricing, adult and action changes at $layout $brightness',
+        (tester) async {
+          Size? reference;
+          for (final action in SourceCardAction.values) {
+            for (final pricing in SourcePricing.values) {
+              await mount(
+                tester,
+                SourceWebsiteCard(
+                  source: _source(pricing, adult: pricing.index.isEven),
+                  action: action,
+                  onOpen: () {},
+                  onAction: () {},
+                  onDetails: () {},
+                  onLongPress: () {},
+                ),
+                width: layout.$1,
+                scale: layout.$2,
+                brightness: brightness,
+              );
+              final size = tester.getSize(find.byType(SourceWebsiteCard));
+              reference ??= size;
+              expect(
+                size,
+                reference,
+                reason: '$action $pricing changed the geometry',
+              );
+              if (layout.$2 == 1) {
+                expect(size.height, NodeLaneTokens.sourceCardHeight);
+              }
+              expect(tester.takeException(), isNull);
+            }
+          }
+        },
+      );
+    }
+  }
+
+  testWidgets(
+    'footer and metadata actions are isolated; complete labels stay available',
+    (tester) async {
+      var opened = 0, updated = 0, longPressed = 0;
+      final source = _source(SourcePricing.free, adult: true);
+      await mount(
+        tester,
+        Builder(
+          builder: (context) => SourceWebsiteCard(
+            source: source,
+            action: SourceCardAction.update,
+            onOpen: () => opened++,
+            onAction: () => updated++,
+            onLongPress: () => longPressed++,
+            onDetails: () => showSourceWebsiteInfo(context, source),
+          ),
+        ),
+      );
+      await tester.tap(find.text('更新'));
+      expect([opened, updated], [0, 1]);
+      await tester.tap(find.text('+5'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.text('日漫、韩漫、国漫、欧美漫画'), findsOneWidget);
+      expect(opened, 0);
+      Navigator.of(tester.element(find.text('地区'))).pop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(source.name!));
+      await tester.longPress(find.text(source.name!));
+      expect([opened, longPressed], [1, 1]);
+    },
+  );
+
+  testWidgets(
+    'only an explicit NSFW flag shows the adult corner in RTL; pricing stays unknown',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      for (final flag in [true, false, null]) {
+        await mount(
+          tester,
+          SourceWebsiteCard(
+            source: Source(name: 'Fixture', lang: 'en', isNsfw: flag),
+            action: SourceCardAction.retry,
+            onOpen: () {},
+            onAction: () {},
+            onDetails: () {},
+            onLongPress: () {},
+          ),
+          direction: TextDirection.rtl,
+        );
+        final adult = flag == true ? findsOneWidget : findsNothing;
+        expect(find.text('18+'), adult);
+        expect(find.bySemanticsLabel(RegExp('含 18')), adult);
+        expect(find.text('收费未标注'), findsOneWidget);
+        expect(find.text('分类未标注'), findsOneWidget);
+        expect(find.text('免费阅读'), findsNothing);
+        expect(tester.takeException(), isNull);
+      }
+      semantics.dispose();
+    },
+  );
+}

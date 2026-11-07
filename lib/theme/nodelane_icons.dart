@@ -131,4 +131,9 @@ class NodeLaneIcons {
   IconData get favorite => CupertinoIcons.star;
   IconData get signIn => CupertinoIcons.square_arrow_right;
   IconData get signOut => CupertinoIcons.square_arrow_left;
+
+  IconData get sourceFree => CupertinoIcons.book;
+  IconData get sourcePartlyPaid => CupertinoIcons.circle_lefthalf_fill;
+  IconData get sourcePaid => CupertinoIcons.lock;
+  IconData get sourceUnknown => CupertinoIcons.question_circle;
 }
