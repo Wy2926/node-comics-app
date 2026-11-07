@@ -299,9 +299,10 @@ void main() {
     test('the next chapter follows a transition page', () async {
       final manager = ChapterPreloadManager()..initialize(chapterPages(ch1, 3));
 
-      final added = await manager.preloadNextChapter(
-        _model(chapterPages(ch2, 2)),
+      final added = await manager.loadNextChapter(
         ch1,
+        findNextChapter: () => ch2,
+        loadPages: (_, _) async => _model(chapterPages(ch2, 2)),
       );
 
       expect(added, isTrue);
@@ -318,7 +319,11 @@ void main() {
         final manager = ChapterPreloadManager()
           ..initialize(chapterPages(ch1, 2));
         for (final ch in [ch2, ch3, ch4]) {
-          await manager.preloadNextChapter(_model(chapterPages(ch, 2)), ch1);
+          await manager.loadNextChapter(
+            manager.pages.last.chapter!,
+            findNextChapter: () => ch,
+            loadPages: (_, _) async => _model(chapterPages(ch, 2)),
+          );
         }
 
         final evicted = manager.evictOldChapters(ch3);

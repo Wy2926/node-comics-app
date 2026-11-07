@@ -24,6 +24,8 @@ class TransitionViewPaged extends ConsumerWidget {
       nextChapter: data.nextChapter,
       mangaName: data.mangaName ?? '',
       readerMode: readerMode,
+      nextChapterState: data.nextChapterState,
+      onRetryChapter: data.onRetryChapter,
     );
   }
 }

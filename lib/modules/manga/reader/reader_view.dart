@@ -412,14 +412,11 @@ class _MangaChapterPageGalleryState
   }
 
   // final double _horizontalScaleValue = 1.0; TODO
-  bool _isNextChapterPreloading = false;
   int _prefetchSessionId = 0;
-  // bool _isPrevChapterPreloading = false; TODO
 
   int get pagePreloadAmount => ref.read(pagePreloadAmountStateProvider);
   late bool _isBookmarked = _readerController.getChapterBookmarked();
 
-  bool _isLastPageTransition = false;
   bool _isView = false;
   final _keyboardFocusNode = FocusNode();
   final List<int> _cropBorderCheckList = [];
@@ -1186,14 +1183,15 @@ class _MangaChapterPageGalleryState
 
       // ── Next-chapter preloading: trigger when near the end ──
       final distToEnd = pagesLength - 1 - last;
-      if (distToEnd <= pagePreloadAmount && !_isLastPageTransition) {
-        _triggerNextChapterPreload();
+      if (distToEnd <= pagePreloadAmount) {
+        // A short final chapter can fit below its transition while the first
+        // visible item still belongs to the previous chapter. Load after the
+        // visible tail so this boundary cannot prevent further scrolling.
+        final visibleEnd = _pageViewToActualIndex(
+          last.clamp(0, pagesLength - 1),
+        );
+        _triggerNextChapterPreload(afterChapter: pages[visibleEnd].chapter);
       }
-
-      // // ── Previous-chapter preloading: trigger when near the start ──
-      // if (itemPositions.first.index <= pagePreloadAmount) {
-      //   _triggerPrevChapterPreload();
-      // }
 
       // Ensure the current chapter's pages are reloaded if they were evicted,
       // and evict old chapters' pages to free memory. Gated on pageChanged
@@ -1234,72 +1232,40 @@ class _MangaChapterPageGalleryState
     });
   }
 
-  void _addLastPageTransition(Chapter chap) {
-    if (_isLastPageTransition) return;
-    try {
-      if (!mounted || pageCount == 0) return;
-      if (pages.last.isLastChapter ?? false) return;
-
-      final added = addLastChapterTransition(chap);
-      if (added && mounted) {
-        setState(() {
-          _isLastPageTransition = true;
-        });
-      }
-    } catch (_) {}
-  }
-
-  void _preloadNextChapter(GetChapterPagesModel chapterData, Chapter chap) {
-    try {
-      if (chapterData.uChapDataPreload.isEmpty || !mounted) return;
-
-      final firstChapter = chapterData.uChapDataPreload.first.chapter;
-      if (firstChapter == null) return;
-
-      // Use mixin's method for memory-bounded preloading with auto-eviction
-      preloadNextChapter(chapterData, chap).then((success) {
-        if (success && mounted) {
-          setState(() {});
-        }
-      });
-    } catch (_) {}
-  }
-
-  // bidirectional proactive chapter preloading ──
-
-  /// Proactively starts loading both adjacent chapters at reader init.
-  void _proactivePreload() {
-    _triggerNextChapterPreload();
-    // _triggerPrevChapterPreload();
-  }
-
-  /// Fires off next-chapter page fetching if not already in progress.
-  void _triggerNextChapterPreload() async {
-    if (_isNextChapterPreloading || _isLastPageTransition) return;
-    _isNextChapterPreloading = true;
-    try {
-      if (!mounted) {
-        _isNextChapterPreloading = false;
-        return;
-      }
-      final nextChapter = _readerController.getNextChapter();
-      if (isChapterLoaded(nextChapter)) {
-        _isNextChapterPreloading = false;
-        return;
-      }
-      final value = await ref.read(
-        getChapterPagesProvider(chapter: nextChapter).future,
-      );
-      if (mounted) {
-        _preloadNextChapter(value, chapter);
-      }
-      _isNextChapterPreloading = false;
-    } on RangeError {
-      _isNextChapterPreloading = false;
-      _addLastPageTransition(chapter);
-    } catch (_) {
-      _isNextChapterPreloading = false;
-    }
+  void _triggerNextChapterPreload({Chapter? afterChapter}) {
+    if (!mounted) return;
+    // Capture the requested boundary before awaiting; scrolling back must not
+    // attach the result to a different chapter.
+    final current = afterChapter ?? chapter;
+    unawaited(
+      preloadManager.loadNextChapter(
+        current,
+        findNextChapter: () {
+          if (!mounted) throw StateError('Reader closed');
+          final active = current.id == chapter.id;
+          final controller = active
+              ? _readerController
+              : ref.read(readerControllerProvider(chapter: current).notifier);
+          try {
+            return controller.hasNextChapter
+                ? controller.getNextChapter()
+                : null;
+          } finally {
+            if (!active) controller.keepAliveLink?.close();
+          }
+        },
+        loadPages: (next, retry) async {
+          if (!mounted) throw StateError('Reader closed');
+          final provider = getChapterPagesProvider(chapter: next);
+          if (retry) {
+            await ChapterCache().remove(next);
+            if (!mounted) throw StateError('Reader closed');
+            ref.invalidate(provider);
+          }
+          return ref.read(provider.future);
+        },
+      ),
+    );
   }
 
   void _initCurrentIndex() async {
@@ -1307,14 +1273,19 @@ class _MangaChapterPageGalleryState
     _currentPageDisplayIndex.value = _savedPageIndex;
 
     // Initialize the preload manager with bounded memory (from ReaderMemoryManagement mixin)
-    initializePreloadManager(_chapterUrlModel, onPagesUpdated: () {});
+    initializePreloadManager(
+      _chapterUrlModel,
+      onPagesUpdated: () {
+        if (mounted) setState(() {});
+      },
+    );
 
     // Kick off ordered prefetch before the first frame so lower-indexed pages
     // win the HTTP race against the simultaneous widget-driven loads.
     _prefetchPagesInOrder(); // intentionally not awaited
 
-    // proactively start loading adjacent chapters in background
-    _proactivePreload();
+    // Start the next chapter in the background, keeping a visible boundary.
+    _triggerNextChapterPreload();
 
     _readerController.setHistoryUpdate();
     // Use post-frame callback instead of Future.delayed(1ms) timing hack
@@ -1521,14 +1492,9 @@ class _MangaChapterPageGalleryState
 
     // ── Next-chapter preloading: trigger when near the end ──
     final distToEnd = pages.length - 1 - actualIndex;
-    if (distToEnd <= pagePreloadAmount && !_isLastPageTransition) {
+    if (distToEnd <= pagePreloadAmount) {
       _triggerNextChapterPreload();
     }
-
-    // // ── Previous-chapter preloading: trigger when near the start ──
-    // if (actualIndex <= pagePreloadAmount) {
-    //   _triggerPrevChapterPreload();
-    // }
 
     await _handleEvictionsAndPrefetch();
   }

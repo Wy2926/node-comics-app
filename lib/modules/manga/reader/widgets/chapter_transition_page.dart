@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
+import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 class ChapterTransitionPage extends StatelessWidget {
@@ -8,6 +11,10 @@ class ChapterTransitionPage extends StatelessWidget {
   final Chapter? nextChapter;
   final String mangaName;
   final ReaderMode readerMode;
+  final NextChapterState? nextChapterState;
+  final VoidCallback? onRetryChapter;
+
+  bool get _hasNextChapter => nextChapter != null || nextChapterState != null;
 
   const ChapterTransitionPage({
     super.key,
@@ -15,6 +22,8 @@ class ChapterTransitionPage extends StatelessWidget {
     required this.nextChapter,
     required this.mangaName,
     required this.readerMode,
+    this.nextChapterState,
+    this.onRetryChapter,
   });
 
   @override
@@ -27,26 +36,17 @@ class ChapterTransitionPage extends StatelessWidget {
     );
   }
 
-  // ── Vertical: FittedBox path (width is always capped to 480) ──────────────
-
+  // Keep long failure text and Retry reachable on short screens/large text.
   Widget _buildVerticalScaffold(BuildContext context) {
     return Center(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return FittedBox(
-            fit: BoxFit.scaleDown,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: constraints.maxWidth.clamp(100.0, 480.0),
-                maxHeight: constraints.maxHeight.clamp(100.0, double.infinity),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: _buildVerticalLayout(context),
-              ),
-            ),
-          );
-        },
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: _buildVerticalLayout(context),
+          ),
+        ),
       ),
     );
   }
@@ -101,32 +101,25 @@ class ChapterTransitionPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Icon(
-            nextChapter != null
+            _hasNextChapter
                 ? Icons.keyboard_arrow_down
                 : Icons.check_circle_outline,
             size: 32,
-            color: nextChapter != null
+            color: _hasNextChapter
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.onSurface
                       .withValues(alpha: 0.6),
           ),
           const SizedBox(height: 16),
-          if (nextChapter != null) ...[
+          if (_hasNextChapter) ...[
             _buildChapterCard(
               context,
               label: l10n.next_chapter,
-              name: nextChapter!.name ?? 'Chapter ${nextChapter!.id}',
+              name: nextChapter?.name ?? l10n.next_chapter,
               isPrimary: true,
             ),
             const SizedBox(height: 20),
-            Text(
-              l10n.continue_to_next_chapter,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface
-                    .withValues(alpha: 0.6),
-              ),
-              textAlign: TextAlign.center,
-            ),
+            _buildContinuation(context),
           ] else ...[
             _buildEndOfMangaCard(context),
             const SizedBox(height: 20),
@@ -160,22 +153,22 @@ class ChapterTransitionPage extends StatelessWidget {
     );
 
     final Widget arrowIcon = Icon(
-      nextChapter != null
+      _hasNextChapter
           ? (readerMode.isRTL
                 ? Icons.keyboard_arrow_left
                 : Icons.keyboard_arrow_right)
           : Icons.check_circle_outline,
       size: 36,
-      color: nextChapter != null
+      color: _hasNextChapter
           ? theme.colorScheme.primary
           : theme.colorScheme.onSurface.withValues(alpha: 0.6),
     );
 
-    final Widget nextCard = nextChapter != null
+    final Widget nextCard = _hasNextChapter
         ? _buildChapterCard(
             context,
             label: l10n.next_chapter,
-            name: nextChapter!.name ?? 'Chapter ${nextChapter!.id}',
+            name: nextChapter?.name ?? l10n.next_chapter,
             isPrimary: true,
           )
         : _buildEndOfMangaCard(context);
@@ -223,16 +216,40 @@ class ChapterTransitionPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Text(
-          nextChapter != null
-              ? l10n.continue_to_next_chapter
-              : l10n.return_to_the_list_of_chapters,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-          textAlign: TextAlign.center,
-        ),
+        _buildContinuation(context),
       ],
+    );
+  }
+
+  Widget _buildContinuation(BuildContext context) {
+    final l10n = context.l10n;
+    final state = nextChapterState;
+    if (state == null) {
+      return Text(
+        _hasNextChapter
+            ? l10n.continue_to_next_chapter
+            : l10n.return_to_the_list_of_chapters,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+        textAlign: TextAlign.center,
+      );
+    }
+    final loading = state == NextChapterState.loading;
+    return ReaderInteractiveRegion(
+      child: NodeLaneNotice(
+        message: switch (state) {
+          NextChapterState.loading => l10n.reader_loading_pages,
+          NextChapterState.failed => l10n.reader_loading_failed,
+          NextChapterState.empty => l10n.reader_no_pages,
+        },
+        description: state == NextChapterState.failed
+            ? l10n.reader_loading_retry_hint
+            : null,
+        kind: loading ? NodeLaneNoticeKind.progress : NodeLaneNoticeKind.error,
+        actionLabel: !loading && onRetryChapter != null ? l10n.retry : null,
+        onAction: loading ? null : onRetryChapter,
+      ),
     );
   }
 

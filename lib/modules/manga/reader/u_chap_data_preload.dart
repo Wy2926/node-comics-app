@@ -6,6 +6,8 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/page.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
 
+enum NextChapterState { loading, failed, empty }
+
 class UChapDataPreload {
   Chapter? chapter;
   Directory? directory;
@@ -19,6 +21,10 @@ class UChapDataPreload {
   Chapter? nextChapter;
   String? mangaName;
   bool? isLastChapter;
+
+  // Present only on the pending chapter boundary; cleared on success/disposal.
+  NextChapterState? nextChapterState;
+  VoidCallback? onRetryChapter;
   Rect? srcRect;
 
   /// The real on-disk path of this page, for local image-folder chapters
