@@ -974,16 +974,12 @@ List<Widget> mobilePrimaryButtonBar(
   VideoController controller, {
   FocusNode? playPauseFocus,
 }) {
-  bool hasPrevEpisode =
-      streamController.getEpisodeIndex().$1 + 1 !=
-      streamController.getEpisodesLength(streamController.getEpisodeIndex().$2);
-  bool hasNextEpisode = streamController.getEpisodeIndex().$1 != 0;
   final isFullScreen = isFullscreen(context);
   return [
     const Spacer(flex: 3),
     IconButton(
       style: mobilePlayerEpisodeNavigationButtonStyle(),
-      onPressed: hasPrevEpisode
+      onPressed: streamController.hasPreviousEpisode
           ? () {
               if (isFullScreen) {
                 key.currentState?.exitFullscreen();
@@ -1001,7 +997,7 @@ List<Widget> mobilePrimaryButtonBar(
     const Spacer(),
     IconButton(
       style: mobilePlayerEpisodeNavigationButtonStyle(),
-      onPressed: hasNextEpisode
+      onPressed: streamController.hasNextEpisode
           ? () {
               if (isFullScreen) {
                 key.currentState?.exitFullscreen();

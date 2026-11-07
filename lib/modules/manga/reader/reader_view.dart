@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
+import 'package:mangayomi/modules/manga/reader/managers/reader_image_prefetcher.dart';
 
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:photo_view/photo_view.dart';
@@ -218,6 +219,7 @@ class _MangaChapterPageGalleryState
     _rebuildDetail.close();
 
     _evictionAndPrefetchDebounce?.cancel();
+    _imagePrefetcher.dispose();
     _failedPageIndexes.dispose();
     _hasCurrentPageImageError.dispose();
     _currentPageViewIndex.dispose();
@@ -263,12 +265,17 @@ class _MangaChapterPageGalleryState
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
       _readingStopwatch.stop();
+      _readerInForeground = false;
+      _imagePrefetcher.clear();
       if (keepOn) {
         WakelockPlus.disable();
       }
       _saveCurrentPage(_pageViewToActualIndex(_currentIndex ?? 0));
     } else if (state == AppLifecycleState.resumed) {
       _readingStopwatch.start();
+      _readerInForeground = true;
+      _prefetchPagesInOrder();
+      _scheduleReadProgressListener();
       if (keepOn) {
         WakelockPlus.enable();
       }
@@ -412,7 +419,24 @@ class _MangaChapterPageGalleryState
   }
 
   // final double _horizontalScaleValue = 1.0; TODO
-  int _prefetchSessionId = 0;
+  bool _readerInForeground = true;
+  late final _imagePrefetcher = ReaderImagePrefetcher(
+    load: (page, isCurrent) async {
+      final path = page.resolvedFilePath ?? await page.getLocalFilePath;
+      if (!mounted || !isCurrent()) return;
+      if (path != null) {
+        page.resolvedFilePath = path;
+        return;
+      }
+      final provider = page.getImageProvider(ref, false);
+      if (provider is CustomExtendedNetworkImageProvider) {
+        await provider.getNetworkImageData();
+        if (!mounted || !isCurrent()) return;
+        final cachedPath = await page.getLocalFilePath;
+        if (mounted && isCurrent()) page.resolvedFilePath = cachedPath;
+      }
+    },
+  );
 
   int get pagePreloadAmount => ref.read(pagePreloadAmountStateProvider);
   late bool _isBookmarked = _readerController.getChapterBookmarked();
@@ -1233,7 +1257,7 @@ class _MangaChapterPageGalleryState
   }
 
   void _triggerNextChapterPreload({Chapter? afterChapter}) {
-    if (!mounted) return;
+    if (!mounted || !_readerInForeground) return;
     // Capture the requested boundary before awaiting; scrolling back must not
     // attach the result to a different chapter.
     final current = afterChapter ?? chapter;
@@ -1284,6 +1308,7 @@ class _MangaChapterPageGalleryState
           if (!mounted) return;
           final mode = ref.read(_currentReaderMode);
           if (mode == null) return;
+          _prefetchPagesInOrder();
           if (mode.isContinuous) {
             _readProgressListener();
           } else if (_extendedController.hasClients &&
@@ -1300,7 +1325,7 @@ class _MangaChapterPageGalleryState
 
     // Kick off ordered prefetch before the first frame so lower-indexed pages
     // win the HTTP race against the simultaneous widget-driven loads.
-    _prefetchPagesInOrder(); // intentionally not awaited
+    _prefetchPagesInOrder();
 
     // Start the next chapter in the background, keeping a visible boundary.
     _triggerNextChapterPreload();
@@ -1365,12 +1390,14 @@ class _MangaChapterPageGalleryState
       final archivePath = isLocalArchive
           ? await resolveLocalArchivePath(currentChapter.archivePath!)
           : (await findDownloadedChapter(currentChapter))?.archive?.path;
+      if (!mounted) return;
 
       if (archivePath != null && await File(archivePath).exists()) {
         try {
           final local = await ref.read(
             getArchiveDataFromFileProvider(archivePath).future,
           );
+          if (!mounted) return;
           final images = local.images ?? [];
           for (final page in pages) {
             // A page's index is its image's position in the archive. Not a
@@ -1393,78 +1420,30 @@ class _MangaChapterPageGalleryState
           }
         }
       }
+    } else {
+      // Remote pages and image folders can resolve from their existing URLs /
+      // paths. Restore their membership so subsequent eviction stays bounded.
+      preloadManager.markChapterAsLoaded(currentChapter);
     }
   }
 
-  /// Warms Flutter's [ImageCache] and pre-resolves each page’s
-  /// local/archive file path in reading order before the widget tree renders.
-  ///
-  /// Instead of letting [ScrollablePositionedList] trigger many
-  /// simultaneous network requests in arbitrary server-response order,
-  /// this method starts image fetches early and in a prioritized sequence.
-  /// Pages near the current reading position are queued first,
-  /// and multiple background workers resolve their providers concurrently,
-  /// giving earlier pages a head start without strictly serializing downloads.
-  ///
-  /// Flutter deduplicates identical image providers, so pages already within
-  /// the cache extent attach to existing pending requests without
-  /// issuing duplicates. Pages beyond the cache extent are fetched in
-  /// reading order but may overlap due to parallel workers.
-  ///
-  /// The work is fully asynchronous and does not block UI interaction.
-  Future<void> _prefetchPagesInOrder() async {
-    final sessionId = ++_prefetchSessionId;
-    if (pages.isEmpty) return;
+  /// Fetch encoded images in the current window without decoding offscreen
+  /// pages. Replacing the queue preserves a reader-wide limit of three workers.
+  void _prefetchPagesInOrder() {
+    if (!mounted || !_readerInForeground || pages.isEmpty) return;
+    final snapshot = pages;
     final actualIdx = _pageViewToActualIndexSync(_currentIndex ?? 0);
-    final startIdx = actualIdx.clamp(0, pages.length - 1);
-
+    final startIdx = actualIdx.clamp(0, snapshot.length - 1);
     final preloadAmount = ref.read(pagePreloadAmountStateProvider);
-    final forwardLimit = (startIdx + preloadAmount).clamp(0, pages.length - 1);
-    final backwardLimit = (startIdx - 2).clamp(0, pages.length - 1);
-
-    final indices = [
-      for (var i = startIdx; i <= forwardLimit; i++) i,
-      for (var i = startIdx - 1; i >= backwardLimit; i--) i,
-    ];
-
-    final queue = List<int>.from(indices);
-
-    Future<void> worker() async {
-      while (queue.isNotEmpty) {
-        if (sessionId != _prefetchSessionId || !mounted) return;
-        final i = queue.removeAt(0);
-        // The page list can shrink or shift while the workers run (a split
-        // wide page, an appended chapter), so the queued slot may be gone.
-        if (i >= pages.length) continue;
-        final page = pages[i];
-        if (page.isTransitionPage) continue;
-        try {
-          // Pre-resolve the local/archive file path in advance to avoid load delays
-          if (page.resolvedFilePath == null) {
-            final path = await page.getLocalFilePath;
-            if (path != null) {
-              page.resolvedFilePath = path;
-            }
-          }
-
-          final provider = page.getImageProvider(ref, true);
-          if (provider is CustomExtendedNetworkImageProvider) {
-            await provider.getNetworkImageData();
-            // Resolve again if just downloaded
-            if (page.resolvedFilePath == null) {
-              final path = await page.getLocalFilePath;
-              if (path != null) {
-                page.resolvedFilePath = path;
-              }
-            }
-          }
-        } catch (_) {
-          // Swallow errors: network failures, widget disposal, etc.
-        }
-      }
-    }
-
-    await Future.wait([worker(), worker(), worker()]);
+    final forwardLimit = (startIdx + preloadAmount).clamp(
+      0,
+      snapshot.length - 1,
+    );
+    final backwardLimit = (startIdx - 2).clamp(0, snapshot.length - 1);
+    _imagePrefetcher.update([
+      for (var i = startIdx; i <= forwardLimit; i++) snapshot[i],
+      for (var i = startIdx - 1; i >= backwardLimit; i--) snapshot[i],
+    ]);
   }
 
   /// Handles page changes in PageView mode (discrete pages).
@@ -1520,6 +1499,7 @@ class _MangaChapterPageGalleryState
   Future<void> _handleEvictionsAndPrefetch() async {
     // Ensure the current chapter's pages are reloaded if they were evicted
     await _checkAndReloadEvictedPages(chapter);
+    if (!mounted) return;
 
     // Evict old chapters' pages to free memory
     final evictedIndices = preloadManager.evictOldChapters(chapter);

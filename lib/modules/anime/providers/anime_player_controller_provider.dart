@@ -35,19 +35,14 @@ class AnimeStreamController extends _$AnimeStreamController
   final bool incognitoMode = settingsRepository.current.incognitoMode!;
 
   // ---------------------------------------------------------------------------
-  // Anime-flavoured aliases (preserve the existing public API)
+  // Episode navigation
   // ---------------------------------------------------------------------------
-
-  (int, bool) getEpisodeIndex() => getChapterIndex();
 
   Chapter getPrevEpisode() => getPrevChapter();
   Chapter getNextEpisode() => getNextChapter();
 
   bool get hasPreviousEpisode => hasPreviousChapter;
   bool get hasNextEpisode => hasNextChapter;
-
-  int getEpisodesLength(bool isInFilterList) =>
-      getChaptersLength(isInFilterList);
 
   // ---------------------------------------------------------------------------
   // Playback position

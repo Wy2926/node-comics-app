@@ -12,6 +12,7 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/update.dart';
 import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_providers.dart';
+import 'package:mangayomi/modules/manga/reader/mixins/chapter_controller_mixin.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/services/chapter_cache.dart';
 import 'package:mangayomi/services/get_detail.dart';
@@ -123,6 +124,63 @@ void main() {
     manga.chapters.loadSync();
     return manga.getChapterListForReading();
   }
+
+  test(
+    'reading progress cannot replace sorted neighbours with raw link order',
+    () async {
+      final chapters = await refresh([
+        for (var i = 5; i >= 1; i--) entry('Chapter $i', 'chapter-$i'),
+      ]);
+      final selected = chapters.singleWhere((c) => c.name == 'Chapter 2');
+      final skipped = chapters.singleWhere((c) => c.name == 'Chapter 3');
+      saveProgress(skipped);
+      database.writeTxnSync(() {
+        database.settings.putSync(
+          database.settings.getSync(227)!
+            ..chapterFilterUnreadList = [
+              ChapterFilterUnread(mangaId: 1, type: 1),
+            ],
+        );
+      });
+      final manga = database.mangas.getSync(1)!..chapters.loadSync();
+      final navigation = _ChapterNavigation(selected, manga);
+      expect(navigation.getNextChapter().name, 'Chapter 4');
+      saveProgress(selected);
+      manga.chapters.loadSync();
+      expect(readingList().any((c) => c.id == selected.id), isFalse);
+      expect(navigation.hasNextChapter, isTrue);
+      expect(navigation.getNextChapter().name, 'Chapter 4');
+      expect(navigation.getPrevChapter().name, 'Chapter 1');
+      final first = _ChapterNavigation(
+        chapters.singleWhere((c) => c.name == 'Chapter 1'),
+        manga,
+      );
+      final last = _ChapterNavigation(
+        chapters.singleWhere((c) => c.name == 'Chapter 5'),
+        manga,
+      );
+      expect((first.hasPreviousChapter, first.hasNextChapter), (false, true));
+      expect((last.hasPreviousChapter, last.hasNextChapter), (true, false));
+    },
+  );
+
+  test(
+    'an explicitly opened alternate scanlator remains the navigation anchor',
+    () async {
+      final chapters = await refresh([
+        entry('Chapter 3', 'three'),
+        entry('Chapter 2', 'two-a', 'A'),
+        entry('Chapter 2', 'two-b', 'B'),
+        entry('Chapter 1', 'one'),
+      ]);
+      final selected = chapters.singleWhere((c) => c.scanlator == 'B');
+      final manga = database.mangas.getSync(1)!..chapters.loadSync();
+      final navigation = _ChapterNavigation(selected, manga);
+      expect(navigation.getNextChapter().name, 'Chapter 3');
+      expect(navigation.getPrevChapter().name, 'Chapter 1');
+      expect(manga.getChapterListForReading(anchor: selected), hasLength(3));
+    },
+  );
 
   test(
     'catalog and sequential reader retain same-name and decimal URL variants',
@@ -277,4 +335,13 @@ void main() {
     ]);
     expect(readingList(), hasLength(3));
   });
+}
+
+class _ChapterNavigation with ChapterControllerMixin {
+  _ChapterNavigation(this.chapter, this.manga);
+  @override
+  final Chapter chapter;
+  final Manga manga;
+  @override
+  Manga getManga() => manga;
 }

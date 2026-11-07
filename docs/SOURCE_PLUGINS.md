@@ -40,6 +40,8 @@
 
 `NodeLane.capabilities` 在 QuickJS 中只读提供，`requires` 声明不支持的包不会安装。NodeLane 插件的 `Client` 在 App 请求桥校验精确 HTTPS 主机、每次重定向、1 MiB 请求体、4 MiB 文本响应、30 秒超时和最多 4 次跳转；使用证书验证开启的 Dart HTTP 通道。该边界覆盖此 Client，不宣称上游所有可执行扩展能力已经形成完整恶意代码沙箱。
 
+来源运行时只释放 JavaScript 定时器、回调与原生引用。HTTP、提取器与 WebView 等宿主桥在调用者的 Zone 中执行，维持共享 HTTPS 连接的生命周期。普通 JavaScript 阅读调用直接执行，不经过安装工作线程，因而不受安装的 40 秒响应限时约束。
+
 CF 继续走现有 MClient／设备 WebView，Cookie 和 UA 留设备端。Comix 的 `captcha_required` 单独提示在源站处理；不把所有 403 当作 CF，不自动解题。日志隐藏请求凭据和查询值。
 
 `PageUrl.imageProcessing` 是可选声明式图片操作。`image.tile-shuffle.v1` 接收算法 3 及插件提供的种子掩码，公共图片层根据响应头恢复图块；不含站点判断，不传整章图片到 JS，也不把源站细节加入翻译层。未知协议失败。页面序列保留重复 URL，防止页槽和进度偏移；章节缓存序列化处理参数。
@@ -50,6 +52,7 @@ CF 继续走现有 MClient／设备 WebView，Cookie 和 UA 留设备端。Comix
 
 - `lib/services/source_package.dart`：包校验、下载边界与来源归属。
 - `lib/eval/javascript/http.dart`：声明主机和文本请求预算。
+- `lib/eval/javascript/source_runtime.dart`、`test/eval/js_http_lifecycle_test.dart`：JavaScript 与宿主资源的释放边界，本地 HTTPS 同连接跨运行时复用、失败后恢复。
 - `lib/services/source_images/tile_shuffle.dart`：独立通用图块还原，阅读缓存与下载共同使用。
 - `test/services/source_package_test.dart`、`nodelane_catalog_test.dart`、`source_image_processing_test.dart`：失败恢复、隔离、重复操作、像素和缓存边界。
 - `test/modules/manga/detail/chapter_catalog_identity_test.dart`、`test/modules/manga/reader/min_subsampling_headers_test.dart`：目录入库／顺序阅读的章节身份、重复刷新与进度保留，以及阅读器初始化时安全读取图片请求头。
@@ -57,4 +60,4 @@ CF 继续走现有 MClient／设备 WebView，Cookie 和 UA 留设备端。Comix
 
 来源图块协议参考 `node-comics` 提交 `af3df6ee75276ba1970ba0a7dc22488d54712e18` 的 `images.ts`（SHA-256 `3a7eedd0c9a8fbf1a14e67f89285d71f71dfc2e40d60fa3ce67e66ce0ad92113`），App 通用 Dart 置换独立实现，未复制该 GPL TypeScript 文件；具体种子掩码留在 GPL 插件。使用既有 `image` 4.10.1 依赖，不引入模型或字体。独立插件仓库保留其 GPL-3.0-only 许可和移植来源，App 上游 Apache-2.0 声明不改标。
 
-合成样本、QuickJS、真实 HTTP、iOS 模拟器和真机分别记录。S2READ 已在 iOS 27 模拟器验证安装／更新、搜索、完整目录、真实正文首尾页、下一章与后台返回保持位置；图块还原另以合成图片验证真实 HTTP 到阅读器图片入口、像素结果与失败重试。Comix 在设备现有会话中已加载热门与完整章节目录，但章节接口仍要求站点验证码，不能视为真实图片或 CF 已验收。真机与性能尚未验收；Android 按当前开发约定暂缓，没有据此修改 Android 发布配置。
+合成样本、QuickJS、真实 HTTP、iOS 模拟器和真机分别记录。S2READ 已在 iOS 27 模拟器验证安装／更新、搜索、完整目录、真实正文首尾页、下一章与后台返回保持位置；瓜子漫画已验证真实在线连续跨章与后台返回保持页码。图块还原另以合成图片验证真实 HTTP 到阅读器图片入口、像素结果与失败重试。Comix 在设备现有会话中已加载热门与完整章节目录，但章节接口仍要求站点验证码，不能视为真实图片或 CF 已验收。真机与性能尚未验收；Android 按当前开发约定暂缓，没有据此修改 Android 发布配置。

@@ -73,7 +73,13 @@ extension MangaExtensions on Manga {
   /// Filtered chapters respecting the user's active filters (unread,
   /// bookmarked, downloaded, scanlator). Sorted by chapter number ascending.
   /// Base list — no user-chosen sort, no deduplication.
-  List<Chapter> getFilteredChapters([Settings? settingsOverride]) {
+  List<Chapter> getFilteredChapters([Settings? settingsOverride]) =>
+      _getFilteredChapters(settingsOverride);
+
+  List<Chapter> _getFilteredChapters(
+    Settings? settingsOverride, {
+    Chapter? anchor,
+  }) {
     final settings = settingsOverride ?? settingsRepository.current;
 
     final filterUnread =
@@ -119,28 +125,18 @@ extension MangaExtensions on Manga {
         ? const <int>{}
         : downloadRepository.getDownloadedIdsAmong(chapterIds).toSet();
 
-    return data
-        .where(
-          (e) => filterUnread == 1
-              ? e.isRead == false
-              : filterUnread == 2
-              ? e.isRead == true
-              : true,
-        )
-        .where(
-          (e) => filterBookmarked == 1
-              ? e.isBookmarked == true
-              : filterBookmarked == 2
-              ? e.isBookmarked == false
-              : true,
-        )
-        .where((e) {
-          if (filterDownloaded == 0) return true;
-          final dl = downloadedIds.contains(e.id);
-          return filterDownloaded == 1 ? dl : !dl;
-        })
-        .where((e) => !filterScanlator.contains(e.scanlator))
-        .toList();
+    return data.where((entry) {
+      if (anchor != null && entry.id == anchor.id) return true;
+      if (filterUnread == 1 && entry.isRead != false) return false;
+      if (filterUnread == 2 && entry.isRead != true) return false;
+      if (filterBookmarked == 1 && entry.isBookmarked != true) return false;
+      if (filterBookmarked == 2 && entry.isBookmarked != false) return false;
+      if (filterDownloaded != 0 &&
+          downloadedIds.contains(entry.id) != (filterDownloaded == 1)) {
+        return false;
+      }
+      return !filterScanlator.contains(entry.scanlator);
+    }).toList();
   }
 
   /// Filtered chapters for display in the chapter list UI: same filters as
@@ -199,8 +195,10 @@ extension MangaExtensions on Manga {
   /// Preserve distinct URLs, including same-number parts with no group label.
   /// Only collapse alternatives with different, explicit scanlator labels and
   /// one entry per group; ambiguous same-group numbering retains every part.
-  List<Chapter> getChapterListForReading() {
-    final list = getFilteredChapters();
+  List<Chapter> getChapterListForReading({Chapter? anchor}) {
+    // Reading can mark the current chapter read or change its bookmark. Keep
+    // that chapter as the navigation anchor while filtering its neighbours.
+    final list = _getFilteredChapters(null, anchor: anchor);
     final sortKeys = _chapterSortKeys(name ?? '', list);
     final groups = <(double, String), int>{};
     final ambiguous = <double>{};
@@ -218,6 +216,12 @@ extension MangaExtensions on Manga {
     final seen = <double>{};
     return list.where((c) {
       final key = sortKeys[c.id];
+      if (anchor != null &&
+          key != null &&
+          key == sortKeys[anchor.id] &&
+          !ambiguous.contains(key)) {
+        return c.id == anchor.id;
+      }
       return key == null || ambiguous.contains(key) || seen.add(key);
     }).toList();
   }

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -302,28 +303,44 @@ void main() {
       },
     );
 
-    test(
-      'only the chapters around the current one keep their images',
-      () async {
-        final ch3 = Chapter(id: 103, mangaId: 1, name: 'Chapter 3', url: '/c3');
-        final ch4 = Chapter(id: 104, mangaId: 1, name: 'Chapter 4', url: '/c4');
-        final manager = ChapterPreloadManager()
-          ..initialize(chapterPages(ch1, 2));
-        for (final ch in [ch2, ch3, ch4]) {
-          await manager.loadNextChapter(
-            manager.pages.last.chapter!,
-            findNextChapter: () => ch,
-            loadPages: (_, _) async => _model(chapterPages(ch, 2)),
-          );
-        }
+    test('only the chapters around the current one keep their images', () async {
+      final ch3 = Chapter(id: 103, mangaId: 1, name: 'Chapter 3', url: '/c3');
+      final ch4 = Chapter(id: 104, mangaId: 1, name: 'Chapter 4', url: '/c4');
+      final initial = _model(chapterPages(ch1, 2));
+      for (final page in initial.uChapDataPreload) {
+        final bytes = Uint8List.fromList([1, 2, 3]);
+        initial.archiveImages.add(bytes);
+        page.archiveImage = bytes;
+        page.chapterUrlModel = initial;
+      }
+      final manager = ChapterPreloadManager()
+        ..initialize(initial.uChapDataPreload);
+      for (final ch in [ch2, ch3, ch4]) {
+        await manager.loadNextChapter(
+          manager.pages.last.chapter!,
+          findNextChapter: () => ch,
+          loadPages: (_, _) async => _model(chapterPages(ch, 2)),
+        );
+      }
 
-        final evicted = manager.evictOldChapters(ch3);
+      final evicted = manager.evictOldChapters(ch3);
 
-        expect(evicted.map((i) => manager.pages[i].chapter?.id).toSet(), {101});
-        expect(manager.isChapterEvicted(ch1), isTrue);
-        expect(manager.isChapterLoaded(ch2), isTrue);
-        expect(manager.isChapterLoaded(ch4), isTrue);
-      },
-    );
+      expect(evicted.map((i) => manager.pages[i].chapter?.id).toSet(), {101});
+      expect(manager.isChapterEvicted(ch1), isTrue);
+      expect(manager.isChapterLoaded(ch2), isTrue);
+      expect(manager.isChapterLoaded(ch4), isTrue);
+      expect(initial.archiveImages, everyElement(isNull));
+      expect(
+        initial.uChapDataPreload.map((p) => p.archiveImage),
+        everyElement(isNull),
+      );
+
+      // Scrolling back restores an earlier chapter without moving it after
+      // the tail. Chapters 1/2/3 are now neighbours; only chapter 4 is evicted.
+      manager.markChapterAsLoaded(ch1);
+      final backwards = manager.evictOldChapters(ch2);
+      expect(backwards.map((i) => manager.pages[i].chapter?.id).toSet(), {104});
+      expect(manager.isChapterLoaded(ch1), isTrue);
+    });
   });
 }

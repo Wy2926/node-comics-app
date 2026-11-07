@@ -11,6 +11,7 @@ class PageUrl {
   factory PageUrl.fromJson(Map<String, dynamic> json) {
     return PageUrl(
       json['url'].toString().trim(),
+      fileName: json['fileName'] as String?,
       headers: (json['headers'] as Map?)?.toMapStringString,
       imageProcessing: json['imageProcessing'] == null
           ? null

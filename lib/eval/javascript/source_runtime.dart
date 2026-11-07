@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 
-/// Owns the native references and Dart timers created by one source runtime.
+/// Owns native references and JavaScript timers, not host I/O resources.
 /// The pinned QuickJS adapter does not release these in dispose().
 class SourceJavascriptRuntime extends QuickJsRuntime2 {
   SourceJavascriptRuntime({super.timeout}) {
@@ -13,8 +13,9 @@ class SourceJavascriptRuntime extends QuickJsRuntime2 {
   final _references = <JSRef>{};
   final _nativeKeys = <Object>{};
   final _timers = <Timer>{};
+  final _hostZone = Zone.current;
   bool _disposed = false;
-  late final _zone = Zone.current.fork(
+  late final _zone = _hostZone.fork(
     specification: ZoneSpecification(
       createTimer: (self, parent, zone, duration, callback) {
         late Timer timer;
@@ -36,6 +37,19 @@ class SourceJavascriptRuntime extends QuickJsRuntime2 {
   );
 
   T run<T>(T Function() action) => _zone.run(action);
+
+  @override
+  void onMessage(String channelName, dynamic Function(dynamic args) fn) {
+    super.onMessage(channelName, (args) {
+      // Shared HTTPS sockets keep the zone in which they were opened. Owning
+      // their read/write timers here makes a reused connection hang after this
+      // runtime is disposed. Host bridges (HTTP, extractors, WebView, etc.)
+      // retain their caller's lifetime; only JS setTimeout belongs to us.
+      return channelName == 'SetTimeout'
+          ? run(() => fn(args))
+          : _hostZone.run(() => fn(args));
+    });
+  }
 
   @override
   JavascriptRuntime init() {

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -16,8 +15,9 @@ class ChapterPreloadManager {
   /// Set of chapter IDs currently in memory
   final Set<String> _loadedChapterIds = {};
 
-  /// Queue of chapter IDs in order of loading (for LRU eviction)
-  final Queue<String> _chapterLoadOrder = Queue();
+  /// Chapter IDs in reading order, including evicted chapters. Reloading a
+  /// previous chapter must not move it after the tail of the reading list.
+  final List<String> _chapterOrder = [];
 
   /// Set of chapter IDs whose page data has been evicted (image/archive data
   /// cleared but the pages themselves still sit in [_pages]). Lets callers
@@ -39,9 +39,6 @@ class ChapterPreloadManager {
   /// Gets the current number of pages
   int get pageCount => _pages.length;
 
-  /// Gets the loaded chapter count
-  int get loadedChapterCount => _loadedChapterIds.length;
-
   /// Returns `true` if pages from [chapter] are already in memory.
   bool isChapterLoaded(Chapter? chapter) {
     final id = _getChapterIdentifier(chapter);
@@ -58,7 +55,7 @@ class ChapterPreloadManager {
     }
     _pages.clear();
     _loadedChapterIds.clear();
-    _chapterLoadOrder.clear();
+    _chapterOrder.clear();
     _evictedChapterIds.clear();
 
     _pages.addAll(initialPages);
@@ -68,7 +65,7 @@ class ChapterPreloadManager {
       final chapterId = _getChapterIdentifier(initialPages.first.chapter);
       if (chapterId != null) {
         _loadedChapterIds.add(chapterId);
-        _chapterLoadOrder.add(chapterId);
+        _chapterOrder.add(chapterId);
       }
     }
 
@@ -137,7 +134,7 @@ class ChapterPreloadManager {
       _pages.addAll(data.uChapDataPreload);
       final chapterId = _getChapterIdentifier(next)!;
       _loadedChapterIds.add(chapterId);
-      _chapterLoadOrder.add(chapterId);
+      _chapterOrder.add(chapterId);
       boundary.nextChapterState = null;
       return true;
     } catch (_) {
@@ -191,27 +188,22 @@ class ChapterPreloadManager {
     final currentId = _getChapterIdentifier(currentChapter);
     if (currentId == null) return [];
 
-    // _chapterLoadOrder is already maintained incrementally in the same
-    // left-to-right order chapters appear in _pages (appended on next-chapter
-    // preload, pruned on eviction) - reuse
-    // it directly instead of re-deriving the same ordering with a full O(N)
-    // scan over every page on every call.
-    final loadedIdsInOrder = _chapterLoadOrder.toList();
-
-    final currentIndex = loadedIdsInOrder.indexOf(currentId);
+    // Reuse the chapter order instead of scanning all page slots to derive it.
+    final currentIndex = _chapterOrder.indexOf(currentId);
     if (currentIndex == -1) return [];
 
     final idsToKeep = <String>{currentId};
     if (currentIndex - 1 >= 0) {
-      idsToKeep.add(loadedIdsInOrder[currentIndex - 1]);
+      idsToKeep.add(_chapterOrder[currentIndex - 1]);
     }
-    if (currentIndex + 1 < loadedIdsInOrder.length) {
-      idsToKeep.add(loadedIdsInOrder[currentIndex + 1]);
+    if (currentIndex + 1 < _chapterOrder.length) {
+      idsToKeep.add(_chapterOrder[currentIndex + 1]);
     }
 
     final evictedIndices = <int>[];
     final idsToEvict = _loadedChapterIds.difference(idsToKeep);
     if (idsToEvict.isEmpty) return [];
+    final clearedModels = <GetChapterPagesModel>{};
 
     // Single linear pass over pages to evict old chapters in O(N)
     for (int i = 0; i < _pages.length; i++) {
@@ -226,12 +218,23 @@ class ChapterPreloadManager {
         page.decodedImage?.dispose();
         page.decodedImage = null;
         page.resolvedFilePath = null;
+        final model = page.chapterUrlModel;
+        if (model != null && clearedModels.add(model)) {
+          // The model also retains the archive bytes and original unsplit
+          // pages. Clearing only the visible page did not release that memory.
+          model.archiveImages.fillRange(0, model.archiveImages.length, null);
+          for (final original in model.uChapDataPreload) {
+            original.archiveImage = null;
+            original.decodedImage?.dispose();
+            original.decodedImage = null;
+            original.resolvedFilePath = null;
+          }
+        }
         evictedIndices.add(i);
       }
     }
 
     _loadedChapterIds.removeAll(idsToEvict);
-    _chapterLoadOrder.removeWhere((id) => idsToEvict.contains(id));
     _evictedChapterIds.addAll(idsToEvict);
 
     return evictedIndices;
@@ -242,8 +245,8 @@ class ChapterPreloadManager {
     final chapterId = _getChapterIdentifier(chapter);
     if (chapterId != null) {
       _loadedChapterIds.add(chapterId);
-      if (!_chapterLoadOrder.contains(chapterId)) {
-        _chapterLoadOrder.add(chapterId);
+      if (!_chapterOrder.contains(chapterId)) {
+        _chapterOrder.add(chapterId);
       }
       _evictedChapterIds.remove(chapterId);
     }
@@ -276,7 +279,7 @@ class ChapterPreloadManager {
     }
     _pages.clear();
     _loadedChapterIds.clear();
-    _chapterLoadOrder.clear();
+    _chapterOrder.clear();
     _evictedChapterIds.clear();
 
     // Clear callbacks

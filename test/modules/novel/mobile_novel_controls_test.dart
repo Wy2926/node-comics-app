@@ -122,7 +122,11 @@ void main() {
       expect(
         tester
             .widget<IconButton>(
-              find.widgetWithIcon(IconButton, Icons.skip_previous_rounded),
+              find.byWidgetPredicate(
+                (widget) =>
+                    widget is IconButton &&
+                    widget.tooltip == 'Previous chapter',
+              ),
             )
             .onPressed,
         isNull,
