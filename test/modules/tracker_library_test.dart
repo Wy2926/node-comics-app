@@ -85,14 +85,20 @@ void main() {
   }
 
   Future<void> settle(WidgetTester tester, {Finder? until}) async {
-    // Isar runs outside the widget clock.
-    for (var i = 0; i < (until == null ? 8 : 50); i++) {
+    // Isar runs outside the widget clock; wait for completion, not 120 ms.
+    final deadline = DateTime.now().add(const Duration(seconds: 5));
+    while (DateTime.now().isBefore(deadline)) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 15)),
       );
       await tester.pump();
-      if (until != null && until.evaluate().isNotEmpty) return;
+      if (until != null
+          ? until.evaluate().isNotEmpty
+          : find.byType(NodeLaneSkeleton).evaluate().isEmpty) {
+        return;
+      }
     }
+    fail('Tracker section did not finish loading.');
   }
 
   testWidgets(

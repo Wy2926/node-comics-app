@@ -219,7 +219,7 @@ class _NodeLaneCatalogSheetState extends State<NodeLaneCatalogSheet> {
                     ),
                     if (widget.bottom != null)
                       Padding(
-                        padding: const EdgeInsets.all(20),
+                        padding: NodeLaneTokens.sheetFooterPadding,
                         child: widget.bottom!,
                       ),
                   ],

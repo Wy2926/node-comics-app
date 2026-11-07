@@ -19,8 +19,9 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
+import 'package:mangayomi/modules/browse/global_search/search_activity.dart';
 import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
-import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
@@ -374,9 +375,13 @@ void main() {
     },
   );
 
-  for (final entry in ['menu', 'empty state', 'keyboard']) {
+  for (final (entry, destination) in [
+    ('menu', 'header'),
+    ('empty state', 'details'),
+    ('keyboard', 'view all'),
+  ]) {
     testWidgets(
-      '$entry carries the query through view-all, reuses page one, and preserves it for pagination and back',
+      '$entry carries the query through $destination and preserves cached pages and drafts on return',
       (tester) async {
         final calls = <String>[];
         final container = ProviderContainer(
@@ -475,12 +480,23 @@ void main() {
           // Editing the next draft must not change the query of visible results.
           await tester.enterText(find.byType(TextFormField), '尚未提交');
           await tester.pump();
-          await tester.tap(
-            find.descendant(
-              of: find.byType(SourceSearchScreen),
-              matching: find.text('local'),
-            ),
-          );
+          if (destination == 'details') {
+            await tester.tap(find.text('搜索详情'));
+            await tester.pumpAndSettle();
+            await tester.tap(
+              find.descendant(
+                of: find.byType(SearchActivitySheet),
+                matching: find.text('local'),
+              ),
+            );
+          } else {
+            await tester.tap(
+              find.descendant(
+                of: find.byType(SourceSearchScreen),
+                matching: find.text(destination == 'header' ? 'local' : '查看全部'),
+              ),
+            );
+          }
           await tester.pumpAndSettle();
           expect(
             tester.widget<MangaHomeScreen>(find.byType(MangaHomeScreen)).query,
@@ -497,8 +513,8 @@ void main() {
           expect(find.byType(GlobalSearchScreen), findsOneWidget);
           expect(
             tester
-                .widget<SeachFormTextField>(find.byType(SeachFormTextField))
-                .controller
+                .widget<NodeLaneTextField>(find.byType(NodeLaneTextField))
+                .controller!
                 .text,
             '尚未提交',
           );

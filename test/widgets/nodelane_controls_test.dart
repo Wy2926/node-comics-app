@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -18,9 +19,11 @@ Widget _app(
   bool dark = false,
   double scale = 1,
   TargetPlatform platform = TargetPlatform.iOS,
+  String? fontFamily,
 }) => MaterialApp(
   theme: ThemeData(
     platform: platform,
+    fontFamily: fontFamily,
     brightness: dark ? Brightness.dark : Brightness.light,
   ),
   builder: (context, child) => MediaQuery(
@@ -36,6 +39,67 @@ Widget _app(
 );
 
 void main() {
+  testWidgets(
+    'shared navigation, rows, inputs, actions and choices inherit the chosen app font',
+    (tester) async {
+      _phone(tester);
+      for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+        await tester.pumpWidget(
+          _app(
+            Builder(
+              builder: (context) => Scaffold(
+                appBar: nodeLaneAppBar(context, title: 'Navigation'),
+                body: Column(
+                  children: [
+                    const NodeLaneRow(title: 'Website', subtitle: 'Metadata'),
+                    const NodeLaneTextField(initialValue: 'Query'),
+                    FilledButton(onPressed: () {}, child: const Text('Apply')),
+                    NodeLaneSegments<int>(
+                      value: 0,
+                      segments: const [
+                        ButtonSegment(value: 0, label: Text('All')),
+                        ButtonSegment(value: 1, label: Text('Custom')),
+                      ],
+                      onChanged: (_) {},
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            platform: platform,
+            fontFamily: 'ReaderFont',
+          ),
+        );
+        await tester.pumpAndSettle();
+        for (final label in [
+          'Navigation',
+          'Website',
+          'Metadata',
+          'Apply',
+          'All',
+          'Custom',
+        ]) {
+          final paragraph = tester.renderObject<RenderParagraph>(
+            find.text(label),
+          );
+          expect(
+            paragraph.text.style!.fontFamily,
+            'ReaderFont',
+            reason: '$platform / $label',
+          );
+        }
+        expect(
+          tester
+              .widget<EditableText>(find.byType(EditableText))
+              .style
+              .fontFamily,
+          'ReaderFont',
+        );
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
   testWidgets(
     'selection header keeps all and invert adjacent on narrow screens',
     (tester) async {

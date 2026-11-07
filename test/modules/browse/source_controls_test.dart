@@ -1,5 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,10 +8,16 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/source_preference_widget.dart';
 import 'package:mangayomi/modules/browse/global_search/source_search_scope.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
-  Future<void> mount(WidgetTester tester, Widget child) async {
+  Future<void> mount(
+    WidgetTester tester,
+    Widget child, {
+    double scale = 1,
+    double inset = 0,
+  }) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -25,6 +29,13 @@ void main() {
         theme: ThemeData(
           platform: TargetPlatform.iOS,
           colorSchemeSeed: NodeLaneTokens.defaultMobileAccent,
+        ),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(scale),
+            viewInsets: EdgeInsets.only(bottom: inset),
+          ),
+          child: child!,
         ),
         home: Scaffold(body: child),
       ),
@@ -215,20 +226,15 @@ void main() {
         Source(id: 2, name: 'Beta', isAdded: true),
       ];
       SourceSearchScope? result;
-      final initial = SourceSearchScope({1, 2}, false);
+      final initial = const SourceSearchScope();
       await mount(
         tester,
         Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              result = await Navigator.of(context).push<SourceSearchScope>(
-                MaterialPageRoute(
-                  builder: (_) => SourceSearchScopePage(
-                    sources: sources,
-                    current: initial,
-                    media: '漫画',
-                  ),
-                ),
+              result = await showNodeLaneCatalogSheet<SourceSearchScope>(
+                context,
+                SourceSearchScopeSheet(sources: sources, current: initial),
               );
             },
             child: const Text('范围'),
@@ -238,24 +244,102 @@ void main() {
       await tester.tap(find.text('范围'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Beta').last);
-      await tester.tap(find.byTooltip('返回'));
+      await tester.tap(find.byTooltip('关闭'));
       await tester.pumpAndSettle();
       expect(result, isNull);
-      expect(initial.ids, {1, 2});
+      expect(initial.mode, SourceSearchScopeMode.all);
       await tester.tap(find.text('范围'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Beta');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Beta').last);
-      await tester.tap(find.byType(NodeLaneSwitch));
-      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('搜索这 1 个网站'));
       await tester.pumpAndSettle();
       expect(result!.ids, {1});
-      expect(result!.pinnedOnly, isTrue);
+      expect(result!.mode, SourceSearchScopeMode.custom);
       expect(
         sources.every((s) => s.isAdded == true && s.isActive == true),
         isTrue,
       );
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'scope presets preserve hidden choices and keep apply reachable with large text and keyboard',
+    (tester) async {
+      await mount(
+        tester,
+        Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showNodeLaneCatalogSheet(
+              context,
+              SourceSearchScopeSheet(
+                sources: [
+                  Source(id: 1, name: 'Alpha', lang: 'en', isPinned: true),
+                  Source(id: 2, name: 'Beta', lang: 'zh'),
+                ],
+                current: const SourceSearchScope(),
+              ),
+            ),
+            child: const Text('范围'),
+          ),
+        ),
+        scale: 2.5,
+        inset: 260,
+      );
+      await tester.tap(find.text('范围'));
+      await tester.pumpAndSettle();
+      final scrollable = find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      Future<void> top() async {
+        tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+        await tester.pumpAndSettle();
+      }
+
+      Future<void> tap(String label) async {
+        if (find.text(label).evaluate().isEmpty) {
+          await tester.scrollUntilVisible(
+            find.text(label),
+            120,
+            scrollable: scrollable,
+          );
+        } else {
+          await tester.ensureVisible(find.text(label));
+        }
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+
+      await tap('常用');
+      expect(find.text('搜索这 1 个网站').hitTestable(), findsOneWidget);
+      await tap('Beta');
+      expect(find.text('搜索这 2 个网站').hitTestable(), findsOneWidget);
+      await top();
+      await tester.ensureVisible(find.byType(TextField));
+      await tester.enterText(find.byType(TextField), 'Beta');
+      await tester.pumpAndSettle();
+      await tap('取消当前结果');
+      expect(find.text('搜索这 1 个网站'), findsOneWidget);
+      await top();
+      await tester.enterText(find.byType(TextField), '');
+      await tester.pumpAndSettle();
+      await tap('全选');
+      await tap('清空');
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+      );
+      await top();
+      await tap('全部');
+      expect(find.text('搜索这 2 个网站'), findsOneWidget);
+      await tap('自选');
+      expect(find.text('搜索这 0 个网站'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

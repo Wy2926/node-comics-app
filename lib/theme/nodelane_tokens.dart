@@ -15,10 +15,12 @@ class NodeLaneTokens {
     required this.searchLine,
     required this.accent,
     required this.onAccent,
+    this.typeface = const TextStyle(),
   });
 
   final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
   final Color searchSurface, searchLine;
+  final TextStyle typeface;
   static const disclosureDuration = Duration(milliseconds: 200);
   static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
   static const space16 = 16.0, space20 = 20.0, space24 = 24.0;
@@ -37,6 +39,9 @@ class NodeLaneTokens {
   static const coverAspectRatio = 1.43;
   static const shelfCoverAspectRatio = 1.08, shelfGap = space12;
   static const bookTitleSize = 15.0, captionSize = 12.0;
+  static const resultCoverWidth = 140.0, resultCoverPeek = 32.0;
+  // Approved search board: compact portrait previews and one-line captions.
+  static const resultCoverAspectRatio = .9, resultTitleLines = 1;
   static const shelfComfortableWidth = 168.0, shelfCompactWidth = 96.0;
   static const shelfThumbnailWidth = 64.0, shelfThumbnailHeight = 92.0;
   static const activityCoverSize = 72.0;
@@ -117,6 +122,12 @@ class NodeLaneTokens {
   static const modalInset = EdgeInsets.symmetric(horizontal: 20, vertical: 24);
   static const modalTitlePadding = EdgeInsets.fromLTRB(20, 20, 20, 12);
   static const modalContentPadding = EdgeInsets.fromLTRB(20, 0, 20, 20);
+  static const sheetFooterPadding = EdgeInsets.fromLTRB(
+    gutter,
+    space24,
+    gutter,
+    space20,
+  );
   static const modalActionsPadding = EdgeInsets.fromLTRB(12, 0, 12, 12);
   static const modalTitleStyle = TextStyle(
     fontSize: 20,
@@ -148,6 +159,9 @@ class NodeLaneTokens {
       searchLine: dark ? const Color(0xff46505f) : const Color(0xffdde2e9),
       accent: theme.colorScheme.primary,
       onAccent: theme.colorScheme.onPrimary,
+      typeface: (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
+        letterSpacing: 0,
+      ),
     );
   }
 
@@ -174,15 +188,16 @@ class NodeLaneTokens {
 
   BorderRadius get inputRadius => BorderRadius.circular(capsuleRadius);
 
-  TextStyle get pageTitle => TextStyle(
+  TextStyle get pageTitle => typeface.copyWith(
     fontSize: 34,
     height: 1.2,
     fontWeight: FontWeight.w700,
     letterSpacing: -.6,
     color: ink,
   );
-  TextStyle get title => modalTitleStyle.copyWith(color: ink, height: 1.25);
-  TextStyle get detailTitle => TextStyle(
+  TextStyle get title =>
+      typeface.merge(modalTitleStyle).copyWith(color: ink, height: 1.25);
+  TextStyle get detailTitle => typeface.copyWith(
     fontSize: 26,
     letterSpacing: 0,
     height: 1.25,
@@ -190,8 +205,8 @@ class NodeLaneTokens {
     color: ink,
   );
   TextStyle get detailMetadata =>
-      TextStyle(fontSize: 15, height: 1.6, color: muted);
-  TextStyle get detailSectionTitle => TextStyle(
+      typeface.copyWith(fontSize: 15, height: 1.6, color: muted);
+  TextStyle get detailSectionTitle => typeface.copyWith(
     fontSize: 18,
     letterSpacing: 0,
     height: 1.3,
@@ -200,16 +215,23 @@ class NodeLaneTokens {
   );
   Color get detailChipSurface =>
       Color.alphaBlend(soft.withValues(alpha: .55), surface);
-  TextStyle get body => TextStyle(fontSize: 16, height: 1.3, color: ink);
-  TextStyle get label => TextStyle(
+  TextStyle get body =>
+      typeface.copyWith(fontSize: 16, height: 1.3, color: ink);
+  TextStyle get label => typeface.copyWith(
     fontSize: bookTitleSize,
     letterSpacing: 0,
     height: 1.25,
     fontWeight: FontWeight.w600,
     color: ink,
   );
-  TextStyle get secondary =>
-      TextStyle(fontSize: 13, letterSpacing: 0, height: 1.35, color: muted);
+  TextStyle get bookTitle =>
+      label.copyWith(fontWeight: FontWeight.w500, height: 1.3);
+  TextStyle get secondary => typeface.copyWith(
+    fontSize: 13,
+    letterSpacing: 0,
+    height: 1.35,
+    color: muted,
+  );
   TextStyle get readerTitle =>
       title.copyWith(fontSize: 22, fontWeight: FontWeight.w700);
   TextStyle get readerLabel =>
@@ -217,7 +239,7 @@ class NodeLaneTokens {
   TextStyle get readerSecondary => secondary.copyWith(fontSize: 14);
   TextStyle get readerValue => body.copyWith(fontSize: 15, color: muted);
   TextStyle get caption =>
-      TextStyle(fontSize: captionSize, height: 1.3, color: muted);
+      typeface.copyWith(fontSize: captionSize, height: 1.3, color: muted);
   TextStyle get sectionTitle => secondary.copyWith(fontWeight: FontWeight.w600);
 
   InputDecoration inputDecoration(

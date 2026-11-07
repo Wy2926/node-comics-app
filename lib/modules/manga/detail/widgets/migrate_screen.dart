@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/browse/global_search/mobile_global_search.dart';
-import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
-import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/mobile_migration.dart';
-import 'package:mangayomi/utils/item_type_localization.dart';
-import 'package:mangayomi/utils/source_fetch_gate.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/eval/model/m_pages.dart';
+import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/models/track_search.dart';
+import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
+import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
+import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_migration.dart';
+import 'package:mangayomi/modules/mass_migration/services/mass_migration_service.dart';
+import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
+import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
+import 'package:mangayomi/modules/widgets/global_search_result_card.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
-import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/models/track_search.dart';
-import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
-import 'package:mangayomi/modules/mass_migration/services/mass_migration_service.dart';
-import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
-import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/services/get_detail.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/language.dart';
-import 'package:mangayomi/modules/widgets/global_search_result_card.dart';
-import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/utils/list_extent_precalculation.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/utils/source_fetch_gate.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 class MigrationScreen extends ConsumerStatefulWidget {
   final Manga manga;
@@ -93,15 +93,18 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
     final installed = sourceRepository.getAddedByItemType(
       widget.manga.itemType,
     );
-    return MobileGlobalSearchEmpty(
-      message: installed.isEmpty
+    return NodeLaneEmptyState(
+      icon: Icons.extension_outlined,
+      title: installed.isEmpty
           ? l10n.global_search_no_sources(widget.manga.itemType.localized(l10n))
           : l10n.global_search_only_pinned(installed.length),
-      hint: installed.isEmpty
+      message: installed.isEmpty
           ? l10n.global_search_no_sources_hint
           : l10n.global_search_only_pinned_hint,
-      actionLabel: installed.isEmpty ? l10n.show_extensions : l10n.settings,
-      onAction: () => _openSources(installed.isNotEmpty),
+      action: FilledButton(
+        onPressed: () => _openSources(installed.isNotEmpty),
+        child: Text(installed.isEmpty ? l10n.show_extensions : l10n.settings),
+      ),
     );
   }
 
@@ -182,7 +185,7 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
           ? SuperListView.builder(
               padding: tvPageInsets,
               itemCount: sourceList.length,
-              extentPrecalculationPolicy: SuperPrecalculationPolicy(),
+              extentPrecalculationPolicy: SmallListPrecalculationPolicy(),
               itemBuilder: _sourceRow,
             )
           : const SizedBox.shrink(),
@@ -291,9 +294,9 @@ class _MigrationSourceSearchScreenState
     final l10n = l10nLocalizations(context)!;
 
     if (isMobile && !isTv) {
-      return MobileGlobalSourceSection(
+      return SourceResultSection(
         title: widget.source.name ?? '',
-        language: completeLanguageName(widget.source.lang ?? ''),
+        metadata: completeLanguageName(widget.source.lang ?? ''),
         loading: _isLoading,
         count: pages?.list.length ?? 0,
         status: _errorMessage.isNotEmpty
@@ -740,12 +743,5 @@ class _MigrationMangaGlobalImageCardState
       preview: preview,
       destinationSource: widget.source,
     );
-  }
-}
-
-class SuperPrecalculationPolicy extends ExtentPrecalculationPolicy {
-  @override
-  bool shouldPrecalculateExtents(ExtentPrecalculationContext context) {
-    return context.numberOfItems < 100;
   }
 }

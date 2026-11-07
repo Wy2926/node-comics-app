@@ -5,15 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/eval/model/m_pages.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
 import 'package:mangayomi/modules/browse/global_search/mobile_global_search.dart';
-import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
 import 'package:mangayomi/services/get_popular.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/source_fetch_gate.dart';
@@ -62,11 +64,14 @@ void main() {
           onClear: controller.clear,
           scope: 'Manga · 0 sources',
           query: 'Original',
-          results: MobileGlobalSearchEmpty(
-            message: 'No manga sources are installed.',
-            hint: 'Add a repository, then install an extension for it.',
-            actionLabel: 'Show extensions',
-            onAction: () => actions++,
+          results: NodeLaneEmptyState(
+            icon: Icons.extension_outlined,
+            title: 'No manga sources are installed.',
+            message: 'Add a repository, then install an extension for it.',
+            action: FilledButton(
+              onPressed: () => actions++,
+              child: const Text('Show extensions'),
+            ),
           ),
         ),
         inset: 260,
@@ -106,14 +111,15 @@ void main() {
         Scaffold(
           body: SafeArea(
             child: SingleChildScrollView(
-              child: MobileGlobalSourceSection(
+              child: SourceResultSection(
                 title: 'A source with a long name that must wrap completely',
-                language: 'English',
+                metadata: 'English',
                 onOpen: () => sourceOpened++,
-                loading: false,
                 count: 6,
-                itemBuilder: (context, index) => MobileGlobalResultCard(
-                  title: 'Result $index with a long title',
+                itemBuilder: (context, index) => SourceResultCover(
+                  title: index == 1
+                      ? 'Short'
+                      : 'Result $index with a long title',
                   cover: const ColoredBox(color: Colors.blueGrey),
                   inLibrary: index == 0,
                   onOpen: () => opened.add(index),
@@ -124,11 +130,17 @@ void main() {
           ),
         ),
       );
+      // Short and truncated captions must not change cover geometry.
+      final covers = find.descendant(
+        of: find.byType(SourceResultCover),
+        matching: find.byType(ClipRRect),
+      );
+      expect(tester.getSize(covers.at(0)), tester.getSize(covers.at(1)));
       await tester.tap(
         find.text('A source with a long name that must wrap completely'),
       );
       expect(sourceOpened, 1);
-      final first = find.byType(MobileGlobalResultCard).first;
+      final first = find.byType(SourceResultCover).first;
       await tester.ensureVisible(first);
       await tester.pumpAndSettle();
       await tester.tap(first);
@@ -264,16 +276,16 @@ void main() {
         );
         await tester.pump();
         expect(calls, ['Seed']);
-        final field = tester.widget<SeachFormTextField>(
-          find.byType(SeachFormTextField),
+        final field = tester.widget<NodeLaneTextField>(
+          find.byType(NodeLaneTextField),
         );
-        field.onSuffixPressed();
+        field.onClear!();
         await tester.pump();
         await tester.pump();
-        expect(field.controller.text, isEmpty);
+        expect(field.controller!.text, isEmpty);
         expect(calls, ['Seed']);
-        expect(find.byType(GlobalSearchPrompt), findsOneWidget);
-        expect(find.text('1 source with no results'), findsNothing);
+        expect(find.text('输入关键词搜索作品'), findsOneWidget);
+        expect(find.text('未找到相关作品'), findsNothing);
         await tester.enterText(find.byType(TextFormField), '  Next  ');
         await tester.pump();
         expect(calls, ['Seed']);
@@ -281,14 +293,14 @@ void main() {
         await tester.pump();
         await tester.pump();
         expect(calls, ['Seed', 'Next']);
-        expect(field.controller.text, 'Next');
+        expect(field.controller!.text, 'Next');
         seed.completeError(StateError('old query failure'));
         await tester.pump();
-        expect(find.text('1 source with no results'), findsNothing);
+        expect(find.text('未找到相关作品'), findsNothing);
         next.complete(MPages(list: []));
         await tester.pumpAndSettle();
-        expect(find.text('1 source with no results'), findsOneWidget);
-        field.onFieldSubmitted!(' Next ');
+        expect(find.text('未找到相关作品'), findsOneWidget);
+        field.onSubmitted!(' Next ');
         await tester.pump();
         expect(calls, ['Seed', 'Next']);
         expect(tester.takeException(), isNull);
@@ -320,7 +332,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(requests, 0);
-      expect(find.byType(GlobalSearchPrompt), findsOneWidget);
+      expect(find.text('输入关键词搜索作品'), findsOneWidget);
       expect(find.byType(SourceSearchScreen), findsNothing);
       await tester.pumpWidget(const SizedBox());
     });

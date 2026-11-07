@@ -1,26 +1,27 @@
-import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/modules/tracker_library/tracker_library_screen.dart';
-import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/services/discovery/media_catalog_resolver.dart';
 import 'package:mangayomi/services/discovery/media_lookup_context.dart';
 import 'package:mangayomi/services/discovery/western_watch_order.dart';
 import 'package:mangayomi/services/fetch_watch_order.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/design_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/list_extent_precalculation.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:marquee/marquee.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
-import 'package:mangayomi/utils/platform_utils.dart';
 
 /// Cover height over width, taken from the artwork itself: AniList serves
 /// these at 230x320. Matching it means BoxFit.cover has nothing to crop, so
@@ -180,7 +181,7 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
     if (sequels != null && sequels!.isNotEmpty) {
       return SuperListView.builder(
         padding: tvPageInsets.add(pageBottomInsets(context)),
-        extentPrecalculationPolicy: SuperPrecalculationPolicy(),
+        extentPrecalculationPolicy: SmallListPrecalculationPolicy(),
         itemCount: sequels!.length,
         itemBuilder: (context, index) {
           final sequel = sequels![index];
@@ -804,12 +805,5 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
         );
       },
     );
-  }
-}
-
-class SuperPrecalculationPolicy extends ExtentPrecalculationPolicy {
-  @override
-  bool shouldPrecalculateExtents(ExtentPrecalculationContext context) {
-    return context.numberOfItems < 100;
   }
 }

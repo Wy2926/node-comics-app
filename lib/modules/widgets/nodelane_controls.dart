@@ -185,6 +185,7 @@ class NodeLaneRow extends StatelessWidget {
     this.prominent = false,
     this.accented = false,
     this.checkable = false,
+    this.highlightSelected = true,
     this.enabled = true,
     this.openOnReveal = false,
   }) : assert(icon == null || leading == null),
@@ -215,6 +216,7 @@ class NodeLaneRow extends StatelessWidget {
     this.prominent = false,
     this.accented = false,
     this.checkable = false,
+    this.highlightSelected = true,
     this.enabled = true,
     this.openOnReveal = false,
     this.first = true,
@@ -241,7 +243,13 @@ class NodeLaneRow extends StatelessWidget {
   final Widget? leading, trailing, valueLeading;
   final VoidCallback? onTap, onLongPress;
   final bool? selected;
-  final bool destructive, checkable, enabled, first, last, _card;
+  final bool destructive,
+      checkable,
+      highlightSelected,
+      enabled,
+      first,
+      last,
+      _card;
   final bool compact, prominent, accented;
 
   /// Opt in only for navigation and opening a picker, never preference writes.
@@ -391,7 +399,7 @@ class NodeLaneRow extends StatelessWidget {
           ? NodeLaneGroupSurface(
               first: first,
               last: last,
-              selected: selected == true,
+              selected: highlightSelected && selected == true,
               child: content,
             )
           : content,
@@ -1103,10 +1111,11 @@ class _NodeLaneSliderRowState extends State<NodeLaneSliderRow> {
 }
 
 double nodeLaneAppBarHeight(BuildContext context) =>
-    (MediaQuery.textScalerOf(context).scale(22) * 1.3 + 16).clamp(
-      kToolbarHeight,
-      double.infinity,
-    );
+    (MediaQuery.textScalerOf(context)
+                    .scale(NodeLaneTokens.modalTitleStyle.fontSize!) *
+                1.3 +
+            NodeLaneTokens.space16)
+        .clamp(kToolbarHeight, double.infinity);
 
 AppBar nodeLaneAppBar(
   BuildContext context, {
@@ -1124,7 +1133,7 @@ AppBar nodeLaneAppBar(
     maxLines: 1,
     overflow: TextOverflow.ellipsis,
   ),
-  titleTextStyle: titleStyle ?? NodeLaneTokens.of(context).readerTitle,
+  titleTextStyle: titleStyle ?? NodeLaneTokens.of(context).title,
   centerTitle: true,
   toolbarHeight: nodeLaneAppBarHeight(context),
   automaticallyImplyLeading: false,

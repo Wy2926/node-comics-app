@@ -1,43 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/browse/global_search/mobile_global_search.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
+import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/widgets/bottom_text_widget.dart';
+import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
 import 'package:mangayomi/modules/widgets/tv_pill.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/headers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
-/// A search-result cover card: focusable/TV-navigable, watches the library
-/// for a live favorite/custom-cover match against [manga], and calls
-/// [onActivate] on tap or the TV select key.
-///
-/// Shared between the global search results grid and the migration source
-/// picker, which used to hand-roll the identical focus/scale/StreamBuilder
-/// shell twice and differed only in [padding]/[autofocus] and what
-/// activating a card does.
+/// Both search and migration use the same cover, library match and TV focus.
+/// Migration matches its target source; discovery can also mark other editions.
 class GlobalSearchResultCard extends ConsumerStatefulWidget {
-  final MManga manga;
-  final Source source;
-  final EdgeInsetsGeometry padding;
-  final bool autofocus;
-  final VoidCallback onActivate;
-
   const GlobalSearchResultCard({
     super.key,
     required this.manga,
     required this.source,
-    required this.padding,
     required this.onActivate,
+    this.onQuickAdd,
+    this.padding = EdgeInsets.zero,
     this.autofocus = false,
+    this.matchAnySource = false,
+    this.carousel,
+    this.coverSize = const Size(110, 150),
   });
+  final MManga manga;
+  final Source source;
+  final VoidCallback onActivate;
+  final VoidCallback? onQuickAdd;
+  final EdgeInsetsGeometry padding;
+  final bool autofocus, matchAnySource;
+
+  /// Carousels supply bounded geometry; legacy desktop/TV lists supply a size.
+  final bool? carousel;
+  final Size coverSize;
 
   @override
   ConsumerState<GlobalSearchResultCard> createState() =>
@@ -47,28 +47,52 @@ class GlobalSearchResultCard extends ConsumerStatefulWidget {
 class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
     with AutomaticKeepAliveClientMixin<GlobalSearchResultCard> {
   bool _focused = false;
+  bool get _carousel => widget.carousel ?? (isMobile && !isTv);
   late Stream<List<Manga>> _library = _watchLibrary();
-  Stream<List<Manga>> _watchLibrary() => mangaRepository.watchByLangNameSource(
-    widget.source.lang,
-    widget.manga.name,
-    widget.source.name,
-  );
+  Stream<List<Manga>> _watchLibrary() => widget.matchAnySource
+      ? mangaRepository.watchFavoritesByItemTypeAndName(
+          widget.source.itemType,
+          widget.manga.name,
+        )
+      : mangaRepository.watchByLangNameSource(
+          widget.source.lang,
+          widget.manga.name,
+          widget.source.name,
+        );
+
+  Manga? _match(List<Manga> entries) {
+    if (!widget.matchAnySource) {
+      return entries
+          .where((e) => e.sourceId == null || e.sourceId == widget.source.id)
+          .firstOrNull;
+    }
+    return entries
+            .where(
+              (e) =>
+                  e.lang == widget.source.lang &&
+                  e.source == widget.source.name,
+            )
+            .firstOrNull ??
+        entries.firstOrNull;
+  }
 
   @override
   void didUpdateWidget(covariant GlobalSearchResultCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.manga.name != widget.manga.name ||
         oldWidget.source.id != widget.source.id ||
+        oldWidget.source.itemType != widget.source.itemType ||
         oldWidget.source.name != widget.source.name ||
-        oldWidget.source.lang != widget.source.lang) {
+        oldWidget.source.lang != widget.source.lang ||
+        oldWidget.matchAnySource != widget.matchAnySource) {
       _library = _watchLibrary();
     }
   }
 
-  Widget _mobileCover(Manga? matched, double width) {
+  Widget _cover(Manga? matched, double width) {
     final placeholder = Icon(
       Icons.auto_stories_outlined,
-      size: 36,
+      size: NodeLaneTokens.emptyStateIconSize,
       color: NodeLaneTokens.of(context).muted,
     );
     final bytes = matched?.customCoverImage;
@@ -106,169 +130,76 @@ class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final getMangaDetail = widget.manga;
-    if (isMobile && !isTv) {
-      return StreamBuilder<List<Manga>>(
-        stream: _library,
-        builder: (context, snapshot) {
-          final matched = snapshot.data
-              ?.where(
-                (entry) =>
-                    entry.sourceId == null ||
-                    entry.sourceId == widget.source.id,
-              )
-              .firstOrNull;
+    return StreamBuilder<List<Manga>>(
+      stream: _library,
+      builder: (context, snapshot) {
+        final matched = _match(snapshot.data ?? const []);
+        Widget card(double width) => SourceResultCover(
+          title: widget.manga.name ?? '',
+          cover: _cover(matched, width),
+          inLibrary: matched?.favorite ?? false,
+          onOpen: widget.onActivate,
+          onQuickAdd: widget.onQuickAdd,
+        );
+        if (_carousel) {
           return LayoutBuilder(
-            builder: (context, constraints) => MobileGlobalResultCard(
-              title: widget.manga.name ?? '',
-              cover: _mobileCover(matched, constraints.maxWidth),
-              inLibrary: matched?.favorite ?? false,
-              onOpen: widget.onActivate,
-            ),
-          );
-        },
-      );
-    }
-    // A bare GestureDetector never takes focus, so on a remote these covers
-    // were unreachable: the only focusable things on the screen were the source
-    // headers, and the d-pad could never get down into the results. Focus also
-    // scrolls the card into view, and ensureVisible walks every enclosing
-    // scrollable, so it moves the horizontal strip and the source list both.
-    return Focus(
-      autofocus: widget.autofocus,
-      onFocusChange: (f) {
-        setState(() => _focused = f);
-        if (f && context.mounted && Scrollable.maybeOf(context) != null) {
-          Scrollable.ensureVisible(
-            context,
-            alignment: 0.5,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
+            builder: (_, constraints) => card(constraints.maxWidth),
           );
         }
-      },
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent && tvIsSelectKey(event.logicalKey)) {
-          widget.onActivate();
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      // The padding sits outside the scale deliberately: it is the room the
-      // focused cover grows into. Inside, it would scale along with the card
-      // and buy nothing, which is why the block had to be stretched before.
-      child: Padding(
-        padding: widget.padding,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 130),
-          curve: Curves.easeOut,
-          // Matches the library cover: accent ring plus a slight lift.
-          transform: Matrix4.identity()
-            ..scaleByDouble(
-              _focused ? 1.06 : 1.0,
-              _focused ? 1.06 : 1.0,
-              _focused ? 1.06 : 1.0,
-              1,
-            ),
-          transformAlignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: _focused ? context.primaryColor : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: GestureDetector(
-            onTap: widget.onActivate,
-            child: StreamBuilder(
-              stream: _library,
-              builder: (context, snapshot) {
-                final hasData = snapshot.hasData && snapshot.data!.isNotEmpty;
-                return Stack(
-                  children: [
-                    SizedBox(
-                      width: 110,
-                      child: Column(
-                        children: [
-                          Builder(
-                            builder: (context) {
-                              if (hasData &&
-                                  snapshot.data!.first.customCoverImage !=
-                                      null) {
-                                return Image.memory(
-                                  snapshot.data!.first.customCoverImage
-                                      as Uint8List,
-                                );
-                              }
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(5),
-                                child: cachedNetworkImage(
-                                  headers: ref.watch(
-                                    headersProvider(
-                                      source: widget.source.name!,
-                                      lang: widget.source.lang!,
-                                      sourceId: widget.source.id,
-                                    ),
-                                  ),
-                                  imageUrl: toImgUrl(
-                                    hasData
-                                        ? snapshot
-                                                  .data!
-                                                  .first
-                                                  .customCoverFromTracker ??
-                                              snapshot.data!.first.imageUrl ??
-                                              ""
-                                        : getMangaDetail.imageUrl ?? "",
-                                  ),
-                                  width: 110,
-                                  height: 150,
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            },
-                          ),
-                          BottomTextWidget(
-                            fontSize: 12.0,
-                            text: getMangaDetail.name!,
-                            isLoading: true,
-                            textColor: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .color,
-                            isComfortableGrid: true,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 110,
-                      height: 150,
-                      color: hasData && snapshot.data!.first.favorite!
-                          ? Colors.black.withValues(alpha: 0.7)
-                          : null,
-                    ),
-                    if (hasData && snapshot.data!.first.favorite!)
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: Icon(
-                            Icons.collections_bookmark,
-                            color: context.primaryColor,
-                          ),
-                        ),
-                      ),
-                  ],
-                );
-              },
+        final t = NodeLaneTokens.of(context);
+        return Focus(
+          autofocus: widget.autofocus,
+          onFocusChange: (focused) {
+            setState(() => _focused = focused);
+            if (focused && Scrollable.maybeOf(context) != null) {
+              Scrollable.ensureVisible(
+                context,
+                alignment: .5,
+                duration: NodeLaneTokens.disclosureDuration,
+                curve: Curves.easeOut,
+              );
+            }
+          },
+          onKeyEvent: (_, event) {
+            if (event is KeyDownEvent && tvIsSelectKey(event.logicalKey)) {
+              widget.onActivate();
+              return KeyEventResult.handled;
+            }
+            return KeyEventResult.ignored;
+          },
+          child: Padding(
+            padding: widget.padding,
+            child: AnimatedContainer(
+              duration: NodeLaneTokens.disclosureDuration,
+              curve: Curves.easeOut,
+              transform: Matrix4.diagonal3Values(
+                _focused ? 1.06 : 1,
+                _focused ? 1.06 : 1,
+                1,
+              ),
+              transformAlignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
+                border: Border.all(
+                  color: _focused ? t.accent : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              child: SizedBox(
+                width: widget.coverSize.width,
+                height:
+                    widget.coverSize.height +
+                    NodeLaneTokens.space8 +
+                    SourceResultCover.captionHeight(context),
+                child: card(widget.coverSize.width),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   @override
-  bool get wantKeepAlive => !(isMobile && !isTv);
+  bool get wantKeepAlive => !_carousel;
 }
