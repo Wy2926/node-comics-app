@@ -22,7 +22,7 @@ void main() {
             currentChapter: Chapter(id: 1, mangaId: 1, name: 'Chapter'),
             pageIndex: 1,
           )
-          ..nextChapterState = NextChapterState.failed
+          ..chapterState = ChapterLoadState.failed
           ..onRetryChapter = () => retries++;
     await tester.pumpWidget(
       MaterialApp(

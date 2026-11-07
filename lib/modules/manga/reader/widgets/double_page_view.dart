@@ -25,7 +25,7 @@ class DoublePageView extends StatefulWidget {
   final BackgroundColor backgroundColor;
 
   /// Callback for image load failure state.
-  final Function(bool)? onFailedToLoadImage;
+  final void Function(UChapDataPreload page, bool failed)? onFailedToLoadImage;
 
   /// Whether to use the paged mode (with PhotoView zoom) or vertical mode.
   ///
@@ -48,10 +48,11 @@ class DoublePageView extends StatefulWidget {
   onControllerChanged;
 
   /// Callback when an image finishes loading with its dimensions.
-  final void Function(int index, double width, double height)? onImageLoaded;
+  final void Function(UChapDataPreload page, double width, double height)?
+  onImageLoaded;
 
   /// Callback when a wide single page is loaded.
-  final void Function(int index)? onWideSinglePageLoaded;
+  final void Function(UChapDataPreload page)? onWideSinglePageLoaded;
 
   /// Creates a paged mode double page view.
   const DoublePageView.paged({
@@ -76,11 +77,11 @@ class DoublePageView extends StatefulWidget {
     this.onLongPressData,
     this.onFailedToLoadImage,
     this.addTopPadding = true,
+    this.onImageLoaded,
   }) : isPagedMode = false,
        scrollDirection = Axis.vertical,
        onZoomChanged = null,
        onControllerChanged = null,
-       onImageLoaded = null,
        onWideSinglePageLoaded = null;
 
   @override
@@ -245,9 +246,7 @@ class _DoublePageViewState extends State<DoublePageView>
         for (final page in widget.pages)
           if (page != null)
             Flexible(
-              key: ValueKey(
-                'dp_page_${page.widgetKey(-1)}_${page.pageUrl?.url}',
-              ),
+              key: ValueKey('dp_page_${page.identity}'),
               child: _buildPageImage(page),
             ),
       ],
@@ -261,17 +260,16 @@ class _DoublePageViewState extends State<DoublePageView>
     return ImageViewVertical(
       data: pageData,
       failedToLoadImage: (val) {
-        widget.onFailedToLoadImage?.call(val);
+        widget.onFailedToLoadImage?.call(pageData, val);
       },
       onLongPressData: onLongPress,
       isHorizontal: true,
       onImageLoaded: (width, height) {
         pageData.loadedWidth = width;
         pageData.loadedHeight = height;
-        final idx = pageData.index ?? 0;
-        widget.onImageLoaded?.call(idx, width, height);
+        widget.onImageLoaded?.call(pageData, width, height);
         if (width > height) {
-          widget.onWideSinglePageLoaded?.call(idx);
+          widget.onWideSinglePageLoaded?.call(pageData);
         }
       },
       loadStateChanged: (state) {
@@ -279,9 +277,10 @@ class _DoublePageViewState extends State<DoublePageView>
           case LoadState.loading:
             return _buildLoadingState(state);
           case LoadState.completed:
-            return _buildCompletedState(state);
+            widget.onFailedToLoadImage?.call(pageData, false);
+            return null;
           case LoadState.failed:
-            return _buildFailedState(state, l10n);
+            return _buildFailedState(pageData, state, l10n);
         }
       },
     );
@@ -309,13 +308,12 @@ class _DoublePageViewState extends State<DoublePageView>
     );
   }
 
-  Widget? _buildCompletedState(SubsamplingImageState state) {
-    widget.onFailedToLoadImage?.call(false);
-    return null; // Affiche l'image via MinSubsamplingImage
-  }
-
-  Widget _buildFailedState(SubsamplingImageState state, dynamic l10n) {
-    widget.onFailedToLoadImage?.call(true);
+  Widget _buildFailedState(
+    UChapDataPreload pageData,
+    SubsamplingImageState state,
+    dynamic l10n,
+  ) {
+    widget.onFailedToLoadImage?.call(pageData, true);
 
     return Container(
       color: getBackgroundColor(widget.backgroundColor),
@@ -327,7 +325,7 @@ class _DoublePageViewState extends State<DoublePageView>
             description: l10n.reader_image_failure_hint,
             onRetry: () {
               state.reLoadImage();
-              widget.onFailedToLoadImage?.call(false);
+              widget.onFailedToLoadImage?.call(pageData, false);
             },
           ),
         ),

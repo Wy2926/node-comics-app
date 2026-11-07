@@ -7,10 +7,18 @@ import 'package:mangayomi/services/get_chapter_pages.dart';
 
 /// Manages the preloading and memory of chapters in the manga reader.
 ///
-/// Fetches and appends the next chapter with a retryable boundary.
+/// Each edge has one request and a retryable boundary, independent of the UI.
 class ChapterPreloadManager {
-  /// The list of preloaded chapter data
-  final List<UChapDataPreload> _pages = [];
+  ChapterPreloadManager(List<UChapDataPreload> initialPages)
+    : _pages = List.of(initialPages) {
+    final chapterId = _getChapterIdentifier(initialPages.firstOrNull?.chapter);
+    if (chapterId != null) {
+      _loadedChapterIds.add(chapterId);
+      _chapterOrder.add(chapterId);
+    }
+  }
+
+  final List<UChapDataPreload> _pages;
 
   /// Set of chapter IDs currently in memory
   final Set<String> _loadedChapterIds = {};
@@ -25,131 +33,137 @@ class ChapterPreloadManager {
   /// scanning every page of the chapter looking for cleared data.
   final Set<String> _evictedChapterIds = {};
 
-  /// At most one next-chapter request per reader.
-  bool _isPreloadingNext = false;
+  final Set<ChapterDirection> _loading = {};
   bool _disposed = false;
-  int _requestGeneration = 0;
 
   /// Callbacks
-  void Function()? onPagesUpdated;
+  VoidCallback? onPagesUpdated;
+
+  /// The viewport may defer a prepend until scrolling stops, then preserve
+  /// its visible item around this synchronous mutation. No scroll/provider
+  /// dependency belongs in the chapter loader.
+  Future<void> Function(VoidCallback commit)? commitPrepend;
 
   /// Gets the list of pages (read-only)
   List<UChapDataPreload> get pages => List.unmodifiable(_pages);
 
-  /// Gets the current number of pages
-  int get pageCount => _pages.length;
-
-  /// Returns `true` if pages from [chapter] are already in memory.
-  bool isChapterLoaded(Chapter? chapter) {
-    final id = _getChapterIdentifier(chapter);
-    return id != null && _loadedChapterIds.contains(id);
-  }
-
-  /// Initializes the manager with the first chapter's pages.
-  void initialize(List<UChapDataPreload> initialPages) {
-    _requestGeneration++;
-    _disposed = false;
-    _isPreloadingNext = false;
-    for (final page in _pages) {
-      page.onRetryChapter = null;
-    }
-    _pages.clear();
-    _loadedChapterIds.clear();
-    _chapterOrder.clear();
-    _evictedChapterIds.clear();
-
-    _pages.addAll(initialPages);
-
-    // Track the initial chapter
-    if (initialPages.isNotEmpty) {
-      final chapterId = _getChapterIdentifier(initialPages.first.chapter);
-      if (chapterId != null) {
-        _loadedChapterIds.add(chapterId);
-        _chapterOrder.add(chapterId);
-      }
-    }
-
-    if (kDebugMode) {
-      debugPrint(
-        '[ChapterPreload] Initialized with ${initialPages.length} pages',
-      );
-    }
-  }
-
-  /// Keeps a stable boundary at the end while the next chapter is fetched.
-  /// Failed/empty requests wait for an explicit retry, not every scroll frame.
-  Future<bool> loadNextChapter(
-    Chapter currentChapter, {
-    required Chapter? Function() findNextChapter,
+  /// Failed/empty requests require an explicit retry. Eviction releases image
+  /// data, but never makes an existing chapter eligible for insertion again.
+  Future<bool> loadAdjacentChapter(
+    ChapterDirection direction, {
+    required Chapter? Function(Chapter edge) findChapter,
     required Future<GetChapterPagesModel> Function(Chapter, bool) loadPages,
     bool retry = false,
   }) async {
-    if (_disposed || _isPreloadingNext || _pages.isEmpty) return false;
-    final tail = _pages.last;
-    if (tail.chapter?.id != currentChapter.id ||
-        (tail.isLastChapter ?? false)) {
+    if (_disposed || _loading.contains(direction) || _pages.isEmpty) {
       return false;
     }
-    if (tail.nextChapterState != null && !retry) return false;
+    final previous = direction == ChapterDirection.previous;
+    UChapDataPreload edge() => previous ? _pages.first : _pages.last;
+    final current = edge();
+    if (current.chapterState == ChapterLoadState.exhausted ||
+        (current.chapterState != null && !retry)) {
+      return false;
+    }
 
-    final boundary = tail.nextChapterState != null
-        ? tail
+    final boundary =
+        current.isTransitionPage && current.boundaryDirection == direction
+        ? current
         : UChapDataPreload.transition(
-            currentChapter: currentChapter,
-            pageIndex: _pages.length,
+            currentChapter: current.chapter!,
+            pageIndex: previous ? 0 : _pages.length,
+            boundaryDirection: direction,
           );
-    if (!identical(boundary, tail)) _pages.add(boundary);
-    final generation = _requestGeneration;
-    bool isCurrent() => !_disposed && generation == _requestGeneration;
-    _isPreloadingNext = true;
-    boundary.nextChapterState = NextChapterState.loading;
+    _loading.add(direction);
+    boundary.chapterState = ChapterLoadState.loading;
     boundary.onRetryChapter = null;
-    onPagesUpdated?.call();
+
+    Future<void> publish(VoidCallback change) async {
+      void commit() {
+        if (_disposed) return;
+        change();
+        for (var i = 0; i < _pages.length; i++) {
+          _pages[i].pageIndex = i;
+        }
+        onPagesUpdated?.call();
+      }
+
+      if (previous && commitPrepend != null) {
+        await commitPrepend!(commit);
+      } else {
+        commit();
+      }
+    }
 
     try {
-      final next = findNextChapter();
-      if (next == null) {
-        boundary.isLastChapter = true;
-        boundary.nextChapterState = null;
+      Chapter? adjacent;
+      late GetChapterPagesModel data;
+      // Start source I/O even while the viewport is waiting for a gesture to
+      // finish. Future.wait observes errors immediately and keeps one result.
+      await Future.wait<void>([
+        if (!identical(current, boundary))
+          publish(
+            () => previous ? _pages.insert(0, boundary) : _pages.add(boundary),
+          )
+        else
+          Future<void>.sync(() => onPagesUpdated?.call()),
+        () async {
+          final target = adjacent = findChapter(current.chapter!);
+          if (target == null) return;
+          if (_chapterOrder.contains(_getChapterIdentifier(target))) {
+            throw StateError('Chapter is already in the reading list');
+          }
+          data = await loadPages(target, retry);
+        }(),
+      ]);
+      if (_disposed) return false;
+      final target = adjacent;
+      if (target == null) {
+        boundary.chapterState = ChapterLoadState.exhausted;
         return false;
       }
-      final data = await loadPages(next, retry);
-      if (!isCurrent()) return false;
+      final chapterId = _getChapterIdentifier(target)!;
       if (data.uChapDataPreload.isEmpty) {
-        boundary.nextChapterState = NextChapterState.empty;
+        boundary.chapterState = ChapterLoadState.empty;
         return false;
       }
-      if (data.uChapDataPreload.any((page) => page.chapter?.id != next.id) ||
-          isChapterLoaded(next)) {
-        throw StateError('Invalid next chapter pages');
+      if (data.uChapDataPreload.any(
+        (page) => page.chapter?.id != target.id || page.isTransitionPage,
+      )) {
+        throw StateError('Invalid adjacent chapter pages');
       }
-
-      // Replace the pending item at the same index. Ready chapters have no
-      // interstitial page, including in single/double-page reading modes.
-      _pages.removeLast();
-      final startIndex = _pages.length;
-      for (final entry in data.uChapDataPreload.asMap().entries) {
-        entry.value.pageIndex = startIndex + entry.key;
-      }
-      _pages.addAll(data.uChapDataPreload);
-      final chapterId = _getChapterIdentifier(next)!;
-      _loadedChapterIds.add(chapterId);
-      _chapterOrder.add(chapterId);
-      boundary.nextChapterState = null;
-      return true;
+      await publish(() {
+        // The opposite edge may have completed while this prepend waited for
+        // scroll idle. Validate membership at the actual insertion point.
+        if (_chapterOrder.contains(chapterId)) {
+          throw StateError('Chapter is already in the reading list');
+        }
+        _pages.remove(boundary);
+        if (previous) {
+          _pages.insertAll(0, data.uChapDataPreload);
+          _chapterOrder.insert(0, chapterId);
+        } else {
+          _pages.addAll(data.uChapDataPreload);
+          _chapterOrder.add(chapterId);
+        }
+        _loadedChapterIds.add(chapterId);
+        boundary.chapterState = null;
+      });
+      return !_disposed;
     } catch (_) {
-      if (isCurrent()) boundary.nextChapterState = NextChapterState.failed;
+      if (!_disposed) boundary.chapterState = ChapterLoadState.failed;
       return false;
     } finally {
-      if (isCurrent()) {
-        _isPreloadingNext = false;
-        if (boundary.nextChapterState != null) {
+      if (!_disposed) {
+        _loading.remove(direction);
+        if (boundary.chapterState == ChapterLoadState.failed ||
+            boundary.chapterState == ChapterLoadState.empty) {
           boundary.onRetryChapter = () {
-            if (!isCurrent() || !identical(_pages.lastOrNull, boundary)) return;
+            if (_disposed || !identical(edge(), boundary)) return;
             unawaited(
-              loadNextChapter(
-                currentChapter,
-                findNextChapter: findNextChapter,
+              loadAdjacentChapter(
+                direction,
+                findChapter: findChapter,
                 loadPages: loadPages,
                 retry: true,
               ),
@@ -211,9 +225,6 @@ class ChapterPreloadManager {
       if (page.isTransitionPage || page.chapter == null) continue;
       final id = _getChapterIdentifier(page.chapter);
       if (id != null && idsToEvict.contains(id)) {
-        if (kDebugMode) {
-          debugPrint('[ChapterPreload] Evicting chapter page index $i for $id');
-        }
         page.archiveImage = null;
         page.decodedImage?.dispose();
         page.decodedImage = null;
@@ -266,10 +277,9 @@ class ChapterPreloadManager {
   }
 
   /// Disposes of all resources.
-  Future<void> dispose() async {
+  void dispose() {
     _disposed = true;
-    _requestGeneration++;
-    _isPreloadingNext = false;
+    _loading.clear();
     // Clear pages
     for (final page in _pages) {
       page.onRetryChapter = null;
@@ -284,9 +294,6 @@ class ChapterPreloadManager {
 
     // Clear callbacks
     onPagesUpdated = null;
-
-    if (kDebugMode) {
-      debugPrint('[ChapterPreload] Disposed');
-    }
+    commitPrepend = null;
   }
 }

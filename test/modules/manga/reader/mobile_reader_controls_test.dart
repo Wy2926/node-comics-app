@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mangayomi/modules/manga/reader/mixins/reader_gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -99,12 +101,16 @@ void main() {
   });
 
   testWidgets(
-    'reader chrome keeps page geometry and yields hidden taps and semantics',
+    'reader chrome keeps page geometry and yields hidden input and semantics',
     (tester) async {
       var visible = true;
       var pageTaps = 0;
       var settingsTaps = 0;
       var pageScrolls = 0;
+      var pageKeys = 0;
+      var sliderChanges = 0;
+      final readerFocus = FocusNode();
+      addTearDown(readerFocus.dispose);
       late StateSetter change;
       final semantics = tester.ensureSemantics();
       try {
@@ -113,73 +119,78 @@ void main() {
           StatefulBuilder(
             builder: (context, setState) {
               change = setState;
-              return NotificationListener<ScrollNotification>(
-                onNotification: (_) {
-                  pageScrolls++;
-                  return false;
-                },
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: GestureDetector(
-                        key: const Key('page'),
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => pageTaps++,
-                        child: const ColoredBox(color: Colors.black),
-                      ),
-                    ),
-                    MobileReaderPanel(
-                      visible: visible,
-                      top: true,
-                      child: MobileReaderHeading(
-                        title: 'A long manga title',
-                        chapter: 'Chapter 123 — extended chapter title',
-                        onBack: () {},
-                        menu: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.more_horiz),
+              return ReaderKeyboardHandler(
+                onNextPage: () => pageKeys++,
+              ).wrapWithKeyboardListener(
+                focusNode: readerFocus,
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (_) {
+                    pageScrolls++;
+                    return false;
+                  },
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: GestureDetector(
+                          key: const Key('page'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => pageTaps++,
+                          child: const ColoredBox(color: Colors.black),
                         ),
                       ),
-                    ),
-                    MobileReaderPanel(
-                      visible: visible,
-                      top: false,
-                      child: Column(
-                        children: [
-                          MobileReaderProgress(
-                            currentIndex: 0,
-                            totalPages: 10,
-                            label: '1',
-                            reverse: false,
-                            previousLabel: 'Previous',
-                            nextLabel: 'Next',
-                            onChanged: (_) {},
-                            onChangeEnd: (_) {},
+                      MobileReaderPanel(
+                        visible: visible,
+                        top: true,
+                        child: MobileReaderHeading(
+                          title: 'A long manga title',
+                          chapter: 'Chapter 123 — extended chapter title',
+                          onBack: () {},
+                          menu: IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.more_horiz),
                           ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              for (final label in [
-                                'Chapters',
-                                'Translate',
-                                'Display',
-                                'Settings',
-                              ])
-                                Expanded(
-                                  child: NodeLaneToolbarAction(
-                                    label: label,
-                                    icon: Icons.tune,
-                                    onPressed: () {
-                                      if (label == 'Settings') settingsTaps++;
-                                    },
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                      MobileReaderPanel(
+                        visible: visible,
+                        top: false,
+                        child: Column(
+                          children: [
+                            MobileReaderProgress(
+                              currentIndex: 0,
+                              totalPages: 10,
+                              label: '1',
+                              reverse: false,
+                              previousLabel: 'Previous',
+                              nextLabel: 'Next',
+                              onChanged: (_) => sliderChanges++,
+                              onChangeEnd: (_) {},
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                for (final label in [
+                                  'Chapters',
+                                  'Translate',
+                                  'Display',
+                                  'Settings',
+                                ])
+                                  Expanded(
+                                    child: NodeLaneToolbarAction(
+                                      label: label,
+                                      icon: Icons.tune,
+                                      onPressed: () {
+                                        if (label == 'Settings') settingsTaps++;
+                                      },
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -196,8 +207,29 @@ void main() {
         expect(settingsTaps, 1);
         expect(pageTaps, 0);
         expect(pageScrolls, 0);
+        await tester.ensureVisible(find.byType(Slider));
+        await tester.tap(find.byType(Slider));
+        tester
+            .widget<FocusableActionDetector>(
+              find.descendant(
+                of: find.byType(Slider),
+                matching: find.byType(FocusableActionDetector),
+              ),
+            )
+            .focusNode!
+            .requestFocus();
+        await tester.pump();
+        expect(
+          FocusManager.instance.primaryFocus?.context
+              ?.findAncestorWidgetOfExactType<Slider>(),
+          isNotNull,
+        );
+        final changesBeforeHide = sliderChanges;
         change(() => visible = false);
         await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+        expect(sliderChanges, changesBeforeHide);
+        expect(pageKeys, 1);
         expect(tester.getSize(find.byKey(const Key('page'))), pageSize);
         expect(
           tester.semantics.simulatedAccessibilityTraversal().map(

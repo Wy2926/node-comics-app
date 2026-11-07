@@ -6,7 +6,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 
 /// Chrome is an overlay: opening it never changes the page viewport. Hidden
-/// controls yield pointer events and semantics to the reader beneath them.
+/// controls yield pointer/keyboard input and semantics to the reader beneath them.
 class MobileReaderPanel extends StatelessWidget {
   const MobileReaderPanel({
     super.key,
@@ -26,49 +26,52 @@ class MobileReaderPanel extends StatelessWidget {
       bottom: top ? null : 0,
       left: 0,
       right: 0,
-      child: IgnorePointer(
-        ignoring: !visible,
-        child: ExcludeSemantics(
-          excluding: !visible,
-          // Stack only clips layout overflow. A translated panel can otherwise
-          // paint outside its bounds into a surrounding safe area when hidden.
-          child: ClipRect(
-            child: AnimatedSlide(
-              offset: visible ? Offset.zero : Offset(0, top ? -1 : 1),
-              duration: MediaQuery.disableAnimationsOf(context)
-                  ? Duration.zero
-                  : const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              child: NodeLaneNoticeAvoidance(
-                enabled: visible && !top,
-                child: NodeLaneSurface(
-                  child: Material(
-                    color: colors.surface,
-                    borderRadius: top
-                        ? null
-                        : const BorderRadius.vertical(
-                            top: Radius.circular(NodeLaneTokens.modalRadius),
-                          ),
-                    clipBehavior: Clip.antiAlias,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight:
-                            MediaQuery.sizeOf(context).height *
-                            (top ? .32 : .48),
-                      ),
-                      child: SafeArea(
-                        top: top,
-                        bottom: !top,
-                        child: NotificationListener<ScrollNotification>(
-                          // Scrolling enlarged controls must not trigger the page's
-                          // scroll-to-hide handler.
-                          onNotification: (_) => true,
-                          child: SingleChildScrollView(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: top ? 4 : 12,
-                              vertical: top ? 4 : 8,
+      child: ExcludeFocus(
+        excluding: !visible,
+        child: IgnorePointer(
+          ignoring: !visible,
+          child: ExcludeSemantics(
+            excluding: !visible,
+            // Stack only clips layout overflow. A translated panel can otherwise
+            // paint outside its bounds into a surrounding safe area when hidden.
+            child: ClipRect(
+              child: AnimatedSlide(
+                offset: visible ? Offset.zero : Offset(0, top ? -1 : 1),
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                child: NodeLaneNoticeAvoidance(
+                  enabled: visible && !top,
+                  child: NodeLaneSurface(
+                    child: Material(
+                      color: colors.surface,
+                      borderRadius: top
+                          ? null
+                          : const BorderRadius.vertical(
+                              top: Radius.circular(NodeLaneTokens.modalRadius),
                             ),
-                            child: child,
+                      clipBehavior: Clip.antiAlias,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight:
+                              MediaQuery.sizeOf(context).height *
+                              (top ? .32 : .48),
+                        ),
+                        child: SafeArea(
+                          top: top,
+                          bottom: !top,
+                          child: NotificationListener<ScrollNotification>(
+                            // Scrolling enlarged controls must not trigger the page's
+                            // scroll-to-hide handler.
+                            onNotification: (_) => true,
+                            child: SingleChildScrollView(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: top ? 4 : 12,
+                                vertical: top ? 4 : 8,
+                              ),
+                              child: child,
+                            ),
                           ),
                         ),
                       ),

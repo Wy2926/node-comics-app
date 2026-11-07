@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:mangayomi/modules/manga/reader/controllers/reader_viewport_anchor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
@@ -85,10 +86,9 @@ class ImageViewWebtoon extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final Axis scrollDirection;
   final double minCacheExtent;
-  final int initialScrollIndex;
   final ScrollPhysics physics;
   final Function(UChapDataPreload data) onLongPressData;
-  final Function(int index, bool failed) onFailedToLoadImage;
+  final void Function(UChapDataPreload page, bool failed) onFailedToLoadImage;
   final BackgroundColor backgroundColor;
   final bool isDoublePageMode;
   final bool isHorizontalContinuous;
@@ -98,7 +98,7 @@ class ImageViewWebtoon extends ConsumerStatefulWidget {
   final bool reverse;
   final bool zoomOutDisabled;
   final bool doubleTapZoomEnabled;
-  final void Function(int index)? onPageImageLoaded;
+  final ReaderViewportAnchorController viewportAnchor;
 
   const ImageViewWebtoon({
     super.key,
@@ -107,7 +107,6 @@ class ImageViewWebtoon extends ConsumerStatefulWidget {
     required this.scrollController,
     required this.scrollDirection,
     required this.minCacheExtent,
-    required this.initialScrollIndex,
     required this.physics,
     required this.onLongPressData,
     required this.onFailedToLoadImage,
@@ -121,10 +120,11 @@ class ImageViewWebtoon extends ConsumerStatefulWidget {
     this.zoomOutDisabled = false,
     this.doubleTapZoomEnabled = true,
     this.onImageLoaded,
-    this.onPageImageLoaded,
+    required this.viewportAnchor,
   });
 
-  final Function(int index, double width, double height)? onImageLoaded;
+  final void Function(UChapDataPreload page, double width, double height)?
+  onImageLoaded;
 
   @override
   ConsumerState<ImageViewWebtoon> createState() => _ImageViewWebtoonState();
@@ -159,37 +159,6 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
   @override
   void initState() {
     super.initState();
-    if (widget.initialScrollIndex > 0) {
-      void jump([int attempt = 0]) {
-        if (!mounted) return;
-        if (widget.listController.isAttached &&
-            widget.scrollController.hasClients) {
-          // Keep restoration index-based, like ScrollablePositionedList. The
-          // controller accounts for reverse/RTL and estimated item extents.
-          widget.listController.jumpToItem(
-            index: widget.initialScrollIndex,
-            scrollController: widget.scrollController,
-            alignment: 0.0,
-          );
-          if (attempt < 5) {
-            final range = widget.listController.visibleRange;
-            if (range == null ||
-                widget.initialScrollIndex < range.$1 ||
-                widget.initialScrollIndex > range.$2) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                jump(attempt + 1);
-              });
-            }
-          }
-        } else if (attempt < 5) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            jump(attempt + 1);
-          });
-        }
-      }
-
-      WidgetsBinding.instance.addPostFrameCallback((_) => jump());
-    }
     _transformNotifier = ValueNotifier(Matrix4.identity());
     final doubleTapAnimationValue = ref.read(
       doubleTapAnimationSpeedStateProvider,
@@ -448,16 +417,10 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
     super.dispose();
   }
 
-  int _calculateItemCount(bool singleFirst) {
-    if (widget.isDoublePageMode && !widget.isHorizontalContinuous) {
-      if (widget.pages.isEmpty) return 0;
-      return ReaderPageIndexMath.buildSpreads(
-        widget.pages,
-        singleFirst: singleFirst,
-      ).length;
-    }
-    return widget.pages.length;
-  }
+  List<DoublePageSpread> _spreads = [];
+
+  String _itemIdentity(int index) =>
+      widget.pages[_spreads[index].firstIndex].identity;
 
   @override
   Widget build(BuildContext context) {
@@ -466,7 +429,17 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
     final dualPageRotateToFitInvert = ref.watch(
       dualPageRotateToFitInvertStateProvider,
     );
-    final itemCount = _calculateItemCount(singleFirst);
+    _spreads = ReaderPageIndexMath(
+      isDoublePageActive:
+          widget.isDoublePageMode && !widget.isHorizontalContinuous,
+      singleFirst: singleFirst,
+      pageCount: widget.pages.length,
+      pages: widget.pages,
+    ).spreads;
+    final itemCount = _spreads.length;
+    final indices = <Key, int>{
+      for (var i = 0; i < itemCount; i++) ValueKey(_itemIdentity(i)): i,
+    };
 
     return RawGestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -505,6 +478,7 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
           reverse: widget.reverse,
           cacheExtent: widget.minCacheExtent,
           itemCount: itemCount,
+          findChildIndexCallback: (key) => indices[key],
           physics: widget.physics,
           controller: widget.scrollController,
           listController: widget.listController,
@@ -513,7 +487,6 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
             context,
             index,
             itemCount,
-            singleFirst,
             dualPageRotateToFit,
             dualPageRotateToFitInvert,
           ),
@@ -530,8 +503,8 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
   }
 
   double _estimateExtent(int? index, double crossAxisExtent) {
-    if (index != null && index >= 0 && index < widget.pages.length) {
-      final page = widget.pages[index];
+    if (index != null && index >= 0 && index < _spreads.length) {
+      final page = widget.pages[_spreads[index].firstIndex];
       if (page.loadedWidth != null &&
           page.loadedHeight != null &&
           page.loadedWidth! > 0) {
@@ -571,63 +544,55 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
     BuildContext context,
     int index,
     int itemCount,
-    bool singleFirst,
     bool dualPageRotateToFit,
     bool dualPageRotateToFitInvert,
   ) {
-    Widget item;
-    var actualIndex = index;
-    if (widget.isDoublePageMode && !widget.isHorizontalContinuous) {
-      final spreads = ReaderPageIndexMath.buildSpreads(
-        widget.pages,
-        singleFirst: singleFirst,
-      );
-      if (index >= spreads.length) return const SizedBox.shrink();
-      final spread = spreads[index];
-      actualIndex = spread.firstIndex;
-      item = _buildDoublePageItem(spread);
-    } else {
-      final currentPage = widget.pages[index];
-      final uniqueKey = ValueKey(currentPage.widgetKey(index));
-
-      item = KeyedSubtree(
-        key: uniqueKey,
-        child: _buildSinglePageItem(
-          context,
-          index,
-          dualPageRotateToFit,
-          dualPageRotateToFitInvert,
-        ),
+    final spread = _spreads[index];
+    final actualIndex = spread.firstIndex;
+    Widget item = widget.isDoublePageMode && !widget.isHorizontalContinuous
+        ? _buildDoublePageItem(spread)
+        : _buildSinglePageItem(
+            context,
+            actualIndex,
+            dualPageRotateToFit,
+            dualPageRotateToFitInvert,
+          );
+    if (!widget.pages[actualIndex].isTransitionPage) {
+      item = ReaderViewportItem(
+        key: ValueKey('image-${_itemIdentity(index)}'),
+        identity: _itemIdentity(index),
+        controller: widget.viewportAnchor,
+        child: item,
       );
     }
 
     if (!widget.isHorizontalContinuous) {
       final page = widget.pages[actualIndex];
-      if (!page.isTransitionPage &&
-          actualIndex > 0 &&
-          widget.pages[actualIndex - 1].chapter?.id != page.chapter?.id) {
-        item = Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      item = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!page.isTransitionPage &&
+              actualIndex > 0 &&
+              widget.pages[actualIndex - 1].chapter?.id != page.chapter?.id)
             ReaderChapterHeading(name: page.chapter?.name ?? ''),
-            item,
-          ],
-        );
-      }
-    }
-
-    if (widget.showPageGaps &&
-        widget.readerMode != ReaderMode.webtoon &&
-        index < itemCount - 1) {
-      item = Padding(
-        padding: widget.isHorizontalContinuous
-            ? const EdgeInsets.only(right: 6)
-            : const EdgeInsets.only(bottom: 6),
-        child: item,
+          item,
+        ],
       );
     }
+    final gap =
+        widget.showPageGaps &&
+            widget.readerMode != ReaderMode.webtoon &&
+            index < itemCount - 1
+        ? 6.0
+        : 0.0;
+    item = Padding(
+      padding: widget.isHorizontalContinuous
+          ? EdgeInsets.only(right: gap)
+          : EdgeInsets.only(bottom: gap),
+      child: item,
+    );
 
-    return item;
+    return KeyedSubtree(key: ValueKey(_itemIdentity(index)), child: item);
   }
 
   Widget _buildSinglePageItem(
@@ -656,23 +621,19 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
       rotation = dualPageRotateToFitInvert ? 270 : 90;
     }
 
-    final uniqueKey = ValueKey('single-${currentPage.widgetKey(index)}');
-
     return Padding(
-      key: uniqueKey,
       padding: widget.isHorizontalContinuous
           ? EdgeInsets.zero
           : EdgeInsets.symmetric(horizontal: sidePad),
       child: ImageViewVertical(
         data: currentPage,
         failedToLoadImage: (failed) =>
-            widget.onFailedToLoadImage(index, failed),
+            widget.onFailedToLoadImage(currentPage, failed),
         onLongPressData: widget.onLongPressData,
         isHorizontal: widget.isHorizontalContinuous,
         rotation: rotation,
         onImageLoaded: (width, height) {
-          widget.onImageLoaded?.call(index, width, height);
-          widget.onPageImageLoaded?.call(index);
+          widget.onImageLoaded?.call(currentPage, width, height);
         },
       ),
     );
@@ -694,19 +655,13 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
 
     final List<UChapDataPreload?> datas = [page1, page2];
 
-    final uniqueKey = ValueKey(
-      'double-${page1.widgetKey(index1)}-${page2?.widgetKey(index1 + 1) ?? "none"}',
-    );
-
-    return KeyedSubtree(
-      key: uniqueKey,
-      child: DoublePageView.vertical(
-        pages: datas,
-        backgroundColor: widget.backgroundColor,
-        onFailedToLoadImage: (failed) =>
-            widget.onFailedToLoadImage(index1, failed),
-        onLongPressData: widget.onLongPressData,
-      ),
+    return DoublePageView.vertical(
+      key: ValueKey('double-${page1.identity}-${page2?.identity}'),
+      pages: datas,
+      backgroundColor: widget.backgroundColor,
+      onFailedToLoadImage: widget.onFailedToLoadImage,
+      onImageLoaded: widget.onImageLoaded,
+      onLongPressData: widget.onLongPressData,
     );
   }
 }

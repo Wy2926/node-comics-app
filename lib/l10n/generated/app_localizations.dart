@@ -8538,6 +8538,24 @@ abstract class AppLocalizations {
   /// **'No images found for this chapter'**
   String get reader_no_pages;
 
+  /// No description provided for @reader_loading_previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading previous chapter…'**
+  String get reader_loading_previous;
+
+  /// No description provided for @reader_previous_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the previous chapter'**
+  String get reader_previous_failed;
+
+  /// No description provided for @reader_reached_start.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the first chapter'**
+  String get reader_reached_start;
+
   /// No description provided for @reader_loading_next.
   ///
   /// In en, this message translates to:

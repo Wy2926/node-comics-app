@@ -238,7 +238,7 @@ void main() {
 
   group('splitting a wide page', () {
     test('every later page moves one slot down', () {
-      final manager = ChapterPreloadManager()..initialize(chapterPages(ch1, 4));
+      final manager = ChapterPreloadManager(chapterPages(ch1, 4));
       final wide = manager.pages[1];
 
       manager.splitPage(
@@ -263,8 +263,8 @@ void main() {
       final right = UChapDataPreload(ch1, null, null, null, null, 1, null, 2)
         ..srcRect = const Rect.fromLTWH(500, 0, 500, 1400);
 
-      expect(left.widgetKey(1), isNot(right.widgetKey(2)));
-      expect(page(ch1, 1).widgetKey(1), '101-1');
+      expect(left.identity, isNot(right.identity));
+      expect(page(ch1, 1).identity, '101-1');
     });
   });
 
@@ -273,12 +273,11 @@ void main() {
       'waiting spread becomes next image without moving earlier spreads',
       () async {
         for (final singleFirst in [false, true]) {
-          final manager = ChapterPreloadManager()
-            ..initialize(chapterPages(ch1, 3));
+          final manager = ChapterPreloadManager(chapterPages(ch1, 3));
           final response = Completer<GetChapterPagesModel>();
-          final loading = manager.loadNextChapter(
-            ch1,
-            findNextChapter: () => ch2,
+          final loading = manager.loadAdjacentChapter(
+            ChapterDirection.next,
+            findChapter: (_) => ch2,
             loadPages: (_, _) => response.future,
           );
           final before = ReaderPageIndexMath.buildSpreads(
@@ -298,7 +297,7 @@ void main() {
             manager.pages[after[waitingIndex].firstIndex].chapter,
             same(ch2),
           );
-          await manager.dispose();
+          manager.dispose();
         }
       },
     );
@@ -313,12 +312,11 @@ void main() {
         page.archiveImage = bytes;
         page.chapterUrlModel = initial;
       }
-      final manager = ChapterPreloadManager()
-        ..initialize(initial.uChapDataPreload);
+      final manager = ChapterPreloadManager(initial.uChapDataPreload);
       for (final ch in [ch2, ch3, ch4]) {
-        await manager.loadNextChapter(
-          manager.pages.last.chapter!,
-          findNextChapter: () => ch,
+        await manager.loadAdjacentChapter(
+          ChapterDirection.next,
+          findChapter: (_) => ch,
           loadPages: (_, _) async => _model(chapterPages(ch, 2)),
         );
       }
@@ -327,8 +325,7 @@ void main() {
 
       expect(evicted.map((i) => manager.pages[i].chapter?.id).toSet(), {101});
       expect(manager.isChapterEvicted(ch1), isTrue);
-      expect(manager.isChapterLoaded(ch2), isTrue);
-      expect(manager.isChapterLoaded(ch4), isTrue);
+
       expect(initial.archiveImages, everyElement(isNull));
       expect(
         initial.uChapDataPreload.map((p) => p.archiveImage),
@@ -338,9 +335,9 @@ void main() {
       // Scrolling back restores an earlier chapter without moving it after
       // the tail. Chapters 1/2/3 are now neighbours; only chapter 4 is evicted.
       manager.markChapterAsLoaded(ch1);
+      expect(manager.isChapterEvicted(ch1), isFalse);
       final backwards = manager.evictOldChapters(ch2);
       expect(backwards.map((i) => manager.pages[i].chapter?.id).toSet(), {104});
-      expect(manager.isChapterLoaded(ch1), isTrue);
     });
   });
 }

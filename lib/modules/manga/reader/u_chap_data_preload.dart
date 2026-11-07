@@ -6,7 +6,9 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/page.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
 
-enum NextChapterState { loading, failed, empty }
+enum ChapterDirection { previous, next }
+
+enum ChapterLoadState { loading, failed, empty, exhausted }
 
 class UChapDataPreload {
   Chapter? chapter;
@@ -18,10 +20,10 @@ class UChapDataPreload {
   GetChapterPagesModel? chapterUrlModel;
   int? pageIndex;
   bool isTransitionPage;
-  bool? isLastChapter;
+  final ChapterDirection? boundaryDirection;
 
   // Present only on the pending chapter boundary; cleared on success/disposal.
-  NextChapterState? nextChapterState;
+  ChapterLoadState? chapterState;
   VoidCallback? onRetryChapter;
   Rect? srcRect;
 
@@ -53,7 +55,7 @@ class UChapDataPreload {
     this.chapterUrlModel,
     this.pageIndex, {
     this.isTransitionPage = false,
-    this.isLastChapter = false,
+    this.boundaryDirection,
     this.srcRect,
     this.localImagePath,
   });
@@ -61,15 +63,21 @@ class UChapDataPreload {
   /// Identifies this page among its neighbours in a list or page view, for
   /// widget keys. The two halves of a split wide page share [index] and only
   /// differ by [srcRect].
-  String widgetKey(int fallbackIndex) {
-    final half = srcRect == null ? '' : '-${srcRect!.left.round()}';
-    return '${chapter?.id ?? "trans"}-${index ?? fallbackIndex}$half';
+  String get identity {
+    if (isTransitionPage) {
+      return '${chapter?.id}-boundary-${boundaryDirection?.name}';
+    }
+    final rect = srcRect;
+    final crop = rect == null
+        ? ''
+        : '-${rect.left},${rect.top},${rect.width},${rect.height}';
+    return '${chapter?.id}-$index$crop';
   }
 
   UChapDataPreload.transition({
     required Chapter currentChapter,
     required int this.pageIndex,
-    this.isLastChapter = false,
+    this.boundaryDirection = ChapterDirection.next,
   }) : chapter = currentChapter,
        isTransitionPage = true,
        directory = null,

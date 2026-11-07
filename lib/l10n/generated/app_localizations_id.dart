@@ -4857,6 +4857,15 @@ class AppLocalizationsId extends AppLocalizations {
   String get reader_no_pages => 'No images found for this chapter';
 
   @override
+  String get reader_loading_previous => 'Loading previous chapter…';
+
+  @override
+  String get reader_previous_failed => 'Could not load the previous chapter';
+
+  @override
+  String get reader_reached_start => 'You have reached the first chapter';
+
+  @override
   String get reader_loading_next => 'Loading next chapter…';
 
   @override

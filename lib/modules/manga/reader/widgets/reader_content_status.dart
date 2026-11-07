@@ -140,18 +140,22 @@ class ReaderChapterBoundary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final state = data.nextChapterState;
+    final state = data.chapterState;
+    final previous = data.boundaryDirection == ChapterDirection.previous;
     Widget body = ReaderContentStatus(
       message: switch (state) {
-        NextChapterState.loading => l10n.reader_loading_next,
-        NextChapterState.failed => l10n.reader_next_failed,
-        NextChapterState.empty => l10n.reader_no_pages,
-        null => l10n.you_have_finished_reading,
+        ChapterLoadState.loading =>
+          previous ? l10n.reader_loading_previous : l10n.reader_loading_next,
+        ChapterLoadState.failed =>
+          previous ? l10n.reader_previous_failed : l10n.reader_next_failed,
+        ChapterLoadState.empty => l10n.reader_no_pages,
+        ChapterLoadState.exhausted || null =>
+          previous ? l10n.reader_reached_start : l10n.you_have_finished_reading,
       },
-      description: state == NextChapterState.failed
+      description: state == ChapterLoadState.failed
           ? l10n.reader_loading_retry_hint
           : null,
-      loading: state == NextChapterState.loading,
+      loading: state == ChapterLoadState.loading,
       onRetry: data.onRetryChapter,
     );
     if (horizontal) {

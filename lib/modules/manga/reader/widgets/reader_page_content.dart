@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/manga/reader/controllers/reader_viewport_anchor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -32,44 +33,39 @@ class ReaderPageContent extends ConsumerWidget {
   final BackgroundColor backgroundColor;
   final int pagePreloadAmount;
 
-  /// Index the continuous list should open on. Read once, at construction:
-  /// this is [ImageViewWebtoon.initialScrollIndex], not a live "which page is
-  /// visible now" value.
-  final int initialScrollIndex;
-
   /// The page currently shown by the paged PageView, for the single-page
   /// branch's `isVisible` check.
   final int currentPageViewIndex;
 
-  /// Total pages as seen by the page-view controller (halved in double-page
-  /// mode) - depends on state (double-page toggle, singleFirst setting) that
-  /// lives on the caller, so it is passed in rather than recomputed here.
-  final int pageViewPageCount;
-
   final bool isReverseHorizontal;
   final bool isCurrentPageZoomed;
 
+  final ReaderViewportAnchorController viewportAnchor;
   final ListController listController;
   final ScrollController continuousScrollController;
   final PageController extendedController;
   final Axis scrollDirection;
 
   /// Looks up (creating if needed) the single-page zoom controller for
-  /// [index]. Owned by the caller so the zoom-state listener it attaches
+  /// [page]. Owned by the caller so the zoom-state listener it attaches
   /// keeps seeing the same instances across rebuilds.
-  final ssiv.SubsamplingScaleImageViewController Function(int index)
+  final ssiv.SubsamplingScaleImageViewController Function(UChapDataPreload page)
   pageControllerFor;
 
-  final void Function(int index, bool failed) onFailedToLoadImage;
-  final void Function(int index, double width, double height) onWidePage;
-  final void Function(int index) onPageImageLoaded;
+  final void Function(UChapDataPreload page, bool failed) onFailedToLoadImage;
+  final void Function(UChapDataPreload page, double width, double height)
+  onWidePage;
 
   /// A single page's image finished loading wider than tall; the caller
   /// schedules a delayed rebuild once the layout has had a chance to settle.
-  final void Function(int index) onWideSinglePageLoaded;
+  final void Function(UChapDataPreload page) onWideSinglePageLoaded;
 
-  final void Function(int index, bool zoomed) onDoublePageZoomChanged;
-  final void Function(int index, PhotoViewController controller, bool attached)
+  final void Function(String identity, bool zoomed) onDoublePageZoomChanged;
+  final void Function(
+    String identity,
+    PhotoViewController controller,
+    bool attached,
+  )
   onDoublePageControllerChanged;
   final Future<void> Function(int index) onPageChanged;
 
@@ -81,9 +77,8 @@ class ReaderPageContent extends ConsumerWidget {
     required this.pageMode,
     required this.backgroundColor,
     required this.pagePreloadAmount,
-    required this.initialScrollIndex,
     required this.currentPageViewIndex,
-    required this.pageViewPageCount,
+    required this.viewportAnchor,
     required this.isReverseHorizontal,
     required this.isCurrentPageZoomed,
     required this.listController,
@@ -93,7 +88,6 @@ class ReaderPageContent extends ConsumerWidget {
     required this.pageControllerFor,
     required this.onFailedToLoadImage,
     required this.onWidePage,
-    required this.onPageImageLoaded,
     required this.onWideSinglePageLoaded,
     required this.onDoublePageZoomChanged,
     required this.onDoublePageControllerChanged,
@@ -107,6 +101,7 @@ class ReaderPageContent extends ConsumerWidget {
     if (readerMode.isContinuous) {
       return ImageViewWebtoon(
         pages: pages,
+        viewportAnchor: viewportAnchor,
         listController: listController,
         scrollController: continuousScrollController,
         scrollDirection: isHorizontalContinuous
@@ -119,7 +114,6 @@ class ReaderPageContent extends ConsumerWidget {
         minCacheExtent: isHorizontalContinuous
             ? (pagePreloadAmount.clamp(1, 3) * 1.5) * context.width(1)
             : (pagePreloadAmount.clamp(1, 3) * 1.5) * context.height(1),
-        initialScrollIndex: initialScrollIndex,
         physics: const ClampingScrollPhysics(),
         onLongPressData: (data) => ImageActionsDialog.show(
           context: context,
@@ -140,14 +134,27 @@ class ReaderPageContent extends ConsumerWidget {
         doubleTapZoomEnabled: ref.watch(
           webtoonDoubleTapZoomEnabledStateProvider,
         ),
-        onImageLoaded: (index, width, height) {
+        onImageLoaded: (page, width, height) {
           if (ref.read(splitWidePagesStateProvider) && width > height * 1.2) {
-            onWidePage(index, width, height);
+            onWidePage(page, width, height);
           }
-          onPageImageLoaded(index);
+          if (width > height) onWideSinglePageLoaded(page);
         },
       );
     }
+
+    final doublePage =
+        pageMode == PageMode.doublePage && !isHorizontalContinuous;
+    final spreads = ReaderPageIndexMath(
+      isDoublePageActive: doublePage,
+      singleFirst: ref.watch(doublePageSingleFirstPageStateProvider),
+      pageCount: pages.length,
+      pages: pages,
+    ).spreads;
+    final indices = <Key, int>{
+      for (var i = 0; i < spreads.length; i++)
+        ValueKey(pages[spreads[i].firstIndex].identity): i,
+    };
 
     return TweenAnimationBuilder<Color?>(
       tween: ColorTween(
@@ -163,7 +170,7 @@ class ReaderPageContent extends ConsumerWidget {
           child: animChild,
         );
       },
-      child: (pageMode == PageMode.doublePage && !isHorizontalContinuous)
+      child: doublePage
           ? PageView.builder(
               controller: extendedController,
               scrollDirection: scrollDirection,
@@ -172,36 +179,32 @@ class ReaderPageContent extends ConsumerWidget {
                   ? const NeverScrollableScrollPhysics()
                   : const ClampingScrollPhysics(),
               itemBuilder: (context, index) {
-                final singleFirst = ref.watch(
-                  doublePageSingleFirstPageStateProvider,
-                );
-                final spreads = ReaderPageIndexMath.buildSpreads(
-                  pages,
-                  singleFirst: singleFirst,
-                );
-                final spread = index < spreads.length ? spreads[index] : null;
-                final index1 = spread?.firstIndex ?? index * 2;
-                final index2 = spread?.secondIndex;
+                final spread = spreads[index];
+                final index1 = spread.firstIndex;
+                final index2 = spread.secondIndex;
+                final identity = pages[index1].identity;
                 final List<UChapDataPreload?> pageList = [
                   if (index1 < pages.length) pages[index1],
                   if (index2 != null && index2 < pages.length) pages[index2],
                 ];
                 return DoublePageView.paged(
-                  key: ValueKey('spread_${index}_${index1}_$index2'),
+                  key: ValueKey(identity),
                   pages: isReverseHorizontal
                       ? pageList.reversed.toList()
                       : pageList,
                   backgroundColor: backgroundColor,
                   scrollDirection: scrollDirection,
                   onZoomChanged: (zoomed) {
-                    onDoublePageZoomChanged(index, zoomed);
+                    onDoublePageZoomChanged(identity, zoomed);
                   },
                   onControllerChanged: (controller, attached) {
-                    onDoublePageControllerChanged(index, controller, attached);
+                    onDoublePageControllerChanged(
+                      identity,
+                      controller,
+                      attached,
+                    );
                   },
-                  onFailedToLoadImage: (val) {
-                    onFailedToLoadImage(index, val);
-                  },
+                  onFailedToLoadImage: onFailedToLoadImage,
                   onImageLoaded: (pIdx, width, height) {
                     if (ref.read(splitWidePagesStateProvider) &&
                         width > height * 1.2) {
@@ -219,7 +222,8 @@ class ReaderPageContent extends ConsumerWidget {
                   },
                 );
               },
-              itemCount: pageViewPageCount,
+              itemCount: spreads.length,
+              findChildIndexCallback: (key) => indices[key],
               onPageChanged: onPageChanged,
             )
           : PageView.builder(
@@ -232,12 +236,11 @@ class ReaderPageContent extends ConsumerWidget {
               itemBuilder: (BuildContext context, int index) {
                 final page = pages[index];
                 return ReaderPagedItem(
-                  key: ValueKey('paged-${page.widgetKey(index)}'),
-                  index: index,
+                  key: ValueKey(page.identity),
                   page: page,
                   chapter: chapter,
                   pageController: extendedController,
-                  controller: pageControllerFor(index),
+                  controller: pageControllerFor(page),
                   isVisible: index == currentPageViewIndex,
                   backgroundColor: backgroundColor,
                   onFailedToLoadImage: onFailedToLoadImage,
@@ -246,6 +249,7 @@ class ReaderPageContent extends ConsumerWidget {
                 );
               },
               itemCount: pages.length,
+              findChildIndexCallback: (key) => indices[key],
               onPageChanged: onPageChanged,
             ),
     );
@@ -255,20 +259,19 @@ class ReaderPageContent extends ConsumerWidget {
 /// A single page in the (non-double-page) paged PageView: a transition page,
 /// or a zoomable [ImageViewPaged] with its own loading/error/retry states.
 class ReaderPagedItem extends ConsumerWidget {
-  final int index;
   final UChapDataPreload page;
   final Chapter chapter;
   final PageController pageController;
   final ssiv.SubsamplingScaleImageViewController controller;
   final bool isVisible;
   final BackgroundColor backgroundColor;
-  final void Function(int index, bool failed) onFailedToLoadImage;
-  final void Function(int index, double width, double height) onWidePage;
-  final void Function(int index) onWideSinglePageLoaded;
+  final void Function(UChapDataPreload page, bool failed) onFailedToLoadImage;
+  final void Function(UChapDataPreload page, double width, double height)
+  onWidePage;
+  final void Function(UChapDataPreload page) onWideSinglePageLoaded;
 
   const ReaderPagedItem({
     super.key,
-    required this.index,
     required this.page,
     required this.chapter,
     required this.pageController,
@@ -293,10 +296,10 @@ class ReaderPagedItem extends ConsumerWidget {
       isVisible: isVisible,
       onImageLoaded: (width, height) {
         if (ref.read(splitWidePagesStateProvider) && width > height * 1.2) {
-          onWidePage(index, width.toDouble(), height.toDouble());
+          onWidePage(page, width.toDouble(), height.toDouble());
         }
         if (width > height) {
-          onWideSinglePageLoaded(index);
+          onWideSinglePageLoaded(page);
         }
       },
       loadStateChanged: (state) {
@@ -323,11 +326,11 @@ class ReaderPagedItem extends ConsumerWidget {
           );
         }
         if (state.loadState == ssiv.LoadState.completed) {
-          onFailedToLoadImage(index, false);
+          onFailedToLoadImage(page, false);
           return null; // Dessine l'image via SubsamplingScaleImageView
         }
         if (state.loadState == ssiv.LoadState.failed) {
-          onFailedToLoadImage(index, true);
+          onFailedToLoadImage(page, true);
           final l10n = l10nLocalizations(context)!;
           return Container(
             color:
@@ -341,7 +344,7 @@ class ReaderPagedItem extends ConsumerWidget {
                   description: l10n.reader_image_failure_hint,
                   onRetry: () {
                     state.reLoadImage();
-                    onFailedToLoadImage(index, false);
+                    onFailedToLoadImage(page, false);
                   },
                 ),
               ),
