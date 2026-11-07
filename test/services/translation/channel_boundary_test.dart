@@ -23,6 +23,8 @@ class _CompleteImageRuntime implements ChannelRuntime {
   final updates = StreamController<void>.broadcast();
   List<TranslationTarget> window = [];
   int reads = 0;
+  bool automatic = false;
+  Future<void>? restoration;
   @override
   Stream<void> get changes => updates.stream;
   @override
@@ -32,15 +34,24 @@ class _CompleteImageRuntime implements ChannelRuntime {
         result: TranslationResultRef('local-configuration', 'local-output'),
       );
   @override
-  Future<void> restore(List<TranslationTarget> targets) async {}
+  Future<void> restore(List<TranslationTarget> targets) async {
+    await restoration;
+  }
+
   @override
-  void setWindow(String consumer, List<TranslationTarget> targets) {
+  void setWindow(
+    String consumer,
+    List<TranslationTarget> targets, {
+    bool automatic = true,
+  }) {
     window = targets;
+    this.automatic = automatic;
   }
 
   @override
   void pause(String consumer) {
     window = [];
+    automatic = false;
   }
 
   @override
@@ -72,6 +83,32 @@ class _UnusedSource implements SourceImageReader {
 }
 
 void main() {
+  test('automatic scheduling requires translated display even after late cache restoration', () async {
+    final runtime = _CompleteImageRuntime();
+    final restored = Completer<void>();
+    runtime.restoration = restored.future;
+    final view = TranslationViewController()
+      ..window([
+        TranslationTarget(const TranslationPage('page', '1'), _UnusedSource()),
+      ]);
+    expect(view.enabled, isTrue);
+    expect(view.showTranslation, isFalse);
+    view.configure(showTranslation: true);
+    view.attach(runtime); // Signing in keeps the user's translated display.
+    expect(runtime.automatic, isTrue);
+    view.configure(showTranslation: false);
+    expect(runtime.automatic, isFalse);
+    expect(view.enabled, isTrue);
+    restored.complete();
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      runtime.automatic,
+      isFalse,
+      reason: 'Late restore cannot restart paused translation',
+    );
+    view.dispose();
+    await runtime.dispose();
+  });
   test('presentation consumes a full-image channel and rejects callbacks after account or visibility changes', () async {
     final runtime = CompleteImageChannel().createRuntime(
       const TranslationOptions(),
@@ -79,7 +116,7 @@ void main() {
     final view = TranslationViewController();
     var released = 0;
     view.attach(runtime);
-    view.configure(enabled: true);
+    view.configure(showTranslation: true);
     view.window([
       TranslationTarget(
         const TranslationPage('source/page', 'revision'),

@@ -4,6 +4,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/translation/translation_image_status.dart';
+import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,6 +51,9 @@ class BrowserTab {
   Map<String, dynamic>? anchor;
   void visited(String value) {
     if (!isBrowserUrl(value)) return;
+    if (url.isNotEmpty && Uri.parse(value).origin != Uri.parse(url).origin) {
+      translation.configure(showTranslation: false);
+    }
     url = value;
     if (history.isNotEmpty && history[historyIndex] == value) return;
     if (history.isNotEmpty) {
@@ -68,6 +73,7 @@ class BrowserTab {
     'history': history,
     'historyIndex': historyIndex,
     'translated': translation.showTranslation,
+    'autoTranslate': translation.enabled,
     'anchor': anchor,
   };
   static BrowserTab? fromJson(dynamic value) {
@@ -98,7 +104,8 @@ class BrowserTab {
           history.length - 1,
         ),
       );
-      tab.translation.showTranslation = value['translated'] != false;
+      tab.translation.showTranslation = value['translated'] == true;
+      tab.translation.enabled = value['autoTranslate'] != false;
       if (value['anchor'] is Map) {
         tab.anchor = Map<String, dynamic>.from(value['anchor'] as Map);
       }
@@ -401,16 +408,19 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
   }
 
-  void _translationControls(BrowserTab tab) => showTranslationControls(
-    context,
-    tab.translation,
-    title: '网页翻译',
-    subtitle: [
-      tab.title,
-      Uri.tryParse(tab.url)?.host ?? '',
-    ].where((v) => v.isNotEmpty).join(' · '),
-    browser: true,
-  );
+  Future<void> _translationControls(BrowserTab tab) async {
+    await showTranslationControls(
+      context,
+      tab.translation,
+      title: '网页翻译',
+      subtitle: [
+        tab.title,
+        Uri.tryParse(tab.url)?.host ?? '',
+      ].where((v) => v.isNotEmpty).join(' · '),
+      browser: true,
+    );
+    if (mounted) _save();
+  }
 
   Widget _menu(BrowserTab? tab) => PopupMenuButton<String>(
     tooltip: '更多',
@@ -444,7 +454,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       final confirmed = await confirmClearBrowserLogins(context);
       if (!mounted || confirmed != true) return;
       for (final item in tabs) {
-        item.translation.configure(enabled: false);
+        item.translation.configure(showTranslation: false);
       }
       await CookieManager.instance().deleteAllCookies();
       await MClient.deleteAllCookies();
@@ -464,7 +474,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     final next = tab.historyIndex + delta;
     if (next < 0 || next >= tab.history.length) return;
     tab.historyIndex = next;
-    tab.url = tab.history[next];
+    tab.visited(tab.history[next]);
     tab.x = 0;
     tab.y = 0;
     await tab.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(tab.url)));
@@ -547,29 +557,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                   listenable: tab.translation,
                   builder: (context, _) => MobileBrowserToolbar(
                     tabCount: tabs.length,
-                    translating: tab.pageReady && tab.translation.enabled,
                     onBack: tab.historyIndex > 0 ? () => _history(-1) : null,
                     onNew: () => _new(''),
-                    onTranslate: !tab.pageReady
-                        ? null
-                        : () {
-                            if (tab.translation.runtime == null) {
-                              _translationControls(tab);
-                              return;
-                            }
-                            tab.translation.configure(
-                              enabled: true,
-                              showTranslation: true,
-                            );
-                          },
                     showTranslation: tab.translation.showTranslation,
-                    onDisplayChanged:
-                        tab.pageReady &&
-                            (tab.translation.enabled ||
-                                tab.translation.targets.any(
-                                  (t) =>
-                                      tab.translation.state(t).result != null,
-                                ))
+                    onDisplayChanged: tab.pageReady
                         ? (value) {
                             tab.translation.configure(showTranslation: value);
                             _save();
@@ -613,9 +604,16 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   late int restoreX = widget.tab.x, restoreY = widget.tab.y;
   bool loading = true, loadError = false;
   bool restoringPosition = false;
+  bool _imageMenuOpen = false;
   double progress = 0;
   String? loadingUrl;
   int navigation = 0;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    bridge?.updateTheme(translationImageTheme(context));
+  }
+
   Future<void> _visibility() async {
     final controller = widget.tab.controller;
     if (controller == null) return;
@@ -688,6 +686,20 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
             controller,
             widget.tab.translation,
             widget.tab.id,
+            theme: translationImageTheme(context),
+            onImageMenu: (target) async {
+              if (!mounted || !widget.active || _imageMenuOpen) return;
+              _imageMenuOpen = true;
+              try {
+                await showTranslationImageMenu(
+                  context,
+                  widget.tab.translation,
+                  target,
+                );
+              } finally {
+                _imageMenuOpen = false;
+              }
+            },
           );
           widget.tab.captureAnchor = bridge!.captureAnchor;
           _visibility();
@@ -721,10 +733,6 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
           });
           bridge?.navigate();
           if (url?.toString() != widget.tab.url) {
-            if (Uri.tryParse(url?.toString() ?? '')?.origin !=
-                Uri.tryParse(widget.tab.url)?.origin) {
-              widget.tab.translation.configure(enabled: false);
-            }
             restoreX = 0;
             restoreY = 0;
             widget.tab.anchor = null;

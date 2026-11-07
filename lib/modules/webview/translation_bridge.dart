@@ -9,9 +9,17 @@ import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/source_file.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
+import 'package:mangayomi/modules/translation/translation_image_status.dart';
+import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 
 class WebTranslationBridge {
-  WebTranslationBridge(this.controller, this.view, this.tabId) {
+  WebTranslationBridge(
+    this.controller,
+    this.view,
+    this.tabId, {
+    Map<String, Object> theme = const {},
+    this.onImageMenu,
+  }) : _theme = theme {
     controller.addJavaScriptHandler(
       handlerName: 'nodelaneImages',
       callback: (JavaScriptHandlerFunctionData data) => _receive(data),
@@ -21,6 +29,15 @@ class WebTranslationBridge {
   final InAppWebViewController controller;
   final TranslationViewController view;
   final String tabId;
+  final Future<void> Function(TranslationTarget)? onImageMenu;
+  Map<String, Object> _theme;
+
+  void updateTheme(Map<String, Object> theme) {
+    if (jsonEncode(theme) == jsonEncode(_theme)) return;
+    _theme = theme;
+    _changed();
+  }
+
   final _inputQueue = DbWriteQueue(), _outputQueue = DbWriteQueue();
   final _elements = <String, Map<String, dynamic>>{};
   final _displayed = <String, String>{};
@@ -29,8 +46,7 @@ class WebTranslationBridge {
   int _sequence = 0, _epoch = 0;
   bool _ready = false, _disposed = false;
   DateTime _lastMessage = DateTime.fromMillisecondsSinceEpoch(0);
-  bool get active =>
-      view.enabled && view.foreground && view.runtime != null && !_disposed;
+  bool get active => view.foreground && view.runtime != null && !_disposed;
 
   void navigate() {
     _epoch++;
@@ -90,6 +106,39 @@ class WebTranslationBridge {
       return false;
     }
     _sequence = value['seq'] as int;
+    if (value['action'] != null) {
+      final epoch = _epoch;
+      final id = value['id'];
+      final entry = _elements[id];
+      if (entry == null ||
+          value['revision'] != entry['revision'] ||
+          (await controller.getUrl())?.toString().split('#').first !=
+              _document ||
+          epoch != _epoch ||
+          !active) {
+        return false;
+      }
+      final page = entry['page'] as TranslationPage;
+      final target = view.targetFor(page);
+      if (target == null) return false;
+      if (value['action'] == 'menu') {
+        if (onImageMenu == null ||
+            translationImageMenuActions(view, target).isEmpty) {
+          return false;
+        }
+        await onImageMenu!(target);
+        return true;
+      }
+      final action = TranslationAction.values
+          .where((a) => a.name == value['action'])
+          .firstOrNull;
+      if (action == null ||
+          TranslationImageStatus.forTarget(view, target).action != action) {
+        return false;
+      }
+      await view.perform(target, action);
+      return true;
+    }
     if (DateTime.now().difference(_lastMessage) <
         const Duration(milliseconds: 80)) {
       return false;
@@ -181,20 +230,47 @@ class WebTranslationBridge {
 
   void _changed() {
     if (!_ready || _disposed) return;
-    final state = '$active:${view.showTranslation}';
+    final status = {
+      'active': active,
+      'translated': view.showTranslation,
+      'theme': _theme,
+      'items': [
+        if (active)
+          for (final entry in _elements.entries)
+            if (view.targetFor(entry.value['page'] as TranslationPage)
+                case final target?)
+              {
+                'id': entry.key,
+                'revision': entry.value['revision'],
+                'menu':
+                    onImageMenu != null &&
+                    translationImageMenuActions(view, target).isNotEmpty,
+                ...TranslationImageStatus.forTarget(view, target).toJson(),
+              },
+      ],
+    };
+    final state = jsonEncode(status);
     if (_state != state) {
       _state = state;
       if (!active) _displayed.clear();
-      _call('state', {
-        'active': active,
-        'translated': view.showTranslation,
-      }, _epoch).catchError((_) => null);
+      final epoch = _epoch;
+      // Display switches must not wait behind a full image's chunk transfer.
+      _call('state', status, epoch).catchError((_) {
+        if (epoch == _epoch && _state == state) _state = '';
+        return null;
+      });
     }
     if (!active || !view.showTranslation) return;
     for (final entry in _elements.entries) {
       final page = entry.value['page'] as TranslationPage;
       final image = view.images[page.identity];
       final signature = '${entry.value['revision']}:${image?.file.path}';
+      if (image == null && _displayed.remove(entry.key) != null) {
+        final epoch = _epoch;
+        _outputQueue
+            .run(() => _call('resultClear', {'id': entry.key}, epoch))
+            .catchError((_) => null);
+      }
       if (image == null ||
           _displayed[entry.key] == signature ||
           !_sending.add(entry.key)) {
@@ -203,7 +279,11 @@ class WebTranslationBridge {
       final epoch = _epoch;
       _outputQueue
           .run(() async {
-            if (!active || epoch != _epoch) return;
+            if (!active ||
+                epoch != _epoch ||
+                view.images[page.identity] != image) {
+              return;
+            }
             final length = await image.file.length();
             await _call('resultBegin', {
               'id': entry.key,
@@ -214,7 +294,9 @@ class WebTranslationBridge {
             final file = await image.file.open();
             try {
               while (offset < length) {
-                if (!active) throw const TranslationCancelled();
+                if (!active || view.images[page.identity] != image) {
+                  throw const TranslationCancelled();
+                }
                 final bytes = await file.read(128 * 1024);
                 if (bytes.isEmpty) {
                   throw const TranslationFailure('INVALID_RESULT');
@@ -226,8 +308,17 @@ class WebTranslationBridge {
                 }, epoch);
                 offset += bytes.length;
               }
+              if (!active || view.images[page.identity] != image) {
+                throw const TranslationCancelled();
+              }
               await _call('resultEnd', {'id': entry.key}, epoch);
-              if (epoch == _epoch) _displayed[entry.key] = signature;
+              if (epoch == _epoch) {
+                if (view.images[page.identity] == image) {
+                  _displayed[entry.key] = signature;
+                } else {
+                  await _call('resultClear', {'id': entry.key}, epoch);
+                }
+              }
             } finally {
               await file.close();
             }
@@ -237,7 +328,12 @@ class WebTranslationBridge {
               await _call('resultAbort', {}, epoch).catchError((_) => null);
             }
           })
-          .whenComplete(() => _sending.remove(entry.key));
+          .whenComplete(() {
+            _sending.remove(entry.key);
+            if (epoch == _epoch && view.images[page.identity] != image) {
+              _changed();
+            }
+          });
     }
   }
 

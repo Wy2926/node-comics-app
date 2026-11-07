@@ -46,12 +46,16 @@ class ImageViewVertical extends ConsumerWidget {
       onImageLoaded: onImageLoaded,
     );
 
-    return applyReaderColorFilter(
-      GestureDetector(
-        onLongPress: () => onLongPressData.call(data),
-        child: imageWidget,
+    return ReaderTranslationHost.withStatus(
+      context,
+      data,
+      child: applyReaderColorFilter(
+        GestureDetector(
+          onLongPress: () => onLongPressData.call(data),
+          child: imageWidget,
+        ),
+        ref,
       ),
-      ref,
     );
   }
 }

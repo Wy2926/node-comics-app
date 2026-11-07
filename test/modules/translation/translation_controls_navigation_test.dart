@@ -7,13 +7,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 
 class _Runtime extends Fake implements ChannelRuntime {
+  @override
+  void setWindow(
+    String consumer,
+    List<TranslationTarget> targets, {
+    bool automatic = true,
+  }) {}
+  @override
+  Future<void> restore(List<TranslationTarget> targets) async {}
   @override
   Stream<void> get changes => const Stream.empty();
   @override
@@ -127,7 +134,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(TranslationControlsContent), findsNothing);
     expect(find.byType(MobileNodeLaneAccountPage), findsOneWidget);
-    expect(find.byType(NodeLaneCatalogSheet), findsNothing);
     expect(find.text('前往登录'), findsOneWidget);
   }
 
@@ -144,14 +150,14 @@ void main() {
         expect(readerKey.currentState, same(reader));
         expect(readingPosition.offset, 320);
         expect(find.byType(TranslationControlsContent), findsNothing);
-        expect(controller.enabled, isFalse);
+        expect(controller.shouldTranslateAutomatically, isFalse);
       }
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'login failure retries; language selection preserves the reader and controller',
+    'login failure retries without translating originals or changing reading position',
     (tester) async {
       await mount(tester);
       await openLogin(tester);
@@ -175,19 +181,12 @@ void main() {
       await tester.tap(find.byTooltip('Translation'));
       await tester.pumpAndSettle();
       expect(find.text('登录后开启翻译'), findsNothing);
-      expect(controller.enabled, isFalse);
+      expect(controller.shouldTranslateAutomatically, isFalse);
       final toggle = tester.widget<NodeLaneSwitchRow>(
-        find.widgetWithText(NodeLaneSwitchRow, '翻译当前阅读范围'),
+        find.widgetWithText(NodeLaneSwitchRow, '自动翻译'),
       );
       expect(toggle.onChanged, isNotNull);
-      await tester.tap(find.text('翻译目标语言'));
-      await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
-      expect(find.text('English'), findsOneWidget);
-      expect(find.byType(MobileNodeLaneAccountPage), findsNothing);
-      await tester.tap(find.byTooltip('关闭').last);
-      await tester.pumpAndSettle();
-      expect(readingPosition.offset, 320);
+      expect(toggle.value, isTrue);
       expect(tester.takeException(), isNull);
     },
   );
@@ -202,10 +201,10 @@ void main() {
     expect(find.text('登录后开启翻译'), findsOneWidget);
     await tester.tap(find.text('翻译目标语言'));
     await tester.pumpAndSettle();
-    expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+    expect(find.text('한국어'), findsOneWidget);
     expect(find.byType(MobileNodeLaneAccountPage), findsNothing);
     expect(service.loginCalls, 0);
-    expect(controller.enabled, isFalse);
+    expect(controller.shouldTranslateAutomatically, isFalse);
     await tester.tap(find.byTooltip('关闭').last);
     await tester.pumpAndSettle();
     expect(readerKey.currentState, same(reader));

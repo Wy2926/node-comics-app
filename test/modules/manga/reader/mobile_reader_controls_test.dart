@@ -9,10 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_entry_state.dart';
-import 'package:mangayomi/modules/translation/translation_controls.dart';
-import 'package:mangayomi/modules/translation/translation_view_controller.dart';
-import 'package:mangayomi/services/translation/contracts.dart';
-import 'package:mangayomi/services/translation/translation_service.dart';
 
 void main() {
   Future<void> mount(
@@ -26,13 +22,6 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          translationServiceProvider.overrideWith((ref) {
-            final service = _TranslationService();
-            ref.onDispose(service.dispose);
-            return service;
-          }),
-        ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -325,115 +314,4 @@ void main() {
     expect(closes, 1);
     expect(tester.takeException(), isNull);
   });
-
-  testWidgets(
-    'original and translated display switches do not enable translation',
-    (tester) async {
-      final controller = TranslationViewController();
-      addTearDown(controller.dispose);
-      controller.window([
-        TranslationTarget(
-          const TranslationPage('preview', '1'),
-          _NoImageRead(),
-        ),
-      ]);
-      await mount(
-        tester,
-        TranslationControlsContent(controller: controller, mobile: true),
-      );
-      expect(find.textContaining('第 1 张'), findsNothing);
-      for (var i = 0; i < 2; i++) {
-        await tester.ensureVisible(find.text('原图'));
-        await tester.tap(find.text('原图'));
-        await tester.pump();
-        expect(controller.showTranslation, isFalse);
-        expect(controller.enabled, isFalse);
-        await tester.tap(find.text('译图'));
-        await tester.pump();
-        expect(controller.showTranslation, isTrue);
-        expect(controller.enabled, isFalse);
-      }
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets('status rows expose only the available recovery action', (
-    tester,
-  ) async {
-    final runtime = _ProgressRuntime();
-    final controller = TranslationViewController()..attach(runtime);
-    addTearDown(controller.dispose);
-    controller.window([
-      TranslationTarget(
-        const TranslationPage('preview/1', 'v1'),
-        _NoImageRead(),
-      ),
-      TranslationTarget(
-        const TranslationPage('preview/2', 'v1'),
-        _NoImageRead(),
-      ),
-    ]);
-    await mount(
-      tester,
-      TranslationControlsContent(controller: controller, mobile: true),
-      height: 900,
-    );
-    final running = find.ancestor(
-      of: find.text('第 1 张 · 正在翻译…'),
-      matching: find.byType(ListTile),
-    );
-    expect(tester.widget<ListTile>(running).onTap, isNull);
-    expect(tester.widget<ListTile>(running).trailing, isNull);
-    expect(find.byTooltip('本页翻译操作'), findsOneWidget);
-    await tester.ensureVisible(find.byTooltip('本页翻译操作'));
-    await tester.tap(find.byTooltip('本页翻译操作'));
-    // A running page keeps its spinner alive, so do not wait for all animations.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('核实状态'), findsOneWidget);
-    expect(find.text('重试本页翻译'), findsNothing);
-    await tester.tap(find.text('核实状态'));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(runtime.actions, [TranslationAction.verify]);
-    expect(tester.takeException(), isNull);
-  });
-}
-
-class _TranslationService extends TranslationService {
-  @override
-  Future<void> initialize() async {}
-}
-
-class _ProgressRuntime extends Fake implements ChannelRuntime {
-  final actions = <TranslationAction>[];
-  @override
-  Stream<void> get changes => const Stream.empty();
-  @override
-  void pause(String consumer) {}
-  @override
-  PageTranslationState stateFor(TranslationPage page) => page.key == 'preview/1'
-      ? const PageTranslationState(
-          phase: TranslationPhase.running,
-          message: '正在翻译…',
-        )
-      : const PageTranslationState(
-          phase: TranslationPhase.uncertain,
-          message: '结果待核实',
-          actions: {TranslationAction.verify},
-        );
-  @override
-  Future<void> perform(
-    TranslationTarget target,
-    TranslationAction action,
-  ) async {
-    actions.add(action);
-  }
-}
-
-class _NoImageRead implements SourceImageReader {
-  @override
-  Future<OriginalImageLease> acquire(
-    TranslationPage page,
-    TranslationCancellation cancellation,
-  ) => throw StateError('Display controls must not read source images');
 }

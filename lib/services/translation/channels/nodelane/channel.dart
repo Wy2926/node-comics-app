@@ -10,6 +10,7 @@ import '../../identity.dart';
 import '../../image_work.dart';
 import 'http.dart';
 import 'receipt.dart';
+import 'protocol.dart';
 
 class NodeLaneChannel implements TranslationChannel {
   NodeLaneChannel({
@@ -29,10 +30,14 @@ class NodeLaneChannel implements TranslationChannel {
   @override
   String get id => 'nodelane';
   @override
-  String get label => 'NodeLane';
+  String get label => 'NodeLane 官方';
   @override
-  String get scope =>
-      translationKey(['nodelane', base.toString(), userId, 'overlay-v1']);
+  String get scope => translationKey([
+    'nodelane',
+    base.toString(),
+    userId,
+    nodeLaneTranslationProtocol,
+  ]);
   @override
   ChannelRuntime createRuntime(TranslationOptions options) => OfficialRuntime(
     scope: scope,
@@ -62,13 +67,15 @@ class OfficialRuntime implements ChannelRuntime {
   final NodeLaneHttp api;
   final _updates = StreamController<void>.broadcast();
   final _windows = <String, List<TranslationTarget>>{};
+  final _automatic = <String>{};
+  final _requested = <String>{};
   final _receipts = <String, OfficialReceipt>{};
   final _states = <String, PageTranslationState>{};
   final _jobs = <String, TranslationCancellation>{};
   final _handled = <String>{};
   final _verified = <String>{};
   final _sourceChecked = <String>{};
-  final _manual = <String>{};
+  final _manual = <String, TranslationCancellation>{};
   final _control = DbWriteQueue();
   final _resultQueue = DbWriteQueue();
   final _resultJobs = <String, Future<(File, int, int)>>{};
@@ -87,6 +94,12 @@ class OfficialRuntime implements ChannelRuntime {
   Map<String, TranslationTarget> get _wanted => {
     for (final window in _windows.values)
       for (final target in window) target.page.identity: target,
+  };
+  Set<String> get _scheduled => {
+    for (final consumer in _automatic)
+      for (final target in _windows[consumer] ?? <TranslationTarget>[])
+        target.page.identity,
+    ..._requested,
   };
   String _binding(TranslationPage page) =>
       'binding:${translationKey([scope, page.key, options.language])}';
@@ -138,7 +151,8 @@ class OfficialRuntime implements ChannelRuntime {
       throw const TranslationFailure('OUTCOME_UNKNOWN');
     }
     _life.check();
-    _receipts[page.key] = receipt;
+    // A concurrent restore or explicit action may already own a newer receipt.
+    final current = _receipts.putIfAbsent(page.key, () => receipt);
     if (_receipts.length > 128) {
       final protected = _wanted.values.map((t) => t.page.key).toSet();
       for (final key in _receipts.keys.toList()) {
@@ -148,7 +162,7 @@ class OfficialRuntime implements ChannelRuntime {
         }
       }
     }
-    return receipt;
+    return current;
   }
 
   @override
@@ -156,21 +170,42 @@ class OfficialRuntime implements ChannelRuntime {
     for (final target in targets.take(4)) {
       _life.check();
       final receipt = await _load(target.page);
-      if (receipt != null) _project(target.page, receipt);
+      if (receipt != null && !_jobs.containsKey(target.page.identity)) {
+        _project(target.page, receipt);
+      }
     }
   }
 
   @override
-  void setWindow(String consumer, List<TranslationTarget> targets) {
+  void setWindow(
+    String consumer,
+    List<TranslationTarget> targets, {
+    bool automatic = true,
+  }) {
     if (_life.isCancelled) return;
     final before = _wanted;
+    final scheduledBefore = _scheduled;
     _windows[consumer] = targets.take(4).toList(growable: false);
+    if (automatic) {
+      _automatic.add(consumer);
+    } else {
+      _automatic.remove(consumer);
+    }
     final wanted = _wanted;
+    _requested.removeWhere((key) => !wanted.containsKey(key));
+    final scheduled = _scheduled;
     for (final key in before.keys) {
-      if (!wanted.containsKey(key)) {
+      if (!wanted.containsKey(key) ||
+          (scheduledBefore.contains(key) && !scheduled.contains(key))) {
         _jobs[key]?.cancel();
         _handled.remove(key);
-        _sourceChecked.remove(key);
+        if (!wanted.containsKey(key)) {
+          _sourceChecked.remove(key);
+          final pageKey = before[key]!.page.key;
+          if (!wanted.values.any((target) => target.page.key == pageKey)) {
+            _manual[pageKey]?.cancel();
+          }
+        }
       }
     }
     if (wanted.isEmpty) {
@@ -187,7 +222,7 @@ class OfficialRuntime implements ChannelRuntime {
 
   @override
   void pause(String consumer) {
-    setWindow(consumer, const []);
+    setWindow(consumer, const [], automatic: false);
     _windows.remove(consumer);
   }
 
@@ -197,9 +232,12 @@ class OfficialRuntime implements ChannelRuntime {
       _armRetry();
       return;
     }
+    final scheduled = _scheduled;
     for (final entry in _wanted.entries) {
       if (_jobs.length >= 2) break;
-      if (_jobs.containsKey(entry.key) || _handled.contains(entry.key)) {
+      if (!scheduled.contains(entry.key) ||
+          _jobs.containsKey(entry.key) ||
+          _handled.contains(entry.key)) {
         continue;
       }
       final cancel = TranslationCancellation();
@@ -210,7 +248,26 @@ class OfficialRuntime implements ChannelRuntime {
           .catchError((Object error) {
             final receipt = _receipts[entry.value.page.key];
             if (receipt != null) _verified.remove(receipt.id);
-            if (cancel.isCancelled || error is TranslationCancelled) return;
+            if (cancel.isCancelled || error is TranslationCancelled) {
+              if (_wanted.containsKey(entry.key) &&
+                  !_scheduled.contains(entry.key)) {
+                if (receipt == null) {
+                  _show(entry.value.page, const PageTranslationState());
+                } else if (!receipt.active) {
+                  _project(entry.value.page, receipt);
+                } else {
+                  _show(
+                    entry.value.page,
+                    const PageTranslationState(
+                      phase: TranslationPhase.uncertain,
+                      message: '翻译已暂停，可核实进度',
+                      actions: {TranslationAction.verify},
+                    ),
+                  );
+                }
+              }
+              return;
+            }
             final failure = error is TranslationFailure
                 ? error
                 : const TranslationFailure('NETWORK');
@@ -237,6 +294,11 @@ class OfficialRuntime implements ChannelRuntime {
           .whenComplete(() {
             unlink();
             _jobs.remove(entry.key);
+            final receipt = _receipts[entry.value.page.key];
+            if (cancel.isCancelled ||
+                (receipt != null && !receipt.active && !receipt.unknown)) {
+              _requested.remove(entry.key);
+            }
             _pump();
           });
     }
@@ -284,7 +346,7 @@ class OfficialRuntime implements ChannelRuntime {
       '/v1/capabilities',
       cancellation: cancel,
     );
-    if (value['result_protocol'] != 'overlay-v1') {
+    if (value['result_protocol'] != nodeLaneTranslationProtocol) {
       throw const TranslationFailure('CLIENT_UPGRADE_REQUIRED');
     }
     final modes = value['modes'];
@@ -436,8 +498,8 @@ class OfficialRuntime implements ChannelRuntime {
       }
       _verified.add(current.id);
     }
-    // An existing receipt is only a display hit after checking the current
-    // original. Stable URLs and file paths alone are not content identity.
+    // Before submitting or resuming a task, verify the original bytes. Cached
+    // display is restored separately without submitting or uploading images.
     if (!_sourceChecked.contains(target.page.identity)) {
       _show(
         target.page,
@@ -446,19 +508,7 @@ class OfficialRuntime implements ChannelRuntime {
           message: '核对原图…',
         ),
       );
-      final source = await target.source.acquire(target.page, cancel);
-      try {
-        if (await source.file.length() > 32 * 1024 * 1024 ||
-            await imageDigest(source.file) != current.sourceSha) {
-          throw const TranslationFailure('SOURCE_CHANGED');
-        }
-        cancel.check();
-        current.revision = target.page.revision;
-        await _save(current);
-        _sourceChecked.add(target.page.identity);
-      } finally {
-        source.release();
-      }
+      await _checkSource(target, current, cancel);
     }
     if (!current.sent) {
       await _control.run(() async {
@@ -517,6 +567,26 @@ class OfficialRuntime implements ChannelRuntime {
     }
   }
 
+  Future<void> _checkSource(
+    TranslationTarget target,
+    OfficialReceipt receipt,
+    TranslationCancellation cancel,
+  ) async {
+    final source = await target.source.acquire(target.page, cancel);
+    try {
+      if (await source.file.length() > 32 * 1024 * 1024 ||
+          await imageDigest(source.file) != receipt.sourceSha) {
+        throw const TranslationFailure('SOURCE_CHANGED');
+      }
+      cancel.check();
+      receipt.revision = target.page.revision;
+      await _save(receipt);
+      _sourceChecked.add(target.page.identity);
+    } finally {
+      source.release();
+    }
+  }
+
   void _project(TranslationPage page, OfficialReceipt receipt) {
     if (page.revision != receipt.revision) {
       _show(
@@ -553,9 +623,15 @@ class OfficialRuntime implements ChannelRuntime {
           TranslationPhase.queued => '等待翻译…',
           TranslationPhase.running => '正在翻译…',
           TranslationPhase.uncertain => '结果待核实',
-          TranslationPhase.failed => '本页翻译失败',
+          TranslationPhase.failed => TranslationFailure(
+            receipt.errorCode ?? 'REMOTE_FAILED',
+          ).message,
           TranslationPhase.succeeded =>
-            receipt.result?['kind'] == 'partial' ? '部分内容已翻译' : '译图已就绪',
+            receipt.resultExpired
+                ? '译图已过期，请重新翻译'
+                : receipt.result?['kind'] == 'partial'
+                ? '部分内容已翻译'
+                : '译图已就绪',
           _ => '',
         },
         actions: receipt.unknown
@@ -568,7 +644,8 @@ class OfficialRuntime implements ChannelRuntime {
                   TranslationAction.readResult,
                   TranslationAction.regenerate,
                 },
-                TranslationPhase.failed => const {TranslationAction.retry},
+                TranslationPhase.failed =>
+                  receipt.canRetry ? const {TranslationAction.retry} : const {},
                 _ => const {TranslationAction.verify},
               },
       ),
@@ -685,14 +762,19 @@ class OfficialRuntime implements ChannelRuntime {
     TranslationAction action,
   ) async {
     _life.check();
-    if (!_manual.add(target.page.key)) return;
+    if (!_wanted.containsKey(target.page.identity)) return;
+    if (_manual.containsKey(target.page.key)) return;
+    final cancel = TranslationCancellation();
+    _manual[target.page.key] = cancel;
+    final unlink = _life.onCancel(cancel.cancel);
     try {
       final previous = await _load(target.page);
+      cancel.check();
       if (action == TranslationAction.readResult) {
         if (previous == null) return;
         final lease = await readResult(
           TranslationResultRef(scope, previous.id),
-          _life,
+          cancel,
         );
         lease.release();
         _project(target.page, previous);
@@ -710,17 +792,30 @@ class OfficialRuntime implements ChannelRuntime {
             (previous.state == 'failed')) {
           throw const TranslationFailure('OUTCOME_UNKNOWN');
         }
+        if (action == TranslationAction.retry && !previous.canRetry) {
+          throw TranslationFailure(previous.errorCode ?? 'REMOTE_FAILED');
+        }
         if (!_sourceChecked.contains(target.page.identity) &&
             action == TranslationAction.regenerate) {
-          // User explicitly chose to translate a changed original. Keep the
-          // old completed receipt and let normal preparation freeze new bytes.
-          await repository.remove(previous.key);
-          _receipts.remove(target.page.key);
-          _handled.remove(target.page.identity);
-          _pump();
-          return;
+          try {
+            await _checkSource(target, previous, cancel);
+          } on TranslationFailure catch (failure) {
+            if (failure.code != 'SOURCE_CHANGED') rethrow;
+            // Explicitly translating changed bytes creates a new frozen input.
+            await repository.remove(previous.key);
+            _receipts.remove(target.page.key);
+            cancel.check();
+            _show(
+              target.page,
+              const PageTranslationState(phase: TranslationPhase.preparing),
+            );
+            _requested.add(target.page.identity);
+            _handled.remove(target.page.identity);
+            _pump();
+            return;
+          }
         }
-        await _capabilities(_life);
+        await _capabilities(cancel);
         final created = OfficialReceipt(
           id: translationUuid(),
           key: previous.key,
@@ -740,19 +835,24 @@ class OfficialRuntime implements ChannelRuntime {
           },
         );
         // Recover and check frozen input before creating the explicit new intent.
-        final input = await _input(previous, _life);
+        final input = await _input(previous, cancel);
         try {
+          cancel.check();
           await _bind(created);
+          _receipts[target.page.key] = created;
+          cancel.check();
         } finally {
           input.release();
         }
-        _receipts[target.page.key] = created;
+        _project(target.page, created);
       } else if (previous != null) {
         _verified.remove(previous.id);
       }
+      _requested.add(target.page.identity);
       _handled.remove(target.page.identity);
       _pump();
     } finally {
+      unlink();
       _manual.remove(target.page.key);
     }
   }
@@ -800,10 +900,22 @@ class OfficialRuntime implements ChannelRuntime {
     final data = await repository.read(_operation(ref.operationId));
     if (data == null) throw const TranslationFailure('RESULT_UNAVAILABLE');
     final receipt = OfficialReceipt.fromJson(data);
-    if (receipt.scope != scope ||
-        receipt.state != 'succeeded' ||
-        receipt.result == null) {
+    if (receipt.scope != scope || receipt.state != 'succeeded') {
       throw const TranslationFailure('RESULT_UNAVAILABLE');
+    }
+    if (receipt.resultExpired && receipt.resultKey != null) {
+      final cached = repository.file('result', receipt.resultKey!);
+      if (await cached.exists() &&
+          receipt.resultSha == await imageDigest(cached)) {
+        cancel.check();
+        if (epoch != repository.cacheEpoch) throw const TranslationCancelled();
+        return (cached, receipt.width, receipt.height);
+      }
+    }
+    if (receipt.result == null) {
+      throw TranslationFailure(
+        receipt.resultExpired ? 'RESULT_EXPIRED' : 'RESULT_UNAVAILABLE',
+      );
     }
     final result = receipt.result!;
     if (result['normalization_version'] != 1 ||
@@ -974,6 +1086,8 @@ class OfficialRuntime implements ChannelRuntime {
     _stopWatching();
     _retryTimer?.cancel();
     _windows.clear();
+    _automatic.clear();
+    _requested.clear();
     _states.clear();
     _receipts.clear();
     api.close();

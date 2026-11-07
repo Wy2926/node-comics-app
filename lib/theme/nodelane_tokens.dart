@@ -112,7 +112,7 @@ class NodeLaneTokens {
   static const navigationInset = 6.0, navigationLabelSize = 12.0;
   static const navigationLabelHeight = 1.3;
   static const browserAddressHeight = 44.0, browserBackWidth = 64.0;
-  static const browserTranslationWidth = 132.0, browserDisplayWidth = 176.0;
+  static const browserDisplayWidth = 176.0;
   static const dialogMaxWidth = 480.0;
   static const modalInset = EdgeInsets.symmetric(horizontal: 20, vertical: 24);
   static const modalTitlePadding = EdgeInsets.fromLTRB(20, 20, 20, 12);

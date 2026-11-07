@@ -23,8 +23,10 @@ class MobileReaderImageActions extends StatefulWidget {
     required this.onSave,
     required this.onShare,
     required this.onSetCover,
+    this.translationActions,
   });
   final String bookTitle, chapterTitle;
+  final Widget? translationActions;
   final int? pageNumber;
   final Future<Uint8List?> Function() loadImage;
   final Future<void> Function(Uint8List) onSave, onSetCover;
@@ -171,6 +173,11 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
                             style: colors.readerSecondary,
                           ),
                           const SizedBox(height: 12),
+                          if (!_confirmCover &&
+                              widget.translationActions != null) ...[
+                            widget.translationActions!,
+                            const SizedBox(height: NodeLaneTokens.space12),
+                          ],
                           Text(
                             l10n.reader_image_original,
                             style: colors.readerSecondary,

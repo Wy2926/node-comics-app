@@ -11,7 +11,6 @@ import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_tabs_sheet.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
-import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 
 void main() {
   test(
@@ -106,7 +105,8 @@ void main() {
   testWidgets('small-screen browser controls keep independent action targets', (
     tester,
   ) async {
-    var closes = 0, tabs = 0, translations = 0, pages = 0, newTabs = 0;
+    var closes = 0, tabs = 0, controls = 0, pages = 0, newTabs = 0;
+    final displays = <bool>[];
     final focus = FocusNode();
     addTearDown(focus.dispose);
     await mount(
@@ -133,10 +133,10 @@ void main() {
           ),
           MobileBrowserToolbar(
             tabCount: 12,
-            translating: false,
             onTabs: () => tabs++,
             onNew: () => newTabs++,
-            onTranslate: () => translations++,
+            onDisplayChanged: displays.add,
+            onControls: () => controls++,
           ),
         ],
       ),
@@ -152,9 +152,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('返回'));
     await tester.tap(find.text('12'));
-    await tester.tap(find.text('翻译'));
+    await tester.tap(find.text('译图'));
     await tester.tap(find.byTooltip('新建标签页'));
-    expect([closes, tabs, translations, pages, newTabs], [1, 1, 1, 0, 1]);
+    await tester.tap(find.byTooltip('网页翻译'));
+    expect([closes, tabs, controls, pages, newTabs], [1, 1, 1, 0, 1]);
+    expect(displays, [true]);
     expect(
       tester
           .widget<IconButton>(
@@ -194,43 +196,6 @@ void main() {
     expect(find.text('当前'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
-  testWidgets(
-    'original display does not pause translation or open another panel',
-    (tester) async {
-      final controller = TranslationViewController()..configure(enabled: true);
-      addTearDown(controller.dispose);
-      var starts = 0, controls = 0, tabs = 0;
-      await mount(
-        tester,
-        ListenableBuilder(
-          listenable: controller,
-          builder: (context, _) => MobileBrowserToolbar(
-            tabCount: 2,
-            translating: controller.enabled,
-            showTranslation: controller.showTranslation,
-            onDisplayChanged: (value) =>
-                controller.configure(showTranslation: value),
-            onTranslate: () => starts++,
-            onControls: () => controls++,
-            onTabs: () => tabs++,
-            onNew: () {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('原图'));
-      await tester.pumpAndSettle();
-      expect(controller.enabled, isTrue);
-      expect(controller.showTranslation, isFalse);
-      expect([starts, controls, tabs], [0, 0, 0]);
-      await tester.tap(find.text('译图'));
-      await tester.pumpAndSettle();
-      expect(controller.showTranslation, isTrue);
-      await tester.tap(find.byTooltip('网页翻译'));
-      expect([starts, controls, tabs], [0, 1, 0]);
-      expect(tester.takeException(), isNull);
-    },
-  );
 
   testWidgets(
     'tab close is not repeated while saving and can retry a failed save',

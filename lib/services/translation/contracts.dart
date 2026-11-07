@@ -142,7 +142,14 @@ abstract interface class ChannelRuntime {
   Stream<void> get changes;
   PageTranslationState stateFor(TranslationPage page);
   Future<void> restore(List<TranslationTarget> targets);
-  void setWindow(String consumer, List<TranslationTarget> targets);
+
+  /// Keeps visible images available for cached results and explicit actions.
+  /// Only [automatic] authorizes creating translations for untouched images.
+  void setWindow(
+    String consumer,
+    List<TranslationTarget> targets, {
+    bool automatic = true,
+  });
   void pause(String consumer);
   Future<void> perform(TranslationTarget target, TranslationAction action);
   Future<DisplayImageLease> readResult(
@@ -168,6 +175,10 @@ class TranslationFailure implements Exception {
     'UNSUPPORTED_IMAGE' => '暂不支持此图片的翻译，已保留原图',
     'INVALID_RESULT' => '译图校验失败，请重新读取',
     'RESULT_UNAVAILABLE' => '译图暂不可用，请重新读取',
+    'RESULT_EXPIRED' => '译图已过期，请重新翻译',
+    'CLASSIC_ANALYSIS_TOO_LARGE' => '图片分析内容过多，请缩小图片后再翻译',
+    'CLASSIC_REGION_LIMIT_EXCEEDED' => '图片文字区域过多，请拆分图片后再翻译',
+    'CLASSIC_TEXT_LIMIT_EXCEEDED' => '图片单段文字过长，请调整图片后再翻译',
     'TRANSLATION_UNAVAILABLE' => '此翻译已不可用',
     'OUTCOME_UNKNOWN' => '结果待核实，未重新提交',
     'RATE_LIMITED' => '请求受限，稍后自动恢复',

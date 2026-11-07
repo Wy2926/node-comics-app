@@ -13,6 +13,10 @@ import 'package:mangayomi/services/translation/source_file.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
+import 'package:mangayomi/modules/translation/translation_image_status.dart';
+import 'package:mangayomi/modules/translation/translation_image_actions.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/utils/headers.dart';
 
@@ -97,14 +101,13 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
   const ReaderTranslationHost({
     super.key,
     required this.pages,
-    required this.currentIndex,
     required this.visibleCount,
     required this.child,
     required this.pageListenable,
     required this.actualIndex,
   });
   final List<UChapDataPreload> pages;
-  final int currentIndex, visibleCount;
+  final int visibleCount;
   final Widget child;
   final ValueListenable<int?> pageListenable;
   final int Function() actualIndex;
@@ -125,11 +128,18 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
         .dependOnInheritedWidgetOfExactType<_ReaderTranslationScope>();
     if (scope == null) return const SizedBox.shrink();
     if (labeled) {
-      return NodeLaneToolbarAction(
-        label: '翻译',
-        active: scope.notifier!.enabled,
-        icon: NodeLaneIcons.of(context).translate,
-        onPressed: () => showTranslationControls(context, scope.notifier!),
+      final controller = scope.notifier!;
+      final translated = controller.showTranslation;
+      return Tooltip(
+        message: translated ? '点击切换为原图' : '点击切换为译图',
+        child: NodeLaneToolbarAction(
+          label: translated ? '译图' : '原图',
+          active: translated,
+          icon: translated
+              ? NodeLaneIcons.of(context).translate
+              : NodeLaneIcons.of(context).image,
+          onPressed: () => controller.configure(showTranslation: !translated),
+        ),
       );
     }
     return IconButton(
@@ -139,6 +149,87 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
       ),
       onPressed: () => showTranslationControls(context, scope.notifier!),
     );
+  }
+
+  static TranslationViewController? controllerOf(BuildContext context) =>
+      context
+          .getInheritedWidgetOfExactType<_ReaderTranslationScope>()
+          ?.notifier;
+
+  static Widget withStatus(
+    BuildContext context,
+    UChapDataPreload original, {
+    required Widget child,
+    SubsamplingScaleImageViewController? imageController,
+  }) {
+    final controller = context
+        .dependOnInheritedWidgetOfExactType<_ReaderTranslationScope>()
+        ?.notifier;
+    final target = controller?.targetFor(readerTranslationPage(original));
+    final visible =
+        controller != null &&
+        target != null &&
+        controller.foreground &&
+        controller.runtime != null;
+    final status = visible
+        ? TranslationImageStatus.forTarget(controller, target)
+        : const TranslationImageStatus('', visible: false);
+    // Keep the image at the same element depth when translation toggles.
+    return Stack(
+      children: [
+        child,
+        if (visible && status.visible)
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final badge = TranslationImageBadge(
+                  status: status,
+                  onAction: status.action == null
+                      ? null
+                      : () => controller.perform(target, status.action!),
+                );
+                Widget position() {
+                  final viewport = Offset.zero & constraints.biggest;
+                  final rect = imageController == null
+                      ? viewport
+                      : imageController.imageViewRect;
+                  if (rect == null || !rect.overlaps(viewport)) {
+                    return const SizedBox.shrink();
+                  }
+                  final visible = rect
+                      .intersect(viewport)
+                      .deflate(NodeLaneTokens.space8);
+                  if (visible.width <= 0 || visible.height <= 0) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: visible.left,
+                      top: visible.top,
+                      right: viewport.right - visible.right,
+                    ),
+                    child: Align(alignment: Alignment.topLeft, child: badge),
+                  );
+                }
+
+                return imageController == null
+                    ? position()
+                    : AnimatedBuilder(
+                        animation: imageController,
+                        builder: (context, _) => position(),
+                      );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  static Widget? imageActions(BuildContext context, UChapDataPreload original) {
+    final controller = controllerOf(context);
+    final target = controller?.targetFor(readerTranslationPage(original));
+    if (controller == null || target == null) return null;
+    return TranslationImageActions(controller: controller, target: target);
   }
 }
 

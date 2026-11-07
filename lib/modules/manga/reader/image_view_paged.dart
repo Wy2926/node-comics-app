@@ -360,12 +360,17 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
       content = Container(color: pageBgColor, child: content);
     }
 
-    return applyReaderColorFilter(
-      GestureDetector(
-        onLongPress: () => widget.onLongPressData.call(widget.data),
-        child: content,
+    return ReaderTranslationHost.withStatus(
+      context,
+      widget.data,
+      imageController: isAnimated ? null : widget.controller,
+      child: applyReaderColorFilter(
+        GestureDetector(
+          onLongPress: () => widget.onLongPressData.call(widget.data),
+          child: content,
+        ),
+        ref,
       ),
-      ref,
     );
   }
 }

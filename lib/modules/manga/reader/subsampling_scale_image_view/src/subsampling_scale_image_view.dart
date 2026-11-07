@@ -122,6 +122,18 @@ class SubsamplingScaleImageViewController extends ChangeNotifier {
   int get sWidth => _state?._sWidth ?? 0;
   int get sHeight => _state?._sHeight ?? 0;
 
+  /// Image bounds in the view, including rotation and the current zoom/pan.
+  ui.Rect? get imageViewRect {
+    final s = _state;
+    if (s == null || !isReady) return null;
+    final rotated = s.widget.rotation == 90 || s.widget.rotation == 270;
+    return s._vTranslate &
+        ui.Size(
+          (rotated ? s._sHeight : s._sWidth) * s._scale,
+          (rotated ? s._sWidth : s._sHeight) * s._scale,
+        );
+  }
+
   ui.Size get imageSize {
     if (_state == null) return ui.Size.zero;
     return ui.Size(_state!._sWidth.toDouble(), _state!._sHeight.toDouble());

@@ -18,8 +18,8 @@ SCRIPT = (ROOT / 'assets/nodelane_reader.js').read_text().replace(
 FIXTURE = r'''
 <html><body style="margin:0"><pre id="result">pending</pre>
 <script>
-const windows = [];
-window.flutter_inappwebview = {callHandler: async (name, value) => { windows.push(value); return true; }};
+const windows = [], actions = [];
+window.flutter_inappwebview = {callHandler: async (name, value) => { if (value.action) actions.push(value); else windows.push(value); return true; }};
 </script><script>__SCRIPT__</script><script>
 const assert = (value, text) => { if (!value) throw Error(text); };
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -53,14 +53,52 @@ const call = (operation, args) => window.__nodelaneReader.call('fixture', operat
   await call('resultEnd',{id:item.id});
   assert(document.querySelectorAll('[data-nodelane-overlay]').length===1,'overlay missing');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'source or reading anchor mutated');
+  const theme={surface:'#1e242c',ink:'#f0f3f8',line:'#353e4a',accent:'#006eff',error:'#ff8888',inset:8,gap:8,padding:12,radius:24,tap:44,fontSize:13,reduceMotion:true};
+  const failed={...item,label:'翻译失败',detail:'连接失败，请重试',issue:true,working:false,action:'retry',actionLabel:'重试'};
+  await call('state',{active:true,translated:true,theme,items:[failed]});
+  const badge=document.querySelector('[data-nodelane-overlay="status"]');
+  assert(badge,'image status missing');
+  assert(badge.style.getPropertyValue('--surface')===theme.surface,'native theme tokens missing');
+  assert(Math.abs(badge.getBoundingClientRect().left-img.getBoundingClientRect().left-8)<1,'badge not on image top-left');
+  assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'status changed reading position');
+  const button=badge.shadowRoot.querySelector('button');
+  button.click(); button.click(); await wait(1);
+  assert(actions.length===1 && actions[0].id===item.id && actions[0].action==='retry','single image retry duplicated or misrouted');
+  await call('state',{active:true,translated:false,items:[{...failed,label:'状态待确认',action:'verify',actionLabel:'核实'}]});
+  assert(badge.style.display!=='none','original display hid image status');
+  button.click(); await wait(1);
+  assert(actions.at(-1).action==='verify','unknown result creates retry instead of verifying');
+  await call('state',{active:true,translated:false,items:[{...failed,label:'正在翻译',working:true,action:null,actionLabel:''}]});
+  assert(button.hidden && button.disabled,'running translation allows resubmission');
+  for (const label of ['已翻译','无可译文字']) {
+    await call('state',{active:true,translated:true,items:[{...failed,label,visible:false,menu:true,action:null,actionLabel:''}]});
+    assert(!document.querySelector('[data-nodelane-overlay="status"]'),'completed image has corner controls');
+    img.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true})); await wait(1);
+    assert(actions.at(-1).action==='menu' && actions.at(-1).id===item.id,'long-press menu directly regenerated or targeted a different image');
+    await wait(810);
+  }
+  const beforeHold=actions.length;
+  img.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,isPrimary:true,pointerId:1,clientX:20,clientY:20}));
+  img.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:1,clientX:20,clientY:60}));
+  await wait(580);
+  assert(actions.length===beforeHold,'scroll gesture opened image menu');
+  img.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,isPrimary:true,pointerId:1,clientX:20,clientY:20}));
+  await wait(580);
+  assert(actions.length===beforeHold+1 && actions.at(-1).action==='menu','stationary long press did not open menu');
+  img.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:1}));
+  await call('state',{active:true,translated:true,items:[{...failed,label:'无可译文字',visible:false,menu:false,action:null}]});
+  assert(!document.querySelector('[data-nodelane-overlay="status"]'),'empty image controls leaked');
+  assert(!img.style.getPropertyValue('-webkit-touch-callout'),'image callout style not restored');
   const saved=await call('anchor',{});
   scrollTo(0,800); await call('restore',saved); await wait(1000);
   assert(Math.abs(scrollY-before)<2,'cold tab anchor restoration failed');
   await call('state',{active:true,translated:false});
-  assert(document.querySelector('[data-nodelane-overlay]').style.display==='none','original toggle failed');
+  assert(document.querySelector('canvas[data-nodelane-overlay]').style.display==='none','original toggle failed');
   img.src=URL.createObjectURL(blob); await img.decode();
   rejected=false; try { await call('resultBegin',{...item,size:meta.size}); } catch { rejected=true; }
   assert(rejected,'stale element revision accepted');
+  await call('state',{active:true,translated:true,items:[failed]});
+  assert(!document.querySelector('[data-nodelane-overlay="status"]'),'stale image status survived replacement');
   await call('state',{active:false,translated:true});
   const count=windows.length; dispatchEvent(new Event('scroll')); await wait(250);
   assert(windows.length===count,'hidden page submitted work');
@@ -121,7 +159,7 @@ ws.close(); console.log(status); if(status!=='NODELANE_BRIDGE_PASS') process.exi
                 run = subprocess.run([node, '--input-type=module', '-e', probe,
                     f'http://127.0.0.1:{port}', f'http://127.0.0.1:{server.server_port}'], capture_output=True, text=True, timeout=25)
                 if run.returncode: raise SystemExit(run.stdout.strip() or run.stderr[:500])
-                print('PASS: chunked Blob input/output, original toggle and position, stale document/element, hidden release')
+                print('PASS: image status, native theme, targeted retry/verify, duplicate guard, original/position, chunked transfer, stale revision and hidden release')
             finally:
                 browser.terminate()
                 browser.wait(timeout=10)

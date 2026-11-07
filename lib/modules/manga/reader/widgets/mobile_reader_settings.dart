@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
+import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +33,8 @@ Future<void> showMobileReaderSettings({
 }) async {
   if (!context.mounted || ModalRoute.of(context)?.isCurrent != true) return;
   final container = ProviderScope.containerOf(context, listen: false);
+  final translation = ReaderTranslationHost.controllerOf(context);
+  var openTranslation = false;
   var resume = autoScroll.value;
   autoScroll.value = false;
   try {
@@ -44,6 +48,12 @@ Future<void> showMobileReaderSettings({
       shape: NodeLaneTokens.readerSheetShape,
       builder: (_) => MobileReaderSettings(
         bookTitle: bookTitle,
+        onTranslation: translation == null
+            ? null
+            : () {
+                openTranslation = true;
+                Navigator.of(context, rootNavigator: true).pop();
+              },
         currentReaderModeProvider: currentReaderModeProvider,
         autoScrollPage: autoScrollPage,
         pageOffset: pageOffset,
@@ -71,6 +81,9 @@ Future<void> showMobileReaderSettings({
         },
       ),
     );
+    if (openTranslation && translation != null && context.mounted) {
+      await showTranslationControls(context, translation);
+    }
   } finally {
     if (context.mounted &&
         ModalRoute.of(context)?.isCurrent == true &&
@@ -87,6 +100,7 @@ class MobileReaderSettings extends ConsumerStatefulWidget {
   const MobileReaderSettings({
     super.key,
     required this.bookTitle,
+    this.onTranslation,
     required this.currentReaderModeProvider,
     required this.autoScrollPage,
     required this.pageOffset,
@@ -95,6 +109,7 @@ class MobileReaderSettings extends ConsumerStatefulWidget {
     required this.onSpeedChanged,
   });
   final String bookTitle;
+  final VoidCallback? onTranslation;
   final ProviderListenable<ReaderMode?> currentReaderModeProvider;
   final ValueNotifier<bool> autoScrollPage;
   final ValueNotifier<double> pageOffset;
@@ -140,6 +155,21 @@ class _MobileReaderSettingsState extends ConsumerState<MobileReaderSettings> {
                   style: NodeLaneTokens.of(context).readerLabel
                       .copyWith(fontWeight: FontWeight.w600),
                 ),
+                if (widget.onTranslation != null)
+                  MobileSettingsGroup(
+                    children: [
+                      NodeLaneRow(
+                        title: '漫画翻译',
+                        subtitle: '自动翻译、目标语言与渠道',
+                        icon: NodeLaneIcons.of(context).translate,
+                        onTap: () {
+                          if (_leaving) return;
+                          _leaving = true;
+                          widget.onTranslation!();
+                        },
+                      ),
+                    ],
+                  ),
                 _Scope(l10n.reader_settings_book_scope),
                 if (mode != null)
                   MobileSettingsGroup(

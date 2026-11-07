@@ -9,6 +9,8 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'browser_url.dart';
 
+import 'package:mangayomi/modules/translation/translation_display_switch.dart';
+
 ButtonStyle _barIconStyle(Color color, {Color? background}) =>
     IconButton.styleFrom(
       fixedSize: const Size.square(NodeLaneTokens.minTapTarget),
@@ -116,19 +118,17 @@ class MobileBrowserToolbar extends StatelessWidget {
   const MobileBrowserToolbar({
     super.key,
     required this.tabCount,
-    required this.translating,
     required this.onTabs,
     required this.onNew,
-    required this.onTranslate,
     this.onBack,
-    this.showTranslation = true,
+    this.showTranslation = false,
     this.onDisplayChanged,
     this.onControls,
   });
   final int tabCount;
-  final bool translating, showTranslation;
+  final bool showTranslation;
   final VoidCallback onTabs, onNew;
-  final VoidCallback? onTranslate, onBack, onControls;
+  final VoidCallback? onBack, onControls;
   final ValueChanged<bool>? onDisplayChanged;
   @override
   Widget build(BuildContext context) =>
@@ -168,101 +168,28 @@ class MobileBrowserToolbar extends StatelessWidget {
                     Expanded(
                       child: Center(
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: translating || onDisplayChanged != null
-                                ? NodeLaneTokens.browserDisplayWidth
-                                : NodeLaneTokens.browserTranslationWidth,
+                          constraints: const BoxConstraints(
+                            maxWidth: NodeLaneTokens.browserDisplayWidth,
                           ),
-                          child: onTranslate == null
-                              ? const SizedBox.shrink()
-                              : translating || onDisplayChanged != null
-                              ? Row(
-                                  children: [
-                                    Expanded(
-                                      child: NodeLaneSegments<bool>(
-                                        value: showTranslation,
-                                        pill: true,
-                                        labelStyle: t.readerLabel,
-                                        segments: const [
-                                          ButtonSegment(
-                                            value: false,
-                                            label: Text('原图'),
-                                          ),
-                                          ButtonSegment(
-                                            value: true,
-                                            label: Text('译图'),
-                                          ),
-                                        ],
-                                        onChanged: onDisplayChanged ?? (_) {},
-                                      ),
-                                    ),
-                                    if (onControls != null)
-                                      IconButton(
-                                        tooltip: '网页翻译',
-                                        onPressed: onControls,
-                                        style: _barIconStyle(t.ink),
-                                        icon: Icon(
-                                          icons.down,
-                                          size: NodeLaneTokens.smallIconSize,
-                                        ),
-                                      ),
-                                  ],
-                                )
-                              : Material(
-                                  color: t.accent,
-                                  borderRadius: BorderRadius.circular(
-                                    NodeLaneTokens.capsuleRadius,
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextButton(
-                                          onPressed: onTranslate,
-                                          style: TextButton.styleFrom(
-                                            minimumSize: const Size(
-                                              NodeLaneTokens.minTapTarget,
-                                              NodeLaneTokens.minTapTarget,
-                                            ),
-                                            padding: EdgeInsets.zero,
-                                            tapTargetSize: MaterialTapTargetSize
-                                                .shrinkWrap,
-                                            visualDensity:
-                                                VisualDensity.standard,
-                                            foregroundColor: t.onAccent,
-                                          ),
-                                          child: Text(
-                                            '翻译',
-                                            style: t.readerLabel.copyWith(
-                                              color: t.onAccent,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      if (onControls != null) ...[
-                                        SizedBox(
-                                          height: NodeLaneTokens.space16,
-                                          child: VerticalDivider(
-                                            width: 1,
-                                            color: t.onAccent.withValues(
-                                              alpha: .4,
-                                            ),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          tooltip: '网页翻译',
-                                          onPressed: onControls,
-                                          style: _barIconStyle(t.onAccent),
-                                          icon: Icon(
-                                            icons.down,
-                                            size: NodeLaneTokens.smallIconSize,
-                                            color: t.onAccent,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TranslationDisplaySwitch(
+                                  translated: showTranslation,
+                                  onChanged: onDisplayChanged,
                                 ),
+                              ),
+                              IconButton(
+                                tooltip: '网页翻译',
+                                onPressed: onControls,
+                                style: _barIconStyle(t.ink),
+                                icon: Icon(
+                                  icons.adjustments,
+                                  size: NodeLaneTokens.smallIconSize,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

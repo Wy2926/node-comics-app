@@ -247,7 +247,9 @@ void main() {
   testWidgets(
     'shared language choice cancels, skips same value and writes once at large text',
     (tester) async {
-      final service = _Service()..ready.complete();
+      final service = _Service()
+        ..language = 'zh-Hans'
+        ..ready.complete();
       await mount(
         tester,
         service,
@@ -267,18 +269,18 @@ void main() {
       expect(service.calls, isEmpty);
       await tester.tap(find.text('翻译目标语言'));
       await tester.pumpAndSettle();
-      await reveal(tester, find.text('日本語'));
-      await tester.tap(find.text('日本語'));
+      await reveal(tester, find.text('العربية'));
+      await tester.tap(find.text('العربية'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(service.calls, ['language:ja']);
+      expect(service.calls, ['language:ar']);
       expect(
         tester.widget<NodeLaneRow>(find.byType(NodeLaneRow)).enabled,
         isFalse,
       );
       service.finish();
       await tester.pumpAndSettle();
-      expect(find.text('日本語'), findsOneWidget);
+      expect(find.text('العربية'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

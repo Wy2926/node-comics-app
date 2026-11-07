@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,15 +10,53 @@ import 'package:mangayomi/repositories/translation_repository.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/channel.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/image_work.dart';
+import 'package:mangayomi/services/translation/identity.dart';
+import 'package:mangayomi/services/translation/channels/nodelane/receipt.dart';
+import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 
 class _Source implements SourceImageReader {
   _Source(this.file);
   final File file;
+  int reads = 0;
   @override
   Future<OriginalImageLease> acquire(
     TranslationPage page,
     TranslationCancellation cancellation,
-  ) async => OriginalImageLease(file);
+  ) async {
+    reads++;
+    return OriginalImageLease(file);
+  }
+}
+
+class _HeldSource extends _Source {
+  _HeldSource(super.file);
+  final acquired = Completer<void>(), resume = Completer<void>();
+  @override
+  Future<OriginalImageLease> acquire(
+    TranslationPage page,
+    TranslationCancellation cancellation,
+  ) async {
+    if (!acquired.isCompleted) acquired.complete();
+    await resume.future;
+    cancellation.check();
+    return super.acquire(page, cancellation);
+  }
+}
+
+class _HeldReadRepository extends TranslationRepository {
+  _HeldReadRepository(TranslationRepository repository, this.key)
+    : super(repository.database, repository.directory);
+  final String key;
+  final started = Completer<void>(), resume = Completer<void>();
+  @override
+  Future<Map<String, dynamic>?> read(String key) async {
+    final value = await super.read(key);
+    if (key == this.key && !started.isCompleted) {
+      started.complete();
+      await resume.future;
+    }
+    return value;
+  }
 }
 
 Future<void> _until(bool Function() check) async {
@@ -40,6 +79,8 @@ void main() {
   final remote = <String, Map<String, dynamic>>{};
   bool dropCreate = false, absentCreate = false, dropUpload = false;
   int uploads = 0;
+  String? terminalFailure;
+  bool expiredResult = false;
 
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
@@ -64,6 +105,8 @@ void main() {
     gets.clear();
     remote.clear();
     uploads = 0;
+    terminalFailure = null;
+    expiredResult = false;
     dropCreate = false;
     absentCreate = false;
     dropUpload = false;
@@ -72,6 +115,10 @@ void main() {
       expect(request.headers.value('cookie'), isNull);
       request.response.headers.contentType = ContentType.json;
       final path = request.uri.path;
+      if (path.startsWith('/v1/translations')) {
+        expect(request.headers.value('X-Translation-Protocol'), 'overlay-v1');
+        expect(request.headers.value('authorization'), isNotNull);
+      }
       Map<String, dynamic> body = {};
       if (path == '/v1/capabilities') {
         body = {
@@ -138,6 +185,14 @@ void main() {
             'height': 12,
             'artifact': null,
           };
+          if (terminalFailure != null) {
+            body['state'] = 'failed';
+            body['result'] = null;
+            body['error'] = {'code': terminalFailure};
+          } else if (expiredResult) {
+            body['result'] = null;
+            body['error'] = {'code': 'RESULT_EXPIRED'};
+          }
           if (dropUpload) {
             dropUpload = false;
             (await request.response.detachSocket()).destroy();
@@ -175,6 +230,35 @@ void main() {
     return value;
   }
 
+  test('original display stops automatic preparation and translated display resumes only when enabled', () async {
+    final source = _HeldSource((target.source as _Source).file);
+    target = TranslationTarget(target.page, source);
+    final value = runtime();
+    final view = TranslationViewController()
+      ..attach(value)
+      ..window([target]);
+    addTearDown(view.dispose);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(source.acquired.isCompleted, isFalse);
+    expect(puts, isEmpty);
+    view.configure(showTranslation: true);
+    await source.acquired.future;
+    view.configure(showTranslation: false);
+    source.resume.complete();
+    await _until(
+      () => value.stateFor(target.page).phase == TranslationPhase.idle,
+    );
+    expect(puts, isEmpty);
+    expect(uploads, 0);
+    expect(view.enabled, isTrue);
+    view.configure(enabled: false, showTranslation: true);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(puts, isEmpty);
+    view.configure(enabled: true);
+    await _until(() => value.stateFor(target.page).noText);
+    expect(puts, hasLength(1));
+    expect(uploads, 1);
+  });
   test('lost create response survives runtime restart and verifies the original UUID', () async {
     dropCreate = true;
     final first = runtime()..setWindow('reader', [target]);
@@ -196,6 +280,117 @@ void main() {
     expect(puts, hasLength(2));
     expect(puts[0].$1, isNot(puts[1].$1));
   });
+  test('cold cached display and single-image regeneration work without enabling automatic translation', () async {
+    final first = runtime() as OfficialRuntime;
+    first.setWindow('reader', [target]);
+    await _until(() => first.stateFor(target.page).noText);
+    await Future<void>.delayed(const Duration(milliseconds: 25));
+    final id = puts.single.$1;
+    final operation = 'operation:${first.scope}:$id';
+    final receipt = OfficialReceipt.fromJson(
+      (await repository.read(operation))!,
+    );
+    final sha = translationKey('fixture-overlay');
+    receipt.snapshot!['result'] = {
+      'kind': 'translated',
+      'representation': 'overlay-v1',
+      'normalization_version': 1,
+      'input_sha256': receipt.inputSha,
+      'width': receipt.width,
+      'height': receipt.height,
+      'composite': 'source-atop',
+      'bbox': {'x': 0, 'y': 0, 'width': 1, 'height': 1},
+      'artifact': {
+        'mime': 'image/webp',
+        'path': '/v1/translations/$id/result',
+        'byte_size': 1,
+        'sha256': sha,
+      },
+    };
+    receipt.resultKey = translationKey([
+      first.scope,
+      id,
+      sha,
+      'mobile-png-composite-v1',
+    ]);
+    final source = target.source as _Source;
+    final cached = await repository.publish(
+      'result',
+      receipt.resultKey!,
+      source.file,
+    );
+    receipt.resultSha = await imageDigest(cached);
+    await repository.write(
+      operation,
+      first.scope,
+      'completed',
+      receipt.toJson(),
+    );
+    await first.dispose();
+    runtimes.remove(first);
+    source.reads = 0;
+    final next = runtime();
+    final untouched = TranslationTarget(
+      const TranslationPage('next-page', '1'),
+      source,
+    );
+    final view = TranslationViewController()..configure(enabled: false);
+    addTearDown(view.dispose);
+    view.attach(next);
+    view.window([target, untouched]);
+    await _until(() => view.state(target).result != null);
+    expect(view.images, isEmpty);
+    view.configure(showTranslation: true);
+    await _until(() => view.images.isNotEmpty);
+    expect(view.images[target.page.identity]!.file.path, cached.path);
+    expect(source.reads, 0);
+    expect(puts, hasLength(1));
+    expect(gets, isEmpty);
+    expect(uploads, 1);
+    view.configure(showTranslation: false);
+    view.configure(showTranslation: true);
+    expect(view.enabled, isFalse);
+    expect(view.images, hasLength(1));
+    await view.perform(target, TranslationAction.regenerate);
+    await _until(() => puts.length == 2 && next.stateFor(target.page).noText);
+    expect(puts.last.$2, {'regenerate_of': id});
+    expect(view.enabled, isFalse);
+    expect(next.stateFor(untouched.page).phase, TranslationPhase.idle);
+  });
+  test(
+    'late cache restoration cannot replace the result of explicit regeneration',
+    () async {
+      final first = runtime() as OfficialRuntime;
+      first.setWindow('reader', [target]);
+      await _until(() => first.stateFor(target.page).noText);
+      final id = puts.single.$1;
+      await first.dispose();
+      runtimes.remove(first);
+
+      final held = _HeldReadRepository(
+        repository,
+        'operation:${first.scope}:$id',
+      );
+      repository = held;
+      addTearDown(() {
+        if (!held.resume.isCompleted) held.resume.complete();
+      });
+      final next = runtime();
+      final restoration = next.restore([target]);
+      await held.started.future;
+      next.setWindow('reader', [target], automatic: false);
+      terminalFailure = 'REMOTE_FAILED';
+      await next.perform(target, TranslationAction.regenerate);
+      await _until(
+        () => next.stateFor(target.page).phase == TranslationPhase.failed,
+      );
+      expect(puts.last.$2, {'regenerate_of': id});
+      held.resume.complete();
+      await restoration;
+      expect(next.stateFor(target.page).phase, TranslationPhase.failed);
+      expect(next.stateFor(target.page).actions, {TranslationAction.retry});
+    },
+  );
   test(
     'only a verified absent request replays the same UUID and exact body',
     () async {
@@ -214,6 +409,71 @@ void main() {
       expect(puts.first.$1, puts.last.$1);
       expect(puts.first.$2, puts.last.$2);
       expect(gets, [puts.first.$1]);
+    },
+  );
+
+  test(
+    'NodeLane failed-image retry uses a new UUID and preserves retry_of',
+    () async {
+      terminalFailure = 'REMOTE_FAILED';
+      final value = runtime()..setWindow('reader', [target]);
+      await _until(
+        () => value.stateFor(target.page).phase == TranslationPhase.failed,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 25));
+      terminalFailure = null;
+      await value.perform(target, TranslationAction.retry);
+      await _until(() => value.stateFor(target.page).noText);
+      expect(puts, hasLength(2));
+      expect(puts.last.$2, {'retry_of': puts.first.$1});
+      expect(puts.first.$1, isNot(puts.last.$1));
+    },
+  );
+
+  test(
+    'NodeLane analysis limits cannot be retried or silently resubmitted',
+    () async {
+      terminalFailure = 'CLASSIC_REGION_LIMIT_EXCEEDED';
+      final value = runtime()..setWindow('reader', [target]);
+      await _until(
+        () => value.stateFor(target.page).phase == TranslationPhase.failed,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 25));
+      expect(value.stateFor(target.page).actions, isEmpty);
+      expect(value.stateFor(target.page).message, contains('拆分图片'));
+      await expectLater(
+        value.perform(target, TranslationAction.retry),
+        throwsA(isA<TranslationFailure>()),
+      );
+      expect(puts, hasLength(1));
+    },
+  );
+
+  test(
+    'NodeLane expired result stays terminal and requires explicit regeneration',
+    () async {
+      expiredResult = true;
+      final value = runtime()..setWindow('reader', [target]);
+      await _until(
+        () => value.stateFor(target.page).phase == TranslationPhase.succeeded,
+      );
+      final result = value.stateFor(target.page).result!;
+      await expectLater(
+        value.readResult(result, TranslationCancellation()),
+        throwsA(
+          isA<TranslationFailure>().having(
+            (e) => e.code,
+            'code',
+            'RESULT_EXPIRED',
+          ),
+        ),
+      );
+      expect(puts, hasLength(1));
+      await Future<void>.delayed(const Duration(milliseconds: 25));
+      expiredResult = false;
+      await value.perform(target, TranslationAction.regenerate);
+      await _until(() => value.stateFor(target.page).noText);
+      expect(puts.last.$2, {'regenerate_of': puts.first.$1});
     },
   );
 

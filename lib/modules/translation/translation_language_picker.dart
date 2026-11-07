@@ -4,16 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/services/translation/languages.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-
-const translationLanguageNames = {
-  'zh-Hans': '简体中文',
-  'zh-Hant': '繁體中文',
-  'en': 'English',
-  'ja': '日本語',
-};
 
 Future<String?> showTranslationLanguagePicker(
   BuildContext context,

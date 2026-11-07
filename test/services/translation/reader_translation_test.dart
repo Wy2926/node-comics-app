@@ -5,6 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
@@ -14,6 +16,7 @@ class _LocalRuntime implements ChannelRuntime {
   final _changes = StreamController<void>.broadcast();
   List<TranslationTarget> window = [];
   int reads = 0, releases = 0;
+  bool automatic = false;
   @override
   Stream<void> get changes => _changes.stream;
   @override
@@ -24,8 +27,13 @@ class _LocalRuntime implements ChannelRuntime {
   @override
   Future<void> restore(List<TranslationTarget> targets) async {}
   @override
-  void setWindow(String consumer, List<TranslationTarget> targets) {
+  void setWindow(
+    String consumer,
+    List<TranslationTarget> targets, {
+    bool automatic = true,
+  }) {
     window = targets;
+    this.automatic = automatic;
   }
 
   @override
@@ -88,9 +96,11 @@ void main() {
         ProviderScope(
           overrides: [translationServiceProvider.overrideWithValue(service)],
           child: MaterialApp(
+            locale: const Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: ReaderTranslationHost(
               pages: [left, right],
-              currentIndex: 0,
               visibleCount: 2,
               pageListenable: index,
               actualIndex: () => index.value!,
@@ -102,6 +112,15 @@ void main() {
                     appBar: AppBar(
                       actions: [ReaderTranslationHost.button(context)],
                     ),
+                    bottomNavigationBar: ReaderTranslationHost.button(
+                      context,
+                      labeled: true,
+                    ),
+                    body: ReaderTranslationHost.withStatus(
+                      context,
+                      left,
+                      child: const SizedBox(width: 240, height: 300),
+                    ),
                   );
                 },
               ),
@@ -110,24 +129,30 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('漫画翻译'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('翻译当前阅读范围'));
-      await tester.pumpAndSettle();
-
       expect(runtime.window, hasLength(1));
+      expect(runtime.reads, 0);
+      expect(runtime.automatic, isFalse);
+      expect(identical(shownLeft, left), isTrue);
+      await tester.tap(find.text('原图'));
+      await tester.pumpAndSettle();
       expect(runtime.reads, 1);
+      expect(runtime.automatic, isTrue);
+      expect(find.byType(TranslationImageBadge), findsNothing);
+      expect(find.byTooltip('图片更多操作'), findsNothing);
+      expect(find.text('已翻译'), findsNothing);
       expect(shownLeft.srcRect, const Rect.fromLTWH(0, 0, 50, 40));
       expect(shownRight.srcRect, const Rect.fromLTWH(50, 0, 50, 40));
       expect(left.resolvedFilePath, '/synthetic-original.png');
       expect(right.resolvedFilePath, '/synthetic-original.png');
 
-      await tester.tap(find.text('显示译图'));
+      await tester.tap(find.text('译图'));
       await tester.pumpAndSettle();
+      expect(runtime.automatic, isFalse);
       expect(identical(shownLeft, left), isTrue);
       expect(identical(shownRight, right), isTrue);
-      await tester.tap(find.text('显示译图'));
+      await tester.tap(find.text('原图'));
       await tester.pumpAndSettle();
+      expect(runtime.automatic, isTrue);
       expect(runtime.reads, 1);
 
       final recorder = ui.PictureRecorder();

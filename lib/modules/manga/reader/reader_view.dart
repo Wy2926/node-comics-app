@@ -928,7 +928,6 @@ class _MangaChapterPageGalleryState
             bottom: false,
             child: ReaderTranslationHost(
               pages: pages,
-              currentIndex: _getCurrentPagesActualIndex(),
               pageListenable: _currentPageViewIndex,
               actualIndex: () => _getCurrentPagesActualIndex(),
               visibleCount: effectivePageMode == PageMode.doublePage ? 2 : 1,
@@ -1162,7 +1161,7 @@ class _MangaChapterPageGalleryState
                         });
                       }
                     },
-                    onSettingsPressed: () => ReaderSettingsModal.show(
+                    onSettingsPressed: (context) => ReaderSettingsModal.show(
                       context: context,
                       bookTitle: _readerController.getMangaName(),
                       vsync: this,

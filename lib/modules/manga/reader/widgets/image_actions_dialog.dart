@@ -12,6 +12,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_image_actions.dart';
 import 'package:mangayomi/utils/manga_cover_actions.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
+import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/widgets/image_actions_sheet.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -47,6 +48,10 @@ class ImageActionsDialog {
         ModalRoute.of(context)?.isCurrent != true) {
       return;
     }
+    final translationActions = ReaderTranslationHost.imageActions(
+      context,
+      data,
+    );
     if (isMobile && !isTv) {
       final actualChapter = data.chapter?.name ?? chapterName;
       final pageIndex = data.index ?? data.pageIndex;
@@ -62,6 +67,7 @@ class ImageActionsDialog {
         showDragHandle: false,
         shape: NodeLaneTokens.readerSheetShape,
         builder: (_) => MobileReaderImageActions(
+          translationActions: translationActions,
           bookTitle: manga.name ?? '',
           chapterTitle: actualChapter,
           pageNumber: pageIndex == null ? null : pageIndex + 1,
@@ -89,6 +95,7 @@ class ImageActionsDialog {
         imageBytes: imageBytes,
         manga: manga,
         fileName: name,
+        translationActions: translationActions,
       ),
     );
   }
@@ -142,11 +149,13 @@ class _ImageActionsSheet extends StatelessWidget {
   final Uint8List imageBytes;
   final Manga manga;
   final String fileName;
+  final Widget? translationActions;
 
   const _ImageActionsSheet({
     required this.imageBytes,
     required this.manga,
     required this.fileName,
+    this.translationActions,
   });
 
   @override
@@ -155,6 +164,7 @@ class _ImageActionsSheet extends StatelessWidget {
       onSetCover: _setAsCover,
       onShare: _shareImage,
       onSave: _saveImage,
+      footer: translationActions,
     );
   }
 

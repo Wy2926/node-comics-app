@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/services/translation/languages.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
-
-import 'translation_language_picker.dart';
 
 class TranslationSettings extends ConsumerStatefulWidget {
   const TranslationSettings({super.key});

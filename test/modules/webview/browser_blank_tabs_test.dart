@@ -85,6 +85,8 @@ void main() {
     expect(tab.title, isEmpty);
     expect(tab.history, isEmpty);
     expect(tab.anchor, isNull);
+    expect(tab.translation.enabled, isTrue);
+    expect(tab.translation.showTranslation, isFalse);
     tab.visited('https://reader.example/1');
     tab.visited('https://reader.example/1');
     expect(tab.history, ['https://reader.example/1']);
@@ -97,10 +99,16 @@ void main() {
     ]);
     tab.visited('javascript:alert(1)');
     expect(tab.url, 'https://reader.example/new');
+    tab.translation.configure(enabled: false, showTranslation: true);
     final restored = BrowserTab.fromJson(tab.toJson())!;
     addTearDown(restored.translation.dispose);
     expect(restored.history, tab.history);
     expect(restored.historyIndex, 1);
+    expect(restored.translation.enabled, isFalse);
+    expect(restored.translation.showTranslation, isTrue);
+    restored.visited('https://other.example/chapter');
+    expect(restored.translation.showTranslation, isFalse);
+    expect(restored.translation.enabled, isFalse);
     expect(BrowserTab.fromJson({'id': 'about', 'url': 'about:blank'}), isNull);
   });
 

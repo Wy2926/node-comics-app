@@ -13,9 +13,19 @@
 | 持久化与图片工作 | [translation_repository.dart](../lib/repositories/translation_repository.dart) 使用独立、私有的 Isar 库；输入与结果预算、文件发布与缓存代次、租约释放分别执行。[image_work.dart](../lib/services/translation/image_work.dart) 串行 isolate 准备／合成，校验摘要、尺寸、bbox 与 alpha |
 | 原生会话与组合入口 | [translation_service.dart](../lib/services/translation/translation_service.dart) 是具体渠道的组合入口；OIDC PKCE／续期在渠道内部。[nodelane_private_storage.dart](../lib/services/nodelane_private_storage.dart) 使用独立安全存储空间；[NodeLane.entitlements](../ios/Runner/NodeLane.entitlements) 在三种 iOS 构建配置中声明钥匙串能力，另有设备绑定钥匙串、私有目录备份排除及 Android 备份／迁移排除规则 |
 | 阅读器 | [reader_translation.dart](../lib/modules/manga/reader/reader_translation.dart) 根据章节原始页身份更新窗口；译图采用独立显示数据，不覆盖来源页。单页保存归一化缩放中心，双页保留外层 controller，连续阅读订阅已有页码通知 |
-| 手机网页 | [mobile_browser.dart](../lib/modules/webview/mobile_browser.dart)、[translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[nodelane_reader.js](../assets/nodelane_reader.js)：最多 12 个逻辑标签；新建为空标签、共用开始页并原位输入，空标签不创建 WebView；网页活动 1 个＋温存 1 个／30 秒，主框架与文档代次校验，HTTP／Blob 来源、128 KiB 确认传输、非交互覆盖层、图片锚点恢复 |
+| 手机网页 | [mobile_browser.dart](../lib/modules/webview/mobile_browser.dart)、[translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[nodelane_reader.js](../assets/nodelane_reader.js)：最多 12 个逻辑标签；新建为空标签、共用开始页并原位输入，空标签不创建 WebView；网页活动 1 个＋温存 1 个／30 秒，主框架与文档代次校验，HTTP／Blob 来源、128 KiB 确认传输、非交互译图覆盖层、图内状态与单图操作、图片锚点恢复 |
 
-手机登录入口为“更多”首栏的 NodeLane 账号；目标语言从更多首页、阅读器或网页面板直接弹层选择，本机译图缓存位于“更多 → 存储与备份”。阅读器或浏览器工具栏仍手动开启翻译。此视图仍调用原服务，沿用登录、计费与渠道协议；布局与交互验收见[手机界面与视觉令牌](MOBILE_UI_DESIGN.md#翻译与账号设置)。每次打开新的网页标签默认不开始翻译；标签切回前台可以恢复原先已开启的阅读窗口。原图显示与暂停任务是两个控制项，已受理任务继续由后端执行。不同官方账号、服务与语言隔离；重新进入已有页面会核对当前原图摘要，定位地址相同不直接视为同一内容。
+手机登录入口为“更多”首栏的 NodeLane 账号；目标语言从更多首页、阅读器或网页面板选择，本机译图缓存位于“更多 → 存储与备份”。阅读器原工具栏第二项一键切换原图／译图，不增加工具栏高度；翻译设置从现有“设置 → 漫画翻译”进入。浏览器原底栏固定保留分段切换和设置入口。两处共用显示与任务控制契约，首次默认显示原图、自动翻译开启；登录后切到译图即可自动翻译。浏览器保存标签的显示模式与自动开关，跨站导航切回原图并保留自动开关。
+
+目标语言固定使用 NodeLane 当前支持的 17 项，统一定义在 [languages.dart](../lib/services/translation/languages.dart)，以参考后端 `backend/app/languages.py` 为依据。首次优先匹配明确设置的应用语言，否则按系统语言顺序选择支持项；中文区分简繁，葡萄牙语对应 `pt-BR`，无匹配项使用英语。首次结果立即持久化，之后保留已保存的目标语言，不随界面或系统语言变化覆盖。
+
+`TranslationViewController` 在前台为当前窗口独立调用 `restore` 读取本地回执；`showTranslation` 控制结果读取、展示及自动送译门槛，缺少结果保留原图。`setWindow(automatic: false)` 保留可见目标与已受理任务的状态恢复，禁止自动创建新任务；只有前台同时满足“显示译图＋自动翻译开启”才自动送译；切回原图暂停新增任务与在途本地准备／上传，但保留自动开关选择，切回译图后再恢复。手动单图动作仍由明确点击独立触发。显式重试／重译只调度选中的图片，不改变自动开关。关闭自动翻译取消尚未完成的本地准备与上传，已被后端受理的任务仍可能完成；状态不明时核实旧 UUID。窗口离开取消在途操作，账号、服务、语言与来源修订隔离，送译前核对原图摘要。
+
+预翻译与当前图共用上述门槛：原生阅读器从当前页开始按章节页序向后取，跳过过渡页并按源图身份去重，窗口上限为 `min(visibleCount + 2, 4)`，通常单页三张、双页四张；拆页共用同一源图。网页在当前视口及下方附近区域识别已加载图片（图片顶部不超过三倍视口高度），按页面从上到下最多保留四张。客户端最多两个调度任务在途，提交／上传受串行队列约束；服务端执行并发由服务端控制。翻页、滚动更新窗口，离开窗口取消本地工作并释放结果租约；已有成功回执和译图复用，不自动重译整章。
+
+阅读器与网页共享左上角的处理中／异常状态和恢复动作；已完成、无文字及未送译图片不显示角标。图片右上角不放更多按钮，阅读器与网页都由长按图片进入单图菜单。网页手势只请求打开原生菜单，不直接提交重译；滚动、移动、导航与后台取消手势并恢复站点样式。动作经过文档代次、origin、元素修订、当前目标与可用动作校验。面板分别说明图片显示与自动翻译，保留目标语言、真实渠道与窗口摘要。模式切换不重建原图或改变阅读位置；详细交互与令牌见[手机界面与视觉令牌](MOBILE_UI_DESIGN.md#翻译与账号设置)。
+
+NodeLane 适配器的 `protocol.dart` 集中声明 `overlay-v1` 请求头与明确不可重试的分析上限错误。失败重试使用新 UUID 的 `retry_of`，成功重译使用 `regenerate_of`，状态未知先核实旧 UUID；结果过期允许读取已有完整缓存，缓存缺失时提示显式重译。图片读取失败只重读原结果，不转成模型调用。协议和后端错误码不展示在产品面板中。
 
 默认服务为 `https://comics.nodelane.net`，构建可用 `--dart-define=NODELANE_API_BASE=https://…` 指定兼容服务。账号页集中显示身份、订阅与分别计算的三类额度，复用同一原生会话和渠道运行时；手机独立翻译设置页已移除。
 
@@ -45,7 +55,7 @@ flutter build ios --debug --no-codesign
 - 漫画阅读器继续使用 Mangayomi 的来源、章节、图片与翻页体系；网页入口增加多标签管理，只把当前阅读图片交给同一个翻译服务。
 - 来源负责发现和取图，渠道负责翻译协议与任务寿命，结果服务负责完整译图，展示端负责替换与位置。翻译公共层不认识站点、Cookie、官方扣费规则或 MTU 路径。
 - 首期只交付 NodeLane 官方 `classic` 渠道，接现有逐图 API；使用合成的完整图片渠道测试替换边界。MTU 是已有协议的对照及后续可选任务，Shinobu 是已知候选，不在手机首期实现模型下载、ONNX 推理或本机执行宿主。
-- 默认看原图，用户在原生界面开启翻译后才处理有限窗口。后台已受理任务独立完成；客户端暂停只停止本地工作。网页翻译不自动创建漫画或把全站图片加入书架。
+- 默认不开启自动送译，只有前台显示译图且用户开启自动翻译时才处理有限窗口。后台已受理任务独立完成；客户端暂停只停止本地工作。网页翻译不自动创建漫画或把全站图片加入书架。
 
 不移植整套扩展运行时，不新增通用插件平台、工作流引擎或跨来源书目聚合。首期可读普通图片；需要登录、Canvas、长图分别通过后文的验收门槛开放，不能把普通图片通过当作全部来源可用。
 

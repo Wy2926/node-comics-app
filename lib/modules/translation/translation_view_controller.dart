@@ -13,14 +13,31 @@ class TranslationViewController extends ChangeNotifier {
   final images = <String, DisplayImageLease>{};
   final _requests = <String, TranslationCancellation>{};
   final _attempted = <String, String>{};
-  bool enabled = false,
-      showTranslation = true,
+  final _imageErrors = <String, String>{};
+  final _expired = <String>{};
+  final _actions = <String, Object>{};
+  final _restored = <String>{};
+  int _epoch = 0;
+  bool enabled = true,
+      showTranslation = false,
       foreground = true,
       _disposed = false;
   String? error;
 
+  /// Keep the user's switch preference while original display pauses all
+  /// automatic submissions, including pretranslation of neighboring images.
+  bool get shouldTranslateAutomatically =>
+      enabled && showTranslation && foreground;
+
+  TranslationTarget? targetFor(TranslationPage page) => targets
+      .where((target) => target.page.identity == page.identity)
+      .firstOrNull;
+
   void attach(ChannelRuntime? value) {
     if (identical(value, runtime)) return;
+    _epoch++;
+    error = null;
+    _actions.clear();
     runtime?.pause(consumer);
     _subscription?.cancel();
     _release();
@@ -39,6 +56,9 @@ class TranslationViewController extends ChangeNotifier {
       if (!keep.contains(key)) _requests.remove(key)?.cancel();
     }
     _attempted.removeWhere((key, _) => !keep.contains(key));
+    _imageErrors.removeWhere((key, _) => !keep.contains(key));
+    _expired.removeWhere((key) => !keep.contains(key));
+    _restored.removeWhere((key) => !keep.contains(key));
     _sync();
   }
 
@@ -50,36 +70,90 @@ class TranslationViewController extends ChangeNotifier {
     _sync();
   }
 
-  PageTranslationState state(TranslationTarget target) =>
-      runtime?.stateFor(target.page) ?? const PageTranslationState();
+  bool isPerforming(TranslationTarget target) =>
+      _actions.containsKey(target.page.identity);
+  bool isReading(TranslationTarget target) =>
+      _requests.containsKey(target.page.identity) &&
+      !images.containsKey(target.page.identity);
+  PageTranslationState state(TranslationTarget target) {
+    final value =
+        runtime?.stateFor(target.page) ?? const PageTranslationState();
+    final failure = _imageErrors[target.page.identity];
+    if (failure == null) return value;
+    return PageTranslationState(
+      phase: TranslationPhase.failed,
+      message: failure,
+      result: value.result,
+      actions: {
+        if (!_expired.contains(target.page.identity)) ...{
+          if (value.result != null) TranslationAction.readResult,
+          ...value.actions,
+        } else if (value.actions.contains(TranslationAction.regenerate))
+          TranslationAction.regenerate,
+      },
+    );
+  }
+
   void _sync() {
     if (_disposed) return;
-    if (enabled && foreground) {
-      runtime?.setWindow(consumer, targets);
+    if (foreground) {
+      runtime?.setWindow(
+        consumer,
+        targets,
+        automatic: shouldTranslateAutomatically,
+      );
+      _restore();
     } else {
       runtime?.pause(consumer);
     }
     _changed();
   }
 
+  void _restore() {
+    final attached = runtime;
+    if (attached == null) return;
+    final pending = targets
+        .where((target) => _restored.add(target.page.identity))
+        .toList();
+    if (pending.isEmpty) return;
+    final epoch = _epoch;
+    attached
+        .restore(pending)
+        .then((_) {
+          if (_disposed || epoch != _epoch || !foreground) return;
+          _sync();
+        })
+        .catchError((Object failure) {
+          if (_disposed || epoch != _epoch || !foreground) return;
+          error = failure is TranslationFailure ? failure.message : '已有译图读取失败';
+          for (final target in pending) {
+            _restored.remove(target.page.identity);
+          }
+          notifyListeners();
+        });
+  }
+
   void _changed() {
     if (_disposed) return;
     if (foreground && showTranslation) {
       for (final target in targets) {
-        final result = state(target).result;
+        final result = runtime?.stateFor(target.page).result;
         final key = target.page.identity;
         if (result == null) {
           _requests.remove(key)?.cancel();
           _attempted.remove(key);
+          _imageErrors.remove(key);
+          _expired.remove(key);
           images.remove(key)?.release();
           continue;
         }
-        if (runtime == null ||
-            _requests.containsKey(key) ||
+        if (_requests.containsKey(key) ||
             _attempted[key] == result.operationId) {
           continue;
         }
         _attempted[key] = result.operationId;
+        _imageErrors.remove(key);
+        _expired.remove(key);
         final cancel = TranslationCancellation();
         _requests[key] = cancel;
         runtime!
@@ -97,7 +171,12 @@ class TranslationViewController extends ChangeNotifier {
             })
             .catchError((Object e) {
               if (!cancel.isCancelled) {
-                error = e is TranslationFailure ? e.message : '译图读取失败';
+                if (e is TranslationFailure && e.code == 'RESULT_EXPIRED') {
+                  _expired.add(key);
+                }
+                _imageErrors[key] = e is TranslationFailure
+                    ? e.message
+                    : '译图读取失败';
                 notifyListeners();
               }
             })
@@ -113,14 +192,38 @@ class TranslationViewController extends ChangeNotifier {
     TranslationTarget target,
     TranslationAction action,
   ) async {
+    final attached = runtime;
+    final key = target.page.identity;
+    if (_disposed ||
+        attached == null ||
+        !foreground ||
+        targetFor(target.page) == null ||
+        !state(target).actions.contains(action) ||
+        _actions.containsKey(key)) {
+      return;
+    }
+    final epoch = _epoch;
+    final request = Object();
+    _actions[key] = request;
     error = null;
+    _imageErrors.remove(key);
+    notifyListeners();
     try {
-      await runtime?.perform(target, action);
-      _attempted.remove(target.page.identity);
+      await attached.perform(target, action);
+      if (_disposed || epoch != _epoch) return;
+      _attempted.remove(key);
       _changed();
+    } on TranslationCancelled {
+      // Navigation and account replacement invalidate the old action.
     } catch (e) {
-      error = e is TranslationFailure ? e.message : '操作未完成';
-      if (!_disposed) notifyListeners();
+      if (!_disposed && epoch == _epoch && targetFor(target.page) != null) {
+        final message = e is TranslationFailure ? e.message : '操作未完成，请重试';
+        _imageErrors[key] = message;
+        error = message;
+      }
+    } finally {
+      if (identical(_actions[key], request)) _actions.remove(key);
+      if (!_disposed && epoch == _epoch) notifyListeners();
     }
   }
 
@@ -130,6 +233,9 @@ class TranslationViewController extends ChangeNotifier {
     }
     _requests.clear();
     _attempted.clear();
+    _imageErrors.clear();
+    _expired.clear();
+    _restored.clear();
     for (final image in images.values) {
       image.release();
     }

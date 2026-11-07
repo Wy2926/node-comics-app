@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../../contracts.dart';
+import 'protocol.dart';
 
 /// No source-client interceptors, cookie jar, logging or automatic retries.
 class NodeLaneHttp {
@@ -43,7 +44,10 @@ class NodeLaneHttp {
       );
     }
     if (path.startsWith('/v1/translations')) {
-      request.headers.set('X-Translation-Protocol', 'overlay-v1');
+      request.headers.set(
+        nodeLaneTranslationProtocolHeader,
+        nodeLaneTranslationProtocol,
+      );
     }
     request.headers.set(HttpHeaders.acceptHeader, 'application/json');
     return request;
@@ -230,10 +234,14 @@ class NodeLaneHttp {
     final mapped = switch (response.statusCode) {
       401 || 403 => 'AUTH_REQUIRED',
       429 => 'RATE_LIMITED',
+      410 when code == 'RESULT_EXPIRED' => 'RESULT_EXPIRED',
       410 => 'TRANSLATION_UNAVAILABLE',
       409 when code == 'CLIENT_UPGRADE_REQUIRED' => 'CLIENT_UPGRADE_REQUIRED',
       402 => 'QUOTA_EXHAUSTED',
       _ when code == 'DAILY_QUOTA_EXHAUSTED' => 'QUOTA_EXHAUSTED',
+      _ when code == 'LANGUAGE_UNSUPPORTED' => 'UNSUPPORTED_LANGUAGE',
+      _ when code is String && nodeLaneNonRetryableErrors.contains(code) =>
+        code,
       _ => 'NETWORK',
     };
     throw TranslationFailure(

@@ -1,5 +1,6 @@
 import '../../contracts.dart';
 import '../../image_work.dart';
+import 'protocol.dart';
 
 class OfficialReceipt {
   OfficialReceipt({
@@ -44,6 +45,11 @@ class OfficialReceipt {
           snapshot?['execution_resolved'] != true);
   Map<String, dynamic>? get result =>
       snapshot?['result'] as Map<String, dynamic>?;
+  String? get errorCode =>
+      snapshot?['error'] is Map ? snapshot!['error']['code'] as String? : null;
+  bool get resultExpired => errorCode == 'RESULT_EXPIRED';
+  bool get canRetry =>
+      state == 'failed' && !nodeLaneNonRetryableErrors.contains(errorCode);
 
   void accept(Map<String, dynamic> value) {
     if (value['id'] != id ||
@@ -71,7 +77,11 @@ class OfficialReceipt {
         nextTime.isBefore(previousTime)) {
       return;
     }
-    if (value['state'] == 'succeeded') {
+    final expired =
+        value['error'] is Map &&
+        value['error']['code'] == 'RESULT_EXPIRED' &&
+        value['result'] == null;
+    if (value['state'] == 'succeeded' && !expired) {
       final result = value['result'];
       if (result is! Map ||
           result['normalization_version'] != 1 ||

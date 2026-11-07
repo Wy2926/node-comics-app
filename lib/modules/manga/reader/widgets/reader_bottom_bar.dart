@@ -67,7 +67,7 @@ class ReaderBottomBar extends ConsumerWidget {
   final VoidCallback? onPageModeToggle;
 
   /// Callback when settings button is pressed
-  final VoidCallback onSettingsPressed;
+  final ValueChanged<BuildContext> onSettingsPressed;
 
   /// Provider for watching current reader mode
   /// Accepts any ProviderListenable that returns ReaderMode?
@@ -179,7 +179,7 @@ class ReaderBottomBar extends ConsumerWidget {
                   child: NodeLaneToolbarAction(
                     label: context.l10n.settings,
                     icon: NodeLaneIcons.of(context).adjustments,
-                    onPressed: onSettingsPressed,
+                    onPressed: () => onSettingsPressed(context),
                   ),
                 ),
               ],
@@ -485,7 +485,7 @@ class ReaderBottomBar extends ConsumerWidget {
 
           // Settings button
           IconButton(
-            onPressed: onSettingsPressed,
+            onPressed: () => onSettingsPressed(context),
             icon: const Icon(Icons.settings_rounded),
           ),
         ],

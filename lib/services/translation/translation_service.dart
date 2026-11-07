@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,15 +9,24 @@ import 'package:path_provider/path_provider.dart';
 import 'package:mangayomi/models/translation_entry.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
 import 'package:mangayomi/repositories/translation_repository.dart';
+import 'package:mangayomi/repositories/settings_repository.dart';
 
 import 'contracts.dart';
 import 'image_work.dart';
+import 'languages.dart';
 import 'channels/nodelane/channel.dart';
 import 'channels/nodelane/session.dart';
 import 'channels/nodelane/account.dart';
 
 final translationServiceProvider = Provider<TranslationService>((ref) {
-  final service = TranslationService();
+  final appLocale = settingsRepository.currentOrNull?.locale;
+  final service = TranslationService(
+    preferredLocales: [
+      if (appLocale?.languageCode case final language?)
+        Locale(language, appLocale?.countryCode),
+      ...PlatformDispatcher.instance.locales,
+    ],
+  );
   ref.onDispose(service.dispose);
   return service;
 });
@@ -24,23 +34,29 @@ final translationServiceProvider = Provider<TranslationService>((ref) {
 /// Composition root: source and presentation code depend only on ChannelRuntime.
 /// A separate private database keeps receipts out of library backup and sync.
 class TranslationService extends ChangeNotifier {
-  TranslationService({NodeLaneSession? session})
-    : _session =
-          session ??
-          NodeLaneSession(
-            Uri.parse(
-              const String.fromEnvironment(
-                'NODELANE_API_BASE',
-                defaultValue: 'https://comics.nodelane.net',
-              ),
-            ),
-          );
+  TranslationService({
+    NodeLaneSession? session,
+    Iterable<Locale>? preferredLocales,
+  }) : language = translationLanguageForLocales(
+         preferredLocales ?? PlatformDispatcher.instance.locales,
+       ),
+       _session =
+           session ??
+           NodeLaneSession(
+             Uri.parse(
+               const String.fromEnvironment(
+                 'NODELANE_API_BASE',
+                 defaultValue: 'https://comics.nodelane.net',
+               ),
+             ),
+           );
   final NodeLaneSession _session;
   ChannelRuntime? runtime;
   TranslationRepository? _repository;
   TranslationImageWork? _images;
   Future<void>? _initializing;
-  String language = 'zh-Hans';
+  String get channelLabel => 'NodeLane 官方';
+  String language;
   bool busy = false;
   String? error;
   bool get loggedIn => _session.userId != null;
@@ -126,7 +142,15 @@ class TranslationService extends ChangeNotifier {
       error = e.message;
     }
     final prefs = await _repository!.read('preferences');
-    language = prefs?['language'] as String? ?? language;
+    final savedLanguage = prefs?['language'];
+    if (savedLanguage is String &&
+        translationLanguageNames.containsKey(savedLanguage)) {
+      language = savedLanguage;
+    } else {
+      await _repository!.write('preferences', 'app', 'preferences', {
+        'language': language,
+      });
+    }
     await _replaceRuntime();
   }
 
@@ -161,10 +185,14 @@ class TranslationService extends ChangeNotifier {
   });
   Future<void> setLanguage(String value) => _act(() async {
     await initialize();
-    language = value;
+    if (!translationLanguageNames.containsKey(value)) {
+      throw const TranslationFailure('UNSUPPORTED_LANGUAGE');
+    }
+    if (value == language) return;
     await _repository!.write('preferences', 'app', 'preferences', {
-      'language': language,
+      'language': value,
     });
+    language = value;
     await _replaceRuntime();
   });
   Future<void> clearResults() => _act(() async {
