@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "updates": [
+    {
+      "platform": "android",
+      "arch": "arm64-v8a",
+      "version": "0.2.0",
+      "notes": "更新 0.2.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.2.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.2.0/nodelane-comics-v0.2.0-android-arm64-v8a.apk",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 2
+    },
+    {
+      "platform": "android",
+      "arch": "armeabi-v7a",
+      "version": "0.2.0",
+      "notes": "更新 0.2.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.2.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.2.0/nodelane-comics-v0.2.0-android-armeabi-v7a.apk",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 2
+    },
+    {
+      "platform": "android",
+      "arch": "universal",
+      "version": "0.1.0",
+      "notes": "更新 0.1.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.1.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.1.0/nodelane-comics-v0.1.0-android-universal.apk",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 1
+    },
+    {
+      "platform": "android",
+      "arch": "x86_64",
+      "version": "0.3.0",
+      "notes": "更新 0.3.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.3.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.3.0/nodelane-comics-v0.3.0-android-x86_64.apk",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 3
+    },
+    {
+      "platform": "android-tv",
+      "arch": "arm64-v8a",
+      "version": "0.3.0",
+      "notes": "更新 0.3.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.3.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.3.0/nodelane-comics-v0.3.0-android-tv-arm64-v8a.apk",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 3
+    },
+    {
+      "platform": "ios",
+      "arch": "any",
+      "version": "0.2.0",
+      "notes": "更新 0.2.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.2.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.2.0/nodelane-comics-v0.2.0-ios.ipa",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 2
+    },
+    {
+      "platform": "linux",
+      "arch": "any",
+      "version": "0.1.0",
+      "notes": "更新 0.1.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.1.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.1.0/nodelane-comics-v0.1.0-linux.AppImage",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 1
+    },
+    {
+      "platform": "macos",
+      "arch": "any",
+      "version": "0.3.0",
+      "notes": "更新 0.3.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.3.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.3.0/nodelane-comics-v0.3.0-macos.dmg",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 3
+    },
+    {
+      "platform": "windows",
+      "arch": "any",
+      "version": "0.1.0",
+      "notes": "更新 0.1.0",
+      "page_url": "https://github.com/Wy2926/node-comics-app/releases/tag/v0.1.0",
+      "url": "https://github.com/Wy2926/node-comics-app/releases/download/v0.1.0/nodelane-comics-v0.1.0-windows.exe",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "build": 1
+    }
+  ]
+}

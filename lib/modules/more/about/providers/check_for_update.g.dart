@@ -42,7 +42,7 @@ final class CheckForAppUpdatesProvider
 }
 
 String _$checkForAppUpdatesHash() =>
-    r'ae04e9287ba511f636c9e39c2bd67a6e18d337f8';
+    r'17ff992a857a52137b4c21549de7ab7a9cb1d467';
 
 abstract class _$CheckForAppUpdates extends $Notifier<bool> {
   bool build();
@@ -62,20 +62,8 @@ abstract class _$CheckForAppUpdates extends $Notifier<bool> {
   }
 }
 
-/// Automatic update-check provider.
-///
-/// Respects the user's [checkForAppUpdatesProvider] preference.  Returns
-/// [UpdateInfo] when a newer version exists and downloadable assets are ready,
-/// `null` otherwise.
-
 @ProviderFor(checkForUpdate)
 final checkForUpdateProvider = CheckForUpdateProvider._();
-
-/// Automatic update-check provider.
-///
-/// Respects the user's [checkForAppUpdatesProvider] preference.  Returns
-/// [UpdateInfo] when a newer version exists and downloadable assets are ready,
-/// `null` otherwise.
 
 final class CheckForUpdateProvider
     extends
@@ -85,11 +73,6 @@ final class CheckForUpdateProvider
           FutureOr<UpdateInfo?>
         >
     with $FutureModifier<UpdateInfo?>, $FutureProvider<UpdateInfo?> {
-  /// Automatic update-check provider.
-  ///
-  /// Respects the user's [checkForAppUpdatesProvider] preference.  Returns
-  /// [UpdateInfo] when a newer version exists and downloadable assets are ready,
-  /// `null` otherwise.
   CheckForUpdateProvider._()
     : super(
         from: null,
@@ -116,4 +99,4 @@ final class CheckForUpdateProvider
   }
 }
 
-String _$checkForUpdateHash() => r'7134bb3c6ac01bc16fecf975195a5231d57c6148';
+String _$checkForUpdateHash() => r'600600e957741be78eec19e6faad00d7e6ac2597';

@@ -1,3 +1,5 @@
+import 'package:mangayomi/services/app_update_manifest.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -25,11 +27,15 @@ final _package = PackageInfo(
   version: '0.1.0',
   buildNumber: '1',
 );
-const UpdateInfo _update = (
-  '1.0.0',
-  'Sample release notes',
-  'https://example.invalid/release',
-  <dynamic>[],
+const _digest =
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const _update = UpdateInfo(
+  version: '1.0.0',
+  build: 2,
+  notes: 'Sample release notes',
+  pageUrl: 'https://example.invalid/release',
+  url: 'https://example.invalid/app.apk',
+  sha256: _digest,
 );
 
 class _Launcher extends UrlLauncherPlatform {
@@ -60,7 +66,9 @@ class _Downloads implements AppUpdateDownloads {
   @override
   Future<UpdateDownload> start({
     required String version,
-    required List<String> assets,
+    required int build,
+    required String url,
+    required String sha256,
     required String title,
     required String notes,
   }) async {
@@ -290,7 +298,7 @@ void main() {
       await tester.tap(open);
       await tester.pump();
       expect(launcher.calls, [
-        (_update.$3, PreferredLaunchMode.externalApplication),
+        (_update.pageUrl, PreferredLaunchMode.externalApplication),
       ]);
       launcher.result.complete(false);
       await tester.pumpAndSettle();
@@ -350,12 +358,14 @@ void main() {
       await tester.tap(find.text('Download update'));
       await tester.pump();
       expect(downloads.starts, 1);
-      expect(downloads.requestedNotes, _update.$2);
+      expect(downloads.requestedNotes, _update.notes);
       router.pop();
       await tester.pumpAndSettle();
       downloads.pending!.complete(
         UpdateDownload(
           version: '1.0.0',
+          build: 2,
+          sha256: _digest,
           url: 'https://example.invalid/app.apk',
           phase: UpdateDownloadPhase.downloading,
           notes: List.filled(30, 'Saved release notes').join('\n'),
@@ -404,6 +414,8 @@ void main() {
       expect(downloads.queries, before);
       downloads.task = const UpdateDownload(
         version: '1.0.0',
+        build: 2,
+        sha256: _digest,
         url: 'https://example.invalid/app.apk',
         phase: UpdateDownloadPhase.ready,
         notes: 'Saved release notes',

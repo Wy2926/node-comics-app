@@ -1,3 +1,5 @@
+import 'package:mangayomi/services/app_update_manifest.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -46,8 +48,13 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
     unawaited(_check());
   }
 
-  UpdateInfo _releaseFor(UpdateDownload task) =>
-      (task.version, task.notes, '', <dynamic>[task.url]);
+  UpdateInfo _releaseFor(UpdateDownload task) => UpdateInfo(
+    version: task.version,
+    build: task.build,
+    notes: task.notes,
+    url: task.url,
+    sha256: task.sha256,
+  );
 
   Future<void> _check() async {
     if (_checking || _busy) return;
@@ -159,7 +166,7 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
       final downloads = _downloads;
       if (downloads == null) {
         final opened = await launchUrl(
-          Uri.parse(_update!.$3),
+          Uri.parse(_update!.pageUrl),
           mode: LaunchMode.externalApplication,
         );
         if (!opened) throw StateError('Unable to open release');
@@ -178,12 +185,12 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
         var current = await downloads.current();
         if (current == null || current.phase == UpdateDownloadPhase.failed) {
           current = await downloads.start(
-            version: current?.version ?? _update!.$1,
-            assets: current == null
-                ? _update!.$4.whereType<String>().toList()
-                : [current.url],
+            version: current?.version ?? _update!.version,
+            build: current?.build ?? _update!.build,
+            url: current?.url ?? _update!.url,
+            sha256: current?.sha256 ?? _update!.sha256,
             title: title,
-            notes: current?.notes ?? _update!.$2,
+            notes: current?.notes ?? _update!.notes,
           );
         }
         if (mounted) setState(() => _download = current);
@@ -237,8 +244,8 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
               child: release != null && !_checking
                   ? SoftwareUpdateView(
                       currentVersion: currentVersion,
-                      targetVersion: download?.version ?? release.$1,
-                      notes: (download?.notes ?? release.$2)
+                      targetVersion: download?.version ?? release.version,
+                      notes: (download?.notes ?? release.notes)
                           .split('\n')
                           .where(
                             (line) =>

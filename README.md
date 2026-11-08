@@ -32,7 +32,7 @@ flutter build macos --release
 python3 -B tool/package_macos_dmg.py
 ```
 
-源码与安装包共用本仓库。发行入口为 Actions → **Build & Release**：填写已有的 `v<应用版本>` 标签并选择平台，默认 `macos`；推送标签本身不触发全平台发布。
+源码与安装包共用本仓库。发行入口为 Actions → **Build & Release**：填写已有的 `v<应用版本>` 标签并选择平台，默认 `macos`；推送标签本身不触发全平台发布。发布成功后会自动生成更新清单 Actions 产物，需要手动上传到 `https://comics-updates.nodelane.net/stable/index.json`；安装包下载地址仍指向 GitHub。生成和上传方式见[应用更新说明](docs/APP_UPDATES.md)。
 
 ## 许可证
 

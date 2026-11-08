@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
+import 'package:mangayomi/services/app_update_manifest.dart';
 import 'package:mangayomi/modules/more/about/software_update_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -14,7 +14,7 @@ Future<void> showAppUpdateAnnouncement(
   if (router.state.uri.path == '/appUpdate') return;
   final view = await showDialog<bool>(
     context: context,
-    builder: (_) => AppUpdateDialog(version: update.$1),
+    builder: (_) => AppUpdateDialog(version: update.version),
   );
   if (view == true &&
       context.mounted &&

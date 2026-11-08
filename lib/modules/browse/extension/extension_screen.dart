@@ -1,3 +1,4 @@
+import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +10,6 @@ import 'package:mangayomi/modules/browse/extension/providers/extensions_provider
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/extension_list_tile_widget.dart';
 import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';

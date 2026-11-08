@@ -1,3 +1,4 @@
+import 'package:mangayomi/services/app_update_manifest.dart';
 import 'dart:async';
 
 import 'package:mangayomi/utils/platform_utils.dart';

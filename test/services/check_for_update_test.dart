@@ -1,188 +1,211 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
+import 'package:mangayomi/services/app_update_feed.dart';
+import 'package:mangayomi/services/app_update_manifest.dart';
 import 'package:mangayomi/utils/nodelane_brand.dart';
-import 'package:mangayomi/services/fetch_sources_list.dart';
-import 'package:mangayomi/services/app_update_downloads.dart';
-
-Map<String, dynamic> release(String version, String filename) => {
-  'tag_name': 'v$version',
-  'draft': false,
-  'prerelease': false,
-  'body': 'Release notes $version',
-  'html_url': '${NodeLaneBrand.repositoryUrl}/releases/tag/v$version',
-  'assets': [
-    {
-      'state': 'uploaded',
-      'browser_download_url':
-          '${NodeLaneBrand.repositoryUrl}/releases/download/v$version/$filename',
-    },
-  ],
-};
 
 void main() {
-  test('APK selection respects ABI priority and never crosses phone/TV or incompatible ABIs', () {
-    const phone = 'https://example.invalid/android-arm64-v8a.apk';
-    const tv = 'https://example.invalid/android-tv-arm64-v8a.apk';
-    const x86 = 'https://example.invalid/android-x86_64.apk';
-    const universal = 'https://example.invalid/android-universal.apk';
-    expect(
-      selectAndroidUpdateAsset(
-        [x86, phone, tv],
-        ['arm64-v8a', 'armeabi-v7a'],
-        androidTv: false,
-      ),
-      phone,
-    );
-    expect(
-      selectAndroidUpdateAsset([phone, tv], ['arm64-v8a'], androidTv: true),
-      tv,
-    );
-    expect(
-      selectAndroidUpdateAsset([tv, x86], ['arm64-v8a'], androidTv: false),
-      isNull,
-    );
-    expect(selectAndroidUpdateAsset([x86], ['x86'], androidTv: false), isNull);
-    expect(selectAndroidUpdateAsset([x86], ['x86_64'], androidTv: false), x86);
-    expect(
-      selectAndroidUpdateAsset([phone], ['arm64-v8a'], androidTv: true),
-      isNull,
-    );
-    expect(
-      selectAndroidUpdateAsset(
-        [x86, universal],
-        ['arm64-v8a'],
-        androidTv: false,
-      ),
-      universal,
-    );
-  });
+  final fixture = File('test/fixtures/app_update_manifest.json')
+      .readAsStringSync();
+  final uri = Uri.parse(NodeLaneBrand.updateManifestUrl);
 
-  test('each platform finds its highest stable uploaded release', () async {
-    final pending = release('9.0.0', 'app.ipa');
-    (pending['assets'] as List).single['state'] = 'starter';
-    final releases = [
-      // A newer publication can be an older backport.
-      release('0.1.0', 'app.ipa'),
-      release('0.4.0', 'app.dmg'),
-      release('0.3.0', 'app.ipa')..['draft'] = true,
-      release('0.3.0', 'app.ipa')..['prerelease'] = true,
-      release('0.3.0-beta', 'app.ipa'),
-      pending,
-      release('0.2.0', 'app.ipa'),
-      release('0.5.0', 'app-windows.zip'),
-      release('0.6.0', 'app-linux.zip'),
-      release('0.7.0', 'app-android-arm64.apk'),
-      release('0.8.0', 'app-android-tv-arm64.apk'),
-    ];
-    final client = MockClient(
-      (_) async => http.Response(jsonEncode(releases), 200),
-    );
-    for (final (platform, tv, version) in [
-      ('ios', false, '0.2.0'),
-      ('macos', false, '0.4.0'),
-      ('windows', false, '0.5.0'),
-      ('linux', false, '0.6.0'),
-      ('android', false, '0.7.0'),
-      ('android', true, '0.8.0'),
+  test('generated manifest selects the highest compatible version and ABI', () {
+    final updates = parseAppUpdateManifest(fixture);
+    for (final (platform, tv, abis, version, arch) in [
+      ('android', false, ['arm64-v8a', 'armeabi-v7a'], '0.2.0', 'arm64-v8a'),
+      ('android', false, ['armeabi-v7a'], '0.2.0', 'armeabi-v7a'),
+      ('android', false, ['x86_64', 'x86'], '0.3.0', 'x86_64'),
+      ('android', false, ['x86'], '0.1.0', 'universal'),
+      ('android', true, ['arm64-v8a'], '0.3.0', 'arm64-v8a'),
+      ('android', true, ['x86_64'], null, null),
+      ('ios', false, <String>[], '0.2.0', 'any'),
+      ('macos', false, <String>[], '0.3.0', 'any'),
+      ('windows', false, <String>[], '0.1.0', 'any'),
+      ('linux', false, <String>[], '0.1.0', 'any'),
     ]) {
-      final result = await fetchLatestAppRelease(
-        client: client,
+      final selected = selectAppUpdate(
+        updates,
         platform: platform,
         androidTv: tv,
+        androidAbis: abis,
+        currentVersion: '0.0.0',
+        currentBuild: 0,
       );
-      expect(result?.$1, version, reason: '$platform / TV=$tv');
-      expect(result?.$2, 'Release notes $version');
-      expect(
-        result?.$3,
-        '${NodeLaneBrand.repositoryUrl}/releases/tag/v$version',
-      );
-      expect(result?.$4.single, contains('/releases/download/v$version/'));
+      expect(selected?.version, version, reason: '$platform / $abis / TV=$tv');
+      expect(selected?.arch, arch);
     }
-    final desktopOnly = MockClient(
-      (_) async =>
-          http.Response(jsonEncode([release('0.4.0', 'app.dmg')]), 200),
-    );
-    expect(
-      await fetchLatestAppRelease(client: desktopOnly, platform: 'ios'),
-      isNull,
-    );
+    for (final (version, build) in [('0.2.0', 1), ('0.1.0', 2)]) {
+      expect(
+        selectAppUpdate(
+          updates,
+          platform: 'android',
+          androidAbis: ['arm64-v8a'],
+          currentVersion: version,
+          currentBuild: build,
+        ),
+        isNull,
+      );
+    }
   });
 
-  test(
-    'pagination failure returns no partial result and a new check can recover',
-    () async {
-      final pages = <String>[];
-      var fail = true;
-      final client = MockClient((request) async {
-        final page = request.url.queryParameters['page']!;
-        pages.add(page);
-        if (page == '1') {
-          return http.Response(
-            jsonEncode(List.generate(100, (_) => release('0.2.0', 'app.ipa'))),
-            200,
-          );
-        }
-        if (fail) return http.Response('', 503);
-        return http.Response(jsonEncode([release('0.3.0', 'app.ipa')]), 200);
-      });
-      await expectLater(
-        fetchLatestAppRelease(client: client, platform: 'ios'),
-        throwsFormatException,
-      );
-      fail = false;
-      expect(
-        (await fetchLatestAppRelease(client: client, platform: 'ios'))?.$1,
-        '0.3.0',
-      );
-      expect(pages, ['1', '2', '1', '2']);
-    },
-  );
-
-  test('missing release differs from failed or malformed checks', () async {
-    expect(
-      await fetchLatestAppRelease(
-        client: MockClient((_) async => http.Response('', 404)),
-      ),
-      isNull,
-    );
-    for (final response in [
-      http.Response('', 503),
-      http.Response('not json', 200),
-      http.Response('{}', 200),
+  test('invalid manifests fail instead of becoming a no-update result', () {
+    expect(parseAppUpdateManifest('{"schema":1,"updates":[]}'), isEmpty);
+    for (final body in [
+      'not json',
+      '{}',
+      '{"schema":2,"updates":[]}',
+      '{"schema":1,"updates":[{}]}',
     ]) {
-      await expectLater(
-        fetchLatestAppRelease(client: MockClient((_) async => response)),
+      expect(() => parseAppUpdateManifest(body), throwsFormatException);
+    }
+    for (final (field, value) in [
+      ('version', '0.2.0-beta'),
+      ('build', 0),
+      ('sha256', 'not-a-digest'),
+      ('platform', 'unknown'),
+      ('arch', 'unknown'),
+      ('notes', null),
+      ('url', 'https://other.invalid/app.apk'),
+      (
+        'page_url',
+        'http://github.com/Wy2926/node-comics-app/releases/tag/v0.2.0',
+      ),
+    ]) {
+      final root = jsonDecode(fixture) as Map<String, dynamic>;
+      (root['updates'] as List).first[field] = value;
+      expect(
+        () => parseAppUpdateManifest(jsonEncode(root)),
         throwsFormatException,
+        reason: field,
       );
     }
+  });
+
+  late Directory directory;
+  late File cache;
+  setUp(() async {
+    directory = await Directory.systemTemp.createTemp('nodelane-update-test-');
+    cache = File('${directory.path}/cache.json');
+  });
+  tearDown(() => directory.delete(recursive: true));
+
+  test('automatic cache persists, manual checks use ETag, and URL changes isolate state', () async {
+    var now = DateTime.utc(2026, 11, 8);
+    var requests = 0;
+    final client = MockClient((request) async {
+      requests++;
+      if (requests == 1 || request.url.host == 'another.example') {
+        expect(request.headers['If-None-Match'], isNull);
+        return http.Response(
+          fixture,
+          200,
+          headers: {
+            'etag': 'v1',
+            'content-type': 'application/json; charset=utf-8',
+          },
+        );
+      }
+      expect(request.headers['If-None-Match'], 'v1');
+      return http.Response('', 304);
+    });
+    AppUpdateFeed open(Uri url) => AppUpdateFeed(
+      uri: url,
+      cacheFile: () async => cache,
+      client: client,
+      now: () => now,
+    );
+    final first = open(uri);
+    expect(await first.load(), isNotEmpty);
+    final restarted = open(uri);
+    now = now.add(const Duration(hours: 3));
+    expect(await restarted.load(), isNotEmpty);
+    expect(requests, 1);
+    await restarted.load(force: true);
+    expect(requests, 2);
+    now = now.add(const Duration(hours: 6));
+    await restarted.load();
+    expect(requests, 3);
+    await open(Uri.parse('https://another.example/stable/index.json')).load();
+    expect(requests, 4);
+    client.close();
+  });
+
+  test('failed or malformed refresh preserves cache and can recover without stale success', () async {
+    Object response = http.Response(
+      fixture,
+      200,
+      headers: {
+        'etag': 'v1',
+        'content-type': 'application/json; charset=utf-8',
+      },
+    );
+    final feed = AppUpdateFeed(
+      uri: uri,
+      cacheFile: () async => cache,
+      client: MockClient((_) async {
+        if (response is Exception) throw response;
+        return response as http.Response;
+      }),
+    );
+    addTearDown(feed.close);
+    await feed.load();
+    final original = await cache.readAsString();
+    for (final failure in [
+      http.Response('', 404),
+      http.Response('', 503),
+      http.Response('{}', 200),
+      http.ClientException('offline'),
+    ]) {
+      response = failure;
+      await expectLater(feed.load(force: true), throwsA(isA<Exception>()));
+      expect(await cache.readAsString(), original);
+    }
+    response = http.Response('{"schema":1,"updates":[]}', 200);
+    expect(await feed.load(force: true), isEmpty);
+    await cache.writeAsString('corrupt');
+    response = http.Response('', 304);
     await expectLater(
-      fetchLatestAppRelease(
-        client: MockClient((_) async => throw http.ClientException('offline')),
-      ),
+      feed.load(force: true),
       throwsA(isA<http.ClientException>()),
     );
   });
 
-  test('version ordering normalizes tags and compares numeric components', () {
-    for (final (left, right, expected) in [
-      ('0.1.0', '0.1.0', 0),
-      ('0.1.0', '0.1.1', -1),
-      ('0.9.9', '1.0.0', -1),
-      ('0.9.1', '0.10.0', -1),
-      ('0.9', '0.9.0', 0),
-      ('0.9.1', '0.9.1.1', -1),
-      (' v0.9.1 ', 'V0.9.1', 0),
-      ('0.9.1+119', '0.9.1-beta', 0),
-      ('v0.9.1-alpha.1', '0.9.2', -1),
-    ]) {
-      expect(compareVersions(left, right), expected, reason: '$left / $right');
-      if (expected != 0) {
-        expect(compareVersions(right, left), -expected);
-      }
-    }
-  });
+  test(
+    'overlapping checks share one request and release it after failure',
+    () async {
+      final requested = Completer<void>();
+      final response = Completer<http.Response>();
+      var requests = 0;
+      final feed = AppUpdateFeed(
+        uri: uri,
+        cacheFile: () async => cache,
+        client: MockClient((_) {
+          requests++;
+          if (!requested.isCompleted) requested.complete();
+          return response.future;
+        }),
+      );
+      addTearDown(feed.close);
+      final first = feed.load();
+      await requested.future;
+      final second = feed.load(force: true);
+      final expected = expectLater(
+        Future.wait([first, second]),
+        throwsA(isA<http.ClientException>()),
+      );
+      response.complete(http.Response('', 503));
+      await expected;
+      expect(requests, 1);
+      await expectLater(
+        feed.load(force: true),
+        throwsA(isA<http.ClientException>()),
+      );
+      expect(requests, 2);
+    },
+  );
 }
