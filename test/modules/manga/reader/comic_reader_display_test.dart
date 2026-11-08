@@ -18,11 +18,12 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 
 class _Frames extends ImageStreamCompleter {
   void emit(ui.Image image) => setImage(ImageInfo(image: image.clone()));
+  void fail() => reportError(exception: StateError('fixture image failed'));
 }
 
 class _FrameImage extends ImageProvider<_FrameImage> {
   _FrameImage(this.frames);
-  final _Frames frames;
+  _Frames frames;
   @override
   Future<_FrameImage> obtainKey(ImageConfiguration configuration) =>
       SynchronousFuture(this);
@@ -79,10 +80,11 @@ void main() {
         }
         image.dispose();
       });
-      final scroll = ScrollController(), list = ListController();
+      final scroll = ReaderScrollController(), list = ListController();
       addTearDown(scroll.dispose);
       addTearDown(list.dispose);
-      final anchor = ReaderViewportAnchorController(onLayoutChanged: () {});
+      final anchor = ReaderViewportAnchorController();
+      addTearDown(anchor.dispose);
       final key = GlobalKey();
       Future<void> mount(ComicBookSettings book, ComicCanvas canvas) async {
         final profile = book
@@ -223,6 +225,57 @@ void main() {
       page.decodedImage?.dispose();
     }
     image.dispose();
+  });
+
+  testWidgets('GIF loading, failure and retry reserve the image column', (
+    tester,
+  ) async {
+    final frames = _Frames();
+    final provider = _FrameImage(frames);
+    addTearDown(provider.evict);
+    final recorder = ui.PictureRecorder();
+    Canvas(recorder).drawColor(Colors.blue, BlendMode.src);
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(40, 80);
+    picture.dispose();
+    addTearDown(image.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SingleChildScrollView(
+          child: Center(
+            child: SizedBox(
+              width: 200,
+              child: ReaderAnimatedImage(
+                image: provider,
+                fit: BoxFit.fitWidth,
+                cropBorders: false,
+                naturalHeight: true,
+                reservedSize: const Size(40, 80),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final reader = find.byType(ReaderAnimatedImage);
+    expect(tester.getSize(reader), const Size(200, 400));
+    frames.emit(image);
+    await tester.pump();
+    expect(tester.getSize(reader), const Size(200, 400));
+    frames.fail();
+    await tester.pump();
+    expect(tester.getSize(reader), const Size(200, 400));
+    final retry = provider.frames = _Frames();
+    await tester.tap(find.text('Retry'));
+    await tester.pump();
+    expect(tester.getSize(reader), const Size(200, 400));
+    retry.emit(image);
+    await tester.pump();
+    expect(tester.getSize(reader), const Size(200, 400));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets(

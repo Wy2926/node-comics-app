@@ -417,9 +417,10 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
         },
         child: ValueListenableBuilder<Matrix4>(
           valueListenable: _transformNotifier,
-          child: SuperListView.builder(
+          child: ReaderViewportList(
+            viewportAnchor: widget.viewportAnchor,
             scrollDirection: Axis.vertical,
-            cacheExtent: widget.minCacheExtent,
+            imageCacheExtent: widget.minCacheExtent,
             itemCount: itemCount,
             findChildIndexCallback: (key) => indices[key],
             physics: widget.physics,

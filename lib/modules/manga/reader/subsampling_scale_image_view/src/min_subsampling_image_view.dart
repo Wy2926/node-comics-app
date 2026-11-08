@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
 
@@ -405,63 +404,26 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
       if (customWidget != null) return customWidget;
     }
 
-    final hasDimensions =
-        widget.data.loadedHeight != null &&
-        widget.data.loadedWidth != null &&
-        widget.data.loadedWidth! > 0 &&
-        widget.data.loadedHeight! > 0;
-
-    final placeholderHeight = hasDimensions
-        ? (widget.isHorizontal
-              ? context.height(0.8)
-              : MediaQuery.of(context).size.width *
-                    (widget.data.loadedHeight! / widget.data.loadedWidth!))
-        : context.height(0.8);
-    final placeholderWidth = widget.isHorizontal
-        ? (hasDimensions
-              ? context.height(0.8) *
-                    (widget.data.loadedWidth! / widget.data.loadedHeight!)
-              : (widget.data.loadedWidth ?? context.width(0.8)))
-        : double.infinity;
-
-    if (_isLoading && _uiImage == null) {
-      final double? progress = _loadingProgress?.expectedTotalBytes != null
+    if (_hasError || _uiImage == null) {
+      final progress = _loadingProgress?.expectedTotalBytes != null
           ? _loadingProgress!.cumulativeBytesLoaded /
                 _loadingProgress!.expectedTotalBytes!
           : null;
-      return Container(
-        color: backgroundColor,
-        height: placeholderHeight,
-        width: placeholderWidth,
-        child: Center(
-          child: SingleChildScrollView(
-            child: ReaderContentStatus(
-              message: context.l10n.reader_image_loading,
-              loading: true,
-              progress: progress,
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (_hasError || _uiImage == null) {
-      final l10n = l10nLocalizations(context)!;
-      return Container(
-        color: backgroundColor,
-        height: placeholderHeight,
-        width: placeholderWidth,
-        child: Center(
-          child: SingleChildScrollView(
-            child: ReaderContentStatus(
-              message: l10n.image_loading_error,
-              description: l10n.reader_image_failure_hint,
-              onRetry: () {
-                widget.failedToLoadImage(false);
-                _loadImage(refresh: true, evictCache: true);
-              },
-            ),
-          ),
+      return ReaderImagePlaceholder(
+        imageWidth: widget.data.loadedWidth,
+        imageHeight: widget.data.loadedHeight,
+        horizontal: widget.isHorizontal,
+        backgroundColor: backgroundColor,
+        child: ReaderContentStatus(
+          message: _hasError
+              ? context.l10n.image_loading_error
+              : context.l10n.reader_image_loading,
+          description: _hasError
+              ? context.l10n.reader_image_failure_hint
+              : null,
+          loading: !_hasError,
+          progress: progress,
+          onRetry: _hasError ? subsamplingState.reLoadImage : null,
         ),
       );
     }

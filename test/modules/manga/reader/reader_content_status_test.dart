@@ -7,6 +7,57 @@ import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 
 void main() {
+  testWidgets('loading and error text never resize a known narrow image', (
+    tester,
+  ) async {
+    Future<void> show(bool loading) => tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(800, 600),
+            textScaler: TextScaler.linear(2),
+          ),
+          child: SingleChildScrollView(
+            child: Center(
+              child: SizedBox(
+                width: 200,
+                child: Column(
+                  children: [
+                    ReaderImagePlaceholder(
+                      imageWidth: 400,
+                      imageHeight: 1000,
+                      child: ReaderContentStatus(
+                        message: loading
+                            ? 'Loading image'
+                            : 'Image failed to load',
+                        loading: loading,
+                        onRetry: loading ? null : () {},
+                      ),
+                    ),
+                    const Text('Next page'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await show(true);
+    final next = tester.getTopLeft(find.text('Next page'));
+    expect(
+      tester.getSize(find.byType(ReaderImagePlaceholder)),
+      const Size(200, 500),
+    );
+    await show(false);
+    expect(tester.getTopLeft(find.text('Next page')), next);
+    await show(true);
+    expect(tester.getTopLeft(find.text('Next page')), next);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('chapter retry scrolls clear of bottom floating controls', (
     tester,
   ) async {

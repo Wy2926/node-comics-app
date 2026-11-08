@@ -16,12 +16,14 @@ class ReaderAnimatedImage extends StatefulWidget {
     this.rightHalf,
     this.onImageLoaded,
     this.naturalHeight = false,
+    this.reservedSize,
     this.onFailure,
   });
   final ImageProvider image;
   final BoxFit fit;
   final bool cropBorders;
   final bool naturalHeight;
+  final Size? reservedSize;
   final ValueChanged<bool>? onFailure;
   final bool? rightHalf;
   final void Function(int, int)? onImageLoaded;
@@ -34,6 +36,7 @@ class _ReaderAnimatedImageState extends State<ReaderAnimatedImage> {
   ImageStreamListener? _listener;
   ui.Image? _frame;
   Rect? _borderRect;
+  Size? _lastSize;
   bool _failed = false;
   int _generation = 0;
   @override
@@ -46,6 +49,7 @@ class _ReaderAnimatedImageState extends State<ReaderAnimatedImage> {
   void didUpdateWidget(ReaderAnimatedImage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.image != oldWidget.image) {
+      _lastSize = null;
       _resolve();
     } else if (widget.cropBorders != oldWidget.cropBorders) {
       _generation++;
@@ -205,26 +209,29 @@ class _ReaderAnimatedImageState extends State<ReaderAnimatedImage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_failed) {
-      return Center(
-        child: ReaderContentStatus(
-          message: context.l10n.image_loading_error,
-          description: context.l10n.reader_image_failure_hint,
-          onRetry: () async {
-            await widget.image.evict();
-            if (mounted) setState(_resolve);
-          },
-        ),
-      );
-    }
     final frame = _frame;
-    if (frame == null) {
-      return Center(
-        child: ReaderContentStatus(
-          message: context.l10n.reader_image_loading,
-          loading: true,
-        ),
+    if (_failed || frame == null) {
+      final status = ReaderContentStatus(
+        message: _failed
+            ? context.l10n.image_loading_error
+            : context.l10n.reader_image_loading,
+        description: _failed ? context.l10n.reader_image_failure_hint : null,
+        loading: !_failed,
+        onRetry: _failed
+            ? () async {
+                await widget.image.evict();
+                if (mounted) setState(_resolve);
+              }
+            : null,
       );
+      final reserved = _lastSize ?? widget.reservedSize;
+      return widget.naturalHeight
+          ? ReaderImagePlaceholder(
+              imageWidth: reserved?.width,
+              imageHeight: reserved?.height,
+              child: status,
+            )
+          : Center(child: SingleChildScrollView(child: status));
     }
     var source = widget.cropBorders && _borderRect != null
         ? _borderRect!
@@ -237,6 +244,7 @@ class _ReaderAnimatedImageState extends State<ReaderAnimatedImage> {
         source.height,
       );
     }
+    _lastSize = source.size;
     final paint = CustomPaint(
       painter: _AnimatedPagePainter(frame, source, widget.fit),
       size: Size.infinite,

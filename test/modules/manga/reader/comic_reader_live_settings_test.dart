@@ -15,6 +15,7 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/manga/reader/image_view_webtoon.dart';
 import 'package:mangayomi/modules/manga/reader/reader_view.dart';
+import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -51,6 +52,11 @@ class _Preferences extends ComicReaderPreferencesController {
   ) async {
     state = edit(state);
   }
+}
+
+class _SavedPage extends ReaderController {
+  @override
+  int getPageIndex() => 4;
 }
 
 class _Translation extends TranslationService {
@@ -125,7 +131,11 @@ void main() {
     root.deleteSync(recursive: true);
   });
 
-  Future<ProviderContainer> mount(WidgetTester tester) async {
+  Future<ProviderContainer> mount(
+    WidgetTester tester, {
+    bool settle = true,
+    bool savedPage = false,
+  }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -147,6 +157,9 @@ void main() {
     final translation = _Translation();
     final container = ProviderContainer(
       overrides: [
+        if (savedPage)
+          readerControllerProvider(chapter: chapter)
+              .overrideWith(_SavedPage.new),
         translationServiceProvider.overrideWithValue(translation),
         comicReaderPreferencesProvider.overrideWith(_Preferences.new),
       ],
@@ -180,7 +193,7 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    if (settle) await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     return container;
   }
@@ -196,6 +209,20 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
     }
   }
+
+  testWidgets('saved chapter page is visible from the first gallery frame', (
+    tester,
+  ) async {
+    await mount(tester, settle: false, savedPage: true);
+    for (var frame = 0; frame < 6; frame++) {
+      final view = content(tester);
+      final anchor = view.viewportAnchor.capture(view.scrollController)!;
+      expect(anchor.identity, '1-4');
+      expect(anchor.leading, closeTo(0, .1));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'real scroll stays paused while nested translation preserves the reading panel',

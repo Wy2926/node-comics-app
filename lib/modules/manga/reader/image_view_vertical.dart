@@ -77,6 +77,10 @@ class _ImageViewVerticalState extends ConsumerState<ImageViewVertical> {
             fit: fit,
             cropBorders: profile.crop,
             naturalHeight: !widget.isHorizontal,
+            reservedSize:
+                display.loadedWidth != null && display.loadedHeight != null
+                ? Size(display.loadedWidth!, display.loadedHeight!)
+                : null,
             onFailure: widget.failedToLoadImage,
             onImageLoaded: (width, height) {
               display.loadedWidth = width.toDouble();

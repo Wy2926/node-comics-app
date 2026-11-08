@@ -22,7 +22,6 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart'
     as ssiv;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
@@ -239,6 +238,7 @@ class _MangaChapterPageGalleryState
     _listController.removeListener(_scheduleReadProgressListener);
     _continuousScrollController.dispose();
     _listController.dispose();
+    _viewportAnchor.dispose();
 
     _extendedController.dispose();
     if (_isNavigatingToChapter) {
@@ -452,13 +452,9 @@ class _MangaChapterPageGalleryState
   );
 
   late final ListController _listController = ListController();
-  late final ScrollController _continuousScrollController = ScrollController();
+  final _continuousScrollController = ReaderScrollController();
   bool _readProgressScheduled = false;
-  ReaderViewportAnchor? _heldViewportAnchor;
-  bool _anchorCorrectionPending = false;
-  late final _viewportAnchor = ReaderViewportAnchorController(
-    onLayoutChanged: _correctViewportAnchor,
-  );
+  final _viewportAnchor = ReaderViewportAnchorController();
   final _disposed = Completer<void>();
   Completer<void>? _foregroundWaiter;
   Completer<void>? _anchorCommit;
@@ -509,45 +505,13 @@ class _MangaChapterPageGalleryState
     }
   }
 
-  void _releaseViewportAnchor() {
-    _heldViewportAnchor = null;
-    _anchorCorrectionPending = false;
-  }
-
-  void _correctViewportAnchor() {
-    if (_disposed.isCompleted || _heldViewportAnchor == null) return;
-    _anchorCorrectionPending = true;
-    if (_anchorCommit != null) return;
-    unawaited(
-      _withIdleViewport(() async {
-        _anchorCorrectionPending = false;
-        final anchor = _heldViewportAnchor;
-        if (anchor == null) return;
-        final actual = pages.indexWhere((p) => p.identity == anchor.identity);
-        if (actual < 0) {
-          _releaseViewportAnchor();
-          return;
-        }
-        await _restoreViewportAnchor(anchor, _actualToPageViewIndex(actual));
-      }),
-    );
-  }
-
   Future<void> _restoreViewportAnchor(ReaderViewportAnchor anchor, int index) =>
       _viewportAnchor.restore(
         anchor,
         index: index,
         list: _listController,
-        scroll: _continuousScrollController,
-        isCurrent: () =>
-            !_disposed.isCompleted && identical(_heldViewportAnchor, anchor),
+        isCurrent: () => !_disposed.isCompleted,
       );
-
-  @override
-  void startAutoScroll() {
-    _releaseViewportAnchor();
-    super.startAutoScroll();
-  }
 
   /// One viewport update at a time. Progress stays live while waiting for a
   /// drag/fling; only the actual layout correction pauses progress reporting.
@@ -569,7 +533,6 @@ class _MangaChapterPageGalleryState
       done.complete();
       if (!_disposed.isCompleted) {
         onAutoScrollChanged();
-        if (_anchorCorrectionPending) _correctViewportAnchor();
         _scheduleReadProgressListener();
       }
     }
@@ -585,16 +548,13 @@ class _MangaChapterPageGalleryState
         setState(() {});
         return;
       }
-      _anchorCorrectionPending = false;
       var actual = _getCurrentPagesActualIndex();
       if (before[actual].isTransitionPage) {
         actual += before[actual].boundaryDirection == ChapterDirection.previous
             ? 1
             : -1;
       }
-      final anchor =
-          _heldViewportAnchor ??
-          _viewportAnchor.capture(_continuousScrollController);
+      final anchor = _viewportAnchor.capture(_continuousScrollController);
       if (anchor != null) {
         actual = before.indexWhere((p) => p.identity == anchor.identity);
       }
@@ -643,7 +603,7 @@ class _MangaChapterPageGalleryState
             list: _listController,
           );
         }
-        final held = _heldViewportAnchor = ReaderViewportAnchor(
+        final held = ReaderViewportAnchor(
           after[currentActual].identity,
           anchor?.leading ?? 0,
         );
@@ -810,15 +770,11 @@ class _MangaChapterPageGalleryState
             focusNode: _keyboardFocusNode,
             child: NotificationListener<ScrollNotification>(
               onNotification: (notification) {
-                if (notification is UserScrollNotification &&
-                    notification.direction != ScrollDirection.idle) {
-                  _releaseViewportAnchor();
-                }
                 if (notification is ScrollStartNotification) {
                   if (notification.dragDetails != null) {
                     isUserDragging = true;
                     _autoScroll.value = false;
-                    _releaseViewportAnchor();
+                    _viewportAnchor.cancelRestore();
                   }
                 } else if (notification is ScrollEndNotification) {
                   isUserDragging = false;
@@ -1002,16 +958,24 @@ class _MangaChapterPageGalleryState
                                     .identity;
                             _readingBackward = jumpIndex < (_currentIndex ?? 0);
                             _backwardScrollPending = _readingBackward;
-                            _heldViewportAnchor = _readerMode.isContinuous
-                                ? ReaderViewportAnchor(_visiblePageIdentity!, 0)
-                                : null;
                             _currentIndex = jumpIndex;
                             _currentPageViewIndex.value = jumpIndex;
-                            navigationService.jumpToPage(
-                              index: jumpIndex,
-                              readerMode: _readerMode,
-                            );
-                            _correctViewportAnchor();
+                            if (_readerMode.isContinuous) {
+                              unawaited(
+                                _restoreViewportAnchor(
+                                  ReaderViewportAnchor(
+                                    _visiblePageIdentity!,
+                                    0,
+                                  ),
+                                  jumpIndex,
+                                ),
+                              );
+                            } else {
+                              navigationService.jumpToPage(
+                                index: jumpIndex,
+                                readerMode: _readerMode,
+                              );
+                            }
                             _scheduleEvictionsAndPrefetch();
                           },
                           onSettingsPressed: (context) =>
@@ -1077,7 +1041,7 @@ class _MangaChapterPageGalleryState
   }
 
   void _handlePageNavigation({required bool forward}) {
-    _releaseViewportAnchor();
+    _viewportAnchor.cancelRestore();
     _readingBackward = !forward;
     _backwardScrollPending = !forward;
     final readerMode = _readerMode;
@@ -1158,7 +1122,6 @@ class _MangaChapterPageGalleryState
     if (!mounted ||
         !_readerMode.isContinuous ||
         _restoringPosition ||
-        _anchorCorrectionPending ||
         !_listController.isAttached) {
       return;
     }
@@ -1286,8 +1249,12 @@ class _MangaChapterPageGalleryState
 
     _visiblePageIdentity = pages[_getCurrentPagesActualIndex()].identity;
     if (readerMode.isContinuous) {
-      _heldViewportAnchor = ReaderViewportAnchor(_visiblePageIdentity!, 0);
-      _anchorCorrectionPending = true;
+      unawaited(
+        _restoreViewportAnchor(
+          ReaderViewportAnchor(_visiblePageIdentity!, 0),
+          _currentIndex!,
+        ),
+      );
     }
 
     // Kick off ordered prefetch before the first frame so lower-indexed pages
@@ -1305,8 +1272,6 @@ class _MangaChapterPageGalleryState
     } else {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     }
-    await _commitWithAnchor();
-    if (!mounted) return;
     if (_getCurrentPagesActualIndex() <= 2) {
       _triggerChapterPreload(ChapterDirection.previous);
     }

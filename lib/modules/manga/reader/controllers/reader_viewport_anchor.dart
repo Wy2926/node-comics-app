@@ -1,6 +1,52 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show precisionErrorTolerance;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+
+/// Preserve an in-flight page-scroll animation when layout changes its origin.
+/// Drag input already uses the current pixels; ballistic activities restart on
+/// new dimensions. Driven animations need their absolute samples translated.
+class ReaderScrollController extends ScrollController {
+  @override
+  ScrollPosition createScrollPosition(
+    ScrollPhysics physics,
+    ScrollContext context,
+    ScrollPosition? oldPosition,
+  ) => _ReaderScrollPosition(
+    physics: physics,
+    context: context,
+    oldPosition: oldPosition,
+  );
+}
+
+class _ReaderScrollPosition extends ScrollPositionWithSingleContext {
+  _ReaderScrollPosition({
+    required super.physics,
+    required super.context,
+    super.oldPosition,
+  });
+
+  double _drivenCorrection = 0;
+
+  @override
+  void beginActivity(ScrollActivity? newActivity) {
+    _drivenCorrection = 0;
+    super.beginActivity(newActivity);
+  }
+
+  @override
+  void correctBy(double correction) {
+    if (activity is DrivenScrollActivity) _drivenCorrection += correction;
+    super.correctBy(correction);
+  }
+
+  @override
+  double setPixels(double newPixels) => super.setPixels(
+    newPixels + (activity is DrivenScrollActivity ? _drivenCorrection : 0),
+  );
+}
 
 /// A visible item's position inside the viewport, independent of its list index.
 class ReaderViewportAnchor {
@@ -12,11 +58,26 @@ class ReaderViewportAnchor {
 /// Only mounted cells are retained. Chapter loading and page grouping stay with
 /// the caller; this controller measures and restores an image's viewport offset.
 class ReaderViewportAnchorController {
-  ReaderViewportAnchorController({this.onLayoutChanged});
-
-  final VoidCallback? onLayoutChanged;
   final _items = <String, BuildContext>{};
   final _retained = ValueNotifier<String?>(null);
+  _RenderReaderViewport? _viewport;
+  _AnchorRequest? _pending;
+  bool _disposed = false;
+
+  void dispose() {
+    cancelRestore();
+    _disposed = true;
+    _viewport = null;
+    _items.clear();
+    _retained.dispose();
+  }
+
+  void cancelRestore() {
+    final pending = _pending;
+    _pending = null;
+    _retained.value = null;
+    if (pending != null && !pending.done.isCompleted) pending.done.complete();
+  }
 
   (double, double, double)? _geometry(
     String identity,
@@ -55,11 +116,53 @@ class ReaderViewportAnchorController {
     );
   }
 
+  // SuperSliverList uses dead reckoning: its laid-out origin can differ from
+  // the sum of unmeasured extents. Start at a mounted cell, including its heading.
+  double _offsetForIndex(
+    int index,
+    ListController list,
+    _RenderReaderViewport viewport,
+  ) {
+    var target = 0.0;
+    var from = 0;
+    for (final context in _items.values) {
+      RenderObject? cell = context.findRenderObject();
+      while (cell != null &&
+          cell.parentData is! SliverMultiBoxAdaptorParentData) {
+        cell = cell.parent;
+      }
+      if (cell is! RenderBox || !cell.attached || !cell.hasSize) continue;
+      final data = cell.parentData! as SliverMultiBoxAdaptorParentData;
+      if (data.keptAlive || data.index == null) continue;
+      final local = cell.localToGlobal(Offset.zero, ancestor: viewport);
+      final leading = switch (viewport.axisDirection) {
+        AxisDirection.down => local.dy,
+        AxisDirection.up => viewport.size.height - local.dy - cell.size.height,
+        AxisDirection.right => local.dx,
+        AxisDirection.left => viewport.size.width - local.dx - cell.size.width,
+      };
+      target = viewport.offset.pixels + leading;
+      from = data.index!;
+      break;
+    }
+    for (var i = from; i < index; i++) {
+      target += list.extentForIndex(i).$1;
+    }
+    for (var i = index; i < from; i++) {
+      target -= list.extentForIndex(i).$1;
+    }
+    return target;
+  }
+
   ReaderViewportAnchor? capture(ScrollController scroll) {
     if (!scroll.hasClients) return null;
+    return _capture(scroll.position.axisDirection);
+  }
+
+  ReaderViewportAnchor? _capture(AxisDirection direction) {
     ReaderViewportAnchor? anchor;
     for (final itemIdentity in _items.keys) {
-      final geometry = _geometry(itemIdentity, scroll.position.axisDirection);
+      final geometry = _geometry(itemIdentity, direction);
       if (geometry == null) continue;
       final (leading, extent, viewport) = geometry;
       if (leading + extent <= 0.5 || leading >= viewport - 0.5) continue;
@@ -105,41 +208,196 @@ class ReaderViewportAnchorController {
     }
   }
 
+  /// Request a position for the next layout, including the very first frame.
+  /// Image loading never schedules navigation or waits for scrolling to stop.
   Future<void> restore(
     ReaderViewportAnchor anchor, {
     required int index,
     required ListController list,
-    required ScrollController scroll,
     required bool Function() isCurrent,
-  }) async {
-    bool ready() => isCurrent() && scroll.hasClients && list.isAttached;
-    double? leading() =>
-        _geometry(anchor.identity, scroll.position.axisDirection)?.$1;
+  }) {
+    cancelRestore();
+    final request = _pending = _AnchorRequest(anchor, index, list, isCurrent);
     _retained.value = anchor.identity;
-    try {
-      await WidgetsBinding.instance.endOfFrame;
-      if (!ready()) return;
-      var offset = leading();
-      // Materialize an offscreen anchor once, then measure the actual image
-      // inside its heading/gap. Later image resizes notify their own correction.
-      if (offset == null) {
-        list.jumpToItem(index: index, scrollController: scroll, alignment: 0);
-        await WidgetsBinding.instance.endOfFrame;
-        if (!ready()) return;
-        offset = leading();
-      }
-      if (offset == null) return;
-      final delta = offset - anchor.leading;
-      if (delta.abs() < 0.5) return;
-      scroll.jumpTo(
-        (scroll.offset + delta).clamp(
-          scroll.position.minScrollExtent,
-          scroll.position.maxScrollExtent,
+    _viewport?.markNeedsLayout();
+    return request.done.future;
+  }
+}
+
+class _AnchorRequest {
+  _AnchorRequest(this.anchor, this.index, this.list, this.isCurrent);
+  final ReaderViewportAnchor anchor;
+  final int index;
+  final ListController list;
+  final bool Function() isCurrent;
+  final done = Completer<void>();
+}
+
+/// The image list owns geometry; network/progress/error widgets only supply
+/// content. Keep the visible image in place before painting, including during
+/// a drag or ballistic scroll, without jumpTo cancelling the scroll activity.
+class ReaderViewportList extends SuperListView {
+  ReaderViewportList({
+    super.key,
+    required this.viewportAnchor,
+    required super.itemBuilder,
+    required super.itemCount,
+    required super.listController,
+    required super.controller,
+    super.findChildIndexCallback,
+    super.extentEstimation,
+    this.imageCacheExtent = 250,
+    super.physics,
+    super.scrollDirection,
+    super.reverse,
+  }) : super.builder(padding: EdgeInsets.zero, cacheExtent: imageCacheExtent);
+
+  final ReaderViewportAnchorController viewportAnchor;
+  final double imageCacheExtent;
+
+  @override
+  Widget buildViewport(
+    BuildContext context,
+    ViewportOffset offset,
+    AxisDirection axisDirection,
+    List<Widget> slivers,
+  ) => _ReaderViewport(
+    controller: viewportAnchor,
+    offset: offset,
+    axisDirection: axisDirection,
+    scrollCacheExtent: ScrollCacheExtent.pixels(imageCacheExtent),
+    slivers: slivers,
+  );
+}
+
+class _ReaderViewport extends Viewport {
+  _ReaderViewport({
+    required this.controller,
+    required super.offset,
+    required super.axisDirection,
+    required super.scrollCacheExtent,
+    required super.slivers,
+  });
+  final ReaderViewportAnchorController controller;
+
+  @override
+  RenderViewport createRenderObject(BuildContext context) =>
+      _RenderReaderViewport(
+        controller,
+        offset: offset,
+        axisDirection: axisDirection,
+        crossAxisDirection: Viewport.getDefaultCrossAxisDirection(
+          context,
+          axisDirection,
         ),
+        scrollCacheExtent: scrollCacheExtent,
       );
-      await WidgetsBinding.instance.endOfFrame;
-    } finally {
-      _retained.value = null;
+
+  @override
+  void updateRenderObject(BuildContext context, RenderViewport renderObject) {
+    super.updateRenderObject(context, renderObject);
+    (renderObject as _RenderReaderViewport).controller = controller;
+  }
+}
+
+class _RenderReaderViewport extends RenderViewport {
+  _RenderReaderViewport(
+    this._controller, {
+    required super.offset,
+    required super.axisDirection,
+    required super.crossAxisDirection,
+    required super.scrollCacheExtent,
+  });
+
+  ReaderViewportAnchorController _controller;
+  ReaderViewportAnchor? _lastAnchor;
+  double? _lastPixels;
+
+  set controller(ReaderViewportAnchorController value) {
+    if (identical(value, _controller)) return;
+    _controller._viewport = null;
+    _controller = value;
+    if (attached) value._viewport = this;
+    _lastAnchor = null;
+    _lastPixels = null;
+    markNeedsLayout();
+  }
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _controller._viewport = this;
+  }
+
+  @override
+  void detach() {
+    if (identical(_controller._viewport, this)) _controller._viewport = null;
+    super.detach();
+  }
+
+  // Descendant geometry is read after the slivers finish layout, in the
+  // callback phase where Flutter permits access to those measured sizes.
+  T _measure<T>(T Function() read) {
+    late T result;
+    invokeLayoutCallback<BoxConstraints>((_) => result = read());
+    return result;
+  }
+
+  @override
+  void performLayout() {
+    final pending = _controller._pending;
+    final request = pending != null && pending.isCurrent() ? pending : null;
+    final previous = _lastAnchor;
+    // Scroll input since the last layout must remain effective. Only changes
+    // in content geometry are compensated, never the user's reading movement.
+    final expected =
+        request?.anchor ??
+        (previous == null
+            ? null
+            : ReaderViewportAnchor(
+                previous.identity,
+                previous.leading - (offset.pixels - _lastPixels!),
+              ));
+    super.performLayout();
+    if (expected != null) {
+      double? leading() => _measure(
+        () => _controller._geometry(expected.identity, axisDirection)?.$1,
+      );
+      double? lastEstimate;
+      while (leading() == null && request != null && request.list.isAttached) {
+        final target = _measure(
+          () => _controller._offsetForIndex(request.index, request.list, this),
+        );
+        if (!target.isFinite || target == lastEstimate) break;
+        lastEstimate = target;
+        offset.correctBy(target - offset.pixels);
+        super.performLayout();
+      }
+      final actual = leading();
+      if (actual != null) {
+        final position = offset as ScrollPosition;
+        final target = (offset.pixels + actual - expected.leading).clamp(
+          position.minScrollExtent,
+          position.maxScrollExtent,
+        );
+        final delta = target - offset.pixels;
+        if (delta.abs() > precisionErrorTolerance) {
+          offset.correctBy(delta);
+          super.performLayout();
+        }
+      }
+    }
+    _lastAnchor = _measure(() => _controller._capture(axisDirection));
+    _lastPixels = offset.pixels;
+    if (pending != null) {
+      final controller = _controller;
+      controller._pending = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!controller._disposed && controller._pending == null) {
+          controller._retained.value = null;
+        }
+        if (!pending.done.isCompleted) pending.done.complete();
+      });
     }
   }
 }
@@ -193,6 +451,18 @@ class _ReaderViewportItemState extends State<ReaderViewportItem>
   }
 
   @override
+  void activate() {
+    super.activate();
+    widget.controller._items[widget.identity] = context;
+  }
+
+  @override
+  void deactivate() {
+    _unregister(widget);
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     _unregister(widget);
     widget.controller._retained.removeListener(updateKeepAlive);
@@ -202,12 +472,6 @@ class _ReaderViewportItemState extends State<ReaderViewportItem>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return NotificationListener<SizeChangedLayoutNotification>(
-      onNotification: (_) {
-        widget.controller.onLayoutChanged?.call();
-        return true;
-      },
-      child: SizeChangedLayoutNotifier(child: widget.child),
-    );
+    return widget.child;
   }
 }

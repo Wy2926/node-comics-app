@@ -7,6 +7,54 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
+/// Loading and retry controls occupy image space, independent of their text,
+/// progress, or accessibility size. Use the actual column width for known pages.
+class ReaderImagePlaceholder extends StatelessWidget {
+  const ReaderImagePlaceholder({
+    super.key,
+    required this.child,
+    this.imageWidth,
+    this.imageHeight,
+    this.horizontal = false,
+    this.backgroundColor = Colors.transparent,
+  });
+
+  final Widget child;
+  final double? imageWidth, imageHeight;
+  final bool horizontal;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final screen = MediaQuery.sizeOf(context);
+      final known =
+          imageWidth != null &&
+          imageWidth! > 0 &&
+          imageHeight != null &&
+          imageHeight! > 0;
+      final width = constraints.hasBoundedWidth
+          ? constraints.maxWidth
+          : screen.width;
+      final height = horizontal && constraints.hasBoundedHeight
+          ? constraints.maxHeight
+          : screen.height * .8;
+      return SizedBox(
+        width: horizontal
+            ? (known ? height * imageWidth! / imageHeight! : width)
+            : width,
+        height: horizontal
+            ? height
+            : (known ? width * imageHeight! / imageWidth! : height),
+        child: ColoredBox(
+          color: backgroundColor,
+          child: Center(child: SingleChildScrollView(child: child)),
+        ),
+      );
+    },
+  );
+}
+
 /// A quiet, full-width status inside the reading flow. The surrounding image
 /// retains its reserved dimensions; the status never hides neighboring pages.
 class ReaderContentStatus extends StatelessWidget {

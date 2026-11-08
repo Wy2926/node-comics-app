@@ -35,12 +35,10 @@ void main() {
               ..loadedHeight = 1100 + i * 130,
         ];
         var pages = chapter(3, 8);
-        final scroll = ScrollController();
+        final scroll = ReaderScrollController();
         final list = ListController();
-        VoidCallback? onLayoutChanged;
-        final anchors = ReaderViewportAnchorController(
-          onLayoutChanged: () => onLayoutChanged?.call(),
-        );
+        final anchors = ReaderViewportAnchorController();
+        addTearDown(anchors.dispose);
         addTearDown(scroll.dispose);
         addTearDown(list.dispose);
         late StateSetter rebuild;
@@ -60,12 +58,13 @@ void main() {
                     for (var i = 0; i < spreads.length; i++)
                       ValueKey(pages[spreads[i].firstIndex].identity): i,
                   };
-                  return SuperListView.builder(
+                  return ReaderViewportList(
+                    viewportAnchor: anchors,
                     controller: scroll,
                     listController: list,
                     scrollDirection: axis,
                     reverse: reverse,
-                    cacheExtent: 500,
+                    imageCacheExtent: 500,
                     itemCount: spreads.length,
                     // Deliberately inaccurate, as network images are initially unknown.
                     extentEstimation: (_, _) => 270,
@@ -145,15 +144,14 @@ void main() {
             anchor,
             index: index,
             list: list,
-            scroll: scroll,
             isCurrent: () => true,
           );
           // Sizes must follow the page, not its former global index; otherwise
           // a later slider jump uses an unrelated image's cached height.
           expect(list.extentForIndex(index), measuredExtent);
-          for (var frame = 0; frame < 6; frame++) {
-            await tester.pump(const Duration(milliseconds: 16));
-          }
+          // The first painted frame must already have the correct offset.
+          await tester.pump(const Duration(milliseconds: 16));
+          expect(tester.takeException(), isNull);
           await restored;
           final current = anchors.capture(scroll)!;
           expect(current.identity, anchor.identity);
@@ -167,28 +165,11 @@ void main() {
         // first layout. Its final height must not move the held reading point.
         final currentItems = items();
         final anchorIndex = currentItems.indexOf(anchor.identity);
-        Future<void>? correction;
-        onLayoutChanged = () {
-          onLayoutChanged = null;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            correction = anchors.restore(
-              anchor,
-              index: anchorIndex,
-              list: list,
-              scroll: scroll,
-              isCurrent: () => true,
-            );
-          });
-        };
         final previous = pages.firstWhere(
           (page) => page.identity == currentItems[anchorIndex - 1],
         );
         rebuild(() => previous.loadedHeight = previous.loadedHeight! + 700);
-        for (var frame = 0; frame < 6; frame++) {
-          await tester.pump(const Duration(milliseconds: 16));
-        }
-        expect(correction, isNotNull);
-        await correction;
+        await tester.pump(const Duration(milliseconds: 16));
         final afterDecode = anchors.capture(scroll)!;
         expect(afterDecode.identity, anchor.identity);
         expect(afterDecode.leading, closeTo(anchor.leading, 0.5));
@@ -204,7 +185,6 @@ void main() {
           anchor,
           index: anchorIndex,
           list: list,
-          scroll: scroll,
           isCurrent: () => current,
         );
         current = false;
@@ -221,4 +201,144 @@ void main() {
       },
     );
   }
+  testWidgets(
+    'first frame restores the saved page; loading preserves live scrolling',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final scroll = ReaderScrollController();
+      final list = ListController();
+      final anchors = ReaderViewportAnchorController();
+      addTearDown(scroll.dispose);
+      addTearDown(list.dispose);
+      addTearDown(anchors.dispose);
+      final heights = List.filled(12, 500.0);
+      late StateSetter rebuild;
+      var scrollEnds = 0;
+      final restored = anchors.restore(
+        const ReaderViewportAnchor('page-4', 0),
+        index: 4,
+        list: list,
+        isCurrent: () => true,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                rebuild = setState;
+                return NotificationListener<ScrollEndNotification>(
+                  onNotification: (_) {
+                    scrollEnds++;
+                    return false;
+                  },
+                  child: ReaderViewportList(
+                    viewportAnchor: anchors,
+                    controller: scroll,
+                    listController: list,
+                    physics: const ClampingScrollPhysics(),
+                    imageCacheExtent: 1200,
+                    extentEstimation: (_, _) => 270,
+                    itemCount: heights.length,
+                    itemBuilder: (_, index) => ReaderViewportItem(
+                      key: ValueKey(index),
+                      identity: 'page-$index',
+                      controller: anchors,
+                      child: SizedBox(
+                        height: heights[index],
+                        child: Text('Page $index'),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await restored;
+      expect(anchors.capture(scroll)!.identity, 'page-4');
+      expect(anchors.capture(scroll)!.leading, closeTo(0, .1));
+
+      void expectPosition(double leading) {
+        expect(tester.takeException(), isNull);
+        expect(anchors.capture(scroll)!.identity, 'page-4');
+        expect(anchors.capture(scroll)!.leading, closeTo(leading, .1));
+      }
+
+      // Several downloads above/below the reading point complete together.
+      rebuild(() {
+        heights[3] = 1500;
+        heights[5] = 1200;
+      });
+      await tester.pump();
+      expectPosition(0);
+      final gesture = await tester.startGesture(const Offset(200, 400));
+      await gesture.moveBy(const Offset(0, -100));
+      await tester.pump();
+      final dragged = anchors.capture(scroll)!.leading;
+      final ends = scrollEnds;
+      expect(scroll.position.isScrollingNotifier.value, isTrue);
+      rebuild(() => heights[3] = 700);
+      await tester.pump();
+      expectPosition(dragged);
+      expect(scroll.position.isScrollingNotifier.value, isTrue);
+      expect(scrollEnds, ends);
+
+      // An image resize and the next pointer move share one frame.
+      rebuild(() => heights[3] = 1300);
+      await gesture.moveBy(const Offset(0, -40));
+      await tester.pump();
+      expectPosition(dragged - 40);
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      // Programmatic/automatic scrolling must also survive the layout change.
+      final beforeAnimation = anchors.capture(scroll)!.leading;
+      final animation = scroll.animateTo(
+        scroll.offset + 200,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.linear,
+      );
+      await tester.pump();
+      rebuild(() => heights[3] = 900);
+      await tester.pump();
+      expectPosition(beforeAnimation);
+      expect(scroll.position.isScrollingNotifier.value, isTrue);
+      await tester.pump(const Duration(milliseconds: 100));
+      expectPosition(beforeAnimation - 40);
+      await tester.pumpAndSettle();
+      await animation;
+      expectPosition(beforeAnimation - 200);
+      final reset = anchors.restore(
+        const ReaderViewportAnchor('page-4', 0),
+        index: 4,
+        list: list,
+        isCurrent: () => true,
+      );
+      await tester.pump();
+      await reset;
+      await tester.flingFrom(
+        const Offset(200, 400),
+        const Offset(0, -100),
+        600,
+      );
+      await tester.pump();
+      final ballistic = anchors.capture(scroll)!.leading;
+      final endsBeforeResize = scrollEnds;
+      expect(scroll.position.isScrollingNotifier.value, isTrue);
+      rebuild(() => heights[3] = 1400);
+      await tester.pump();
+      expectPosition(ballistic);
+      expect(scroll.position.isScrollingNotifier.value, isTrue);
+      expect(scrollEnds, endsBeforeResize);
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(anchors.capture(scroll)!.leading, lessThan(ballistic));
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(const SizedBox());
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
