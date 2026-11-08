@@ -33,8 +33,9 @@ void main() {
     Brightness brightness = Brightness.light,
     TextDirection direction = TextDirection.ltr,
     double? lineHeight,
+    double? letterSpacing,
   }) async {
-    tester.view.physicalSize = const Size(390, 844);
+    tester.view.physicalSize = Size(width + 40, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -51,6 +52,7 @@ void main() {
             size: MediaQuery.sizeOf(context),
             textScaler: TextScaler.linear(scale),
             lineHeightScaleFactorOverride: lineHeight,
+            letterSpacingOverride: letterSpacing,
           ),
           child: Directionality(textDirection: direction, child: child!),
         ),
@@ -101,9 +103,7 @@ void main() {
               reason: '$action $pricing changed the geometry',
             );
             final language = tester.getRect(find.text('中文(Zhōngwén)'));
-            final classification = tester.getRect(
-              find.textContaining('日漫 / 韩漫'),
-            );
+            final classification = tester.getRect(find.textContaining('日漫'));
             expect(language.bottom, lessThanOrEqualTo(classification.top));
             for (final element
                 in find
@@ -129,6 +129,102 @@ void main() {
   }
 
   testWidgets(
+    'classification count follows width and text settings on resize',
+    (tester) async {
+      final card = SourceWebsiteCard(
+        source: _source(SourcePricing.free),
+        action: SourceCardAction.open,
+        onOpen: () {},
+        onAction: () {},
+        onDetails: () {},
+        onLongPress: () {},
+      );
+      for (final (width, scale, spacing, visible, hidden) in [
+        (350.0, 1.0, null, '日漫 / 韩漫 / 国漫 / 欧美漫画', 4),
+        (539.0, 1.0, null, '日漫 / 韩漫 / 国漫 / 欧美漫画 / 页漫 / 条漫 / 原创 / 同人', 0),
+        (538.0, 1.0, null, '日漫 / 韩漫 / 国漫 / 欧美漫画 / 页漫 / 条漫 / 原创', 1),
+        (280.0, 1.0, null, '日漫 / 韩漫 / 国漫', 5),
+        (350.0, 2.0, null, '日漫 / 韩漫', 6),
+        (350.0, 1.0, 2.0, '日漫 / 韩漫 / 国漫', 5),
+        (350.0, 1.0, null, '日漫 / 韩漫 / 国漫 / 欧美漫画', 4),
+      ]) {
+        await mount(
+          tester,
+          card,
+          width: width,
+          scale: scale,
+          letterSpacing: spacing,
+        );
+        expect(find.text(visible), findsOneWidget);
+        expect(
+          find.textContaining(RegExp(r'^\+\d+$')),
+          hidden == 0 ? findsNothing : findsOneWidget,
+        );
+        if (hidden > 0) {
+          expect(find.text('+$hidden'), findsOneWidget);
+          expect(
+            tester.getRect(find.text(visible)).right,
+            lessThan(tester.getRect(find.text('+$hidden')).left),
+          );
+        }
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.text(visible),
+        );
+        expect(
+          paragraph.size.width,
+          greaterThanOrEqualTo(
+            paragraph.getMaxIntrinsicWidth(double.infinity) - .001,
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
+  testWidgets('whole labels hide with exact single and double digit counts', (
+    tester,
+  ) async {
+    const many = SourceCatalogMetadata(
+      regions: ['jp', 'kr', 'cn', 'hk_tw', 'western', 'other'],
+      formats: ['page', 'vertical', 'strip'],
+      creations: ['original', 'fan', 'adaptation'],
+    );
+    for (final (metadata, width, visible, hidden) in [
+      (const SourceCatalogMetadata(regions: ['hk_tw', 'cn']), 130.0, '', 2),
+      (many, 220.0, '日漫 / 韩漫', 10),
+      (many, 270.0, '日漫 / 韩漫 / 国漫', 9),
+    ]) {
+      await mount(
+        tester,
+        SourceWebsiteCard(
+          source: Source(
+            name: 'Fixture',
+            lang: 'zh',
+            catalogMetadataJson: jsonEncode(metadata.toJson()),
+          ),
+          action: SourceCardAction.open,
+          onOpen: () {},
+          onAction: () {},
+          onDetails: () {},
+          onLongPress: () {},
+        ),
+        width: width,
+        direction: TextDirection.rtl,
+      );
+      expect(find.text(visible), findsOneWidget);
+      expect(find.text('+$hidden'), findsOneWidget);
+      expect(find.textContaining('港台漫画'), findsNothing);
+      if (visible.isNotEmpty) {
+        expect(
+          tester.getRect(find.text('+$hidden')).right,
+          lessThan(tester.getRect(find.text(visible)).left),
+        );
+      }
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets(
     'footer and metadata actions are isolated; complete labels stay available',
     (tester) async {
       var opened = 0, updated = 0, longPressed = 0;
@@ -148,7 +244,7 @@ void main() {
       );
       await tester.tap(find.text('更新'));
       expect([opened, updated], [0, 1]);
-      await tester.tap(find.text('+5'));
+      await tester.tap(find.text('+4'));
       await tester.pumpAndSettle();
       expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
       expect(find.text('日漫、韩漫、国漫、欧美漫画'), findsOneWidget);

@@ -89,14 +89,6 @@ class SourceWebsiteCard extends StatelessWidget {
           NodeLaneTokens.sourceCardFooterHeight,
           textHeight(t.sourceFooter) + NodeLaneTokens.space16,
         );
-        final visibleCount =
-            scaler.scale(t.sourceMetadata.fontSize!) > t.sourceTitle.fontSize!
-            ? 2
-            : 3;
-        final remaining = math.max(0, labels.length - visibleCount);
-        final classification = labels.isEmpty
-            ? '分类未标注'
-            : labels.take(visibleCount).join(' / ');
         final pricing = Row(
           children: [
             ExcludeSemantics(
@@ -202,44 +194,9 @@ class SourceWebsiteCard extends StatelessWidget {
                             constraints: BoxConstraints(
                               minHeight: classificationHeight,
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    classification,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: t.sourceMetadata.copyWith(
-                                      color: labels.isEmpty ? t.muted : t.ink,
-                                    ),
-                                  ),
-                                ),
-                                if (remaining > 0)
-                                  TextButton(
-                                    onPressed: onDetails,
-                                    style: TextButton.styleFrom(
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      minimumSize: const Size.square(
-                                        NodeLaneTokens.minTapTarget,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: NodeLaneTokens.space4,
-                                      ),
-                                    ),
-                                    child: Semantics(
-                                      label: '查看全部来源资料，另有 $remaining 个分类',
-                                      child: ExcludeSemantics(
-                                        child: Text(
-                                          '+$remaining',
-                                          style: t.sourceMetadata.copyWith(
-                                            color: t.accent,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                            child: _SourceClassifications(
+                              labels: labels,
+                              onDetails: onDetails,
                             ),
                           ),
                         ],
@@ -339,6 +296,105 @@ class SourceWebsiteCard extends StatelessWidget {
           ),
         );
         return Semantics(selected: selected, child: card);
+      },
+    );
+  }
+}
+
+class _SourceClassifications extends StatelessWidget {
+  const _SourceClassifications({required this.labels, required this.onDetails});
+
+  final List<String> labels;
+  final VoidCallback? onDetails;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    // Match Text's inherited font and accessibility overrides when measuring.
+    final style = DefaultTextStyle.of(context).style
+        .merge(t.sourceMetadata)
+        .copyWith(
+          color: labels.isEmpty ? t.muted : t.ink,
+          fontWeight: MediaQuery.boldTextOf(context) ? FontWeight.bold : null,
+          height: MediaQuery.maybeLineHeightScaleFactorOverrideOf(context),
+          letterSpacing: MediaQuery.maybeLetterSpacingOverrideOf(context),
+          wordSpacing: MediaQuery.maybeWordSpacingOverrideOf(context),
+        );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = TextPainter(
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          locale: Localizations.maybeLocaleOf(context),
+          maxLines: 1,
+        );
+        double widthOf(String text) {
+          painter.text = TextSpan(text: text, style: style);
+          painter.layout();
+          return painter.width;
+        }
+
+        var visibleCount = labels.length;
+        var counterWidth = 0.0;
+        // Try the whole line first so a counter never hides a label needlessly.
+        if (widthOf(labels.join(' / ')) > constraints.maxWidth) {
+          do {
+            visibleCount--;
+            counterWidth = math.max(
+              NodeLaneTokens.minTapTarget,
+              widthOf('+${labels.length - visibleCount}') +
+                  NodeLaneTokens.space8,
+            );
+          } while (visibleCount > 0 &&
+              widthOf(labels.take(visibleCount).join(' / ')) +
+                      NodeLaneTokens.space8 +
+                      counterWidth >
+                  constraints.maxWidth);
+        }
+        painter.dispose();
+        final remaining = labels.length - visibleCount;
+        return Row(
+          children: [
+            Expanded(
+              child: Text(
+                labels.isEmpty
+                    ? '分类未标注'
+                    : labels.take(visibleCount).join(' / '),
+                maxLines: 1,
+                softWrap: false,
+                style: style,
+              ),
+            ),
+            if (remaining > 0) ...[
+              if (visibleCount > 0)
+                const SizedBox(width: NodeLaneTokens.space8),
+              SizedBox(
+                width: math.min(counterWidth, constraints.maxWidth),
+                child: TextButton(
+                  onPressed: onDetails,
+                  style: TextButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NodeLaneTokens.space4,
+                    ),
+                  ),
+                  child: Semantics(
+                    label: '查看全部来源资料，另有 $remaining 个分类',
+                    child: ExcludeSemantics(
+                      child: Text(
+                        '+$remaining',
+                        maxLines: 1,
+                        softWrap: false,
+                        style: style.copyWith(color: t.accent),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
       },
     );
   }
