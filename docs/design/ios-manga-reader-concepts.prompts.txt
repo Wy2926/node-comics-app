@@ -1,0 +1,82 @@
+NodeLane iOS manga reader concepts
+Generation method: built-in image_gen, followed by targeted built-in edits (not CLI).
+Purpose: project visual references only; the reader implementation is unchanged by this design task.
+Visual reference reviewed: ios-manga-detail-concept.png.
+Code references: reader_bottom_bar.dart, mobile_reader_widgets.dart, mobile_reader_chapters.dart, translation_controls.dart, mobile_reader_display.dart, mobile_reader_settings.dart, mobile_reader_image_actions.dart, nodelane_tokens.dart.
+All menu functions were checked against the current project. Book/chapter/page counts and manga art are illustrative generated content, not connected source data.
+Selected outputs:
+- ios-manga-reader-operations-concept.png
+- ios-manga-reader-settings-concept.png
+
+=== Operations board — generation ===
+Use case: ui-mockup.
+Asset type: a high fidelity NodeLane iOS manga reader design board, a project design reference rather than a screenshot of an already implemented change.
+Create a polished, buildable Chinese mobile UI matching this application's established design tokens. The artboard is wide landscape, approximately 16:9, high resolution, with FOUR equally sized complete front-facing iPhones aligned in a single row, identical thin dark device frames, 9:41 status bars, Dynamic Islands, and home indicators. Phones occupy most of the canvas; large enough for legible UI text. Restrained off-white presentation background. Heading at top: "NodeLane", with the board subtitle specified below. Small captions below each phone. Small footer "视觉概念稿 · 示例内容". No perspective or decorative objects.
+VISUAL SYSTEM: cool gray canvas #F5F6FA, pure white grouped surfaces, accent #006EFF, primary ink #171A21, secondary gray #697180, fine separators #E7EAF0, soft field fill #EBEEF4. 20 pt horizontal gutters, 16 pt card padding, 18 pt grouped-card radius, 12 pt control radius, 24 pt sheet corners. 20 pt semibold sheet headings, 16 pt row labels, 13 pt explanatory text, restrained system SF/PingFang typography. Consistent 24 pt SF Symbols-like outline icons, minimum 44 pt targets, generous but efficient 56 pt rows. Active controls use blue. Sheets are opaque and have one small gray drag handle and a pale gray circular close x at the top right. No nested sheets, double outlines, excessive transparency or large shadows. All scrollable content ends above a clean bottom safe-area strip and home indicator.
+READER CONTEXT: the same example manga "海岸来信", chapter "第12话 海风的回信", page "8 / 24" in all reader scenes. This is illustrative example data. Show the same original black-and-white seaside manga page with 3 quiet panels (seaside town, a person reading a letter, waves); original artwork only, no recognizable franchise, no large speech text. Manga art is the background and UI is the focus. Background manga is dimmed whenever a bottom sheet is open. No app root tab bar on any reader or sheet; the reader's own four actions are not the app tab bar.
+SCOPE: preserve the existing application functions described below; redesign only their presentation. No AI assistant/chat, rating, comments, membership, credits, purchases, cloud sync, font picker, reading statistics, new download options or other invented features. Precise simplified Chinese labels, no lorem ipsum, no code, hex values or token annotations printed inside the phones.
+Board subtitle: "iOS · 漫画阅读操作". Phone captions left to right: "阅读工具栏", "章节目录", "漫画翻译", "显示快捷设置".
+
+PHONE 1 — reading with controls visible:
+Compact top bar: left back chevron; two lines "海岸来信" and "第12话 海风的回信"; bookmark icon and small ellipsis at right (existing online-source overflow). Large unobscured manga reading viewport.
+At bottom, a clean white rounded-top overlay panel. Centered page count "8 / 24", then a blue position slider with previous-chapter and next-chapter controls at either end. Hairline divider below. Four evenly spaced icon-and-label actions in one row: "章节", "翻译", "显示", "设置". Use list, translate, book, and sliders symbols. No new toolbar buttons. Bottom home safe area is reserved, never overlaps the action labels. Reading content is not squeezed by the overlay.
+
+PHONE 2 — chapter list:
+An approximately 80% height bottom sheet, over dimmed reader. Header "章节 · 12"; locate-current-chapter target symbol and circular close x. A rounded gray search field "搜索章节或翻译组". Below, book "海岸来信" and helper "沿用详情页筛选和排序，书签即时保存。"
+Inset white grouped list of chapter rows. Show "第12话 海风的回信" with blue selected wash and secondary "正在阅读"; "第11话 潮汐之间", "第10话 夏末的灯塔", "第9话 未寄出的信", "第8话 回到海边" with muted secondary "已读", and a next row partially clipped by scroll viewport if needed. Independent bookmark icons on the right, one filled blue. Fine inset separators. No download buttons or new sort controls in this sheet.
+
+PHONE 3 — translation controls in a signed-in, active example state:
+A compact bottom sheet occupying only as much lower space as its content needs, approximately 50–60% screen height. Header "漫画翻译", circular close x.
+First grouped row has switch on: "翻译当前阅读范围", subtitle "按当前页和随后两页处理". Next a full-width two-part rounded segmented control "原图" / "译图", with "译图" selected in blue.
+Then restrained in-progress rows "第 1 张 · 正在翻译…" and "第 2 张 · 等待翻译…" with small status icons, no fabricated percentages, no retry on an in-progress row.
+Bottom separate white settings row "翻译设置" with small settings symbol and chevron. Do not add language selection, quota or account details here; those are separate existing pages. Do not combine signed-in status with a login call to action on this example screen. Switching original/translated display is visually separate from enabling translation.
+
+PHONE 4 — display quick settings:
+An approximately 80% height bottom sheet, header "显示" and close. Book "海岸来信". Compact helper "阅读模式和单双页仅用于当前漫画，选择后返回阅读。"
+A white grouped list titled "阅读模式". Exactly these seven existing choices, in this order: "垂直", "从左到右", "从右到左", "垂直连续", "网络漫画", "水平连续", "水平连续 (RTL)". Select "从右到左" with a blue check; other rows remain neutral. Keep all seven legible without crowding, use compact 44 pt rows.
+Below, two-segment control "单页" / "双页", single page selected. Last white grouped switch row "裁剪边框" off, secondary "应用于所有漫画。". Fit within the scrollable sheet; no apply/save/reset button, because existing options take effect immediately.
+
+=== Operations board — final refinement ===
+Use case: precise-object-edit.
+Edit the attached NodeLane iOS manga reading operations board. Preserve all four complete phones, the entire board composition, all text, colors, spacing, manga art and controls exactly.
+On the THIRD phone only, remove the right-pointing chevron at the far right of BOTH in-progress translation rows: "第 1 张 · 正在翻译…" and "第 2 张 · 等待翻译…". These are passive status rows with no navigation target. Preserve their left status indicators and text, row height, separators and background. Keep the chevron on the lower "翻译设置" row.
+Everything else must remain unchanged. Output the entire complete board.
+
+=== Settings board — generation ===
+Use case: ui-mockup.
+Asset type: a high fidelity NodeLane iOS manga reader design board, a project design reference rather than a screenshot of an already implemented change.
+Create a polished, buildable Chinese mobile UI matching this application's established design tokens. The artboard is wide landscape, approximately 16:9, high resolution, with FOUR equally sized complete front-facing iPhones aligned in a single row, identical thin dark device frames, 9:41 status bars, Dynamic Islands, and home indicators. Phones occupy most of the canvas; large enough for legible UI text. Restrained off-white presentation background. Heading at top: "NodeLane", with the board subtitle specified below. Small captions below each phone. Small footer "视觉概念稿 · 示例内容". No perspective or decorative objects.
+VISUAL SYSTEM: cool gray canvas #F5F6FA, pure white grouped surfaces, accent #006EFF, primary ink #171A21, secondary gray #697180, fine separators #E7EAF0, soft field fill #EBEEF4. 20 pt horizontal gutters, 16 pt card padding, 18 pt grouped-card radius, 12 pt control radius, 24 pt sheet corners. 20 pt semibold sheet headings, 16 pt row labels, 13 pt explanatory text, restrained system SF/PingFang typography. Consistent 24 pt SF Symbols-like outline icons, minimum 44 pt targets, generous but efficient 56 pt rows. Active controls use blue. Sheets are opaque and have one small gray drag handle and a pale gray circular close x at the top right. No nested sheets, double outlines, excessive transparency or large shadows. All scrollable content ends above a clean bottom safe-area strip and home indicator.
+READER CONTEXT: the same example manga "海岸来信", chapter "第12话 海风的回信", page "8 / 24" in all reader scenes. This is illustrative example data. Show the same original black-and-white seaside manga page with 3 quiet panels (seaside town, a person reading a letter, waves); original artwork only, no recognizable franchise, no large speech text. Manga art is the background and UI is the focus. Background manga is dimmed whenever a bottom sheet is open. No app root tab bar on any reader or sheet; the reader's own four actions are not the app tab bar.
+SCOPE: preserve the existing application functions described below; redesign only their presentation. No AI assistant/chat, rating, comments, membership, credits, purchases, cloud sync, font picker, reading statistics, new download options or other invented features. Precise simplified Chinese labels, no lorem ipsum, no code, hex values or token annotations printed inside the phones.
+Board subtitle: "iOS · 漫画阅读设置". Phone captions left to right: "阅读模式", "通用设置", "图像滤镜", "图片操作".
+PHONES 1–3 all show the SAME approximately 80% height reader-settings bottom sheet over dimmed manga, with shared header "阅读设置", close x, and one blue/soft-gray three-part rounded segmented navigation "阅读模式" / "通用" / "图像滤镜". Only the correct segment is blue on each screen; the three screen layouts align exactly at the top. Current options save immediately; no footer save/apply button. The sheet body is independently scrollable. Prefer clean 56 pt rows and 16 pt gaps over dense mini-controls.
+
+PHONE 1 — Reading mode selected:
+Under the segment show book "海岸来信" and small scope label "以下设置仅用于当前漫画。"
+White grouped card with choice row "阅读模式", value "垂直连续", disclosure chevron; switch row "自动滚动" off, helper "打开设置期间暂停滚动。"
+Then scope label "以下设置用于所有漫画，即时保存。"
+White grouped card with switch "裁剪边框" off, disclosure row "页面布局", disclosure row "连续阅读". These expandable sections are collapsed, no invented page-layout controls. Use appropriate book, timer, crop and stacked-pages outline symbols. Enough negative space; do not stretch rows to fill the sheet.
+
+PHONE 2 — General selected:
+Scope label "以下设置用于所有漫画，即时保存。"
+White grouped card: "缩放类型" value "适合屏幕" and chevron; "背景颜色" value "黑色" with small black swatch and chevron; "显示页码" on; "保持屏幕开启" on; "动画页面过渡" on. Consistent blue switches.
+Second white grouped card: "导航布局" with disclosure chevron; "翻页时闪烁" with disclosure chevron. These are existing collapsed sections, do not invent new rows or selected navigation values.
+
+PHONE 3 — Image filters selected:
+Two-line scope note "用于所有漫画，只改变阅读画面，不修改原始图片。"
+First white group has switches "反转颜色" off and "灰度" off.
+Second white group, section label "色彩增强": three clear slider rows, each label at left and value at right, thin blue slider below. "亮度" value "0.0"; "对比度" value "1.0"; "饱和度" value "1.0". Each slider row has its own subtle small reset-arrow icon, matching existing per-setting reset action. Neutral/default values are shown, no promises of AI enhancement.
+Last white group "自定义颜色滤镜" switch off. Do not show RGBA controls while the switch is off. Body can scroll; avoid overlaying the safe area.
+
+PHONE 4 — image long-press actions:
+No settings tabs on this phone. Show a shorter 55–65% height action sheet over the same manga page. Header "图片操作", close x. Context lines "海岸来信", "第12话 海风的回信 · 第8页". Scope note "使用原始整页图片，不含翻译、裁剪或阅读滤镜。"
+A white grouped card with three spacious rows: save/download-to-tray icon with title "保存", subtitle "保存到应用内 Pictures 文件夹。"; share-square-arrow icon with title "分享", subtitle "打开系统分享面板。"; image icon with title "设置为封面", subtitle "确认后修改这本漫画的封面。". All icons blue, text dark, secondary notes gray. Save and share are actions without chevrons; cover may have a chevron because it opens confirmation. No photo-gallery permission promise, no delete action, no new translation action or live preview control.
+
+=== Settings board — final refinement ===
+Use case: precise-object-edit.
+Edit the attached NodeLane iOS manga reading settings board, retaining the entire four-phone composition, phone dimensions, colors, typography system, all exact Chinese text, selected segments, switch values, original manga background and fourth phone.
+Refine only the layout of the settings sheets in PHONES 1, 2 and 3. They currently begin too low and crowd all settings into about half a screen. Raise their top edges together to approximately 22% down the phone's usable screen, so all three sheets occupy about 78% of screen height. Align all three sheet tops, drag handles, heading rows and segmented tabs exactly with one another. Keep the sheet radius at 24 logical points, 20-point side gutters, 16-point card padding, 18-point card radius, 16-point row labels and 13-point descriptions. Reflow the SAME existing content naturally inside this taller sheet, with clean 56-point rows and 16-point gaps, leaving comfortable scroll space above the bottom safe area.
+For the THREE existing color enhancement sliders in the third phone, use the newly available space to restore a clear two-line row: label on the first line at left, existing numeric value and a small muted reset arrow at right; a full-width blue slider on its own second line. Preserve brightness 0.0, contrast 1.0, saturation 1.0. This is a geometry adjustment, not additional controls. Keep inversion, grayscale and custom-filter switches OFF. Do not alter any texts, add settings, or shrink fonts.
+Keep the fourth phone (image actions) exactly as it is. Keep all device frames, captions, safe areas and the overall board heading intact. Output the full board.
+

@@ -1,14 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
-import 'package:mangayomi/modules/browse/browse_screen.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/data_and_storage/widgets/unified_restore.dart';
@@ -16,13 +16,16 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
-import 'package:mangayomi/modules/widgets/tv_pill.dart';
 import 'package:mangayomi/utils/local_directory_access.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/onboarding/widgets/onboarding_nav_preview.dart';
+import 'package:mangayomi/modules/onboarding/widgets/onboarding_folder_status.dart';
+import 'package:mangayomi/modules/onboarding/widgets/onboarding_controls.dart';
+import 'package:mangayomi/modules/onboarding/widgets/mobile_onboarding.dart';
 
 /// The nav destination for each library, so a library the user does not read
 /// can be kept out of the bar.
@@ -32,31 +35,10 @@ const _libraryRoutes = {
   ItemType.novel: '/NovelLibrary',
 };
 
-/// Shown once, on the first launch of a fresh install.
-///
-/// A new install opens on an empty library, an empty Browse, and a nav bar
-/// carrying three libraries the user may well not want. Nothing says that
-/// Mangayomi ships with no sources of its own and that supplying them is the
-/// first job. This asks the three things worth asking, applies them, and leaves
-/// the user on Browse with a repository already added, which is where the
-/// extensions it holds are waiting to be installed.
-///
-/// The steps are: which libraries they read, how those sit in the nav bar, and
-/// a repository to stock them from. The middle step is skipped when only one
-/// library is chosen, since there is then nothing to arrange.
-///
-/// No repository is suggested or shipped. The field starts empty and every step
-/// can be left without answering.
-///
-/// ## On a TV
-///
-/// The same decisions, laid out for a remote instead of a thumb. Typing a
-/// repository URL on a d-pad is genuinely unpleasant, so the TV build says out
-/// loud that this can be done later from Settings, and Skip is a first-class
-/// way off the screen rather than a consolation. The field takes focus on
-/// arrival so the first press of OK opens the keyboard, and every choice is a
-/// row of [TvPill]s, because a SegmentedButton's internals are not reliably
-/// reachable with a d-pad.
+/// First-run and replayable setup. Phones choose content, then browse the
+/// existing catalogue, import a folder or add a third-party repository.
+/// Desktop keeps its navigation arrangement; TV keeps remote-friendly controls.
+/// The owner manages preferences and work, while mobile widgets render state.
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
@@ -103,15 +85,18 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   bool _forward = true;
 
   /// A television only ever reads anime, so the question is not asked there
-  /// and this is the answer. Everywhere else it starts with everything ticked
-  /// and the reader narrows it.
-  final Set<ItemType> _libraries = isTv
-      ? {ItemType.anime}
-      : {...ItemType.values};
+  /// and this is the answer. Everywhere else only manga starts ticked.
+  final Set<ItemType> _libraries = isTv ? {ItemType.anime} : {ItemType.manga};
   bool _mergeLibraries = false;
   ItemType _repoType = ItemType.manga;
 
   bool _adding = false;
+  bool _restoring = false;
+  bool _pickingFolder = false;
+  bool _finishing = false;
+  String? _actionError, _folderError;
+  bool get _busy => _adding || _restoring || _pickingFolder || _finishing;
+  bool get _mobile => isMobile && !isTv;
   String? _error;
   Repo? _added;
 
@@ -197,7 +182,14 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   /// nothing behind it, so it does nothing and Skip stays the way out.
   @override
   Future<bool> didPopRoute() async {
-    if (!_adding && _step != _firstStep) _back();
+    // Restore dialogs belong to the inner navigator and must receive Back
+    // before the welcome step, including while restore owns the busy state.
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      await navigator.maybePop();
+      return true;
+    }
+    if (!_busy && _step != _firstStep) _back();
     return true;
   }
 
@@ -236,18 +228,20 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
 
   /// Whether the arrange step has anything to offer.
   ///
-  /// Nothing to arrange with one library in the bar. And the merge setting it
-  /// writes is read as `mergeLibraryNavMobile && !context.isTablet`, so on
-  /// anything 600dp or wider, tablets and TVs included, the answer would be
-  /// stored and then ignored. Better not to ask.
+  /// The phone shell always groups media under Library. Its legacy merge
+  /// preference is not changed by this flow. The old arrange step remains
+  /// only for narrow desktop layouts that still use that preference.
   bool get _shouldArrangeBar =>
-      _chosen.length > 1 && !context.isTablet && !isTv;
+      !_mobile && _chosen.length > 1 && !context.isTablet && !isTv;
 
   void _next() {
+    if (_busy) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     if (_step == _Step.libraries) {
       _applyLibraries();
       setState(() {
         _forward = true;
+        _actionError = null;
         _repoType = _chosen.first;
         _step = _shouldArrangeBar ? _Step.navigation : _Step.repository;
       });
@@ -260,34 +254,32 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     });
   }
 
-  /// Runs the existing restore flow, then leaves.
-  ///
-  /// A backup carries repositories, library and settings, which answers every
-  /// question this screen asks. Anyone who has one should not have to walk the
-  /// steps first and find Settings afterwards. Mangayomi's own backups and
-  /// Mihon, Aniyomi and Neko ones all go through the same picker.
+  /// Restores a NodeLane backup or imports a supported third-party backup
+  /// through the shared picker, then checks whether source setup is needed.
   Future<void> _restore() async {
-    final restored = await performRestore(context, ref);
-    if (!mounted) return;
-    // Nothing was restored, so nothing has been answered. Backing out of the
-    // file picker used to drop the user into an empty library, which is the
-    // opposite of what cancelling should do.
-    if (!restored) return;
-    // Whether the backup brought sources with it depends on what it was. A
-    // Mangayomi backup carries the repositories, but only when its settings
-    // were included in it, and a Mihon, Aniyomi or Neko backup references its
-    // own ecosystem's extensions and never carries Mangayomi repositories.
-    //
-    // So ask rather than assume. Repositories present means the rest of this
-    // screen has been answered already; none means the one question still
-    // worth asking is where sources come from.
-    if (_hasAnyRepo) {
-      ref.read(onboardingCompletedStateProvider.notifier).complete();
-    } else {
-      setState(() {
-        _forward = true;
-        _step = _Step.repository;
-      });
+    if (_busy) return;
+    setState(() {
+      _restoring = true;
+      _actionError = null;
+    });
+    try {
+      final restored = await performRestore(context, ref);
+      if (!mounted) return;
+      if (!restored) return;
+      // A NodeLane backup includes repositories only when settings were saved.
+      // Third-party imports can restore a library without configuring sources.
+      if (_hasAnyRepo) {
+        ref.read(onboardingCompletedStateProvider.notifier).complete();
+      } else {
+        setState(() {
+          _forward = true;
+          _step = _Step.repository;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _actionError = context.l10n.failed);
+    } finally {
+      if (mounted) setState(() => _restoring = false);
     }
   }
 
@@ -299,66 +291,70 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   /// them. The folder is named after itself rather than asking, since a name
   /// is one more decision and Settings can rename it later.
   Future<void> _addLocalFolder() async {
-    final path =
-        await LocalDirectoryAccess.pickDirectory() ??
-        await FilePicker.getDirectoryPath(
-          linuxOptions: const LinuxOptions(lockParentWindow: true),
-        );
-    if (path == null || !mounted) return;
-    final folders = ref.read(localFoldersStateProvider).toList();
-    // Picking the same folder twice used to add it twice, and the name
-    // de-duplication turned that into "Manga 2", "Manga 3" and so on. Trying
-    // again after a scan found nothing is the most likely thing a user does
-    // here, so it has to be the cheapest.
-    if (!folders.any((folder) => folder.path == path)) {
-      folders.add(
-        LocalFolder(
-          name: LocalFolder.fromPath(path: path).name ?? p.basename(path),
-          path: path,
-        ),
-      );
-      ref.read(localFoldersStateProvider.notifier).set(folders);
-    }
-    // The downloads directory already belongs to the app. Scanning it as a
-    // local folder builds a second, local copy of a library it is already
-    // managing, and the two then drift apart. Easy to do by accident, because
-    // it holds exactly the folder layout the scanner is looking for.
-    final base = await StorageProvider().getDirectory();
-    final inDownloads =
-        base != null && p.isWithin(p.join(base.path, 'downloads'), path);
-
+    if (_busy) return;
     setState(() {
-      _addedFolderPath = path;
-      _folderIsInDownloads = inDownloads;
-      _scanningFolder = true;
-      _foundTitles = null;
+      _pickingFolder = true;
+      _folderError = null;
     });
-    // Awaited, because saying "scanning it now" and then never saying anything
-    // else leaves the user watching a sentence that has stopped being true.
     try {
+      // A null iOS selection means cancellation, not a second picker request.
+      final path = Platform.isIOS
+          ? await LocalDirectoryAccess.pickDirectory()
+          : await FilePicker.getDirectoryPath(
+              linuxOptions: const LinuxOptions(lockParentWindow: true),
+            );
+      if (path == null || !mounted) return;
+      final folders = ref.read(localFoldersStateProvider).toList();
+      if (!folders.any((folder) => folder.path == path)) {
+        folders.add(
+          LocalFolder(
+            name: LocalFolder.fromPath(path: path).name ?? p.basename(path),
+            path: path,
+          ),
+        );
+        ref.read(localFoldersStateProvider.notifier).set(folders);
+      }
+      setState(() {
+        _addedFolderPath = path;
+        _folderIsInDownloads = false;
+        _foundTitles = null;
+        _foundTitleNames = const [];
+        _foundByType = const {};
+      });
+      final base = await StorageProvider().getDirectory();
+      if (!mounted) return;
+      setState(() {
+        _folderIsInDownloads =
+            base != null && p.isWithin(p.join(base.path, 'downloads'), path);
+        _scanningFolder = true;
+      });
       await ref.read(scanLocalLibraryProvider.future);
+      if (!mounted) return;
+      // Keep the existing scanner's per-folder identity and media counts.
+      final prefix = '${p.basename(path)}/';
+      final mine = mangaRepository
+          .getLocalArchive()
+          .where((manga) => (manga.link ?? '').startsWith(prefix))
+          .toList();
+      setState(() {
+        _foundTitles = mine.length;
+        _foundTitleNames = mine
+            .map((manga) => manga.name ?? '')
+            .where((name) => name.isNotEmpty)
+            .toList();
+        _foundByType = {
+          for (final type in ItemType.values)
+            if (mine.any((manga) => manga.itemType == type))
+              type: mine.where((manga) => manga.itemType == type).length,
+        };
+      });
+    } catch (_) {
+      if (mounted) setState(() => _folderError = context.l10n.failed);
     } finally {
       if (mounted) {
         setState(() {
+          _pickingFolder = false;
           _scanningFolder = false;
-          // Only what came from this folder. A global count would include
-          // every local title the library already had and tell the user
-          // nothing about the folder they just picked.
-          final prefix = '${p.basename(path)}/';
-          final mine = mangaRepository
-              .getLocalArchive()
-              .where((manga) => (manga.link ?? '').startsWith(prefix))
-              .toList();
-          _foundTitles = mine.length;
-          _foundTitleNames = mine
-              .map((manga) => manga.name ?? '')
-              .where((name) => name.isNotEmpty)
-              .toList();
-          _foundByType = {
-            for (final type in ItemType.values)
-              if (mine.any((manga) => manga.itemType == type))
-                type: mine.where((manga) => manga.itemType == type).length,
-          };
         });
       }
     }
@@ -370,6 +366,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   /// scanner reads a single manga's folder as a shelf of empty titles. Without
   /// this the only way back is Settings, after the first run is over.
   void _removeLocalFolder() {
+    if (_busy) return;
     final path = _addedFolderPath;
     if (path == null) return;
     ref
@@ -382,6 +379,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         );
     setState(() {
       _addedFolderPath = null;
+      _folderError = null;
       _folderIsInDownloads = false;
       _foundTitles = null;
       _foundTitleNames = const [];
@@ -412,8 +410,11 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   /// Nothing is undone. Each step applies its answer as it is left, and coming
   /// back and going forward again simply applies the new one.
   void _back() {
+    if (_busy) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
       _forward = false;
+      _actionError = null;
       _step = _step == _Step.repository && _shouldArrangeBar
           ? _Step.navigation
           : _firstStep;
@@ -435,6 +436,8 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   }
 
   Future<void> _addRepo() async {
+    if (_busy || !_urlLooksValid) return;
+    final type = _repoType;
     final l10n = l10nLocalizations(context)!;
     final url = _controller.text.trim();
     setState(() {
@@ -443,11 +446,12 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     });
     try {
       final repo = await ref.read(getRepoInfosProvider(jsonUrl: url).future);
+      if (!mounted) return;
       if (repo == null) {
         setState(() => _error = l10n.onboarding_repo_failed);
         return;
       }
-      final currentRepos = ref.read(extensionsRepoStateProvider(_repoType));
+      final currentRepos = ref.read(extensionsRepoStateProvider(type));
       final alreadyExists = currentRepos.any((r) {
         final rUrl = r.jsonUrl?.trim().toLowerCase();
         final newUrl = repo.jsonUrl?.trim().toLowerCase();
@@ -456,7 +460,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
             r == repo;
       });
       if (!alreadyExists) {
-        await ref.read(extensionsRepoStateProvider(_repoType).notifier).set([
+        await ref.read(extensionsRepoStateProvider(type).notifier).set([
           ...currentRepos,
           repo,
         ]);
@@ -464,47 +468,70 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       if (!mounted) return;
       setState(() {
         _added = repo;
-        _addedFor = _repoType;
+        _addedFor = type;
         _controller.clear();
       });
     } catch (e) {
       // Whatever went wrong, the user's move is the same: check the address
       // or the connection. A raw exception under a text field is noise.
-      setState(() => _error = l10n.onboarding_repo_failed);
+      if (mounted) setState(() => _error = l10n.onboarding_repo_failed);
     } finally {
       if (mounted) setState(() => _adding = false);
     }
   }
 
-  /// Leaves on the extensions list for the library the repository stocks,
-  /// which is where the extensions it provides are waiting to be installed.
-  /// That is the next thing to do, so there is no reason to make the user go
-  /// and find it.
-  ///
-  /// Only when a repository was actually added. Somebody who skipped has
-  /// nothing to install and is better off in their library.
-  void _finish() {
-    // The library the repository was filed under, and only while the user
-    // still reads it. Changing the picker afterwards, or going back and
-    // dropping that library, would otherwise land them on an extensions list
-    // with nothing in it.
-    final landing = _addedFor;
-    if (landing == null || !_libraries.contains(landing)) {
-      ref.read(onboardingCompletedStateProvider.notifier).complete();
-      return;
-    }
-    ref
-        .read(browseInitialTabProvider.notifier)
-        .request(BrowseTab(landing, BrowseTabKind.extensions));
-    ref.read(routerProvider).go('/browse');
-    // Let Browse build behind this screen before fading to it. Navigating and
-    // finishing in the same frame meant the fade ran over the frame the branch
-    // was still being created in, tab controllers, permission check and all,
-    // which is what made the end of the flow the roughest part of it.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(onboardingCompletedStateProvider.notifier).complete();
+  /// An explicit destination wins over the repository's next installation step.
+  /// Skipping without content simply closes setup on the existing route.
+  void _finish({BrowseTab? browseTarget, bool openLibrary = false}) {
+    if (_busy) return;
+    setState(() {
+      _finishing = true;
+      _actionError = null;
+    });
+    try {
+      // The library the repository was filed under, and only while the user
+      // still reads it. Changing the picker afterwards, or going back and
+      // dropping that library, would otherwise land them on an extensions list
+      // with nothing in it.
+      final landing = _addedFor;
+      final target =
+          browseTarget ??
+          (landing != null && _libraries.contains(landing)
+              ? BrowseTab(landing, BrowseTabKind.extensions)
+              : null);
+      if (target != null) {
+        ref.read(browseInitialTabProvider.notifier).request(target);
+        ref.read(routerProvider).go('/browse');
+      } else if (openLibrary) {
+        ref.read(routerProvider).go(_libraryRoutes[_chosen.first]!);
+      } else {
+        _complete();
+        return;
       }
+      // Let the router accept the destination before dismissing setup.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _complete();
+        }
+      });
+    } catch (_) {
+      _finishFailed();
+    }
+  }
+
+  void _complete() {
+    try {
+      ref.read(onboardingCompletedStateProvider.notifier).complete();
+    } catch (_) {
+      _finishFailed();
+    }
+  }
+
+  void _finishFailed() {
+    if (!mounted) return;
+    setState(() {
+      _finishing = false;
+      _actionError = context.l10n.failed;
     });
   }
 
@@ -512,6 +539,56 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     final theme = Theme.of(context);
+
+    if (_mobile) {
+      final first = _step == _Step.libraries;
+      final hasRepository = _addedFor != null && _libraries.contains(_addedFor);
+      final openLibrary =
+          !first && !hasRepository && _existingFolders.isNotEmpty;
+      return MobileOnboardingFrame(
+        step: first ? 1 : 2,
+        title: first ? l10n.app_name : l10n.onboarding_content_title,
+        description: first
+            ? l10n.onboarding_mobile_libraries_body
+            : l10n.onboarding_mobile_sources_body,
+        busy: _busy,
+        leaveLabel: first
+            ? l10n.onboarding_skip
+            : openLibrary
+            ? l10n.onboarding_open_library
+            : l10n.onboarding_start,
+        onLeave: () => _finish(openLibrary: openLibrary),
+        onBack: first ? null : _back,
+        onNext: first ? _next : null,
+        error: _actionError,
+        child: first
+            ? MobileOnboardingLibraries(
+                selected: _libraries,
+                busy: _busy,
+                onToggle: _toggleLibrary,
+                onRestore: _restore,
+              )
+            : MobileOnboardingSources(
+                libraries: _chosen,
+                repoType: _repoType,
+                onRepoType: (type) => setState(() => _repoType = type),
+                urlController: _controller,
+                onUrlChanged: () => setState(() => _error = null),
+                canAdd: _urlLooksValid,
+                onAdd: _addRepo,
+                busy: _busy,
+                repoError: _error,
+                addedName: _added == null
+                    ? null
+                    : _added!.name ?? _added!.jsonUrl ?? '',
+                onBrowse: () => _finish(
+                  browseTarget: BrowseTab(_chosen.first, BrowseTabKind.sources),
+                ),
+                onAddFolder: _addLocalFolder,
+                folderStatus: _mobileFolderStatus(l10n),
+              ),
+      );
+    }
 
     final scaffold = Scaffold(
       body: SafeArea(
@@ -526,7 +603,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
                 child: Padding(
                   padding: EdgeInsets.all(isTv ? 12 : 4).add(tvPageInsets),
                   child: IconButton(
-                    onPressed: _adding ? null : _back,
+                    onPressed: _busy ? null : _back,
                     tooltip: l10n.go_back,
                     icon: const Icon(Icons.arrow_back),
                   ),
@@ -555,25 +632,13 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // The app's own mark rather than a stock glyph. icon.png is
-              // the bare silhouette, tinted against the background the same
-              // way the More and About screens tint it. The full colour
-              // icons are drawn on a white tile, which reads as a bright
-              // block on a dark theme, so they are not used here.
-              Image.asset(
-                appIconAssets[2],
-                height: isTv ? 96 : 80,
-                color: theme.brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-                fit: BoxFit.contain,
-              ),
+              NodeLaneBrandMark(size: isTv ? 96 : 80),
               const SizedBox(height: 16),
               // Above the words rather than below them, so it keeps its place
               // while the content underneath changes height. Not tappable:
               // going forward has to run through _next so each answer is
               // applied, and going back is the arrow's job.
-              _StepDots(
+              OnboardingStepDots(
                 steps: _visibleSteps.length,
                 current: _visibleSteps.indexOf(_step),
                 duration: _motion,
@@ -642,9 +707,10 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
                   ),
                 ),
               ),
+              if (_actionError != null) Text(_actionError!),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: _adding ? null : _finish,
+                onPressed: _busy ? null : _finish,
                 child: Text(_leaveLabel(l10n)),
               ),
               // Typing a URL on a d-pad is miserable, so on a TV say
@@ -686,55 +752,59 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
 
   List<Widget> _stepBody(AppLocalizations l10n) => switch (_step) {
     _Step.libraries => [
-      _ChoiceRow<ItemType>(
+      OnboardingChoiceRow<ItemType>(
         values: ItemType.values,
-        label: (type) => _libraryLabel(l10n, type),
+        label: (type) => type == ItemType.manga
+            ? _libraryLabel(l10n, type)
+            : context.l10n.onboarding_untested_content(
+                _libraryLabel(l10n, type),
+              ),
         isSelected: _libraries.contains,
-        onTap: (type) => setState(() {
-          // One has to stay. An empty bar would have no library in it and the
-          // next step nothing to arrange.
-          if (!_libraries.remove(type)) {
-            _libraries.add(type);
-          } else if (_libraries.isEmpty) {
-            _libraries.add(type);
-          }
-        }),
+        onTap: _busy ? null : _toggleLibrary,
       ),
       const SizedBox(height: 16),
-      FilledButton(onPressed: _next, child: Text(l10n.onboarding_next)),
+      FilledButton(
+        onPressed: _busy ? null : _next,
+        child: Text(l10n.onboarding_next),
+      ),
       const SizedBox(height: 12),
       // Given weight next to Next rather than tucked under it. For anyone
       // arriving from another app or a reinstall this is the whole job, and
       // burying it costs them a walk through three questions they have
       // already answered somewhere else.
       OutlinedButton.icon(
-        onPressed: _restore,
+        onPressed: _busy ? null : _restore,
         icon: const Icon(Icons.settings_backup_restore, size: 20),
         label: Text(l10n.onboarding_restore),
       ),
     ],
     _Step.navigation => [
-      _ChoiceRow<bool>(
+      OnboardingChoiceRow<bool>(
         values: const [false, true],
         label: (merged) =>
             merged ? l10n.onboarding_nav_merged : l10n.onboarding_nav_split,
         isSelected: (merged) => merged == _mergeLibraries,
-        onTap: (merged) => setState(() => _mergeLibraries = merged),
+        onTap: _busy
+            ? null
+            : (merged) => setState(() => _mergeLibraries = merged),
       ),
       const SizedBox(height: 18),
       // The words alone do not settle it. This is the bar the choice produces,
       // with the libraries they actually picked in it.
-      _NavPreview(libraries: _chosen, merged: _mergeLibraries),
+      OnboardingNavPreview(libraries: _chosen, merged: _mergeLibraries),
       const SizedBox(height: 18),
-      FilledButton(onPressed: _next, child: Text(l10n.onboarding_next)),
+      FilledButton(
+        onPressed: _busy ? null : _next,
+        child: Text(l10n.onboarding_next),
+      ),
     ],
     _Step.repository => [
       if (_chosen.length > 1) ...[
-        _ChoiceRow<ItemType>(
+        OnboardingChoiceRow<ItemType>(
           values: _chosen,
           label: (type) => _libraryLabel(l10n, type),
           isSelected: (type) => type == _repoType,
-          onTap: _adding ? null : (type) => setState(() => _repoType = type),
+          onTap: _busy ? null : (type) => setState(() => _repoType = type),
         ),
         const SizedBox(height: 16),
       ],
@@ -744,10 +814,10 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         // something the user has to hunt for.
         autofocus: isTv,
         autocorrect: false,
-        enabled: !_adding,
+        enabled: !_busy,
         keyboardType: TextInputType.url,
         onChanged: (_) => setState(() => _error = null),
-        onSubmitted: (_) => _urlLooksValid && !_adding ? _addRepo() : null,
+        onSubmitted: (_) => _urlLooksValid && !_busy ? _addRepo() : null,
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           isDense: true,
@@ -758,7 +828,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       ),
       const SizedBox(height: 12),
       FilledButton(
-        onPressed: _urlLooksValid && !_adding ? _addRepo : null,
+        onPressed: _urlLooksValid && !_busy ? _addRepo : null,
         child: _adding
             ? const SizedBox(
                 height: 18,
@@ -769,7 +839,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       ),
       if (_added != null) ...[
         const SizedBox(height: 14),
-        _AddedRepo(name: _added!.name ?? _added!.jsonUrl ?? ''),
+        OnboardingAddedRepo(name: _added!.name ?? _added!.jsonUrl ?? ''),
       ],
       const SizedBox(height: 20),
       Text(
@@ -780,7 +850,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       ),
       const SizedBox(height: 8),
       OutlinedButton.icon(
-        onPressed: _adding ? null : _addLocalFolder,
+        onPressed: _busy ? null : _addLocalFolder,
         icon: const Icon(Icons.folder_open, size: 20),
         label: Text(l10n.onboarding_local_folder),
       ),
@@ -789,7 +859,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       // and invites them to add one they already have.
       if (_addedFolderPath == null && _existingFolders.isNotEmpty) ...[
         const SizedBox(height: 12),
-        _FolderStatus(
+        OnboardingFolderStatus(
           message: l10n.onboarding_local_existing('${_existingFolders.length}'),
           titles: _existingFolders
               .map((folder) => folder.name ?? '')
@@ -808,12 +878,19 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         style: Theme.of(context).textTheme.bodySmall
             ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
+      if (_folderError != null) ...[
+        const SizedBox(height: 12),
+        Text(_folderError!),
+      ],
       if (_addedLocalFolder) ...[
         const SizedBox(height: 14),
         if (_scanningFolder)
-          _FolderStatus(message: l10n.onboarding_local_scanning, busy: true)
+          OnboardingFolderStatus(
+            message: l10n.onboarding_local_scanning,
+            busy: true,
+          )
         else if ((_foundTitles ?? 0) > 0)
-          _FolderStatus(
+          OnboardingFolderStatus(
             message: _folderIsInDownloads
                 ? l10n.onboarding_local_in_downloads
                 : _typeBreakdown(l10n),
@@ -821,11 +898,11 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
             titles: _foundTitleNames,
             warn: _folderIsInDownloads,
           )
-        else
+        else if (_folderError == null)
           // Zero almost always means the folder above this one. The scanner
           // reads the picked folder as a shelf of titles, so a single title's
           // own folder looks like a shelf of chapters with nothing in them.
-          _FolderStatus(
+          OnboardingFolderStatus(
             message: l10n.onboarding_local_empty,
             path: _addedFolderPath,
             warn: true,
@@ -841,455 +918,64 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     ],
   };
 
+  void _toggleLibrary(ItemType type) {
+    if (_busy) return;
+    setState(() {
+      if (!_libraries.remove(type) || _libraries.isEmpty) _libraries.add(type);
+    });
+  }
+
+  Widget? _mobileFolderStatus(AppLocalizations l10n) {
+    if (_folderError != null) {
+      return OnboardingFolderStatus(
+        mobile: true,
+        message: _folderError!,
+        path: _addedFolderPath,
+        warn: true,
+        onAddFolder: _addLocalFolder,
+        onRemoveFolder: _addedLocalFolder ? _removeLocalFolder : null,
+        actionsEnabled: !_busy,
+      );
+    }
+    if (_addedLocalFolder) {
+      return OnboardingFolderStatus(
+        key: ValueKey(_addedFolderPath),
+        mobile: true,
+        message: _scanningFolder || _pickingFolder
+            ? l10n.onboarding_local_scanning
+            : _folderIsInDownloads
+            ? l10n.onboarding_local_in_downloads
+            : (_foundTitles ?? 0) > 0
+            ? _typeBreakdown(l10n)
+            : l10n.onboarding_local_empty,
+        path: _addedFolderPath,
+        titles: _foundTitleNames,
+        busy: _scanningFolder || _pickingFolder,
+        onAddFolder: _addLocalFolder,
+        onRemoveFolder: _removeLocalFolder,
+        actionsEnabled: !_busy,
+        warn:
+            !_scanningFolder &&
+            !_pickingFolder &&
+            (_folderIsInDownloads || (_foundTitles ?? 0) == 0),
+      );
+    }
+    if (_existingFolders.isEmpty) return null;
+    return OnboardingFolderStatus(
+      mobile: true,
+      message: l10n.onboarding_local_existing('${_existingFolders.length}'),
+      onAddFolder: _addLocalFolder,
+      actionsEnabled: !_busy,
+      titles: _existingFolders
+          .map((f) => f.name ?? '')
+          .where((name) => name.isNotEmpty)
+          .toList(),
+    );
+  }
+
   String _libraryLabel(AppLocalizations l10n, ItemType type) => switch (type) {
     ItemType.manga => l10n.manga,
     ItemType.anime => l10n.anime,
     ItemType.novel => l10n.novel,
   };
-}
-
-/// A row of choices that works under a thumb and under a d-pad.
-///
-/// The TV build uses the same pills as the TV home and the Browse switcher,
-/// because a SegmentedButton's segments are not reliably reachable with a
-/// d-pad.
-class _ChoiceRow<T> extends StatelessWidget {
-  const _ChoiceRow({
-    required this.values,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final List<T> values;
-  final String Function(T) label;
-  final bool Function(T) isSelected;
-  final void Function(T)? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    if (isTv) {
-      return Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          for (final value in values)
-            TvPill(
-              label: label(value),
-              selected: isSelected(value),
-              onTap: () => onTap?.call(value),
-            ),
-        ],
-      );
-    }
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final value in values)
-          FilterChip(
-            label: Text(label(value)),
-            selected: isSelected(value),
-            // The tick would appear and disappear with the selection, so every
-            // chip in the row changed width and the row jumped around as the
-            // user tapped through it. The fill already says which is on.
-            showCheckmark: false,
-            // The default selected fill comes from the scheme's secondary
-            // container while the label stays on the surface colour, and on
-            // some of the light schemes that lands dark text on a dark fill.
-            // Pairing primary with onPrimary keeps them legible together
-            // whatever palette the user has chosen.
-            selectedColor: scheme.primary,
-            labelStyle: TextStyle(
-              color: isSelected(value) ? scheme.onPrimary : scheme.onSurface,
-            ),
-            onSelected: onTap == null ? null : (_) => onTap!(value),
-          ),
-      ],
-    );
-  }
-}
-
-/// A small drawing of the navigation bar the current choice would produce.
-///
-/// Not a screenshot: it is built from the same icons and labels the real bar
-/// uses, so it stays honest if those change, and it shows the libraries the
-/// user actually picked rather than a stock three.
-class _NavPreview extends StatelessWidget {
-  const _NavPreview({required this.libraries, required this.merged});
-
-  final List<ItemType> libraries;
-  final bool merged;
-
-  static const _icons = {
-    ItemType.manga: Icons.collections_bookmark_outlined,
-    ItemType.anime: Icons.video_collection_outlined,
-    ItemType.novel: Icons.local_library_outlined,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = l10nLocalizations(context)!;
-    final labels = {
-      ItemType.manga: l10n.manga,
-      ItemType.anime: l10n.anime,
-      ItemType.novel: l10n.novel,
-    };
-
-    final bar = <(IconData, String)>[
-      if (merged)
-        (Icons.collections_bookmark_outlined, l10n.library)
-      else
-        for (final type in libraries) (_icons[type]!, labels[type]!),
-      (Icons.explore_outlined, l10n.browse),
-      (Icons.more_horiz_outlined, l10n.more),
-    ];
-
-    // Merged hides a second bar behind the first: tapping Library swaps the
-    // whole row for the libraries plus a way back. That is the part of the
-    // choice the words cannot describe, so it is drawn too.
-    final insideLibrary = <(IconData, String)>[
-      (Icons.arrow_back, l10n.go_back),
-      for (final type in libraries) (_icons[type]!, labels[type]!),
-    ];
-
-    return Column(
-      children: [
-        _NavPreviewBar(items: bar),
-        if (merged) ...[
-          const SizedBox(height: 6),
-          Icon(
-            Icons.keyboard_arrow_down,
-            size: 18,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            l10n.onboarding_nav_inside,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          _NavPreviewBar(items: insideLibrary),
-        ],
-      ],
-    );
-  }
-}
-
-class _NavPreviewBar extends StatelessWidget {
-  const _NavPreviewBar({required this.items});
-
-  final List<(IconData, String)> items;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        // Solid, not a half transparent wash. On a light scheme the wash left
-        // the bar barely separated from the page behind it.
-        color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            for (final (index, item) in items.indexed)
-              _NavPreviewItem(
-                icon: item.$1,
-                label: item.$2,
-                // The entry the bar opens on. A back arrow never is one.
-                selected: index == 0 && item.$1 != Icons.arrow_back,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavPreviewItem extends StatelessWidget {
-  const _NavPreviewItem({
-    required this.icon,
-    required this.label,
-    required this.selected,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    // The current entry carries an indicator behind its icon, which is what a
-    // NavigationBar actually draws and what makes it read as current.
-    //
-    // The icon sits on that indicator and takes its colour. The label sits on
-    // the bar and takes the bar's. Colouring both from the indicator put a
-    // near white label on a light grey bar under the rose schemes, which made
-    // the current entry the one word in the row you could not read.
-    final iconColor = selected
-        ? scheme.onSecondaryContainer
-        : scheme.onSurfaceVariant;
-    final labelColor = selected ? scheme.onSurface : scheme.onSurfaceVariant;
-    return Flexible(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: selected ? scheme.secondaryContainer : null,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              child: Icon(icon, size: 20, color: iconColor),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: labelColor,
-              fontWeight: selected ? FontWeight.w600 : null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Where the user is in the flow, and how much of it is left.
-///
-/// The count is not fixed, because the arrange step drops out for a single
-/// library or a wide window. Three dots followed by only two questions would
-/// be a small lie about how long this takes.
-class _StepDots extends StatelessWidget {
-  const _StepDots({
-    required this.steps,
-    required this.current,
-    required this.duration,
-  });
-
-  final int steps;
-  final int current;
-  final Duration duration;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < steps; i++)
-          AnimatedContainer(
-            duration: duration,
-            curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            height: 6,
-            // The one you are on is a bar, the rest are dots, so it reads at a
-            // glance without colour having to carry it alone.
-            width: i == current ? 20 : 6,
-            decoration: BoxDecoration(
-              color: i == current
-                  ? scheme.primary
-                  : scheme.onSurfaceVariant.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// What became of the folder that was just added.
-class _FolderStatus extends StatefulWidget {
-  const _FolderStatus({
-    required this.message,
-    this.path,
-    this.titles = const [],
-    this.busy = false,
-    this.warn = false,
-  });
-
-  final String message;
-
-  /// Where the folder is, so the user can tell which one they picked before
-  /// deciding whether to take it back.
-  final String? path;
-
-  /// What it turned out to hold. A count says the scan worked; the names say
-  /// it found the right things.
-  final List<String> titles;
-
-  final bool busy;
-  final bool warn;
-
-  @override
-  State<_FolderStatus> createState() => _FolderStatusState();
-}
-
-class _FolderStatusState extends State<_FolderStatus> {
-  /// Whether the full list of widget.titles is showing.
-  ///
-  /// Three names answer "did the scan work". They do not always answer "is
-  /// this the right folder", which is the question worth answering here while
-  /// Remove is still one tap away.
-  bool _expanded = false;
-
-  /// Enough to recognise a folder by, and a stop before a first run screen
-  /// turns into a library listing.
-  static const _expandedLimit = 40;
-
-  /// The tail of a widget.path.
-  ///
-  /// On iOS the front of one of these is a hundred characters of container
-  /// UUID, so truncating the end would leave only the part that identifies
-  /// nothing.
-  static String _tail(String path) {
-    final parts = p.split(path).where((part) => part != '/').toList();
-    if (parts.length <= 3) return path;
-    return '…/${parts.sublist(parts.length - 3).join('/')}';
-  }
-
-  /// The titles, collapsed to a few names or opened to the lot.
-  ///
-  /// Tapping toggles it. The count is the affordance: it is drawn in the
-  /// accent colour so it reads as something to press, which is as much
-  /// decoration as a first run screen should spend on this.
-  Widget _titleList(TextStyle? muted) {
-    final scheme = Theme.of(context).colorScheme;
-    final collapsedCount = widget.titles.length <= 4 ? widget.titles.length : 3;
-    final shown = _expanded
-        ? widget.titles.take(_expandedLimit).toList()
-        : widget.titles.take(collapsedCount).toList();
-    final hidden = widget.titles.length - shown.length;
-
-    return GestureDetector(
-      onTap: hidden > 0 || _expanded
-          ? () => setState(() => _expanded = !_expanded)
-          : null,
-      behavior: HitTestBehavior.opaque,
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: shown.join(' · ')),
-            if (hidden > 0)
-              TextSpan(
-                text: '  +$hidden',
-                style: muted?.copyWith(
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              )
-            else if (_expanded)
-              TextSpan(
-                text: '  ${'−'}',
-                style: muted?.copyWith(
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-          ],
-        ),
-        textAlign: TextAlign.center,
-        // Opened, it grows inside the step's scroll view rather than
-        // clipping. Closed, it stays two lines so the buttons keep their
-        // place.
-        maxLines: _expanded ? null : 2,
-        overflow: _expanded ? TextOverflow.clip : TextOverflow.ellipsis,
-        style: muted,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = widget.warn ? theme.colorScheme.error : theme.hintColor;
-    final muted = theme.textTheme.bodySmall?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
-    );
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (widget.busy)
-              SizedBox(
-                height: 14,
-                width: 14,
-                child: CircularProgressIndicator(strokeWidth: 2, color: color),
-              )
-            else
-              Icon(
-                widget.warn ? Icons.info_outline : Icons.check_circle_outline,
-                size: 18,
-                color: color,
-              ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                widget.message,
-                style: theme.textTheme.bodySmall?.copyWith(color: color),
-              ),
-            ),
-          ],
-        ),
-        if (widget.path != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            _tail(widget.path!),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: muted?.copyWith(fontSize: 11),
-          ),
-        ],
-        if (widget.titles.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          _titleList(muted),
-        ],
-      ],
-    );
-  }
-}
-
-class _AddedRepo extends StatelessWidget {
-  const _AddedRepo({required this.name});
-
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.check_circle_outline, size: 18, color: theme.hintColor),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            name,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
-          ),
-        ),
-      ],
-    );
-  }
 }

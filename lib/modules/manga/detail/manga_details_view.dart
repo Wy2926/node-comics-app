@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
@@ -13,22 +14,29 @@ import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/services/get_detail.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/detail/manga_detail_view.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
+import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 
 enum _DuplicateLibraryAction { addAnyway, migrate }
 
 class MangaDetailsView extends ConsumerStatefulWidget {
   final Manga manga;
   final bool sourceExist;
-  final Function(bool) checkForUpdate;
+  final bool loading;
+  final Future<void> Function() onRefresh;
   const MangaDetailsView({
     super.key,
     required this.sourceExist,
     required this.manga,
-    required this.checkForUpdate,
+    required this.onRefresh,
+    this.loading = false,
   });
 
   @override
@@ -96,23 +104,25 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     final l10n = l10nLocalizations(context)!;
     return showDialog<_DuplicateLibraryAction>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => NodeLaneAlertDialog(
         title: Text(model.name ?? ''),
         content: Text(l10n.already_in_library(oldSourceName, model.name ?? '')),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(ctx, _DuplicateLibraryAction.addAnyway),
-            child: Text(l10n.add_anyway),
-          ),
-          TextButton(
+          NodeLaneDialogAction(
+            label: l10n.migrate,
             onPressed: () =>
                 Navigator.pop(ctx, _DuplicateLibraryAction.migrate),
-            child: Text(l10n.migrate),
+          ),
+          NodeLaneDialogAction(
+            label: l10n.add_anyway,
+            secondary: true,
+            onPressed: () =>
+                Navigator.pop(ctx, _DuplicateLibraryAction.addAnyway),
+          ),
+          NodeLaneDialogAction(
+            label: l10n.cancel,
+            secondary: true,
+            onPressed: () => Navigator.pop(ctx),
           ),
         ],
       ),
@@ -152,135 +162,135 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     if (context.mounted) Navigator.pop(context);
   }
 
-  Size measureText(String text, TextStyle style) {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    return textPainter.size;
-  }
-
-  double calculateDynamicButtonWidth(
-    String text,
-    TextStyle textStyle,
-    double padding,
-  ) {
-    final textSize = measureText(text, textStyle);
-    return textSize.width + padding;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     bool? isLocalArchive = widget.manga.isLocalArchive ?? false;
-    return Scaffold(
-      floatingActionButton: Consumer(
-        builder: (context, ref, child) {
-          final chaptersList = ref.watch(chaptersListttStateProvider);
-          final isExtended = ref.watch(isExtendedStateProvider);
-          return ref.watch(isLongPressedStateProvider)
-              ? Container()
-              : chaptersList.isNotEmpty &&
-                    chaptersList
-                        .where((element) => !element.isRead!)
-                        .toList()
-                        .isNotEmpty
-              ? StreamBuilder(
-                  stream: historyRepository.watchByItemType(
-                    widget.manga.itemType,
-                  ),
-                  builder: (context, snapshot) {
-                    String buttonLabel = widget.manga.itemType != ItemType.anime
-                        ? l10n.read
-                        : l10n.watch;
-                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                      final incognitoMode = ref.watch(
-                        incognitoModeStateProvider,
-                      );
-                      final entries = snapshot.data!
-                          .where(
-                            (element) => element.mangaId == widget.manga.id,
-                          )
-                          .toList();
-
-                      if (entries.isNotEmpty && !incognitoMode) {
-                        final chap = entries.last.chapter.value!;
-                        return CustomFloatingActionBtn(
-                          isExtended: !isExtended,
-                          label: l10n.resume,
-                          onPressed: () {
-                            chap.pushToReaderView(context);
-                          },
-                        );
-                      }
-                    }
-                    return CustomFloatingActionBtn(
-                      isExtended: !isExtended,
-                      label: buttonLabel,
-                      onPressed: () {
-                        widget.manga.chapters.toList().first.pushToReaderView(
-                          context,
-                        );
-                      },
-                    );
-                  },
-                )
-              : Container();
-        },
-      ),
+    final mobile = isMobile && !isTv;
+    final page = Scaffold(
+      floatingActionButton: mobile ? null : _readingAction(false),
       body: MangaDetailView(
-        titleDescription: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Icon(Icons.person_outline, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  (widget.manga.author?.isEmpty ?? false)
-                      ? l10n.unknown
-                      : widget.manga.author!,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Icon(getMangaStatusIcon(widget.manga.status), size: 14),
-                const SizedBox(width: 4),
-                Text(getMangaStatusName(widget.manga.status, context)),
-                if (!isLocalArchive) const Text(' • '),
-                if (!isLocalArchive) Text(widget.manga.source!),
-                if (!isLocalArchive)
-                  Text(' (${widget.manga.lang!.toUpperCase()})'),
-                if (!isLocalArchive && !widget.sourceExist)
-                  const Padding(
-                    padding: EdgeInsets.all(3),
-                    child: Icon(
-                      Icons.warning_amber,
-                      color: Colors.deepOrangeAccent,
-                      size: 14,
+        loading: widget.loading,
+        readingAction: mobile ? _readingAction(true) : null,
+        titleDescription: mobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.loading &&
+                      !(widget.manga.author?.trim().isNotEmpty ?? false))
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: NodeLaneTokens.space4,
+                      ),
+                      child: NodeLaneSkeleton(
+                        height: NodeLaneTokens.space12,
+                        width: 96,
+                      ),
+                    )
+                  else
+                    Text(
+                      l10n.manga_author(
+                        (widget.manga.author?.trim().isNotEmpty ?? false)
+                            ? widget.manga.author!
+                            : l10n.unknown,
+                      ),
                     ),
+                  if (widget.loading && widget.manga.status == Status.unknown)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: NodeLaneTokens.space4,
+                      ),
+                      child: NodeLaneSkeleton(
+                        height: NodeLaneTokens.space12,
+                        width: 64,
+                      ),
+                    )
+                  else
+                    Text(getMangaStatusName(widget.manga.status, context)),
+                  if (!isLocalArchive)
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          '${widget.manga.source} · ${widget.manga.lang!.toUpperCase()}',
+                        ),
+                        if (!widget.sourceExist)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(
+                              Icons.warning_amber,
+                              color: Colors.deepOrangeAccent,
+                              size: 14,
+                            ),
+                          ),
+                      ],
+                    ),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Icon(
+                        mobile
+                            ? NodeLaneIcons.of(context).account
+                            : Icons.person_outline,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        (widget.manga.author?.isEmpty ?? false)
+                            ? l10n.unknown
+                            : widget.manga.author!,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ],
                   ),
-              ],
-            ),
-          ],
-        ),
-        action: widget.manga.favorite!
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Icon(getMangaStatusIcon(widget.manga.status), size: 14),
+                      const SizedBox(width: 4),
+                      Text(getMangaStatusName(widget.manga.status, context)),
+                      if (!isLocalArchive) const Text(' • '),
+                      if (!isLocalArchive) Text(widget.manga.source!),
+                      if (!isLocalArchive)
+                        Text(' (${widget.manga.lang!.toUpperCase()})'),
+                      if (!isLocalArchive && !widget.sourceExist)
+                        const Padding(
+                          padding: EdgeInsets.all(3),
+                          child: Icon(
+                            Icons.warning_amber,
+                            color: Colors.deepOrangeAccent,
+                            size: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+        action: mobile
+            ? NodeLaneSecondaryButton(
+                icon: widget.manga.favorite!
+                    ? NodeLaneIcons.of(context).check
+                    : NodeLaneIcons.of(context).add,
+                onPressed: _onFavoritePressed,
+                child: Text(
+                  widget.manga.favorite!
+                      ? l10n.in_library
+                      : l10n.add_to_library,
+                ),
+              )
+            : widget.manga.favorite!
             ? SizedBox(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     elevation: 0,
                   ),
-                  onPressed: () async {
-                    final model = widget.manga;
-                    model.favorite = false;
-                    model.dateAdded = 0;
-                    await mangaRepository.save(model);
-                  },
+                  onPressed: _onFavoritePressed,
                   child: Column(
                     children: [
                       const Icon(Icons.favorite, size: 20),
@@ -299,7 +309,7 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   elevation: 0,
                 ),
-                onPressed: () => _onAddToLibraryPressed(context),
+                onPressed: _onFavoritePressed,
                 child: Column(
                   children: [
                     Icon(
@@ -324,9 +334,86 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
           ref.read(isExtendedStateProvider.notifier).update(value);
         },
         sourceExist: widget.sourceExist,
-        checkForUpdate: widget.checkForUpdate,
+        onRefresh: widget.onRefresh,
         itemType: widget.manga.itemType,
       ),
     );
+    return mobile ? NodeLaneSurface(child: page) : page;
   }
+
+  Future<void> _onFavoritePressed() async {
+    final model = widget.manga;
+    if (model.favorite!) {
+      model.favorite = false;
+      model.dateAdded = 0;
+      await mangaRepository.save(model);
+    } else {
+      await _onAddToLibraryPressed(context);
+    }
+  }
+
+  Widget _readingAction(bool mobile) {
+    final l10n = context.l10n;
+    return Consumer(
+      builder: (context, ref, child) {
+        final chapters = ref.watch(chaptersListttStateProvider);
+        final selecting = ref.watch(isLongPressedStateProvider);
+        if (selecting || chapters.isEmpty) return const SizedBox.shrink();
+        final isExtended = mobile ? false : ref.watch(isExtendedStateProvider);
+        final incognito = ref.watch(incognitoModeStateProvider);
+        final anime = widget.manga.itemType == ItemType.anime;
+        return StreamBuilder(
+          stream: historyRepository.watchByItemType(widget.manga.itemType),
+          builder: (context, snapshot) {
+            final historyChapter = snapshot.data
+                ?.where((entry) => entry.mangaId == widget.manga.id)
+                .lastOrNull
+                ?.chapter
+                .value;
+            final resume =
+                !incognito &&
+                historyChapter != null &&
+                chapters.any((chapter) => !(chapter.isRead ?? false));
+            return _readingButton(
+              mobile: mobile,
+              isExtended: !isExtended,
+              label: resume
+                  ? (mobile && !anime
+                        ? l10n.manga_continue_reading
+                        : l10n.resume)
+                  : (anime ? l10n.watch : l10n.read),
+              onPressed: () {
+                final chapter = resume
+                    ? historyChapter
+                    : widget.manga.getChapterListForReading().firstOrNull;
+                chapter?.pushToReaderView(context);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _readingButton({
+    required bool mobile,
+    required bool isExtended,
+    required String label,
+    required VoidCallback onPressed,
+  }) => mobile
+      ? FilledButton.icon(
+          label: Text(label),
+          icon: Icon(
+            widget.manga.itemType == ItemType.anime
+                ? NodeLaneIcons.of(context).anime
+                : NodeLaneIcons.of(context).manga,
+            size: NodeLaneTokens.iconSize,
+          ),
+          onPressed: onPressed,
+        )
+      : CustomFloatingActionBtn(
+          isExtended: isExtended,
+          label: label,
+          onPressed: onPressed,
+        );
 }

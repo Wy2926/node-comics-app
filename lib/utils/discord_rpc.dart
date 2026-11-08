@@ -1,11 +1,19 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/localized_message.dart';
 import 'package:flutter_discord_rpc_fork/flutter_discord_rpc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
 
 class DiscordRPC {
+  static const _appAssets = RPCAssets(
+    largeImage: 'app-icon',
+    largeText: NodeLaneBrand.displayName,
+  );
+
   /// Id of the Discord Application
   final String applicationId;
 
@@ -25,19 +33,17 @@ class DiscordRPC {
   int? _activeReaderSession;
 
   /// Instance of the current RPC activity
-  final RpcActivity activity = RpcActivity(
-    assets: const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
+  late final RpcActivity activity = RpcActivity(
+    assets: _appAssets,
     buttons: [
-      const RPCButton(
-        label: "Get Mangayomi",
-        url: "https://github.com/kodjodevf/mangayomi",
-      ),
-      const RPCButton(
-        label: "Join us",
-        url: "https://discord.com/invite/EjfBuYahsP",
+      RPCButton(
+        label: localizedMessage(
+          (l10n) => l10n.discord_get_app(NodeLaneBrand.displayName),
+        ),
+        url: NodeLaneBrand.repositoryUrl,
       ),
     ],
-    details: "Idle",
+    details: localizedMessage((l10n) => l10n.discord_idle),
     state: "-----",
     timestamps: RPCTimestamps(
       start: DateTime.timestamp().millisecondsSinceEpoch,
@@ -76,9 +82,9 @@ class DiscordRPC {
 
   Future<void> showIdleText() async {
     await updateActivity(
-      details: "Idle",
+      details: localizedMessage((l10n) => l10n.discord_idle),
       state: "-----",
-      assets: const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
+      assets: _appAssets,
     );
   }
 
@@ -97,16 +103,17 @@ class DiscordRPC {
   }
 
   Future<void> showChapterDetails(WidgetRef ref, Chapter chapter) async {
-    final status = chapter.manga.value!.itemType == ItemType.anime
-        ? "Watching"
-        : "Reading";
-    final title = chapter.manga.value!.name;
+    final l10n = ref.context.l10n;
+    final title = chapter.manga.value!.name ?? '';
+    final details = chapter.manga.value!.itemType == ItemType.anime
+        ? l10n.discord_watching_title(title)
+        : l10n.discord_reading_title(title);
     final chapterTitle = chapter.name;
     final imageUrl = chapter.manga.value!.imageUrl;
     final rpcShowTitle = ref.read(rpcShowTitleStateProvider);
     final rpcShowCoverImage = ref.read(rpcShowCoverImageStateProvider);
     await updateActivity(
-      details: rpcShowTitle ? "$status $title" : "Idle",
+      details: rpcShowTitle ? details : l10n.discord_idle,
       state: rpcShowTitle && rpcShowReadingWatchingProgress
           ? chapterTitle
           : "-----",
@@ -116,26 +123,9 @@ class DiscordRPC {
               largeImage: imageUrl,
               largeText: rpcShowTitle ? chapter.manga.value!.name : "-----",
               smallImage: "app-icon",
-              smallText: "Mangayomi",
+              smallText: NodeLaneBrand.displayName,
             )
-          : const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
-    );
-  }
-
-  Future<void> showLargeImage() async {
-    await updateActivity(
-      assets: const RPCAssets(largeImage: "app-icon", largeText: "Mangayomi"),
-    );
-  }
-
-  Future<void> showSmallImage(String largeImage, String largeText) async {
-    await updateActivity(
-      assets: RPCAssets(
-        largeImage: largeImage,
-        largeText: largeText,
-        smallImage: "app-icon",
-        smallText: "Mangayomi",
-      ),
+          : _appAssets,
     );
   }
 

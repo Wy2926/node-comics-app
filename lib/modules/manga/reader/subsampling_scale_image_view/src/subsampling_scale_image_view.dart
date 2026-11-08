@@ -14,6 +14,7 @@ import 'package:mangayomi/utils/avif.dart';
 import 'package:mangayomi/utils/downloaded_page_file.dart';
 
 import 'coordinate_transformer.dart';
+import 'page_pan_forwarding.dart';
 import 'ffi_image_decoder.dart';
 import 'subsampling_image_painter.dart';
 import 'tiling_engine.dart';
@@ -103,8 +104,11 @@ class SubsamplingScaleImageViewController extends ChangeNotifier {
     _state = state;
   }
 
-  void _detach() {
-    _state = null;
+  /// Only [state]'s own detach counts: when a page moves to another slot,
+  /// its replacement attaches before the old view is disposed, and the old
+  /// view must not unhook it.
+  void _detach(_SubsamplingScaleImageViewState state) {
+    if (identical(_state, state)) _state = null;
   }
 
   // ── State Getters ──────────────────────────────────────────────────────────
@@ -117,6 +121,18 @@ class SubsamplingScaleImageViewController extends ChangeNotifier {
   ui.Offset get translation => _state?._vTranslate ?? ui.Offset.zero;
   int get sWidth => _state?._sWidth ?? 0;
   int get sHeight => _state?._sHeight ?? 0;
+
+  /// Image bounds in the view, including rotation and the current zoom/pan.
+  ui.Rect? get imageViewRect {
+    final s = _state;
+    if (s == null || !isReady) return null;
+    final rotated = s.widget.rotation == 90 || s.widget.rotation == 270;
+    return s._vTranslate &
+        ui.Size(
+          (rotated ? s._sHeight : s._sWidth) * s._scale,
+          (rotated ? s._sWidth : s._sHeight) * s._scale,
+        );
+  }
 
   ui.Size get imageSize {
     if (_state == null) return ui.Size.zero;
@@ -288,30 +304,9 @@ class SubsamplingScaleImageView extends StatefulWidget {
   /// Optional preload data for caching resolved file path.
   final UChapDataPreload? preloadData;
 
-  /// Callback called on every loading state change.
-  /// Returns a custom widget for [LoadState.loading] and [LoadState.failed] states,
-  /// or null to use the default behavior.
-  ///
-  /// Example :
-  /// ```dart
-  /// loadStateChanged: (state) {
-  ///   if (state.loadState == LoadState.failed) {
-  ///     return GestureDetector(
-  ///       onTap: state.reLoadImage,
-  ///       child: const Icon(Icons.error),
-  ///     );
-  ///   }
-  ///   if (state.loadState == LoadState.loading) {
-  ///     final progress = state.loadingProgress?.expectedTotalBytes != null
-  ///       ? state.loadingProgress!.cumulativeBytesLoaded /
-  ///         state.loadingProgress!.expectedTotalBytes!
-  ///       : 0.0;
-  ///     return CircularProgressIndicator(value: progress > 0 ? progress : null);
-  ///   }
-  ///   return null; // standard display
-  /// }
-  /// ```
-  final Widget? Function(SubsamplingImageState state)? loadStateChanged;
+  /// Reader-owned loading and failure presentation. Returning null leaves
+  /// the image area empty until its view state is initialized.
+  final Widget? Function(SubsamplingImageState state) loadStateChanged;
 
   // ── Rotation and gestures ───────────────────────────────────────────────────────
 
@@ -396,7 +391,7 @@ class SubsamplingScaleImageView extends StatefulWidget {
     required this.image,
     this.resolvedFilePath,
     this.preloadData,
-    this.loadStateChanged,
+    required this.loadStateChanged,
     this.rotation = 0,
     this.panEnabled = true,
     this.zoomEnabled = true,
@@ -406,6 +401,7 @@ class SubsamplingScaleImageView extends StatefulWidget {
     this.parentScale = 1.0,
     this.isVisible = true,
     this.srcRect,
+    this.normalizedSrcRect,
     this.fit,
     this.minimumScaleType = ScaleType.centerInside,
     this.panLimit = PanLimit.inside,
@@ -429,6 +425,9 @@ class SubsamplingScaleImageView extends StatefulWidget {
   /// A source sub-region (srcRect) to display.
   /// If provided, the viewer will display only this sub-region and adapt all scales and translations.
   final Rect? srcRect;
+
+  /// A fraction of the decoded (possibly border-cropped) image.
+  final Rect? normalizedSrcRect;
 
   @override
   State<SubsamplingScaleImageView> createState() =>
@@ -479,6 +478,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
   double _lastNotifiedScale = 0;
   ui.Offset _lastNotifiedCenter = ui.Offset.zero;
   Timer? _resizeTimer;
+  Rect? _sourceRect;
 
   @override
   void initState() {
@@ -515,7 +515,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
   void dispose() {
     _resizeTimer?.cancel();
     _cancelImageStream();
-    widget.controller?._detach();
+    widget.controller?._detach(this);
     _animationController.dispose();
     _tilingEngine.dispose();
     super.dispose();
@@ -526,7 +526,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller?._detach();
+      oldWidget.controller?._detach(this);
       widget.controller?._attach(this);
     }
 
@@ -534,10 +534,14 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     final imageChanged =
         widget.resolvedFilePath != oldWidget.resolvedFilePath ||
         (widget.resolvedFilePath == null && widget.image != oldWidget.image);
-    final cropChanged = widget.cropBorders != oldWidget.cropBorders;
+    final cropChanged =
+        widget.cropBorders != oldWidget.cropBorders ||
+        widget.srcRect != oldWidget.srcRect ||
+        widget.normalizedSrcRect != oldWidget.normalizedSrcRect;
     final scaleTypeChanged =
         widget.minimumScaleType != oldWidget.minimumScaleType ||
-        widget.fit != oldWidget.fit;
+        widget.fit != oldWidget.fit ||
+        widget.rotation != oldWidget.rotation;
 
     if (imageChanged || cropChanged) {
       _isInitialized = false;
@@ -1004,12 +1008,17 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
       return;
     }
 
-    _sWidth = widget.srcRect != null
-        ? widget.srcRect!.width.toInt()
-        : outSize[0];
-    _sHeight = widget.srcRect != null
-        ? widget.srcRect!.height.toInt()
-        : outSize[1];
+    final normalized = widget.normalizedSrcRect;
+    _sourceRect = normalized == null
+        ? widget.srcRect
+        : Rect.fromLTRB(
+            normalized.left * outSize[0],
+            normalized.top * outSize[1],
+            normalized.right * outSize[0],
+            normalized.bottom * outSize[1],
+          );
+    _sWidth = _sourceRect?.width.toInt() ?? outSize[0];
+    _sHeight = _sourceRect?.height.toInt() ?? outSize[1];
 
     if (widget.preloadData != null) {
       widget.preloadData!.resolvedFilePath = path;
@@ -1216,8 +1225,8 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     );
 
     var fileRect = transformer.fileSRect(tile.sRect);
-    if (widget.srcRect != null) {
-      fileRect = fileRect.translate(widget.srcRect!.left, widget.srcRect!.top);
+    if (_sourceRect != null) {
+      fileRect = fileRect.translate(_sourceRect!.left, _sourceRect!.top);
     }
 
     final params = DecodeParams(
@@ -1366,11 +1375,14 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
         if (widget.pageController != null &&
             widget.pageController!.hasClients &&
             _scale <= _getMinScale() * 1.01) {
-          final double excessX = proposedTranslate.dx - clampedTranslate.dx;
-          if (excessX != 0) {
-            final pos = widget.pageController!.position;
+          final pos = widget.pageController!.position;
+          final double delta = pageScrollDeltaForPan(
+            pos.axisDirection,
+            proposedTranslate - clampedTranslate,
+          );
+          if (delta != 0) {
             pos.jumpTo(
-              (pos.pixels - excessX).clamp(
+              (pos.pixels + delta).clamp(
                 pos.minScrollExtent,
                 pos.maxScrollExtent,
               ),
@@ -1422,7 +1434,11 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
         widget.pageController!.hasClients &&
         _scale <= _getMinScale() * 1.01) {
       final double currentPageValue = widget.pageController!.page ?? 0.0;
-      final int targetPage = currentPageValue.round();
+      final int targetPage = settlePage(
+        currentPageValue,
+        widget.pageController!.position.axisDirection,
+        details.velocity.pixelsPerSecond,
+      );
       widget.pageController!.animateToPage(
         targetPage,
         duration: const Duration(milliseconds: 250),
@@ -1529,32 +1545,8 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
 
         // Displays custom state widget if image is not ready
         if (_loadState != LoadState.completed || !_isInitialized) {
-          final stateWidget = widget.loadStateChanged?.call(_makeImageState());
-          if (stateWidget != null) return stateWidget;
-
-          // Default UI
-          return switch (_loadState) {
-            LoadState.loading => Center(
-              child: _loadingProgress?.expectedTotalBytes != null
-                  ? CircularProgressIndicator(
-                      value:
-                          _loadingProgress!.cumulativeBytesLoaded /
-                          _loadingProgress!.expectedTotalBytes!,
-                    )
-                  : const CircularProgressIndicator(),
-            ),
-            LoadState.failed => Center(
-              child: GestureDetector(
-                onTap: () => _loadFromProvider(evictCache: true),
-                child: const Icon(
-                  Icons.broken_image_outlined,
-                  color: Colors.grey,
-                  size: 48,
-                ),
-              ),
-            ),
-            LoadState.completed => const SizedBox.shrink(),
-          };
+          return widget.loadStateChanged(_makeImageState()) ??
+              const SizedBox.shrink();
         }
 
         return GestureDetector(

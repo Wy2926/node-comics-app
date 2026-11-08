@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/browse/browse_screen.dart';
+import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/widgets/custom_sliver_grouped_list_view.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/browse/sources/widgets/source_list_tile.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/language.dart';
@@ -67,6 +67,30 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
     return SourceListTile(source: source, itemType: widget.itemType);
   }
 
+  void _showExtensions() {
+    final index = widget.tabs.indexWhere(
+      (tab) =>
+          tab.type == widget.itemType && tab.kind == BrowseTabKind.extensions,
+    );
+    if (index >= 0) widget.tabIndex(index);
+  }
+
+  Widget _localSource() => SourceListTile(
+    source: Source(name: 'local', lang: '', itemType: widget.itemType),
+    itemType: widget.itemType,
+  );
+
+  Widget _sectionTitle(String title) => Padding(
+    padding: const EdgeInsets.only(left: 12),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+      ),
+    ),
+  );
+
   @override
   void dispose() {
     for (final n in [
@@ -84,12 +108,13 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
     final sourcesStream = ref.watch(getSourcesStreamProvider(widget.itemType));
+    final tvHorizontalInset = tvHorizontalSafeInset(context);
 
     return Padding(
       padding: EdgeInsets.only(
         top: 10,
-        left: isTv ? 8 : 0,
-        right: isTv ? 8 : 0,
+        left: tvHorizontalInset,
+        right: tvHorizontalInset,
       ),
       child: sourcesStream.when(
         data: (snapshotData) {
@@ -109,43 +134,13 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      final extensionIndex = widget.tabs.indexWhere(
-                        (t) =>
-                            t.type == widget.itemType &&
-                            t.kind == BrowseTabKind.extensions,
-                      );
-
-                      if (extensionIndex != -1) {
-                        widget.tabIndex(extensionIndex);
-                      }
-                    },
+                    onPressed: _showExtensions,
                     icon: const Icon(Icons.extension_rounded),
                     label: Text(context.l10n.show_extensions),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        l10n.other,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SourceListTile(
-                  source: Source(
-                    name: "local",
-                    lang: "",
-                    itemType: widget.itemType,
-                  ),
-                  itemType: widget.itemType,
-                ),
+                _sectionTitle(l10n.other),
+                _localSource(),
               ],
             );
           }
@@ -172,20 +167,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 CustomSliverGroupedListView<Source, String>(
                   elements: lastUsedEntries,
                   groupBy: (element) => "",
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          l10n.last_used,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  groupSeparatorBuilder: (String groupByValue) =>
+                      _sectionTitle(l10n.last_used),
                   itemBuilder: (context, Source element) {
                     return _row(element, shareNodes: false);
                   },
@@ -197,20 +180,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 CustomSliverGroupedListView<Source, String>(
                   elements: isPinnedEntries,
                   groupBy: (element) => "",
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          l10n.pinned,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  groupSeparatorBuilder: (String groupByValue) =>
+                      _sectionTitle(l10n.pinned),
                   itemBuilder: (context, Source element) {
                     return _row(element);
                   },
@@ -223,20 +194,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                   elements: allEntriesWithoutIspinned,
                   groupBy: (element) =>
                       completeLanguageName(element.lang!.toLowerCase()),
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          groupByValue,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  groupSeparatorBuilder: (String groupByValue) =>
+                      _sectionTitle(groupByValue),
                   itemBuilder: (context, Source element) {
                     return _row(element);
                   },
@@ -247,38 +206,21 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 ),
                 SliverToBoxAdapter(
                   child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Row(
-                          children: [
-                            Text(
-                              l10n.other,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SourceListTile(
-                        source: Source(
-                          name: "local",
-                          lang: "",
-                          itemType: widget.itemType,
-                        ),
-                        itemType: widget.itemType,
-                      ),
-                    ],
+                    children: [_sectionTitle(l10n.other), _localSource()],
                   ),
+                ),
+                // Trailing room rather than padding around the viewport, so rows
+                // scroll under the translucent bar, which is what gives it
+                // something to blur, and only the last one clears it.
+                SliverToBoxAdapter(
+                  child: SizedBox(height: pageBottomInsets(context).bottom),
                 ),
               ],
             ),
           );
         },
-        error: (error, _) => ErrorState(
-          detail: error.toString(),
+        error: (error, _) => NodeLaneEmptyState.error(
+          message: error.toString(),
           onRetry: () =>
               ref.invalidate(getSourcesStreamProvider(widget.itemType)),
         ),

@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/utils/chapter_recognition.dart';
-import 'package:mangayomi/modules/manga/reader/mixins/chapter_reader_settings_mixin.dart';
 import 'package:mangayomi/modules/manga/reader/mixins/chapter_controller_mixin.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
@@ -30,20 +28,8 @@ class CurrentIndex extends _$CurrentIndex {
   }
 }
 
-BoxFit getBoxFit(ScaleType scaleType) {
-  return switch (scaleType) {
-    ScaleType.fitHeight => BoxFit.fitHeight,
-    ScaleType.fitWidth => BoxFit.fitWidth,
-    ScaleType.fitScreen => BoxFit.contain,
-    ScaleType.originalSize => BoxFit.cover,
-    ScaleType.smartFit => BoxFit.contain,
-    _ => BoxFit.cover,
-  };
-}
-
 @riverpod
-class ReaderController extends _$ReaderController
-    with ChapterControllerMixin, ChapterReaderSettingsMixin {
+class ReaderController extends _$ReaderController with ChapterControllerMixin {
   @override
   KeepAliveLink build({required Chapter chapter}) {
     _keepAliveLink = ref.keepAlive();
@@ -57,54 +43,9 @@ class ReaderController extends _$ReaderController
   @override
   final bool incognitoMode = settingsRepository.current.incognitoMode!;
 
-  // ---------------------------------------------------------------------------
-  // Reader-specific settings
-  // ---------------------------------------------------------------------------
-
-  ReaderMode getReaderMode() {
-    final personalReaderModeList =
-        getIsarSetting().personalReaderModeList ?? [];
-    final personalReaderMode = personalReaderModeList.where(
-      (element) => element.mangaId == getManga().id,
-    );
-    if (personalReaderMode.isNotEmpty) {
-      return personalReaderMode.first.readerMode;
-    }
-    return ref.read(defaultReadingModeStateProvider);
-  }
-
-  void setReaderMode(ReaderMode newReaderMode) {
-    _cachedIsContinuousLike = null;
-    List<PersonalReaderMode>? personalReaderModeLists = [];
-    for (var personalReaderMode
-        in getIsarSetting().personalReaderModeList ?? []) {
-      if (personalReaderMode.mangaId != getManga().id) {
-        personalReaderModeLists.add(personalReaderMode);
-      }
-    }
-    personalReaderModeLists.add(
-      PersonalReaderMode()
-        ..mangaId = getManga().id
-        ..readerMode = newReaderMode,
-    );
-    settingsRepository.save(
-      getIsarSetting()..personalReaderModeList = personalReaderModeLists,
-    );
-    onSettingsMutated();
-  }
-
-  // ---------------------------------------------------------------------------
-  // Page tracking
-  // ---------------------------------------------------------------------------
-
   int? _cachedPageLength;
   int getCachedPageLength([List fallback = const []]) {
     return _cachedPageLength ??= getPageLength(fallback);
-  }
-
-  bool? _cachedIsContinuousLike;
-  bool getCachedIsContinuousLike() {
-    return _cachedIsContinuousLike ??= getReaderMode().isVerticalContinuous;
   }
 
   int getPageIndex() {
@@ -129,12 +70,12 @@ class ReaderController extends _$ReaderController
     int newIndex,
     bool save, [
     List pageUrlsFallback = const [],
+    bool isContinuousLike = false,
   ]) {
     if (chapter.isRead! || incognitoMode) return;
     final pageLength = getCachedPageLength(pageUrlsFallback);
     if (pageLength == 0 || (!save && newIndex == _lastSavedIndex)) return;
     _lastSavedIndex = newIndex;
-    final isContinuousLike = getCachedIsContinuousLike();
     final isRead = isContinuousLike
         ? (newIndex + 2) >= pageLength - 1
         : (newIndex + 2) >= pageLength;
@@ -197,7 +138,6 @@ class ReaderController extends _$ReaderController
           chapterRepository.putSync(chap);
           if (siblings.isNotEmpty) chapterRepository.putAllSync(siblings);
         });
-        onSettingsMutated();
         if (isRead) {
           chapter.updateTrackChapterRead(ref);
           if (ref.read(deleteDownloadAfterReadingStateProvider)) {

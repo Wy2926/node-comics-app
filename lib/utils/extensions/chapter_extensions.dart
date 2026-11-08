@@ -24,21 +24,22 @@ extension ChapterExtension on Chapter {
     BuildContext context, {
     bool ignoreIsRead = false,
   }) async {
-    if (ignoreIsRead || !isRead!) {
-      await pushMangaReaderView(context: context, chapter: this);
-    } else {
+    var target = this;
+    if (!ignoreIsRead && (isRead ?? false)) {
       final filteredChaps = manga.value!.getChapterListForReading();
-      bool exist = false;
-      for (var filteredChap in filteredChaps) {
-        if (filteredChap.toJson().toString() == toJson().toString()) {
-          exist = true;
-        }
-        if (exist && !filteredChap.isRead!) {
-          await pushMangaReaderView(context: context, chapter: filteredChap);
-          break;
-        }
-      }
+      final current = filteredChaps.indexWhere((chapter) => chapter.id == id);
+      // A finished book still has a working reading entry. The reader already
+      // opens completed chapters at page one without clearing saved progress.
+      target =
+          filteredChaps
+              .skip(current + 1)
+              .where((chapter) => !(chapter.isRead ?? false))
+              .firstOrNull ??
+          filteredChaps.firstOrNull ??
+          manga.value!.chapters.firstOrNull ??
+          this;
     }
+    await pushMangaReaderView(context: context, chapter: target);
   }
 
   void cancelDownloads(int? downloadId) {
@@ -69,7 +70,10 @@ extension ChapterExtension on Chapter {
       if (folderPath == null || folderPath.isEmpty) continue;
       mangaDirList.add(
         Directory(
-          p.join(folderPath, manga.value!.name!.replaceForbiddenCharacters('_')),
+          p.join(
+            folderPath,
+            manga.value!.name!.replaceForbiddenCharacters('_'),
+          ),
         ),
       );
     }

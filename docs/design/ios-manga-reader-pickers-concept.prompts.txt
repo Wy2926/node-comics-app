@@ -1,0 +1,72 @@
+NodeLane 漫画阅读器二级选择界面设计稿
+生成方式：内置 image_gen 工具
+输入参考：ios-manga-reader-settings-concept.png（视觉与构图参考）
+输出：ios-manga-reader-pickers-concept.png
+状态：设计参考，已接入共享阅读选择面板；实现及验收边界见 ../MOBILE_UI_DESIGN.md。
+核对：阅读模式 7 项；缩放仅当前开放的 4 项；背景颜色 4 项；导航布局 6 项。保留已有偏好与作用范围，缩放小图是静态示意。
+
+最终生成提示词：
+
+Use case: ui-mockup.
+Transform the supplied NodeLane four-iPhone reader-settings design board into a polished companion design board showing redesigned SECOND-LEVEL SINGLE-CHOICE PICKERS. The input image is a style and framing reference: preserve its NodeLane visual identity, four equally sized black iPhone frames, straight-on composition, subtle pale cool-gray backdrop, realistic iOS status bars and bottom home indicators. Replace the four foreground screens with the four pickers specified below. Generate one wide landscape board, about 16:9, with crisp readable Simplified Chinese and generous separation between phones. Heading above phones: "NodeLane", subtitle "iOS · 阅读选项". Small footer outside the phones: "视觉设计稿 · 示例内容".
+
+Primary design intention: make the current reading mode, scale type and other choice pages feel like a coherent iOS app, with contextual bottom-sheet navigation, immediate single selection and no full-screen empty settings page. These are visual designs of EXISTING features, not new product capabilities.
+
+Shared design system, identical in all four phones:
+- Screen underneath is the same softly dimmed grayscale coastal manga reading page from the reference, with book title "海岸来信" and chapter subtitle "第12话 海风的回信". Use only a calm glimpse of that background; foreground settings are the focus.
+- Bottom-attached selection sheet, cool pale canvas #F5F6FA, white grouped list #FFFFFF, strong ink #171A21, secondary text #697180, fine inset separators #E7EAF0. Blue #006EFF for selection.
+- Sheet top corners 24 pt, grouped card corners 18 pt, horizontal margins 20 pt. NO floating small dialog, no detached pill-shaped sheet, no app root tab bar.
+- A centered gray 44x4 pt drag handle. Below it, one consistent header: 24 pt thin iOS back chevron at left, then the title in 22 pt semibold/bold; at right an 18 pt x inside a pale 32 pt circular button (44 pt touch target).
+- Back returns to the parent reading settings; the x closes reader settings. Do not duplicate both a close word and an x.
+- Labels 17 pt medium, explanatory text 14 pt regular, system SF/PingFang feel, not decorative type. All stroke icons have consistent iOS/Cupertino line weight, all checkmarks same 24 pt size.
+- All single-choice rows: leading option content where useful, label, selected row pale blue background and ONE blue check at trailing right. Unselected rows white with NO radio circles, NO switches and NO trailing chevrons. Fine indented horizontal separators.
+- Every picker has exactly ONE selected option, specified below. No "保存", "应用", "确定", reset, premium, recommendation badge, presets, new settings or extra action buttons.
+- After each list a quiet single-line helper: "点选即保存并返回上一层。"
+- Sheet height follows content: the seven-row reading-mode sheet is tallest (about 78% screen), four-row scale sheet medium (about 64%), four-row background-color sheet shorter (about 54%), six-row navigation sheet about 70%. Keep all lists fully readable without compressed type, while maintaining identical per-kind row heights. Modest bottom safe area.
+
+Phone 1 — caption under phone: "阅读模式".
+Header exact "阅读模式".
+Above grouped list, book "海岸来信", then secondary "仅用于当前漫画".
+Exactly these SEVEN rows in this order, 62 pt tall, understated 24 pt directional/book outline symbols at left to aid recognition:
+"垂直"
+"从左到右"
+"从右到左"
+"垂直连续" — SELECTED pale blue row, blue check
+"网络漫画"
+"水平连续"
+"水平连续 (RTL)"
+All seven must fit. Do not add page mode, auto-scroll or crop controls to this picker.
+
+Phone 2 — caption under phone: "缩放类型".
+Header exact "缩放类型".
+Secondary scope above group: "应用于所有漫画".
+Exactly FOUR rows, about 80 pt tall. Each row has a small 42x48 pt STATIC outlined page-in-viewport schematic at left, showing fitting direction using simple shapes and tiny arrows; these are illustrative icons, not a new live preview. To the right, label 17 pt and one 14 pt description. Selected row pale blue, same blue check at far right:
+"适合屏幕" — SELECTED. Description "整页适配屏幕"
+"拉伸" — Description "铺满阅读区域"
+"适合宽度" — Description "以页面宽度适配"
+"适合高度" — Description "以页面高度适配"
+DO NOT include original size or smart fit; they are not offered by the existing UI.
+
+Phone 3 — caption under phone: "背景颜色".
+Header exact "背景颜色".
+Secondary scope "应用于所有漫画".
+Exactly FOUR 62 pt rows. Simple 28 pt circular color swatches at left with a fine border:
+"黑色" — black swatch — SELECTED pale blue row, blue check
+"灰色" — medium gray swatch
+"白色" — white swatch with thin outline
+"自动" — half-light half-dark swatch
+No color wheel, custom color, gradient option, extra preview controls, or explanation claiming the whole app theme changes. This only changes the reader background.
+
+Phone 4 — caption under phone: "导航布局".
+Header exact "导航布局".
+Secondary scope "应用于所有漫画".
+Exactly SIX 62 pt text rows, use the SAME left label alignment and trailing check placement as the other lists, no speculative tap-zone diagrams or new interaction modes:
+"默认" — SELECTED pale blue row, blue check
+"L形"
+"Kindle"
+"边缘"
+"右和左"
+"已禁用"
+The screen must not include tap-zone switches, inversion settings or animation controls; those remain in the parent settings.
+
+Constraints: treat this as a faithful, implementable iOS UI proposal. Maintain the existing restrained blue/white/gray token family from the reference. Absolutely no invented options, duplicate rows, random English, lorem ipsum, illegible tiny copy, yellow accents, heavy shadows, glass distortion, colored gradients, extra phone panels, or tilted devices. Make typography, alignment, icon stroke, spacing, sheet headers and selection marks visibly identical across all four screens.

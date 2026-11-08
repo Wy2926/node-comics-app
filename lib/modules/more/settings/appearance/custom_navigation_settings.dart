@@ -4,6 +4,9 @@ import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/appearance_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_navigation_settings.dart';
 
 class CustomNavigationSettings extends ConsumerStatefulWidget {
   const CustomNavigationSettings({super.key});
@@ -17,6 +20,7 @@ class _CustomNavigationSettingsState
     extends ConsumerState<CustomNavigationSettings> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobileNavigationSettings();
     final l10n = context.l10n;
     final navigationOrder = ref.watch(navigationOrderStateProvider);
     final hideItems = ref.watch(hideItemsStateProvider);
@@ -32,23 +36,22 @@ class _CustomNavigationSettingsState
               children: [
                 SwitchListTile(
                   value: ref.watch(animeOnlyTvModeProvider),
-                  title: const Text('Anime-only TV layout'),
-                  subtitle: const Text(
-                    'Hide the manga & novel libraries (on by default on TV)',
-                  ),
+                  title: Text(context.l10n.anime_only_tv_layout),
+                  subtitle: Text(context.l10n.tv_hide_libraries_hint),
                   onChanged: (value) {
                     ref.read(animeOnlyTvModeProvider.notifier).set(value);
                   },
                 ),
-                SwitchListTile(
-                  value: mergeLibraryNavMobile,
-                  title: Text(context.l10n.merge_library_nav_mobile),
-                  onChanged: (value) {
-                    ref
-                        .read(mergeLibraryNavMobileStateProvider.notifier)
-                        .set(value);
-                  },
-                ),
+                if (!isMobile || isTv)
+                  SwitchListTile(
+                    value: mergeLibraryNavMobile,
+                    title: Text(context.l10n.merge_library_nav_mobile),
+                    onChanged: (value) {
+                      ref
+                          .read(mergeLibraryNavMobileStateProvider.notifier)
+                          .set(value);
+                    },
+                  ),
               ],
             ),
           ),

@@ -96,4 +96,40 @@ void main() {
         .toList();
     expect(shown, ['item 5', 'item 1', 'item 2', 'item 3', 'item 4']);
   });
+  testWidgets('group edges follow sorting and recover after filtering', (
+    tester,
+  ) async {
+    final edges = <int, (bool, bool)>{};
+    Widget grouped(List<int> values) => MaterialApp(
+      home: CustomScrollView(
+        slivers: [
+          CustomSliverGroupedListView<int, int>(
+            elements: values,
+            groupBy: (value) => value ~/ 10,
+            order: GroupedListOrder.DESC,
+            itemComparator: (a, b) => a.compareTo(b),
+            groupSeparatorBuilder: (group) => Text('day $group'),
+            groupedItemBuilder: (_, value, first, last) {
+              edges[value] = (first, last);
+              return SizedBox(height: 40, child: Text('$value'));
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpWidget(grouped([11, 22, 10, 21, 12]));
+    await tester.pumpAndSettle();
+    expect(edges, {
+      22: (true, false),
+      21: (false, true),
+      12: (true, false),
+      11: (false, false),
+      10: (false, true),
+    });
+    edges.clear();
+    await tester.pumpWidget(grouped([11, 22]));
+    await tester.pumpAndSettle();
+    expect(edges, {22: (true, true), 11: (true, true)});
+    expect(tester.takeException(), isNull);
+  });
 }

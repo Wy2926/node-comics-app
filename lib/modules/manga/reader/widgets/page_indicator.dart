@@ -1,7 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
+
+import '../settings/comic_reader_scope.dart';
+
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Page indicator widget showing current page / total pages.
 ///
@@ -30,7 +36,7 @@ class PageIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showPagesNumber = ref.watch(showPagesNumberStateProvider);
+    final showPagesNumber = ComicReaderScope.of(context).habits.pageNumber;
 
     // Don't show when UI is visible or setting is disabled
     if (isUiVisible || !showPagesNumber) {
@@ -42,8 +48,39 @@ class PageIndicator extends ConsumerWidget {
       child: ValueListenableBuilder<int>(
         valueListenable: currentPageListenable,
         builder: (context, currentIndex, child) {
+          final label = '${formatCurrentIndex(currentIndex)} / $totalPages';
+          if (isMobile && !isTv) {
+            final media = MediaQuery.of(context);
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom:
+                    max(
+                      media.viewPadding.bottom,
+                      media.systemGestureInsets.bottom,
+                    ) +
+                    8,
+              ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  child: Text(
+                    label,
+                    style: NodeLaneTokens.of(context).readerValue
+                        .copyWith(color: Colors.white),
+                  ),
+                ),
+              ),
+            );
+          }
           return Text(
-            '${formatCurrentIndex(currentIndex)} / $totalPages',
+            label,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20.0,

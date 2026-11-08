@@ -1,181 +1,206 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:isar_community/isar.dart';
-import 'package:mangayomi/models/translation_record.dart';
-import 'package:mangayomi/modules/nodelane/nodelane_models.dart';
+import 'package:mangayomi/models/translation_entry.dart';
+import 'package:mangayomi/repositories/db_write_queue.dart';
+import 'package:mangayomi/services/translation/contracts.dart';
+import 'package:mangayomi/services/translation/identity.dart';
 
-import 'db_write_queue.dart';
-
-/// One collection is both the durable receipt and the complete-image index.
+/// All receipt mutations precede their network effects. Files are published
+/// before their metadata, so a crash can leave an orphan, never a false success.
 class TranslationRepository {
-  TranslationRepository(this.db, this.directory);
-  final Isar db;
+  TranslationRepository(this.database, this.directory);
+  final Isar database;
   final Directory directory;
-  static const inputBudget = 256 * 1024 * 1024;
-  static const resultBudget = 512 * 1024 * 1024;
+  final _writes = DbWriteQueue();
+  final _files = DbWriteQueue();
+  final _leases = <String, int>{};
+  final _deleted = <String>{};
+  int cacheEpoch = 0;
+  static const inputBudget = 128 * 1024 * 1024;
+  static const resultBudget = 256 * 1024 * 1024;
+  static const metadataBudget = 16 * 1024 * 1024;
 
-  Future<void> initialize() async {
-    await directory.create(recursive: true);
-    final refs = <String>{};
-    for (final r in await db.translationRecords.where().findAll()) {
-      refs.add(r.inputPath);
-      if (r.resultPath != null) refs.add(r.resultPath!);
-    }
-    final cutoff = DateTime.now().subtract(const Duration(days: 1));
-    await for (final f in directory.list()) {
-      if (f is File &&
-          !refs.contains(f.path) &&
-          (await f.stat()).modified.isBefore(cutoff)) {
-        await f.delete();
-      }
-    }
-  }
-
-  File file(String name) => File('${directory.path}/$name');
-  TranslationRecord? get(int id) => db.translationRecords.getSync(id);
-  List<TranslationRecord> page(String scope, String key, String language) => db
-      .translationRecords
-      .where(sort: Sort.desc)
-      .anyId()
-      .filter()
-      .scopeEqualTo(scope)
-      .pageKeyEqualTo(key)
-      .languageEqualTo(language)
-      .findAllSync();
-  List<TranslationRecord> recent(String scope) => db.translationRecords
-      .where(sort: Sort.desc)
-      .anyId()
-      .filter()
-      .scopeEqualTo(scope)
-      .limit(100)
-      .findAllSync();
-  List<TranslationRecord> pending(String scope) => db.translationRecords
-      .where()
-      .filter()
-      .scopeEqualTo(scope)
-      .publishedEqualTo(false)
-      .not()
-      .remoteStateEqualTo('failed')
-      .not()
-      .phaseEqualTo('cancelled')
-      .limit(32)
-      .findAllSync();
-  bool owns(String uuid) =>
-      db.translationRecords.where().uuidEqualTo(uuid).findFirstSync() != null;
-  Future<TranslationRecord> insert(
-    TranslationRecord record, {
-    bool newAttempt = false,
-  }) => dbWriteQueue.run(
-    () => db.writeTxn(() async {
-      if (!newAttempt) {
-        final existing = await db.translationRecords
-            .where(sort: Sort.desc)
-            .anyId()
-            .filter()
-            .scopeEqualTo(record.scope)
-            .pageKeyEqualTo(record.pageKey)
-            .languageEqualTo(record.language)
-            .sourceShaEqualTo(record.sourceSha)
-            .findFirst();
-        if (existing != null) return existing;
-      }
-      record.id = await db.translationRecords.put(record);
-      return record;
-    }),
-  );
-  Future<TranslationRecord?> update(
-    int id,
-    int revision,
-    void Function(TranslationRecord) change,
-  ) => dbWriteQueue.run(
-    () => db.writeTxn(() async {
-      final record = await db.translationRecords.get(id);
-      if (record == null || record.deliveryRevision != revision) return null;
-      change(record);
-      await db.translationRecords.put(record);
-      return record;
-    }),
-  );
-  Future<void> publish(
-    TranslationRecord record,
-    File temporary,
-    Map<String, dynamic> info,
-    void Function() guard,
-  ) async {
-    guard();
-    final target = file('${record.uuid}.${record.deliveryRevision}.png');
-    await temporary.rename(target.path);
+  Future<Map<String, dynamic>?> read(String key) async {
+    final entry = await database.translationEntrys.getByKey(key);
+    if (entry == null) return null;
     try {
-      final saved = await update(record.id, record.deliveryRevision, (r) {
-        guard();
-        r.phase = 'ready';
-        r.resultPath = target.path;
-        r.resultSha = info['sha256'] as String;
-        r.resultBytes = info['byte_size'] as int;
-        r.published = true;
-        r.errorCode = null;
-        r.accessedAt = DateTime.now().millisecondsSinceEpoch;
-      });
-      if (saved == null && await target.exists()) await target.delete();
+      return jsonDecode(entry.payload) as Map<String, dynamic>;
     } catch (_) {
-      if (await target.exists()) await target.delete();
-      rethrow;
+      // Corrupt receipts must not look like an absent, safe-to-submit request.
+      throw const TranslationFailure('OUTCOME_UNKNOWN');
     }
   }
 
-  Future<void> touch(TranslationRecord record) => update(
-    record.id,
-    record.deliveryRevision,
-    (r) => r.accessedAt = DateTime.now().millisecondsSinceEpoch,
+  Future<List<Map<String, dynamic>>> entries(String scope, String kind) async {
+    final entries = await database.translationEntrys
+        .filter()
+        .scopeEqualTo(scope)
+        .kindEqualTo(kind)
+        .findAll();
+    return entries
+        .map((e) => jsonDecode(e.payload) as Map<String, dynamic>)
+        .toList();
+  }
+
+  Future<void> write(
+    String key,
+    String scope,
+    String kind,
+    Map<String, dynamic> value,
+  ) => writeBatch([(key, scope, kind, value)]);
+
+  /// Binding and operation are one commit; a crash cannot hide an intent and
+  /// cause the next visit to allocate another operation ID.
+  Future<void> writeBatch(
+    List<(String, String, String, Map<String, dynamic>)> values,
+  ) => _writes.run(
+    () => database.writeTxn(() async {
+      for (final (key, scope, kind, value) in values) {
+        final payload = jsonEncode(value);
+        final old = await database.translationEntrys.getByKey(key);
+        final size = await database.translationEntrys.getSize();
+        if (size + payload.length * 3 - (old?.payload.length ?? 0) * 3 >
+            metadataBudget) {
+          throw const TranslationFailure('STORAGE_FULL');
+        }
+        final entry = TranslationEntry()
+          ..id = old?.id ?? Isar.autoIncrement
+          ..key = key
+          ..scope = scope
+          ..kind = kind
+          ..payload = payload
+          ..updatedAt = DateTime.now().millisecondsSinceEpoch;
+        await database.translationEntrys.put(entry);
+      }
+    }),
   );
-  Future<void> reserveInput(int bytes, {Set<int> protected = const {}}) async {
-    final records = await db.translationRecords
-        .where()
-        .sortByAccessedAt()
-        .findAll();
-    var used = 0;
-    final candidates = <TranslationRecord>[];
-    for (final r in records) {
-      if (!await File(r.inputPath).exists()) continue;
-      used += r.inputBytes;
-      if (!protected.contains(r.id) &&
-          r.published &&
-          (r.original ||
-              r.resultPath != null && await File(r.resultPath!).exists())) {
-        candidates.add(r);
+
+  Future<void> remove(String key) => _writes.run(
+    () => database.writeTxn(() async {
+      await database.translationEntrys.deleteByKey(key);
+    }),
+  );
+
+  File file(String kind, String key) {
+    if (!const {'input', 'result', 'source'}.contains(kind) ||
+        !RegExp(r'^[a-f0-9]{64}$').hasMatch(key)) {
+      throw const TranslationFailure('INVALID_RESULT');
+    }
+    return File('${directory.path}/$kind/$key');
+  }
+
+  Future<File> publish(String kind, String key, File input, {int? epoch}) =>
+      _files.run(() async {
+        final target = file(kind, key);
+        if (epoch != null && epoch != cacheEpoch) {
+          throw const TranslationCancelled();
+        }
+        await target.parent.create(recursive: true);
+        final length = await input.length();
+        final incoming =
+            length - (await target.exists() ? await target.length() : 0);
+        if (kind == 'input' || kind == 'result') {
+          await _evict(kind, incoming, target.path);
+        }
+        final temp = File('${target.path}.${translationUuid()}.tmp');
+        try {
+          final sink = temp.openWrite();
+          try {
+            await sink.addStream(input.openRead());
+            await sink.flush();
+          } finally {
+            await sink.close();
+          }
+          if (epoch != null && epoch != cacheEpoch) {
+            throw const TranslationCancelled();
+          }
+          await temp.rename(target.path);
+          return target;
+        } finally {
+          if (await temp.exists()) await temp.delete();
+        }
+      });
+
+  Future<int> diskSize(String kind) async {
+    final dir = Directory('${directory.path}/$kind');
+    if (!await dir.exists()) return 0;
+    var total = 0;
+    await for (final item in dir.list()) {
+      if (item is File) total += await item.length();
+    }
+    return total;
+  }
+
+  void Function() retain(File file) {
+    final path = file.path;
+    _leases[path] = (_leases[path] ?? 0) + 1;
+    var released = false;
+    return () {
+      if (released) return;
+      released = true;
+      final count = (_leases[path] ?? 1) - 1;
+      if (count > 0) {
+        _leases[path] = count;
+      } else {
+        _leases.remove(path);
+        if (_deleted.remove(path)) file.delete().catchError((_) => file);
       }
-    }
-    for (final r in candidates) {
-      if (used + bytes <= inputBudget) break;
-      await File(r.inputPath).delete();
-      used -= r.inputBytes;
-    }
-    if (used + bytes > inputBudget) {
-      throw const NodeLaneException('STORAGE_FAILED', '送译缓存空间不足。');
+    };
+  }
+
+  Future<void> deleteFile(File file) async {
+    if (_leases.containsKey(file.path)) {
+      _deleted.add(file.path);
+    } else if (await file.exists()) {
+      await file.delete();
     }
   }
 
-  Future<void> evictResults(Set<int> protected) async {
-    final records = await db.translationRecords
-        .where()
-        .sortByAccessedAt()
-        .findAll();
-    var size = records.fold<int>(0, (n, r) => n + r.resultBytes);
-    for (final r in records) {
-      if (size <= resultBudget) break;
-      if (r.resultPath == null || protected.contains(r.id)) continue;
-      final path = r.resultPath!;
-      final saved = await update(r.id, r.deliveryRevision, (v) {
-        v.deliveryRevision++;
-        v.phase = 'evicted';
-        v.resultPath = null;
-        v.resultBytes = 0;
-      });
-      if (saved != null) {
-        size -= r.resultBytes;
-        final f = File(path);
-        if (await f.exists()) await f.delete();
+  Future<void> clearResults() {
+    cacheEpoch++;
+    return _files.run(() async {
+      final dir = Directory('${directory.path}/result');
+      if (!await dir.exists()) return;
+      await for (final file in dir.list()) {
+        if (file is File) await deleteFile(file);
       }
+    });
+  }
+
+  Future<void> _evict(String kind, int incoming, String target) async {
+    final budget = kind == 'input' ? inputBudget : resultBudget;
+    if (incoming > budget) throw const TranslationFailure('STORAGE_FULL');
+    final pinned = <String>{target, ..._leases.keys};
+    if (kind == 'input') {
+      final active = await database.translationEntrys
+          .filter()
+          .kindEqualTo('active')
+          .findAll();
+      for (final entry in active) {
+        final value = jsonDecode(entry.payload) as Map<String, dynamic>;
+        pinned.add(file('input', value['inputKey'] as String).path);
+      }
+    }
+    final dir = Directory('${directory.path}/$kind');
+    if (!await dir.exists()) return;
+    final files = <(File, FileStat)>[];
+    var size = 0;
+    await for (final file in dir.list()) {
+      if (file is! File) continue;
+      final stat = await file.stat();
+      size += stat.size;
+      if (!pinned.contains(file.path)) files.add((file, stat));
+    }
+    files.sort((a, b) => a.$2.modified.compareTo(b.$2.modified));
+    for (final item in files) {
+      if (size + incoming <= budget) break;
+      await item.$1.delete();
+      size -= item.$2.size;
+    }
+    if (size + incoming > budget) {
+      throw const TranslationFailure('STORAGE_FULL');
     }
   }
 }

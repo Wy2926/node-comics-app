@@ -14,14 +14,17 @@ import 'package:mangayomi/services/trackers/anilist.dart';
 import 'package:mangayomi/services/trackers/kitsu.dart';
 import 'package:mangayomi/services/trackers/myanimelist.dart';
 import 'package:mangayomi/services/trackers/simkl.dart';
-import 'package:mangayomi/services/trackers/trakt_tv.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
+
+import 'mobile_track_screen.dart';
 
 class TrackScreen extends ConsumerWidget {
   const TrackScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return const MobileTrackScreen();
     final updateProgressAfterReading = ref.watch(
       updateProgressAfterReadingStateProvider,
     );
@@ -112,21 +115,6 @@ class TrackScreen extends ConsumerWidget {
                         .login();
                   },
                   id: TrackerProviders.simkl.syncId,
-                  entries: entries,
-                ),
-                TrackListile(
-                  onTap: () async {
-                    await ref
-                        .read(
-                          traktTvProvider(
-                            syncId: TrackerProviders.trakt.syncId,
-                            itemType: null,
-                            widgetRef: ref,
-                          ).notifier,
-                        )
-                        .login();
-                  },
-                  id: TrackerProviders.trakt.syncId,
                   entries: entries,
                 ),
                 ListTile(
@@ -238,22 +226,8 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                       autofocus: !isTv,
                       onChanged: (_) => setState(updateCanLogin),
                       onFieldSubmitted: (_) => passwordFocusNode.requestFocus(),
-                      decoration: InputDecoration(
+                      decoration: outlinedFieldDecoration(
                         hintText: l10n.email_adress,
-                        filled: false,
-                        contentPadding: const EdgeInsets.all(12),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(width: 0.4),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: const BorderSide(),
-                        ),
                       ),
                     ),
                   ),
@@ -273,7 +247,7 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                       enableSuggestions: false,
                       autocorrect: false,
                       autofillHints: const [AutofillHints.password],
-                      decoration: InputDecoration(
+                      decoration: outlinedFieldDecoration(
                         hintText: l10n.password,
                         suffixIcon: IconButton(
                           onPressed: () => setState(() {
@@ -284,20 +258,6 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
-                        ),
-                        filled: false,
-                        contentPadding: const EdgeInsets.all(12),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(width: 0.4),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: const BorderSide(),
                         ),
                       ),
                     ),

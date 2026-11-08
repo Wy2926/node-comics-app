@@ -1,6 +1,28 @@
 {
   "@@locale": "ru",
+  "app_update_details_hint": "Просмотр примечаний к выпуску и вариантов установки",
+  "app_update_download": "Скачать обновление",
+  "app_update_download_hint": "После загрузки следуйте инструкциям для установки обновления.",
+  "bookshelf_all": "Все",
+  "bookshelf_search": "Поиск в библиотеке",
+  "app_update_allow_install": "Разрешите установку приложения в настройках системы, затем вернитесь и нажмите «Установить».",
+  "app_update_waiting": "Ожидание возобновления загрузки системой…",
+  "app_update_cancel_download": "Отменить загрузку",
+  "app_update_remove_package": "Удалить загруженный пакет",
+  "app_name": "NodeLane Comics",
+  "settings_search_empty": "Нет соответствующих настроек",
+  "search_empty_hint": "Попробуйте другое ключевое слово или очистите поиск, чтобы увидеть все.",
+  "search_clear": "Очистить поиск",
+  "app_updates": "Обновления приложения",
+  "app_update_auto": "Проверка при запуске",
+  "app_update_view": "Посмотреть обновление",
+  "app_update_later": "Позже",
+  "app_update_external_hint": "Открывает ссылку на обновление в вашем браузере.",
+  "app_update_failed": "Невозможно проверить наличие обновлений. Пожалуйста, попробуйте еще раз.",
+  "app_update_opened": "Открыта ссылка на обновление",
+  "app_diagnostics": "Диагностика и журналы",
   "library": "Библиотека",
+  "updates_search": "Поиск обновлений",
   "updates": "Обновления",
   "history": "История",
   "browse": "Обзор",
@@ -11,14 +33,17 @@
   "ignore_filters": "Игнорировать фильтры",
   "downloaded": "Загружено",
   "unread": "Непрочитанное",
+  "unwatched": "Непросмотренный",
   "started": "Начато",
   "bookmarked": "В закладках",
   "sort": "Сортировать",
   "alphabetically": "По алфавиту",
   "last_read": "Последнее чтение",
+  "last_watched": "Последний просмотр",
   "last_update_check": "Последняя проверка обновлений",
   "last_entry_delete_warning": "{count, plural, =1{Ты удаляешь единственный {entryType} этого {mediaType} из библиотеки.} other{Ты удаляешь все {count} {entryTypePlural} этого {mediaType} из библиотеки.}}\nЭто также удалит весь {mediaType} из твоей библиотеки.\n\nПримечание: Сами файлы удалены не будут.",
   "@last_entry_delete_warning": {
+    "description": "Warning when deleting all entries (chapters/episodes) of a manga/anime.",
     "placeholders": {
       "count": {},
       "entryType": {},
@@ -29,16 +54,21 @@
   "chapter": "глава",
   "episode": "эпизод",
   "unread_count": "Количество непрочитанных",
+  "unwatched_count": "Количество непросмотренных",
   "latest_chapter": "Последняя глава",
+  "latest_episode": "Последний эпизод",
   "date_added": "Дата добавления",
   "display": "Отображение",
   "display_mode": "Режим отображения",
   "compact_grid": "Компактная сетка",
+  "compression_level": "Уровень сжатия",
+  "compression_info": "Чем выше степень сжатия, тем меньше места занимает файл резервной копии, но используется больше ресурсов процессора. По умолчанию: {level}",
   "comfortable_grid": "Комфортная сетка",
   "cover_only_grid": "Только обложки",
   "list": "Список",
   "badges": "Значки",
   "downloaded_chapters": "Загруженные главы",
+  "downloaded_episodes": "Загруженные эпизоды",
   "language": "Язык",
   "local_source": "Локальный источник",
   "tabs": "Вкладки",
@@ -46,11 +76,13 @@
   "show_numbers_of_items": "Показать количество элементов",
   "other": "Другое",
   "show_continue_reading_buttons": "Показать кнопки продолжения чтения",
+  "show_continue_watching_buttons": "Показать кнопки продолжения просмотра",
   "empty_library": "Пустая библиотека",
   "search": "Поиск...",
   "no_recent_updates": "Нет недавних обновлений",
   "remove_everything": "Удалить все",
   "remove_everything_msg": "Вы уверены? Вся история будет потеряна",
+  "remove_all_update_msg": "Вы уверены? Все обновления будут удалены",
   "ok": "ОК",
   "cancel": "Отмена",
   "remove": "Удалить",
@@ -63,538 +95,6 @@
   "latest": "Последнее",
   "extensions": "Расширения",
   "migrate": "Перенести",
-  "incognito_mode": "Инкогнито режим",
-  "incognito_mode_description": "Пауза в истории чтения",
-  "download_queue": "Очередь загрузки",
-  "categories": "Категории",
-  "settings": "Настройки",
-  "about": "О приложении",
-  "help": "Помощь",
-  "no_downloads": "Нет загрузок",
-  "edit_categories": "Изменить категории",
-  "edit_categories_description": "У вас нет категорий. Нажмите на кнопку плюса, чтобы создать одну для организации вашей библиотеки",
-  "add": "Добавить",
-  "add_category": "Добавить категорию",
-  "name": "Имя",
-  "category_name_required": "*Требуется",
-  "add_category_error_exist": "Категория с этим именем уже существует!",
-  "delete_category": "Удалить категорию",
-  "delete_category_msg": "Вы хотите удалить категорию {name}?",
-  "rename_category": "Переименовать категорию",
-  "general": "Общее",
-  "general_subtitle": "Язык приложения",
-  "app_language": "Язык приложения",
-  "appearance": "Внешний вид",
-  "appearance_subtitle": "Тема, формат даты и времени",
-  "theme": "Тема",
-  "dark_mode": "Темный режим",
-  "on": "Включено",
-  "off": "Выключено",
-  "pure_black_dark_mode": "Чисто черный темный режим",
-  "timestamp": "Временная метка",
-  "relative_timestamp": "Относительная временная метка",
-  "relative_timestamp_short": "Краткая (Сегодня, Вчера)",
-  "relative_timestamp_long": "Длинная (Краткая+, n дней назад)",
-  "date_format": "Формат даты",
-  "reader": "Читатель",
-  "refresh": "Обновить",
-  "reader_subtitle": "Режим чтения, отображение, навигация",
-  "default_reading_mode": "Режим чтения по умолчанию",
-  "reading_mode_vertical": "Вертикальный",
-  "reading_mode_horizontal": "Горизонтальный",
-  "reading_mode_left_to_right": "Слева направо",
-  "reading_mode_right_to_left": "Справа налево",
-  "reading_mode_vertical_continuous": "Вертикальный непрерывный",
-  "reading_mode_webtoon": "Вебтун",
-  "double_tap_animation_speed": "Скорость анимации двойного касания",
-  "normal": "Обычная",
-  "fast": "Быстрая",
-  "no_animation": "Без анимации",
-  "animate_page_transitions": "Анимированные переходы между страницами",
-  "crop_borders": "Обрезать края",
-  "downloads": "Загрузки",
-  "downloads_subtitle": "Настройки загрузок",
-  "download_location": "Место загрузки",
-  "custom_location": "Пользовательское место",
-  "only_on_wifi": "Только по Wi-Fi",
-  "save_as_cbz_archive": "Сохранить как архив CBZ",
-  "browse_subtitle": "Источники, глобальный поиск",
-  "only_include_pinned_sources": "Включать только закрепленные источники",
-  "nsfw_sources": "Источники NSFW (+18)",
-  "nsfw_sources_show": "Показывать в списках источников и расширений",
-  "nsfw_sources_info": "Это не предотвращает появление контента NSFW (18+) в приложении от неофициальных или неправильно помеченных расширений",
-  "version": "Версия",
-  "check_for_update": "Проверить обновления",
-  "n_days_ago": "{days} дней назад",
-  "today": "Сегодня",
-  "yesterday": "Вчера",
-  "a_week_ago": "Неделю назад",
-  "add_to_library": "Добавить в библиотеку",
-  "completed": "Завершено",
-  "ongoing": "В процессе",
-  "on_hiatus": "На паузе",
-  "canceled": "Отменено",
-  "publishing_finished": "Публикация завершена",
-  "unknown": "Неизвестно",
-  "set_categories": "Установить категории",
-  "edit": "Редактировать",
-  "in_library": "В библиотеке",
-  "filter_scanlator_groups": "Фильтр групп переводчиков",
-  "reset": "Сброс",
-  "by_source": "По источнику",
-  "by_chapter_number": "По номеру главы",
-  "by_upload_date": "По дате загрузки",
-  "source_title": "Название источника",
-  "chapter_number": "Номер главы",
-  "share": "Поделиться",
-  "n_chapters": "{n} глав",
-  "no_description": "Нет описания",
-  "resume": "Продолжить",
-  "read": "Читать",
-  "watch": "Смотреть",
-  "popular": "Популярное",
-  "open_in_browser": "Открыть в браузере",
-  "clear_cookie": "Очистить cookie",
-  "show_page_number": "Показать номер страницы",
-  "from_library": "Из библиотеки",
-  "downloaded_chapter": "Загруженная глава",
-  "page": "Страница {page}",
-  "global_search": "Глобальный поиск",
-  "color_blend_level": "Уровень смешивания цветов",
-  "current": "Текущий {char}",
-  "finished": "Завершенный {char}",
-  "next": "Следующий {char}",
-  "previous": "Предыдущий {char}",
-  "no_more_chapter": "Больше нет глав",
-  "no_result": "Нет результатов",
-  "send": "Отправить",
-  "delete": "Удалить",
-  "start_downloading": "Начать загрузку сейчас",
-  "retry": "Повторить",
-  "add_chapters": "Добавить главы",
-  "delete_chapters": "Удалить главу?",
-  "default0": "По умолчанию",
-  "total_chapters": "Всего глав",
-  "import_local_file": "Импортировать локальный файл",
-  "import_files": "Файлы",
-  "nothing_read_recently": "Недавно ничего не читалось",
-  "status": "Статус",
-  "not_started": "Не начато",
-  "score": "Оценка",
-  "start_date": "Дата начала",
-  "finish_date": "Дата окончания",
-  "reading": "Чтение",
-  "on_hold": "На паузе",
-  "dropped": "Брошено",
-  "plan_to_read": "Планирую прочитать",
-  "re_reading": "Перечитывание",
-  "chapters": "Главы",
-  "add_tracker": "Добавить трекер",
-  "one_tracker": "1 трекер",
-  "n_tracker": "{n} трекеров",
-  "tracking": "Отслеживание",
-  "description": "Описание",
-  "episode_progress": "Прогресс: {n}",
-  "n_episodes": "{n} эпизодов",
-  "manga_sources": "Источники манги",
-  "anime_sources": "Источники аниме",
-  "anime_extensions": "Расширения аниме",
-  "manga_extensions": "Расширения манги",
-  "anime": "Аниме",
-  "manga": "Манга",
-  "library_no_category_exist": "У вас еще нет категорий",
-  "watching": "Смотрят",
-  "plan_to_watch": "Планируют смотреть",
-  "re_watching": "Пересмотр",
-  "episodes": "Эпизоды",
-  "download": "Скачать",
-  "new_update_available": "Доступно новое обновление",
-  "app_version": "Версия приложения: v{v}",
-  "searching_for_updates": "Поиск обновлений...",
-  "no_new_updates_available": "Новых обновлений нет",
-  "uninstall": "Удалить",
-  "uninstall_extension": "Удалить расширение {ext}?",
-  "langauage": "Язык",
-  "extension_detail": "Подробности расширения",
-  "scale_type": "Тип масштабирования",
-  "scale_type_fit_screen": "По размеру экрана",
-  "scale_type_stretch": "Растягивание",
-  "scale_type_fit_width": "По ширине",
-  "scale_type_fit_height": "По высоте",
-  "scale_type_original_size": "Оригинальный размер",
-  "scale_type_smart_fit": "Умное подгонка",
-  "page_preload_amount": "Количество предзагружаемых страниц",
-  "page_preload_amount_subtitle": "Количество страниц для предварительной загрузки при чтении. Большие значения обеспечивают более плавное чтение, но требуют больше кэша и сетевого трафика.",
-  "image_loading_error": "Это изображение не удалось загрузить",
-  "add_episodes": "Добавить эпизоды",
-  "video_quality": "Качество",
-  "video_subtitle": "Субтитры",
-  "check_for_extension_updates": "Проверить обновления расширений",
-  "auto_extensions_updates": "Автоматические обновления расширений",
-  "auto_extensions_updates_subtitle": "Автоматически обновлять расширение при появлении новой версии.",
-  "check_for_app_updates": "Проверять обновления приложения при запуске",
-  "reading_mode": "Режим чтения",
-  "custom_filter": "Пользовательский фильтр",
-  "background_color": "Цвет фона",
-  "white": "Белый",
-  "black": "Черный",
-  "grey": "Серый",
-  "automaic": "Автоматический",
-  "preferred_domain": "Предпочтительный домен",
-  "load_more": "Загрузить еще",
-  "cancel_all_for_this_series": "Отменить все для этой серии",
-  "login": "Вход",
-  "login_into": "Войти в {tracker}",
-  "email_adress": "Адрес электронной почты",
-  "password": "Пароль",
-  "log_out_from": "Выйти из {tracker}?",
-  "log_out": "Выйти",
-  "update_pending": "Ожидается обновление",
-  "update_all": "Обновить все",
-  "backup_and_restore": "Резервное копирование и восстановление",
-  "create_backup": "Создать резервную копию",
-  "create_backup_dialog_title": "Что вы хотите сохранить в резервной копии?",
-  "create_backup_subtitle": "Может использоваться для восстановления текущей библиотеки",
-  "restore_backup": "Восстановить из резервной копии",
-  "restore_backup_subtitle": "Восстановить библиотеку из резервной копии",
-  "automatic_backups": "Автоматические резервные копии",
-  "backup_frequency": "Частота создания резервных копий",
-  "backup_location": "Место хранения резервных копий",
-  "backup_options": "Опции резервного копирования",
-  "backup_options_dialog_title": "Что вы хотите включить в резервную копию?",
-  "backup_options_subtitle": "Какую информацию включить в резервную копию",
-  "backup_and_restore_warning_info": "Следует хранить копии резервных копий в других местах",
-  "library_entries": "Записи библиотеки",
-  "chapters_and_episode": "Главы и эпизоды",
-  "every_6_hours": "Каждые 6 часов",
-  "every_12_hours": "Каждые 12 часов",
-  "daily": "Ежедневно",
-  "every_2_days": "Каждые 2 дня",
-  "weekly": "Еженедельно",
-  "restore_backup_warning_title": "Восстановление резервной копии перезапишет все существующие данные.\n\nПродолжить восстановление?",
-  "services": "Сервисы",
-  "tracking_warning_info": "Односторонняя синхронизация для обновления прогресса чтения в службах отслеживания. Настройте отслеживание для отдельных записей из их кнопки отслеживания.",
-  "use_page_tap_zones": "Использовать зоны касания страницы",
-  "manage_trackers": "Управление трекерами",
-  "restore": "Восстановить",
-  "backups": "Резервные копии",
-  "by_scanlator": "По сканлейтору",
-  "by_name": "По имени",
-  "installed": "Установлено",
-  "auto_scroll": "Автопрокрутка",
-  "video_audio": "Аудио",
-  "player": "Плеер",
-  "markEpisodeAsSeenSetting": "В какой момент отметить эпизод как просмотренный",
-  "default_skip_intro_length": "Стандартная длина пропуска вступления",
-  "default_playback_speed_length": "Стандартная длина скорости воспроизведения",
-  "updateProgressAfterReading": "Обновить прогресс после чтения",
-  "no_sources_installed": "Источники не установлены!",
-  "show_extensions": "Показать расширения",
-  "default_skip_forward_skip_length": "Длина пропуска вперед по умолчанию",
-  "aniskip_requires_info": "AniSkip требует отслеживания аниме с использованием MAL или Anilist для работы.",
-  "enable_aniskip": "Включить AniSkip",
-  "enable_auto_skip": "Включить автоматическое пропускание",
-  "aniskip_button_timeout": "Тайм-аут кнопки",
-  "fullscreen": "Полноэкранный режим",
-  "update_library": "Обновить библиотеку",
-  "updating_library": "Обновление библиотеки ({cur} / {max}) - Не удалось: {failed}",
-  "next_chapter": "Следующая глава",
-  "next_5_chapters": "Следующие 5 глав",
-  "next_10_chapters": "Следующие 10 глав",
-  "next_25_chapters": "Следующие 25 глав",
-  "cover_saved": "Обложка сохранена",
-  "set_as_cover": "Установить как обложку",
-  "use_this_as_cover_art": "Использовать это как обложку?",
-  "save": "Сохранить",
-  "picture_saved": "Изображение сохранено",
-  "cover_updated": "Обложка обновлена",
-  "blend_mode_default": "По умолчанию",
-  "blend_mode_multiply": "Умножение",
-  "blend_mode_screen": "Экран",
-  "blend_mode_overlay": "Наложение",
-  "blend_mode_colorDodge": "Увеличение яркости",
-  "blend_mode_lighten": "Осветление",
-  "blend_mode_colorBurn": "Уменьшение яркости",
-  "blend_mode_darken": "Затемнение",
-  "blend_mode_difference": "Разность",
-  "blend_mode_saturation": "Насыщенность",
-  "blend_mode_softLight": "Мягкое свечение",
-  "blend_mode_plus": "Плюс",
-  "blend_mode_exclusion": "Исключение",
-  "custom_color_filter": "Пользовательский цветной фильтр",
-  "color_filter_blend_mode": "Режим смешивания цветового фильтра",
-  "enable_all": "Включить все",
-  "disable_all": "Отключить все",
-  "font": "Шрифт",
-  "color": "Цвет",
-  "font_size": "Размер шрифта",
-  "text": "Текст",
-  "border": "Граница",
-  "background": "Фон",
-  "no_subtite_warning_message": "Не имеет эффекта, потому что в этом видео нет субтитров",
-  "grid_size": "Размер сетки",
-  "n_per_row": "{n} в ряд",
-  "horizontal_continious": "Горизонтальное непрерывное",
-  "edit_code": "Редактировать код",
-  "use_libass": "Включить libass",
-  "use_libass_info": "Используйте рендеринг субтитров на основе libass для нативного бэкенда.",
-  "libass_not_disable_message": "Отключите `use libass` в настройках плеера, чтобы иметь возможность настраивать субтитры.",
-  "torrent_stream": "Торрент-стрим",
-  "add_torrent": "Добавить торрент",
-  "enter_torrent_hint_text": "Введите magnet-ссылку или URL торрент-файла",
-  "torrent_url": "URL торрента",
-  "or": "ИЛИ",
-  "advanced": "Продвинутые",
-  "use_native_http_client": "Использовать нативный HTTP-клиент",
-  "use_native_http_client_info": "он автоматически поддерживает функции платформы, такие как VPN, поддерживает больше функций HTTP, таких как HTTP/3 и пользовательская обработка перенаправлений",
-  "unwatched": "Непросмотренный",
-  "last_watched": "Последний просмотр",
-  "unwatched_count": "Количество непросмотренных",
-  "latest_episode": "Последний эпизод",
-  "downloaded_episodes": "Загруженные эпизоды",
-  "show_continue_watching_buttons": "Показать кнопки продолжения просмотра",
-  "by_episode_number": "По номеру эпизода",
-  "episode_number": "Номер эпизода",
-  "total_episodes": "Общее количество эпизодов",
-  "next_episode": "Следующий эпизод",
-  "next_5_episodes": "Следующие 5 эпизодов",
-  "next_10_episodes": "Следующие 10 эпизодов",
-  "next_25_episodes": "Следующие 25 эпизодов",
-  "remove_all_update_msg": "Вы уверены? Все обновления будут удалены",
-  "syncing": "Синхронизация",
-  "sync_password": "Пароль (минимум 8 символов)",
-  "sync_logged": "Вход выполнен успешно",
-  "syncing_subtitle": "Синхронизируйте свой прогресс на нескольких устройствах через собственный \nserver. Загляните на наш сервер discord для получения дополнительной информации!",
-  "last_sync_manga": "Последняя синхронизация манги:",
-  "last_sync_history": "Последняя история синхронизирована на:",
-  "last_sync_update": "Последнее обновление синхронизировано на:",
-  "sync_server": "Адрес сервера синхронизации",
-  "sync_login_invalid_creds": "Неверный адрес электронной почты или пароль",
-  "sync_starting": "Начало синхронизации...",
-  "sync_finished": "Синхронизация завершена",
-  "sync_failed": "Не удалось синхронизировать",
-  "sync_button_sync": "Синхронизировать прогресс",
-  "dialog_confirm": "Подтвердить",
-  "full_screen_player": "Использовать полноэкранный режим",
-  "full_screen_player_info": "Автоматически использовать полноэкранный режим при воспроизведении видео.",
-  "novel_sources": "Источники романов",
-  "novel_extensions": "Расширения для романов",
-  "novel": "Роман",
-  "skip_opening": "Пропустить вступление",
-  "skip_ending": "Пропустить концовку",
-  "n_hour_ago": "{hour} час назад",
-  "n_hours_ago": "{hours} часов назад",
-  "n_minute_ago": "{minute} минуту назад",
-  "n_minutes_ago": "{minutes} минут назад",
-  "n_day_ago": "{day} день назад",
-  "now": "сейчас",
-  "library_last_updated": "Библиотека обновлена: {lastUpdated}",
-  "data_and_storage": "Данные и хранилище",
-  "download_location_info": "Используется для скачивания глав",
-  "storage": "Хранилище",
-  "clear_chapter_and_episode_cache": "Очистить кэш глав и эпизодов",
-  "cache_cleared": "Кэш очищен",
-  "clear_chapter_or_episode_cache_on_app_launch": "Очистить кэш глав/эпизодов при запуске приложения",
-  "app_settings": "Настройки приложения",
-  "sources_settings": "Настройки источников",
-  "include_sensitive_settings": "Включить чувствительные настройки (например, токены для входа в трекер)",
-  "create": "Создать",
-  "migrate_confirm": "Перенести на другой источник",
-  "clean_database": "Очистить базу данных",
-  "cleaned_database": "База данных очищена! Удалено {x} записей",
-  "clean_database_desc": "Это удалит все элементы, которые не добавлены в библиотеку!",
-  "statistics": "Статистика",
-  "default_subtitle_language": "Язык субтитров по умолчанию",
-  "follow_system_theme": "Следовать системной теме",
-  "sync_on": "Включить синхронизацию",
-  "sync_auto": "Автосинхронизация",
-  "sync_auto_warning": "Автосинхронизация в настоящее время является экспериментальной функцией!",
-  "sync_auto_off": "Выключено",
-  "sync_auto_5_minutes": "Каждые 5 минут",
-  "sync_auto_10_minutes": "Каждые 10 минут",
-  "sync_auto_30_minutes": "Каждые 30 минут",
-  "sync_auto_1_hour": "Каждый час",
-  "sync_auto_3_hours": "Каждые 3 часа",
-  "sync_auto_6_hours": "Каждые 6 часов",
-  "sync_auto_12_hours": "Каждые 12 часов",
-  "server_error": "Ошибка сервера!",
-  "reorder_navigation": "Настроить навигацию",
-  "reorder_navigation_description": "Перестройте и настройте каждую навигацию в соответствии с вашими потребностями.",
-  "include_subtitles": "Включить субтитры",
-  "downloads_are_limited_to_wifi": "Загрузки ограничены только Wi-Fi",
-  "manga_extensions_repo": "Репозиторий расширений манги",
-  "anime_extensions_repo": "Репозиторий расширений аниме",
-  "novel_extensions_repo": "Репозиторий расширений новелл",
-  "undefined": "Не определено",
-  "empty_extensions_repo": "У вас здесь нет URL-адресов репозитория. Нажмите кнопку добавления, чтобы добавить один!",
-  "add_extensions_repo": "Добавить URL репозитория",
-  "remove_extensions_repo": "Удалить URL репозитория",
-  "manage_manga_repo_urls": "Управление URL-адресами репозитория манги",
-  "manage_anime_repo_urls": "Управление URL-адресами репозитория аниме",
-  "manage_novel_repo_urls": "Управление URL-адресами репозитория новелл",
-  "url_cannot_be_empty": "URL не может быть пустым",
-  "url_must_end_with_dot_json_or_dot_pb": "URL должен заканчиваться на .json / .pb",
-  "repo_url": "URL репозитория",
-  "invalid_url_format": "Неверный формат URL",
-  "clear_all_sources": "Очистить все источники",
-  "clear_all_sources_msg": "Это полностью очистит все источники приложения. Вы уверены, что хотите продолжить?",
-  "sources_cleared": "Источники очищены!",
-  "repo_added": "Репозиторий источников добавлен!",
-  "add_repo": "Добавить репозиторий?",
-  "genre_search_library": "Поиск жанра в библиотеке",
-  "genre_search_source": "Просмотр в источнике",
-  "source_not_added": "Источник не установлен!",
-  "load_own_subtitles": "Загрузить свои собственные субтитры...",
-  "unsupported_repo": "Вы попытались добавить неподдерживаемый репозиторий. Пожалуйста, обратитесь за поддержкой на сервер discord!",
-  "downloaded_only": "Только загруженные",
-  "downloaded_only_description": "Показывать только загруженные записи в вашей библиотеке",
-  "concurrent_downloads": "Одновременные загрузки",
-  "logs_on": "Включить ведение журнала",
-  "share_app_logs": "Поделиться журналами приложения",
-  "no_app_logs": "Файл log.txt недоступен!",
-  "failed": "Не удалось!",
-  "next_week": "На следующей неделе",
-  "sync_button_upload": "Только выгрузить",
-  "sync_button_upload_info": "Эта операция полностью заменит удаленные данные локальными данными!",
-  "sync_button_download": "Только загрузить",
-  "sync_button_download_info": "Эта операция полностью заменит локальные данные удаленными данными!",
-  "extension_settings": "Настройки расширения",
-  "video_audio_info": "Предпочитаемые языки, коррекция высоты тона, аудиоканалы",
-  "all_chapters": "Все главы",
-  "all_episodes": "Все эпизоды",
-  "advanced_info": "Конфигурация mpv",
-  "recommendations": "Рекомендации",
-  "recommendations_similar": "похожий",
-  "recommendations_weights": "Веса рекомендаций",
-  "recommendations_weights_genre": "Сходство жанра",
-  "recommendations_weights_setting": "Сходство сеттинга",
-  "recommendations_weights_synopsis": "Сходство сюжета",
-  "recommendations_weights_theme": "Сходство темы",
-  "custom_dns": "Пользовательский DNS (оставьте пустым для использования системного DNS)",
-  "android_proxy_server": "Прокси-сервер Android (M-Extension-Server)",
-  "get_m_extension_server": "Получить M-Extension-Server",
-  "get_sync_server": "Получить сервер синхронизации здесь",
-  "search_subtitles": "Искать субтитры онлайн...",
-  "extension_notes": "Примечания: {notes}",
-  "end_of_chapter": "Конец главы",
-  "chapter_completed": "Глава завершена",
-  "continue_to_next_chapter": "Продолжайте прокручивать, чтобы прочитать следующую главу",
-  "no_next_chapter": "Нет следующей главы",
-  "you_have_finished_reading": "Вы закончили чтение",
-  "return_to_the_list_of_chapters": "Вернуться к списку глав",
-  "hwdec": "Аппаратный декодер",
-  "enable_hardware_accel": "Аппаратное ускорение",
-  "enable_hardware_accel_info": "Включите/выключите, если возникают ошибки или сбои",
-  "track_library_navigate": "Перейти к существующей локальной записи",
-  "track_library_add": "Добавить в локальную библиотеку",
-  "track_library_add_confirm": "Добавить отслеживаемый элемент в локальную библиотеку",
-  "track_library_not_logged": "Войдите в соответствующий трекер, чтобы использовать эту функцию!",
-  "track_library_switch": "Переключиться на другой трекер",
-  "go_back": "Назад",
-  "merge_library_nav_mobile": "Объединить навигацию библиотеки на мобильном",
-  "enable_discord_rpc": "Включить Discord RPC",
-  "hide_discord_rpc_incognito": "Скрыть Discord RPC в режиме Инкогнито",
-  "rpc_show_reading_watching_progress": "Показывать текущую главу в Discord (требуется перезапуск)",
-  "rpc_show_title": "Показывать текущий заголовок в Discord",
-  "rpc_show_cover_image": "Показывать текущее изображение обложки в Discord",
-  "sync_enable_histories": "Синхронизировать данные истории",
-  "sync_enable_updates": "Синхронизировать данные обновлений",
-  "sync_enable_settings": "Синхронизировать настройки",
-  "enable_mpv": "Включить шейдеры / скрипты mpv",
-  "mpv_info": "Поддерживает скрипты .js в mpv/scripts/",
-  "mpv_redownload": "Перезагрузить файлы конфигурации mpv",
-  "mpv_redownload_info": "Заменяет старые файлы конфигурации на новые!",
-  "mpv_download": "Требуются файлы конфигурации MPV!\nЗагрузить сейчас?",
-  "custom_buttons": "Пользовательские кнопки",
-  "custom_buttons_info": "Выполнить код lua с пользовательскими кнопками",
-  "custom_buttons_edit": "Редактировать пользовательские кнопки",
-  "custom_buttons_add": "Добавить пользовательскую кнопку",
-  "custom_buttons_added": "Пользовательская кнопка добавлена!",
-  "custom_buttons_delete": "Удалить пользовательскую кнопку",
-  "custom_buttons_text": "Текст кнопки",
-  "custom_buttons_text_req": "Требуется текст кнопки",
-  "custom_buttons_js_code": "Код lua",
-  "custom_buttons_js_code_req": "Требуется код lua",
-  "custom_buttons_js_code_long": "Код lua (при долгом нажатии)",
-  "custom_buttons_startup": "Код lua (при запуске)",
-  "n_days": "{n} дней",
-  "decoder": "Декодер",
-  "decoder_info": "Аппаратное декодирование, формат пикселей, устранение полос",
-  "enable_gpu_next": "Включить gpu-next (только Android)",
-  "enable_gpu_next_info": "Новый движок рендеринга видео",
-  "debanding": "Устранение полос",
-  "use_yuv420p": "Использовать формат пикселей YUV420P",
-  "use_yuv420p_info": "Может исправить черные экраны на некоторых видеокодеках, также может улучшить производительность за счет качества",
-  "audio_preferred_languages": "Предпочитаемые языки",
-  "audio_preferred_languages_info": "Аудиоязык(и) для выбора по умолчанию на видео с несколькими аудиопотоками, 2/3-буквенные коды языков (например: ru, en, de). Несколько значений могут быть разделены запятой.",
-  "enable_audio_pitch_correction": "Включить коррекцию высоты тона аудио",
-  "enable_audio_pitch_correction_info": "Предотвращает высокий тон аудио на более высоких скоростях и низкий на более низких скоростях",
-  "audio_channels": "Аудиоканалы",
-  "volume_boost_cap": "Предел усиления громкости",
-  "internal_player": "Внутренний плеер",
-  "internal_player_info": "Прогресс, элементы управления, ориентация",
-  "subtitle_delay_text": "Задержка субтитров",
-  "subtitle_delay": "Задержка (мс)",
-  "subtitle_speed": "Скорость",
-  "calendar": "Календарь",
-  "calendar_no_data": "Пока нет данных.",
-  "calendar_info": "Календарь может предсказать следующую загрузку главы только на основе предыдущих загрузок. Некоторые данные могут быть неточными на 100%!",
-  "in_n_day": "через {days} день",
-  "in_n_days": "через {days} дней",
-  "clear_library": "Очистить библиотеку",
-  "clear_library_desc": "Выберите очистку всех записей манги, аниме и/или новелл",
-  "clear_library_input": "Введите 'manga', 'anime' и/или 'novel' (разделенные запятой), чтобы удалить все связанные записи",
-  "watch_order": "Порядок просмотра",
-  "sequels": "Продолжения",
-  "recommendations_similarity": "Сходство:",
-  "local_folder_structure": "Структура локальной папки",
-  "local_folder": "Локальные папки",
-  "add_local_folder": "Добавить локальную папку",
-  "rescan_local_folder": "Пересканировать все локальные папки сейчас",
-  "export_metadata": "Экспортировать метаданные",
-  "exported": "Экспортировано",
-  "text_size": "Размер текста:",
-  "text_align": "Выравнивание текста",
-  "line_height": "Высота строки",
-  "show_scroll_percentage": "Показывать процент прокрутки",
-  "remove_extra_paragraph_spacing": "Удалить дополнительный интервал между параграфами",
-  "select_label_color": "Выбрать цвет {label}",
-  "default_user_agent": "Агент пользователя по умолчанию",
-  "forceLandscapeMode": "Принудительно переднй режим",
-  "forceLandscapeModeSubtitle": "Принудительно использовать ландшафтную ориентацию плеера.",
-  "dns_over_https": "DNS-over-HTTPS (DoH)",
-  "dns_provider": "Поставщик DNS",
-  "tracked": "Отслеживается",
-  "auth_unlock_msg": "Аутентифицируйтесь, чтобы разблокировать Mangayomi",
-  "app_locked": "Mangayomi заблокирован",
-  "auth_to_continue": "Аутентифицируйтесь, чтобы продолжить",
-  "authenticating": "Идет аутентификация...",
-  "unlock": "Разблокировать",
-  "security": "Безопасность",
-  "auth_to_change_security_setting": "Аутентифицируйтесь, чтобы изменить настройки безопасности",
-  "app_lock": "Блокировка приложения",
-  "require_biometric_or_device_credential": "Требуется биометрическая аутентификация или учетные данные устройства для открытия приложения",
-  "biometric_or_device_credential_not_available": "Биометрическая аутентификация недоступна на этом устройстве",
-  "app_lock_description": "Когда блокировка приложения включена, вам будет предложено пройти аутентификацию\\nкаждый раз, когда вы открываете приложение или возвращаетесь из фона.",
-  "keep_screen_on": "Держать экран включённым",
-  "webtoon_side_padding": "Боковой отступ Webtoon",
-  "show_page_gaps": "Показывать пробелы между страницами",
-  "invert_colors": "Инвертировать цвета",
-  "grayscale": "Оттенки серого",
-  "brightness": "Яркость",
-  "contrast": "Контраст",
-  "saturation": "Насыщенность",
-  "navigation_layout": "Макет навигации",
-  "nav_layout_default": "По умолчанию",
-  "nav_layout_l_shaped": "L-образный",
-  "nav_layout_kindle": "Kindle",
-  "nav_layout_edge": "Краевой",
-  "nav_layout_right_and_left": "Справа и слева",
-  "nav_layout_disabled": "Отключена",
-  "color_enhancements": "Улучшение цвета",
-  "split_epub_chapters": "Разделить на главы",
-  "split_epub_chapters_description": "Импортировать каждую главу EPUB как отдельную запись",
-  "compression_info": "Чем выше степень сжатия, тем меньше места занимает файл резервной копии, но используется больше ресурсов процессора. По умолчанию: {level}",
   "mass_migration_title": "Массовая миграция",
   "mass_migration_preview_items": "Предпросмотр элементов",
   "mass_migration_destination_source": "Исходный код назначения",
@@ -777,172 +277,131 @@
   "mass_migration_unknown_match": "Неизвестное совпадение",
   "mass_migration_unknown_source": "Неизвестный источник",
   "mass_migration_unknown_chapter": "Неизвестная глава",
-  "delete_download_after_reading": "Удалять загрузку после чтения",
-  "total": "Всего",
-  "mean_per_title": "Среднее на название",
-  "completion_rate": "Процент завершения",
-  "watching_time": "Время просмотра",
-  "reading_time": "Время чтения",
-  "average_chapters_per_title": "Среднее кол-во глав на название",
-  "read_percentage": "Процент прочитанного",
-  "entries": "Записи",
-  "extension_server_intro_with_jre": "Загрузите пакет прокси-сервера перед использованием расширений Mihon. Пакет включает в себя JRE и JAR-файл сервера расширений.",
-  "extension_server_intro_ios": "Загрузите JAR-файл прокси-сервера перед использованием расширений Mihon. Для iOS требуется только JAR-файл сервера расширений.",
-  "checking_files": "Проверка файлов",
-  "files_installed": "Файлы установлены",
-  "files_missing": "Файлы отсутствуют",
-  "update_files": "Обновить файлы",
-  "up_to_date": "Обновлено",
-  "choose_location": "Выберите местоположение",
-  "import_existing_jar": "Импортировать существующий JAR",
-  "detect_files_in_selected_folder": "Обнаружить файлы в выбранной папке",
-  "preparing_download": "Подготовка к загрузке...",
-  "app_install_location": "Место установки приложения",
-  "install_location": "Месть установки",
-  "jre_executable": "Исполняемый файл JRE",
-  "extension_server_jar": "JAR сервера расширений",
-  "installed_version": "Установленная версия",
-  "latest_version": "Последняя версия",
-  "m_extension_server_description": "Используйте M-Extension-Server, когда вам нужен отдельный прокси-сервер для Android-устройства. Установите адрес прокси здесь и загрузите APK с GitHub.",
-  "set_proxy_address": "Установить адрес прокси",
-  "no_extension_server_bundle_available_for_this_platform": "Для этой платформы нет доступного пакета сервера расширений.",
-  "failed_to_download_bundle": "Ошибка загрузки пакета ({statusCode}).",
-  "@failed_to_download_bundle": {
-    "placeholders": {
-      "statusCode": {}
-    }
-  },
-  "downloaded_bundle_missing_expected_files": "Загруженный пакет не содержит ожидаемых файлов.",
-  "extension_server_files_ready": "Файлы сервера расширений готовы.",
-  "ios_extension_server_import_hint": "На iOS сервер устанавливается внутри песочницы приложения. Используйте «Импортировать существующий JAR», чтобы добавить загруженный файл.",
-  "select_extension_server_folder": "Выберите папку сервера расширений",
-  "selected_folder_does_not_exist": "Выбранная папка не существует.",
-  "no_extension_server_files_found_in_selected_folder": "Файлы сервера расширений в выбранной папке не найдены.",
-  "extension_server_files_linked": "Файлы сервера расширений привязаны.",
-  "selected_file_could_not_be_accessed": "Не удалось получить доступ к выбранному файлу.",
-  "extension_server_jar_imported": "JAR-файл сервера расширений импортирован.",
-  "could_not_launch_apk_bridge_page": "Не удалось запустить страницу M-Extension-Server.",
-  "not_configured": "Не настроено",
-  "webview": "Веб-просмотр",
-  "mass_migration_description": "Перенесите записи из вашей библиотеки с одного источника на другой.",
-  "mass_migration_selection_title": "Выбор миграции",
-  "mass_migration_source_selecting_description": "Выберите один или несколько источников для миграции.",
-  "mass_migration_manga_selecting_description": "Выберите названия для переноса на новый источник.",
-  "mass_migration_status_idle": "Ожидание",
-  "mass_migration_status_searching": "Поиск...",
-  "mass_migration_status_migrating": "Миграция...",
-  "mass_migration_status_finished": "Завершено",
-  "mass_migration_action_migrate": "Мигрировать",
-  "mass_migration_action_copy": "Копировать",
-  "mass_migration_action_skip_step": "Пропустить шаг",
-  "mass_migration_option_keep_old": "Сохранить старую запись после миграции",
-  "mass_migration_dialog_title": "Перенести {count, plural, one{1 название} few{{count} названия} other{{count} названий}}?",
-  "mass_migration_dialog_content": "Это заменит текущие записи новыми из выбранного источника.",
-  "mass_migration_help_title": "Как использовать массовую миграцию",
-  "mass_migration_help_content": "1. Выберите исходный источник.\n2. Выберите названия, которые хотите перенести.\n3. Выберите целевые источники.\n4. Проверьте совпадения и запустите миграцию.",
-  "mihon_proxy_server": "Прокси-сервер Mihon",
-  "android_proxy_server_mihon_description": "Загрузите и настройте прокси-сервер, необходимый для использования расширений Mihon.",
-  "could_not_check_proxy_server_updates": "Не удалось проверить обновления прокси-сервера.",
-  "proxy_server_ip_hint": "IP-адрес сервера (например, 10.0.0.5 или https://example.com)",
-  "no_newer_proxy_server_release_available": "Нет доступных новых версий прокси-сервера.",
-  "statistics_title": "Статистика",
-  "statistics_total_manga": "Всего манги",
-  "statistics_total_anime": "Всего аниме",
-  "statistics_chapters_read": "Прочитано глав",
-  "statistics_episodes_watched": "Посмотрено эпизодов",
-  "statistics_reading_time": "Время чтения",
-  "statistics_watching_time": "Время просмотра",
-  "statistics_mean_score": "Средний балл",
-  "statistics_score_distribution": "Распределение оценок",
-  "statistics_status_distribution": "Распределение статусов",
-  "statistics_reading_time_unit_hour": "{count, plural, one{1 час} few{{count} часа} other{{count} часов}}",
-  "statistics_reading_time_unit_minute": "{count, plural, one{1 минута} few{{count} минуты} other{{count} минут}}",
-  "statistics_reading_time_unit_day": "{count, plural, one{1 день} few{{count} дня} other{{count} дней}}",
-  "statistics_no_data": "Недостаточно данных для статистики.",
-  "compression_level": "Уровень сжатия",
-  "android_proxy_server_mihon": "Android прокси-сервер (Mihon)",
-  "select_extension_server_jar": "Выбрать JAR-файл сервера",
-  "webtoon_disable_zoom_out": "Отключить уменьшение масштаба Webtoon",
-  "webtoon_double_tap_zoom_enabled": "Двойное касание для масштабирования Webtoon",
-  "navigate_to_pan": "Навигация перетаскиванием",
-  "navigate_to_pan_subtitle": "Сначала сдвигать увеличенное изображение перед сменой страницы",
-  "split_wide_pages": "Разделять двойные страницы",
-  "dual_page_invert": "Инвертировать разделенные половины страниц",
-  "dual_page_rotate_to_fit": "Поворачивать для соответствия",
-  "dual_page_rotate_to_fit_invert": "Обратное направление вращения",
-  "landscape_zoom": "Автоматическое масштабирование в альбоме",
-  "zoom_start_position": "Начальная позиция масштабирования",
-  "zoom_start_left": "Слева",
-  "zoom_start_right": "Справа",
-  "zoom_start_center": "По центру",
-  "automatic_background": "Автоматический фон",
-  "tapping_inversion": "Инверсия касаний",
-  "tapping_inversion_none": "Нет",
-  "tapping_inversion_horizontal": "По горизонтали",
-  "tapping_inversion_vertical": "По вертикали",
-  "tapping_inversion_both": "Оба",
-  "flash_on_page_change": "Вспышка при смене страницы",
-  "flash_on_page_change_subtitle": "Помощник против выгорания AMOLED",
-  "flash_color": "Цвет вспышки",
-  "flash_color_black": "Черный",
-  "flash_color_white": "Белый",
-  "flash_color_white_black": "Белый и Черный",
-  "flash_interval": "Интервал вспышки: {n} страниц",
-  "@flash_interval": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "flash_duration": "Длительность вспышки: {n} мс",
-  "@flash_duration": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "show_navigation_overlay_on_start": "Показывать навигационную панель при запуске",
-  "reader_hide_threshold": "Порог скрытия интерфейса",
-  "reader_hide_threshold_highest": "Самый высокий (5 px)",
-  "reader_hide_threshold_high": "Высокий (13 px)",
-  "reader_hide_threshold_low": "Низкий (31 px)",
-  "reader_hide_threshold_lowest": "Самый низкий (47 px)",
-  "error_no_pages_available": "Ошибка: нет доступных страниц",
-  "mark_duplicate_chapters_read": "Отметить повторяющиеся номера глав как прочитанные",
-  "tts": "Преобразование текста в речь",
-  "tts_speed": "Скорость",
-  "tts_pitch": "Высота тона",
-  "tts_language": "Язык",
-  "tts_voice": "Голос",
-  "tts_stop": "Остановить",
-  "tts_play": "Воспроизведение",
-  "tts_pause": "Пауза",
-  "tts_previous": "Предыдущий абзац",
-  "tts_next": "Следующий абзац",
-  "tts_paragraph_progress": "Абзац {current} из {total}",
-  "tts_settings": "Параметры TTS",
-  "tts_default": "По умолчанию",
-  "app_ui_scale": "Масштаб интерфейса",
-  "app_ui_scale_subtitle": "Сделайте интерфейс больше или меньше в соответствии с вашим экраном и расстоянием просмотра.",
-  "allow_concurrent_downloads": "Разрешить одновременные загрузки",
-  "allow_concurrent_downloads_subtitle": "Загружайте из разных источников одновременно. Один источник по-прежнему загружает одну главу за раз, чтобы не перегружать. Отключите, чтобы загружать по одному везде.",
-  "download_delay": "Задержка загрузки",
-  "download_delay_subtitle": "Выключен. Добавьте ожидание со случайной дрожью между главами, чтобы быть мягче к источникам.",
-  "save_search": "Сохранить поиск",
-  "saved_searches": "Сохраненные поиски",
-  "enter_search_to_save_first": "Сначала введите поиск для сохранения",
-  "no_saved_searches": "Для этого источника еще нет сохраненных поисков.\nВыполните поиск, а затем выберите \"Сохранить поиск\".",
-  "source": "Источник",
+  "migrate_confirm": "Перенести на другой источник",
+  "clean_database": "Очистить базу данных",
+  "cleaned_database": "База данных очищена! Удалено {x} записей",
+  "clean_database_desc": "Это удалит все элементы, которые не добавлены в библиотеку!",
+  "incognito_mode": "Инкогнито режим",
+  "incognito_mode_description": "Пауза в истории чтения",
+  "downloaded_only": "Только загруженные",
+  "downloaded_only_description": "Показывать только загруженные записи в вашей библиотеке",
+  "download_queue": "Очередь загрузки",
+  "categories": "Категории",
+  "statistics": "Статистика",
+  "settings": "Настройки",
+  "about": "О приложении",
+  "help": "Помощь",
+  "no_downloads": "Нет загрузок",
+  "edit_categories": "Изменить категории",
+  "edit_categories_description": "У вас нет категорий. Нажмите на кнопку плюса, чтобы создать одну для организации вашей библиотеки",
+  "add": "Добавить",
+  "add_category": "Добавить категорию",
+  "name": "Имя",
   "label_value": "{label}: {value}",
+  "@label_value": {
+    "placeholders": {
+      "label": {},
+      "value": {}
+    }
+  },
   "url": "URL",
+  "category_name_required": "*Требуется",
+  "add_category_error_exist": "Категория с этим именем уже существует!",
+  "delete_category": "Удалить категорию",
+  "delete_category_msg": "Вы хотите удалить категорию {name}?",
+  "rename_category": "Переименовать категорию",
+  "general": "Общее",
+  "general_subtitle": "Язык приложения",
+  "app_language": "Язык приложения",
+  "default_subtitle_language": "Язык субтитров по умолчанию",
+  "appearance": "Внешний вид",
+  "appearance_subtitle": "Тема, формат даты и времени",
+  "theme": "Тема",
+  "dark_mode": "Темный режим",
+  "follow_system_theme": "Следовать системной теме",
+  "on": "Включено",
+  "off": "Выключено",
+  "pure_black_dark_mode": "Чисто черный темный режим",
+  "timestamp": "Временная метка",
+  "relative_timestamp": "Относительная временная метка",
+  "relative_timestamp_short": "Краткая (Сегодня, Вчера)",
+  "relative_timestamp_long": "Длинная (Краткая+, n дней назад)",
+  "date_format": "Формат даты",
+  "reader": "Читатель",
+  "refresh": "Обновить",
+  "reader_subtitle": "Режим чтения, отображение, навигация",
+  "default_reading_mode": "Режим чтения по умолчанию",
+  "reading_mode_vertical": "Вертикальный",
+  "reading_mode_horizontal": "Горизонтальный",
+  "reading_mode_left_to_right": "Слева направо",
+  "reading_mode_right_to_left": "Справа налево",
+  "reading_mode_vertical_continuous": "Вертикальный непрерывный",
+  "reading_mode_webtoon": "Вебтун",
+  "double_tap_animation_speed": "Скорость анимации двойного касания",
+  "normal": "Обычная",
+  "fast": "Быстрая",
+  "no_animation": "Без анимации",
+  "animate_page_transitions": "Анимированные переходы между страницами",
+  "crop_borders": "Обрезать края",
+  "downloads": "Загрузки",
+  "downloads_subtitle": "Настройки загрузок",
+  "download_location": "Место загрузки",
+  "custom_location": "Пользовательское место",
+  "only_on_wifi": "Только по Wi-Fi",
+  "save_as_cbz_archive": "Сохранить как архив CBZ",
+  "delete_download_after_reading": "Удалять загрузку после чтения",
+  "concurrent_downloads": "Одновременные загрузки",
+  "browse_subtitle": "Источники, глобальный поиск",
+  "only_include_pinned_sources": "Включать только закрепленные источники",
+  "nsfw_sources": "Источники NSFW (+18)",
+  "nsfw_sources_show": "Показывать в списках источников и расширений",
+  "nsfw_sources_info": "Это не предотвращает появление контента NSFW (18+) в приложении от неофициальных или неправильно помеченных расширений",
+  "version": "Версия",
   "beta_version": "Бета ({version})",
+  "@beta_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "check_for_update": "Проверить обновления",
+  "logs_on": "Включить ведение журнала",
+  "share_app_logs": "Поделиться журналами приложения",
+  "no_app_logs": "Файл log.txt недоступен!",
+  "failed": "Не удалось!",
+  "n_days_ago": "{days} дней назад",
+  "today": "Сегодня",
+  "yesterday": "Вчера",
+  "a_week_ago": "Неделю назад",
+  "next_week": "На следующей неделе",
+  "add_to_library": "Добавить в библиотеку",
+  "completed": "Завершено",
+  "ongoing": "В процессе",
+  "on_hiatus": "На паузе",
+  "canceled": "Отменено",
+  "publishing_finished": "Публикация завершена",
+  "unknown": "Неизвестно",
   "empty_placeholder": "ПУСТО",
   "error": "Ошибка",
   "error_with_message": "Ошибка: {error}",
+  "@error_with_message": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "no_pages_available": "Ошибка: нет доступных страниц",
+  "set_categories": "Установить категории",
+  "edit": "Редактировать",
+  "in_library": "В библиотеке",
+  "filter_scanlator_groups": "Фильтр групп переводчиков",
+  "reset": "Сброс",
+  "by_source": "По источнику",
+  "by_chapter_number": "По номеру главы",
+  "by_episode_number": "По номеру эпизода",
+  "by_upload_date": "По дате загрузки",
+  "source_title": "Название источника",
   "create_extension": "Создать расширение",
+  "developer_mode": "Режим разработчика",
+  "developer_mode_subtitle": "Показывать инструменты разработчика расширений (создание расширения, редактирование кода)",
   "choose_extension_language": "Выберите язык расширения",
   "lang": "Язык",
   "base_url": "Базовый URL",
@@ -968,16 +427,187 @@
   "error_when_creating_source": "Ошибка при создании источника",
   "cookies_deleted": "Файлы cookie удалены!",
   "delete_all_cookies": "Удалить все cookie",
+  "chapter_number": "Номер главы",
+  "episode_number": "Номер эпизода",
+  "share": "Поделиться",
+  "n_chapters": "{n} глав",
   "missing_chapters": "Отсутствует глав: {count}",
+  "no_description": "Нет описания",
+  "resume": "Продолжить",
+  "read": "Читать",
+  "watch": "Смотреть",
+  "popular": "Популярное",
+  "open_in_browser": "Открыть в браузере",
+  "clear_cookie": "Очистить cookie",
+  "show_page_number": "Показать номер страницы",
+  "from_library": "Из библиотеки",
+  "downloaded_chapter": "Загруженная глава",
+  "page": "Страница {page}",
+  "global_search": "Глобальный поиск",
+  "color_blend_level": "Уровень смешивания цветов",
+  "current": "Текущий {char}",
+  "finished": "Завершенный {char}",
+  "next": "Следующий {char}",
+  "previous": "Предыдущий {char}",
+  "no_more_chapter": "Больше нет глав",
+  "no_result": "Нет результатов",
+  "send": "Отправить",
+  "delete": "Удалить",
+  "start_downloading": "Начать загрузку сейчас",
+  "retry": "Повторить",
+  "add_chapters": "Добавить главы",
+  "delete_chapters": "Удалить главу?",
+  "default0": "По умолчанию",
+  "total_chapters": "Всего глав",
+  "total_episodes": "Общее количество эпизодов",
+  "import_local_file": "Импортировать локальный файл",
+  "import_files": "Файлы",
+  "split_epub_chapters": "Разделить на главы",
+  "split_epub_chapters_description": "Импортировать каждую главу EPUB как отдельную запись",
+  "nothing_read_recently": "Недавно ничего не читалось",
+  "status": "Статус",
+  "not_started": "Не начато",
+  "score": "Оценка",
+  "start_date": "Дата начала",
+  "finish_date": "Дата окончания",
+  "reading": "Чтение",
+  "on_hold": "На паузе",
+  "dropped": "Брошено",
+  "plan_to_read": "Планирую прочитать",
+  "re_reading": "Перечитывание",
+  "chapters": "Главы",
+  "add_tracker": "Добавить трекер",
+  "one_tracker": "1 трекер",
+  "n_tracker": "{n} трекеров",
+  "tracking": "Отслеживание",
+  "syncing": "Синхронизация",
+  "sync_logged": "Вход выполнен успешно",
+  "syncing_subtitle": "Введите адрес сервера синхронизации и войдите через браузер, чтобы синхронизировать прогресс чтения между устройствами.",
+  "sync_service": "Синхронизация на своём сервере",
+  "last_sync": "Последняя синхронизация: ",
+  "sync_login_browser": "Войти через браузер",
+  "sync_server": "Адрес сервера синхронизации",
+  "sync_starting": "Начало синхронизации...",
+  "sync_finished": "Синхронизация завершена",
+  "sync_failed": "Не удалось синхронизировать",
   "sync_restore_in_progress": "Синхронизация пропущена — идет восстановление",
+  "sync_progress_percent": "Синхронизация… {percent}%",
+  "@sync_progress_percent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "sync_progress_indeterminate": "Синхронизация…",
+  "sync_button_sync": "Синхронизировать прогресс",
+  "sync_button_upload": "Только выгрузить",
+  "sync_button_upload_info": "Эта операция полностью заменит удаленные данные локальными данными!",
+  "sync_button_download": "Только загрузить",
+  "sync_button_download_info": "Эта операция полностью заменит локальные данные удаленными данными!",
   "sync_status_not_configured": "Не подключено",
   "sync_status_checking": "Проверка соединения...",
   "sync_status_connected": "Подключено",
   "sync_status_unauthorized": "Сессия истекла, войдите снова",
   "sync_status_unreachable": "Сервер недоступен",
   "sync_section_general": "Общие",
-  "sync_section_data_types": "Что синхронизировать",
+  "sync_on": "Включить синхронизацию",
+  "sync_auto": "Автосинхронизация",
+  "sync_auto_warning": "Автосинхронизация в настоящее время является экспериментальной функцией!",
+  "sync_auto_off": "Выключено",
+  "sync_auto_5_minutes": "Каждые 5 минут",
+  "sync_auto_10_minutes": "Каждые 10 минут",
+  "sync_auto_30_minutes": "Каждые 30 минут",
+  "sync_auto_1_hour": "Каждый час",
+  "sync_auto_3_hours": "Каждые 3 часа",
+  "sync_auto_6_hours": "Каждые 6 часов",
+  "sync_auto_12_hours": "Каждые 12 часов",
+  "server_error": "Ошибка сервера!",
+  "dialog_confirm": "Подтвердить",
+  "description": "Описание",
+  "reorder_navigation": "Настроить навигацию",
+  "reorder_navigation_description": "Перестройте и настройте каждую навигацию в соответствии с вашими потребностями.",
+  "floating_navigation_bar": "Плавающая панель навигации",
+  "floating_navigation_bar_description": "Используйте плавающую капсулу вместо стандартной прикрепленной навигационной панели.",
+  "full_screen_player": "Использовать полноэкранный режим",
+  "full_screen_player_info": "Автоматически использовать полноэкранный режим при воспроизведении видео.",
+  "episode_progress": "Прогресс: {n}",
+  "n_episodes": "{n} эпизодов",
+  "@n_episodes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "missing_episodes": "Отсутствует эпизодов: {count}",
+  "manga_sources": "Источники манги",
+  "anime_sources": "Источники аниме",
+  "novel_sources": "Источники романов",
+  "anime_extensions": "Расширения аниме",
+  "manga_extensions": "Расширения манги",
+  "novel_extensions": "Расширения для романов",
+  "extension_settings": "Настройки расширения",
+  "anime": "Аниме",
+  "manga": "Манга",
+  "novel": "Роман",
+  "library_no_category_exist": "У вас еще нет категорий",
+  "watching": "Смотрят",
+  "plan_to_watch": "Планируют смотреть",
+  "re_watching": "Пересмотр",
+  "episodes": "Эпизоды",
+  "download": "Скачать",
+  "new_update_available": "Доступно новое обновление",
+  "app_version": "Версия приложения: v{v}",
+  "searching_for_updates": "Поиск обновлений...",
+  "no_new_updates_available": "Новых обновлений нет",
+  "uninstall": "Удалить",
+  "uninstall_extension": "Удалить расширение {ext}?",
+  "double_tap_search_hint": "Дважды коснитесь для поиска по всем {type}",
+  "show_nav_double_tap_tooltip": "Подсказка о поиске двойным касанием",
+  "show_nav_double_tap_tooltip_subtitle": "Показывать подсказку во вкладках Манга/Аниме/Новеллы о том, что двойное нажатие открывает глобальный поиск.",
+  "already_in_library": "\"{title}\" уже в вашей библиотеке из {source}.",
+  "add_anyway": "Всё равно добавить",
+  "langauage": "Язык",
+  "extension_detail": "Подробности расширения",
+  "scale_type": "Тип масштабирования",
+  "scale_type_fit_screen": "По размеру экрана",
+  "scale_type_stretch": "Растягивание",
+  "scale_type_fit_width": "По ширине",
+  "scale_type_fit_height": "По высоте",
+  "scale_type_original_size": "Оригинальный размер",
+  "scale_type_smart_fit": "Умное подгонка",
+  "page_preload_amount": "Количество предзагружаемых страниц",
+  "page_preload_amount_subtitle": "Количество страниц для предварительной загрузки при чтении. Большие значения обеспечивают более плавное чтение, но требуют больше кэша и сетевого трафика.",
+  "image_loading_error": "Это изображение не удалось загрузить",
+  "add_episodes": "Добавить эпизоды",
+  "video_quality": "Качество",
+  "video_subtitle": "Субтитры",
+  "check_for_extension_updates": "Проверить обновления расширений",
+  "auto_extensions_updates": "Автоматические обновления расширений",
+  "auto_extensions_updates_subtitle": "Автоматически обновлять расширение при появлении новой версии.",
+  "check_for_app_updates": "Проверять обновления приложения при запуске",
+  "reading_mode": "Режим чтения",
+  "custom_filter": "Пользовательский фильтр",
+  "background_color": "Цвет фона",
+  "white": "Белый",
+  "black": "Черный",
+  "grey": "Серый",
+  "automaic": "Автоматический",
+  "preferred_domain": "Предпочтительный домен",
+  "load_more": "Загрузить еще",
+  "cancel_all_for_this_series": "Отменить все для этой серии",
+  "login": "Вход",
+  "login_into": "Войти в {tracker}",
+  "email_adress": "Адрес электронной почты",
+  "password": "Пароль",
+  "log_out_from": "Выйти из {tracker}?",
+  "log_out": "Выйти",
+  "update_pending": "Ожидается обновление",
+  "update_all": "Обновить все",
+  "backup_and_restore": "Резервное копирование и восстановление",
+  "create_backup": "Создать резервную копию",
+  "create_backup_dialog_title": "Что вы хотите сохранить в резервной копии?",
+  "create_backup_subtitle": "Может использоваться для восстановления текущей библиотеки",
+  "restore_backup": "Восстановить из резервной копии",
   "encrypt_backups": "Шифровать резервные копии",
   "encrypt_backups_info": "Защитить резервные копии паролем с использованием шифрования AES",
   "no_secure_storage": "Безопасное хранилище не найдено",
@@ -988,6 +618,22 @@
   "confirm_password": "Подтвердите пароль",
   "passwords_do_not_match": "Пароли не совпадают",
   "password_required_to_restore": "Для восстановления резервной копии требуется пароль.",
+  "restore_backup_subtitle": "Восстановить библиотеку из резервной копии",
+  "automatic_backups": "Автоматические резервные копии",
+  "backup_frequency": "Частота создания резервных копий",
+  "backup_location": "Место хранения резервных копий",
+  "backup_options": "Опции резервного копирования",
+  "backup_options_dialog_title": "Что вы хотите включить в резервную копию?",
+  "backup_options_subtitle": "Какую информацию включить в резервную копию",
+  "backup_and_restore_warning_info": "Следует хранить копии резервных копий в других местах",
+  "library_entries": "Записи библиотеки",
+  "chapters_and_episode": "Главы и эпизоды",
+  "every_6_hours": "Каждые 6 часов",
+  "every_12_hours": "Каждые 12 часов",
+  "daily": "Ежедневно",
+  "every_2_days": "Каждые 2 дня",
+  "weekly": "Еженедельно",
+  "restore_backup_warning_title": "Восстановление резервной копии перезапишет все существующие данные.\n\nПродолжить восстановление?",
   "restore_sync_question_title": "Синхронизировать восстановление?",
   "restore_sync_question_message": "Устройство подключено к серверу синхронизации. Загрузить восстановленные данные сейчас?",
   "restore_sync_question_confirm": "Да, синхронизировать",
@@ -999,6 +645,309 @@
   "restore_sync_question_keep_disabled": "Оставить отключенной",
   "restore_sync_uploading": "Синхронизация восстановленных данных с сервером…",
   "restore_sync_upload_success": "Восстановленные данные синхронизированы с сервером",
+  "services": "Сервисы",
+  "tracking_warning_info": "Односторонняя синхронизация для обновления прогресса чтения в службах отслеживания. Настройте отслеживание для отдельных записей из их кнопки отслеживания.",
+  "use_page_tap_zones": "Использовать зоны касания страницы",
+  "manage_trackers": "Управление трекерами",
+  "restore": "Восстановить",
+  "backups": "Резервные копии",
+  "by_scanlator": "По сканлейтору",
+  "by_name": "По имени",
+  "installed": "Установлено",
+  "auto_scroll": "Автопрокрутка",
+  "video_audio": "Аудио",
+  "video_audio_info": "Предпочитаемые языки, коррекция высоты тона, аудиоканалы",
+  "player": "Плеер",
+  "markEpisodeAsSeenSetting": "В какой момент отметить эпизод как просмотренный",
+  "mark_duplicate_chapters_read": "Отметить повторяющиеся номера глав как прочитанные",
+  "default_skip_intro_length": "Стандартная длина пропуска вступления",
+  "default_playback_speed_length": "Стандартная длина скорости воспроизведения",
+  "updateProgressAfterReading": "Обновить прогресс после чтения",
+  "no_sources_installed": "Источники не установлены!",
+  "show_extensions": "Показать расширения",
+  "default_skip_forward_skip_length": "Длина пропуска вперед по умолчанию",
+  "aniskip_requires_info": "AniSkip требует отслеживания аниме с использованием MAL или Anilist для работы.",
+  "enable_aniskip": "Включить AniSkip",
+  "enable_auto_skip": "Включить автоматическое пропускание",
+  "aniskip_button_timeout": "Тайм-аут кнопки",
+  "skip_opening": "Пропустить вступление",
+  "skip_ending": "Пропустить концовку",
+  "fullscreen": "Полноэкранный режим",
+  "update_library": "Обновить библиотеку",
+  "next_chapter": "Следующая глава",
+  "next_5_chapters": "Следующие 5 глав",
+  "next_10_chapters": "Следующие 10 глав",
+  "next_25_chapters": "Следующие 25 глав",
+  "all_chapters": "Все главы",
+  "next_episode": "Следующий эпизод",
+  "next_5_episodes": "Следующие 5 эпизодов",
+  "next_10_episodes": "Следующие 10 эпизодов",
+  "next_25_episodes": "Следующие 25 эпизодов",
+  "all_episodes": "Все эпизоды",
+  "cover_saved": "Обложка сохранена",
+  "set_as_cover": "Установить как обложку",
+  "use_this_as_cover_art": "Использовать это как обложку?",
+  "save": "Сохранить",
+  "picture_saved": "Изображение сохранено",
+  "cover_updated": "Обложка обновлена",
+  "include_subtitles": "Включить субтитры",
+  "blend_mode_default": "По умолчанию",
+  "blend_mode_multiply": "Умножение",
+  "blend_mode_screen": "Экран",
+  "blend_mode_overlay": "Наложение",
+  "blend_mode_colorDodge": "Увеличение яркости",
+  "blend_mode_lighten": "Осветление",
+  "blend_mode_colorBurn": "Уменьшение яркости",
+  "blend_mode_darken": "Затемнение",
+  "blend_mode_difference": "Разность",
+  "blend_mode_saturation": "Насыщенность",
+  "blend_mode_softLight": "Мягкое свечение",
+  "blend_mode_plus": "Плюс",
+  "blend_mode_exclusion": "Исключение",
+  "custom_color_filter": "Пользовательский цветной фильтр",
+  "color_filter_blend_mode": "Режим смешивания цветового фильтра",
+  "enable_all": "Включить все",
+  "disable_all": "Отключить все",
+  "font": "Шрифт",
+  "color": "Цвет",
+  "font_size": "Размер шрифта",
+  "text": "Текст",
+  "border": "Граница",
+  "background": "Фон",
+  "no_subtite_warning_message": "Не имеет эффекта, потому что в этом видео нет субтитров",
+  "grid_size": "Размер сетки",
+  "n_per_row": "{n} в ряд",
+  "horizontal_continious": "Горизонтальное непрерывное",
+  "edit_code": "Редактировать код",
+  "use_libass": "Включить libass",
+  "use_libass_info": "Используйте рендеринг субтитров на основе libass для нативного бэкенда.",
+  "libass_not_disable_message": "Отключите `use libass` в настройках плеера, чтобы иметь возможность настраивать субтитры.",
+  "override_ass_subtitles": "Переопределить субтитры ASS",
+  "override_ass_subtitles_info": "Применить собственный стиль к субтитрам ASS/SSA",
+  "torrent_stream": "Торрент-стрим",
+  "add_torrent": "Добавить торрент",
+  "enter_torrent_hint_text": "Введите magnet-ссылку или URL торрент-файла",
+  "torrent_url": "URL торрента",
+  "or": "ИЛИ",
+  "advanced": "Продвинутые",
+  "advanced_info": "Конфигурация mpv",
+  "use_native_http_client": "Использовать нативный HTTP-клиент",
+  "use_native_http_client_info": "он автоматически поддерживает функции платформы, такие как VPN, поддерживает больше функций HTTP, таких как HTTP/3 и пользовательская обработка перенаправлений",
+  "n_hour_ago": "{hour} час назад",
+  "n_hours_ago": "{hours} часов назад",
+  "n_minute_ago": "{minute} минуту назад",
+  "n_minutes_ago": "{minutes} минут назад",
+  "n_day_ago": "{day} день назад",
+  "now": "сейчас",
+  "library_last_updated": "Библиотека обновлена: {lastUpdated}",
+  "data_and_storage": "Данные и хранилище",
+  "download_location_info": "Используется для скачивания глав",
+  "storage": "Хранилище",
+  "clear_chapter_and_episode_cache": "Очистить кэш глав и эпизодов",
+  "cache_cleared": "Кэш очищен",
+  "clear_chapter_or_episode_cache_on_app_launch": "Очистить кэш глав/эпизодов при запуске приложения",
+  "app_settings": "Настройки приложения",
+  "sources_settings": "Настройки источников",
+  "include_sensitive_settings": "Включить чувствительные настройки (например, токены для входа в трекер)",
+  "create": "Создать",
+  "downloads_are_limited_to_wifi": "Загрузки ограничены только Wi-Fi",
+  "recommendations": "Рекомендации",
+  "recommendations_similar": "похожий",
+  "recommendations_weights": "Веса рекомендаций",
+  "recommendations_weights_genre": "Сходство жанра",
+  "recommendations_weights_setting": "Сходство сеттинга",
+  "recommendations_weights_synopsis": "Сходство сюжета",
+  "recommendations_weights_theme": "Сходство темы",
+  "manga_extensions_repo": "Репозиторий расширений манги",
+  "anime_extensions_repo": "Репозиторий расширений аниме",
+  "novel_extensions_repo": "Репозиторий расширений новелл",
+  "custom_dns": "Пользовательский DNS (оставьте пустым для использования системного DNS)",
+  "android_proxy_server": "Прокси-сервер Android (M-Extension-Server)",
+  "get_m_extension_server": "Получить M-Extension-Server",
+  "undefined": "Не определено",
+  "empty_extensions_repo": "У вас здесь нет URL-адресов репозитория. Нажмите кнопку добавления, чтобы добавить один!",
+  "add_extensions_repo": "Добавить URL репозитория",
+  "remove_extensions_repo": "Удалить URL репозитория",
+  "manage_manga_repo_urls": "Управление URL-адресами репозитория манги",
+  "manage_anime_repo_urls": "Управление URL-адресами репозитория аниме",
+  "manage_novel_repo_urls": "Управление URL-адресами репозитория новелл",
+  "url_cannot_be_empty": "URL не может быть пустым",
+  "url_must_end_with_dot_json_or_dot_pb": "URL должен заканчиваться на .json / .pb",
+  "repo_url": "URL репозитория",
+  "invalid_url_format": "Неверный формат URL",
+  "clear_all_sources": "Очистить все источники",
+  "clear_all_sources_msg": "Это полностью очистит все источники приложения. Вы уверены, что хотите продолжить?",
+  "sources_cleared": "Источники очищены!",
+  "repo_added": "Репозиторий источников добавлен!",
+  "repo_already_exists": "Репозиторий уже существует!",
+  "add_repo": "Добавить репозиторий?",
+  "add_repo_sources_to_add": "Списки расширений, которые будут добавлены:",
+  "add_repo_warning": "Расширения из этих репозиториев запускаются внутри приложения. Добавляйте только репозитории, которым вы доверяете.",
+  "genre_search_library": "Поиск жанра в библиотеке",
+  "genre_search_source": "Просмотр в источнике",
+  "source_not_added": "Источник не установлен!",
+  "load_own_subtitles": "Загрузить свои собственные субтитры...",
+  "search_subtitles": "Искать субтитры онлайн...",
+  "extension_notes": "Примечания: {notes}",
+  "unsupported_repo": "Не удалось добавить этот репозиторий источников. Проверьте его адрес или свяжитесь с его сопровождающим.",
+  "you_have_finished_reading": "Вы закончили чтение",
+  "hwdec": "Аппаратный декодер",
+  "enable_hardware_accel": "Аппаратное ускорение",
+  "enable_hardware_accel_info": "Включите/выключите, если возникают ошибки или сбои",
+  "track_library_navigate": "Перейти к существующей локальной записи",
+  "track_library_add": "Добавить в локальную библиотеку",
+  "track_library_add_confirm": "Добавить отслеживаемый элемент в локальную библиотеку",
+  "track_library_not_logged": "Войдите в соответствующий трекер, чтобы использовать эту функцию!",
+  "track_library_switch": "Переключиться на другой трекер",
+  "go_back": "Назад",
+  "merge_library_nav_mobile": "Объединить навигацию библиотеки на мобильном",
+  "enable_discord_rpc": "Включить Discord RPC",
+  "hide_discord_rpc_incognito": "Скрыть Discord RPC в режиме Инкогнито",
+  "rpc_show_reading_watching_progress": "Показывать текущую главу в Discord (требуется перезапуск)",
+  "rpc_show_title": "Показывать текущий заголовок в Discord",
+  "rpc_show_cover_image": "Показывать текущее изображение обложки в Discord",
+  "enable_mpv": "Включить шейдеры / скрипты mpv",
+  "mpv_info": "Поддерживает скрипты .js в mpv/scripts/",
+  "mpv_redownload": "Перезагрузить файлы конфигурации mpv",
+  "mpv_redownload_info": "Заменяет старые файлы конфигурации на новые!",
+  "mpv_download": "Требуются файлы конфигурации MPV!\nЗагрузить сейчас?",
+  "custom_buttons": "Пользовательские кнопки",
+  "custom_buttons_info": "Выполнить код lua с пользовательскими кнопками",
+  "custom_buttons_edit": "Редактировать пользовательские кнопки",
+  "custom_buttons_add": "Добавить пользовательскую кнопку",
+  "custom_buttons_added": "Пользовательская кнопка добавлена!",
+  "custom_buttons_delete": "Удалить пользовательскую кнопку",
+  "custom_buttons_text": "Текст кнопки",
+  "custom_buttons_text_req": "Требуется текст кнопки",
+  "custom_buttons_js_code": "Код lua",
+  "custom_buttons_js_code_req": "Требуется код lua",
+  "custom_buttons_js_code_long": "Код lua (при долгом нажатии)",
+  "custom_buttons_startup": "Код lua (при запуске)",
+  "custom_buttons_add_warning": "Эта кнопка запускает приведенный ниже код Lua в видеоплеере, который может получить доступ к вашим файлам и запускать программы. Добавляйте ее только в том случае, если вы уверены, откуда взялась эта ссылка.",
+  "n_days": "{n} дней",
+  "decoder": "Декодер",
+  "decoder_info": "Аппаратное декодирование, формат пикселей, устранение полос",
+  "enable_gpu_next": "Включить gpu-next (только Android)",
+  "enable_gpu_next_info": "Новый движок рендеринга видео",
+  "debanding": "Устранение полос",
+  "use_yuv420p": "Использовать формат пикселей YUV420P",
+  "use_yuv420p_info": "Может исправить черные экраны на некоторых видеокодеках, также может улучшить производительность за счет качества",
+  "audio_preferred_languages": "Предпочитаемые языки",
+  "audio_preferred_languages_info": "Аудиоязык(и) для выбора по умолчанию на видео с несколькими аудиопотоками, 2/3-буквенные коды языков (например: ru, en, de). Несколько значений могут быть разделены запятой.",
+  "enable_audio_pitch_correction": "Включить коррекцию высоты тона аудио",
+  "enable_audio_pitch_correction_info": "Предотвращает высокий тон аудио на более высоких скоростях и низкий на более низких скоростях",
+  "audio_channels": "Аудиоканалы",
+  "volume_boost_cap": "Предел усиления громкости",
+  "internal_player": "Внутренний плеер",
+  "internal_player_info": "Прогресс, элементы управления, ориентация",
+  "subtitle_delay_text": "Задержка субтитров",
+  "subtitle_delay": "Задержка (мс)",
+  "subtitle_speed": "Скорость",
+  "tracks": "Дорожки",
+  "playback_speed": "Скорость воспроизведения",
+  "shaders": "Шейдеры",
+  "video_fit": "Масштабирование",
+  "calendar": "Календарь",
+  "calendar_no_data": "Пока нет данных.",
+  "calendar_info": "Календарь может предсказать следующую загрузку главы только на основе предыдущих загрузок. Некоторые данные могут быть неточными на 100%!",
+  "in_n_day": "через {days} день",
+  "in_n_days": "через {days} дней",
+  "clear_library": "Очистить библиотеку",
+  "clear_library_desc": "Выберите очистку всех записей манги, аниме и/или новелл",
+  "clear_library_input": "Введите 'manga', 'anime' и/или 'novel' (разделенные запятой), чтобы удалить все связанные записи",
+  "watch_order": "Порядок просмотра",
+  "watch_order_role_current": "Текущее",
+  "@watch_order_role_current": {
+    "description": "Role label for the title currently being viewed in a watch order."
+  },
+  "watch_order_role_previous": "Предыдущий",
+  "@watch_order_role_previous": {
+    "description": "Role label for an earlier title in a watch order."
+  },
+  "watch_order_role_next": "Далее",
+  "@watch_order_role_next": {
+    "description": "Role label for a later title in a watch order."
+  },
+  "watch_order_source_release_order": "Порядок освобождения",
+  "@watch_order_source_release_order": {
+    "description": "Source label for a watch order based on release dates."
+  },
+  "watch_order_source_community_list": "{name} от {author}",
+  "@watch_order_source_community_list": {
+    "description": "Source label for a community-created Trakt list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_official_collection": "Официальная коллекция Trakt: {name}",
+  "@watch_order_source_official_collection": {
+    "description": "Source label for an official Trakt collection.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_trakt_collection": "Trakt: {name}",
+  "@watch_order_source_trakt_collection": {
+    "description": "Source label for a Trakt collection when it is not marked as official.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_seasons": "Времена года для {title}",
+  "@watch_order_source_seasons": {
+    "description": "Fallback source label when the watch order contains a show's seasons.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_select_source": "Источник заказа",
+  "@watch_order_select_source": {
+    "description": "Label for choosing among available watch-order sources."
+  },
+  "watch_order_season": "Сезон {number}",
+  "@watch_order_season": {
+    "description": "Season metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "watch_order_episode": "Эпизод {number}",
+  "@watch_order_episode": {
+    "description": "Episode metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sequels": "Продолжения",
+  "recommendations_similarity": "Сходство:",
+  "recommendation_rating_accessibility": "Рейтинг {rating}",
+  "@recommendation_rating_accessibility": {
+    "description": "Accessible label for a recommendation rating in the provider's display format.",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "local_folder_structure": "Структура локальной папки",
+  "local_folder": "Локальные папки",
+  "add_local_folder": "Добавить локальную папку",
+  "rescan_local_folder": "Пересканировать все локальные папки сейчас",
   "default_download_destination": "Место загрузки по умолчанию",
   "ask_download_destination": "Запрашивать место загрузки",
   "ask_download_destination_desc": "Выбирать локальную папку перед началом каждой загрузки.",
@@ -1009,19 +958,175 @@
   "custom": "Пользовательский",
   "no_local_folder_available_for_downloads": "Нет доступных локальных папок для загрузок",
   "failed_to_create_cbz": "Не удалось создать CBZ: {error}",
+  "@failed_to_create_cbz": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_cover_image": "Ошибка чтения обложки: {error}",
+  "@error_reading_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_metadata": "Ошибка чтения метаданных: {error}",
+  "@error_reading_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_saving_chapter_episode_to_library": "Ошибка сохранения в библиотеку: {error}",
+  "@error_saving_chapter_episode_to_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_chapter_cover_image": "Ошибка чтения обложки главы: {error}",
+  "@error_reading_chapter_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_archive_cover_image": "Ошибка чтения обложки архива: {error}",
+  "@error_reading_archive_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_getting_local_library": "Ошибка получения локальной библиотеки: {error}",
+  "@error_getting_local_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "export_metadata": "Экспортировать метаданные",
+  "exported": "Экспортировано",
   "failed_to_export_metadata": "Ошибка экспорта метаданных: {error}",
+  "@failed_to_export_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "unrecognized_chapter_numbers": "Для {count} глав не удалось определить номер автоматически.",
+  "@unrecognized_chapter_numbers": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "cloudflare_resolution_webview_server_start_failed": "Не удалось запустить сервер разрешения Cloudflare.",
   "tracker_token_expired": "Срок действия токена {tracker} истек",
+  "@tracker_token_expired": {
+    "placeholders": {
+      "tracker": {}
+    }
+  },
   "video_list_empty": "Список видео пуст",
   "playback_speed_multiplier": "x{value}",
+  "@playback_speed_multiplier": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "could_not_launch_url": "Не удалось открыть {url}",
+  "@could_not_launch_url": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "text_size": "Размер текста:",
+  "text_align": "Выравнивание текста",
+  "line_height": "Высота строки",
+  "show_scroll_percentage": "Показывать процент прокрутки",
+  "remove_extra_paragraph_spacing": "Удалить дополнительный интервал между параграфами",
+  "select_label_color": "Выбрать цвет {label}",
+  "default_user_agent": "Агент пользователя по умолчанию",
+  "forceLandscapeMode": "Принудительно переднй режим",
+  "forceLandscapeModeSubtitle": "Принудительно использовать ландшафтную ориентацию плеера.",
+  "dns_over_https": "DNS-over-HTTPS (DoH)",
+  "dns_provider": "Поставщик DNS",
+  "tracked": "Отслеживается",
+  "auth_unlock_msg": "Аутентифицируйтесь, чтобы разблокировать NodeLane Comics",
+  "app_locked": "NodeLane Comics заблокирован",
+  "auth_to_continue": "Аутентифицируйтесь, чтобы продолжить",
+  "authenticating": "Идет аутентификация...",
+  "lock": "Заблокировать",
+  "unlock": "Разблокировать",
+  "security": "Безопасность",
+  "auth_to_change_security_setting": "Аутентифицируйтесь, чтобы изменить настройки безопасности",
+  "app_lock": "Блокировка приложения",
+  "require_biometric_or_device_credential": "Требуется биометрическая аутентификация или учетные данные устройства для открытия приложения",
+  "biometric_or_device_credential_not_available": "Биометрическая аутентификация недоступна на этом устройстве",
+  "app_lock_description": "Когда блокировка приложения включена, вам будет предложено пройти аутентификацию\\nкаждый раз, когда вы открываете приложение или возвращаетесь из фона.",
+  "checking_device_authentication": "Проверка аутентификации устройства…",
+  "device_authentication_incomplete": "Аутентификация не была завершена. Ваши настройки не изменились.",
+  "keep_screen_on": "Держать экран включённым",
+  "webtoon_side_padding": "Боковой отступ Webtoon",
+  "show_page_gaps": "Показывать пробелы между страницами",
+  "invert_colors": "Инвертировать цвета",
+  "grayscale": "Оттенки серого",
+  "brightness": "Яркость",
+  "contrast": "Контраст",
+  "saturation": "Насыщенность",
+  "navigation_layout": "Макет навигации",
+  "nav_layout_default": "По умолчанию",
+  "nav_layout_l_shaped": "L-образный",
+  "nav_layout_kindle": "Kindle",
+  "nav_layout_edge": "Краевой",
+  "nav_layout_right_and_left": "Справа и слева",
+  "nav_layout_disabled": "Отключена",
+  "color_enhancements": "Улучшение цвета",
+  "total": "Всего",
+  "mean_per_title": "Среднее на название",
+  "completion_rate": "Процент завершения",
+  "watching_time": "Время просмотра",
+  "reading_time": "Время чтения",
+  "average_chapters_per_title": "Среднее количество глав на {title}",
+  "read_percentage": "Процент прочитанного",
+  "entries": "Записи",
+  "android_proxy_server_mihon": "Android прокси-сервер (Mihon)",
+  "android_proxy_server_mihon_description": "Загрузите и настройте прокси-сервер, необходимый для использования расширений Mihon.",
+  "mihon_proxy_server": "Прокси-сервер Mihon",
+  "extension_server_intro_with_jre": "Загрузите пакет прокси-сервера перед использованием расширений Mihon. Пакет включает в себя JRE и JAR-файл сервера расширений.",
+  "extension_server_intro_ios": "Загрузите JAR-файл прокси-сервера перед использованием расширений Mihon. Для iOS требуется только JAR-файл сервера расширений.",
+  "checking_files": "Проверка файлов",
+  "files_installed": "Файлы установлены",
+  "files_missing": "Файлы отсутствуют",
+  "update_files": "Обновить файлы",
+  "up_to_date": "Обновлено",
+  "choose_location": "Выберите местоположение",
+  "import_existing_jar": "Импортировать существующий JAR",
+  "detect_files_in_selected_folder": "Обнаружить файлы в выбранной папке",
+  "preparing_download": "Подготовка к загрузке...",
+  "app_install_location": "Место установки приложения",
+  "install_location": "Месть установки",
+  "jre_executable": "Исполняемый файл JRE",
+  "extension_server_jar": "JAR сервера расширений",
+  "installed_version": "Установленная версия",
+  "latest_version": "Последняя версия",
+  "m_extension_server_description": "Используйте M-Extension-Server, когда вам нужен отдельный прокси-сервер для Android-устройства. Установите адрес прокси здесь и загрузите APK с GitHub.",
+  "set_proxy_address": "Установить адрес прокси",
+  "no_newer_proxy_server_release_available": "Нет доступных новых версий прокси-сервера.",
+  "could_not_check_proxy_server_updates": "Не удалось проверить обновления прокси-сервера.",
+  "no_extension_server_bundle_available_for_this_platform": "Для этой платформы нет доступного пакета сервера расширений.",
+  "failed_to_download_bundle": "Ошибка загрузки пакета ({statusCode}).",
+  "@failed_to_download_bundle": {
+    "placeholders": {
+      "statusCode": {}
+    }
+  },
+  "downloaded_bundle_missing_expected_files": "Загруженный пакет не содержит ожидаемых файлов.",
+  "extension_server_files_ready": "Файлы сервера расширений готовы.",
+  "ios_extension_server_import_hint": "На iOS сервер устанавливается внутри песочницы приложения. Используйте «Импортировать существующий JAR», чтобы добавить загруженный файл.",
+  "select_extension_server_folder": "Выберите папку сервера расширений",
+  "selected_folder_does_not_exist": "Выбранная папка не существует.",
+  "no_extension_server_files_found_in_selected_folder": "Файлы сервера расширений в выбранной папке не найдены.",
+  "extension_server_files_linked": "Файлы сервера расширений привязаны.",
+  "select_extension_server_jar": "Выбрать JAR-файл сервера",
+  "selected_file_could_not_be_accessed": "Не удалось получить доступ к выбранному файлу.",
+  "extension_server_jar_imported": "JAR-файл сервера расширений импортирован.",
+  "could_not_launch_apk_bridge_page": "Не удалось запустить страницу M-Extension-Server.",
+  "proxy_server_ip_hint": "IP-адрес сервера (например, 10.0.0.5 или https://example.com)",
+  "not_configured": "Не настроено",
   "zero_interpreter": "Интерпретатор Zero",
   "zero_interpreter_description": "Управление сервером интерпретатора Zero автоматически или вручную.",
   "start_server_on_launch": "Запускать сервер при старте",
@@ -1030,9 +1135,118 @@
   "stopped": "Остановлен",
   "start": "Запустить",
   "stop": "Остановить",
+  "webview": "Веб-просмотр",
+  "tts": "Преобразование текста в речь",
+  "tts_speed": "Скорость",
+  "tts_pitch": "Высота тона",
+  "tts_language": "Язык",
+  "tts_voice": "Голос",
+  "tts_stop": "Остановить",
+  "tts_play": "Воспроизведение",
+  "tts_pause": "Пауза",
+  "tts_previous": "Предыдущий абзац",
+  "tts_next": "Следующий абзац",
+  "tts_paragraph_progress": "Абзац {current} из {total}",
+  "@tts_paragraph_progress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "tts_settings": "Параметры TTS",
+  "tts_default": "По умолчанию",
+  "webtoon_disable_zoom_out": "Отключить уменьшение масштаба Webtoon",
+  "webtoon_double_tap_zoom_enabled": "Двойное касание для масштабирования Webtoon",
+  "navigate_to_pan": "Навигация перетаскиванием",
+  "navigate_to_pan_subtitle": "Сначала сдвигать увеличенное изображение перед сменой страницы",
+  "split_wide_pages": "Разделять двойные страницы",
+  "dual_page_invert": "Инвертировать разделенные половины страниц",
+  "dual_page_rotate_to_fit": "Поворачивать для соответствия",
+  "dual_page_rotate_to_fit_invert": "Обратное направление вращения",
+  "double_page_single_first_page": "Первая страница отдельно",
+  "double_page_single_first_page_subtitle": "Отображать первую страницу отдельно в двухстраничном режиме",
+  "double_page_auto": "Автоматический двухстраничный режим",
+  "double_page_auto_subtitle": "Автоматически переключаться на двухстраничный режим в альбомной ориентации",
+  "landscape_zoom": "Автоматическое масштабирование в альбоме",
+  "zoom_start_position": "Начальная позиция масштабирования",
+  "zoom_start_left": "Слева",
+  "zoom_start_right": "Справа",
+  "zoom_start_center": "По центру",
+  "automatic_background": "Автоматический фон",
+  "tapping_inversion": "Инверсия касаний",
+  "tapping_inversion_none": "Нет",
+  "tapping_inversion_horizontal": "По горизонтали",
+  "tapping_inversion_vertical": "По вертикали",
+  "tapping_inversion_both": "Оба",
+  "flash_on_page_change": "Вспышка при смене страницы",
+  "flash_on_page_change_subtitle": "Помощник против выгорания AMOLED",
+  "flash_color": "Цвет вспышки",
+  "flash_color_black": "Черный",
+  "flash_color_white": "Белый",
+  "flash_color_white_black": "Белый и Черный",
+  "flash_interval_label": "Интервал вспышки",
+  "flash_interval_value": "{n} страниц",
+  "@flash_interval_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_interval": "Интервал вспышки: {n} страниц",
+  "@flash_interval": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration_label": "Длительность вспышки",
+  "flash_duration_value": "{n} мс",
+  "@flash_duration_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration": "Длительность вспышки: {n} мс",
+  "@flash_duration": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "show_navigation_overlay_on_start": "Показывать навигационную панель при запуске",
+  "reader_hide_threshold": "Порог скрытия интерфейса",
+  "reader_hide_threshold_highest": "Самый высокий (5 px)",
+  "reader_hide_threshold_high": "Высокий (13 px)",
+  "reader_hide_threshold_low": "Низкий (31 px)",
+  "reader_hide_threshold_lowest": "Самый низкий (47 px)",
+  "error_no_pages_available": "Ошибка: нет доступных страниц",
+  "app_ui_scale": "Масштаб интерфейса",
+  "app_ui_scale_subtitle": "Сделайте интерфейс больше или меньше в соответствии с вашим экраном и расстоянием просмотра.",
+  "allow_concurrent_downloads": "Разрешить одновременные загрузки",
+  "allow_concurrent_downloads_subtitle": "Загружайте из разных источников одновременно. Один источник по-прежнему загружает одну главу за раз, чтобы не перегружать. Отключите, чтобы загружать по одному везде.",
+  "download_delay": "Задержка загрузки",
+  "download_delay_subtitle": "Выключен. Добавьте ожидание со случайной дрожью между главами, чтобы быть мягче к источникам.",
+  "save_search": "Сохранить поиск",
+  "saved_searches": "Сохраненные поиски",
+  "enter_search_to_save_first": "Сначала введите поиск для сохранения",
+  "no_saved_searches": "Для этого источника еще нет сохраненных поисков.\nВыполните поиск, а затем выберите \"Сохранить поиск\".",
+  "source": "Источник",
   "something_went_wrong": "Что-то пошло не так",
-  "startup_failed": "Mangayomi не удалось завершить запуск",
+  "startup_failed": "NodeLane Comics не удалось завершить запуск",
   "sources_with_no_results": "{count, plural, =1{1 источник без результатов} few{{count} источника без результатов} other{{count} источников без результатов}}",
+  "@sources_with_no_results": {
+    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "import_mode_title": "Как импортировать данные?",
   "import_mode_message": "Выберите: объединить резервную копию с текущей библиотекой или полностью заменить ее.",
   "import_mode_keep_existing": "Объединить",
@@ -1041,8 +1255,19 @@
   "import_mode_replace_subtitle": "Удаляет текущую библиотеку и заменяет ее резервной копией.",
   "replace_summary_title": "Готово к замене библиотеки",
   "replace_summary_message": "Это удалит текущую библиотеку ({currentCount} тайтлов) и заменит ее на {backupCount} тайтлов из копии.",
+  "@replace_summary_message": {
+    "placeholders": {
+      "currentCount": {},
+      "backupCount": {}
+    }
+  },
   "replace_summary_confirm": "Заменить",
   "replace_result_message": "Библиотека заменена на {count} тайтлов из копии.",
+  "@replace_result_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "category_conflict_title": "Найдены существующие категории",
   "category_conflict_message": "Резервная копия содержит категории, которые уже существуют в библиотеке.",
   "category_conflict_keep": "Сохранить — объединить с существующей категорией",
@@ -1052,26 +1277,70 @@
   "source_conflict_keep": "Сохранить исходное название",
   "import_summary_title": "Готово к импорту",
   "import_summary_message": "Новых тайтлов: {newSeries}, обновлено: {updatedSeries}, добавлено глав: {newChapters}.",
+  "@import_summary_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "import_summary_confirm": "Импортировать",
   "import_result_message": "Импортировано {newSeries} новых тайтлов, обновлено {updatedSeries}, добавлено {newChapters} глав.",
+  "@import_result_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "roll_back": "Откатить",
   "roll_back_confirm_message": "Восстанавливает библиотеку до момента перед этим изменением.",
   "roll_back_done": "Выполнен откат к предыдущему снимку.",
   "restoring_backup": "Восстановление библиотеки…",
   "roll_back_last_change": "Откатить последнее изменение",
   "roll_back_last_change_subtitle": "Снимок от {date} — {description}",
+  "@roll_back_last_change_subtitle": {
+    "placeholders": {
+      "date": {},
+      "description": {}
+    }
+  },
   "roll_back_available_count": "Доступно для отката изменений: {count}",
+  "@roll_back_available_count": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "delete_source_title": "Удалить источник и его мангу",
   "delete_source_subtitle": "Удаляет из библиотеки все тайтлы источника с главами, загрузками и историей.",
   "delete_source_pick_title": "Выберите источник для удаления",
   "delete_source_empty": "Источники в библиотеке не найдены.",
   "delete_source_confirm_title": "Удалить {sourceName}?",
-  "delete_source_confirm_message": "Это безвозвратно удалит {mangaCount} тайтлов, {chapterCount} глав, {historyCount} записей истории.",
+  "@delete_source_confirm_title": {
+    "placeholders": {
+      "sourceName": {}
+    }
+  },
+  "delete_source_confirm_message": "При этом безвозвратно удаляются манга {mangaCount}, главы {chapterCount}, записи истории {historyCount} и записи обновлений {updateCount}. Ссылки для отслеживания сохраняются. Это нельзя отменить, кроме как путем отката.",
+  "@delete_source_confirm_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "chapterCount": {},
+      "historyCount": {},
+      "updateCount": {}
+    }
+  },
   "delete_source_also_remove_extension": "Также удалить установленное расширение",
   "delete_source_keep_history": "Сохранить историю чтения",
   "delete_source_keep_downloads": "Сохранить записи загрузок",
   "delete_source_button": "Удалить",
   "delete_source_result_message": "Удалено {mangaCount} тайтлов из {sourceName}.",
+  "@delete_source_result_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "sourceName": {}
+    }
+  },
   "merge_manga_title": "Объединить дубликаты манги",
   "merge_manga_subtitle": "Находит мангу с одинаковыми названиями в одном источнике и объединяет их.",
   "merge_manga_none_found": "Дубликаты манги не найдены.",
@@ -1079,23 +1348,49 @@
   "merge_manga_choose_primary_title": "В какой тайтл объединить остальные?",
   "merge_manga_choose_primary_message": "Главы, история и трекинг будут перенесены в выбранный тайтл.",
   "merge_manga_chapters_subtitle": "{count, plural, =1{1 глава} few{{count} главы} other{{count} глав}}",
+  "@merge_manga_chapters_subtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "merge_manga_button": "Объединить",
   "merge_manga_result_message": "Объединено {count} дубликатов в {mangaName}.",
+  "@merge_manga_result_message": {
+    "placeholders": {
+      "count": {},
+      "mangaName": {}
+    }
+  },
   "merge_preview_title": "Подтверждение объединения",
-  "merge_manga_preview_message": "Найдено глав: {totalChapters}. Дубликатов: {duplicateChapters}, будет добавлено: {keptChapters}.",
+  "merge_manga_preview_message": "{totalChapters} главы найдены в других записях. {duplicateChapters} являются дубликатами и будут удалены (с сохранением копии, на которой выполняется чтение); {keptChapters} будет добавлен. {duplicateTracks} дублирующиеся ссылки для отслеживания также будут удалены.",
+  "@merge_manga_preview_message": {
+    "placeholders": {
+      "totalChapters": {},
+      "duplicateChapters": {},
+      "keptChapters": {},
+      "duplicateTracks": {}
+    }
+  },
+  "memory_overlay": "Показывать использование памяти",
+  "memory_overlay_subtitle": "Индикатор использования памяти приложением в реальном времени. Для точного измерения на устройстве: наблюдайте за ним во время прокрутки библиотеки или чтения главы.",
   "beta": "Бета",
   "error_reports": "Отчеты об ошибках",
   "error_reports_subtitle": "Ошибки, зафиксированные приложением, и способ их отправки",
   "error_reports_empty": "Ошибок нет.",
   "error_reports_likely_cause": "Вероятная причина",
   "error_reports_report": "Сообщить на GitHub",
-  "error_reports_banner": "Mangayomi столкнулся с ошибкой",
+  "error_reports_banner": "NodeLane Comics столкнулся с ошибкой",
   "error_reports_banner_action": "Посмотреть",
   "error_reports_copy": "Копировать",
   "error_reports_copied": "Скопировано в буфер обмена",
   "error_reports_clear": "Очистить",
+  "error_reports_extension_failure": "Эта ошибка вызвана расширением, а не NodeLane Comics. Расширения разрабатываются и поддерживаются владельцами репозитория, из которого был установлен источник. Название источника и открываемый контент помогут им исправить проблему.",
+  "error_reports_already_reported": "Уже отправлено",
+  "error_reports_expected_failure": "Обычно это проблема на стороне источника или сети, а не приложения: истекшая ссылка, сбой сервера или обрыв соединения. Имеет смысл сообщать, только если ошибка повторяется на источнике, работающем в других местах.",
   "share_unavailable_copied": "Отправка недоступна, скопировано в буфер обмена.",
-  "onboarding_title": "Добро пожаловать в Mangayomi",
+  "onboarding_title": "Добро пожаловать в NodeLane Comics",
   "onboarding_libraries_body": "Выберите, что вы читаете и смотрите.",
   "onboarding_nav_title": "Ваши библиотеки",
   "onboarding_nav_body": "Отдельная вкладка для каждой или объединение в общую вкладку Библиотека.",
@@ -1107,9 +1402,19 @@
   "onboarding_or_local": "Или используйте имеющиеся файлы",
   "onboarding_local_folder": "Добавить папку",
   "onboarding_local_existing": "Настроено папок: {count}",
+  "@onboarding_local_existing": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_any_type": "Поддерживаются манга, аниме и новеллы.",
   "onboarding_local_scanning": "Сканирование папки",
   "onboarding_local_found": "Найдено тайтлов: {count}",
+  "@onboarding_local_found": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_remove": "Удалить эту папку",
   "onboarding_local_in_downloads": "Это папка загрузок приложения.",
   "onboarding_local_empty": "Ничего не найдено. Выберите родительскую папку.",
@@ -1126,183 +1431,6 @@
   "missing_source_check_subtitle": "Поиск тайтлов, чьи расширения не установлены.",
   "missing_source_check_none_found": "Источники для всех тайтлов установлены.",
   "missing_source_check_result_title": "{count, plural, =1{Отсутствует 1 источник} few{Отсутствуют {count} источника} other{Отсутствуют {count} источников}}",
-  "missing_source_check_result_message": "Эти тайтлы привязаны к неустановленным источникам. Нажмите для миграции или установите расширение.",
-  "@tts_paragraph_progress": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
-  "@label_value": {
-    "placeholders": {
-      "label": {},
-      "value": {}
-    }
-  },
-  "@beta_version": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "@error_with_message": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_create_cbz": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_saving_chapter_episode_to_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_chapter_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_archive_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_getting_local_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_export_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@unrecognized_chapter_numbers": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@tracker_token_expired": {
-    "placeholders": {
-      "tracker": {}
-    }
-  },
-  "@playback_speed_multiplier": {
-    "placeholders": {
-      "value": {}
-    }
-  },
-  "@could_not_launch_url": {
-    "placeholders": {
-      "url": {}
-    }
-  },
-  "@sources_with_no_results": {
-    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@replace_summary_message": {
-    "placeholders": {
-      "currentCount": {},
-      "backupCount": {}
-    }
-  },
-  "@replace_result_message": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@import_summary_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@import_result_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@roll_back_last_change_subtitle": {
-    "placeholders": {
-      "date": {},
-      "description": {}
-    }
-  },
-  "@roll_back_available_count": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@delete_source_confirm_title": {
-    "placeholders": {
-      "sourceName": {}
-    }
-  },
-  "@delete_source_confirm_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "chapterCount": {},
-      "historyCount": {},
-      "updateCount": {}
-    }
-  },
-  "@delete_source_result_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "sourceName": {}
-    }
-  },
-  "@merge_manga_chapters_subtitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@merge_manga_result_message": {
-    "placeholders": {
-      "count": {},
-      "mangaName": {}
-    }
-  },
-  "@merge_manga_preview_message": {
-    "placeholders": {
-      "totalChapters": {},
-      "duplicateChapters": {},
-      "keptChapters": {},
-      "duplicateTracks": {}
-    }
-  },
-  "@onboarding_local_existing": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@onboarding_local_found": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "@missing_source_check_result_title": {
     "placeholders": {
       "count": {
@@ -1310,31 +1438,6 @@
       }
     }
   },
-  "developer_mode": "Режим разработчика",
-  "developer_mode_subtitle": "Показывать инструменты разработчика расширений (создание расширения, редактирование кода)",
-  "last_sync": "Последняя синхронизация: ",
-  "sync_login_browser": "Войти через браузер",
-  "sync_progress_percent": "Синхронизация… {percent}%",
-  "@sync_progress_percent": {
-    "placeholders": {
-      "percent": {}
-    }
-  },
-  "sync_progress_indeterminate": "Синхронизация…",
-  "override_ass_subtitles": "Переопределить субтитры ASS",
-  "override_ass_subtitles_info": "Применить собственный стиль к субтитрам ASS/SSA",
-  "repo_already_exists": "Репозиторий уже существует!",
-  "tracks": "Дорожки",
-  "playback_speed": "Скорость воспроизведения",
-  "shaders": "Шейдеры",
-  "video_fit": "Масштабирование",
-  "double_page_single_first_page": "Первая страница отдельно",
-  "double_page_single_first_page_subtitle": "Отображать первую страницу отдельно в двухстраничном режиме",
-  "memory_overlay": "Показывать использование памяти",
-  "memory_overlay_subtitle": "Индикатор использования памяти приложением в реальном времени. Для точного измерения на устройстве: наблюдайте за ним во время прокрутки библиотеки или чтения главы.",
-  "error_reports_extension_failure": "Эта ошибка вызвана расширением, а не Mangayomi. Расширения разрабатываются и поддерживаются владельцами репозитория, из которого был установлен источник. Название источника и открываемый контент помогут им исправить проблему.",
-  "error_reports_already_reported": "Уже отправлено",
-  "error_reports_expected_failure": "Обычно это проблема на стороне источника или сети, а не приложения: истекшая ссылка, сбой сервера или обрыв соединения. Имеет смысл сообщать, только если ошибка повторяется на источнике, работающем в других местах.",
   "global_search_no_sources": "Источники {itemType} не установлены.",
   "@global_search_no_sources": {
     "placeholders": {
@@ -1355,6 +1458,7 @@
   "global_search_only_pinned_hint": "Закрепите источник или отключите «Только закрепленные источники» в настройках обзора.",
   "global_search_all_nsfw": "Все источники для этого помечены как NSFW и скрыты.",
   "global_search_all_nsfw_hint": "Включите источники NSFW в настройках обзора для поиска по ним.",
+  "missing_source_check_result_message": "Эти тайтлы привязаны к неустановленным источникам. Нажмите для миграции или установите расширение.",
   "related_titles": "Связанное",
   "related_none": "Связанных произведений не найдено.",
   "relation_adaptation": "Адаптация",
@@ -1373,13 +1477,6 @@
   "auto_library_update_weekly": "Еженедельно",
   "auto_library_update_wifi_only": "Только по Wi-Fi",
   "auto_library_update_wifi_only_subtitle": "Пропускать запланированное обновление при использовании мобильных данных.",
-  "double_tap_search_hint": "Дважды коснитесь для поиска по всем {type}",
-  "show_nav_double_tap_tooltip": "Подсказка о поиске двойным касанием",
-  "show_nav_double_tap_tooltip_subtitle": "Показывать подсказку во вкладках Манга/Аниме/Новеллы о том, что двойное нажатие открывает глобальный поиск.",
-  "already_in_library": "\"{title}\" уже в вашей библиотеке из {source}.",
-  "add_anyway": "Всё равно добавить",
-  "double_page_auto": "Автоматический двухстраничный режим",
-  "double_page_auto_subtitle": "Автоматически переключаться на двухстраничный режим в альбомной ориентации",
   "padding": "Отступ",
   "page_mode": "Режим страниц",
   "single_page": "Одиночная страница",
@@ -1397,5 +1494,1189 @@
   "chapter_swipe_toggle_bookmark": "Закладка",
   "chapter_swipe_toggle_read": "Прочитано/Не прочитано",
   "chapter_swipe_download": "Скачать",
-  "chapter_swipe_disabled": "Отключено"
+  "chapter_swipe_disabled": "Отключено",
+  "update_errors": "Ошибки обновления",
+  "no_update_errors": "Отсутствие ошибок обновления.",
+  "clear_all": "Очистить все",
+  "dismiss": "Отклонить",
+  "previous_episode": "Предыдущий эпизод",
+  "clear_logs": "Очистить журналы",
+  "bold": "Жирный",
+  "italic": "Курсив",
+  "color_yellow": "Желтый",
+  "color_cyan": "Голубой",
+  "color_green": "Зеленый",
+  "color_orange": "Оранжевый",
+  "continue_watching": "Продолжить просмотр",
+  "search_your_anime": "Найдите свое аниме",
+  "category": "Категория",
+  "hidden_categories": "Скрытые категории",
+  "new_category": "Новая категория",
+  "local": "Местный",
+  "tv_home_rows": "Ряды",
+  "genre_rows": "Жанровые ряды",
+  "share_backup_file": "Поделиться файлом резервной копии NodeLane Comics",
+  "close": "Закрыть",
+  "migrate_source": "Перенос источника",
+  "cloudflare_bypass_proxy": "Обход прокси-сервера Cloudflare",
+  "custom_doh_url": "Пользовательский DoH URL",
+  "custom_doh_url_helper": "Должна быть конечной точкой https DoH (JSON).",
+  "anime_only_tv_layout": "Макет телевизора только для аниме",
+  "anime_only_beta": "Только аниме (бета)",
+  "tv_home_beta": "Домашний телевизор (бета)",
+  "tv_player_beta": "ТВ-плеер (бета)",
+  "network_settings": "Сеть",
+  "reader_page_layout": "Макет страницы",
+  "reader_continuous_options": "Непрерывное чтение",
+  "reader_default_mode_hint": "Режим чтения по умолчанию применяется к заголовкам без установки индивидуального режима во время чтения.",
+  "extension_service": "Служба расширения",
+  "extension_service_description": "Управляйте временем выполнения расширения и адресом прокси.",
+  "proxy_address": "Адрес прокси",
+  "checking_runtime_status": "Проверка статуса…",
+  "download_delay_value": "{seconds} с + случайная задержка",
+  "@download_delay_value": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_count": "{count, plural, one{1 глава} other{{count} глав}}",
+  "@download_queue_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_empty_hint": "Добавляйте загрузки из списка глав названия.",
+  "download_queue_order_hint": "Перетащите маркеры, чтобы изменить порядок",
+  "download_queue_empty": "Нет загрузок в очереди",
+  "download_queue_actions": "Действия по загрузке",
+  "download_queue_cancel_chapter": "Отменить загрузку этой главы.",
+  "download_queue_cancel_series": "Отменить все загрузки для этого названия.",
+  "download_queue_start": "Начать загрузку",
+  "download_queue_retry": "Повторить загрузку",
+  "download_queue_active": "Загрузка",
+  "download_queue_waiting": "Ожидание загрузки",
+  "download_queue_failed": "Загрузка не удалась",
+  "cf_proxy_helper": "Конечная точка FlareSolverr/Byparr. Оставьте пустым, чтобы отключить.",
+  "mobile_navigation_description": "Перетащите, чтобы изменить порядок. Манга, аниме и романы находятся на вкладке «Библиотека». Первый видимый элемент открывается при запуске. Просмотр и многое другое остаются видимыми; дополнительные вкладки появятся в разделе «Дополнительно».",
+  "text_align_justify": "Обоснование",
+  "novel_session_modes_hint": "Установите режим чтения и одну или две страницы при чтении заголовка.",
+  "tts_languages_failed": "Не удалось загрузить языки из речевого движка.",
+  "tts_languages_empty": "Речевой механизм не возвратил ни одного языка. Ваш сохраненный выбор сохраняется.",
+  "tts_language_unavailable": "Этого сохраненного языка нет в текущем списке устройства.",
+  "tts_apply_failed": "Не удалось применить эту настройку к речевому механизму. Вы можете повторить попытку.",
+  "player_controls": "Органы управления",
+  "audio_channel_auto": "Автоматический",
+  "audio_channel_auto_safe": "Автоматический (безопасный)",
+  "audio_channel_mono": "Моно",
+  "audio_channel_stereo": "Стерео",
+  "audio_channel_reverse_stereo": "Обратное стерео",
+  "mpv_bundled_config_hint": "Восстановите конфигурацию, скрипты и шейдеры, включенные в приложение. Файлы с такими же именами будут перезаписаны.",
+  "mpv_restore_bundled": "Восстановление комплектной конфигурации",
+  "mpv_restore_confirm": "Восстановить встроенную конфигурацию MPV? Существующая конфигурация, скрипты и шейдеры с такими же именами будут перезаписаны. Остальные файлы сохранятся.",
+  "player_operation_incomplete": "Операцию не удалось завершить. Проверьте доступ к файлу и повторите попытку.",
+  "custom_buttons_empty_hint": "Добавьте кнопку проигрывателя с меткой и действием нажатия.",
+  "custom_button_primary": "Кнопка по умолчанию",
+  "show_password": "Показать пароль",
+  "hide_password": "Скрыть пароль",
+  "tracking_accounts_empty": "Подключите услугу в настройках отслеживания, чтобы управлять ее записями.",
+  "tracking_entries_empty": "Для этого типа носителя нет отслеживаемых записей. Добавьте отслеживание со страницы сведений о заголовке.",
+  "change_tracking_match": "Изменить соответствующий заголовок",
+  "remove_tracking": "Удалить отслеживание",
+  "remove_tracking_confirm": "Удалить ссылку отслеживания для «{title}»? Запись в сервисе отслеживания сохранится.",
+  "@remove_tracking_confirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "tracking_refresh_required": "Состояние отслеживания не удалось подтвердить. Обновите перед внесением еще одного изменения.",
+  "tracking_entry_unlinked": "Эта запись не связана с локальным заголовком, поэтому ее нельзя редактировать здесь.",
+  "backup_selection_shared": "Изменения этих выборов сохраняются немедленно, а также применяются к автоматическому резервному копированию.",
+  "library_snapshot_history": "Восстановление снимка библиотеки",
+  "library_snapshot_empty": "Снимки безопасности отсутствуют.",
+  "library_snapshot_restore_message": "Текущие данные будут заменены этим снимком. Изменения, сделанные с тех пор, будут потеряны. Удаленные загрузки невозможно восстановить. После успешного завершения доступные снимки безопасности будут удалены.",
+  "library_maintenance_working": "Обновление библиотеки…",
+  "library_safety_snapshot_note": "Перед этой операцией будет сохранен снимок безопасности. Он не включает загруженные файлы.",
+  "library_delete_summary": "Записи библиотеки: {mangaCount}. Главы: {chapterCount}. Записи истории: {historyCount}. Обновления: {updateCount}.\n\nВыберите, что оставить ниже.",
+  "@library_delete_summary": {
+    "placeholders": {
+      "mangaCount": {
+        "type": "int"
+      },
+      "chapterCount": {
+        "type": "int"
+      },
+      "historyCount": {
+        "type": "int"
+      },
+      "updateCount": {
+        "type": "int"
+      }
+    }
+  },
+  "library_delete_pick_message": "Выберите источник, чтобы просмотреть его содержимое и варианты удаления.",
+  "mobile_categories_hint": "Перетащите, чтобы изменить порядок. Откройте категорию, чтобы переименовать ее или изменить ее видимость и обновления.",
+  "mobile_category_visible": "Показать в библиотеке",
+  "mobile_category_hidden": "Скрыто из библиотеки",
+  "mobile_category_updates": "Включить в обновления библиотеки",
+  "statistics_watched": "Смотрел",
+  "calendar_month": "Месяц",
+  "calendar_two_weeks": "2 недели",
+  "calendar_week": "Неделя",
+  "calendar_show_all_dates": "Показать все даты",
+  "update_check_no_result": "Не найдено устанавливаемое обновление. Вы можете попробовать еще раз позже.",
+  "release_notes": "Примечания к выпуску",
+  "no_release_notes": "Примечания к выпуску не предоставлены.",
+  "downloading_update": "Загрузка обновления…",
+  "preparing_installation": "Подготовка к установке…",
+  "onboarding_mobile_libraries_body": "Выбирайте, что читать. Вы можете изменить это позже.",
+  "onboarding_content_title": "Начать чтение",
+  "onboarding_mobile_sources_body": "Выберите способ начала или добавьте контент позже.",
+  "onboarding_step_count": "Шаг {step} из {total}",
+  "@onboarding_step_count": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_results_for": "Результаты для «{query}»",
+  "@global_search_results_for": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "global_search_scope": "{type} · {count, plural, =1{1 источник} other{{count} источники}}",
+  "@global_search_scope": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "migration_search_prompt": "Поиск заголовка назначения.",
+  "migration_original_item": "Текущий элемент",
+  "migration_target_item": "Выбранный элемент",
+  "migration_partial_failure": "Операция не завершилась. Некоторые изменения могли быть сохранены. Прежде чем повторить попытку, проверьте этот объект в своей библиотеке.",
+  "migration_no_categories": "Никаких категорий. Вы можете добавить этот товар без категории.",
+  "mass_migration_select_source": "Выбор текущего источника",
+  "mass_migration_select_all": "Выбрать все",
+  "mass_migration_deselect_all": "Отменить выбор всех",
+  "mass_migration_needs_review": "Просмотр неполных миграций",
+  "bookshelf_actions": "Действия с книжной полкой",
+  "bookshelf_ignore_filters": "Игнорировать фильтры при поиске",
+  "bookshelf_ignore_filters_hint": "Поиск всех работ в этой категории, включая скрытые фильтрами.",
+  "bookshelf_stop_update": "Остановить обновление библиотеки.",
+  "bookshelf_selected_count": "{count} выбраны работы",
+  "@bookshelf_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_remove_library": "Убрать с книжной полки",
+  "bookshelf_remove_library_hint": "Удаляет избранное. Местный импорт также теряет свою библиотеку и записи о прочтении.",
+  "bookshelf_remove_downloads": "Удалить загруженные файлы",
+  "bookshelf_remove_downloads_hint": "Удаляет загруженные файлы, сохраняя при этом рабочую информацию.",
+  "bookshelf_remove_local_files_hint": "Также удаляет выбранные локальные импортированные файлы и удаляет их библиотечные записи. Эти файлы невозможно восстановить здесь.",
+  "bookshelf_remove_incomplete": "Операция не завершилась. Некоторые работы или файлы могли быть обработаны. Закройте это диалоговое окно и проверьте свою книжную полку и загрузки, прежде чем продолжить.",
+  "bookshelf_processing": "Обработка…",
+  "bookshelf_mark_read": "Отметить как прочитанное",
+  "bookshelf_mark_unread": "Отметить как непрочитанное",
+  "bookshelf_select_all": "Выбрать все",
+  "bookshelf_invert_selection": "Инвертировать выбор",
+  "bookshelf_settings": "Настройки книжной полки",
+  "bookshelf_settings_live": "Изменения фильтрации, сортировки и отображения вступают в силу немедленно.",
+  "bookshelf_filter_any": "Любой",
+  "bookshelf_filter_include": "Включить",
+  "bookshelf_filter_exclude": "Исключить",
+  "bookshelf_all_sources": "Все источники",
+  "bookshelf_sources_selected": "Выбраны источники {count}",
+  "@bookshelf_sources_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_sort_ascending": "По возрастанию",
+  "bookshelf_sort_descending": "По убыванию",
+  "bookshelf_layout": "Компоновка книжной полки",
+  "bookshelf_sources_hint": "Выберите «Нет», чтобы отобразить все источники. Изменения вступают в силу, когда вы нажимаете «Фильтр».",
+  "bookshelf_choose_files": "Выбор файлов",
+  "bookshelf_import_wait": "Выберите файл в средстве выбора и дождитесь завершения импорта.",
+  "bookshelf_import_incomplete": "Импорт не завершился. Некоторые файлы могут уже находиться на вашей книжной полке. Закройте это диалоговое окно и проверьте перед повторным импортом.",
+  "bookshelf_categories_replace": "Сохранение присваивает эти категории каждому выбранному произведению, заменяя их предыдущие категории.",
+  "bookshelf_categories_hint": "Выберите одну или несколько категорий или оставьте выбор пустым, чтобы не назначить ни одной.",
+  "bookshelf_categories_hidden": "Существующие скрытые категории сохраняются для этой работы.",
+  "bookshelf_categories_incomplete": "Категории не удалось сохранить полностью. Закройте это диалоговое окно и проверьте книжную полку, прежде чем повторить попытку.",
+  "bookshelf_categories_none_visible": "Здесь нет доступных категорий. Откройте управление категориями, чтобы просмотреть их.",
+  "bookshelf_manage_categories": "Управление категориями",
+  "manga_actions": "Комические действия",
+  "manga_download_scope": "Скачать главы",
+  "manga_download_scope_hint": "Выберите главы в текущих фильтрах. Загруженные главы пропускаются.",
+  "manga_download_scope_empty": "Ни одна глава не соответствует текущим фильтрам. Закройте это меню и настройте фильтры глав.",
+  "manga_action_incomplete": "Действие не завершилось. Прежде чем повторить попытку, проверьте текущее состояние.",
+  "chapter_settings": "Настройки главы",
+  "chapter_settings_live": "Изменения фильтрации и сортировки применяются немедленно.",
+  "chapter_scanlators_all": "Показать все группы сканляторов",
+  "chapter_scanlators_hint": "Выберите группы, чтобы скрыть их главы. Изменения вступают в силу, когда вы нажимаете «Фильтр».",
+  "chapter_scanlators_hidden": "{count} группы сканеров скрыты",
+  "@chapter_scanlators_hidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_selected_count": "Выбрано {count} глав",
+  "@chapter_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_add_bookmark": "Закладка",
+  "chapter_remove_bookmark": "Удалить из закладок",
+  "chapter_read_following": "Читайте ниже",
+  "chapter_delete_records": "Удаление записей главы",
+  "chapter_delete_local_hint": "Удаляет выбранные записи главы и прогресс чтения. Сохраняются оригинальные местные архивы; загруженные копии очищаются.",
+  "chapter_delete_last_hint": "Это все главы этого комикса. Их удаление также удалит комикс с вашей книжной полки.",
+  "chapter_action_incomplete": "Действие не закончилось. Некоторые изменения могут уже быть сохранены. Прежде чем продолжить, закройте и проверьте главы и загрузки.",
+  "reader_display_scope": "Режим чтения и макет страницы вручную применимы к этому комиксу. Выберите изменение, чтобы вернуться к чтению.",
+  "reader_display_single_only": "При непрерывном горизонтальном чтении используются отдельные страницы.",
+  "reader_display_manual_pages": "Изменение макета страницы отключает автоматическое развертывание двойной страницы для всех комиксов.",
+  "reader_display_crop_scope": "Применяется ко всем комиксам.",
+  "reader_chapter_locate": "Найти текущую главу",
+  "reader_chapter_search": "Поиск разделов или сканляторов",
+  "reader_chapter_scope": "Использует фильтры глав и порядок сортировки деталей комикса. Закладки сохраняются сразу.",
+  "reader_chapter_current_hidden": "Глава, которую вы читаете, находится за пределами текущих фильтров.",
+  "reader_chapter_current": "Читаю сейчас",
+  "reader_chapter_read": "Читать",
+  "reader_chapter_bookmark_failed": "Не удалось подтвердить сохранение закладки. Закройте список и проверьте его текущее состояние.",
+  "reader_image_actions": "Действия с изображением",
+  "reader_image_original": "Использует полную исходную страницу без перевода, обрезки или цветных фильтров чтения.",
+  "reader_image_save_ios": "Сохранение в папке «Изображения» в текущем месте хранения приложения.",
+  "reader_image_save_android": "Сохраните в папку Pictures/nodelane-comics устройства.",
+  "reader_image_share": "Откройте общий доступ к системе.",
+  "reader_image_cover": "Измените обложку этого комикса после подтверждения.",
+  "reader_image_cover_limit": "Изображения обложки должны быть меньше 5 МБ. Сохранение и обмен остаются доступными.",
+  "reader_image_action_failed": "Действие не удалось подтвердить. Закройте это меню и проверьте результат, прежде чем повторить попытку.",
+  "reader_settings_book_scope": "Эти настройки применимы только к этому комиксу.",
+  "reader_settings_global_scope": "Эти настройки применяются ко всем комиксам и сохраняются немедленно.",
+  "reader_filters": "Фильтры изображений",
+  "reader_filter_scope": "Применяется ко всем комиксам. Изменяет отображение чтения без изменения исходных изображений.",
+  "reader_auto_scroll_pause": "Прокрутка приостанавливается, пока настройки открыты.",
+  "manga_synopsis": "Краткое описание",
+  "manga_author": "Автор: {author}",
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "manga_continue_reading": "Продолжить чтение",
+  "reader_settings_title": "Настройки считывателя",
+  "reader_picker_book_scope": "Только для этого комикса",
+  "reader_picker_global_scope": "Применяется ко всем комиксам.",
+  "reader_picker_apply_hint": "Нажмите, чтобы сохранить и вернуться на предыдущий уровень.",
+  "reader_scale_fit_screen_hint": "Поместить всю страницу на экран",
+  "reader_scale_stretch_hint": "Заполните область чтения",
+  "reader_scale_fit_width_hint": "Подогнать страницу по ширине",
+  "reader_scale_fit_height_hint": "Подогнать страницу по высоте",
+  "source_filter_active": "Применено",
+  "source_filter_apply": "Применить фильтры",
+  "source_filter_scope": "Фильтры применяются только к этому веб-сайту.",
+  "source_filter_apply_hint": "Примените фильтры, чтобы использовать свой выбор.",
+  "source_filter_term": "{term, select, genres{Жанры} author{Автор} artist{Художник} title{Название} year{Год} tags{Теги} format{Формат} publisher{Издатель} relevance{Актуальность} rating{Рейтинг} views{Просмотры} random{Случайный} all{Все} none{Нет} action{Действие} adventure{Приключение} comedy{Комедия} drama{Драма} fantasy{Фэнтези} romance{Романтика} science_fiction{Научная фантастика} slice_of_life{Кусочек жизни} mystery{Тайна} horror{Ужасы} psychological{Психологический} historical{Исторический} sports{Спорт} supernatural{Сверхъестественное} school_life{Школьная жизнь} tragedy{Трагедия} shounen{Сёнен} shoujo{Сёдзё} seinen{Сэйнен} josei{Джосей} isekai{Исэкай} martial_arts{Боевые искусства} mecha{Меха} music{Музыка} doujinshi{Додзинси} trending{Тенденции} new{Новый} adult_content{Контент для взрослых} only{Только} other{{term}}}",
+  "@source_filter_term": {
+    "description": "Common extension filter display labels. Plugin values are never translated.",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "bookshelf_more_display": "Дополнительные варианты отображения",
+  "bookshelf_more_display_hint": "Значки, источники и категории",
+  "bookshelf_download_count": "Счетчик загрузок",
+  "bookshelf_source_global_hint": "Видимость источника использует предпочтение совместного отображения.",
+  "bookshelf_select_entries": "Избранные произведения",
+  "bookshelf_search_options": "Параметры поиска",
+  "bookshelf_empty_hint": "Собирайте работы из источников или импортируйте локальные файлы.",
+  "bookshelf_no_match_hint": "Попробуйте другие ключевые слова или настройте текущие фильтры.",
+  "bookshelf_clear_query": "Очистить ключевые слова",
+  "bookshelf_view_selection": "Просмотр избранных работ",
+  "bookshelf_import_formats": "Выберите локальный файл, чтобы добавить его на свою книжную полку.",
+  "bookshelf_import_canceled_hint": "Вы можете выбрать снова после отмены средства выбора файла.",
+  "bookshelf_browse_sources": "Просмотр источников",
+  "bookshelf_empty_title": "Ваша книжная полка пуста",
+  "bookshelf_no_match_title": "Никакие сопоставления не работают",
+  "bookshelf_mark_watched": "Марк смотрел",
+  "bookshelf_mark_unwatched": "Отметить как непросмотренное",
+  "nodelane_account": "NodeLane аккаунт",
+  "nodelane_sign_in": "Войдите в NodeLane.",
+  "nodelane_account_intro": "Просмотр вашей учетной записи, подписки и квоты на переводы",
+  "nodelane_login_action": "Продолжить вход в систему",
+  "nodelane_login_browser": "Войдите через системный браузер, затем вернитесь в приложение.",
+  "nodelane_account_id": "Идентификатор учетной записи",
+  "nodelane_account_init_error": "Хранилище учетной записи недоступно. Перезапустите приложение и повторите попытку.",
+  "nodelane_account_refresh_error": "Не удалось обновить информацию об учетной записи.",
+  "nodelane_account_auth_error": "Срок действия вашей сессии истек. Войдите снова",
+  "nodelane_account_unknown": "Информация о подписке недоступна.",
+  "nodelane_account_current": "Текущая подписка",
+  "nodelane_account_free": "Бесплатный аккаунт",
+  "nodelane_account_no_subscription": "Нет активной подписки",
+  "nodelane_account_active": "Активный",
+  "nodelane_account_expired": "Срок действия истек",
+  "nodelane_account_expiry": "Действительно до",
+  "nodelane_account_renewal": "Обновление",
+  "nodelane_renewal_auto": "Автоматическое продление",
+  "nodelane_renewal_manual": "Ручное продление",
+  "nodelane_renewal_stopped": "Автоматическое продление остановлено.",
+  "nodelane_renewal_gift": "Подарочное членство",
+  "nodelane_renewal_attention": "Проверьте статус продления на веб-сайте.",
+  "nodelane_next_billing": "Следующая дата выставления счета",
+  "nodelane_billing_unavailable": "Информация о продлении недоступна",
+  "nodelane_manage_account": "Управление на сайте",
+  "nodelane_view_plans": "Просмотр планов подписки",
+  "nodelane_translation_quota": "Квота на перевод",
+  "nodelane_quota_free": "Бесплатная квота",
+  "nodelane_quota_subscription": "Квота подписки",
+  "nodelane_quota_purchase": "Приобретенная квота",
+  "nodelane_quota_details": "Просмотр сведений о квоте",
+  "nodelane_quota_expanded": "Детали квоты",
+  "nodelane_quota_unlimited": "Неограниченно",
+  "nodelane_quota_not_subscribed": "Не подписан",
+  "nodelane_quota_unknown": "Недоступно",
+  "nodelane_quota_used": "Использовано",
+  "nodelane_quota_reserved": "В процессе",
+  "nodelane_quota_reset": "Следующий сброс",
+  "nodelane_quota_expiry": "Следующий срок действия",
+  "nodelane_quota_no_expiry": "Нет срока годности",
+  "nodelane_quota_reservation_note": "Незавершенные страницы уже вычтены из доступной квоты.",
+  "nodelane_quota_available": "Осталось {count} страниц",
+  "@nodelane_quota_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_quota_pages": "{count} страниц",
+  "@nodelane_quota_pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_sign_out": "Выход",
+  "nodelane_sign_out_confirm": "Выход из системы приостанавливает официальный перевод на этом устройстве. Ваша библиотека и прогресс чтения сохраняются.",
+  "settings_search_hint": "Настройки поиска",
+  "settings_frequent": "Часто используемый",
+  "settings_reading_translation": "Чтение и перевод",
+  "settings_app_preferences": "Настройки приложения",
+  "settings_data_management": "Данные и управление",
+  "settings_more_tools": "Дополнительные инструменты",
+  "settings_more_tools_hint": "Категории, статистика и календарь",
+  "settings_appearance_interface": "Внешний вид и интерфейс",
+  "settings_security_privacy": "Безопасность и конфиденциальность",
+  "settings_source_preferences": "Настройки источника",
+  "settings_about_help": "О проекте и помощь",
+  "settings_storage_backup": "Хранение и резервное копирование",
+  "settings_pending_downloads": "{count} на рассмотрении",
+  "@settings_pending_downloads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_translation_language": "Язык перевода",
+  "settings_translation_scope": "Используется в программе чтения и переводе веб-страниц.",
+  "settings_immediate_choice": "Изменения вступают в силу немедленно.",
+  "settings_translation_init_error": "Настройки перевода недоступны. Перезапустите приложение и повторите попытку.",
+  "settings_local_cache": "Локальный кэш",
+  "settings_chapter_cache": "Кэш глав и эпизодов",
+  "settings_cover_cache": "Крышка тайника",
+  "settings_translation_cache": "Кэш переведенного изображения",
+  "settings_translation_cache_hint": "Сохраняйте записи о переводах и при необходимости снова извлекайте переведенные изображения.",
+  "settings_cache_clear": "Очистить",
+  "settings_translation_cache_done": "Кэш переведенного изображения очищен; записи о переводах сохраняются",
+  "settings_cache_confirmation": "Очистить {name}? Кэшированный контент можно получить снова. Записи в библиотеке будут сохранены.",
+  "@settings_cache_confirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_advanced_options": "Расширенные параметры",
+  "settings_manga_reader": "Читатель манги",
+  "settings_novel_reader": "Читатель романов",
+  "settings_downloads": "Загрузка настроек",
+  "onboarding_welcome": "Добро пожаловать в",
+  "onboarding_reading_content": "Чтение контента",
+  "onboarding_choose_one": "Выберите хотя бы один",
+  "onboarding_restore_hint": "Восстановите свою библиотеку из резервной копии.",
+  "onboarding_browse_hint": "Поиск заголовков на поддерживаемых веб-сайтах.",
+  "onboarding_import_folder": "Импортировать локальную папку",
+  "onboarding_import_folder_hint": "Читайте мангу, романы и аниме на своем устройстве.",
+  "onboarding_third_party": "Добавить сторонний репозиторий",
+  "onboarding_third_party_hint": "Используйте адрес репозитория, который у вас уже есть.",
+  "onboarding_repository_hint": "Введите адрес, предоставленный хранилищем.",
+  "onboarding_repository_address": "Адрес",
+  "onboarding_repository_address_hint": "Введите адрес репозитория",
+  "onboarding_add_repository": "Добавить репозиторий",
+  "onboarding_start": "Начало работы",
+  "onboarding_open_library": "Открытая библиотека",
+  "onboarding_view_imports": "Просмотр импортированного контента",
+  "onboarding_view_folders": "Просмотр папок",
+  "notice_backup_created": "Резервная копия создана",
+  "notice_backup_ready": "Сохраните или поделитесь файлом резервной копии.",
+  "notice_backup_restored": "Резервная копия восстановлена",
+  "notice_backup_unsupported": "Этот формат резервного копирования не поддерживается.",
+  "notice_verification_required": "Требуется проверка сайта",
+  "notice_verification_hint": "Завершите проверку, чтобы продолжить просмотр.",
+  "notice_verify": "Проверка веб-сайта",
+  "notice_action_incomplete": "Действие не закончилось. Проверьте результат, прежде чем повторить попытку.",
+  "notice_library_updating": "Обновление библиотеки",
+  "notice_library_progress": "Проверены заголовки {current} / {total}.",
+  "notice_library_failed": "Некоторые заголовки не удалось обновить.",
+  "notice_import_completed": "Импорт завершен",
+  "notice_operation_incomplete": "Действие не завершено",
+  "subtitle_service": "Онлайн-сервис субтитров",
+  "subtitle_service_mode": "Источник субтитров",
+  "subtitle_service_disabled": "Выкл · очистить сохраненные учетные данные",
+  "subtitle_personal_key": "Мой ключ Wyzie",
+  "subtitle_custom_service": "Мой сервис субтитров",
+  "subtitle_key": "Wyzie API Ключ",
+  "subtitle_key_hint": "Введите свой собственный ключ Wyzie. Он остается на этом устройстве и не включается в резервные копии приложений.",
+  "subtitle_get_key": "Получите персональный ключ",
+  "subtitle_service_address": "Поиск субтитров URL",
+  "subtitle_service_token": "Токен доступа к услуге (необязательно)",
+  "subtitle_custom_hint": "Используйте полный поиск HTTPS URL службы Wyzie-compatible, включая ее путь (например, /search). Введите токен доступа, только если он требуется для вашей службы.",
+  "subtitle_service_off_hint": "Онлайн-поиск субтитров отключен. Встроенные, предоставленные источником и локальные субтитры остаются доступными.",
+  "subtitle_setup_required": "Перед поиском выберите службу субтитров.",
+  "subtitle_invalid_key": "Введите ключ без пробелов.",
+  "subtitle_invalid_address": "Используйте полный HTTPS URL без запроса, фрагмента или встроенных учетных данных.",
+  "subtitle_invalid_token": "Маркер доступа не может содержать пробелы.",
+  "subtitle_storage_failed": "Не удалось прочитать или сохранить настройки субтитров. Пожалуйста, попробуйте еще раз.",
+  "subtitle_auth_failed": "Служба субтитров отказала в доступе. Проверьте свой ключ или токен службы.",
+  "subtitle_quota_exhausted": "Квота на обслуживание субтитров исчерпана. Проверьте свой аккаунт в этом сервисе.",
+  "subtitle_network_failed": "Не удалось связаться со службой субтитров. Пожалуйста, попробуйте еще раз.",
+  "subtitle_response_invalid": "Служба субтитров вернула неподдерживаемый ответ или файл.",
+  "detail_loading_chapters": "Загрузка глав…",
+  "reader_opening_chapter": "Вступительная глава",
+  "reader_open_chapter": "Открыть главу",
+  "reader_loading_pages": "Получение изображений глав…",
+  "reader_loading_pages_hint": "Чтение начнется автоматически, когда все будет готово.",
+  "reader_loading_failed": "Не удалось загрузить эту главу.",
+  "reader_loading_retry_hint": "Проверьте подключение и повторите попытку.",
+  "reader_no_pages": "Для этой главы изображений не найдено.",
+  "reader_loading_previous": "Загрузка предыдущей главы…",
+  "reader_previous_failed": "Не удалось загрузить предыдущую главу.",
+  "reader_reached_start": "Вы дошли до первой главы.",
+  "reader_loading_next": "Загрузка следующей главы…",
+  "reader_next_failed": "Не удалось загрузить следующую главу.",
+  "reader_image_loading": "Загрузка изображения…",
+  "reader_image_failure_hint": "Вы можете продолжать читать другие страницы.",
+  "comic_paged": "Страница за страницей",
+  "comic_scroll": "Прокрутите вниз",
+  "comic_book_scope": "Применимо только к этой книге · изменения сохраняются немедленно",
+  "comic_defaults_title": "Установки и привычки",
+  "comic_defaults_hint": "Значения по умолчанию применяются к полям, которые вы не настроили для книги.",
+  "comic_habits_hint": "Эти привычки применимы к каждому комиксу.",
+  "comic_turn": "Переход на следующую страницу.",
+  "comic_left": "Левый",
+  "comic_right": "Верно",
+  "comic_up": "Вверх",
+  "comic_fit": "По размеру страницы",
+  "comic_fit_contain": "Вся страница",
+  "comic_fit_width": "Подходящая ширина",
+  "comic_fit_height": "Высота установки",
+  "comic_layout": "Макет страницы",
+  "comic_auto": "Авто",
+  "comic_layout_hint": "Авто показывает разброс, когда имеется достаточная ширина.",
+  "comic_width": "Ширина контента",
+  "comic_full": "Полный",
+  "comic_comfortable": "Удобный",
+  "comic_narrow": "Узкий",
+  "comic_gap": "Межстраничный интервал",
+  "comic_no_gap": "Бесшовный",
+  "comic_small_gap": "Маленький",
+  "comic_image_title": "Точная настройка изображения",
+  "comic_image_hint": "Обрезка и тон влияют только на эту книгу.",
+  "comic_wide": "Широкие страницы",
+  "comic_intact": "Хранить в целости",
+  "comic_split": "Сплит",
+  "comic_rotate": "Поворот",
+  "comic_wide_hint": "Разделение следует направлению перелистывания страниц. Применяется к чтению одной страницы.",
+  "comic_cover": "Одна обложка на главу",
+  "comic_effects_reset": "Сброс настроек изображения",
+  "comic_book_reset": "Восстановление настроек книги по умолчанию",
+  "comic_book_reset_hint": "Очищает пользовательские настройки чтения этой книги. Перевод без изменений.",
+  "comic_canvas": "Фон считывателя",
+  "comic_system": "Система",
+  "comic_black": "Черный",
+  "comic_gray": "Серый",
+  "comic_paper": "Бумага",
+  "comic_tap": "Нажмите, чтобы перелистывать страницы.",
+  "comic_tap_hint": "Коснитесь краев для перемещения; коснитесь центра, чтобы отобразить элементы управления.",
+  "comic_scroll_start": "Запуск автоматической прокрутки",
+  "comic_scroll_pause": "Пауза автоматической прокрутки",
+  "comic_scroll_speed": "Скорость прокрутки",
+  "comic_scroll_hint": "Начинается, когда эта панель закрывается. Приостанавливается, когда приложение покидает передний план.",
+  "comic_save_failed": "Не удалось сохранить. Пожалуйста, попробуйте еще раз.",
+  "comic_reading": "Чтение",
+  "comic_chapter_habits_hint": "Привычки списка глав применимы ко всем книгам.",
+  "browser_title": "Браузер",
+  "translation_image_display": "Отображение изображения",
+  "translation_display_hint": "Сначала покажите существующие переводы. Сохраняйте оригинал, если перевода нет.",
+  "translation_sign_in_required": "Войдите, чтобы включить перевод.",
+  "translation_sign_in_hint": "После входа в систему переключитесь на переведенные изображения для автоматического перевода.",
+  "translation_automatic": "Автоматический перевод",
+  "translation_original_hint": "Показ оригиналов. Переключитесь на переведенные изображения для автоматического перевода.",
+  "translation_window_hint": "Обрабатывайте текущие и предстоящие изображения только во время показа переводов.",
+  "translation_channel": "Канал трансляции",
+  "translation_no_images": "На этой странице пока не найдено переводимых изображений.",
+  "translation_waiting_image": "Ожидание текущего изображения",
+  "translation_progress": "Обработано изображений: {complete} / {total}{issues, plural, =0{} one{ · {issues} изображение требует внимания} few{ · {issues} изображения требуют внимания} many{ · {issues} изображений требуют внимания} other{ · {issues} изображения требуют внимания}}",
+  "@translation_progress": {
+    "placeholders": {
+      "complete": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "issues": {
+        "type": "int"
+      }
+    }
+  },
+  "translation_image_actions_hint": "Коснитесь и удерживайте изображение, чтобы выполнить дополнительные действия, включая его повторный перевод.",
+  "translation_title": "Перевод манги",
+  "translation_system_sign_in": "Войдите в систему с помощью системного браузера.",
+  "translation_target_language": "Целевой язык",
+  "translation_clear_cache": "Очистить кэш переведенных изображений.",
+  "translation_cache_hint": "Сохраняйте записи о переводах и при необходимости извлекайте результаты снова.",
+  "translation_saved_read_failed": "Не удалось загрузить сохраненный перевод.",
+  "translation_read_failed": "Не удалось загрузить переведенное изображение.",
+  "operation_retry": "Действие не завершилось. Пожалуйста, попробуйте еще раз.",
+  "translation_original": "Оригинал",
+  "translation_translated": "Переведено",
+  "translation_regenerate_image": "Переведите это изображение еще раз",
+  "translation_read_image": "Перезагрузить переведенное изображение.",
+  "translation_image_actions": "Дополнительные действия с изображениями",
+  "translation_processing": "Обработка",
+  "translation_reading": "Загрузка переведенного изображения",
+  "translation_waiting": "Ожидание перевода",
+  "translation_preparing": "Подготовка перевода",
+  "translation_uploading": "Загрузка оригинала",
+  "translation_running": "Перевод",
+  "translation_uncertain": "Статус требует проверки",
+  "translation_failed": "Не удалось выполнить перевод",
+  "translation_verify": "Проверка",
+  "translation_reread": "Перезагрузить",
+  "browser_back": "Назад",
+  "browser_translation": "Перевод веб-страницы",
+  "browser_new_tab_action": "Открыть новую вкладку",
+  "browser_current_tab": "Ток",
+  "browser_close_tab": "Закрыть вкладку",
+  "browser_new_tab": "Новая вкладка",
+  "browser_page": "Веб-страница",
+  "browser_unopened": "Ни одна страница еще не открыта",
+  "browser_address_hint": "Введите или вставьте URL",
+  "browser_invalid_address": "Введите действительный URL.",
+  "browser_clear_address": "Очистить URL",
+  "browser_paste_address": "Вставьте URL",
+  "browser_open_address": "Открыть URL",
+  "browser_tab_count": "Вкладки · {count}",
+  "@browser_tab_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "browser_load_failed": "Не удалось открыть эту страницу.",
+  "browser_load_failed_hint": "Проверьте подключение и URL.",
+  "browser_edit_address": "Редактировать URL",
+  "browser_clear_cookies_confirm": "Очистить сеансы входа для всех веб-сайтов?",
+  "browser_clear_cookies_hint": "Веб-сайты на всех вкладках могут потребовать повторного входа в систему.",
+  "browser_clear_cookies_action": "Очистить сеансы входа в систему",
+  "browser_tab_limit": "Вы можете держать открытыми до 12 вкладок. Сначала закройте один.",
+  "browser_forward": "Вперед",
+  "browser_clear_all_cookies": "Очистить все сеансы входа на веб-сайт.",
+  "browser_clear_failed": "Не удалось очистить сеансы. Пожалуйста, попробуйте еще раз.",
+  "browser_save_failed": "Не удалось сохранить вкладки. Пожалуйста, попробуйте еще раз.",
+  "browser_tabs_full": "Уже открыто 12 вкладок",
+  "browser_no_tabs": "Открытых вкладок пока нет",
+  "browser_close_failed": "Не удалось сохранить вкладки. Нажмите «Закрыть» еще раз, чтобы повторить попытку.",
+  "source_pinned_websites": "Закрепленные веб-сайты",
+  "manage": "Управление",
+  "translation_settings_hint": "Автоматический перевод, целевой язык и канал",
+  "translation_show_original": "Нажмите, чтобы показать оригинал",
+  "translation_show_translated": "Нажмите, чтобы показать перевод",
+  "source_display": "Дисплей",
+  "source_cover_title": "Обложка и название",
+  "source_cover_only": "Только крышка",
+  "source_save_search": "Сохранить текущий поиск",
+  "source_saved_searches": "Сохраненные поисковые запросы",
+  "source_website_info": "Информация о веб-сайте",
+  "source_saved_search_title": "{title} · Нажмите, чтобы найти",
+  "@source_saved_search_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "action_done": "Готово",
+  "source_search_keyword": "Ключевое слово: {query}",
+  "@source_search_keyword": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "source_no_saved_searches": "Сохраненных результатов поиска пока нет.",
+  "source_save_search_hint": "Найдите ключевое слово, затем сохраните его из действий веб-сайта.",
+  "source_saved_search_scope": "Ключевые слова сохраняются только для этого веб-сайта.",
+  "source_search_here": "Поиск по заголовкам на этом сайте",
+  "source_filter_results": "Отфильтрованные результаты",
+  "source_search_results": "Результаты поиска",
+  "source_return_popular": "Вернуться к популярному",
+  "source_popular_titles": "Популярные названия",
+  "source_no_titles": "Соответствующие заголовки не найдены",
+  "source_no_titles_hint": "Измените ключевые слова или фильтры или вернитесь к популярным заголовкам.",
+  "source_load_more_failed": "Не удалось загрузить больше. Пожалуйста, попробуйте еще раз.",
+  "source_load_pull_retry": "Не удалось загрузить этот сайт. Потяните вниз, чтобы повторить попытку.",
+  "source_clear_failed": "Не удалось завершить очистку. Пожалуйста, попробуйте еще раз.",
+  "source_uninstall_failed": "Не удалось завершить удаление. Пожалуйста, попробуйте еще раз.",
+  "source_details": "Подробности источника",
+  "source_repository_website": "Веб-сайт репозитория",
+  "source_provided_settings": "Настройки предоставлены источником",
+  "source_advanced_actions": "Расширенные действия",
+  "source_edit_metadata": "Редактирование исходной информации",
+  "source_clear_cookies": "Очистить файлы cookie для этого веб-сайта.",
+  "source_clear_cookies_hint": "Возможно, вам придется снова войти в систему при следующем посещении.",
+  "source_uninstall": "Удаление источника",
+  "source_settings_save_failed": "Сохранение не завершилось. Снова откройте настройки исходного кода, чтобы проверить.",
+  "repository_third_party": "Сторонние репозитории",
+  "repository_refresh_failed": "Не удалось обновить каталог. Кэшированный контент сохраняется. Пожалуйста, попробуйте еще раз.",
+  "repository_show_sources": "Показать исходники из этого репозитория",
+  "repository_copy_catalog": "Скопировать ссылку на каталог",
+  "repository_remove": "Удалить репозиторий",
+  "repository_remove_hint": "Сохраните установленные источники и удалите неустановленные записи каталога.",
+  "repository_empty": "Сторонние репозитории пока не добавлены.",
+  "repository_built_in": "Встроенный официальный каталог.",
+  "repository_hidden": "Скрытый",
+  "repository_refreshing": "Обновление…",
+  "repository_refresh": "Обновить каталог",
+  "repository_manage_hint": "Управляйте тем, откуда загружаются сторонние источники.",
+  "repository_invalid_address": "Введите действительный HTTP или HTTPS URL.",
+  "repository_already_added": "Этот репозиторий уже добавлен",
+  "repository_unrecognized": "Поддерживаемый каталог не найден. Проверьте ссылку и повторите попытку.",
+  "repository_read_failed": "Не удалось прочитать каталог. Пожалуйста, попробуйте еще раз.",
+  "repository_save_failed": "Сохранение не завершилось. Проверьте список репозиториев.",
+  "repository_paste_hint": "Вставьте ссылку на каталог стороннего репозитория.",
+  "repository_address": "Репозиторий URL",
+  "repository_paste_link": "Вставить ссылку",
+  "repository_recognized": "{type} · Каталог признан",
+  "@repository_recognized": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "repository_choose_sources_hint": "После добавления репозитория выберите нужные вам источники.",
+  "search_scope": "Область поиска",
+  "search_scope_hint": "Выберите веб-сайты для поиска",
+  "search_websites_action": "{count, plural, one{Поиск на {count} сайте} few{Поиск на {count} сайтах} many{Поиск на {count} сайтах} other{Поиск на {count} сайта}}",
+  "@search_websites_action": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_find_website": "Найти веб-сайт",
+  "search_selected_websites": "{count, plural, one{Выбран {count} сайт} few{Выбрано {count} сайта} many{Выбрано {count} сайтов} other{Выбрано {count} сайта}}",
+  "@search_selected_websites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "action_clear": "Очистить",
+  "search_deselect_results": "Отмените выбор соответствующих веб-сайтов.",
+  "search_select_results": "Выбор подходящих веб-сайтов",
+  "search_no_websites_hint": "Нет подходящих веб-сайтов. Попробуйте другое имя или язык.",
+  "search_select_website_hint": "Выберите по меньшей мере один веб-сайт для поиска.",
+  "search_start_title": "Введите ключевые слова, чтобы найти заголовки.",
+  "search_start_hint": "Выполняйте поиск по нескольким веб-сайтам одновременно и показывайте соответствующие заголовки.",
+  "search_empty_scope": "В этой области нет доступных для поиска веб-сайтов.",
+  "search_empty_scope_hint": "Переключитесь на все веб-сайты или выберите веб-сайты для поиска.",
+  "search_result_count": "{count, plural, one{{count} результат} few{{count} результата} many{{count} результатов} other{{count} результата}}",
+  "@search_result_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_titles": "Поиск по заголовкам",
+  "search_actions": "Поисковые действия",
+  "search_details": "Детали поиска",
+  "search_title_hint": "Поиск по названию",
+  "search_searching": "Поиск",
+  "search_found_results": "{count, plural, one{Найден {count} результат} few{Найдено {count} результата} many{Найдено {count} результатов} other{Найдено {count} результата}}",
+  "@search_found_results": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_no_results": "Нет соответствующих результатов",
+  "search_failed": "Поиск не удался",
+  "search_found_titles": "{count, plural, =1{Найдено 1 название} other{Найдено {count} названий}} · {websites, plural, =1{1 веб-сайт} other{{websites} веб-сайты}}",
+  "@search_found_titles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "websites": {
+        "type": "int"
+      }
+    }
+  },
+  "search_finding_titles": "Поиск заголовков",
+  "search_complete": "Поиск завершен",
+  "search_in_progress": "Поиск",
+  "search_finding_related": "Ищем подходящие названия…",
+  "search_no_results_yet": "Пока нет результатов поиска",
+  "search_no_matching_titles": "Соответствующие заголовки не найдены",
+  "search_results_appear_hint": "Результаты будут появляться здесь по мере их обнаружения.",
+  "search_failed_websites_hint": "Некоторые веб-сайты не смогли завершить поиск. Повторите их в деталях поиска.",
+  "search_change_keywords_hint": "Попробуйте использовать более короткие ключевые слова или выполните поиск на большем количестве веб-сайтов.",
+  "search_view_details": "Просмотр деталей поиска",
+  "search_adjust_scope": "Настройка области поиска",
+  "search_query_websites": "{query} · {count, plural, =1{1 веб-сайт} other{{count} веб-сайты}}",
+  "@search_query_websites": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_completed_count": "Завершено {completed} / {total}",
+  "@search_completed_count": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "search_retry_website_hint": "Повторите неудачные веб-сайты по отдельности.",
+  "source_selected_count": "{count, plural, one{Выбран {count} элемент} few{Выбрано {count} элемента} many{Выбрано {count} элементов} other{Выбрано {count} элемента}}",
+  "@source_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_languages": "Языки поиска",
+  "source_deselect": "Отменить выбор",
+  "source_select": "Выбор источника",
+  "source_multilingual": "Многоязычный",
+  "source_language_unknown": "Язык не указан",
+  "source_adult_content": "Содержит контент 18+",
+  "source_classification_unknown": "Классификация не указана",
+  "source_more_classifications": "{count, plural, =1{Посмотреть всю исходную информацию, еще 1 категорию} other{Просмотр всей исходной информации, {count} дополнительных категорий}}",
+  "@source_more_classifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_loading_website": "Загрузка веб-сайта",
+  "source_unpin": "Открепить",
+  "source_pin": "Штифт",
+  "source_open": "Открыть",
+  "source_metadata_hint": "Информация взята из исходного каталога. Категории описывают контент, представленный на веб-сайте.",
+  "source_region": "Регион",
+  "source_format": "Формат",
+  "source_creation": "Создание",
+  "source_unspecified": "Не указано",
+  "source_pricing": "Ценообразование",
+  "source_region_jp": "Японские комиксы",
+  "source_region_kr": "Корейские комиксы",
+  "source_region_cn": "Китайские комиксы",
+  "source_region_hk_tw": "Комиксы о Гонконге и Тайване",
+  "source_region_western": "Вестерн-комиксы",
+  "source_region_other": "Другие регионы",
+  "source_format_page": "Страничные комиксы",
+  "source_format_vertical": "Вертикальные комиксы",
+  "source_format_strip": "Комиксы",
+  "source_creation_original": "Оригинал",
+  "source_creation_fan": "Вентилятор работает",
+  "source_free_watch": "Бесплатно для просмотра",
+  "source_free_read": "Бесплатное чтение",
+  "source_partial_paid": "Частично оплачено",
+  "source_paid_watch": "Платный просмотр",
+  "source_paid_read": "Платное чтение",
+  "source_pricing_unknown": "Цена не указана",
+  "source_language_filter": "Фильтр по языку",
+  "source_language_filter_hint": "Фильтровать только этот каталог. Установленные источники не затрагиваются.",
+  "source_all_languages": "Все языки",
+  "action_apply": "Применить",
+  "source_load_retry": "Не удалось загрузить этот сайт. Пожалуйста, попробуйте еще раз.",
+  "source_catalog_refresh_failed": "Не удалось обновить каталог. Текущий контент сохраняется. Потяните вниз, чтобы повторить попытку.",
+  "source_uninstall_count": "{count, plural, =1{Удалить 1 источник?} other{Удалить исходники {count}?}}",
+  "@source_uninstall_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_uninstall_selected_hint": "Удалите выбранные источники и очистите их настройки. Сохраняйте названия библиотек и загрузки.",
+  "source_failed_count": "{count, plural, =1{Не удалось выполнить действие для 1 источника.} other{Не удалось выполнить действия для источников {count}.}} Выбор сохранен. Пожалуйста, попробуйте еще раз.",
+  "@source_failed_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_latest_content": "Последний контент",
+  "source_actions": "Исходные действия",
+  "source_bulk_manage": "Управление несколькими источниками",
+  "source_update_installed": "Обновление установленных источников",
+  "source_no_matching_websites": "Нет подходящих веб-сайтов",
+  "source_no_websites": "Нет доступных веб-сайтов",
+  "source_search_installed_hint": "Поиск по заголовкам в установленных источниках",
+  "source_global_search": "Поиск по источникам",
+  "source_manage_repositories": "Управление репозиториями",
+  "source_view_third_party": "Просмотр сторонних источников",
+  "source_catalog_load_failed": "Не удалось загрузить каталог. Потяните вниз, чтобы повторить попытку.",
+  "source_all_websites": "Все веб-сайты",
+  "source_available": "Доступен для установки",
+  "source_third_party": "Третья сторона",
+  "source_name_or_title": "Название или заголовок веб-сайта",
+  "view_all": "Посмотреть все",
+  "search_searching_ellipsis": "Поиск…",
+  "onboarding_untested_content": "{type} · Непроверено",
+  "@onboarding_untested_content": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "onboarding_untested": "Непроверено",
+  "source_custom_scope": "Пользовательский",
+  "source_custom_websites": "Избранные веб-сайты",
+  "tv_hidden_library_hint": "Каждый заголовок находится в скрытой категории.\nУдерживайте кнопку «Все», чтобы отобразить один.",
+  "tv_no_matching_anime": "Нет подходящего аниме",
+  "tv_no_matching_category": "В «{category}» нет подходящего аниме.",
+  "@tv_no_matching_category": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_filtered_empty_hint": "Ни одно аниме не соответствует текущим фильтрам.\nИзмените их с помощью кнопки рядом с поиском.",
+  "tv_new_episodes": "Новые эпизоды",
+  "tv_recently_added": "Недавно добавлено",
+  "tv_empty_category_hint": "В этой категории пока нет аниме.\nДобавьте к нему заголовки со страницы сведений о заголовке.",
+  "tv_empty_library": "Ваша библиотека аниме пуста.",
+  "tv_empty_library_hint": "Добавьте аниме из Обзора, чтобы заполнить свой дом",
+  "tv_browse_anime": "Просмотр аниме",
+  "tv_new_count": "{count} новый",
+  "@tv_new_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tv_category_hidden": "Спрятал «{category}» · удерживайте ОК на «Все», чтобы отобразить",
+  "@tv_category_hidden": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_no_hidden_categories": "Нет скрытых категорий",
+  "import_torrent_file": "импортировать файл .torrent",
+  "import_video_formats": ".mp4, .mkv, .avi и т. д.",
+  "cloudflare_proxy_optional": "Дополнительный FlareSolverr/Byparr URL",
+  "tv_home_layout_hint": "Главная страница аниме на основе строк (Продолжение · Новые эпизоды · категории) вместо плоской сетки.",
+  "tv_hide_libraries_hint": "Скрыть библиотеки манги и романов (на ТВ включено по умолчанию)",
+  "anime_only_hint": "Скрыть мангу и романы в приложении. Выключите, чтобы показать все.",
+  "audio_auto_safe": "Автоматический сейф",
+  "tv_player_hint": "Включено: выделенный ТВ-плеер.  Выкл.: оригинальный (настольный) плеер.",
+  "release_open_failed": "Невозможно открыть релиз.",
+  "tv_replay": "Повтор",
+  "tv_no_episodes": "Серий пока нет",
+  "tracker_continue_series": "Продолжить просмотр сериала",
+  "tracker_watchlist_series": "Серия «Список наблюдения»",
+  "tracker_continue_movies": "Продолжить просмотр фильмов",
+  "tracker_watchlist_movies": "Фильмы из списка просмотра",
+  "tracker_trending_series": "Серия трендов",
+  "tracker_trending_movies": "Популярные фильмы",
+  "tracker_popular_series": "Популярный сериал",
+  "tracker_popular_movies": "Популярные фильмы",
+  "tracker_top_series": "Лучшие серии (за все время)",
+  "tracker_top_movies": "Лучшие фильмы (за все время)",
+  "tracker_airing_series": "Серия проветривания",
+  "tracker_airing_anime": "Проветривание аниме",
+  "tracker_popular_anime": "Популярное аниме",
+  "tracker_upcoming_anime": "Предстоящее аниме",
+  "tracker_popular_manga": "Популярная манга",
+  "tracker_top_manga": "Топ манги",
+  "tracker_top_manhwa": "Топ Манхва",
+  "tracker_top_manhua": "Верх Маньхуа",
+  "tracker_latest_anime": "Последнее аниме",
+  "tracker_best_anime": "Аниме с лучшим рейтингом",
+  "tracker_latest_manga": "Последняя манга",
+  "tracker_best_manga": "Манга с лучшим рейтингом",
+  "tracker_trending_anime": "Популярное аниме",
+  "tracker_upcoming_manga": "Предстоящая манга",
+  "tracker_trending_manga": "Популярная манга",
+  "selection_progress": "Выбран {selected}/{total}",
+  "@selection_progress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "source_code_editor": "Редактор кода",
+  "source_code_execute": "Выполнить",
+  "source_console_logs": "Журналы консоли",
+  "source_no_logs": "Журналов пока нет",
+  "source_updated_successfully": "Исходный код успешно обновлен.",
+  "source_obsolete": "УСТАРЕЛО",
+  "player_seek_forward_seconds": "Поиск вперед на {seconds} секунд.",
+  "@player_seek_forward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_seek_backward_seconds": "Поиск назад на {seconds} секунд.",
+  "@player_seek_backward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_autoplay_on": "Автовоспроизведение следующего эпизода: вкл.",
+  "player_autoplay_off": "Автовоспроизведение следующего эпизода: выключено.",
+  "player_no_other_quality": "Никакого другого качества",
+  "player_no_subtitles": "Никаких субтитров",
+  "player_no_audio_tracks": "Нет звуковых дорожек",
+  "player_seek_forward": "Поиск вперед",
+  "player_seek_backward": "Поиск назад",
+  "player_seconds": "{seconds, plural, one{{seconds} секунда} few{{seconds} секунды} many{{seconds} секунд} other{{seconds} секунды}}",
+  "@player_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "subtitle_preview": "Lorem ipsum dolor sit amet",
+  "subtitle_style": "Стиль",
+  "translation_official_channel": "NodeLane Официальный",
+  "translation_auth_required": "Сначала войдите в свою учетную запись перевода.",
+  "translation_source_changed": "Исходное изображение изменилось. Пожалуйста, перезагрузите его.",
+  "translation_source_missing": "Исходное изображение в настоящее время недоступно.",
+  "translation_resource_limit": "Это изображение превышает предел обработки устройства. Оригинал сохраняется.",
+  "translation_storage_full": "Хранилище переводов заполнено. Сначала очистите переведенные изображения.",
+  "translation_invalid_image": "Неверный формат изображения или содержимое.",
+  "translation_unsupported_image": "Для этого изображения перевод не поддерживается. Оригинал сохраняется.",
+  "translation_invalid_result": "Проверка переведенного изображения не удалась. Пожалуйста, перезагрузите его.",
+  "translation_result_unavailable": "Переведенное изображение недоступно. Пожалуйста, перезагрузите его.",
+  "translation_result_expired": "Срок действия переведенного изображения истек. Пожалуйста, переведите еще раз.",
+  "translation_analysis_too_large": "Слишком много изображений для анализа. Уменьшите размер изображения и повторите попытку.",
+  "translation_region_limit": "Изображение имеет слишком много текстовых областей. Разделите его и попробуйте еще раз.",
+  "translation_text_limit": "Текстовая область слишком длинная. Настройте изображение и повторите попытку.",
+  "translation_unavailable": "Этот перевод больше не доступен.",
+  "translation_outcome_unknown": "Результат требует проверки. Оно не было отправлено повторно.",
+  "translation_rate_limited": "Запросы ограничены. Перевод возобновится автоматически.",
+  "translation_quota_exhausted": "Недостаточная квота перевода.",
+  "translation_unsupported_language": "Сервис не поддерживает этот целевой язык.",
+  "translation_upgrade_required": "Протокол трансляции несовместим. Обновите приложение.",
+  "translation_remote_failed": "Не удалось перевести эту страницу. Вы можете повторить попытку вручную.",
+  "translation_bridge_invalid": "Веб-страница изменилась. Включите перевод снова.",
+  "translation_connection_failed": "Соединение не удалось. Пожалуйста, попробуйте еще раз.",
+  "translation_paused": "Перевод приостановлен. Вы можете проверить его ход.",
+  "translation_preparing_ellipsis": "Готовим перевод…",
+  "translation_checking_original": "Проверка исходного изображения…",
+  "translation_submitting": "Отправка…",
+  "translation_uploading_ellipsis": "Загрузка оригинала…",
+  "translation_waiting_ellipsis": "Ожидание перевода…",
+  "translation_running_ellipsis": "Перевод…",
+  "translation_verify_result": "Результат требует проверки.",
+  "translation_partial": "Некоторый контент был переведен",
+  "translation_ready": "Переведенное изображение готово",
+  "list_separator": ", ",
+  "player_play": "Играть",
+  "player_quality": "Качество",
+  "player_subtitles": "Субтитры",
+  "player_audio": "Аудио",
+  "player_statistics": "Статистика для ботаников",
+  "player_auto": "Авто",
+  "source_information": "Исходная информация",
+  "source_code_page": "Страница",
+  "source_code_query": "Запрос",
+  "repository_invalid_source": "Неверный источник – удалите его.",
+  "player_fit_contain": "Содержать",
+  "player_fit_cover": "Крышка",
+  "player_fit_fill": "Заполнить",
+  "player_fit_height": "Высота",
+  "player_fit_width": "Ширина",
+  "player_fit_scale": "Масштаб",
+  "player_fit_none": "Нет",
+  "player_shader_clear": "Выкл. (очистить шейдеры)",
+  "player_shader_luma": "Увеличение яркости",
+  "player_decoder_auto": "Авто (аппаратное обеспечение)",
+  "player_decoder_software": "Программное обеспечение (без аппаратного обеспечения)",
+  "player_stats_toggle": "Переключение наложения",
+  "player_stats_general": "Общие сведения",
+  "player_stats_frames": "Тайминги кадров",
+  "player_stats_cache": "Входной кэш",
+  "player_stats_filters": "Активные фильтры",
+  "player_stats_log": "Журнал",
+  "source_mark_pinned": "Штифт",
+  "translation_image_action": "{action} это изображение",
+  "@translation_image_action": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_waiting": "Память: ожидание образца",
+  "memory_rss": "RSS {current} пик {peak}",
+  "@memory_rss": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_cache": "кэш {current}/{limit} пик {peak}",
+  "@memory_cache": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_items": "элементы {count}/{limit} живой {live} пик {peak}",
+  "@memory_items": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "live": {
+        "type": "int"
+      },
+      "peak": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_full_samples": "полный {percent}% от {count, plural, =1{1 образец} other{{count} образцы}}",
+  "@memory_full_samples": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_reset_hint": "Включите и выключите его в настройках для сброса",
+  "action_hide": "Скрыть",
+  "discord_get_app": "Получите {app}",
+  "@discord_get_app": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_idle": "Холостой ход",
+  "discord_watching_title": "Смотрю {title}",
+  "@discord_watching_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_reading_title": "Чтение {title}",
+  "@discord_reading_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

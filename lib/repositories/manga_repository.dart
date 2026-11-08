@@ -94,14 +94,8 @@ class MangaRepository {
   // — Isar rejects a sync findAllSync() call from inside an async transaction.
   Future<List<Manga>> getAllAsync() => isar.mangas.where().findAll();
 
-  Future<List<Manga>> getAllLocal() => isar.mangas
-      .filter()
-      .sourceEqualTo("local")
-      .or()
-      .linkContains("Mangayomi/local")
-      .or()
-      .linkContains("Mangayomi\\local")
-      .findAll();
+  Future<List<Manga>> getAllLocal() =>
+      isar.mangas.filter().sourceEqualTo("local").findAll();
 
   List<Manga?> getAllByIds(List<int> ids) => isar.mangas.getAllSync(ids);
 
@@ -144,14 +138,7 @@ class MangaRepository {
   ) => isar.mangas
       .filter()
       .itemTypeEqualTo(itemType)
-      .group(
-        (q) => q
-            .sourceEqualTo("local")
-            .or()
-            .linkContains("Mangayomi/local")
-            .or()
-            .linkContains("Mangayomi\\local"),
-      )
+      .sourceEqualTo("local")
       .sortByDateAddedDesc()
       .offset(offset)
       .limit(limit)
@@ -164,14 +151,7 @@ class MangaRepository {
   ) => isar.mangas
       .filter()
       .itemTypeEqualTo(itemType)
-      .group(
-        (q) => q
-            .sourceEqualTo("local")
-            .or()
-            .linkContains("Mangayomi/local")
-            .or()
-            .linkContains("Mangayomi\\local"),
-      )
+      .sourceEqualTo("local")
       .sortByName()
       .offset(offset)
       .limit(limit)
@@ -185,14 +165,7 @@ class MangaRepository {
   ) => isar.mangas
       .filter()
       .itemTypeEqualTo(itemType)
-      .group(
-        (q) => q
-            .sourceEqualTo("local")
-            .or()
-            .linkContains("Mangayomi/local")
-            .or()
-            .linkContains("Mangayomi\\local"),
-      )
+      .sourceEqualTo("local")
       .nameContains(query, caseSensitive: false)
       .offset(offset)
       .limit(limit)

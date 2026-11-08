@@ -9,10 +9,13 @@ import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart'
 import 'package:mangayomi/modules/more/categories/widgets/custom_textfield.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_categories.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
   final (bool, int) data;
@@ -39,7 +42,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
       length: _visibleTabTypes.length,
       vsync: this,
     );
-    _tabBarController.animateTo(widget.data.$2);
+    if (!(isMobile && !isTv)) _tabBarController.animateTo(widget.data.$2);
   }
 
   @override
@@ -50,6 +53,28 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      return MobileCategories(
+        types: _visibleTabTypes,
+        initialType: ItemType.values.elementAtOrNull(widget.data.$2),
+        editing: widget.data.$1,
+        onCreate: categoryRepository.create,
+        onSave: categoryRepository.save,
+        onReorder: categoryRepository.putAll,
+        onRemove: (category) async {
+          await categoryRepository.remove(category);
+          await ref
+              .read(synchingProvider(syncId: 1).notifier)
+              .addChangedPartAsync(
+                ActionType.removeCategory,
+                category.id,
+                '{}',
+                true,
+                clientId: category.clientId,
+              );
+        },
+      );
+    }
     if (_visibleTabTypes.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: Text(context.l10n.categories)),
@@ -157,7 +182,7 @@ class _CategoriesTabState extends ConsumerState<CategoriesTab> {
           );
         },
         loading: () {
-          return const ProgressCenter();
+          return const NodeLaneEmptyState.loading();
         },
       ),
       floatingActionButton: FloatingActionButton.extended(

@@ -1,6 +1,6 @@
 name: CI
 
-# Build/compile checks for pull requests and main branch for Android, Android TV, iOS, macOS, Windows & Linux in debug mode.
+# Analysis, tests, and build/compile checks for pull requests and main branch for Android, Android TV, iOS, macOS, Windows & Linux in debug mode.
 on:
   pull_request:
     branches: [main]
@@ -33,6 +33,32 @@ jobs:
       # (e.g. undefined symbols / type errors), not pre-existing infos/warnings.
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Repository tests open a real Isar database and download its native
+      # core on first use; the C++ image decoder is built by hook/build.dart
+      # with the runner's clang. Neither needs the Rust toolchain.
+      - name: Run tests
+        run: flutter test
+
+      - name: Test update manifest generation
+        run: python3 -B -m unittest discover -s tool -p 'test_*.py'
 
   build-android:
     name: Build (Android debug)
@@ -76,7 +102,7 @@ jobs:
       - name: Upload Android debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-android-debug
+          name: nodelane-comics-android-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
 
   build-android-tv:
@@ -112,17 +138,6 @@ jobs:
       - name: Install flutter_rust_bridge_codegen
         run: cargo install 'flutter_rust_bridge_codegen'
 
-      # Overwrite the default launcher icon (and banner) with the TV variants
-      # from android/tv_res before building.
-      - name: Apply TV branding
-        run: |
-          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            cp -f "android/tv_res/mipmap-$d/launcher_icon.png" \
-                  "android/app/src/main/res/mipmap-$d/launcher_icon.png"
-          done
-          cp -f android/tv_res/drawable-xhdpi/tv_banner.png \
-                android/app/src/main/res/drawable-xhdpi/tv_banner.png || true
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -132,7 +147,7 @@ jobs:
       - name: Upload Android TV debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-android-tv-debug
+          name: nodelane-comics-android-tv-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
 
   build-ios:
@@ -168,7 +183,7 @@ jobs:
       - name: Upload iOS debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-ios-debug
+          name: nodelane-comics-ios-debug
           path: build/ios/iphoneos/Runner.app
 
   build-macos:
@@ -186,6 +201,8 @@ jobs:
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: Install flutter_rust_bridge_codegen
         run: cargo install 'flutter_rust_bridge_codegen'
@@ -194,17 +211,13 @@ jobs:
         run: flutter pub get
 
       - name: Build debug macOS
-        run: |
-          cd macos
-          pod update
-          cd ..
-          flutter build macos --debug --verbose
+        run: flutter build macos --debug --verbose
 
       - name: Upload macOS debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-macos-debug
-          path: build/macos/Build/Products/Debug/Mangayomi.app
+          name: nodelane-comics-macos-debug
+          path: build/macos/Build/Products/Debug/nodelane-comics.app
 
   build-windows:
     name: Build (Windows debug)
@@ -234,7 +247,7 @@ jobs:
       - name: Upload Windows debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-windows-debug
+          name: nodelane-comics-windows-debug
           path: build/windows/x64/runner/Debug/
 
   build-linux:
@@ -274,5 +287,5 @@ jobs:
       - name: Upload Linux debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-linux-debug
+          name: nodelane-comics-linux-debug
           path: build/linux/x64/debug/bundle/

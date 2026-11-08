@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/repositories/sync_preference_repository.dart';
 import 'package:mangayomi/modules/more/settings/appearance/appearance_screen.dart'
     show SettingsSection;
@@ -14,17 +13,17 @@ import 'package:mangayomi/modules/more/settings/sync/widgets/sync_listile.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/sync_server.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:mangayomi/utils/log/logger.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
+
+import 'mobile_sync_screen.dart';
 
 class SyncScreen extends ConsumerWidget {
-  static const serverUrl = "https://github.com/Schnitzel5/mangayomi-server";
-
   const SyncScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return const MobileSyncScreen();
     final l10n = l10nLocalizations(context)!;
     final autoSyncOptions = {
       l10n.sync_auto_off: 0,
@@ -52,7 +51,8 @@ class SyncScreen extends ConsumerWidget {
             final bool connected =
                 connectionStatus == SyncConnectionStatus.connected;
             final progress = ref.watch(syncProgressProvider(syncId: 1));
-            final enabled = syncPreference.syncOn && connected && !progress.active;
+            final enabled =
+                syncPreference.syncOn && connected && !progress.active;
             return Column(
               children: [
                 // Account comes first: nothing else on this screen means
@@ -202,30 +202,6 @@ class SyncScreen extends ConsumerWidget {
                 SettingsSection(
                   title: l10n.about,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 15,
-                        right: 15,
-                        bottom: 10,
-                        top: 10,
-                      ),
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          if (!await launchUrl(
-                            Uri.parse(serverUrl),
-                            mode: LaunchMode.externalApplication,
-                          )) {
-                            AppLogger.log(
-                              'Could not launch $serverUrl',
-                              logLevel: LogLevel.error,
-                            );
-                            botToast(l10n.could_not_launch_url(serverUrl));
-                          }
-                        },
-                        label: Text(l10n.get_sync_server),
-                        icon: const Icon(Icons.download_outlined),
-                      ),
-                    ),
                     _hintTile(
                       context,
                       icon: Icons.info_outline_rounded,
@@ -437,7 +413,7 @@ class SyncScreen extends ConsumerWidget {
         builder: (context, setState) {
           return AlertDialog(
             title: Text(
-              l10n.login_into("SyncServer"),
+              l10n.login_into(l10n.sync_service),
               style: const TextStyle(fontSize: 30),
             ),
             content: SingleChildScrollView(
@@ -456,22 +432,8 @@ class SyncScreen extends ConsumerWidget {
                         onChanged: (value) => setState(() {
                           server = value;
                         }),
-                        decoration: InputDecoration(
+                        decoration: outlinedFieldDecoration(
                           hintText: l10n.sync_server,
-                          filled: false,
-                          contentPadding: const EdgeInsets.all(12),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(width: 0.4),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide: const BorderSide(),
-                          ),
                         ),
                       ),
                     ),

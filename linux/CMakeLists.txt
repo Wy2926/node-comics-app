@@ -4,10 +4,10 @@ project(runner LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "mangayomi")
+set(BINARY_NAME "nodelane-comics")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-set(APPLICATION_ID "com.kodjodevf.mangayomi")
+set(APPLICATION_ID "com.nodelane.comics")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -55,11 +55,12 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 
 # Optional image decoding libraries for the native Linux image decoder.
-# Install with: sudo apt install libjpeg-dev libpng-dev libavif-dev (Debian/Ubuntu)
-#               sudo dnf install libjpeg-turbo-devel libpng-devel libavif-devel (Fedora/RHEL)
+# Install with: sudo apt install libjpeg-dev libpng-dev libavif-dev libwebp-dev (Debian/Ubuntu)
+#               sudo dnf install libjpeg-turbo-devel libpng-devel libavif-devel libwebp-devel (Fedora/RHEL)
 find_package(JPEG)
 find_package(PNG)
 pkg_check_modules(AVIF IMPORTED_TARGET libavif)
+pkg_check_modules(WEBP IMPORTED_TARGET libwebp)
 
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 
@@ -164,6 +165,15 @@ else()
   message(WARNING "libavif headers not found. Install libavif-dev (Ubuntu) or libavif-devel (Fedora).")
 endif()
 
+# Link libwebp headers if found
+if(WEBP_FOUND)
+  target_include_directories(subsampling_scale_image_view PRIVATE ${WEBP_INCLUDE_DIRS})
+  target_compile_definitions(subsampling_scale_image_view PRIVATE HAVE_LIBWEBP)
+  message(STATUS "libwebp headers found: WebP decoding enabled for Linux")
+else()
+  message(WARNING "libwebp headers not found. Install libwebp-dev (Ubuntu) or libwebp-devel (Fedora).")
+endif()
+
 install(TARGETS subsampling_scale_image_view
   LIBRARY DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   COMPONENT Runtime)
@@ -173,6 +183,12 @@ foreach(bundled_library ${PLUGIN_BUNDLED_LIBRARIES})
     DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
 endforeach(bundled_library)
+
+# Copy the native assets provided by the build.dart from all packages.
+set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/linux/")
+install(DIRECTORY "${NATIVE_ASSETS_DIR}"
+   DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+   COMPONENT Runtime)
 
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.

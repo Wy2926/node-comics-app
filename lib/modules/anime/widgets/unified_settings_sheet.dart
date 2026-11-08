@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/anime/widgets/mobile_player_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_navigation.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+export 'player_settings_navigation.dart';
 
 /// One selectable row inside a [UnifiedSettingsSheet] section: a label, an
 /// optional trailing hint (codec, keyboard shortcut...) and a filled
@@ -22,6 +28,45 @@ class SettingsOptionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (SettingsDrilldownScope.of(context)?.mobile == true) {
+      final colors = NodeLaneTokens.of(context);
+      return Semantics(
+        selected: selected,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Material(
+            color: selected ? colors.accentSoft : colors.surface,
+            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              onTap: onTap,
+              minTileHeight: 52,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
+              title: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: colors.ink,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+              subtitle: hint == null
+                  ? null
+                  : Text(
+                      hint!,
+                      style: TextStyle(fontSize: 13, color: colors.muted),
+                    ),
+              trailing: selected
+                  ? Icon(Icons.check_rounded, color: colors.accent, size: 22)
+                  : const SizedBox(width: 22),
+            ),
+          ),
+        ),
+      );
+    }
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -110,6 +155,17 @@ class SettingsActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (SettingsDrilldownScope.of(context)?.mobile == true) {
+      final colors = NodeLaneTokens.of(context);
+      return ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        minTileHeight: 52,
+        leading: Icon(icon, color: colors.accent, size: 22),
+        title: Text(label, style: TextStyle(fontSize: 16, color: colors.ink)),
+        trailing: Icon(Icons.chevron_right, color: colors.muted, size: 20),
+      );
+    }
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -156,12 +212,14 @@ class SettingsSectionLabel extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    final mobile = SettingsDrilldownScope.of(context)?.mobile == true;
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
       child: Text(
-        text.toUpperCase(),
+        mobile ? text : text.toUpperCase(),
         style: (textTheme.labelSmall ?? const TextStyle()).copyWith(
-          letterSpacing: 0.8,
+          fontSize: mobile ? 13 : null,
+          letterSpacing: mobile ? 0 : 0.8,
           fontWeight: FontWeight.w600,
           color: colorScheme.onSurfaceVariant,
         ),
@@ -175,6 +233,7 @@ class SettingsStepperRow extends StatelessWidget {
   final String label;
   final String? value;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final String? suffix;
   final TextInputType? keyboardType;
   final VoidCallback onDecrement;
@@ -187,6 +246,7 @@ class SettingsStepperRow extends StatelessWidget {
     required this.label,
     this.value,
     this.controller,
+    this.focusNode,
     this.suffix,
     this.keyboardType,
     required this.onDecrement,
@@ -200,6 +260,66 @@ class SettingsStepperRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (SettingsDrilldownScope.of(context)?.mobile == true) {
+      final colors = NodeLaneTokens.of(context);
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(label, style: TextStyle(fontSize: 16, color: colors.ink)),
+            const SizedBox(height: 8),
+            Material(
+              color: colors.soft,
+              borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: '${context.l10n.decrease} $label',
+                    onPressed: onDecrement,
+                    icon: const Icon(Icons.remove),
+                  ),
+                  Expanded(
+                    child: controller == null
+                        ? Text(
+                            value ?? '',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 16, color: colors.ink),
+                          )
+                        : Semantics(
+                            label: label,
+                            child: TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              keyboardType: keyboardType,
+                              textInputAction: TextInputAction.done,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, color: colors.ink),
+                              decoration: InputDecoration(
+                                hintText: label,
+                                suffixText: suffix,
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.all(12),
+                              ),
+                              onChanged: onChanged,
+                              onSubmitted: onSubmitted,
+                              onTapOutside: (_) =>
+                                  FocusScope.of(context).unfocus(),
+                            ),
+                          ),
+                  ),
+                  IconButton(
+                    tooltip: '${context.l10n.increase} $label',
+                    onPressed: onIncrement,
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -236,6 +356,7 @@ class SettingsStepperRow extends StatelessWidget {
                     width: 78,
                     child: TextField(
                       controller: controller,
+                      focusNode: focusNode,
                       keyboardType: keyboardType,
                       textAlign: TextAlign.center,
                       cursorHeight: 14,
@@ -322,19 +443,26 @@ class PlayerPillButton extends StatelessWidget {
   final IconData? icon;
   final String? label;
   final VoidCallback onTap;
+  final GestureLongPressCallback? onLongPress;
   final String? tooltip;
   final bool active;
   final bool isCompact;
+  final bool showLabel;
 
   const PlayerPillButton({
     super.key,
     required this.onTap,
+    this.onLongPress,
     this.icon,
     this.label,
     this.tooltip,
     this.active = false,
     this.isCompact = false,
-  }) : assert(icon != null || label != null, 'Must provide icon or label');
+    this.showLabel = true,
+  }) : assert(
+         icon != null || (showLabel && label != null),
+         'Must provide a visible icon or label',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -348,6 +476,7 @@ class PlayerPillButton extends StatelessWidget {
         ? colorScheme.primary.withValues(alpha: 0.60)
         : colorScheme.outlineVariant.withValues(alpha: 0.35);
     final fgColor = active ? colorScheme.onPrimaryContainer : Colors.white;
+    final visibleLabel = showLabel ? label : null;
 
     final padH = isCompact ? 8.0 : 10.0;
     final padV = isCompact ? 4.5 : 6.0;
@@ -357,6 +486,7 @@ class PlayerPillButton extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
           decoration: BoxDecoration(
@@ -369,11 +499,11 @@ class PlayerPillButton extends StatelessWidget {
             children: [
               if (icon != null) ...[
                 Icon(icon, size: isCompact ? 14 : 15, color: fgColor),
-                if (label != null) SizedBox(width: isCompact ? 4 : 6),
+                if (visibleLabel != null) SizedBox(width: isCompact ? 4 : 6),
               ],
-              if (label != null)
+              if (visibleLabel != null)
                 Text(
-                  label!,
+                  visibleLabel,
                   style: (textTheme.labelMedium ?? const TextStyle()).copyWith(
                     fontWeight: FontWeight.w600,
                     color: fgColor,
@@ -386,27 +516,13 @@ class PlayerPillButton extends StatelessWidget {
         ),
       ),
     );
-    return tooltip != null ? Tooltip(message: tooltip!, child: button) : button;
+    final accessibleButton = !showLabel && label != null
+        ? Semantics(value: label, child: button)
+        : button;
+    return tooltip != null
+        ? Tooltip(message: tooltip!, child: accessibleButton)
+        : accessibleButton;
   }
-}
-
-typedef SettingsSectionBuilder = Widget Function(BuildContext context);
-
-/// One entry in the settings home list ("Qualité", "Vitesse"...): an icon, a
-/// label, an optional live current-value widget shown to the right of it
-/// (e.g. "1.0×"), and the content shown after drilling into it.
-class SettingsEntry {
-  final String label;
-  final IconData icon;
-  final WidgetBuilder? valueBuilder;
-  final SettingsSectionBuilder contentBuilder;
-
-  const SettingsEntry({
-    required this.label,
-    required this.icon,
-    required this.contentBuilder,
-    this.valueBuilder,
-  });
 }
 
 class _SettingsHomeRow extends StatelessWidget {
@@ -654,38 +770,12 @@ class _DrilldownHeader extends StatelessWidget {
   }
 }
 
-/// An inherited widget that exposes navigation actions for the active
-/// [SettingsDrilldown], allowing options inside a section (e.g. playback speed,
-/// fit, video track) to navigate back to the settings home list rather than
-/// dismissing the whole sheet or popup menu.
-class SettingsDrilldownScope extends InheritedWidget {
-  final VoidCallback goHome;
-  final VoidCallback close;
-  final bool isDirectShortcut;
-
-  const SettingsDrilldownScope({
-    super.key,
-    required this.goHome,
-    required this.close,
-    this.isDirectShortcut = false,
-    required super.child,
-  });
-
-  static SettingsDrilldownScope? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<SettingsDrilldownScope>();
-  }
-
-  @override
-  bool updateShouldNotify(covariant SettingsDrilldownScope oldWidget) =>
-      oldWidget.isDirectShortcut != isDirectShortcut;
-}
-
 /// Player settings as a single browsable list — YouTube's pattern instead of
 /// the segmented tabs this used to be: a home list of entries (quality,
 /// audio, subtitles, speed...), each showing its current value; tapping one
 /// slides into its content with a back arrow, and picking a value there
-/// slides back home automatically. One shared widget, wrapped differently for
-/// the mobile bottom sheet and the desktop anchored popup below.
+/// slides back home automatically. Kept for the desktop anchored popup; the
+/// phone sheet reuses the entries through its own presentation.
 class SettingsDrilldown extends StatefulWidget {
   final String title;
   final List<SettingsEntry> entries;
@@ -709,7 +799,11 @@ class _SettingsDrilldownState extends State<SettingsDrilldown> {
   bool _forward = true;
 
   int? _clampActive(int index) =>
-      index >= 0 && index < widget.entries.length ? index : null;
+      index >= 0 &&
+          index < widget.entries.length &&
+          widget.entries[index].contentBuilder != null
+      ? index
+      : null;
 
   @override
   void didUpdateWidget(SettingsDrilldown oldWidget) {
@@ -845,14 +939,21 @@ class _SettingsDrilldownState extends State<SettingsDrilldown> {
                               for (var i = 0; i < widget.entries.length; i++)
                                 _SettingsHomeRow(
                                   entry: widget.entries[i],
-                                  onTap: () => _open(i),
+                                  onTap: () {
+                                    final action = widget.entries[i].onTap;
+                                    if (action != null) {
+                                      action(context);
+                                    } else {
+                                      _open(i);
+                                    }
+                                  },
                                 ),
                               const SizedBox(height: 4),
                             ],
                           )
                         : Padding(
                             padding: const EdgeInsets.only(bottom: 6),
-                            child: widget.entries[active].contentBuilder(
+                            child: widget.entries[active].contentBuilder!(
                               context,
                             ),
                           ),
@@ -867,8 +968,7 @@ class _SettingsDrilldownState extends State<SettingsDrilldown> {
   }
 }
 
-/// The mobile chrome around [SettingsDrilldown]: a modal bottom sheet with a
-/// drag handle and rounded top corners.
+/// Compatibility entry for the phone presentation of the original settings.
 class UnifiedSettingsSheet extends StatelessWidget {
   final String title;
   final List<SettingsEntry> entries;
@@ -883,40 +983,11 @@ class UnifiedSettingsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.40),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-              const SizedBox(height: 6),
-              SettingsDrilldown(
-                title: title,
-                entries: entries,
-                initialIndex: initialIndex,
-                onClose: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return MobilePlayerSettingsSheet(
+      title: title,
+      entries: entries,
+      initialIndex: initialIndex,
+      onClose: () => Navigator.pop(context),
     );
   }
 }
@@ -932,6 +1003,7 @@ Future<T?> showUnifiedPlayerSettings<T>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (context) => UnifiedSettingsSheet(
       title: title,
       entries: entries,

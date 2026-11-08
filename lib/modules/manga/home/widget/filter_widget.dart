@@ -70,7 +70,7 @@ class FilterWidget extends StatelessWidget {
           );
         } else if (filterState is GroupFilter) {
           widget = ExpansionTile(
-            title: Text(filterState.name, style: const TextStyle(fontSize: 13)),
+            title: Text(filterState.name, style: TextStyle(fontSize: 13)),
             children: [
               FilterWidget(
                 filterList: filterState.state,
@@ -84,9 +84,10 @@ class FilterWidget extends StatelessWidget {
         } else if (filterState is SortFilter) {
           final ascending = filterState.state.ascending;
           widget = ExpansionTile(
-            title: Text(filterState.name, style: const TextStyle(fontSize: 13)),
+            title: Text(filterState.name, style: TextStyle(fontSize: 13)),
             children: filterState.values.map((e) {
-              final selected = filterState.values[filterState.state.index] == e;
+              final selected =
+                  filterState.values.indexOf(e) == filterState.state.index;
               return ListTile(
                 dense: true,
                 leading: Icon(
@@ -190,10 +191,13 @@ class _SeachFormTextFieldWidgetState extends State<SeachFormTextFieldWidget> {
 
   late final _controller = TextEditingController(text: widget.text);
   @override
+  void didUpdateWidget(covariant SeachFormTextFieldWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_controller.text != widget.text) _controller.text = widget.text;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (widget.text.isEmpty) {
-      _controller.clear();
-    }
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextField(

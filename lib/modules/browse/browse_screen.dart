@@ -1,8 +1,9 @@
+import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -12,11 +13,10 @@ import 'package:mangayomi/modules/browse/sources/sources_screen.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
-import 'package:mangayomi/modules/widgets/tv_pill.dart';
-import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
+import 'package:mangayomi/modules/browse/widgets/tv_browse_tab_strip.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
@@ -26,18 +26,8 @@ class BrowseScreen extends ConsumerStatefulWidget {
   ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
 }
 
-enum BrowseTabKind { sources, extensions }
-
-class BrowseTab {
-  final ItemType type;
-  final BrowseTabKind kind;
-
-  const BrowseTab(this.type, this.kind);
-}
-
 class _BrowseScreenState extends ConsumerState<BrowseScreen>
     with TickerProviderStateMixin {
-  late final hideItems = ref.read(hideItemsStateProvider);
   final _textEditingController = TextEditingController();
 
   /// Which TV list row currently holds focus, so the rest of the list can
@@ -46,11 +36,13 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
   final _tvActiveRow = ValueNotifier<Object?>(null);
   late TabController _tabBarController;
   late List<BrowseTab> _tabList;
+  final _retiredTabControllers = <TabController>[];
+  int _selectedIndex = 0;
 
   // Hide manga & novel from Browse (sources + extensions) on the anime-only TV
   // layout so only anime shows. Recomputed live so toggling "Anime only" updates
   // the tabs without a restart. Defaults to isTv, user-overridable. See #729.
-  List<BrowseTab> _computeTabList(bool animeOnly) => [
+  List<BrowseTab> _computeTabList(bool animeOnly, List<String> hideItems) => [
     if (!animeOnly && !hideItems.contains("/MangaLibrary"))
       BrowseTab(ItemType.manga, BrowseTabKind.sources),
     if (!hideItems.contains("/AnimeLibrary"))
@@ -68,12 +60,16 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
   @override
   void initState() {
     super.initState();
-    _tabList = _computeTabList(ref.read(animeOnlyTvModeProvider));
+    _tabList = _computeTabList(
+      ref.read(animeOnlyTvModeProvider),
+      ref.read(hideItemsStateProvider),
+    );
     _tabBarController = TabController(
       length: _tabList.length,
       initialIndex: _takeRequestedTabIndex(),
       vsync: this,
     );
+    _selectedIndex = _tabBarController.index;
     _tabBarController.addListener(_onTabChanged);
   }
 
@@ -86,7 +82,9 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
     final requested = ref.read(browseInitialTabProvider);
     if (requested == null) return 0;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(browseInitialTabProvider.notifier).clear();
+      if (mounted && identical(ref.read(browseInitialTabProvider), requested)) {
+        ref.read(browseInitialTabProvider.notifier).clear();
+      }
     });
     final index = _tabList.indexWhere(
       (tab) => tab.kind == requested.kind && tab.type == requested.type,
@@ -95,6 +93,8 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
   }
 
   void _onTabChanged() {
+    if (_selectedIndex == _tabBarController.index) return;
+    _selectedIndex = _tabBarController.index;
     _chekPermission();
     setState(() {
       _textEditingController.clear();
@@ -110,6 +110,10 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
   void dispose() {
     _tvActiveRow.dispose();
     _tabBarController.dispose();
+    for (final controller in _retiredTabControllers) {
+      controller.dispose();
+    }
+    _retiredTabControllers.clear();
     _textEditingController.dispose();
     super.dispose();
   }
@@ -196,15 +200,22 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
     ];
   }
 
+  void _selectTab(int index) {
+    FocusScope.of(context).unfocus();
+    _tabBarController.animateTo(index);
+  }
+
   List<Widget> _tabViews() => _tabList.map((tab) {
     if (tab.kind == BrowseTabKind.sources) {
       return SourcesScreen(
+        key: PageStorageKey('browse-sources-${tab.type.name}'),
         itemType: tab.type,
         tabs: _tabList,
-        tabIndex: (index) => _tabBarController.animateTo(index),
+        tabIndex: _selectTab,
       );
     }
     return ExtensionScreen(
+      key: PageStorageKey('browse-extensions-${tab.type.name}'),
       query: _textEditingController.text,
       itemType: tab.type,
     );
@@ -218,16 +229,30 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
     bool isExtensionTab,
     AppLocalizations l10n,
   ) {
+    final horizontalInsets = tvOverscanHorizontalInsets(context);
+    final tabLabels = [
+      for (final tab in _tabList)
+        tab.kind == BrowseTabKind.extensions
+            ? tab.type.localizedExtensions(l10n)
+            : tab.type.localizedSources(l10n),
+    ];
     return DefaultTabController(
       animationDuration: Duration.zero,
       length: _tabList.length,
       child: Scaffold(
+        // bottom: false so the inset reaches the tab views instead of being
+        // consumed here. Each applies it to its own scroll padding, which lets
+        // content pass under the translucent bar rather than stopping short of
+        // it, and keeps the last row reachable either way.
         body: SafeArea(
+          bottom: !FloatingNavigationScope.enabledOf(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 2),
+                padding: horizontalInsets.add(
+                  const EdgeInsets.only(top: 6, bottom: 2),
+                ),
                 child: Row(
                   children: [
                     Text(
@@ -243,28 +268,19 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
                   ],
                 ),
               ),
-              // Pills centred on screen, matching the home category filter.
+              // Centred when they fit, horizontally scrollable when long
+              // translations or a compact TV viewport need more room.
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (int i = 0; i < _tabList.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 8),
-                        TvPill(
-                          label: _tabList[i].kind == BrowseTabKind.extensions
-                              ? _tabList[i].type.localizedExtensions(l10n)
-                              : _tabList[i].type.localizedSources(l10n),
-                          selected: i == _tabBarController.index,
-                          onTap: () {
-                            _tabBarController.animateTo(i);
-                            setState(() {});
-                          },
-                        ),
-                      ],
-                    ],
-                  ),
+                padding: horizontalInsets.add(
+                  const EdgeInsets.symmetric(vertical: 6),
+                ),
+                child: TvBrowseTabStrip(
+                  labels: tabLabels,
+                  selectedIndex: _tabBarController.index,
+                  onSelected: (index) {
+                    _tabBarController.animateTo(index);
+                    setState(() {});
+                  },
                 ),
               ),
               Expanded(
@@ -283,20 +299,63 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
     );
   }
 
+  void _syncTabs(List<BrowseTab> newTabs) {
+    final unchanged =
+        newTabs.length == _tabList.length &&
+        List.generate(newTabs.length, (i) => i).every(
+          (i) =>
+              newTabs[i].type == _tabList[i].type &&
+              newTabs[i].kind == _tabList[i].kind,
+        );
+    if (unchanged) return;
+    final previous = _tabList.isEmpty
+        ? null
+        : _tabList[_tabBarController.index];
+    var index = newTabs.indexWhere(
+      (tab) => tab.type == previous?.type && tab.kind == previous?.kind,
+    );
+    if (index < 0) {
+      index = newTabs.indexWhere((tab) => tab.kind == previous?.kind);
+    }
+    _tabList = newTabs;
+    final retired = _tabBarController..removeListener(_onTabChanged);
+    _retiredTabControllers.add(retired);
+    // Old TabBarViews still read the controller until this frame is painted.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_retiredTabControllers.remove(retired)) retired.dispose();
+    });
+    _selectedIndex = index < 0 ? 0 : index;
+    _tabBarController = TabController(
+      length: newTabs.length,
+      initialIndex: _selectedIndex,
+      vsync: this,
+    )..addListener(_onTabChanged);
+    _textEditingController.clear();
+    _isSearch = false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Recompute the tab list live when "Anime only" flips; recreate the
-    // controller when the tab count changes.
-    final newTabs = _computeTabList(ref.watch(animeOnlyTvModeProvider));
-    if (newTabs.length != _tabList.length) {
-      _tabList = newTabs;
-      _tabBarController.removeListener(_onTabChanged);
-      _tabBarController.dispose();
-      _tabBarController = TabController(length: _tabList.length, vsync: this);
-      _tabBarController.addListener(_onTabChanged);
-    } else {
-      _tabList = newTabs;
-    }
+    _syncTabs(
+      _computeTabList(
+        ref.watch(animeOnlyTvModeProvider),
+        ref.watch(hideItemsStateProvider),
+      ),
+    );
+    ref.listen(browseInitialTabProvider, (_, requested) {
+      if (requested == null) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            !identical(ref.read(browseInitialTabProvider), requested)) {
+          return;
+        }
+        final index = _tabList.indexWhere(
+          (tab) => tab.type == requested.type && tab.kind == requested.kind,
+        );
+        if (index >= 0) _selectTab(index);
+        ref.read(browseInitialTabProvider.notifier).clear();
+      });
+    });
     if (_tabList.isEmpty) {
       return SizedBox.shrink();
     }
@@ -364,10 +423,10 @@ final extensionUpdateCountProvider = StreamProvider.family<int, ItemType>((
                   (element.isAdded ?? false) &&
                   !(element.isObsolete ?? false) &&
                   compareVersions(
-                    element.version ?? '',
-                    element.versionLast ?? '',
-                  ) <
-                  0,
+                        element.version ?? '',
+                        element.versionLast ?? '',
+                      ) <
+                      0,
             )
             .length,
       );

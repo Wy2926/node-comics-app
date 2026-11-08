@@ -115,65 +115,17 @@ abstract class _$DownloadLocalFolderNameState extends $Notifier<String?> {
   }
 }
 
-/// Scans `Mangayomi/local` folder (if exists) for Mangas/Animes and imports in library.
-///
-/// **Folder structure:**
-/// ```
-/// Mangayomi/local/MangaName/CustomCover.jpg (optional)
-/// Mangayomi/local/MangaName/Chapter1/Page1.jpg
-/// Mangayomi/local/MangaName/Chapter2.cbz
-/// Mangayomi/local/AnimeName/Episode1.mp4
-/// Mangayomi/local/NovelName/NovelName.epub
-/// ```
-/// **Supported filetypes:** (taken from lib/modules/library/providers/local_archive.dart, line 98)
-/// ```
-/// Videotypes:   mp4, mov, avi, flv, wmv, mpeg, mkv
-/// Imagetypes:   jpg, jpeg, png, webp
-/// Archivetypes: cbz, zip, cbt, tar
-/// Other types: epub
-/// ```
+/// Scans the app's `local` folder and configured folders for library entries.
 
 @ProviderFor(scanLocalLibrary)
 final scanLocalLibraryProvider = ScanLocalLibraryProvider._();
 
-/// Scans `Mangayomi/local` folder (if exists) for Mangas/Animes and imports in library.
-///
-/// **Folder structure:**
-/// ```
-/// Mangayomi/local/MangaName/CustomCover.jpg (optional)
-/// Mangayomi/local/MangaName/Chapter1/Page1.jpg
-/// Mangayomi/local/MangaName/Chapter2.cbz
-/// Mangayomi/local/AnimeName/Episode1.mp4
-/// Mangayomi/local/NovelName/NovelName.epub
-/// ```
-/// **Supported filetypes:** (taken from lib/modules/library/providers/local_archive.dart, line 98)
-/// ```
-/// Videotypes:   mp4, mov, avi, flv, wmv, mpeg, mkv
-/// Imagetypes:   jpg, jpeg, png, webp
-/// Archivetypes: cbz, zip, cbt, tar
-/// Other types: epub
-/// ```
+/// Scans the app's `local` folder and configured folders for library entries.
 
 final class ScanLocalLibraryProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
     with $FutureModifier<void>, $FutureProvider<void> {
-  /// Scans `Mangayomi/local` folder (if exists) for Mangas/Animes and imports in library.
-  ///
-  /// **Folder structure:**
-  /// ```
-  /// Mangayomi/local/MangaName/CustomCover.jpg (optional)
-  /// Mangayomi/local/MangaName/Chapter1/Page1.jpg
-  /// Mangayomi/local/MangaName/Chapter2.cbz
-  /// Mangayomi/local/AnimeName/Episode1.mp4
-  /// Mangayomi/local/NovelName/NovelName.epub
-  /// ```
-  /// **Supported filetypes:** (taken from lib/modules/library/providers/local_archive.dart, line 98)
-  /// ```
-  /// Videotypes:   mp4, mov, avi, flv, wmv, mpeg, mkv
-  /// Imagetypes:   jpg, jpeg, png, webp
-  /// Archivetypes: cbz, zip, cbt, tar
-  /// Other types: epub
-  /// ```
+  /// Scans the app's `local` folder and configured folders for library entries.
   ScanLocalLibraryProvider._()
     : super(
         from: null,

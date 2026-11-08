@@ -5,35 +5,37 @@ import UniformTypeIdentifiers
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate {
-  private var activeBackgroundTasks: [String: UIBackgroundTaskIdentifier] = [:]
   private let localDirectoryBookmarksKey =
-    "com.kodjodevf.mangayomi.local_directory_bookmarks"
+    "com.nodelane.comics.local_directory_bookmarks"
   private var localDirectoryPickerResult: FlutterResult?
   private weak var localDirectoryPickerController: UIDocumentPickerViewController?
   private var activeSecurityScopedUrls: [String: URL] = [:]
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
-    let privateStorage = FlutterMethodChannel(name: "net.nodelane.comics/private_storage", binaryMessenger: messenger)
-    privateStorage.setMethodCallHandler { call, result in
-      guard call.method == "excludeFromBackup",
-            let args = call.arguments as? [String: Any], let path = args["path"] as? String else {
-        result(FlutterMethodNotImplemented); return
-      }
+    engineBridge.applicationRegistrar.register(
+      NodeLaneTabBarFactory(messenger: messenger), withId: "nodelane/native_tab_bar"
+    )
+
+    let privateStorageChannel = FlutterMethodChannel(
+      name: "nodelane/private_storage", binaryMessenger: messenger
+    )
+    privateStorageChannel.setMethodCallHandler { call, result in
+      guard call.method == "prepare" else { result(FlutterMethodNotImplemented); return }
       do {
-        var url = URL(fileURLWithPath: path).standardizedFileURL
-        let root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).standardizedFileURL
-        guard url.path.hasPrefix(root.path + "/") else { throw CocoaError(.fileWriteNoPermission) }
-        var values = URLResourceValues(); values.isExcludedFromBackup = true
-        try url.setResourceValues(values); result(nil)
-      } catch { result(FlutterError(code: "STORAGE_FAILED", message: "Private storage unavailable", details: nil)) }
+        let support = try FileManager.default.url(for: .applicationSupportDirectory,
+          in: .userDomainMask, appropriateFor: nil, create: true)
+        var root = support.appendingPathComponent("nodelane-translation", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true,
+          attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
+        var resources = URLResourceValues()
+        resources.isExcludedFromBackup = true
+        try root.setResourceValues(resources)
+        result(root.path)
+      } catch {
+        result(FlutterError(code: "PRIVATE_STORAGE_UNAVAILABLE", message: "Private storage unavailable", details: nil))
+      }
     }
 
     let mChannel = FlutterMethodChannel(
@@ -53,44 +55,6 @@ import UniformTypeIdentifiers
         } else {
           result(FlutterError(code: "ERROR", message: error.debugDescription, details: nil))
         }
-      default:
-        result(FlutterMethodNotImplemented)
-      }
-    })
-
-    let backgroundTaskChannel = FlutterMethodChannel(
-      name: "com.kodjodevf.mangayomi.background_task",
-      binaryMessenger: messenger
-    )
-    backgroundTaskChannel.setMethodCallHandler({
-      [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-      switch call.method {
-      case "begin":
-        let args = call.arguments as? Dictionary<String, Any>
-        let name = args?["name"] as? String ?? "Mangayomi background task"
-        let identifier = UUID().uuidString
-        var task: UIBackgroundTaskIdentifier = .invalid
-        task = UIApplication.shared.beginBackgroundTask(withName: name) {
-          if task != .invalid {
-            UIApplication.shared.endBackgroundTask(task)
-          }
-          self?.activeBackgroundTasks.removeValue(forKey: identifier)
-        }
-        if task == .invalid {
-          result(nil)
-        } else {
-          self?.activeBackgroundTasks[identifier] = task
-          result(identifier)
-        }
-      case "end":
-        let args = call.arguments as? Dictionary<String, Any>
-        guard let identifier = args?["identifier"] as? String,
-              let task = self?.activeBackgroundTasks.removeValue(forKey: identifier) else {
-          result(nil)
-          return
-        }
-        UIApplication.shared.endBackgroundTask(task)
-        result(nil)
       default:
         result(FlutterMethodNotImplemented)
       }

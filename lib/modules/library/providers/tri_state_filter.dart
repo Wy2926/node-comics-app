@@ -37,7 +37,9 @@ mixin TriStateFilterField {
   int getType() => fields.read(settings, itemType);
 
   void setType(int type) {
-    settingsRepository.save(fields.write(settings, itemType, type));
+    settingsRepository.update(
+      (current) => fields.write(current, itemType, type),
+    );
     state = type;
   }
 }

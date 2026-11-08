@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
@@ -13,6 +14,8 @@ import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
+import 'mobile_download_queue.dart';
+
 class DownloadQueueScreen extends ConsumerStatefulWidget {
   const DownloadQueueScreen({super.key});
 
@@ -22,6 +25,44 @@ class DownloadQueueScreen extends ConsumerStatefulWidget {
 }
 
 class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
+  late final _pendingDownloads = downloadRepository.watchPending();
+  bool _isStarting = false;
+
+  void _reorder(List<Download> entries, int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    final ids = entries.map((entry) => entry.id!).toList();
+    ids.insert(newIndex, ids.removeAt(oldIndex));
+    DownloadQueueOrder.setOrder(ids);
+    setState(() {});
+  }
+
+  Future<void> _startQueue(List<Download> entries) async {
+    if (_isStarting || entries.isEmpty) return;
+    setState(() => _isStarting = true);
+    try {
+      for (final entry in entries) {
+        final chapter = entry.chapter.value;
+        if (chapter != null) await downloadRepository.enqueue(chapter);
+      }
+      if (!mounted) return;
+      ref.invalidate(processDownloadsProvider());
+      ref.read(processDownloadsProvider());
+    } finally {
+      if (mounted) setState(() => _isStarting = false);
+    }
+  }
+
+  Widget _mobileQueue(List<Download> entries) => MobileDownloadQueue(
+    entries: entries,
+    isStarting: _isStarting,
+    onStart: () => _startQueue(entries),
+    onReorder: (from, to) => _reorder(entries, from, to),
+    onSettings: () => context.push('/downloads'),
+    onCancel: (entry) => _onDownloadAction(context, 'Cancel', entry, entries),
+    onCancelSeries: (entry) =>
+        _onDownloadAction(context, 'CancelAll', entry, entries),
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
@@ -29,9 +70,10 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
       // No explicit sort: the natural (insertion) id order is the stable base
       // the manual queue order is applied on top of, so rows don't reshuffle as
       // download progress ticks.
-      stream: downloadRepository.watchPending(),
+      stream: _pendingDownloads,
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          if (isMobile && !isTv) return _mobileQueue(const []);
           return Scaffold(
             appBar: AppBar(
               title: Text(l10n.download_queue),
@@ -61,6 +103,7 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
           downloadRepository.deleteAll(orphanIds);
         }
         if (valid.isEmpty) {
+          if (isMobile && !isTv) return _mobileQueue(const []);
           return Scaffold(
             appBar: AppBar(
               title: Text(l10n.download_queue),
@@ -76,6 +119,7 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
           );
         }
         final entries = DownloadQueueOrder.sorted(valid);
+        if (isMobile && !isTv) return _mobileQueue(entries);
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -104,13 +148,8 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
             // onReorderItem already accounts for the item being lifted out at
             // oldIndex, so newIndex arrives adjusted and must not be shifted
             // again here.
-            onReorderItem: (oldIndex, newIndex) {
-              final ids = entries.map((e) => e.id!).toList();
-              final moved = ids.removeAt(oldIndex);
-              ids.insert(newIndex, moved);
-              DownloadQueueOrder.setOrder(ids);
-              setState(() {});
-            },
+            onReorderItem: (oldIndex, newIndex) =>
+                _reorder(entries, oldIndex, newIndex),
             itemBuilder: (context, index) {
               final element = entries[index];
               return _buildRow(context, l10n, entries, element, index);
@@ -119,17 +158,7 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
           floatingActionButton: CustomFloatingActionBtn(
             isExtended: false,
             label: l10n.download_queue,
-            onPressed: () async {
-              for (final entry in entries) {
-                final chapter = entry.chapter.value;
-                if (chapter != null) {
-                  await downloadRepository.enqueue(chapter);
-                }
-              }
-              if (!mounted) return;
-              ref.invalidate(processDownloadsProvider());
-              ref.read(processDownloadsProvider());
-            },
+            onPressed: () => _startQueue(entries),
           ),
         );
       },

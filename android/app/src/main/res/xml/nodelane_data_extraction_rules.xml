@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="nodelane-translation/" />
+        <exclude domain="sharedpref" path="app_update_download.xml" />
+        <exclude domain="external" path="Download/app-updates/" />
+        <exclude domain="sharedpref" path="nodelane_private.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorageConfiguration:nodelane_private.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureKeyStorage:nodelane_private.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="nodelane-translation/" />
+        <exclude domain="sharedpref" path="app_update_download.xml" />
+        <exclude domain="external" path="Download/app-updates/" />
+        <exclude domain="sharedpref" path="nodelane_private.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorageConfiguration:nodelane_private.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureKeyStorage:nodelane_private.xml" />
+    </device-transfer>
+</data-extraction-rules>

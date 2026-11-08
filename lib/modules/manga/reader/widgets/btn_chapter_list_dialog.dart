@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
@@ -12,6 +14,10 @@ import 'package:mangayomi/utils/design_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+import 'mobile_reader_chapters.dart';
 
 Widget btnToShowChapterListDialog(
   BuildContext context,
@@ -19,10 +25,26 @@ Widget btnToShowChapterListDialog(
   Chapter chapter, {
   void Function(bool)? onChanged,
   Color? iconColor,
+  bool labeled = false,
 }) {
-  return IconButton(
-    onPressed: () async {
-      onChanged?.call(false);
+  if (labeled &&
+      isMobile &&
+      !isTv &&
+      chapter.manga.value?.itemType == ItemType.manga) {
+    return MobileReaderChaptersButton(chapter: chapter, onChanged: onChanged);
+  }
+  Future<void> open() async {
+    onChanged?.call(false);
+    if (labeled && isMobile && !isTv) {
+      await showNodeLaneCatalogSheet<void>(
+        context,
+        NodeLaneCatalogSheet(
+          title: title,
+          heightFactor: .75,
+          child: ChapterListWidget(chapter: chapter, mobile: true),
+        ),
+      );
+    } else {
       await showDialog(
         context: context,
         builder: (context) {
@@ -82,7 +104,7 @@ Widget btnToShowChapterListDialog(
                             Icons.close_rounded,
                             color: context.primaryColor.withValues(alpha: 0.7),
                           ),
-                          tooltip: 'Fermer',
+                          tooltip: context.l10n.close,
                         ),
                       ],
                     ),
@@ -94,15 +116,32 @@ Widget btnToShowChapterListDialog(
           );
         },
       );
-      onChanged?.call(true);
-    },
+    }
+    if (context.mounted) onChanged?.call(true);
+  }
+
+  if (labeled) {
+    return NodeLaneToolbarAction(
+      label: title,
+      icon: Icons.format_list_bulleted_rounded,
+      onPressed: open,
+    );
+  }
+  return IconButton(
+    tooltip: title,
+    onPressed: open,
     icon: Icon(Icons.format_list_numbered_outlined, color: iconColor),
   );
 }
 
 class ChapterListWidget extends StatefulWidget {
   final Chapter chapter;
-  const ChapterListWidget({super.key, required this.chapter});
+  final bool mobile;
+  const ChapterListWidget({
+    super.key,
+    required this.chapter,
+    this.mobile = false,
+  });
 
   @override
   State<ChapterListWidget> createState() => _ChapterListWidgetState();
@@ -134,6 +173,12 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   Future<void> _jumpTo() async {
     // Wait for the scroll view to layout before jumping
     await WidgetsBinding.instance.endOfFrame;
+    if (!mounted ||
+        !controller.hasClients ||
+        chapterList.isEmpty ||
+        currentChapIndex < 0) {
+      return;
+    }
     controller.jumpTo(
       controller.position.maxScrollExtent /
           chapterList.length *
@@ -143,6 +188,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (chapterList.isEmpty) return Center(child: Text(context.l10n.no_result));
     return Scrollbar(
       interactive: true,
       thickness: 8,
@@ -157,12 +203,13 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
               itemCount: chapterList.length,
               itemBuilder: (context, index) {
                 final chapter = chapterList[index];
-                final currentChap = chapter == chapterList[currentChapIndex];
+                final currentChap = index == currentChapIndex;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: ChapterListTile(
                     chapter: chapter,
                     currentChap: currentChap,
+                    mobile: widget.mobile,
                   ),
                 );
               },
@@ -177,10 +224,12 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
 class ChapterListTile extends StatefulWidget {
   final Chapter chapter;
   final bool currentChap;
+  final bool mobile;
   const ChapterListTile({
     super.key,
     required this.chapter,
     required this.currentChap,
+    this.mobile = false,
   });
 
   @override
@@ -190,8 +239,96 @@ class ChapterListTile extends StatefulWidget {
 class _ChapterListTileState extends State<ChapterListTile> {
   late final chapter = widget.chapter;
   late bool isBookmarked = chapter.isBookmarked!;
+  void _openChapter() {
+    if (!widget.currentChap) {
+      Navigator.pop(context);
+      MangaChapterPageGalleryState.setNavigatingToChapter();
+      pushReplacementMangaReaderView(context: context, chapter: chapter);
+    }
+  }
+
+  void _toggleBookmark() {
+    setState(() {
+      isBookmarked = !isBookmarked;
+    });
+    chapterRepository.save(chapter..isBookmarked = isBookmarked);
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.mobile) {
+      final colors = NodeLaneTokens.of(context);
+      return Consumer(
+        builder: (context, ref, _) {
+          final manga = chapter.manga.value!;
+          final details = <String>[
+            if (!(manga.isLocalArchive ?? false) &&
+                (chapter.dateUpload?.isNotEmpty ?? false))
+              dateFormat(chapter.dateUpload!, ref: ref, context: context),
+            if (chapter.scanlator?.isNotEmpty ?? false) chapter.scanlator!,
+            if (!(chapter.isRead ?? false) &&
+                (chapter.lastPageRead?.isNotEmpty ?? false) &&
+                chapter.lastPageRead != '1')
+              manga.itemType == ItemType.anime
+                  ? context.l10n.episode_progress(
+                      Duration(
+                        milliseconds: int.tryParse(chapter.lastPageRead!) ?? 0,
+                      ).toString().substringBefore('.'),
+                    )
+                  : context.l10n.page(
+                      manga.itemType == ItemType.manga
+                          ? chapter.lastPageRead!
+                          : '${((double.tryParse(chapter.lastPageRead!) ?? 0) * 100).toStringAsFixed(0)} %',
+                    ),
+          ];
+          return Material(
+            color: widget.currentChap ? colors.accentSoft : colors.surface,
+            borderRadius: BorderRadius.circular(12),
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              selected: widget.currentChap,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              title: Text(
+                chapter.name ?? '',
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: widget.currentChap
+                      ? colors.accent
+                      : chapter.isRead!
+                      ? colors.muted
+                      : colors.ink,
+                  fontWeight: widget.currentChap
+                      ? FontWeight.w600
+                      : FontWeight.w400,
+                ),
+              ),
+              subtitle: details.isEmpty
+                  ? null
+                  : Text(
+                      details.join(' · '),
+                      style: TextStyle(fontSize: 12, color: colors.muted),
+                    ),
+              onTap: _openChapter,
+              trailing: IconButton(
+                tooltip: context.l10n.chapter_swipe_toggle_bookmark,
+                onPressed: _toggleBookmark,
+                icon: Icon(
+                  isBookmarked
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
+                  color: isBookmarked ? colors.accent : colors.muted,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
@@ -210,16 +347,7 @@ class _ChapterListTileState extends State<ChapterListTile> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () async {
-            if (!widget.currentChap) {
-              Navigator.pop(context);
-              MangaChapterPageGalleryState.setNavigatingToChapter();
-              pushReplacementMangaReaderView(
-                context: context,
-                chapter: chapter,
-              );
-            }
-          },
+          onTap: _openChapter,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -391,14 +519,7 @@ class _ChapterListTileState extends State<ChapterListTile> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () {
-                        setState(() {
-                          isBookmarked = !isBookmarked;
-                        });
-                        chapterRepository.save(
-                          chapter..isBookmarked = isBookmarked,
-                        );
-                      },
+                      onTap: _toggleBookmark,
                       child: Padding(
                         padding: const EdgeInsets.all(8),
                         child: Icon(

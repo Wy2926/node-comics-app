@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "NodeLane Comics";
+"CFBundleName" = "NodeLane Comics";
+"NSPhotoLibraryUsageDescription" = "NodeLane Comics cần quyền truy cập vào thư viện ảnh của bạn để lưu và khôi phục bản sao lưu.";
+"NSDocumentUsageDescription" = "NodeLane Comics cần quyền truy cập vào tệp của bạn để tạo và khôi phục bản sao lưu.";
+"NSFaceIDUsageDescription" = "NodeLane Comics cần xác thực bằng Face ID.";

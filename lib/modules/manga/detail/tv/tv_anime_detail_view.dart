@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/constant.dart';
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/tracking_menu.dart';
 import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
@@ -15,11 +18,13 @@ import 'package:mangayomi/modules/widgets/category_selection_dialog.dart';
 import 'package:mangayomi/repositories/history_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/repositories/track_repository.dart';
+import 'package:mangayomi/services/discovery/media_lookup_context.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:mangayomi/utils/utils.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 
 /// TV-only, d-pad-first anime detail. Equal split, screen-padded: the hero
 /// (cover, title, meta, synopsis) and a vertical list of actions on the left,
@@ -134,7 +139,6 @@ class _TvAnimeDetailViewState extends ConsumerState<TvAnimeDetailView> {
     final reading = manga.getChapterListForReading();
     final resume = _resumeEpisode(reading);
     final watched = episodes.where((c) => c.isRead ?? false).length;
-
     final cover = resolveCoverImage(manga, ref);
     final bg = Theme.of(context).scaffoldBackgroundColor;
 
@@ -223,18 +227,21 @@ class _TvAnimeDetailViewState extends ConsumerState<TvAnimeDetailView> {
                               ),
                               onTracking: _openTracking,
                               onBrowser: _openInBrowser,
-                              onRecommendations: () => context.push(
-                                '/recommendations',
-                                extra: (
-                                  manga.name,
-                                  manga.itemType,
-                                  ref.read(algorithmWeightsStateProvider),
-                                ),
-                              ),
-                              onWatchOrder: () => context.push(
-                                '/watchOrder',
-                                extra: (manga.name, null),
-                              ),
+                              onRecommendations: () {
+                                context.push(
+                                  '/recommendations',
+                                  extra: (
+                                    _mediaContext(),
+                                    ref.read(algorithmWeightsStateProvider),
+                                  ),
+                                );
+                              },
+                              onWatchOrder: () {
+                                context.push(
+                                  '/watchOrder',
+                                  extra: (_mediaContext(), null as Track?),
+                                );
+                              },
                               onMigrate: () =>
                                   context.push('/migrate', extra: manga),
                               // Seeded: this manga's source floats to the top.
@@ -272,10 +279,17 @@ class _TvAnimeDetailViewState extends ConsumerState<TvAnimeDetailView> {
     );
   }
 
+  MediaLookupContext _mediaContext() => MediaLookupContext.fromManga(
+    manga,
+    tracks: trackRepository.getAllByMangaId(manga.id),
+  );
+
   void _toggleLibrary() {
     final model = manga;
     model.favorite = !(model.favorite ?? false);
-    model.dateAdded = model.favorite! ? DateTime.now().millisecondsSinceEpoch : 0;
+    model.dateAdded = model.favorite!
+        ? DateTime.now().millisecondsSinceEpoch
+        : 0;
     mangaRepository.save(model);
     setState(() {});
   }
@@ -463,17 +477,19 @@ class _LeftInfo extends StatelessWidget {
         .where((g) => g.trim().isNotEmpty)
         .toList();
     final metaBits = <String>[
-      manga.status.name.isNotEmpty ? _cap(manga.status.name) : '',
-      '$episodeCount episodes',
+      getMangaStatusName(manga.status, context),
+      context.l10n.n_episodes(episodeCount),
       if ((manga.source ?? '').isNotEmpty) manga.source!,
       if ((manga.author ?? '').isNotEmpty) manga.author!,
     ].where((s) => s.isNotEmpty).join('   ·   ');
     final favorite = manga.favorite ?? false;
     final resumeWord = resume == null
-        ? 'Play'
+        ? context.l10n.player_play
         : (resume!.isRead ?? false)
-        ? 'Replay'
-        : (watched > 0 ? 'Continue' : 'Play');
+        ? context.l10n.tv_replay
+        : (watched > 0
+              ? context.l10n.onboarding_continue
+              : context.l10n.player_play);
     final resumeName = resume?.name?.trim() ?? '';
     final resumeLabel = resumeName.isEmpty
         ? resumeWord
@@ -598,56 +614,58 @@ class _LeftInfo extends StatelessWidget {
                       focusNode: actionFocus[1],
                       accent: accent,
                       icon: favorite ? Icons.favorite : Icons.favorite_border,
-                      label: favorite ? 'In Library' : 'Add to Library',
+                      label: favorite
+                          ? context.l10n.in_library
+                          : context.l10n.add_to_library,
                       onPressed: onToggleLibrary,
                     ),
                     _VActionButton(
                       focusNode: actionFocus[2],
                       accent: accent,
                       icon: Icons.label_outline,
-                      label: 'Categories',
+                      label: context.l10n.categories,
                       onPressed: onCategories,
                     ),
                     _VActionButton(
                       focusNode: actionFocus[8],
                       accent: accent,
                       icon: Icons.sync_alt,
-                      label: 'Tracking',
+                      label: context.l10n.tracking,
                       onPressed: onTracking,
                     ),
                     _VActionButton(
                       focusNode: actionFocus[3],
                       accent: accent,
                       icon: Icons.public,
-                      label: 'Open in browser',
+                      label: context.l10n.open_in_browser,
                       onPressed: onBrowser,
                     ),
                     _VActionButton(
                       focusNode: actionFocus[4],
                       accent: accent,
                       icon: Icons.recommend_outlined,
-                      label: 'Recommendations',
+                      label: context.l10n.recommendations,
                       onPressed: onRecommendations,
                     ),
                     _VActionButton(
                       focusNode: actionFocus[5],
                       accent: accent,
                       icon: Icons.format_list_numbered,
-                      label: 'Watch order',
+                      label: context.l10n.watch_order,
                       onPressed: onWatchOrder,
                     ),
                     _VActionButton(
                       focusNode: actionFocus[6],
                       accent: accent,
                       icon: Icons.swap_horiz,
-                      label: 'Migrate',
+                      label: context.l10n.migrate,
                       onPressed: onMigrate,
                     ),
                     _VActionButton(
                       focusNode: actionFocus[7],
                       accent: accent,
                       icon: Icons.dynamic_feed,
-                      label: 'Migrate source',
+                      label: context.l10n.migrate_source,
                       onPressed: onMassMigrate,
                     ),
                   ],
@@ -659,8 +677,6 @@ class _LeftInfo extends StatelessWidget {
       ),
     );
   }
-
-  String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
 
 /// A full-width, d-pad-focusable action row. Subtle until focused (the primary
@@ -808,7 +824,7 @@ class _EpisodesPanel extends StatelessWidget {
               : episodes.isEmpty
               ? Center(
                   child: Text(
-                    'No episodes yet',
+                    context.l10n.tv_no_episodes,
                     style: TextStyle(color: Theme.of(context).hintColor),
                   ),
                 )

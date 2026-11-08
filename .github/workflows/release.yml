@@ -1,25 +1,92 @@
 name: Build & Release
+run-name: Release ${{ inputs.tag }} (${{ inputs.platform }})
 
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, e.g. v0.1.0
+        required: true
+        type: string
+      platform:
+        description: Platform to build and publish
+        required: true
+        type: choice
+        default: macos
+        options:
+          - macos
+          - ios
+          - windows
+          - linux
+          - android
+          - android-tv
+          - all
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}
-  cancel-in-progress: true
+  group: nodelane-release-${{ inputs.tag }}
+  cancel-in-progress: false
 
 env:
+  RELEASE_TAG: ${{ inputs.tag }}
   ZSIGN_VERSION: "0.7"
 
 jobs:
+  validate-release-version:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      commit: ${{ steps.version.outputs.commit }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+
+      - name: Match release tag to app version
+        id: version
+        env:
+          RELEASE_PLATFORM: ${{ inputs.platform }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          if os.environ['RELEASE_PLATFORM'] not in {
+              'macos', 'ios', 'windows', 'linux', 'android', 'android-tv', 'all',
+          }:
+              raise SystemExit('Select a supported release platform')
+          match = re.search(
+              r'^version:\s*((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))\+([1-9]\d*)\s*$',
+              Path('pubspec.yaml').read_text(encoding='utf-8'),
+              re.MULTILINE,
+          )
+          if not match:
+              raise SystemExit('Expected a stable app version and positive build number in pubspec.yaml')
+          version, build = match.groups()
+          tag = os.environ['RELEASE_TAG']
+          if tag != f'v{version}':
+              raise SystemExit(f'Release tag {tag} does not match app version v{version}')
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f'commit={commit}\n')
+          print(f'Validated NodeLane {version}+{build} for {tag}')
+          PY
+
   build-and-release-android-apks:
+    needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'android'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -64,28 +131,30 @@ jobs:
           export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
           flutter build apk --release --split-per-abi --verbose
           cd build/app/outputs/flutter-apk
-          mv app-arm64-v8a-release.apk Mangayomi-${{ github.ref_name }}-android-arm64-v8a.apk
-          mv app-armeabi-v7a-release.apk Mangayomi-${{ github.ref_name }}-android-armeabi-v7a.apk
-          mv app-x86_64-release.apk Mangayomi-${{ github.ref_name }}-android-x86_64.apk
+          mv app-arm64-v8a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-arm64-v8a.apk
+          mv app-armeabi-v7a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-armeabi-v7a.apk
+          mv app-x86_64-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-x86_64.apk
 
       - name: upload artifact android apks
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-${{ github.ref_name }}-android
-          path: "build/app/outputs/flutter-apk/Mangayomi-*.apk"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-android
+          path: "build/app/outputs/flutter-apk/nodelane-comics-${{ env.RELEASE_TAG }}-android-*.apk"
+          if-no-files-found: error
 
-  # Dedicated Android TV build: same app, but with TV branding swapped in (a
-  # TV launcher icon + banner). Fire TV shows the square launcher icon for
-  # sideloaded apps and doesn't reliably honour the `-television` resource
-  # qualifier, so the icon is overwritten directly here rather than via a
-  # qualifier. Produces separate Mangayomi-<tag>-android-tv-*.apk artifacts.
+  # Android TV uses the shared NodeLane icon and localized Leanback banners.
+  # Keep the separate artifact names used by the TV update selector.
   build-and-release-android-tv:
+    needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'android-tv'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -120,18 +189,6 @@ jobs:
       - name: Install the CLI tool
         run: cargo install 'flutter_rust_bridge_codegen'
 
-      # Overwrite the default launcher icon (and banner) with the TV variants
-      # from android/tv_res before building. The leanback banner is declared in
-      # the manifest by the Android TV support work.
-      - name: Apply TV branding
-        run: |
-          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            cp -f "android/tv_res/mipmap-$d/launcher_icon.png" \
-                  "android/app/src/main/res/mipmap-$d/launcher_icon.png"
-          done
-          cp -f android/tv_res/drawable-xhdpi/tv_banner.png \
-                android/app/src/main/res/drawable-xhdpi/tv_banner.png || true
-
       - name: Setup Android keystore
         run: |
           echo "${{ secrets.SIGNING_KEY_STORE_BASE64 }}" | base64 -di > android/app/upload-keystore.jks
@@ -145,23 +202,28 @@ jobs:
           export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
           flutter build apk --release --split-per-abi --verbose
           cd build/app/outputs/flutter-apk
-          mv app-arm64-v8a-release.apk Mangayomi-${{ github.ref_name }}-android-tv-arm64-v8a.apk
-          mv app-armeabi-v7a-release.apk Mangayomi-${{ github.ref_name }}-android-tv-armeabi-v7a.apk
-          mv app-x86_64-release.apk Mangayomi-${{ github.ref_name }}-android-tv-x86_64.apk
+          mv app-arm64-v8a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-arm64-v8a.apk
+          mv app-armeabi-v7a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-armeabi-v7a.apk
+          mv app-x86_64-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-x86_64.apk
 
       - name: upload artifact android tv apks
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-${{ github.ref_name }}-android-tv
-          path: "build/app/outputs/flutter-apk/Mangayomi-*android-tv*.apk"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-android-tv
+          path: "build/app/outputs/flutter-apk/nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-*.apk"
+          if-no-files-found: error
 
   build-and-release-ios-ipa:
+    needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'ios'
     permissions:
       contents: write
     runs-on: macos-26
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -206,21 +268,26 @@ jobs:
           mv build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
           ./zsign -f -k ./certificate.p12 -p "$P12_PASSWORD" -m ./profile.mobileprovision ./build/ios/iphoneos/Payload/Runner.app
           cd build/ios/iphoneos
-          zip -r Mangayomi-${{ github.ref_name }}-ios.ipa Payload
+          zip -r nodelane-comics-${{ env.RELEASE_TAG }}-ios.ipa Payload
 
       - name: Upload artifact iOS IPA
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-${{ github.ref_name }}-ios
-          path: "build/ios/iphoneos/Mangayomi-*.ipa"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-ios
+          path: "build/ios/iphoneos/nodelane-comics-${{ env.RELEASE_TAG }}-ios.ipa"
+          if-no-files-found: error
 
   build-and-release-macos-dmg:
+    needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'macos'
     permissions:
       contents: write
     runs-on: macos-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -229,32 +296,36 @@ jobs:
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: flutter pub get
         run: flutter pub get
 
       - name: build macos
-        run: |
-          cd macos
-          pod update
-          cd ..
-          flutter build macos --release --verbose
-          brew install create-dmg
-          create-dmg --volname Mangayomi-${{ github.ref_name }}-macos --window-pos 200 120 --window-size 800 450 --icon-size 100 --app-drop-link 600 185 Mangayomi-${{ github.ref_name }}-macos.dmg build/macos/Build/Products/Release/Mangayomi.app
+        run: flutter build macos --release --verbose
+
+      - name: Package macOS DMG
+        run: python3 -B tool/package_macos_dmg.py
 
       - name: upload artifact macos dmg
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-${{ github.ref_name }}-macos
-          path: "/Users/runner/work/mangayomi/mangayomi/*.dmg"
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-macos
+          path: "build/macos/dmg/nodelane-comics-${{ env.RELEASE_TAG }}-macos.dmg"
+          if-no-files-found: error
 
   build-and-release-windows-exe_zip:
+    needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'windows'
     permissions:
       contents: write
     runs-on: windows-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -266,9 +337,6 @@ jobs:
 
       - name: flutter pub get
         run: flutter pub get
-
-      - name: Enable inno_bundle
-        run: dart pub global activate inno_bundle
 
       - name: build windows exe
         run: |
@@ -282,30 +350,36 @@ jobs:
           # Rename and move installer exe
           $installer = Get-ChildItem -Path "build/windows/x64/installer/Release/*.exe" | Select-Object -First 1
           if ($installer) {
-            Move-Item -Path $installer.FullName -Destination "dist/Mangayomi-${{ github.ref_name }}-windows.exe" -Force
+            Move-Item -Path $installer.FullName -Destination "dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.exe" -Force
           } else {
             Write-Error "Installer executable not found in build/windows/x64/installer/Release/"
           }
 
           # Create zip of runner release
-          $tempZip = Join-Path $env:RUNNER_TEMP "Mangayomi-${{ github.ref_name }}-windows.zip"
+          $tempZip = Join-Path $env:RUNNER_TEMP "nodelane-comics-${{ env.RELEASE_TAG }}-windows.zip"
           Compress-Archive -Path "build/windows/x64/runner/Release/*" -DestinationPath $tempZip -Force
-          Move-Item -Path $tempZip -Destination "dist/Mangayomi-${{ github.ref_name }}-windows.zip" -Force
+          Move-Item -Path $tempZip -Destination "dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.zip" -Force
 
       - name: upload artifact windows exe_zip
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-${{ github.ref_name }}-windows-zip
-          path: dist/Mangayomi-*
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-windows-zip
+          path: |
+            dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.exe
+            dist/nodelane-comics-${{ env.RELEASE_TAG }}-windows.zip
           if-no-files-found: error
 
   build-and-release-linux-zip_AppImage_RPM:
+    needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'linux'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: Install dependencies
         run: |
@@ -326,19 +400,68 @@ jobs:
         run: flutter pub get
 
       - name: build linux
-        run: flutter build linux --release --verbose
+        run: |
+          flutter build linux --release --verbose
+          mkdir -p build/linux/x64/release/bundle/licenses
+          cp LICENSE UPSTREAM.md assets/brand/LICENSE-GPL-3.0-only docs/design/nodelane-brand-assets.md build/linux/x64/release/bundle/licenses/
 
       - name: Zip
         uses: thedoctor0/zip-release@main
         with:
           type: "zip"
-          filename: Mangayomi-${{ github.ref_name }}-linux.zip
+          filename: nodelane-comics-${{ env.RELEASE_TAG }}-linux.zip
           directory: build/linux/x64/release/bundle
+
+      - name: Prepare Arch Linux recipe
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import shutil
+          import tarfile
+          import tempfile
+          from pathlib import Path
+
+          app_version = next(
+              line.removeprefix('version:').strip()
+              for line in Path('pubspec.yaml').read_text().splitlines()
+              if line.startswith('version:')
+          )
+          version, build_number = app_version.split('+')
+          release = Path('build/linux/x64/release')
+          archive_name = f'nodelane-comics-v{version}-linux.zip'
+          resources = {'com.nodelane.comics.desktop': Path('linux/com.nodelane.comics.desktop')}
+          for size in (16, 32, 64, 128, 256, 512):
+              resources[f'icon-{size}.png'] = Path(
+                  f'linux/packaging/icons/hicolor/{size}x{size}/apps/nodelane-comics.png'
+              )
+
+          def sha256(path):
+              digest = hashlib.sha256()
+              with path.open('rb') as source:
+                  for chunk in iter(lambda: source.read(1024 * 1024), b''):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+          checksums = [sha256(release / 'bundle' / archive_name)]
+          checksums.extend(sha256(path) for path in resources.values())
+          recipe = Path('packaging/arch/PKGBUILD.in').read_text()
+          recipe = recipe.replace('@VERSION@', version).replace('@BUILD_NUMBER@', build_number)
+          recipe = recipe.replace('@DESKTOP_SOURCES@', '\n'.join(f"  '{name}'" for name in resources))
+          recipe = recipe.replace('@SHA256SUMS@', '\n'.join(f"  '{value}'" for value in checksums))
+          with tempfile.TemporaryDirectory(prefix='nodelane-arch-') as temporary:
+              package = Path(temporary) / 'nodelane-comics-bin'
+              package.mkdir()
+              (package / 'PKGBUILD').write_text(recipe)
+              for name, source in resources.items():
+                  shutil.copyfile(source, package / name)
+              with tarfile.open(release / f'nodelane-comics-v{version}-archlinux.tar.gz', 'w:gz') as archive:
+                  archive.add(package, arcname=package.name)
+          PY
 
       - name: Create AppImage
         run: |
           # Move Zip-file outside the bundle dir to avoid including it in the AppImage
-          mv build/linux/x64/release/bundle/Mangayomi-*.zip build/linux/x64/release/
+          mv build/linux/x64/release/bundle/nodelane-comics-${{ env.RELEASE_TAG }}-linux.zip build/linux/x64/release/
           # Create fresh AppDir structure
           rm -rf AppDir
           mkdir -p AppDir/usr/bin
@@ -351,6 +474,25 @@ jobs:
             mkdir -p AppDir/usr/lib
             ln -s libmpv.so.2 AppDir/usr/lib/libmpv.so
           fi
+          # libavif is dlopen()ed by the native image decoder, so linuxdeploy's
+          # link-time scan never bundles it and AVIF decoding fails on hosts
+          # without libavif. Copy it and its closure into the AppDir.
+          avif="$(ldconfig -p | awk '/libavif\.so\.16 /{print $NF; exit}')"
+          if [ -n "$avif" ]; then
+            copy_avif() {
+              local lib="$1" base
+              base="$(basename "$lib")"
+              [ -e "AppDir/usr/bin/lib/$base" ] && return 0
+              case "$base" in
+                libc.so*|libm.so*|libdl.so*|libpthread.so*|librt.so*|libresolv.so*|libgcc_s.so*|libstdc++.so*|ld-linux*) return 0 ;;
+              esac
+              cp -L "$lib" "AppDir/usr/bin/lib/$base"
+              while read -r dep; do
+                case "$dep" in /*) copy_avif "$dep" ;; esac
+              done < <(ldd "$lib" 2>/dev/null | awk '/=> \//{print $3}')
+            }
+            copy_avif "$avif"
+          fi
           # Scan AppDir/usr/bin/lib for existing libraries to exclude them from linuxdeploy packaging
           EXCLUDE_LIBS=$(find AppDir/usr/bin/lib -type f -name "*.so*" -exec basename {} \; | sort -u)
           # Add --exclude-library flag to each found library
@@ -358,7 +500,7 @@ jobs:
             EXCLUDE_ARGS+=" --exclude-library $lib"
           done
           # Copy desktop file to AppDir root
-          cp linux/mangayomi.desktop AppDir/mangayomi.desktop
+          cp linux/com.nodelane.comics.desktop AppDir/com.nodelane.comics.desktop
           # Create AppRun file
           cat <<EOF > AppDir/AppRun
           #!/bin/sh
@@ -366,88 +508,97 @@ jobs:
           HERE=\${SELF%/*}
           export PATH="\${HERE}/usr/bin/:\${PATH}"
           export LD_LIBRARY_PATH="\${HERE}/usr/bin/lib/:\${HERE}/usr/lib/:\${LD_LIBRARY_PATH}"
-          exec "\${HERE}/usr/bin/mangayomi" "\$@"
+          exec "\${HERE}/usr/bin/nodelane-comics" "\$@"
           EOF
           chmod +x AppDir/AppRun
           # Make AppImage
           /usr/local/bin/linuxdeploy \
             --appdir AppDir \
-            --desktop-file AppDir/mangayomi.desktop \
-            --icon-file AppDir/usr/share/icons/hicolor/512x512/apps/mangayomi.png \
-            --executable AppDir/usr/bin/mangayomi \
+            --desktop-file AppDir/com.nodelane.comics.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/512x512/apps/nodelane-comics.png \
+            --executable AppDir/usr/bin/nodelane-comics \
             $EXCLUDE_ARGS \
             --output appimage
-          mv $(find . -type f -name "*.AppImage") build/linux/x64/release/Mangayomi-${{ github.ref_name }}-linux.AppImage
+          mv ./*.AppImage build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.AppImage
 
       - name: Create RPM Package
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+          APP_VERSION=$(sed -n 's/^version: //p' pubspec.yaml)
+          VERSION=${APP_VERSION%+*}
+          BUILD_NUMBER=${APP_VERSION##*+}
+          rm -rf rpm_build
           mkdir -p rpm_build/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-          cp -r build/linux/x64/release/bundle rpm_build/SOURCES/mangayomi-${VERSION}
-          tar czf rpm_build/SOURCES/mangayomi-${VERSION}.tar.gz -C rpm_build/SOURCES mangayomi-${VERSION}
+          cp -r build/linux/x64/release/bundle rpm_build/SOURCES/nodelane-comics-${VERSION}
+          tar czf rpm_build/SOURCES/nodelane-comics-${VERSION}.tar.gz -C rpm_build/SOURCES nodelane-comics-${VERSION}
           mkdir -p rpm_build/SOURCES/usr/share/icons
           cp -rL linux/packaging/icons/* rpm_build/SOURCES/usr/share/icons
-          cp linux/mangayomi.desktop rpm_build/SOURCES/
+          cp linux/com.nodelane.comics.desktop rpm_build/SOURCES/
           # RPM Spec File
-          cat <<EOF > rpm_build/SPECS/mangayomi.spec
-          Name: mangayomi
+          cat <<EOF > rpm_build/SPECS/nodelane-comics.spec
+          Name: nodelane-comics
           Version: ${VERSION}
-          Release: 1%{?dist}
-          Summary: Mangayomi is an open-source Flutter app for reading manga, novels, and watching animes across multiple platforms
+          Release: ${BUILD_NUMBER}%{?dist}
+          Summary: NodeLane Comics manga, novel and anime reader
           Requires: (libjpeg-turbo or libjpeg) libpng libavif webkit2gtk4.1 mpv
-          License: MIT
+          License: Apache-2.0 AND GPL-3.0-only
+          URL: https://github.com/Wy2926/node-comics-app
           Source0: %{name}-%{version}.tar.gz
           BuildArch: x86_64
 
           %description
-          Mangayomi is an open-source Flutter app for reading manga, novels, and watching animes across multiple platforms.
+          Read manga and novels, watch anime, and translate manga with NodeLane.
+          Application code is based on Mangayomi (Apache-2.0); NodeLane artwork
+          retains its separately recorded GPL-3.0-only source license.
 
           %prep
           %setup -q
 
           %install
+          mkdir -p %{buildroot}/opt/%{name}
           mkdir -p %{buildroot}/usr/bin
           mkdir -p %{buildroot}/usr/share/applications
-          mkdir -p %{buildroot}/usr/share/icons/hicolor/256x256/apps
-          cp -r * %{buildroot}/usr/bin/
+          cp -r . %{buildroot}/opt/%{name}/
+          ln -s /opt/%{name}/%{name} %{buildroot}/usr/bin/%{name}
           cp -r %{_sourcedir}/usr/share/* %{buildroot}/usr/share/
-          cp %{_sourcedir}/mangayomi.desktop %{buildroot}/usr/share/applications/mangayomi.desktop
+          install -m 644 %{_sourcedir}/com.nodelane.comics.desktop %{buildroot}/usr/share/applications/com.nodelane.comics.desktop
 
           %files
-          /usr/bin/*
-          /usr/share/applications/mangayomi.desktop
-          /usr/share/icons/hicolor/16x16/apps/mangayomi.png
-          /usr/share/icons/hicolor/32x32/apps/mangayomi.png
-          /usr/share/icons/hicolor/64x64/apps/mangayomi.png
-          /usr/share/icons/hicolor/128x128/apps/mangayomi.png
-          /usr/share/icons/hicolor/256x256/apps/mangayomi.png
-          /usr/share/icons/hicolor/512x512/apps/mangayomi.png
+          /opt/%{name}
+          /usr/bin/%{name}
+          /usr/share/applications/com.nodelane.comics.desktop
+          /usr/share/icons/hicolor/*/apps/nodelane-comics.png
           EOF
 
-          rpmbuild --define "_topdir $(pwd)/rpm_build" -ba rpm_build/SPECS/mangayomi.spec
-          mv rpm_build/RPMS/x86_64/*.rpm build/linux/x64/release/Mangayomi-${{ github.ref_name }}-linux.rpm
+          rpmbuild --define "_topdir $(pwd)/rpm_build" -ba rpm_build/SPECS/nodelane-comics.spec
+          mv rpm_build/RPMS/x86_64/*.rpm build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.rpm
 
       - name: upload artifact linux zip
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-${{ github.ref_name }}-linux-zip
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-linux-zip
           path: |
-            build/linux/x64/release/Mangayomi-*.zip
-            build/linux/x64/release/Mangayomi-*.AppImage
-            build/linux/x64/release/Mangayomi-*.rpm
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.zip
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.AppImage
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-linux.rpm
+            build/linux/x64/release/nodelane-comics-${{ env.RELEASE_TAG }}-archlinux.tar.gz
+          if-no-files-found: error
 
   build-and-release-linux-deb:
+    needs: validate-release-version
+    if: inputs.platform == 'all' || inputs.platform == 'linux'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install webkit2gtk-4.1 clang cmake ninja-build pkg-config libgtk-3-dev mpv libmpv-dev dpkg-dev libfuse2 libjpeg-dev libpng-dev libavif-dev libsecret-1-dev
+          sudo apt-get install webkit2gtk-4.1 clang cmake ninja-build pkg-config libgtk-3-dev mpv libmpv-dev dpkg-dev libjpeg-dev libpng-dev libavif-dev libsecret-1-dev
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -460,39 +611,45 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
-      - name: Enable fastforge
-        run: dart pub global activate fastforge
-
-      - name: Update PATH
-        run: echo "PATH=${HOME}/.pub-cache/bin:${PATH}" >> $GITHUB_ENV
+      - name: Build Linux
+        run: |
+          flutter build linux --release --verbose
+          mkdir -p build/linux/x64/release/bundle/licenses
+          cp LICENSE UPSTREAM.md assets/brand/LICENSE-GPL-3.0-only docs/design/nodelane-brand-assets.md build/linux/x64/release/bundle/licenses/
 
       - name: Build deb package
-        run: fastforge package --platform linux --targets deb
-
-      - name: Inject custom .desktop file into .deb
         run: |
-          mkdir extracted_deb
-          dpkg-deb -R "$(find dist -name '*.deb' | head -n 1)" extracted_deb
-          # Replace desktop file
-          cp -f linux/mangayomi.desktop extracted_deb/usr/share/applications/mangayomi.desktop
-          # copy all icon sizes
-          cp -rLf linux/packaging/icons/* extracted_deb/usr/share/icons
-          # Set correct permissions
-          chmod 644 extracted_deb/usr/share/applications/mangayomi.desktop
-          # Repack the .deb
-          fakeroot dpkg-deb -b extracted_deb dist/Mangayomi-${{ github.ref_name }}-linux.deb
+          PACKAGE_DIR=build/linux/x64/deb
+          rm -rf "$PACKAGE_DIR"
+          mkdir -p "$PACKAGE_DIR/DEBIAN" "$PACKAGE_DIR/opt/nodelane-comics" "$PACKAGE_DIR/usr/bin" "$PACKAGE_DIR/usr/share/applications" "$PACKAGE_DIR/usr/share/icons" dist
+          cp -a build/linux/x64/release/bundle/. "$PACKAGE_DIR/opt/nodelane-comics/"
+          ln -s /opt/nodelane-comics/nodelane-comics "$PACKAGE_DIR/usr/bin/nodelane-comics"
+          install -m 644 linux/com.nodelane.comics.desktop "$PACKAGE_DIR/usr/share/applications/com.nodelane.comics.desktop"
+          cp -rL linux/packaging/icons/. "$PACKAGE_DIR/usr/share/icons/"
+          install -m 644 linux/packaging/deb/control "$PACKAGE_DIR/DEBIAN/control"
+          APP_VERSION=$(sed -n 's/^version: //p' pubspec.yaml)
+          INSTALLED_SIZE=$(du -sk "$PACKAGE_DIR/opt" "$PACKAGE_DIR/usr" | awk '{size += $1} END {print size}')
+          printf 'Version: %s\nInstalled-Size: %s\n' "$APP_VERSION" "$INSTALLED_SIZE" >> "$PACKAGE_DIR/DEBIAN/control"
+          dpkg-deb --build --root-owner-group "$PACKAGE_DIR" dist/nodelane-comics-${{ env.RELEASE_TAG }}-linux.deb
 
       - name: upload artifact linux deb
         uses: actions/upload-artifact@v4
         with:
-          name: Mangayomi-${{ github.ref_name }}-linux-deb
-          path: dist/Mangayomi-*.deb
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-linux-deb
+          path: dist/nodelane-comics-${{ env.RELEASE_TAG }}-linux.deb
+          if-no-files-found: error
 
   publish-release:
+    if: >-
+      ${{ !cancelled() &&
+          needs.validate-release-version.result == 'success' &&
+          !contains(needs.*.result, 'failure') &&
+          !contains(needs.*.result, 'cancelled') }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
     needs:
+      - validate-release-version
       - build-and-release-android-apks
       - build-and-release-android-tv
       - build-and-release-ios-ipa
@@ -501,25 +658,58 @@ jobs:
       - build-and-release-linux-zip_AppImage_RPM
       - build-and-release-linux-deb
     steps:
-      - name: Download all build artifacts
+      - name: Checkout release tooling
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-version.outputs.commit }}
+
+      - name: Download selected platform artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: Mangayomi-*
+          pattern: nodelane-comics-${{ env.RELEASE_TAG }}-*
           merge-multiple: true
           path: release-assets
 
-      - name: Flatten release assets
-        run: |
-          find release-assets -mindepth 2 -type f -exec mv {} release-assets/ \;
-          find release-assets -mindepth 1 -type d -empty -delete
-
-      - name: Publish GitHub Release
+      - name: Upload assets to GitHub Release
+        id: release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "release-assets/*"
+          tag: ${{ env.RELEASE_TAG }}
+          artifacts: "release-assets/nodelane-comics-${{ env.RELEASE_TAG }}-*"
           generateReleaseNotes: true
           allowUpdates: true
+          artifactErrorsFailBuild: true
+          draft: true
+          omitDraftDuringUpdate: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+
+      - name: Publish after successful upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ steps.release.outputs.id }}
+        run: |
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
+            -F draft=false -f make_latest=legacy --silent
+
+      - name: Generate update manifest for manual server upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B tool/generate_update_manifest.py
+
+      - name: Save update manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodelane-comics-${{ env.RELEASE_TAG }}-update-manifest
+          path: build/app-updates/
+          if-no-files-found: error
 
   ios-source-build:
-    needs: publish-release
+    if: >-
+      ${{ !cancelled() &&
+          needs.publish-release.result == 'success' &&
+          needs.build-and-release-ios-ipa.result == 'success' }}
+    permissions:
+      contents: write
+    needs: [publish-release, build-and-release-ios-ipa]
     uses: ./.github/workflows/update_sideloading_source.yml

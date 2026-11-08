@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/app_font_family.dart';
+import 'package:mangayomi/modules/more/settings/appearance/providers/floating_navigation_bar_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/widgets/follow_system_theme_button.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -16,17 +17,19 @@ import 'package:mangayomi/modules/more/settings/appearance/widgets/theme_selecto
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/utils/language.dart';
+import 'package:mangayomi/l10n/languages.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/app_ui_scale_state_provider.dart';
 import 'package:mangayomi/modules/widgets/tv_escapable_slider.dart';
+
+import 'mobile_appearance_screen.dart';
 
 final navigationItems = {
   "/MangaLibrary": "Manga",
   "/AnimeLibrary": "Anime",
   "/NovelLibrary": "Novel",
   "/updates": "Updates",
-  "/history": "History",
+  "/browser": "Browser",
   "/browse": "Browse",
   "/more": "More",
   "/trackerLibrary": "Tracking",
@@ -68,6 +71,7 @@ class AppearanceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return const MobileAppearanceScreen();
     final l10n = l10nLocalizations(context);
     final pureBlackDarkMode = ref.watch(pureBlackDarkModeStateProvider);
     final isDarkTheme = ref.watch(themeModeStateProvider);
@@ -104,11 +108,8 @@ class AppearanceScreen extends ConsumerWidget {
                 if (isTv)
                   SwitchListTile(
                     secondary: const Icon(Icons.grid_view_outlined),
-                    title: const Text('TV home (beta)'),
-                    subtitle: const Text(
-                      'Rows-based anime home (Continue · New Episodes · '
-                      'categories) instead of the flat grid',
-                    ),
+                    title: Text(context.l10n.tv_home_beta),
+                    subtitle: Text(context.l10n.tv_home_layout_hint),
                     value: ref.watch(tvHomeStyleProvider),
                     onChanged: (v) =>
                         ref.read(tvHomeStyleProvider.notifier).set(v),
@@ -163,6 +164,22 @@ class AppearanceScreen extends ConsumerWidget {
                 ),
                 _buildLanguageTile(context, ref, l10n),
                 _buildFontTile(context, ref, l10n),
+                if (supportsFloatingNav && !isMobile)
+                  SwitchListTile(
+                    secondary: const Icon(Icons.call_to_action_outlined),
+                    title: Text(l10n.floating_navigation_bar),
+                    subtitle: Text(
+                      l10n.floating_navigation_bar_description,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.secondaryColor,
+                      ),
+                    ),
+                    value: ref.watch(floatingNavigationBarStateProvider),
+                    onChanged: (value) => ref
+                        .read(floatingNavigationBarStateProvider.notifier)
+                        .set(value),
+                  ),
                 ListTile(
                   title: Text(l10n.reorder_navigation),
                   subtitle: Text(
@@ -200,7 +217,7 @@ class AppearanceScreen extends ConsumerWidget {
     return ListTile(
       title: Text(l10n.app_language),
       subtitle: Text(
-        completeLanguageName(l10nLocale.toLanguageTag()),
+        nodeLaneLanguageName(l10nLocale),
         style: TextStyle(fontSize: 11, color: context.secondaryColor),
       ),
       onTap: () {
@@ -221,16 +238,14 @@ class AppearanceScreen extends ConsumerWidget {
                   },
                   child: SuperListView.builder(
                     shrinkWrap: true,
-                    itemCount: AppLocalizations.supportedLocales.length,
+                    itemCount: nodeLaneSupportedLocales.length,
                     itemBuilder: (context, index) {
-                      final locale = AppLocalizations.supportedLocales[index];
+                      final locale = nodeLaneSupportedLocales[index];
                       return RadioListTile(
                         dense: true,
                         contentPadding: const EdgeInsets.all(0),
                         value: locale,
-                        title: Text(
-                          completeLanguageName(locale.toLanguageTag()),
-                        ),
+                        title: Text(nodeLaneLanguageName(locale)),
                       );
                     },
                   ),

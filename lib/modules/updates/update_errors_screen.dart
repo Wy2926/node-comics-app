@@ -6,6 +6,10 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/migrate_screen.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/services/update_errors_provider.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_update_errors_screen.dart';
 
 /// Persistent list of the last library update's failures. Each entry can be
 /// dismissed or migrated away, so recurring source failures don't have to be
@@ -16,20 +20,32 @@ class UpdateErrorsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final errors = ref.watch(updateErrorsProvider);
+    if (isMobile && !isTv) {
+      return MobileUpdateErrorsScreen(
+        errors: errors,
+        findManga: mangaRepository.findById,
+        onDismiss: ref.read(updateErrorsProvider.notifier).remove,
+        onClear: ref.read(updateErrorsProvider.notifier).clear,
+        onMigrate: (manga) => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => MigrationScreen(manga: manga)),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Update errors'),
+        title: Text(context.l10n.update_errors),
         actions: [
           if (errors.isNotEmpty)
             IconButton(
-              tooltip: 'Clear all',
+              tooltip: context.l10n.clear_all,
               icon: const Icon(Icons.clear_all),
               onPressed: () => ref.read(updateErrorsProvider.notifier).clear(),
             ),
         ],
       ),
       body: errors.isEmpty
-          ? const Center(child: Text('No update errors'))
+          ? Center(child: Text(context.l10n.no_update_errors))
           : ListView.builder(
               itemCount: errors.length,
               itemBuilder: (context, index) {
@@ -52,7 +68,7 @@ class UpdateErrorsScreen extends ConsumerWidget {
                     children: [
                       if (manga != null)
                         IconButton(
-                          tooltip: 'Migrate',
+                          tooltip: context.l10n.migrate,
                           icon: const Icon(Icons.swap_horiz),
                           onPressed: () => Navigator.push(
                             context,
@@ -62,7 +78,7 @@ class UpdateErrorsScreen extends ConsumerWidget {
                           ),
                         ),
                       IconButton(
-                        tooltip: 'Dismiss',
+                        tooltip: context.l10n.dismiss,
                         icon: const Icon(Icons.close),
                         onPressed: () => ref
                             .read(updateErrorsProvider.notifier)

@@ -3,10 +3,12 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/tracker_library/tracker_item_card.dart';
-import 'package:mangayomi/modules/widgets/bottom_text_widget.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 class TrackerLibraryImageCard extends StatelessWidget {
   final TrackSearch track;
@@ -22,89 +24,71 @@ class TrackerLibraryImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasData = libraryTrack?.mangaId != null;
-    return GestureDetector(
-      onTap: () => _showCard(context, libraryTrack?.mangaId),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10),
-        child: Stack(
-          children: [
-            SizedBox(
-              width: 110,
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: Stack(
-                      children: [
-                        cachedNetworkImage(
-                          imageUrl: toImgUrl(track.coverUrl ?? ""),
-                          width: 110,
-                          height: 150,
-                          fit: BoxFit.cover,
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final title = track.title ?? context.l10n.unknown;
+    return SizedBox(
+      width: NodeLaneTokens.detailCoverWidth,
+      child: Semantics(
+        button: true,
+        label: title,
+        child: NodeLaneGroupSurface(
+          child: InkWell(
+            onTap: () => _showCard(context, libraryTrack?.mangaId),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                  aspectRatio: 1 / NodeLaneTokens.coverAspectRatio,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      cachedNetworkImage(
+                        imageUrl: toImgUrl(track.coverUrl ?? ''),
+                        width: NodeLaneTokens.detailCoverWidth,
+                        height:
+                            NodeLaneTokens.detailCoverWidth *
+                            NodeLaneTokens.coverAspectRatio,
+                        fit: BoxFit.cover,
+                        errorWidget: Icon(
+                          icons.manga,
+                          size: NodeLaneTokens.emptyStateIconSize,
+                          color: t.muted,
                         ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Text.rich(
-                            TextSpan(
-                              style: TextStyle(
-                                background: Paint()
-                                  ..color = Theme.of(context)
-                                      .scaffoldBackgroundColor
-                                      .withValues(alpha: 0.75)
-                                  ..strokeWidth = 20.0
-                                  ..strokeJoin = StrokeJoin.round
-                                  ..style = PaintingStyle.stroke,
-                              ),
-                              children: [
-                                WidgetSpan(
-                                  child: Icon(
-                                    Icons.star,
-                                    color: context.primaryColor,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: " ${track.score ?? "?"}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                      ),
+                      PositionedDirectional(
+                        top: NodeLaneTokens.space8,
+                        end: NodeLaneTokens.space8,
+                        child: NodeLaneCoverBadge(
+                          track.score?.toString() ?? '—',
+                          icon: icons.favorite,
+                        ),
+                      ),
+                      if (libraryTrack?.mangaId != null)
+                        PositionedDirectional(
+                          bottom: NodeLaneTokens.space8,
+                          start: NodeLaneTokens.space8,
+                          child: NodeLaneCoverBadge(
+                            '',
+                            icon: icons.librarySelected,
+                            tone: NodeLaneBadgeTone.neutral,
+                            semanticsLabel: context.l10n.in_library,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  BottomTextWidget(
-                    fontSize: 12.0,
-                    text: track.title!,
-                    isLoading: true,
-                    textColor: Theme.of(context).textTheme.bodyLarge!.color,
-                    isComfortableGrid: true,
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 110,
-              height: 150,
-              color: hasData ? Colors.black.withValues(alpha: 0.7) : null,
-            ),
-            if (hasData)
-              Positioned(
-                top: 0,
-                left: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Icon(
-                    Icons.collections_bookmark,
-                    color: context.primaryColor,
+                    ],
                   ),
                 ),
-              ),
-          ],
+                Padding(
+                  padding: const EdgeInsets.all(NodeLaneTokens.space8),
+                  child: Text(
+                    title,
+                    style: t.label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

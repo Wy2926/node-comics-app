@@ -10,6 +10,10 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/date.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_tracker_card.dart';
+
 import 'package:numberpicker/numberpicker.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -36,7 +40,7 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
   @override
   initState() {
     super.initState();
-    _init();
+    if (!isMobile || isTv) _init();
   }
 
   Future<void> _init() async {
@@ -60,6 +64,15 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      return MobileTrackerCard(
+        track: widget.trackRes,
+        itemType: widget.itemType,
+        mangaId: widget.mangaId,
+        syncId: widget.syncId,
+        hide: widget.hide,
+      );
+    }
     final l10n = l10nLocalizations(context);
     final l10nLocale = ref.watch(l10nLocaleStateProvider);
     return Container(

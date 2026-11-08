@@ -1,9 +1,10 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/utils/error_toast.dart';
+
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:archive/archive_io.dart';
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/backup_compression.dart';
@@ -20,7 +21,6 @@ import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/repositories/update_repository.dart';
 import 'package:mangayomi/services/backup_password_storage.dart';
-import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/share.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -38,77 +38,43 @@ Future<void> doBackUp(
   final compression = ref.read(backupCompressionLevelProvider);
   final compressionLevel = compression.clamp(0, 9).toInt();
   try {
-    final zipPath = await writeMangayomiBackupZip(
+    final zipPath = await writeNodeLaneBackupZip(
       list: list,
       directory: path,
       compressionLevel: compressionLevel,
     );
     if (context != null && context.mounted) {
+      final l10n = context.l10n;
+      final box = context.findRenderObject() as RenderBox?;
+      final origin = box == null
+          ? null
+          : box.localToGlobal(Offset.zero) & box.size;
       Navigator.pop(context);
-      BotToast.showNotification(
-        animationDuration: const Duration(milliseconds: 200),
-        animationReverseDuration: const Duration(milliseconds: 200),
-        duration: const Duration(seconds: 5),
-        backButtonBehavior: BackButtonBehavior.none,
-        leading: (_) =>
-            Image.asset(appIconAssets[Random().nextInt(2)], height: 25),
-        title: (_) => const Text(
-          "Backup created!",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        // The button used to be hidden on Linux, where share_plus throws on a
-        // file. shareOrCopy answers there with the backup's path on the
-        // clipboard, which is the thing a Linux user wanted from it anyway.
-        trailing: (_) => UnconstrainedBox(
-          alignment: Alignment.topLeft,
-          child: ElevatedButton(
-            onPressed: () {
-              final RenderBox? box = context.findRenderObject() as RenderBox?;
-              shareOrCopy(
-                ShareParams(
-                  files: [XFile(zipPath)],
-                  subject: p.basename(zipPath),
-                  title: "Share Mangayomi backup file",
-                  sharePositionOrigin: box == null
-                      ? null
-                      : box.localToGlobal(Offset.zero) & box.size,
-                ),
-              );
-            },
-            child: Text(context.l10n.share),
+      showNodeLaneNotice(
+        l10n.notice_backup_created,
+        description: l10n.notice_backup_ready,
+        kind: NodeLaneNoticeKind.success,
+        actionLabel: l10n.share,
+        onAction: () => shareOrCopy(
+          ShareParams(
+            files: [XFile(zipPath)],
+            subject: p.basename(zipPath),
+            title: l10n.share_backup_file,
+            sharePositionOrigin: origin,
           ),
         ),
-        enableSlideOff: true,
-        onlyOne: true,
-        crossPage: true,
       );
     }
-  } catch (e) {
+  } catch (e, stack) {
     if (context?.mounted ?? false) {
-      BotToast.showNotification(
-        animationDuration: const Duration(milliseconds: 200),
-        animationReverseDuration: const Duration(milliseconds: 200),
-        duration: const Duration(seconds: 7),
-        backButtonBehavior: BackButtonBehavior.none,
-        leading: (_) => const Icon(Icons.error, color: Colors.red),
-        title: (_) => Text(
-          "Backup failed: $e",
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.red,
-          ),
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-        ),
-        enableSlideOff: true,
-        onlyOne: true,
-        crossPage: true,
-      );
+      toastError(e, stack: stack, source: 'backup');
+    } else {
+      recordError(e, stack: stack, source: 'backup');
     }
   }
 }
 
-Future<String> writeMangayomiBackupZip({
+Future<String> writeNodeLaneBackupZip({
   required List<int> list,
   required String directory,
   int compressionLevel = 6,
@@ -190,7 +156,7 @@ Future<String> writeMangayomiBackupZip({
   }
   final regExp = RegExp(r'[^a-zA-Z0-9 .()\-\s]');
   final name =
-      'mangayomi_${DateTime.now().toString().replaceAll(regExp, '_').replaceAll(' ', '_')}';
+      'nodelane-comics_${DateTime.now().toString().replaceAll(regExp, '_').replaceAll(' ', '_')}';
   final backupFilePath = p.join(directory, "$name.backup.db");
   final file = File(backupFilePath);
 

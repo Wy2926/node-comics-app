@@ -1,56 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 List<Widget> dialogCancelConfirmActions({
   required BuildContext dialogContext,
   required String confirmLabel,
-  Color? confirmColor,
+  bool destructive = false,
   VoidCallback? onCancel,
   VoidCallback? onConfirm,
-}) {
-  final l10n = dialogContext.l10n;
-  return [
-    Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        TextButton(
-          onPressed: onCancel ?? () => Navigator.pop(dialogContext, false),
-          child: Text(
-            l10n.cancel,
-            style: TextStyle(color: dialogContext.primaryColor),
-          ),
-        ),
-        TextButton(
-          onPressed: onConfirm ?? () => Navigator.pop(dialogContext, true),
-          child: Text(
-            confirmLabel,
-            style: TextStyle(color: confirmColor ?? dialogContext.primaryColor),
-          ),
-        ),
-      ],
-    ),
-  ];
-}
+}) => [
+  NodeLaneDialogAction(
+    label: dialogContext.l10n.cancel,
+    secondary: true,
+    onPressed: onCancel ?? () => Navigator.pop(dialogContext, false),
+  ),
+  NodeLaneDialogAction(
+    label: confirmLabel,
+    destructive: destructive,
+    onPressed: onConfirm ?? () => Navigator.pop(dialogContext, true),
+  ),
+];
 
-List<Widget> dialogCancelOnlyAction(BuildContext dialogContext) {
-  final l10n = dialogContext.l10n;
-  return [
-    TextButton(
-      onPressed: () => Navigator.pop(dialogContext, null),
-      child: Text(
-        l10n.cancel,
-        style: TextStyle(color: dialogContext.primaryColor),
-      ),
-    ),
-  ];
-}
+List<Widget> dialogCancelOnlyAction(BuildContext dialogContext) => [
+  NodeLaneDialogAction(
+    label: dialogContext.l10n.cancel,
+    secondary: true,
+    onPressed: () => Navigator.pop(dialogContext),
+  ),
+];
 
-/// Asked right before a restore that would push its data to a connected
-/// sync server — lets the user back out of overwriting good server data
-/// with a wrong backup, or re-enable sync if it was previously disabled.
-/// Not dismissible (no back button, no barrier tap); always resolves to
-/// true (sync/re-enable) or false (skip/keep disabled).
+/// Restore still requires an explicit decision before updating the server.
 Future<bool?> confirmSyncAfterRestore(
   BuildContext context, {
   required bool syncOn,
@@ -59,62 +39,51 @@ Future<bool?> confirmSyncAfterRestore(
   return showDialog<bool>(
     context: context,
     barrierDismissible: false,
-    builder: (dialogContext) {
-      return PopScope(
-        canPop: false,
-        child: AlertDialog(
-          title: Text(
-            syncOn
-                ? l10n.restore_sync_question_title
-                : l10n.restore_sync_disabled_question_title,
-          ),
-          content: Text(
-            syncOn
-                ? l10n.restore_sync_question_message
-                : l10n.restore_sync_disabled_question_message,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(
-                syncOn
-                    ? l10n.restore_sync_question_deny
-                    : l10n.restore_sync_question_keep_disabled,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(
-                syncOn
-                    ? l10n.restore_sync_question_confirm
-                    : l10n.restore_sync_question_reenable,
-              ),
-            ),
-          ],
+    builder: (dialogContext) => PopScope(
+      canPop: false,
+      child: NodeLaneAlertDialog(
+        title: Text(
+          syncOn
+              ? l10n.restore_sync_question_title
+              : l10n.restore_sync_disabled_question_title,
         ),
-      );
-    },
+        content: Text(
+          syncOn
+              ? l10n.restore_sync_question_message
+              : l10n.restore_sync_disabled_question_message,
+        ),
+        actions: [
+          NodeLaneDialogAction(
+            label: syncOn
+                ? l10n.restore_sync_question_deny
+                : l10n.restore_sync_question_keep_disabled,
+            secondary: true,
+            onPressed: () => Navigator.pop(dialogContext, false),
+          ),
+          NodeLaneDialogAction(
+            label: syncOn
+                ? l10n.restore_sync_question_confirm
+                : l10n.restore_sync_question_reenable,
+            destructive: syncOn,
+            onPressed: () => Navigator.pop(dialogContext, true),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
 void showBusyDialog(BuildContext context, String message) {
-  showDialog(
+  showDialog<void>(
     context: context,
     barrierDismissible: false,
-    builder: (dialogContext) => PopScope(
+    builder: (_) => PopScope(
       canPop: false,
-      child: AlertDialog(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
-            const SizedBox(width: 16),
-            Expanded(child: Text(message)),
-          ],
+      child: NodeLaneAlertDialog(
+        content: NodeLaneNotice(
+          message: message,
+          kind: NodeLaneNoticeKind.progress,
+          contained: false,
         ),
       ),
     ),
@@ -124,4 +93,17 @@ void showBusyDialog(BuildContext context, String message) {
 void hideBusyDialog(BuildContext context) {
   final navigator = Navigator.of(context, rootNavigator: true);
   if (navigator.canPop()) navigator.pop();
+}
+
+void showLogOutDialog(
+  BuildContext context, {
+  required String serviceName,
+  required VoidCallback onLogOut,
+}) async {
+  final confirmed = await showNodeLaneConfirmation(
+    context,
+    title: context.l10n.log_out_from(serviceName),
+    confirmLabel: context.l10n.log_out,
+  );
+  if (confirmed && context.mounted) onLogOut();
 }

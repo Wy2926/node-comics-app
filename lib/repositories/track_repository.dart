@@ -189,6 +189,9 @@ class TrackRepository {
   void putAllPreferencesSync(List<TrackPreference> preferences) =>
       isar.trackPreferences.putAllSync(preferences);
 
+  void deletePreferenceSync(int syncId) =>
+      isar.trackPreferences.deleteSync(syncId);
+
   void clearPreferencesSync() => isar.trackPreferences.clearSync();
 
   // Escape hatch for track-rooted transactions too specific to name.

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/source.dart';
@@ -10,6 +11,7 @@ import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 
 class MassMigrationDestinationScreen extends ConsumerWidget {
   const MassMigrationDestinationScreen({required this.sourceGroup, super.key});
@@ -23,6 +25,58 @@ class MassMigrationDestinationScreen extends ConsumerWidget {
       sourceGroup: sourceGroup,
       showNSFW: ref.watch(showNSFWStateProvider),
     );
+
+    if (isMobile && !isTv) {
+      return MobileBrowsePage(
+        title: l10n.mass_migration_destination_source,
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  '${sourceGroup.sourceName} · ${l10n.mass_migration_item_count(sourceGroup.count)}',
+                ),
+              ),
+            ),
+            if (sources.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(l10n.mass_migration_no_destination_sources),
+                ),
+              ),
+            SliverList.builder(
+              itemCount: sources.length,
+              itemBuilder: (_, index) {
+                final source = sources[index];
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: NodeLaneRow.card(
+                    title: source.name ?? l10n.mass_migration_unknown_source,
+                    leading: MassMigrationSourceIcon(source: source),
+                    subtitle: [
+                      if (source.lang?.isNotEmpty == true)
+                        completeLanguageName(source.lang!),
+                      l10n.mass_migration_installed,
+                    ].join(' · '),
+                    onTap: () => Navigator.push(
+                      context,
+                      createRoute(
+                        page: MassMigrationRunnerScreen(
+                          sourceGroup: sourceGroup,
+                          destinationSource: source,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.mass_migration_destination_source)),

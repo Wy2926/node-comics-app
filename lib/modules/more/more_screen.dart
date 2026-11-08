@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/more/mobile_more_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/modules/more/widgets/incognito_mode_widget.dart';
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/nodelane/nodelane_provider.dart';
-import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
 
 class MoreScreen extends ConsumerStatefulWidget {
   const MoreScreen({super.key});
@@ -22,61 +21,20 @@ class MoreScreen extends ConsumerStatefulWidget {
 class MoreScreenState extends ConsumerState<MoreScreen> {
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) return const MobileMoreScreen();
     final l10n = l10nLocalizations(context)!;
     final hiddenItems = ref.watch(hideItemsStateProvider);
-    final accountService = ref.watch(nodeLaneAuthProvider);
-    final chinese = Localizations.localeOf(context).languageCode == 'zh';
     return Scaffold(
       body: SingleChildScrollView(
-        padding: tvPageInsets,
+        padding: tvPageInsets.add(pageBottomInsets(context)),
         child: Column(
           children: [
             SizedBox(height: AppBar().preferredSize.height),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              child: Image.asset(
-                appIconAssets[2],
-                color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-                fit: BoxFit.cover,
-                height: 100,
-              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: NodeLaneBrandMark(size: 100),
             ),
             const Divider(),
-            ListenableBuilder(
-              listenable: accountService,
-              builder: (context, _) {
-                final theme = NodeLaneTheme.apply(Theme.of(context));
-                return Theme(
-                  data: theme,
-                  child: ListTileWidget(
-                    onTap: () => context.push('/nodelaneAccount'),
-                    icon: Icons.account_circle_outlined,
-                    leading: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: NodeLaneTheme.panel(
-                        theme.colorScheme,
-                        accented: true,
-                      ).copyWith(borderRadius: NodeLaneTheme.controlRadius),
-                      child: Icon(
-                        Icons.person_outline,
-                        size: 20,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    title: chinese ? 'NodeLane 账号' : 'NodeLane account',
-                    subtitle:
-                        accountService.state.account?.user.name ??
-                        (!accountService.state.initialized ||
-                                accountService.state.busy
-                            ? (chinese ? '正在连接' : 'Connecting')
-                            : (chinese ? '未登录' : 'Signed out')),
-                  ),
-                );
-              },
-            ),
             // ListTile(
             //   onTap: () {},
             //   leading: const SizedBox(height: 40, child: Icon(Icons.cloud_off)),
@@ -90,13 +48,13 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
             const DownloadedOnlyWidget(),
             const IncognitoModeWidget(),
             const Divider(),
-            if (hiddenItems.contains("/history"))
+            if (hiddenItems.contains('/browser'))
               ListTileWidget(
                 onTap: () {
-                  context.push('/history');
+                  context.go('/browser');
                 },
-                icon: Icons.history,
-                title: l10n.history,
+                icon: Icons.tab_outlined,
+                title: context.l10n.browser_title,
               ),
             // Downloads are hidden on TV: no offline use case, and the download
             // buttons are hidden there too, so a queue entry would just dangle.

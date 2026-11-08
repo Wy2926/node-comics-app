@@ -1,13 +1,5 @@
 import 'package:mangayomi/services/crash_report.dart';
-
-/// Builds the "report this" link for a [CrashReport].
-///
-/// It opens the repository's own issue form with the parts the app already
-/// knows filled in. Nothing is sent by opening it: the reader lands on a
-/// GitHub page holding a draft, sees every word of it, and decides whether to
-/// press submit. That is the whole reason this is a link and not a POST.
-const _repo = 'kodjodevf/mangayomi';
-const _template = 'report_issue.yml';
+import 'package:mangayomi/utils/nodelane_brand.dart';
 
 /// GitHub stops honouring prefilled values on very long URLs, so the body
 /// fields and the final encoded URL are both capped. Per-field caps alone are
@@ -15,6 +7,8 @@ const _template = 'report_issue.yml';
 const _maxFieldLength = 2500;
 const _maxIssueUrlLength = 6000;
 
+/// Builds the repository's prefilled issue link for the reader to review.
+/// Building this link does not submit a report.
 Uri buildIssueUrl(
   CrashReport report, {
   required String appVersion,
@@ -25,7 +19,7 @@ Uri buildIssueUrl(
     throw ArgumentError.value(
       report,
       'report',
-      'Only Mangayomi app failures can be filed in this repository',
+      'Only NodeLane app failures can be filed in this repository',
     );
   }
   final cause = report.likelyCause;
@@ -82,12 +76,12 @@ Uri buildIssueUrl(
     );
 
   final query = <String, String>{
-    'template': _template,
+    'template': 'report_issue.yml',
     'title': _issueTitle(report),
     'reproduce-steps': _cap(whatHappened.toString()),
     'actual-behavior': _cap(actual.toString()),
     'expected-behavior': 'No error.',
-    'mangayomi-version': appVersion,
+    'nodelane-comics-version': appVersion,
     'device': device,
     'other-details': _cap(details.toString()),
   };
@@ -110,11 +104,7 @@ String recentErrorsText(List<CrashReport> reports, {int take = 5}) {
       .join('\n');
 }
 
-String _cap(String value) {
-  return _capTo(value, _maxFieldLength);
-}
-
-String _capTo(String value, int limit) {
+String _cap(String value, [int limit = _maxFieldLength]) {
   final trimmed = value.trim();
   if (trimmed.length <= limit) return trimmed;
   const suffix = '\n... truncated';
@@ -124,15 +114,16 @@ String _capTo(String value, int limit) {
 
 String _issueTitle(CrashReport report) {
   final rawContext = report.screen ?? report.source;
-  final context = _capTo(
+  final context = _cap(
     rawContext.replaceAll(RegExp(r'\s+'), ' '),
     40,
   ).replaceAll('\n', '');
-  return _capTo('[Bug][$context] ${report.summary}', 180).replaceAll('\n', '');
+  return _cap('[Bug][$context] ${report.summary}', 180).replaceAll('\n', '');
 }
 
 Uri _fitIssueUrl(Map<String, String> query) {
-  Uri build() => Uri.https('github.com', '/$_repo/issues/new', query);
+  Uri build() =>
+      Uri.https('github.com', '/${NodeLaneBrand.repository}/issues/new', query);
 
   var url = build();
   // Preserve the diagnostic first. Stack/log details are reduced before the
@@ -153,7 +144,7 @@ Uri _fitIssueUrl(Map<String, String> query) {
       final nextLength = value.length - reduction < entry.value
           ? entry.value
           : value.length - reduction;
-      query[entry.key] = _capTo(value, nextLength);
+      query[entry.key] = _cap(value, nextLength);
       changed = true;
       break;
     }

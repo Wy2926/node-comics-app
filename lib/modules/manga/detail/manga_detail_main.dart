@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/manga/detail/manga_details_view.dart';
 import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_providers.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_loading.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 class MangaReaderDetail extends ConsumerStatefulWidget {
   final int mangaId;
@@ -25,13 +28,21 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
   Future<void> _init() async {
     // Wait for the widget tree to settle before loading detail
     await WidgetsBinding.instance.endOfFrame;
-    await ref.read(
-      updateMangaDetailProvider(mangaId: widget.mangaId, isInit: true).future,
-    );
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    await _updateDetail(isInit: true);
+  }
+
+  Future<void> _updateDetail({bool isInit = false}) async {
+    if (!mounted || (_isLoading && !isInit)) return;
+    if (!isInit) setState(() => _isLoading = true);
+    try {
+      await ref.read(
+        updateMangaDetailProvider(
+          mangaId: widget.mangaId,
+          isInit: isInit,
+        ).future,
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -44,62 +55,38 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
     return Scaffold(
       body: manga.when(
         data: (manga) {
-          return StreamBuilder(
-            stream: sourceRepository.watchActiveByItemTypeLangName(
-              manga!.itemType,
-              manga.lang!,
-              manga.source!,
-            ),
+          if (manga == null) {
+            return _loadingPage();
+          }
+          final hasSourceInfo = manga.lang != null && manga.source != null;
+          return StreamBuilder<List<Source>>(
+            initialData: hasSourceInfo
+                ? sourceRepository.getActiveByItemTypeLangName(
+                    manga.itemType,
+                    manga.lang!,
+                    manga.source!,
+                  )
+                : const [],
+            stream: hasSourceInfo
+                ? sourceRepository.watchActiveByItemTypeLangName(
+                    manga.itemType,
+                    manga.lang!,
+                    manga.source!,
+                  )
+                : const Stream.empty(),
             builder: (context, snapshot) {
               final sourceExist = snapshot.hasData && snapshot.data!.isNotEmpty;
+              Future<void> refreshDetail() async {
+                if (sourceExist) await _updateDetail();
+              }
+
               return RefreshIndicator(
-                onRefresh: () async {
-                  if (sourceExist && !_isLoading) {
-                    await ref.read(
-                      updateMangaDetailProvider(
-                        mangaId: manga.id,
-                        isInit: false,
-                      ).future,
-                    );
-                  }
-                },
-                child: Stack(
-                  children: [
-                    MangaDetailsView(
-                      manga: manga,
-                      sourceExist: sourceExist,
-                      checkForUpdate: (value) async {
-                        if (!_isLoading) {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                          if (sourceExist) {
-                            await ref.read(
-                              updateMangaDetailProvider(
-                                mangaId: manga.id,
-                                isInit: false,
-                              ).future,
-                            );
-                          }
-                          if (mounted) {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          }
-                        }
-                      },
-                    ),
-                    if (_isLoading)
-                      const Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 40),
-                          child: Center(child: RefreshProgressIndicator()),
-                        ),
-                      ),
-                  ],
+                onRefresh: refreshDetail,
+                child: MangaDetailsView(
+                  manga: manga,
+                  loading: _isLoading,
+                  sourceExist: sourceExist,
+                  onRefresh: refreshDetail,
                 ),
               );
             },
@@ -109,9 +96,13 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
           return ErrorText(error);
         },
         loading: () {
-          return const ProgressCenter();
+          return _loadingPage();
         },
       ),
     );
   }
+
+  Widget _loadingPage() => isMobile && !isTv
+      ? const MobileDetailLoadingPage()
+      : const NodeLaneEmptyState.loading();
 }

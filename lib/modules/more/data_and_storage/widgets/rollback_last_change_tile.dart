@@ -1,12 +1,18 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/pre_import_backup.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/restore.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
 import 'package:mangayomi/modules/more/widgets/dialog_actions.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/error_toast.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_library_action.dart';
+import 'mobile_library_snapshots.dart';
 
 class RollbackLastChangeTile extends ConsumerWidget {
   const RollbackLastChangeTile({super.key});
@@ -14,8 +20,32 @@ class RollbackLastChangeTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final snapshots = ref.watch(lastLibrarySnapshotProvider).asData?.value;
-    if (snapshots == null || snapshots.isEmpty) return const SizedBox.shrink();
     final l10n = context.l10n;
+    if (isMobile && !isTv) {
+      return MobileLibraryAction(
+        title: l10n.library_snapshot_history,
+        subtitle: snapshots == null
+            ? l10n.roll_back_last_change
+            : snapshots.isEmpty
+            ? l10n.library_snapshot_empty
+            : l10n.roll_back_available_count(snapshots.length),
+        icon: Icons.settings_backup_restore_rounded,
+        onOpen: () => Navigator.push<void>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MobileLibrarySnapshots(
+              onRollback: (pageContext, snapshot) => offerLibraryRollback(
+                pageContext,
+                ref,
+                snapshot.backupPath,
+                snapshot: snapshot,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (snapshots == null || snapshots.isEmpty) return const SizedBox.shrink();
 
     if (snapshots.length == 1) {
       final snapshot = snapshots.first;
@@ -77,19 +107,26 @@ class RollbackLastChangeTile extends ConsumerWidget {
 Future<void> offerLibraryRollback(
   BuildContext context,
   WidgetRef ref,
-  String safetyBackupPath,
-) async {
+  String safetyBackupPath, {
+  LibrarySafetySnapshot? snapshot,
+}) async {
   final l10n = context.l10n;
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
+        scrollable: isMobile && !isTv,
         title: Text(l10n.roll_back),
-        content: Text(l10n.roll_back_confirm_message),
+        content: Text(
+          snapshot == null
+              ? l10n.roll_back_confirm_message
+              : '${snapshot.description}\n${librarySnapshotTime(context, snapshot)}'
+                    '\n\n${l10n.library_snapshot_restore_message}',
+        ),
         actions: dialogCancelConfirmActions(
           dialogContext: dialogContext,
           confirmLabel: l10n.roll_back,
-          confirmColor: Colors.red,
+          destructive: true,
         ),
       );
     },
@@ -119,11 +156,16 @@ Future<void> offerLibraryRollback(
         syncAfterRestore: syncAfterRestore,
       ).future,
     );
+  } catch (e, s) {
+    // Keep the snapshot: the roll back did not happen, so it is still the
+    // way back.
+    toastError(e, stack: s, source: 'rollback');
+    return;
   } finally {
     if (context.mounted) hideBusyDialog(context);
   }
   await clearLastLibrarySnapshot();
   if (!context.mounted) return;
   ref.invalidate(lastLibrarySnapshotProvider);
-  botToast(l10n.roll_back_done);
+  showNodeLaneNotice(l10n.roll_back_done, kind: NodeLaneNoticeKind.success);
 }

@@ -9,6 +9,8 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/headers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class MassMigrationSourceIcon extends StatelessWidget {
   const MassMigrationSourceIcon({required this.source, super.key});
@@ -61,6 +63,7 @@ class MassMigrationCover extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) return _mobileCover(context, ref);
     final customCover = libraryItem?.customCoverImage;
     if (customCover != null && customCover.isNotEmpty) {
       return ClipRRect(
@@ -110,6 +113,56 @@ class MassMigrationCover extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _mobileCover(BuildContext context, WidgetRef ref) {
+    final colors = NodeLaneTokens.of(context);
+    final placeholder = ColoredBox(
+      color: colors.soft,
+      child: Center(
+        child: Icon(Icons.auto_stories_outlined, color: colors.muted),
+      ),
+    );
+    final bytes = libraryItem?.customCoverImage;
+    final rawUrl =
+        remoteItem?.imageUrl ??
+        libraryItem?.customCoverFromTracker ??
+        libraryItem?.imageUrl ??
+        '';
+    Widget cover = placeholder;
+    try {
+      if (bytes?.isNotEmpty == true) {
+        cover = Image.memory(
+          Uint8List.fromList(bytes!),
+          cacheWidth: (width * MediaQuery.devicePixelRatioOf(context)).round(),
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => placeholder,
+        );
+      } else if (rawUrl.trim().isNotEmpty) {
+        final headers =
+            source?.name?.isNotEmpty == true && source?.lang?.isNotEmpty == true
+            ? ref.watch(
+                headersProvider(
+                  source: source!.name!,
+                  lang: source!.lang!,
+                  sourceId: source!.id,
+                ),
+              )
+            : null;
+        cover = Image(
+          image: coverProvider(toImgUrl(rawUrl), headers: headers),
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => placeholder,
+        );
+      }
+    } catch (_) {
+      cover = placeholder;
+    }
+    return SizedBox(
+      width: width,
+      height: height,
+      child: ClipRRect(borderRadius: BorderRadius.circular(10), child: cover),
+    );
+  }
 }
 
 class MassMigrationChapterSection extends StatelessWidget {
@@ -120,7 +173,7 @@ class MassMigrationChapterSection extends StatelessWidget {
   });
 
   final String title;
-  final List<String> chapters;
+  final Iterable<String> chapters;
 
   @override
   Widget build(BuildContext context) {
@@ -149,8 +202,8 @@ class MassMigrationChapterSection extends StatelessWidget {
                   title: Text(
                     chapter,
                     style: const TextStyle(fontSize: 13),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: isMobile && !isTv ? null : 2,
+                    overflow: isMobile && !isTv ? null : TextOverflow.ellipsis,
                   ),
                 ),
               ),

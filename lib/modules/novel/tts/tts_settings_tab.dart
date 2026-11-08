@@ -4,57 +4,7 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/novel/tts/novel_tts_service.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
-const _localeNames = <String, String>{
-  'ar-001': 'العربية',
-  'bg-BG': 'Български',
-  'bn-IN': 'বাংলা (ভারত)',
-  'ca-ES': 'Català',
-  'cs-CZ': 'Čeština',
-  'da-DK': 'Dansk',
-  'de-DE': 'Deutsch',
-  'el-GR': 'Ελληνικά',
-  'en-AU': 'English (Australia)',
-  'en-GB': 'English (UK)',
-  'en-IE': 'English (Ireland)',
-  'en-IN': 'English (India)',
-  'en-US': 'English (US)',
-  'en-ZA': 'English (South Africa)',
-  'es-ES': 'Español (España)',
-  'es-MX': 'Español (México)',
-  'fi-FI': 'Suomi',
-  'fr-CA': 'Français (Canada)',
-  'fr-FR': 'Français (France)',
-  'he-IL': 'עברית',
-  'hi-IN': 'हिन्दी',
-  'hr-HR': 'Hrvatski',
-  'hu-HU': 'Magyar',
-  'id-ID': 'Bahasa Indonesia',
-  'it-IT': 'Italiano',
-  'ja-JP': '日本語',
-  'kn-IN': 'ಕನ್ನಡ',
-  'ko-KR': '한국어',
-  'ms-MY': 'Bahasa Melayu',
-  'nb-NO': 'Norsk Bokmål',
-  'nl-BE': 'Nederlands (België)',
-  'nl-NL': 'Nederlands',
-  'pl-PL': 'Polski',
-  'pt-BR': 'Português (Brasil)',
-  'pt-PT': 'Português (Portugal)',
-  'ro-RO': 'Română',
-  'ru-RU': 'Русский',
-  'sk-SK': 'Slovenčina',
-  'sl-SI': 'Slovenščina',
-  'sv-SE': 'Svenska',
-  'ta-IN': 'தமிழ்',
-  'te-IN': 'తెలుగు',
-  'th-TH': 'ไทย',
-  'tr-TR': 'Türkçe',
-  'uk-UA': 'Українська',
-  'vi-VN': 'Tiếng Việt',
-  'yue-HK': '粵語 (香港)',
-  'zh-CN': '中文 (简体)',
-  'zh-TW': '中文 (繁體)',
-};
+import 'tts_language_names.dart';
 
 class TtsSettingsTab extends ConsumerStatefulWidget {
   const TtsSettingsTab({super.key});
@@ -284,7 +234,7 @@ class _TtsSettingsTabState extends ConsumerState<TtsSettingsTab> {
                   ),
                   ..._languages.map((lang) {
                     final code = lang.toString();
-                    final name = _localeNames[code] ?? code;
+                    final name = ttsLocaleNames[code] ?? code;
                     return DropdownMenuItem<String>(
                       value: code,
                       child: Text('$name ($code)'),

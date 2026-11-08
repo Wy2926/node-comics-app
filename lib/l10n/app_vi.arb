@@ -1,0 +1,2682 @@
+{
+  "@@locale": "vi",
+  "app_update_details_hint": "Xem ghi chú phát hành và tùy chọn cài đặt",
+  "app_update_download": "Tải xuống bản cập nhật",
+  "app_update_download_hint": "Sau khi tải xuống, hãy làm theo lời nhắc để cài đặt bản cập nhật.",
+  "bookshelf_all": "Tất cả",
+  "bookshelf_search": "Thư viện tìm kiếm",
+  "app_update_allow_install": "Cho phép cài đặt ứng dụng trong cài đặt hệ thống, sau đó quay lại và nhấn Cài đặt.",
+  "app_update_waiting": "Đang chờ hệ thống tiếp tục tải xuống…",
+  "app_update_cancel_download": "Hủy tải xuống",
+  "app_update_remove_package": "Xóa gói đã tải xuống",
+  "app_name": "NodeLane Comics",
+  "settings_search_empty": "Không có cài đặt phù hợp",
+  "search_empty_hint": "Hãy thử từ khóa khác hoặc xóa tìm kiếm để xem mọi thứ.",
+  "search_clear": "Xóa tìm kiếm",
+  "app_updates": "Cập nhật ứng dụng",
+  "app_update_auto": "Kiểm tra khi khởi chạy",
+  "app_update_view": "Xem cập nhật",
+  "app_update_later": "Sau này",
+  "app_update_external_hint": "Mở liên kết cập nhật trong trình duyệt của bạn",
+  "app_update_failed": "Không thể kiểm tra cập nhật. Vui lòng thử lại.",
+  "app_update_opened": "Đã mở liên kết cập nhật",
+  "app_diagnostics": "Chẩn đoán và nhật ký",
+  "library": "Thư viện",
+  "updates_search": "Cập nhật tìm kiếm",
+  "updates": "Cập nhật",
+  "history": "Lịch sử",
+  "browse": "Duyệt qua",
+  "more": "Thêm",
+  "open_random_entry": "Mở mục ngẫu nhiên",
+  "import": "Nhập khẩu",
+  "filter": "Bộ lọc",
+  "ignore_filters": "Bỏ qua bộ lọc",
+  "downloaded": "Đã tải xuống",
+  "unread": "Chưa đọc",
+  "unwatched": "Chưa xem",
+  "started": "Đã bắt đầu",
+  "bookmarked": "Đã đánh dấu",
+  "sort": "Sắp xếp",
+  "alphabetically": "Theo thứ tự bảng chữ cái",
+  "last_read": "Đọc lần cuối",
+  "last_watched": "Đã xem lần cuối",
+  "last_update_check": "Kiểm tra cập nhật lần cuối",
+  "last_entry_delete_warning": "{count, plural, =1{Bạn đang xóa {entryType} duy nhất của {mediaType} này khỏi thư viện.} other{Bạn đang xóa tất cả {count} {entryTypePlural} của {mediaType} này khỏi thư viện.}}\nThao tác này cũng sẽ xóa toàn bộ {mediaType} khỏi thư viện của bạn.\n\nLưu ý: Bản thân các tập tin sẽ không bị xóa.",
+  "@last_entry_delete_warning": {
+    "description": "Warning when deleting all entries (chapters/episodes) of a manga/anime.",
+    "placeholders": {
+      "count": {},
+      "entryType": {},
+      "entryTypePlural": {},
+      "mediaType": {}
+    }
+  },
+  "chapter": "chương",
+  "episode": "tập",
+  "unread_count": "Số lượng chưa đọc",
+  "unwatched_count": "Số lượng chưa xem",
+  "latest_chapter": "Chương mới nhất",
+  "latest_episode": "Tập mới nhất",
+  "date_added": "Ngày thêm",
+  "display": "Hiển thị",
+  "display_mode": "Chế độ hiển thị",
+  "compact_grid": "Lưới nhỏ gọn",
+  "compression_level": "Mức nén",
+  "compression_info": "Độ nén càng cao thì tệp sao lưu càng chiếm ít dung lượng nhưng lại sử dụng nhiều CPU hơn. Mặc định: {level}",
+  "comfortable_grid": "Lưới thoải mái",
+  "cover_only_grid": "Lưới chỉ che",
+  "list": "Danh sách",
+  "badges": "Huy hiệu",
+  "downloaded_chapters": "Các chương đã tải xuống",
+  "downloaded_episodes": "Các tập đã tải xuống",
+  "language": "Ngôn ngữ",
+  "local_source": "Nguồn cục bộ",
+  "tabs": "Tab",
+  "show_category_tabs": "Hiển thị tab danh mục",
+  "show_numbers_of_items": "Hiển thị số lượng mục",
+  "other": "Khác",
+  "show_continue_reading_buttons": "Hiển thị nút tiếp tục đọc",
+  "show_continue_watching_buttons": "Hiển thị nút tiếp tục xem",
+  "empty_library": "Thư viện trống",
+  "search": "Tìm kiếm...",
+  "no_recent_updates": "Không có cập nhật gần đây",
+  "remove_everything": "Xóa mọi thứ",
+  "remove_everything_msg": "Bạn có chắc không? Tất cả lịch sử sẽ bị mất",
+  "remove_all_update_msg": "Bạn có chắc không? Toàn bộ bản cập nhật sẽ bị xóa",
+  "ok": "Được rồi",
+  "cancel": "Hủy bỏ",
+  "remove": "Xóa",
+  "remove_history_msg": "Thao tác này sẽ xóa ngày đọc của chương này. Bạn có chắc không?",
+  "last_used": "Được sử dụng lần cuối",
+  "pinned": "Đã ghim",
+  "sources": "Nguồn",
+  "install": "Cài đặt",
+  "update": "Cập nhật",
+  "latest": "Mới nhất",
+  "extensions": "Phần mở rộng",
+  "migrate": "Di chuyển",
+  "mass_migration_title": "Di cư hàng loạt",
+  "mass_migration_preview_items": "Xem trước các mục",
+  "mass_migration_destination_source": "Nguồn đích",
+  "mass_migration_no_library_items": "Không có mục thư viện nào có sẵn để di chuyển hàng loạt.",
+  "mass_migration_no_destination_sources": "Không có nguồn đích được cài đặt nào.",
+  "mass_migration_installed": "Đã cài đặt",
+  "mass_migration_items_ready_for_review": "{count, plural, =1{1 mục đã sẵn sàng để xem xét} other{{count} mục sẵn sàng để xem xét}}",
+  "@mass_migration_items_ready_for_review": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_item_count": "{count, plural, =1{1 sản phẩm} other{{count} mục}}",
+  "@mass_migration_item_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_select_destination_source": "Chọn nguồn đích",
+  "mass_migration_finding_matches": "Tìm kết quả trùng khớp trong {source} • {language}",
+  "@mass_migration_finding_matches": {
+    "placeholders": {
+      "source": {},
+      "language": {}
+    }
+  },
+  "mass_migration_processing_item": "Đang xử lý mục {current} của {total}",
+  "@mass_migration_processing_item": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_waiting_next_item": "Chờ 2 giây trước mục tiếp theo...",
+  "mass_migration_waiting_next_migration": "Chờ 2 giây trước lần di chuyển tiếp theo...",
+  "mass_migration_matched_so_far": "Đã khớp cho đến nay: {count}",
+  "@mass_migration_matched_so_far": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_no_match_count": "Không khớp: {count}",
+  "@mass_migration_no_match_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_review_matches": "Xem lại kết quả phù hợp cho {source}",
+  "@mass_migration_review_matches": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "mass_migration_found_matches": "Đã tìm thấy kết quả phù hợp: {count}",
+  "@mass_migration_found_matches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_no_matches": "Không có kết quả trùng khớp: {count}",
+  "@mass_migration_no_matches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_selected_to_migrate": "Đã chọn để di chuyển: {count}",
+  "@mass_migration_selected_to_migrate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_finish_review": "Kết thúc đánh giá",
+  "mass_migration_migrate_selected": "Di chuyển các mục đã chọn ({count})",
+  "@mass_migration_migrate_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_migrating_selected": "Đang di chuyển các mục đã chọn sang {source}",
+  "@mass_migration_migrating_selected": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "mass_migration_no_items_selected": "Không có mục nào được chọn để di chuyển.",
+  "mass_migration_migrating_item": "Đang di chuyển mục {current} của {total}",
+  "@mass_migration_migrating_item": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_complete": "Di chuyển hàng loạt hoàn tất",
+  "mass_migration_complete_success_message": "Tất cả các mục được chọn đã được xử lý thành công.",
+  "mass_migration_complete_partial_message": "Quá trình di chuyển đã hoàn tất với một số mục vẫn cần được xử lý theo cách thủ công.",
+  "mass_migration_route_summary": "{source} → {destination}",
+  "@mass_migration_route_summary": {
+    "placeholders": {
+      "source": {},
+      "destination": {}
+    }
+  },
+  "mass_migration_processed": "Đã xử lý",
+  "mass_migration_matched": "Đã khớp",
+  "mass_migration_migrated": "Đã di chuyển",
+  "mass_migration_skipped": "Đã bỏ qua",
+  "mass_migration_failed": "Thất bại",
+  "mass_migration_failed_items": "Các mục bị lỗi",
+  "mass_migration_exit": "Thoát khỏi di cư hàng loạt",
+  "mass_migration_no_destination_match": "Không tìm thấy điểm đến phù hợp",
+  "mass_migration_query": "Truy vấn: {query}",
+  "@mass_migration_query": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "mass_migration_skip": "Bỏ qua",
+  "mass_migration_loading": "Đang tải...",
+  "mass_migration_choose_another_result": "Chọn kết quả khác",
+  "mass_migration_source_chapters": "Nguồn chương",
+  "mass_migration_destination_chapters": "Chương đích",
+  "mass_migration_chapter_count": "{count, plural, =1{1 chương} other{{count} chương}}",
+  "@mass_migration_chapter_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_source_chapter_count": "{count, plural, =1{1 chương nguồn} other{{count} chương nguồn}}",
+  "@mass_migration_source_chapter_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_destination_chapter_count": "{count, plural, =1{1 chương đích} other{{count} chương đích}}",
+  "@mass_migration_destination_chapter_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_no_chapters_found": "Không tìm thấy chương nào.",
+  "mass_migration_and_more_chapters": "Và {count} thêm...",
+  "@mass_migration_and_more_chapters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_unknown_title": "Tiêu đề không rõ",
+  "mass_migration_unknown_match": "Trận đấu không xác định",
+  "mass_migration_unknown_source": "Nguồn không xác định",
+  "mass_migration_unknown_chapter": "Chương không xác định",
+  "migrate_confirm": "Di chuyển sang nguồn khác",
+  "clean_database": "Làm sạch cơ sở dữ liệu",
+  "cleaned_database": "Cơ sở dữ liệu đã được làm sạch! {x} mục đã bị xóa",
+  "clean_database_desc": "Thao tác này sẽ xóa tất cả các mục chưa được thêm vào thư viện!",
+  "incognito_mode": "Chế độ ẩn danh",
+  "incognito_mode_description": "Tạm dừng lịch sử đọc",
+  "downloaded_only": "Chỉ được tải xuống",
+  "downloaded_only_description": "Chỉ hiển thị các mục đã tải xuống trong thư viện của bạn",
+  "download_queue": "Hàng đợi tải xuống",
+  "categories": "Danh mục",
+  "statistics": "Thống kê",
+  "settings": "Cài đặt",
+  "about": "Giới thiệu",
+  "help": "Trợ giúp",
+  "no_downloads": "Không tải xuống",
+  "edit_categories": "Chỉnh sửa danh mục",
+  "edit_categories_description": "Bạn không có danh mục nào. Nhấn vào nút dấu cộng để tạo một nút để sắp xếp thư viện của bạn",
+  "add": "Thêm",
+  "add_category": "Thêm danh mục",
+  "name": "Tên",
+  "label_value": "{label}: {value}",
+  "@label_value": {
+    "placeholders": {
+      "label": {},
+      "value": {}
+    }
+  },
+  "url": "URL",
+  "category_name_required": "*Bắt buộc",
+  "add_category_error_exist": "Một danh mục có tên này đã tồn tại!",
+  "delete_category": "Xóa danh mục",
+  "delete_category_msg": "Bạn có muốn xóa danh mục {name} không?",
+  "rename_category": "Đổi tên danh mục",
+  "general": "Tổng quát",
+  "general_subtitle": "Ngôn ngữ ứng dụng",
+  "app_language": "Ngôn ngữ ứng dụng",
+  "default_subtitle_language": "Ngôn ngữ phụ đề mặc định",
+  "appearance": "Ngoại hình",
+  "appearance_subtitle": "Chủ đề, định dạng ngày và giờ",
+  "theme": "Chủ đề",
+  "dark_mode": "Chế độ tối",
+  "follow_system_theme": "Theo chủ đề hệ thống",
+  "on": "Bật",
+  "off": "Tắt",
+  "pure_black_dark_mode": "Chế độ tối đen tuyền",
+  "timestamp": "Dấu thời gian",
+  "relative_timestamp": "Dấu thời gian tương đối",
+  "relative_timestamp_short": "Ngắn (Hôm nay, Hôm qua)",
+  "relative_timestamp_long": "Dài (Ngắn+, n ngày trước)",
+  "date_format": "Định dạng ngày",
+  "reader": "Người đọc",
+  "refresh": "Làm mới",
+  "reader_subtitle": "Chế độ đọc, hiển thị, điều hướng",
+  "default_reading_mode": "Chế độ đọc mặc định",
+  "reading_mode_vertical": "Dọc",
+  "reading_mode_horizontal": "Ngang",
+  "reading_mode_left_to_right": "Trái sang phải",
+  "reading_mode_right_to_left": "Phải sang trái",
+  "reading_mode_vertical_continuous": "Theo chiều dọc liên tục",
+  "reading_mode_webtoon": "Webtoon",
+  "double_tap_animation_speed": "Tốc độ hoạt ảnh chạm hai lần",
+  "normal": "Bình thường",
+  "fast": "Nhanh",
+  "no_animation": "Không có hoạt ảnh",
+  "animate_page_transitions": "Tạo hiệu ứng chuyển tiếp trang",
+  "crop_borders": "Cắt đường viền",
+  "downloads": "Tải xuống",
+  "downloads_subtitle": "Cài đặt tải xuống",
+  "download_location": "Vị trí tải xuống",
+  "custom_location": "Vị trí tùy chỉnh",
+  "only_on_wifi": "Chỉ trên wifi",
+  "save_as_cbz_archive": "Lưu dưới dạng kho lưu trữ CBZ",
+  "delete_download_after_reading": "Xóa tải xuống sau khi đọc",
+  "concurrent_downloads": "Tải xuống đồng thời",
+  "browse_subtitle": "Nguồn, tìm kiếm toàn cầu",
+  "only_include_pinned_sources": "Chỉ bao gồm các nguồn được ghim",
+  "nsfw_sources": "Nguồn NSFW (+18)",
+  "nsfw_sources_show": "Hiển thị trong danh sách nguồn và tiện ích mở rộng",
+  "nsfw_sources_info": "Điều này không ngăn các tiện ích mở rộng không chính thức hoặc có thể bị gắn cờ không chính xác hiển thị nội dung NSFW (18+) trong ứng dụng",
+  "version": "Phiên bản",
+  "beta_version": "Beta ({version})",
+  "@beta_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "check_for_update": "Kiểm tra cập nhật",
+  "logs_on": "Kích hoạt tính năng ghi nhật ký",
+  "share_app_logs": "Chia sẻ nhật ký ứng dụng",
+  "no_app_logs": "Không có log.txt!",
+  "failed": "Thất bại!",
+  "n_days_ago": "{days} ngày trước",
+  "today": "Hôm nay",
+  "yesterday": "Hôm qua",
+  "a_week_ago": "Một tuần trước",
+  "next_week": "Tuần sau",
+  "add_to_library": "Thêm vào thư viện",
+  "completed": "Đã hoàn thành",
+  "ongoing": "Đang tiến hành",
+  "on_hiatus": "Đang tạm dừng",
+  "canceled": "Đã hủy",
+  "publishing_finished": "Xuất bản xong",
+  "unknown": "Không rõ",
+  "empty_placeholder": "TRỐNG\nMPTY\nMTY\nMT\n\n",
+  "error": "Lỗi",
+  "error_with_message": "Lỗi: {error}",
+  "@error_with_message": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "no_pages_available": "Lỗi: không có trang nào",
+  "set_categories": "Đặt danh mục",
+  "edit": "Chỉnh sửa",
+  "in_library": "Trong thư viện",
+  "filter_scanlator_groups": "Nhóm máy quét bộ lọc",
+  "reset": "Đặt lại",
+  "by_source": "Theo nguồn",
+  "by_chapter_number": "Theo số chương",
+  "by_episode_number": "Theo số tập",
+  "by_upload_date": "Theo ngày tải lên",
+  "source_title": "Tiêu đề nguồn",
+  "create_extension": "Tạo tiện ích mở rộng",
+  "developer_mode": "Chế độ nhà phát triển",
+  "developer_mode_subtitle": "Hiển thị công cụ dành cho nhà phát triển tiện ích mở rộng (tạo tiện ích mở rộng, chỉnh sửa mã)",
+  "choose_extension_language": "Chọn ngôn ngữ mở rộng",
+  "lang": "Lang",
+  "base_url": "Url cơ sở",
+  "api_url_optional": "ApiUrl (tùy chọn)",
+  "icon_url": "iconUrl",
+  "source_icon_url": "Url biểu tượng nguồn",
+  "notes": "ghi chú",
+  "extension_name_example": "ví dụ: myAnime",
+  "language_code_example": "ví dụ: vi",
+  "base_url_example": "ví dụ: https://example.com",
+  "api_url_example": "ví dụ: https://api.example.com",
+  "extension_notes_example": "ví dụ: tiện ích mở rộng này yêu cầu đăng nhập",
+  "type": "Loại",
+  "target": "Mục tiêu",
+  "source_type_single": "độc thân",
+  "source_type_multi": "đa",
+  "source_type_torrent": "torrent",
+  "source_language_dart": "Phi tiêu",
+  "source_language_javascript": "JavaScript",
+  "source_language_lnreader_compiled_js": "LNReader biên soạn JS",
+  "source_created_successfully": "Nguồn được tạo thành công",
+  "source_already_exists": "Nguồn đã tồn tại",
+  "error_when_creating_source": "Lỗi khi tạo nguồn",
+  "cookies_deleted": "Đã xóa cookie!",
+  "delete_all_cookies": "Xóa tất cả cookie",
+  "chapter_number": "Số chương",
+  "episode_number": "Số tập",
+  "share": "Chia sẻ",
+  "n_chapters": "{n} chương",
+  "missing_chapters": "Thiếu {count} chương",
+  "no_description": "Không có mô tả",
+  "resume": "Tiếp tục",
+  "read": "Đọc",
+  "watch": "Đồng hồ đeo tay",
+  "popular": "Phổ biến",
+  "open_in_browser": "Mở trong trình duyệt",
+  "clear_cookie": "Xóa cookie",
+  "show_page_number": "Hiển thị số trang",
+  "from_library": "Từ thư viện",
+  "downloaded_chapter": "Đã tải chương",
+  "page": "Trang {page}",
+  "global_search": "Tìm kiếm toàn cầu",
+  "color_blend_level": "Mức độ hòa trộn màu",
+  "current": "Hiện tại {char}",
+  "finished": "Đã hoàn thành {char}",
+  "next": "Tiếp theo {char}",
+  "previous": "Trước {char}",
+  "no_more_chapter": "Không còn chương nào nữa",
+  "no_result": "Không có kết quả",
+  "send": "Gửi",
+  "delete": "Xóa",
+  "start_downloading": "Bắt đầu tải xuống ngay bây giờ",
+  "retry": "Thử lại",
+  "add_chapters": "Thêm chương",
+  "delete_chapters": "Xóa chương?",
+  "default0": "Mặc định",
+  "total_chapters": "Tổng số chương",
+  "total_episodes": "Tổng số tập",
+  "import_local_file": "Nhập tệp cục bộ",
+  "import_files": "Tập tin",
+  "split_epub_chapters": "Chia thành các chương",
+  "split_epub_chapters_description": "Nhập từng chương EPUB dưới dạng một mục riêng biệt",
+  "nothing_read_recently": "Gần đây không có gì đọc",
+  "status": "Trạng thái",
+  "not_started": "Chưa bắt đầu",
+  "score": "Điểm",
+  "start_date": "Ngày bắt đầu",
+  "finish_date": "Ngày kết thúc",
+  "reading": "Đọc sách",
+  "on_hold": "Đang chờ",
+  "dropped": "Đã đánh rơi",
+  "plan_to_read": "Lên kế hoạch đọc sách",
+  "re_reading": "Đọc lại",
+  "chapters": "Chương",
+  "add_tracker": "Thêm theo dõi",
+  "one_tracker": "1 người theo dõi",
+  "n_tracker": "{n} máy theo dõi",
+  "tracking": "Theo dõi",
+  "syncing": "Đồng bộ hóa",
+  "sync_logged": "Đăng nhập thành công",
+  "syncing_subtitle": "Nhập địa chỉ máy chủ đồng bộ hóa của bạn và đăng nhập thông qua trình duyệt để đồng bộ hóa tiến trình đọc trên các thiết bị.",
+  "sync_service": "Đồng bộ hóa tự lưu trữ",
+  "last_sync": "Đồng bộ hóa lần cuối lúc: ",
+  "sync_login_browser": "Đăng nhập bằng trình duyệt",
+  "sync_server": "Địa chỉ máy chủ đồng bộ hóa",
+  "sync_starting": "Đang bắt đầu đồng bộ hóa...",
+  "sync_finished": "Đồng bộ hóa đã hoàn tất",
+  "sync_failed": "Đồng bộ hóa không thành công",
+  "sync_restore_in_progress": "Đồng bộ hóa bị bỏ qua — đang khôi phục",
+  "sync_progress_percent": "Đang đồng bộ hóa… {percent}%",
+  "@sync_progress_percent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "sync_progress_indeterminate": "Đang đồng bộ hóa…",
+  "sync_button_sync": "Tiến trình đồng bộ hóa",
+  "sync_button_upload": "Chỉ tải lên",
+  "sync_button_upload_info": "Dữ liệu của thiết bị này sẽ ghi đè lên máy chủ đối với mọi thứ mà nó có. Không có gì trên máy chủ bị xóa.",
+  "sync_button_download": "Chỉ tải xuống",
+  "sync_button_download_info": "Lấy mọi thứ từ máy chủ. Không có gì trên thiết bị này bị xóa.",
+  "sync_status_not_configured": "Chưa kết nối",
+  "sync_status_checking": "Đang kiểm tra kết nối...",
+  "sync_status_connected": "Đã kết nối",
+  "sync_status_unauthorized": "Phiên đã hết hạn, vui lòng đăng nhập lại",
+  "sync_status_unreachable": "Không thể truy cập máy chủ",
+  "sync_section_general": "Tổng quát",
+  "sync_on": "Bật đồng bộ hóa",
+  "sync_auto": "Tự động đồng bộ hóa",
+  "sync_auto_warning": "Tự động đồng bộ hóa hiện là tính năng thử nghiệm!",
+  "sync_auto_off": "Tắt",
+  "sync_auto_5_minutes": "Cứ sau 5 phút",
+  "sync_auto_10_minutes": "Cứ sau 10 phút",
+  "sync_auto_30_minutes": "30 phút một lần",
+  "sync_auto_1_hour": "Cứ sau 1 giờ",
+  "sync_auto_3_hours": "Cứ sau 3 giờ",
+  "sync_auto_6_hours": "Cứ sau 6 giờ",
+  "sync_auto_12_hours": "Cứ sau 12 giờ",
+  "server_error": "Lỗi máy chủ!",
+  "dialog_confirm": "Xác nhận",
+  "description": "Mô tả",
+  "reorder_navigation": "Tùy chỉnh điều hướng",
+  "reorder_navigation_description": "Sắp xếp lại và chuyển đổi từng điều hướng theo nhu cầu của bạn.",
+  "floating_navigation_bar": "Thanh điều hướng nổi",
+  "floating_navigation_bar_description": "Sử dụng hộp nổi thay vì thanh điều hướng kèm theo tiêu chuẩn.",
+  "full_screen_player": "Sử dụng Toàn màn hình",
+  "full_screen_player_info": "Tự động sử dụng toàn màn hình khi phát video.",
+  "episode_progress": "Tiến độ: {n}",
+  "n_episodes": "{n, plural, =1 {1 tập} other {{n} tập}}",
+  "@n_episodes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "missing_episodes": "Thiếu {count} tập",
+  "manga_sources": "Nguồn truyện tranh",
+  "anime_sources": "Nguồn Anime",
+  "novel_sources": "Nguồn tiểu thuyết",
+  "anime_extensions": "Phần mở rộng Anime",
+  "manga_extensions": "Phần mở rộng truyện tranh",
+  "novel_extensions": "Phần mở rộng tiểu thuyết",
+  "extension_settings": "Cài đặt tiện ích mở rộng",
+  "anime": "Anime",
+  "manga": "Truyện tranh",
+  "novel": "Tiểu thuyết",
+  "library_no_category_exist": "Bạn chưa có danh mục nào",
+  "watching": "Đang xem",
+  "plan_to_watch": "Lên kế hoạch xem",
+  "re_watching": "Xem lại",
+  "episodes": "Tập",
+  "download": "Tải xuống",
+  "new_update_available": "Đã có bản cập nhật mới",
+  "app_version": "Phiên bản ứng dụng: v{v}",
+  "searching_for_updates": "Đang tìm kiếm thông tin cập nhật...",
+  "no_new_updates_available": "Không có bản cập nhật mới",
+  "uninstall": "Gỡ cài đặt",
+  "uninstall_extension": "Gỡ cài đặt tiện ích mở rộng {ext}?",
+  "double_tap_search_hint": "Nhấn đúp để tìm kiếm tất cả {type}",
+  "show_nav_double_tap_tooltip": "Hiển thị gợi ý tìm kiếm nhấn đúp",
+  "show_nav_double_tap_tooltip_subtitle": "Hiển thị chú giải công cụ về đích điều hướng Manga/Anime/Tiểu thuyết giải thích rằng việc nhấn đúp sẽ mở Tìm kiếm chung.",
+  "already_in_library": "\"{title}\" đã có trong thư viện của bạn qua {source}.",
+  "add_anyway": "Dù sao cũng thêm",
+  "langauage": "Ngôn ngữ",
+  "extension_detail": "Chi tiết phần mở rộng",
+  "scale_type": "Loại thang đo",
+  "scale_type_fit_screen": "Vừa vặn với màn hình",
+  "scale_type_stretch": "Căng",
+  "scale_type_fit_width": "Chiều rộng phù hợp",
+  "scale_type_fit_height": "Chiều cao phù hợp",
+  "scale_type_original_size": "Kích thước gốc",
+  "scale_type_smart_fit": "Phù hợp thông minh",
+  "page_preload_amount": "Lượng tải trước trang",
+  "page_preload_amount_subtitle": "Số lượng trang cần tải trước khi đọc. Giá trị cao hơn sẽ mang lại trải nghiệm đọc mượt mà hơn nhưng phải trả giá bằng mức sử dụng mạng và bộ nhớ đệm cao hơn.",
+  "image_loading_error": "Không thể tải được hình ảnh này",
+  "add_episodes": "Thêm tập",
+  "video_quality": "Chất lượng",
+  "video_subtitle": "Phụ đề",
+  "check_for_extension_updates": "Kiểm tra các bản cập nhật tiện ích mở rộng của bên thứ ba",
+  "auto_extensions_updates": "Tự động cập nhật tiện ích mở rộng của bên thứ ba",
+  "auto_extensions_updates_subtitle": "Tự động cập nhật các tiện ích mở rộng đã cài đặt của bên thứ ba. Các plugin chính thức luôn được cài đặt và cập nhật tự động.",
+  "check_for_app_updates": "Kiểm tra cập nhật ứng dụng khi khởi động",
+  "reading_mode": "Chế độ đọc",
+  "custom_filter": "Bộ lọc tùy chỉnh",
+  "background_color": "Màu nền",
+  "white": "Trắng",
+  "black": "Đen",
+  "grey": "Màu xám",
+  "automaic": "Tự động",
+  "preferred_domain": "Tên miền ưa thích",
+  "load_more": "Tải thêm",
+  "cancel_all_for_this_series": "Hủy tất cả cho loạt bài này",
+  "login": "Đăng nhập",
+  "login_into": "Đăng nhập vào {tracker}",
+  "email_adress": "Địa chỉ Email",
+  "password": "Mật khẩu",
+  "log_out_from": "Đăng xuất khỏi {tracker}?",
+  "log_out": "Đăng xuất",
+  "update_pending": "Đang chờ cập nhật",
+  "update_all": "Cập nhật tất cả",
+  "backup_and_restore": "Sao lưu và khôi phục",
+  "create_backup": "Tạo bản sao lưu",
+  "create_backup_dialog_title": "Bạn muốn sao lưu cái gì?",
+  "create_backup_subtitle": "Có thể được sử dụng để khôi phục thư viện hiện tại",
+  "restore_backup": "Khôi phục bản sao lưu",
+  "encrypt_backups": "Mã hóa bản sao lưu",
+  "encrypt_backups_info": "Tệp sao lưu được bảo vệ bằng mật khẩu bằng mã hóa AES",
+  "no_secure_storage": "Không tìm thấy bộ nhớ an toàn",
+  "no_keyring_warning": "Hệ thống này không có sẵn dịch vụ tạo khóa (ví dụ: gnome-keyring hoặc kwallet trên Linux), vì vậy mật khẩu không thể được lưu trữ an toàn.\n\nLưu trữ nó ở trạng thái không mã hóa trong cơ sở dữ liệu ứng dụng cục bộ? Bất kỳ ai có quyền truy cập vào dữ liệu ứng dụng của thiết bị này đều có thể đọc được.",
+  "enter_backup_password": "Nhập mật khẩu dự phòng",
+  "incorrect_password_try_again": "Mật khẩu không chính xác, hãy thử lại.",
+  "set_backup_password": "Đặt mật khẩu sao lưu",
+  "confirm_password": "Xác nhận mật khẩu",
+  "passwords_do_not_match": "Mật khẩu không khớp",
+  "password_required_to_restore": "Cần có mật khẩu để khôi phục bản sao lưu này.",
+  "restore_backup_subtitle": "Khôi phục thư viện từ tập tin sao lưu",
+  "automatic_backups": "Sao lưu tự động",
+  "backup_frequency": "Tần số dự phòng",
+  "backup_location": "Vị trí sao lưu",
+  "backup_options": "Tùy chọn sao lưu",
+  "backup_options_dialog_title": "Bạn muốn sao lưu cái gì?",
+  "backup_options_subtitle": "Thông tin nào cần đưa vào tập tin sao lưu?",
+  "backup_and_restore_warning_info": "Bạn cũng nên giữ bản sao lưu ở những nơi khác",
+  "library_entries": "Mục thư viện",
+  "chapters_and_episode": "Chương và tập",
+  "every_6_hours": "Cứ sau 6 giờ",
+  "every_12_hours": "Cứ sau 12 giờ",
+  "daily": "Hàng ngày",
+  "every_2_days": "2 ngày một lần",
+  "weekly": "Hàng tuần",
+  "restore_backup_warning_title": "Khôi phục bản sao lưu sẽ ghi đè lên tất cả dữ liệu hiện có.\n\nTiếp tục khôi phục?",
+  "restore_sync_question_title": "Đồng bộ hóa quá trình khôi phục này?",
+  "restore_sync_question_message": "Thiết bị này được kết nối với máy chủ đồng bộ. Tải dữ liệu đã khôi phục này lên ngay bây giờ? Nếu không, đồng bộ hóa sẽ bị tắt để dữ liệu cũ của máy chủ không ghi đè lên những gì bạn vừa khôi phục.",
+  "restore_sync_question_confirm": "Có, đồng bộ",
+  "restore_sync_question_deny": "Không, tắt đồng bộ hóa",
+  "sync_disabled_after_restore": "Đồng bộ hóa bị tắt. Bạn có thể bật lại trong Cài đặt.",
+  "restore_sync_disabled_question_title": "Đồng bộ hóa hiện bị tắt",
+  "restore_sync_disabled_question_message": "Đồng bộ hóa bị tắt. Bật lại và tải dữ liệu đã khôi phục này lên máy chủ của bạn?",
+  "restore_sync_question_reenable": "Có, kích hoạt lại và đồng bộ",
+  "restore_sync_question_keep_disabled": "Giữ nó bị vô hiệu hóa",
+  "restore_sync_uploading": "Đang đồng bộ hóa dữ liệu đã khôi phục với máy chủ…",
+  "restore_sync_upload_success": "Đã khôi phục dữ liệu được đồng bộ hóa với máy chủ",
+  "services": "Dịch vụ",
+  "tracking_warning_info": "Đồng bộ một chiều để cập nhật tiến trình chương trong các dịch vụ theo dõi. Thiết lập theo dõi cho từng mục từ nút theo dõi của chúng.",
+  "use_page_tap_zones": "Sử dụng vùng nhấn trang",
+  "manage_trackers": "Quản lý trình theo dõi",
+  "restore": "Khôi phục",
+  "backups": "Sao lưu",
+  "by_scanlator": "Bằng máy scan",
+  "by_name": "Theo tên",
+  "installed": "Đã cài đặt",
+  "auto_scroll": "Tự động cuộn",
+  "video_audio": "Âm thanh",
+  "video_audio_info": "Ngôn ngữ ưa thích, hiệu chỉnh cao độ, kênh âm thanh",
+  "player": "Người chơi",
+  "markEpisodeAsSeenSetting": "Tại thời điểm nào để đánh dấu tập phim là đã xem",
+  "mark_duplicate_chapters_read": "Đánh dấu số chương trùng lặp là đã đọc",
+  "default_skip_intro_length": "Thời lượng bỏ qua phần giới thiệu",
+  "default_playback_speed_length": "Tốc độ phát lại mặc định",
+  "updateProgressAfterReading": "Cập nhật tiến trình sau khi đọc",
+  "no_sources_installed": "Không có nguồn nào được cài đặt!",
+  "show_extensions": "Hiển thị tiện ích mở rộng",
+  "default_skip_forward_skip_length": "Thời lượng tìm kiếm nhấn đúp",
+  "aniskip_requires_info": "AniSkip yêu cầu anime phải được theo dõi bằng MAL hoặc Anilist để hoạt động.",
+  "enable_aniskip": "Kích hoạt AniSkip",
+  "enable_auto_skip": "Bật tự động bỏ qua",
+  "aniskip_button_timeout": "Hết thời gian chờ nút",
+  "skip_opening": "Bỏ qua việc mở",
+  "skip_ending": "Bỏ qua phần kết",
+  "fullscreen": "Toàn màn hình",
+  "update_library": "Cập nhật thư viện",
+  "next_chapter": "Chương tiếp theo",
+  "next_5_chapters": "5 chương tiếp theo",
+  "next_10_chapters": "10 chương tiếp theo",
+  "next_25_chapters": "25 chương tiếp theo",
+  "all_chapters": "Tất cả các chương",
+  "next_episode": "Tập tiếp theo",
+  "next_5_episodes": "5 tập tiếp theo",
+  "next_10_episodes": "10 tập tiếp theo",
+  "next_25_episodes": "25 tập tiếp theo",
+  "all_episodes": "Tất cả các tập",
+  "cover_saved": "Đã lưu bìa",
+  "set_as_cover": "Đặt làm bìa",
+  "use_this_as_cover_art": "Dùng cái này làm ảnh bìa?",
+  "save": "Lưu",
+  "picture_saved": "Đã lưu ảnh",
+  "cover_updated": "Đã cập nhật bìa",
+  "include_subtitles": "Bao gồm phụ đề",
+  "blend_mode_default": "Mặc định",
+  "blend_mode_multiply": "Nhân",
+  "blend_mode_screen": "Màn hình",
+  "blend_mode_overlay": "Lớp phủ",
+  "blend_mode_colorDodge": "ColorDodge",
+  "blend_mode_lighten": "Làm sáng",
+  "blend_mode_colorBurn": "ColorBurn",
+  "blend_mode_darken": "Làm tối",
+  "blend_mode_difference": "Sự khác biệt",
+  "blend_mode_saturation": "Độ bão hòa",
+  "blend_mode_softLight": "Ánh Sáng Mềm Mại",
+  "blend_mode_plus": "cộng thêm",
+  "blend_mode_exclusion": "Loại trừ",
+  "custom_color_filter": "Bộ lọc màu tùy chỉnh",
+  "color_filter_blend_mode": "Chế độ hòa trộn bộ lọc màu",
+  "enable_all": "Kích hoạt tất cả",
+  "disable_all": "Tắt tất cả",
+  "font": "Phông chữ",
+  "color": "Màu sắc",
+  "font_size": "Cỡ chữ",
+  "text": "Văn bản",
+  "border": "Biên giới",
+  "background": "Bối cảnh",
+  "no_subtite_warning_message": "Không có tác dụng vì không có bản phụ đề nào trong video này",
+  "grid_size": "Kích thước lưới",
+  "n_per_row": "{n} mỗi hàng",
+  "horizontal_continious": "Ngang liên tục",
+  "edit_code": "Chỉnh sửa mã",
+  "use_libass": "Kích hoạt libass",
+  "use_libass_info": "Sử dụng kết xuất phụ đề dựa trên libass cho phần phụ trợ gốc.",
+  "libass_not_disable_message": "Tắt `use libass` trong cài đặt trình phát để có thể tùy chỉnh phụ đề.",
+  "override_ass_subtitles": "Ghi đè phụ đề ASS",
+  "override_ass_subtitles_info": "Áp dụng kiểu tùy chỉnh cho phụ đề ASS/SSA",
+  "torrent_stream": "Dòng torrent",
+  "add_torrent": "Thêm torrent",
+  "enter_torrent_hint_text": "Nhập url tập tin magnet hoặc torrent",
+  "torrent_url": "Url torrent",
+  "or": "HOẶC",
+  "advanced": "Nâng cao",
+  "advanced_info": "mpv",
+  "use_native_http_client": "Sử dụng ứng dụng khách http gốc",
+  "use_native_http_client_info": "nó tự động hỗ trợ các tính năng nền tảng như VPN, hỗ trợ nhiều tính năng HTTP hơn như HTTP/3 và xử lý chuyển hướng tùy chỉnh",
+  "n_hour_ago": "{hour} giờ trước",
+  "n_hours_ago": "{hours} giờ trước",
+  "n_minute_ago": "{minute} phút trước",
+  "n_minutes_ago": "{minutes} phút trước",
+  "n_day_ago": "{day} ngày trước",
+  "now": "bây giờ",
+  "library_last_updated": "Thư viện cập nhật lần cuối: {lastUpdated}",
+  "data_and_storage": "Dữ liệu và lưu trữ",
+  "download_location_info": "Được sử dụng để tải chương",
+  "storage": "Lưu trữ",
+  "clear_chapter_and_episode_cache": "Xóa bộ nhớ đệm chương và tập",
+  "cache_cleared": "Đã xóa bộ nhớ đệm",
+  "clear_chapter_or_episode_cache_on_app_launch": "Xóa bộ nhớ đệm chương/tập khi khởi chạy ứng dụng",
+  "app_settings": "Cài đặt ứng dụng",
+  "sources_settings": "Cài đặt nguồn",
+  "include_sensitive_settings": "Bao gồm các cài đặt nhạy cảm (ví dụ: mã thông báo đăng nhập trình theo dõi)",
+  "create": "Tạo",
+  "downloads_are_limited_to_wifi": "Tải xuống chỉ giới hạn ở Wi-Fi",
+  "recommendations": "Khuyến nghị",
+  "recommendations_similar": "tương tự",
+  "recommendations_weights": "Trọng lượng khuyến nghị",
+  "recommendations_weights_genre": "Sự tương đồng về thể loại",
+  "recommendations_weights_setting": "Thiết lập tính tương tự",
+  "recommendations_weights_synopsis": "Sự tương đồng của câu chuyện",
+  "recommendations_weights_theme": "Tính tương đồng của chủ đề",
+  "manga_extensions_repo": "Kho mở rộng manga",
+  "anime_extensions_repo": "Kho phần mở rộng anime",
+  "novel_extensions_repo": "Kho lưu trữ tiện ích mở rộng mới",
+  "custom_dns": "DNS tùy chỉnh (để trống để sử dụng DNS hệ thống)",
+  "android_proxy_server": "Máy chủ proxy Android (M-Extension-Server)",
+  "get_m_extension_server": "Nhận M-Extension-Server",
+  "undefined": "không xác định",
+  "empty_extensions_repo": "Chưa có kho mở rộng",
+  "add_extensions_repo": "Thêm kho lưu trữ URL",
+  "remove_extensions_repo": "Xóa kho lưu trữ URL",
+  "manage_manga_repo_urls": "Quản lý URL kho truyện tranh",
+  "manage_anime_repo_urls": "Quản lý URL Repo Anime",
+  "manage_novel_repo_urls": "Quản lý URL Repo mới",
+  "url_cannot_be_empty": "URL không được để trống",
+  "url_must_end_with_dot_json_or_dot_pb": "URL phải kết thúc bằng .json / .pb",
+  "repo_url": "URL",
+  "invalid_url_format": "Định dạng URL không hợp lệ",
+  "clear_all_sources": "Xóa tất cả các nguồn",
+  "clear_all_sources_msg": "Thao tác này sẽ xóa hoàn toàn tất cả nguồn của ứng dụng. Bạn có chắc chắn muốn tiếp tục không?",
+  "sources_cleared": "Đã xóa nguồn!!!",
+  "repo_added": "Đã thêm kho lưu trữ nguồn!",
+  "repo_already_exists": "Kho lưu trữ đã tồn tại!",
+  "add_repo": "Thêm kho lưu trữ?",
+  "add_repo_sources_to_add": "Danh sách tiện ích mở rộng sẽ được thêm vào:",
+  "add_repo_warning": "Các tiện ích mở rộng từ các kho lưu trữ này chạy bên trong ứng dụng. Chỉ thêm các kho lưu trữ mà bạn tin tưởng.",
+  "genre_search_library": "Tìm kiếm thể loại trong thư viện",
+  "genre_search_source": "Duyệt trong nguồn",
+  "source_not_added": "Nguồn chưa được cài đặt!",
+  "load_own_subtitles": "Tải phụ đề của riêng bạn...",
+  "search_subtitles": "Tìm kiếm phụ đề trực tuyến...",
+  "extension_notes": "Ghi chú: {notes}",
+  "unsupported_repo": "Không thể thêm kho lưu trữ nguồn này. Kiểm tra địa chỉ kho lưu trữ hoặc liên hệ với người bảo trì nó.",
+  "you_have_finished_reading": "Bạn đã đọc xong",
+  "hwdec": "Bộ giải mã phần cứng",
+  "enable_hardware_accel": "Tăng tốc phần cứng",
+  "enable_hardware_accel_info": "Bật/tắt nó nếu bạn gặp lỗi hoặc treo máy",
+  "track_library_navigate": "Đi tới mục cục bộ hiện có",
+  "track_library_add": "Thêm vào thư viện địa phương",
+  "track_library_add_confirm": "Thêm mục được theo dõi vào thư viện cục bộ",
+  "track_library_not_logged": "Đăng nhập vào trình theo dõi tương ứng để sử dụng tính năng này!",
+  "track_library_switch": "Chuyển sang trình theo dõi khác",
+  "go_back": "Quay lại",
+  "merge_library_nav_mobile": "Hợp nhất điều hướng thư viện trên thiết bị di động",
+  "enable_discord_rpc": "Kích hoạt Discord RPC",
+  "hide_discord_rpc_incognito": "Ẩn Discord RPC khi ở chế độ Ẩn danh",
+  "rpc_show_reading_watching_progress": "Hiển thị chương hiện tại trong Discord (yêu cầu khởi động lại)",
+  "rpc_show_title": "Hiển thị tiêu đề hiện tại trong Discord",
+  "rpc_show_cover_image": "Hiển thị ảnh bìa hiện tại trong Discord",
+  "enable_mpv": "Kích hoạt mpv trình đổ bóng / tập lệnh",
+  "mpv_info": "Hỗ trợ tập lệnh .js trong mpv/scripts/",
+  "mpv_redownload": "Tải xuống lại tập tin cấu hình mpv",
+  "mpv_redownload_info": "Thay thế tập tin cấu hình cũ bằng tập tin mới!",
+  "mpv_download": "MPV!\nTải xuống ngay bây giờ?",
+  "custom_buttons": "Nút tùy chỉnh",
+  "custom_buttons_info": "Thực thi mã lua bằng các nút tùy chỉnh",
+  "custom_buttons_edit": "Chỉnh sửa các nút tùy chỉnh",
+  "custom_buttons_add": "Thêm nút tùy chỉnh",
+  "custom_buttons_added": "Đã thêm nút tùy chỉnh!",
+  "custom_buttons_delete": "Xóa nút tùy chỉnh",
+  "custom_buttons_text": "Văn bản nút",
+  "custom_buttons_text_req": "Cần có văn bản nút",
+  "custom_buttons_js_code": "mã lua",
+  "custom_buttons_js_code_req": "yêu cầu mã lua",
+  "custom_buttons_js_code_long": "mã lua (nhấn lâu)",
+  "custom_buttons_startup": "mã lua (khi khởi động)",
+  "custom_buttons_add_warning": "Nút này chạy mã Lua bên dưới trong trình phát video, mã này có thể truy cập các tệp của bạn và chạy chương trình. Chỉ thêm nó nếu bạn tin tưởng liên kết này đến từ đâu.",
+  "n_days": "{n} ngày",
+  "decoder": "Bộ giải mã",
+  "decoder_info": "Giải mã phần cứng, định dạng pixel, gỡ lỗi",
+  "enable_gpu_next": "Kích hoạt gpu-next (chỉ dành cho Android)",
+  "enable_gpu_next_info": "Phần phụ trợ kết xuất video mới",
+  "debanding": "Gỡ bỏ",
+  "use_yuv420p": "Sử dụng định dạng pixel YUV420P",
+  "use_yuv420p_info": "Có thể khắc phục màn hình đen trên một số codec video, cũng có thể cải thiện hiệu suất nhưng phải trả giá bằng chất lượng",
+  "audio_preferred_languages": "Ngôn ngữ ưa thích",
+  "audio_preferred_languages_info": "Ngôn ngữ âm thanh cần ưu tiên khi video có nhiều bản âm thanh. Sử dụng mã gồm hai hoặc ba chữ cái, phân tách bằng dấu phẩy (ví dụ: ja, en).",
+  "enable_audio_pitch_correction": "Bật hiệu chỉnh cao độ âm thanh",
+  "enable_audio_pitch_correction_info": "Ngăn âm thanh trở nên có âm vực cao ở tốc độ nhanh hơn và âm vực thấp ở tốc độ chậm hơn",
+  "audio_channels": "Kênh âm thanh",
+  "volume_boost_cap": "Giới hạn tăng âm lượng",
+  "internal_player": "Trình phát nội bộ",
+  "internal_player_info": "Tiến độ, điều khiển, định hướng",
+  "subtitle_delay_text": "Độ trễ phụ đề",
+  "subtitle_delay": "Độ trễ (ms)",
+  "subtitle_speed": "Tốc độ",
+  "tracks": "Bài hát",
+  "playback_speed": "Tốc độ phát lại",
+  "shaders": "Trình đổ bóng",
+  "video_fit": "Phù hợp",
+  "calendar": "Lịch",
+  "calendar_no_data": "Chưa có dữ liệu.",
+  "calendar_info": "Lịch chỉ có thể dự đoán chương tải lên tiếp theo dựa trên các chương trình tải lên cũ hơn. Một số dữ liệu có thể không chính xác 100%!",
+  "in_n_day": "trong {days} ngày",
+  "in_n_days": "sau {days} ngày",
+  "clear_library": "Xóa thư viện",
+  "clear_library_desc": "Chọn xóa tất cả các mục manga, anime và/hoặc tiểu thuyết",
+  "clear_library_input": "Nhập 'manga', 'anime' và/hoặc 'tiểu thuyết' (cách nhau bằng dấu phẩy) để xóa tất cả các mục liên quan",
+  "watch_order": "Thứ tự xem",
+  "watch_order_role_current": "Hiện tại",
+  "@watch_order_role_current": {
+    "description": "Role label for the title currently being viewed in a watch order."
+  },
+  "watch_order_role_previous": "Trước đó",
+  "@watch_order_role_previous": {
+    "description": "Role label for an earlier title in a watch order."
+  },
+  "watch_order_role_next": "Tiếp theo",
+  "@watch_order_role_next": {
+    "description": "Role label for a later title in a watch order."
+  },
+  "watch_order_source_release_order": "Lệnh phát hành",
+  "@watch_order_source_release_order": {
+    "description": "Source label for a watch order based on release dates."
+  },
+  "watch_order_source_community_list": "{name} bởi {author}",
+  "@watch_order_source_community_list": {
+    "description": "Source label for a community-created Trakt list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_official_collection": "Bộ sưu tập chính thức Trakt: {name}",
+  "@watch_order_source_official_collection": {
+    "description": "Source label for an official Trakt collection.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_trakt_collection": "Trakt: {name}",
+  "@watch_order_source_trakt_collection": {
+    "description": "Source label for a Trakt collection when it is not marked as official.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_seasons": "Các mùa cho {title}",
+  "@watch_order_source_seasons": {
+    "description": "Fallback source label when the watch order contains a show's seasons.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_select_source": "Nguồn đặt hàng",
+  "@watch_order_select_source": {
+    "description": "Label for choosing among available watch-order sources."
+  },
+  "watch_order_season": "Mùa {number}",
+  "@watch_order_season": {
+    "description": "Season metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "watch_order_episode": "Tập {number}",
+  "@watch_order_episode": {
+    "description": "Episode metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sequels": "Phần tiếp theo",
+  "recommendations_similarity": "Điểm tương đồng:",
+  "recommendation_rating_accessibility": "Đánh giá {rating}",
+  "@recommendation_rating_accessibility": {
+    "description": "Accessible label for a recommendation rating in the provider's display format.",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "local_folder_structure": "Cấu trúc của một thư mục cục bộ",
+  "local_folder": "Thư mục cục bộ",
+  "add_local_folder": "Thêm thư mục cục bộ",
+  "rescan_local_folder": "Quét lại tất cả các thư mục cục bộ ngay bây giờ",
+  "default_download_destination": "Đích tải xuống mặc định",
+  "ask_download_destination": "Hỏi đích tải xuống",
+  "ask_download_destination_desc": "Chọn thư mục cục bộ mỗi lần bắt đầu tải xuống.",
+  "select_download_destination": "Chọn đích tải xuống",
+  "clear_local_library": "Xóa thư viện cục bộ",
+  "clear_local_library_desc": "Xóa thư mục cục bộ và lưu trữ các mục khỏi thư viện.",
+  "clear_local_library_msg": "Thao tác này sẽ xóa thư mục cục bộ và các mục lưu trữ khỏi thư viện của bạn. Nó sẽ không xóa các tập tin khỏi đĩa.",
+  "custom": "Tùy chỉnh",
+  "no_local_folder_available_for_downloads": "Không có thư mục cục bộ nào để tải xuống",
+  "failed_to_create_cbz": "Không tạo được CBZ: {error}",
+  "@failed_to_create_cbz": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_cover_image": "Lỗi đọc ảnh bìa: {error}",
+  "@error_reading_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_metadata": "Lỗi đọc siêu dữ liệu: {error}",
+  "@error_reading_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_saving_chapter_episode_to_library": "Lỗi lưu chương/tập vào thư viện: {error}",
+  "@error_saving_chapter_episode_to_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_chapter_cover_image": "Lỗi đọc ảnh bìa chương: {error}",
+  "@error_reading_chapter_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_archive_cover_image": "Lỗi đọc ảnh bìa kho lưu trữ: {error}",
+  "@error_reading_archive_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_getting_local_library": "Lỗi nhận thư viện cục bộ: {error}",
+  "@error_getting_local_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "export_metadata": "Xuất siêu dữ liệu",
+  "exported": "Đã xuất khẩu",
+  "failed_to_export_metadata": "Không thể xuất siêu dữ liệu: {error}",
+  "@failed_to_export_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "unrecognized_chapter_numbers": "{count} (các) chương không thể được đánh số tự động và có thể không đúng thứ tự hoặc bị thiếu đối với người đọc.",
+  "@unrecognized_chapter_numbers": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cloudflare_resolution_webview_server_start_failed": "Không thể khởi động Máy chủ Webview độ phân giải Cloudflare.",
+  "tracker_token_expired": "{tracker} Mã thông báo đã hết hạn",
+  "@tracker_token_expired": {
+    "placeholders": {
+      "tracker": {}
+    }
+  },
+  "video_list_empty": "Danh sách video trống",
+  "playback_speed_multiplier": "x{value}",
+  "@playback_speed_multiplier": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "could_not_launch_url": "Không thể khởi chạy {url}",
+  "@could_not_launch_url": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "text_size": "Kích thước văn bản:",
+  "text_align": "Căn chỉnh văn bản",
+  "line_height": "Chiều cao dòng",
+  "show_scroll_percentage": "Hiển thị phần trăm cuộn",
+  "remove_extra_paragraph_spacing": "Xóa khoảng cách đoạn bổ sung",
+  "select_label_color": "Chọn {label} Màu",
+  "default_user_agent": "Tác nhân người dùng mặc định",
+  "forceLandscapeMode": "Buộc chế độ ngang",
+  "forceLandscapeModeSubtitle": "Buộc người chơi sử dụng hướng ngang.",
+  "dns_over_https": "DNS-over-HTTPS (DoH)",
+  "dns_provider": "Nhà cung cấp DNS",
+  "tracked": "Đã theo dõi",
+  "auth_unlock_msg": "Xác thực để mở khóa ứng dụng",
+  "app_locked": "Ứng dụng đã bị khóa",
+  "auth_to_continue": "Xác thực để tiếp tục",
+  "authenticating": "Đang xác thực...",
+  "lock": "Khóa",
+  "unlock": "Mở khóa",
+  "security": "Bảo mật",
+  "auth_to_change_security_setting": "Xác thực để thay đổi cài đặt bảo mật",
+  "app_lock": "Khóa ứng dụng",
+  "require_biometric_or_device_credential": "Yêu cầu thông tin sinh trắc học hoặc thông tin xác thực thiết bị để mở ứng dụng",
+  "biometric_or_device_credential_not_available": "Xác thực sinh trắc học hoặc thông tin xác thực thiết bị không khả dụng trên thiết bị này",
+  "app_lock_description": "Khi khóa ứng dụng được bật, bạn sẽ được yêu cầu xác thực mỗi khi bạn mở ứng dụng hoặc quay lại ứng dụng đó từ nền.",
+  "checking_device_authentication": "Đang kiểm tra xác thực thiết bị…",
+  "device_authentication_incomplete": "Xác thực chưa hoàn tất. Cài đặt của bạn không thay đổi.",
+  "keep_screen_on": "Giữ màn hình luôn bật",
+  "webtoon_side_padding": "Phần đệm bên webtoon",
+  "show_page_gaps": "Hiển thị khoảng trống trang",
+  "invert_colors": "Đảo ngược màu sắc",
+  "grayscale": "Thang màu xám",
+  "brightness": "Độ sáng",
+  "contrast": "Độ tương phản",
+  "saturation": "Độ bão hòa",
+  "navigation_layout": "Bố cục điều hướng",
+  "nav_layout_default": "Mặc định",
+  "nav_layout_l_shaped": "Hình chữ L",
+  "nav_layout_kindle": "Kindle-ish",
+  "nav_layout_edge": "Cạnh",
+  "nav_layout_right_and_left": "Phải và trái",
+  "nav_layout_disabled": "Bị vô hiệu hóa",
+  "color_enhancements": "Cải tiến màu sắc",
+  "total": "Tổng cộng",
+  "mean_per_title": "Trung bình mỗi Tiêu đề",
+  "completion_rate": "Tỷ lệ hoàn thành",
+  "watching_time": "Thời gian xem",
+  "reading_time": "Giờ đọc",
+  "average_chapters_per_title": "Số chương trung bình trên {title}",
+  "read_percentage": "Tỷ lệ đọc",
+  "entries": "Mục nhập",
+  "android_proxy_server_mihon": "Máy chủ proxy Android (Mihon)",
+  "android_proxy_server_mihon_description": "Tải xuống và định cấu hình máy chủ proxy cần thiết để sử dụng tiện ích mở rộng Mihon.",
+  "mihon_proxy_server": "Máy chủ proxy Mihon",
+  "extension_server_intro_with_jre": "Tải xuống gói máy chủ proxy trước khi sử dụng tiện ích mở rộng Mihon. Gói này bao gồm JRE và JAR máy chủ mở rộng.",
+  "extension_server_intro_ios": "Tải xuống JAR máy chủ proxy trước khi sử dụng tiện ích mở rộng Mihon. iOS chỉ cần máy chủ mở rộng JAR.",
+  "checking_files": "Đang kiểm tra tập tin",
+  "files_installed": "Các tập tin đã được cài đặt",
+  "files_missing": "Thiếu tập tin",
+  "update_files": "Cập nhật tập tin",
+  "up_to_date": "Cập nhật",
+  "choose_location": "Chọn vị trí",
+  "import_existing_jar": "Nhập JAR hiện có",
+  "detect_files_in_selected_folder": "Phát hiện tập tin trong thư mục đã chọn",
+  "preparing_download": "Đang chuẩn bị tải xuống...",
+  "app_install_location": "Vị trí cài đặt ứng dụng",
+  "install_location": "Vị trí cài đặt",
+  "jre_executable": "JRE có thể thực thi được",
+  "extension_server_jar": "JAR máy chủ mở rộng",
+  "installed_version": "Phiên bản đã cài đặt",
+  "latest_version": "Phiên bản mới nhất",
+  "m_extension_server_description": "Sử dụng M-Extension-Server khi bạn cần proxy thiết bị Android riêng. Đặt địa chỉ proxy tại đây và tải xuống APK từ GitHub.",
+  "set_proxy_address": "Đặt địa chỉ proxy",
+  "no_newer_proxy_server_release_available": "Không có bản phát hành máy chủ proxy mới hơn.",
+  "could_not_check_proxy_server_updates": "Không thể kiểm tra các bản cập nhật máy chủ proxy.",
+  "no_extension_server_bundle_available_for_this_platform": "Không có gói máy chủ mở rộng nào có sẵn cho nền tảng này.",
+  "failed_to_download_bundle": "Không tải được gói xuống ({statusCode}).",
+  "@failed_to_download_bundle": {
+    "placeholders": {
+      "statusCode": {}
+    }
+  },
+  "downloaded_bundle_missing_expected_files": "Gói đã tải xuống không chứa các tệp dự kiến.",
+  "extension_server_files_ready": "Tệp máy chủ mở rộng đã sẵn sàng.",
+  "ios_extension_server_import_hint": "Trên iOS, máy chủ được cài đặt bên trong hộp cát ứng dụng. Sử dụng \"Nhập JAR hiện có\" để đưa tệp đã tải xuống vào.",
+  "select_extension_server_folder": "Chọn thư mục máy chủ mở rộng",
+  "selected_folder_does_not_exist": "Thư mục đã chọn không tồn tại.",
+  "no_extension_server_files_found_in_selected_folder": "Không tìm thấy tệp máy chủ mở rộng nào trong thư mục đã chọn.",
+  "extension_server_files_linked": "Các tệp máy chủ mở rộng đã được liên kết.",
+  "select_extension_server_jar": "Chọn máy chủ mở rộng JAR",
+  "selected_file_could_not_be_accessed": "Không thể truy cập được tệp đã chọn.",
+  "extension_server_jar_imported": "JAR máy chủ mở rộng đã được nhập.",
+  "could_not_launch_apk_bridge_page": "Không thể khởi chạy trang M-Extension-Server.",
+  "proxy_server_ip_hint": "IP máy chủ (ví dụ: 10.0.0.5 hoặc https://example.com)",
+  "not_configured": "Chưa được định cấu hình",
+  "zero_interpreter": "Không có thông dịch viên",
+  "zero_interpreter_description": "Điều khiển máy chủ thông dịch Zero tự động hoặc thủ công.",
+  "start_server_on_launch": "Khởi động máy chủ khi khởi chạy",
+  "runtime_status": "Trạng thái thời gian chạy",
+  "running": "Đang chạy",
+  "stopped": "Đã dừng",
+  "start": "Bắt đầu",
+  "stop": "Dừng lại",
+  "webview": "Xem web",
+  "tts": "Chuyển văn bản thành giọng nói",
+  "tts_speed": "Tốc độ",
+  "tts_pitch": "Sân",
+  "tts_language": "Ngôn ngữ",
+  "tts_voice": "Giọng nói",
+  "tts_stop": "Dừng lại",
+  "tts_play": "Chơi",
+  "tts_pause": "Tạm dừng",
+  "tts_previous": "Đoạn trước",
+  "tts_next": "Đoạn tiếp theo",
+  "tts_paragraph_progress": "Đoạn {current} của {total}",
+  "@tts_paragraph_progress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "tts_settings": "Cài đặt TTS",
+  "tts_default": "Mặc định",
+  "webtoon_disable_zoom_out": "Webtoon vô hiệu hóa thu nhỏ",
+  "webtoon_double_tap_zoom_enabled": "Nhấn đúp vào webtoon để thu phóng",
+  "navigate_to_pan": "Điều hướng đến xoay",
+  "navigate_to_pan_subtitle": "Di chuyển hình ảnh đã phóng to trước khi lật trang",
+  "split_wide_pages": "Chia trang rộng",
+  "dual_page_invert": "Đảo ngược cắt nửa trang",
+  "dual_page_rotate_to_fit": "Xoay cho vừa",
+  "dual_page_rotate_to_fit_invert": "Đảo ngược hướng quay",
+  "double_page_single_first_page": "Trang đầu tiên",
+  "double_page_single_first_page_subtitle": "Chỉ hiển thị trang đầu tiên ở chế độ trang đôi",
+  "double_page_auto": "Trang đôi tự động",
+  "double_page_auto_subtitle": "Tự động chuyển sang chế độ trang đôi theo chiều ngang",
+  "landscape_zoom": "Tự động thu phóng phong cảnh",
+  "zoom_start_position": "Vị trí bắt đầu thu phóng",
+  "zoom_start_left": "Còn lại",
+  "zoom_start_right": "Đúng rồi",
+  "zoom_start_center": "Trung tâm",
+  "automatic_background": "Nền tự động",
+  "tapping_inversion": "Khai thác đảo ngược",
+  "tapping_inversion_none": "Không có",
+  "tapping_inversion_horizontal": "Ngang",
+  "tapping_inversion_vertical": "Dọc",
+  "tapping_inversion_both": "Cả hai",
+  "flash_on_page_change": "Flash khi thay đổi trang",
+  "flash_on_page_change_subtitle": "Trợ giúp chống lưu giữ AMOLED",
+  "flash_color": "Màu đèn nháy",
+  "flash_color_black": "Đen",
+  "flash_color_white": "Trắng",
+  "flash_color_white_black": "Trắng & Đen",
+  "flash_interval_label": "Khoảng thời gian nhấp nháy",
+  "flash_interval_value": "{n} trang",
+  "@flash_interval_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_interval": "Khoảng thời gian flash: {n} trang",
+  "@flash_interval": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration_label": "Thời lượng Flash",
+  "flash_duration_value": "{n} ms",
+  "@flash_duration_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration": "Thời lượng flash: {n} ms",
+  "@flash_duration": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "show_navigation_overlay_on_start": "Hiển thị lớp phủ điều hướng khi khởi động",
+  "reader_hide_threshold": "Ngưỡng ẩn đầu đọc",
+  "reader_hide_threshold_highest": "Cao nhất (5 px)",
+  "reader_hide_threshold_high": "Cao (13 px)",
+  "reader_hide_threshold_low": "Thấp (31 px)",
+  "reader_hide_threshold_lowest": "Thấp nhất (47 px)",
+  "error_no_pages_available": "Lỗi: không có trang nào",
+  "app_ui_scale": "Thang đo giao diện",
+  "app_ui_scale_subtitle": "Làm cho giao diện lớn hơn hoặc nhỏ hơn để phù hợp với màn hình và khoảng cách xem của bạn.",
+  "allow_concurrent_downloads": "Cho phép tải xuống đồng thời",
+  "allow_concurrent_downloads_subtitle": "Tải xuống từ nhiều nguồn khác nhau cùng một lúc. Một nguồn vẫn tải từng chương một nên không bị quá tải. Tắt để tải xuống từng cái một ở mọi nơi.",
+  "download_delay": "Độ trễ tải xuống",
+  "download_delay_subtitle": "Tắt. Thêm thời gian chờ với hiện tượng giật ngẫu nhiên giữa các chương để sử dụng nguồn nhẹ nhàng hơn.",
+  "save_search": "Lưu tìm kiếm",
+  "saved_searches": "Tìm kiếm đã lưu",
+  "enter_search_to_save_first": "Nhập tìm kiếm để lưu trước",
+  "no_saved_searches": "Chưa có tìm kiếm nào được lưu cho nguồn này.\nThực hiện tìm kiếm rồi chọn \"Lưu tìm kiếm\".",
+  "source": "Nguồn",
+  "something_went_wrong": "Đã xảy ra lỗi",
+  "startup_failed": "NodeLane Comics không thể hoàn tất quá trình khởi động",
+  "sources_with_no_results": "{count, plural, =1{1 nguồn không có kết quả} other{{count} nguồn không có kết quả}}",
+  "@sources_with_no_results": {
+    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "import_mode_title": "Cái này nên được nhập như thế nào?",
+  "import_mode_message": "Chọn hợp nhất bản sao lưu này vào thư viện hiện tại của bạn hay thay thế toàn bộ thư viện của bạn bằng nó.",
+  "import_mode_keep_existing": "Hợp nhất",
+  "import_mode_keep_existing_subtitle": "Thêm chuỗi mới và cập nhật các chuỗi phù hợp. Không có gì trong thư viện hiện tại của bạn bị xóa.",
+  "import_mode_replace": "Thay thế",
+  "import_mode_replace_subtitle": "Xóa toàn bộ thư viện hiện tại của bạn và thay thế nó bằng bản sao lưu này.",
+  "replace_summary_title": "Sẵn sàng thay thế thư viện của bạn",
+  "replace_summary_message": "Thao tác này sẽ xóa toàn bộ thư viện hiện tại của bạn (chuỗi {currentCount}) và thay thế nó bằng chuỗi {backupCount} từ bản sao lưu này. Điều này chỉ có thể được hoàn tác bằng cách quay lại.",
+  "@replace_summary_message": {
+    "placeholders": {
+      "currentCount": {},
+      "backupCount": {}
+    }
+  },
+  "replace_summary_confirm": "Thay thế",
+  "replace_result_message": "Đã thay thế thư viện của bạn bằng chuỗi {count} từ bản sao lưu này.",
+  "@replace_result_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "category_conflict_title": "Đã tìm thấy danh mục hiện có",
+  "category_conflict_message": "Bản sao lưu có các danh mục đã tồn tại trong thư viện của bạn. Tiếp tục xếp các loạt bài sắp tới vào danh mục hiện có hoặc xóa để thay vào đó, các loạt bài đó không được phân loại.",
+  "category_conflict_keep": "Keep — hợp nhất vào danh mục hiện có",
+  "category_conflict_delete": "Xóa — để lại chuỗi không được phân loại",
+  "source_conflict_title": "Không tìm thấy nguồn",
+  "source_conflict_message": "Các nguồn dự phòng này không khớp với tiện ích mở rộng đã cài đặt. Giữ nguyên tên gốc (được nhập mà không có nguồn hoạt động) hoặc di chuyển sang tiện ích mở rộng đã cài đặt để có thể cập nhật các chuỗi này.",
+  "source_conflict_keep": "Giữ nguyên tên gốc (không có nguồn trực tiếp)",
+  "import_summary_title": "Sẵn sàng nhập khẩu",
+  "import_summary_message": "{newSeries} bộ truyện mới, {updatedSeries} bộ truyện hiện có sẽ được cập nhật và {newChapters} chương mới sẽ được thêm vào. Không có nội dung nào đã có trong thư viện của bạn sẽ bị xóa.",
+  "@import_summary_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
+  "import_summary_confirm": "Nhập khẩu",
+  "import_result_message": "Đã nhập {newSeries} bộ truyện mới, cập nhật {updatedSeries} hiện có, thêm {newChapters} chương mới.",
+  "@import_result_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
+  "roll_back": "Quay lại",
+  "roll_back_confirm_message": "Thao tác này sẽ khôi phục thư viện của bạn về ảnh chụp nhanh an toàn được thực hiện ngay trước khi thay đổi này, hoàn tác mọi thao tác vừa thực hiện.",
+  "roll_back_done": "Được khôi phục về ảnh chụp nhanh trước khi thay đổi.",
+  "restoring_backup": "Đang khôi phục thư viện của bạn…",
+  "roll_back_last_change": "Quay lại thay đổi cuối cùng",
+  "roll_back_last_change_subtitle": "Ảnh chụp nhanh từ {date} — {description}",
+  "@roll_back_last_change_subtitle": {
+    "placeholders": {
+      "date": {},
+      "description": {}
+    }
+  },
+  "roll_back_available_count": "{count} những thay đổi gần đây có sẵn để quay lại",
+  "@roll_back_available_count": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "delete_source_title": "Xóa một nguồn và manga của nó",
+  "delete_source_subtitle": "Chọn một nguồn và xóa mọi manga có trong thư viện của bạn, cùng với các chương, nội dung tải xuống, lịch sử và theo dõi của chúng.",
+  "delete_source_pick_title": "Chọn nguồn cần xóa",
+  "delete_source_empty": "Không tìm thấy nguồn nào trong thư viện của bạn.",
+  "delete_source_confirm_title": "Xóa {sourceName}?",
+  "@delete_source_confirm_title": {
+    "placeholders": {
+      "sourceName": {}
+    }
+  },
+  "delete_source_confirm_message": "Thao tác này sẽ xóa vĩnh viễn {mangaCount} manga, {chapterCount} chương, {historyCount} mục lịch sử và {updateCount} mục cập nhật. Liên kết theo dõi được lưu giữ. Điều này không thể được hoàn tác ngoại trừ bằng cách quay lại.",
+  "@delete_source_confirm_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "chapterCount": {},
+      "historyCount": {},
+      "updateCount": {}
+    }
+  },
+  "delete_source_also_remove_extension": "Đồng thời xóa tiện ích mở rộng đã cài đặt",
+  "delete_source_keep_history": "Giữ lịch sử đọc",
+  "delete_source_keep_downloads": "Lưu giữ hồ sơ tải xuống",
+  "delete_source_button": "Xóa",
+  "delete_source_result_message": "Đã xóa truyện tranh {mangaCount} khỏi {sourceName}.",
+  "@delete_source_result_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "sourceName": {}
+    }
+  },
+  "merge_manga_title": "Hợp nhất các manga trùng lặp",
+  "merge_manga_subtitle": "Tìm manga có tựa đề phù hợp trong cùng một nguồn (ví dụ: sau khi hợp nhất các nguồn trùng lặp) và gộp chúng lại thành một mà không xóa bất kỳ nội dung nào bạn muốn giữ lại.",
+  "merge_manga_none_found": "Không tìm thấy manga trùng lặp.",
+  "merge_manga_pick_title": "Manga có thể bị trùng lặp",
+  "merge_manga_choose_primary_title": "Những cái khác nên hợp nhất vào cái nào?",
+  "merge_manga_choose_primary_message": "Các chương, lịch sử và theo dõi từ các mục khác sẽ được xếp vào bất kỳ mục nào bạn chọn - không có gì bị xóa.",
+  "merge_manga_chapters_subtitle": "{count, plural, =1{1 chương} other{{count} chương}}",
+  "@merge_manga_chapters_subtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "merge_manga_button": "Hợp nhất",
+  "merge_manga_result_message": "Hợp nhất {count} manga trùng lặp vào {mangaName}.",
+  "@merge_manga_result_message": {
+    "placeholders": {
+      "count": {},
+      "mangaName": {}
+    }
+  },
+  "merge_preview_title": "Xác nhận hợp nhất",
+  "merge_manga_preview_message": "{totalChapters} chương được tìm thấy trong các mục khác. {duplicateChapters} là bản sao và sẽ bị loại bỏ (giữ bản sao nào có tiến trình đọc); {keptChapters} sẽ được thêm vào. {duplicateTracks} (các) liên kết theo dõi trùng lặp cũng sẽ bị loại bỏ.",
+  "@merge_manga_preview_message": {
+    "placeholders": {
+      "totalChapters": {},
+      "duplicateChapters": {},
+      "keptChapters": {},
+      "duplicateTracks": {}
+    }
+  },
+  "memory_overlay": "Hiển thị mức sử dụng bộ nhớ",
+  "memory_overlay_subtitle": "Bản đọc trực tiếp về nội dung mà ứng dụng đang nắm giữ. Để đo trên thiết bị thay vì đoán: xem nó trong khi cuộn thư viện hoặc đọc một chương.",
+  "beta": "Beta",
+  "error_reports": "Báo cáo lỗi",
+  "error_reports_subtitle": "Ứng dụng gặp lỗi và cách báo cáo",
+  "error_reports_empty": "Không có gì sai cả. Các lỗi mà ứng dụng phát hiện được lưu giữ ở đây để bạn có thể báo cáo.",
+  "error_reports_likely_cause": "Nguyên nhân có thể",
+  "error_reports_report": "Báo cáo trên GitHub",
+  "error_reports_banner": "NodeLane Comics đã gặp lỗi",
+  "error_reports_banner_action": "Xem nó",
+  "error_reports_copy": "Sao chép",
+  "error_reports_copied": "Đã sao chép vào bảng nhớ tạm",
+  "error_reports_clear": "Xóa",
+  "error_reports_extension_failure": "Điều này đến từ một tiện ích mở rộng, không phải từ NodeLane Comics. Tiện ích mở rộng được viết và duy trì bởi bất kỳ ai chạy kho lưu trữ mà bạn đã cài đặt nguồn này từ đó, vì vậy cần phải có bản sửa lỗi ở đó. Tên nguồn và nội dung bạn đang mở là những chi tiết hữu ích để cung cấp cho họ.",
+  "error_reports_already_reported": "Đã báo cáo",
+  "error_reports_expected_failure": "Đây thường là nguồn hoặc mạng chứ không phải là ứng dụng: liên kết đã hết hạn, máy chủ không hoạt động hoặc kết nối bị ngắt. Chỉ đáng báo cáo nếu nó tiếp tục xảy ra trên một nguồn hoạt động ở nơi khác.",
+  "share_unavailable_copied": "Tính năng chia sẻ không khả dụng trên nền tảng này nên thay vào đó, nó đã được sao chép vào bảng nhớ tạm.",
+  "onboarding_title": "Chào mừng đến với NodeLane Comics",
+  "onboarding_libraries_body": "Chọn những gì bạn đọc và xem. Những cái bạn loại bỏ sẽ nằm ngoài thanh điều hướng và bạn có thể thay đổi điều này sau trong Giao diện.",
+  "onboarding_nav_title": "Thư viện của bạn",
+  "onboarding_nav_body": "Giữ một tab cho mỗi tab hoặc đặt chúng lại với nhau sau một tab Thư viện mà bạn có thể chuyển đổi bên trong.",
+  "onboarding_nav_split": "Mỗi tab một tab",
+  "onboarding_nav_merged": "Một tab Thư viện",
+  "onboarding_nav_inside": "Khai thác Thư viện sẽ hoán đổi thanh cho những thứ này",
+  "onboarding_next": "Tiếp theo",
+  "onboarding_restore": "Khôi phục bản sao lưu",
+  "onboarding_or_local": "Hoặc sử dụng các file bạn đã có",
+  "onboarding_local_folder": "Thêm thư mục",
+  "onboarding_local_existing": "{count} thư mục đã được thiết lập",
+  "@onboarding_local_existing": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "onboarding_local_any_type": "Manga, anime và tiểu thuyết đều có tác dụng. Mỗi tiêu đề sẽ được chuyển đến đúng thư viện dựa trên nội dung bên trong nó.",
+  "onboarding_local_scanning": "Đang quét thư mục",
+  "onboarding_local_found": "{count} tìm thấy tiêu đề",
+  "@onboarding_local_found": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "onboarding_local_remove": "Xóa thư mục đó",
+  "onboarding_local_in_downloads": "Đó là thư mục tải xuống của ứng dụng. Việc thêm nó sẽ tạo ra bản sao cục bộ thứ hai của thư viện mà ứng dụng đã quản lý.",
+  "onboarding_local_empty": "Không tìm thấy gì. Chọn thư mục chứa các thư mục manga của bạn chứ không phải một manga.",
+  "onboarding_repo_failed": "Không thể đọc kho lưu trữ đó. Kiểm tra địa chỉ và kết nối của bạn.",
+  "onboarding_repo_title": "Thêm nguồn",
+  "onboarding_body": "NodeLane Comics không có nguồn riêng. Thêm một kho lưu trữ và các tiện ích mở rộng trong đó sẽ có sẵn để cài đặt và duyệt qua.",
+  "onboarding_add": "Thêm kho lưu trữ",
+  "onboarding_skip": "Tạm thời bỏ qua",
+  "onboarding_continue": "Tiếp tục",
+  "onboarding_later": "Bạn có thể thêm một tài khoản sau trong Cài đặt, trong Duyệt.",
+  "onboarding_replay": "Hiển thị màn hình chào mừng",
+  "onboarding_replay_subtitle": "Mở lại màn hình chạy lần đầu, màn hình cài đặt mới sẽ bắt đầu.",
+  "missing_source_check_title": "Kiểm tra các nguồn bị thiếu",
+  "missing_source_check_subtitle": "Tìm các mục trong thư viện có tiện ích mở rộng chưa được cài đặt - việc khôi phục bản sao lưu có thể để lại các mục trỏ đến nguồn mà bạn chưa từng cài đặt trên thiết bị này.",
+  "missing_source_check_none_found": "Nguồn của mọi mục thư viện đều được cài đặt.",
+  "missing_source_check_result_title": "{count, plural, =1{Thiếu 1 nguồn} other{{count} nguồn bị thiếu}}",
+  "@missing_source_check_result_title": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_no_sources": "Không có nguồn {itemType} nào được cài đặt.",
+  "@global_search_no_sources": {
+    "placeholders": {
+      "itemType": {
+        "type": "String"
+      }
+    }
+  },
+  "global_search_no_sources_hint": "Thêm kho lưu trữ trong Duyệt qua, sau đó cài đặt tiện ích mở rộng cho nó.",
+  "global_search_only_pinned": "Bạn có {count, plural, =1{1 nguồn} other{{count} nguồn}} cho mục này nhưng chỉ những cái được ghim mới được tìm kiếm.",
+  "@global_search_only_pinned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_only_pinned_hint": "Ghim một hoặc tắt \"Chỉ bao gồm các nguồn được ghim\" trong cài đặt Duyệt.",
+  "global_search_all_nsfw": "Mọi nguồn bạn có cho việc này đều được đánh dấu NSFW và những nguồn đó đều bị ẩn.",
+  "global_search_all_nsfw_hint": "Bật nguồn NSFW trong cài đặt Duyệt để tìm kiếm chúng.",
+  "missing_source_check_result_message": "Các mục nhập thư viện này trỏ đến một nguồn chưa được cài đặt trên thiết bị này. Nhấn vào một cái để di chuyển nó sang nguồn đã cài đặt, cài đặt tiện ích mở rộng phù hợp hoặc sử dụng \"Xóa nguồn và manga của nó\" để xóa chúng.",
+  "related_titles": "Liên quan",
+  "related_none": "Không tìm thấy gì liên quan cho tiêu đề này.",
+  "relation_adaptation": "Chuyển thể",
+  "relation_sequel": "Phần tiếp theo",
+  "relation_prequel": "Phần tiền truyện",
+  "relation_parent": "Chuyện cha mẹ",
+  "relation_side_story": "Chuyện bên lề",
+  "relation_spin_off": "Ngoại truyện",
+  "relation_alternative": "Phiên bản thay thế",
+  "auto_library_update": "Cập nhật thư viện tự động",
+  "auto_library_update_subtitle": "Kiểm tra mọi mục trong thư viện của bạn để tìm các chương mới khi ứng dụng khởi động.",
+  "auto_library_update_never": "Không bao giờ",
+  "auto_library_update_12_hours": "Cứ sau 12 giờ",
+  "auto_library_update_daily": "Hàng ngày",
+  "auto_library_update_2_days": "2 ngày một lần",
+  "auto_library_update_weekly": "Hàng tuần",
+  "auto_library_update_wifi_only": "Chỉ trên Wi-Fi",
+  "auto_library_update_wifi_only_subtitle": "Bỏ qua cập nhật theo lịch khi sử dụng dữ liệu di động.",
+  "padding": "Đệm",
+  "page_mode": "Chế độ trang",
+  "single_page": "Trang đơn",
+  "double_page": "Trang đôi",
+  "speed": "Tốc độ",
+  "theme_dark": "Tối",
+  "theme_light": "Ánh sáng",
+  "theme_black": "Đen",
+  "theme_sepia": "Màu nâu đỏ",
+  "decrease": "Giảm",
+  "increase": "Tăng",
+  "chapter_swipe_actions": "Thao tác vuốt chương",
+  "chapter_swipe_start": "Vuốt sang phải",
+  "chapter_swipe_end": "Vuốt sang trái",
+  "chapter_swipe_toggle_bookmark": "Chuyển đổi dấu trang",
+  "chapter_swipe_toggle_read": "Chuyển đổi đọc",
+  "chapter_swipe_download": "Tải xuống",
+  "chapter_swipe_disabled": "Bị vô hiệu hóa",
+  "update_errors": "Lỗi cập nhật",
+  "no_update_errors": "Không có lỗi cập nhật",
+  "clear_all": "Xóa tất cả",
+  "dismiss": "Loại bỏ",
+  "previous_episode": "Tập trước",
+  "clear_logs": "Xóa nhật ký",
+  "bold": "Đậm",
+  "italic": "Nghiêng",
+  "color_yellow": "Màu vàng",
+  "color_cyan": "Lục lam",
+  "color_green": "Màu xanh lá cây",
+  "color_orange": "Cam",
+  "continue_watching": "Tiếp tục xem",
+  "search_your_anime": "Tìm kiếm phim hoạt hình của bạn",
+  "category": "Danh mục",
+  "hidden_categories": "Danh mục ẩn",
+  "new_category": "Danh mục mới",
+  "local": "Địa phương",
+  "tv_home_rows": "Hàng",
+  "genre_rows": "Hàng thể loại",
+  "share_backup_file": "Chia sẻ tập tin sao lưu NodeLane Comics",
+  "close": "Đóng",
+  "migrate_source": "Di chuyển nguồn",
+  "cloudflare_bypass_proxy": "Proxy bỏ qua Cloudflare",
+  "custom_doh_url": "DoH tùy chỉnh URL",
+  "custom_doh_url_helper": "Phải là điểm cuối https DoH (JSON)",
+  "anime_only_tv_layout": "Bố cục TV chỉ dành cho anime",
+  "anime_only_beta": "Chỉ anime (beta)",
+  "tv_home_beta": "TV gia đình (beta)",
+  "tv_player_beta": "Trình phát TV (beta)",
+  "network_settings": "Mạng",
+  "reader_page_layout": "Bố cục trang",
+  "reader_continuous_options": "Đọc liên tục",
+  "reader_default_mode_hint": "Chế độ đọc mặc định áp dụng cho các tiêu đề không có chế độ riêng được đặt trong khi đọc.",
+  "extension_service": "Dịch vụ mở rộng",
+  "extension_service_description": "Quản lý thời gian chạy tiện ích mở rộng và địa chỉ proxy.",
+  "proxy_address": "Địa chỉ proxy",
+  "checking_runtime_status": "Đang kiểm tra trạng thái…",
+  "download_delay_value": "{seconds} s + độ trễ ngẫu nhiên",
+  "@download_delay_value": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_count": "{count, plural, one{1 chương} other{{count} chương}}",
+  "@download_queue_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_empty_hint": "Thêm các bản tải xuống từ danh sách chương của tiêu đề.",
+  "download_queue_order_hint": "Kéo tay cầm để sắp xếp lại",
+  "download_queue_empty": "Không có lượt tải xuống nào được xếp hàng đợi",
+  "download_queue_actions": "Hành động tải xuống",
+  "download_queue_cancel_chapter": "Hủy tải xuống chương này",
+  "download_queue_cancel_series": "Hủy tất cả các lượt tải xuống cho tựa sách này",
+  "download_queue_start": "Bắt đầu tải xuống",
+  "download_queue_retry": "Thử tải xuống lại",
+  "download_queue_active": "Đang tải xuống",
+  "download_queue_waiting": "Đang chờ tải xuống",
+  "download_queue_failed": "Tải xuống không thành công",
+  "cf_proxy_helper": "Điểm cuối FlareSolverr / Byparr. Để trống để vô hiệu hóa.",
+  "mobile_navigation_description": "Kéo để sắp xếp lại. Manga, anime và tiểu thuyết chia sẻ tab Thư viện. Mục hiển thị đầu tiên sẽ mở ra khi khởi chạy. Duyệt và nhiều hơn nữa vẫn hiển thị; các tab bổ sung xuất hiện trong Thêm.",
+  "text_align_justify": "Biện minh",
+  "novel_session_modes_hint": "Đặt chế độ đọc và trang đơn hoặc trang đôi trong khi đọc tiêu đề.",
+  "tts_languages_failed": "Không thể tải ngôn ngữ từ công cụ lời nói.",
+  "tts_languages_empty": "Công cụ phát âm không trả về ngôn ngữ nào. Lựa chọn đã lưu của bạn được giữ lại.",
+  "tts_language_unavailable": "Ngôn ngữ đã lưu này không có trong danh sách hiện tại của thiết bị.",
+  "tts_apply_failed": "Không thể áp dụng cài đặt này cho công cụ giọng nói. Bạn có thể thử lại.",
+  "player_controls": "Điều khiển",
+  "audio_channel_auto": "Tự động",
+  "audio_channel_auto_safe": "Tự động (an toàn)",
+  "audio_channel_mono": "Đơn sắc",
+  "audio_channel_stereo": "Âm thanh nổi",
+  "audio_channel_reverse_stereo": "Âm thanh nổi đảo ngược",
+  "mpv_bundled_config_hint": "Khôi phục cấu hình, tập lệnh và trình đổ bóng đi kèm với ứng dụng. Các tập tin có cùng tên sẽ bị ghi đè.",
+  "mpv_restore_bundled": "Khôi phục cấu hình đi kèm",
+  "mpv_restore_confirm": "Khôi phục cấu hình MPV đi kèm? Cấu hình hiện tại, tập lệnh và trình đổ bóng có cùng tên sẽ bị ghi đè. Các tập tin khác sẽ được giữ lại.",
+  "player_operation_incomplete": "Thao tác không thể hoàn thành. Hãy kiểm tra quyền truy cập tệp và thử lại.",
+  "custom_buttons_empty_hint": "Thêm nút trình phát có nhãn và thao tác nhấn.",
+  "custom_button_primary": "Nút mặc định",
+  "show_password": "Hiển thị mật khẩu",
+  "hide_password": "Ẩn mật khẩu",
+  "tracking_accounts_empty": "Kết nối dịch vụ trong cài đặt Theo dõi để quản lý các mục nhập của dịch vụ đó.",
+  "tracking_entries_empty": "Không có mục được theo dõi cho loại phương tiện này. Thêm theo dõi từ trang chi tiết của tiêu đề.",
+  "change_tracking_match": "Thay đổi tiêu đề phù hợp",
+  "remove_tracking": "Xóa theo dõi",
+  "remove_tracking_confirm": "Xóa liên kết theo dõi cho “{title}”? Mục nhập trong dịch vụ theo dõi sẽ được lưu giữ.",
+  "@remove_tracking_confirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "tracking_refresh_required": "Không thể xác nhận trạng thái theo dõi. Làm mới trước khi thực hiện thay đổi khác.",
+  "tracking_entry_unlinked": "Bản ghi này không được liên kết với tiêu đề địa phương nên không thể chỉnh sửa nó ở đây.",
+  "backup_selection_shared": "Những thay đổi đối với những lựa chọn này sẽ được lưu ngay lập tức và cũng áp dụng cho việc sao lưu tự động.",
+  "library_snapshot_history": "Khôi phục ảnh chụp nhanh thư viện",
+  "library_snapshot_empty": "Không có ảnh chụp nhanh về an toàn.",
+  "library_snapshot_restore_message": "Dữ liệu hiện tại sẽ được thay thế bằng ảnh chụp nhanh này. Những thay đổi được thực hiện kể từ đó sẽ bị mất. Không thể khôi phục các bản tải xuống đã xóa. Ảnh chụp nhanh an toàn có sẵn sẽ bị xóa sau khi thành công.",
+  "library_maintenance_working": "Đang cập nhật thư viện…",
+  "library_safety_snapshot_note": "Ảnh chụp nhanh an toàn sẽ được lưu trước thao tác này. Nó không bao gồm các tập tin tải về.",
+  "library_delete_summary": "Mục thư viện: {mangaCount}. Các chương: {chapterCount}. Mục lịch sử: {historyCount}. Cập nhật: {updateCount}.\n\nChọn nội dung cần giữ bên dưới.",
+  "@library_delete_summary": {
+    "placeholders": {
+      "mangaCount": {
+        "type": "int"
+      },
+      "chapterCount": {
+        "type": "int"
+      },
+      "historyCount": {
+        "type": "int"
+      },
+      "updateCount": {
+        "type": "int"
+      }
+    }
+  },
+  "library_delete_pick_message": "Chọn một nguồn để xem lại nội dung của nó và các tùy chọn xóa.",
+  "mobile_categories_hint": "Kéo để sắp xếp lại. Mở một danh mục để đổi tên hoặc thay đổi mức độ hiển thị và cập nhật của nó.",
+  "mobile_category_visible": "Hiển thị trong thư viện",
+  "mobile_category_hidden": "Ẩn khỏi thư viện",
+  "mobile_category_updates": "Bao gồm trong bản cập nhật thư viện",
+  "statistics_watched": "Đã xem",
+  "calendar_month": "Tháng",
+  "calendar_two_weeks": "2 tuần",
+  "calendar_week": "Tuần",
+  "calendar_show_all_dates": "Hiển thị tất cả các ngày",
+  "update_check_no_result": "Không tìm thấy bản cập nhật có thể cài đặt nào. Bạn có thể thử lại sau.",
+  "release_notes": "Ghi chú phát hành",
+  "no_release_notes": "Không có ghi chú phát hành nào được cung cấp.",
+  "downloading_update": "Đang tải xuống bản cập nhật…",
+  "preparing_installation": "Đang chuẩn bị cài đặt…",
+  "onboarding_mobile_libraries_body": "Chọn nội dung cần đọc. Bạn có thể thay đổi điều này sau.",
+  "onboarding_content_title": "Bắt đầu đọc",
+  "onboarding_mobile_sources_body": "Chọn cách bắt đầu hoặc thêm nội dung sau.",
+  "onboarding_step_count": "Bước {step} của {total}",
+  "@onboarding_step_count": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_results_for": "Kết quả cho “{query}”",
+  "@global_search_results_for": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "global_search_scope": "{type} · {count, plural, =1{1 nguồn} other{{count} nguồn}}",
+  "@global_search_scope": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "migration_search_prompt": "Tìm kiếm tiêu đề đích.",
+  "migration_original_item": "Mục hiện tại",
+  "migration_target_item": "Mục đã chọn",
+  "migration_partial_failure": "Thao tác chưa kết thúc. Một số thay đổi có thể đã được lưu. Hãy kiểm tra mục này trong thư viện của bạn trước khi thử lại.",
+  "migration_no_categories": "Không có danh mục nào. Bạn có thể thêm mục này mà không cần danh mục.",
+  "mass_migration_select_source": "Chọn nguồn hiện tại",
+  "mass_migration_select_all": "Chọn tất cả",
+  "mass_migration_deselect_all": "Bỏ chọn tất cả",
+  "mass_migration_needs_review": "Xem lại quá trình di chuyển chưa hoàn tất",
+  "bookshelf_actions": "Hành động của kệ sách",
+  "bookshelf_ignore_filters": "Bỏ qua bộ lọc khi tìm kiếm",
+  "bookshelf_ignore_filters_hint": "Tìm kiếm tất cả tác phẩm trong danh mục này, bao gồm cả những tác phẩm bị bộ lọc ẩn.",
+  "bookshelf_stop_update": "Dừng cập nhật thư viện",
+  "bookshelf_selected_count": "{count} tác phẩm được chọn",
+  "@bookshelf_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_remove_library": "Xóa khỏi giá sách",
+  "bookshelf_remove_library_hint": "Xóa mục yêu thích. Nhập khẩu địa phương cũng mất thư viện và hồ sơ đọc.",
+  "bookshelf_remove_downloads": "Xóa các tập tin đã tải xuống",
+  "bookshelf_remove_downloads_hint": "Xóa các tệp đã tải xuống trong khi vẫn giữ thông tin công việc.",
+  "bookshelf_remove_local_files_hint": "Đồng thời xóa các tệp được nhập cục bộ đã chọn và xóa các bản ghi thư viện của chúng. Những tập tin này không thể được phục hồi ở đây.",
+  "bookshelf_remove_incomplete": "Thao tác chưa kết thúc. Một số tác phẩm hoặc tập tin có thể đã được xử lý. Đóng hộp thoại này và kiểm tra giá sách cũng như nội dung tải xuống của bạn trước khi tiếp tục.",
+  "bookshelf_processing": "Đang xử lý…",
+  "bookshelf_mark_read": "Đánh dấu đã đọc",
+  "bookshelf_mark_unread": "Đánh dấu là chưa đọc",
+  "bookshelf_select_all": "Chọn tất cả",
+  "bookshelf_invert_selection": "Đảo ngược lựa chọn",
+  "bookshelf_settings": "Cài đặt giá sách",
+  "bookshelf_settings_live": "Các thay đổi về lọc, sắp xếp và hiển thị sẽ có hiệu lực ngay lập tức.",
+  "bookshelf_filter_any": "Bất kỳ",
+  "bookshelf_filter_include": "Bao gồm",
+  "bookshelf_filter_exclude": "Loại trừ",
+  "bookshelf_all_sources": "Tất cả các nguồn",
+  "bookshelf_sources_selected": "{count} nguồn được chọn",
+  "@bookshelf_sources_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_sort_ascending": "Tăng dần",
+  "bookshelf_sort_descending": "Giảm dần",
+  "bookshelf_layout": "Bố trí giá sách",
+  "bookshelf_sources_hint": "Chọn không có để hiển thị tất cả các nguồn. Các thay đổi sẽ được áp dụng khi bạn nhấn vào Bộ lọc.",
+  "bookshelf_choose_files": "Chọn tập tin",
+  "bookshelf_import_wait": "Chọn một tệp trong bộ chọn và đợi quá trình nhập hoàn tất.",
+  "bookshelf_import_incomplete": "Quá trình nhập chưa hoàn tất. Một số tệp có thể đã có trong giá sách của bạn. Đóng hộp thoại này và kiểm tra trước khi nhập lại.",
+  "bookshelf_categories_replace": "Việc lưu chỉ định các danh mục này cho mọi tác phẩm đã chọn, thay thế các danh mục trước đó của chúng.",
+  "bookshelf_categories_hint": "Chọn một hoặc nhiều danh mục hoặc để trống lựa chọn để không chỉ định danh mục nào.",
+  "bookshelf_categories_hidden": "Các danh mục ẩn hiện có được giữ lại cho tác phẩm này.",
+  "bookshelf_categories_incomplete": "Không thể lưu hoàn toàn các danh mục. Đóng hộp thoại này và kiểm tra giá sách trước khi thử lại.",
+  "bookshelf_categories_none_visible": "Không có danh mục nào ở đây. Mở quản lý danh mục để xem xét chúng.",
+  "bookshelf_manage_categories": "Quản lý danh mục",
+  "manga_actions": "Truyện tranh hành động",
+  "manga_download_scope": "Tải chương",
+  "manga_download_scope_hint": "Chọn các chương trong bộ lọc hiện tại. Các chương đã tải xuống sẽ bị bỏ qua.",
+  "manga_download_scope_empty": "Không có chương nào phù hợp với bộ lọc hiện tại. Đóng menu này và điều chỉnh bộ lọc chương.",
+  "manga_action_incomplete": "Hành động chưa kết thúc. Kiểm tra trạng thái hiện tại trước khi thử lại.",
+  "chapter_settings": "Cài đặt chương",
+  "chapter_settings_live": "Các thay đổi về bộ lọc và sắp xếp sẽ được áp dụng ngay lập tức.",
+  "chapter_scanlators_all": "Hiển thị tất cả các nhóm máy quét",
+  "chapter_scanlators_hint": "Chọn nhóm để ẩn chương của họ. Các thay đổi sẽ được áp dụng khi bạn nhấn vào Bộ lọc.",
+  "chapter_scanlators_hidden": "{count} nhóm máy quét bị ẩn",
+  "@chapter_scanlators_hidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_selected_count": "{count} chương được chọn",
+  "@chapter_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_add_bookmark": "Đánh dấu",
+  "chapter_remove_bookmark": "Bỏ đánh dấu",
+  "chapter_read_following": "Đọc bên dưới",
+  "chapter_delete_records": "Xóa bản ghi chương",
+  "chapter_delete_local_hint": "Loại bỏ các bản ghi chương đã chọn và tiến trình đọc. Các tài liệu lưu trữ gốc của địa phương được lưu giữ; các bản sao đã tải xuống sẽ được dọn sạch.",
+  "chapter_delete_last_hint": "Đây là tất cả các chương trong truyện tranh này. Xóa chúng cũng sẽ xóa truyện tranh khỏi giá sách của bạn.",
+  "chapter_action_incomplete": "Hành động chưa kết thúc. Một số thay đổi có thể đã được lưu. Đóng và kiểm tra các chương cũng như nội dung tải xuống trước khi tiếp tục.",
+  "reader_display_scope": "Chế độ đọc và bố cục trang thủ công áp dụng cho truyện tranh này. Chọn một thay đổi để quay lại đọc.",
+  "reader_display_single_only": "Đọc liên tục theo chiều ngang sử dụng các trang đơn.",
+  "reader_display_manual_pages": "Thay đổi bố cục trang sẽ tắt trang đôi tự động cho tất cả truyện tranh.",
+  "reader_display_crop_scope": "Áp dụng cho tất cả truyện tranh.",
+  "reader_chapter_locate": "Xác định vị trí chương hiện tại",
+  "reader_chapter_search": "Tìm kiếm chương hoặc máy quét",
+  "reader_chapter_scope": "Sử dụng bộ lọc chương và sắp xếp thứ tự từ các chi tiết truyện tranh. Dấu trang được lưu ngay lập tức.",
+  "reader_chapter_current_hidden": "Chương bạn đang đọc nằm ngoài bộ lọc hiện tại.",
+  "reader_chapter_current": "Đang đọc",
+  "reader_chapter_read": "Đọc",
+  "reader_chapter_bookmark_failed": "Không thể xác nhận việc lưu dấu trang. Đóng danh sách và kiểm tra trạng thái hiện tại của nó.",
+  "reader_image_actions": "Hành động hình ảnh",
+  "reader_image_original": "Sử dụng toàn bộ trang gốc, không có bộ lọc dịch, cắt xén hoặc màu của trình đọc.",
+  "reader_image_save_ios": "Lưu vào thư mục Ảnh ở vị trí lưu trữ ứng dụng hiện tại.",
+  "reader_image_save_android": "Lưu vào thư mục Pictures/nodelane-comics của thiết bị.",
+  "reader_image_share": "Mở bảng chia sẻ hệ thống.",
+  "reader_image_cover": "Thay đổi bìa truyện tranh này sau khi xác nhận.",
+  "reader_image_cover_limit": "Ảnh bìa phải nhỏ hơn 5 MB. Lưu và chia sẻ vẫn có sẵn.",
+  "reader_image_action_failed": "Hành động không thể được xác nhận. Đóng menu này và kiểm tra kết quả trước khi thử lại.",
+  "reader_settings_book_scope": "Những cài đặt này chỉ áp dụng cho truyện tranh này.",
+  "reader_settings_global_scope": "Các cài đặt này áp dụng cho tất cả truyện tranh và lưu ngay lập tức.",
+  "reader_filters": "Bộ lọc hình ảnh",
+  "reader_filter_scope": "Áp dụng cho tất cả truyện tranh. Thay đổi màn hình đọc mà không sửa đổi hình ảnh gốc.",
+  "reader_auto_scroll_pause": "Quá trình cuộn tạm dừng khi cài đặt đang mở.",
+  "manga_synopsis": "Tóm tắt",
+  "manga_author": "Tác giả: {author}",
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "manga_continue_reading": "Tiếp tục đọc",
+  "reader_settings_title": "Cài đặt đầu đọc",
+  "reader_picker_book_scope": "Chỉ dành cho truyện tranh này",
+  "reader_picker_global_scope": "Áp dụng cho tất cả truyện tranh",
+  "reader_picker_apply_hint": "Nhấn để lưu và quay lại mức trước đó.",
+  "reader_scale_fit_screen_hint": "Vừa toàn bộ trang trên màn hình",
+  "reader_scale_stretch_hint": "Lấp đầy khu vực đọc",
+  "reader_scale_fit_width_hint": "Điều chỉnh trang theo chiều rộng",
+  "reader_scale_fit_height_hint": "Điều chỉnh trang theo chiều cao",
+  "source_filter_active": "Đã áp dụng",
+  "source_filter_apply": "Áp dụng bộ lọc",
+  "source_filter_scope": "Bộ lọc chỉ áp dụng cho trang web này.",
+  "source_filter_apply_hint": "Áp dụng bộ lọc để sử dụng các lựa chọn của bạn.",
+  "source_filter_term": "{term, select, genres{Thể loại} author{Tác giả} artist{Nghệ sĩ} title{Tiêu đề} year{Năm} tags{Thẻ} format{định dạng} publisher{Nhà xuất bản} relevance{Sự liên quan} rating{Đánh giá} views{Lượt xem} random{Ngẫu nhiên} all{Tất cả} none{Không có} action{Hành động} adventure{Cuộc phiêu lưu} comedy{Hài kịch} drama{Kịch} fantasy{Ảo tưởng} romance{Lãng mạn} science_fiction{Khoa học viễn tưởng} slice_of_life{Lát cắt cuộc đời} mystery{Bí ẩn} horror{Kinh dị} psychological{Tâm lý} historical{Lịch sử} sports{Thể thao} supernatural{Siêu nhiên} school_life{Cuộc sống học đường} tragedy{Bi kịch} shounen{Shounen} shoujo{Shoujo} seinen{Seinen} josei{Josei} isekai{Isekai} martial_arts{Võ thuật} mecha{Cơ Khí} music{Âm nhạc} doujinshi{Doujinshi} trending{Đang thịnh hành} new{Mới} adult_content{Nội dung người lớn} only{Chỉ} other{{term}}}",
+  "@source_filter_term": {
+    "description": "Common extension filter display labels. Plugin values are never translated.",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "bookshelf_more_display": "Thêm tùy chọn hiển thị",
+  "bookshelf_more_display_hint": "Huy hiệu, nguồn và danh mục",
+  "bookshelf_download_count": "Số lượt tải xuống",
+  "bookshelf_source_global_hint": "Khả năng hiển thị nguồn sử dụng tùy chọn hiển thị được chia sẻ.",
+  "bookshelf_select_entries": "Chọn tác phẩm",
+  "bookshelf_search_options": "Tùy chọn tìm kiếm",
+  "bookshelf_empty_hint": "Thu thập tác phẩm từ các nguồn hoặc nhập tệp cục bộ.",
+  "bookshelf_no_match_hint": "Hãy thử các từ khóa khác hoặc điều chỉnh các bộ lọc hiện tại.",
+  "bookshelf_clear_query": "Xóa từ khóa",
+  "bookshelf_view_selection": "Xem các tác phẩm đã chọn",
+  "bookshelf_import_formats": "Chọn tệp cục bộ để thêm nó vào giá sách của bạn.",
+  "bookshelf_import_canceled_hint": "Bạn có thể chọn lại sau khi hủy bộ chọn tệp.",
+  "bookshelf_browse_sources": "Duyệt nguồn",
+  "bookshelf_empty_title": "Giá sách của bạn trống rỗng",
+  "bookshelf_no_match_title": "Không có tác phẩm phù hợp",
+  "bookshelf_mark_watched": "Mark đã xem",
+  "bookshelf_mark_unwatched": "Đánh dấu là chưa xem",
+  "nodelane_account": "NodeLane",
+  "nodelane_sign_in": "Đăng nhập vào NodeLane",
+  "nodelane_account_intro": "Xem tài khoản, đăng ký và hạn ngạch dịch thuật của bạn",
+  "nodelane_login_action": "Tiếp tục đăng nhập",
+  "nodelane_login_browser": "Đăng nhập thông qua trình duyệt hệ thống, sau đó quay lại ứng dụng",
+  "nodelane_account_id": "ID tài khoản",
+  "nodelane_account_init_error": "Bộ nhớ tài khoản không khả dụng. Khởi động lại ứng dụng và thử lại.",
+  "nodelane_account_refresh_error": "Không thể làm mới thông tin tài khoản",
+  "nodelane_account_auth_error": "Phiên của bạn đã hết hạn. Đăng nhập lại",
+  "nodelane_account_unknown": "Thông tin đăng ký không có sẵn",
+  "nodelane_account_current": "Đăng ký hiện tại",
+  "nodelane_account_free": "Tài khoản miễn phí",
+  "nodelane_account_no_subscription": "Không có đăng ký hoạt động",
+  "nodelane_account_active": "Đang hoạt động",
+  "nodelane_account_expired": "Đã hết hạn",
+  "nodelane_account_expiry": "Có hiệu lực đến",
+  "nodelane_account_renewal": "Gia hạn",
+  "nodelane_renewal_auto": "Tự động gia hạn",
+  "nodelane_renewal_manual": "Gia hạn thủ công",
+  "nodelane_renewal_stopped": "Đã dừng gia hạn tự động",
+  "nodelane_renewal_gift": "Quà tặng thành viên",
+  "nodelane_renewal_attention": "Kiểm tra trạng thái gia hạn của bạn trên trang web",
+  "nodelane_next_billing": "Ngày thanh toán tiếp theo",
+  "nodelane_billing_unavailable": "Không có thông tin gia hạn",
+  "nodelane_manage_account": "Quản lý trên website",
+  "nodelane_view_plans": "Xem gói thuê bao",
+  "nodelane_translation_quota": "Hạn ngạch dịch thuật",
+  "nodelane_quota_free": "Hạn ngạch miễn phí",
+  "nodelane_quota_subscription": "Hạn ngạch đăng ký",
+  "nodelane_quota_purchase": "Hạn ngạch đã mua",
+  "nodelane_quota_details": "Xem chi tiết hạn ngạch",
+  "nodelane_quota_expanded": "Chi tiết hạn ngạch",
+  "nodelane_quota_unlimited": "Không giới hạn",
+  "nodelane_quota_not_subscribed": "Chưa đăng ký",
+  "nodelane_quota_unknown": "Không có sẵn",
+  "nodelane_quota_used": "Đã qua sử dụng",
+  "nodelane_quota_reserved": "Đang tiến hành",
+  "nodelane_quota_reset": "Đặt lại tiếp theo",
+  "nodelane_quota_expiry": "Hạn sử dụng tiếp theo",
+  "nodelane_quota_no_expiry": "Không có hạn sử dụng",
+  "nodelane_quota_reservation_note": "Các trang đang thực hiện đã được khấu trừ khỏi hạn ngạch hiện có",
+  "nodelane_quota_available": "{count} trang còn lại",
+  "@nodelane_quota_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_quota_pages": "{count} trang",
+  "@nodelane_quota_pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_sign_out": "Đăng xuất",
+  "nodelane_sign_out_confirm": "Việc đăng xuất sẽ tạm dừng bản dịch chính thức trên thiết bị này. Thư viện và tiến trình đọc của bạn được lưu giữ.",
+  "settings_search_hint": "Cài đặt tìm kiếm",
+  "settings_frequent": "Thường xuyên sử dụng",
+  "settings_reading_translation": "Đọc và dịch thuật",
+  "settings_app_preferences": "Tùy chọn ứng dụng",
+  "settings_data_management": "Dữ liệu và quản lý",
+  "settings_more_tools": "Thêm công cụ",
+  "settings_more_tools_hint": "Danh mục, thống kê và lịch",
+  "settings_appearance_interface": "Ngoại hình và giao diện",
+  "settings_security_privacy": "Bảo mật và quyền riêng tư",
+  "settings_source_preferences": "Cài đặt nguồn",
+  "settings_about_help": "Giới thiệu và trợ giúp",
+  "settings_storage_backup": "Lưu trữ và sao lưu",
+  "settings_pending_downloads": "{count} đang chờ xử lý",
+  "@settings_pending_downloads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_translation_language": "Ngôn ngữ dịch thuật",
+  "settings_translation_scope": "Được sử dụng trong trình đọc và dịch trang web",
+  "settings_immediate_choice": "Các thay đổi được áp dụng ngay lập tức",
+  "settings_translation_init_error": "Cài đặt dịch không khả dụng. Khởi động lại ứng dụng và thử lại.",
+  "settings_local_cache": "Bộ đệm cục bộ",
+  "settings_chapter_cache": "Bộ đệm chương và tập",
+  "settings_cover_cache": "Che bộ đệm",
+  "settings_translation_cache": "Bộ đệm hình ảnh đã dịch",
+  "settings_translation_cache_hint": "Lưu giữ bản ghi dịch và truy xuất lại hình ảnh đã dịch khi cần",
+  "settings_cache_clear": "Xóa",
+  "settings_translation_cache_done": "Đã xóa bộ nhớ đệm hình ảnh được dịch; hồ sơ dịch thuật được lưu giữ",
+  "settings_cache_confirmation": "Xóa {name}? Nội dung được lưu trong bộ nhớ đệm có thể được truy xuất lại. Các mục trong thư viện sẽ được lưu giữ.",
+  "@settings_cache_confirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_advanced_options": "Tùy chọn nâng cao",
+  "settings_manga_reader": "Người đọc truyện tranh",
+  "settings_novel_reader": "Người đọc tiểu thuyết",
+  "settings_downloads": "Cài đặt tải xuống",
+  "onboarding_welcome": "Chào mừng đến với",
+  "onboarding_reading_content": "Đọc nội dung",
+  "onboarding_choose_one": "Chọn ít nhất một",
+  "onboarding_restore_hint": "Khôi phục thư viện của bạn từ bản sao lưu",
+  "onboarding_browse_hint": "Tìm tiêu đề trên các trang web được hỗ trợ",
+  "onboarding_import_folder": "Nhập thư mục cục bộ",
+  "onboarding_import_folder_hint": "Đọc manga, tiểu thuyết và anime trên thiết bị của bạn",
+  "onboarding_third_party": "Thêm kho lưu trữ của bên thứ ba",
+  "onboarding_third_party_hint": "Sử dụng địa chỉ kho lưu trữ mà bạn đã có",
+  "onboarding_repository_hint": "Nhập địa chỉ được cung cấp bởi kho lưu trữ.",
+  "onboarding_repository_address": "Địa chỉ",
+  "onboarding_repository_address_hint": "Nhập địa chỉ kho lưu trữ",
+  "onboarding_add_repository": "Thêm kho lưu trữ",
+  "onboarding_start": "Bắt đầu",
+  "onboarding_open_library": "Mở thư viện",
+  "onboarding_view_imports": "Xem nội dung đã nhập",
+  "onboarding_view_folders": "Xem thư mục",
+  "notice_backup_created": "Đã tạo bản sao lưu",
+  "notice_backup_ready": "Lưu hoặc chia sẻ tệp sao lưu.",
+  "notice_backup_restored": "Đã khôi phục bản sao lưu",
+  "notice_backup_unsupported": "Định dạng sao lưu này không được hỗ trợ.",
+  "notice_verification_required": "Yêu cầu xác minh trang web",
+  "notice_verification_hint": "Hoàn tất xác minh để tiếp tục duyệt.",
+  "notice_verify": "Xác minh trang web",
+  "notice_action_incomplete": "Hành động chưa kết thúc. Kiểm tra kết quả của nó trước khi thử lại.",
+  "notice_library_updating": "Đang cập nhật thư viện",
+  "notice_library_progress": "Đã kiểm tra tiêu đề {current} / {total}",
+  "notice_library_failed": "Một số tựa sách không thể cập nhật được",
+  "notice_import_completed": "Đã nhập xong",
+  "notice_operation_incomplete": "Hành động chưa hoàn thành",
+  "subtitle_service": "Dịch vụ phụ đề trực tuyến",
+  "subtitle_service_mode": "Nguồn phụ đề",
+  "subtitle_service_disabled": "Tắt · xóa thông tin xác thực đã lưu",
+  "subtitle_personal_key": "Khóa Wyzie của tôi",
+  "subtitle_custom_service": "Dịch vụ phụ đề của tôi",
+  "subtitle_key": "Wyzie API",
+  "subtitle_key_hint": "Nhập khóa Wyzie của riêng bạn. Nó vẫn ở trên thiết bị này và không được đưa vào bản sao lưu ứng dụng.",
+  "subtitle_get_key": "Nhận chìa khóa cá nhân",
+  "subtitle_service_address": "Tìm kiếm phụ đề URL",
+  "subtitle_service_token": "Mã thông báo truy cập dịch vụ (tùy chọn)",
+  "subtitle_custom_hint": "Sử dụng tìm kiếm HTTPS đầy đủ URL của dịch vụ Wyzie-compatible, bao gồm cả đường dẫn của nó (ví dụ: /search). Chỉ nhập mã thông báo truy cập nếu dịch vụ của bạn yêu cầu.",
+  "subtitle_service_off_hint": "Tìm kiếm phụ đề trực tuyến bị tắt. Phụ đề nhúng, do nguồn cung cấp và phụ đề cục bộ vẫn có sẵn.",
+  "subtitle_setup_required": "Chọn dịch vụ phụ đề trước khi tìm kiếm.",
+  "subtitle_invalid_key": "Nhập khóa không có dấu cách.",
+  "subtitle_invalid_address": "Sử dụng HTTPS URL hoàn chỉnh mà không có truy vấn, đoạn hoặc thông tin xác thực được nhúng.",
+  "subtitle_invalid_token": "Mã thông báo truy cập không được chứa dấu cách.",
+  "subtitle_storage_failed": "Không thể đọc hoặc lưu cài đặt phụ đề. Vui lòng thử lại.",
+  "subtitle_auth_failed": "Dịch vụ phụ đề từ chối truy cập. Kiểm tra mã thông báo khóa hoặc dịch vụ của bạn.",
+  "subtitle_quota_exhausted": "Hạn ngạch dịch vụ phụ đề đã hết. Kiểm tra tài khoản của bạn với dịch vụ đó.",
+  "subtitle_network_failed": "Không thể truy cập dịch vụ phụ đề. Vui lòng thử lại.",
+  "subtitle_response_invalid": "Dịch vụ phụ đề trả về phản hồi hoặc tệp không được hỗ trợ.",
+  "detail_loading_chapters": "Đang tải chương…",
+  "reader_opening_chapter": "Chương mở đầu",
+  "reader_open_chapter": "Chương mở",
+  "reader_loading_pages": "Đang lấy hình ảnh chương…",
+  "reader_loading_pages_hint": "Quá trình đọc sẽ tự động bắt đầu khi sẵn sàng.",
+  "reader_loading_failed": "Không thể tải chương này",
+  "reader_loading_retry_hint": "Hãy kiểm tra kết nối của bạn và thử lại.",
+  "reader_no_pages": "Không tìm thấy hình ảnh cho chương này",
+  "reader_loading_previous": "Đang tải chương trước…",
+  "reader_previous_failed": "Không thể tải chương trước",
+  "reader_reached_start": "Bạn đã đọc đến chương đầu tiên",
+  "reader_loading_next": "Đang tải chương tiếp theo…",
+  "reader_next_failed": "Không thể tải chương tiếp theo",
+  "reader_image_loading": "Đang tải hình ảnh…",
+  "reader_image_failure_hint": "Bạn có thể tiếp tục đọc các trang khác.",
+  "comic_paged": "Từng trang",
+  "comic_scroll": "Cuộn xuống",
+  "comic_book_scope": "Chỉ áp dụng cho cuốn sách này · lưu thay đổi ngay lập tức",
+  "comic_defaults_title": "Mặc định & thói quen",
+  "comic_defaults_hint": "Giá trị mặc định áp dụng cho các trường bạn chưa tùy chỉnh cho sách.",
+  "comic_habits_hint": "Những thói quen này áp dụng cho mọi truyện tranh.",
+  "comic_turn": "Vuốt sang trang tiếp theo",
+  "comic_left": "Còn lại",
+  "comic_right": "Đúng rồi",
+  "comic_up": "Lên",
+  "comic_fit": "Trang phù hợp",
+  "comic_fit_contain": "Toàn bộ trang",
+  "comic_fit_width": "Chiều rộng phù hợp",
+  "comic_fit_height": "Chiều cao phù hợp",
+  "comic_layout": "Bố cục trang",
+  "comic_auto": "Tự động",
+  "comic_layout_hint": "Tự động hiển thị độ rộng khi có đủ chiều rộng.",
+  "comic_width": "Độ rộng nội dung",
+  "comic_full": "Đầy đủ",
+  "comic_comfortable": "Thoải mái",
+  "comic_narrow": "Thu hẹp",
+  "comic_gap": "Giãn cách trang",
+  "comic_no_gap": "Liền mạch",
+  "comic_small_gap": "Nhỏ",
+  "comic_image_title": "Tinh chỉnh hình ảnh",
+  "comic_image_hint": "Cắt xén và tông màu chỉ ảnh hưởng đến cuốn sách này.",
+  "comic_wide": "Trang rộng",
+  "comic_intact": "Giữ nguyên",
+  "comic_split": "Tách",
+  "comic_rotate": "Xoay",
+  "comic_wide_hint": "Việc chia tách theo hướng lật trang. Áp dụng cho việc đọc một trang.",
+  "comic_cover": "Mỗi chương một bìa",
+  "comic_effects_reset": "Đặt lại điều chỉnh hình ảnh",
+  "comic_book_reset": "Khôi phục mặc định sách",
+  "comic_book_reset_hint": "Xóa cài đặt đọc tùy chỉnh của cuốn sách này. Bản dịch không thay đổi.",
+  "comic_canvas": "Nền tảng đầu đọc",
+  "comic_system": "Hệ thống",
+  "comic_black": "Đen",
+  "comic_gray": "Màu xám",
+  "comic_paper": "Giấy",
+  "comic_tap": "Nhấn để lật trang",
+  "comic_tap_hint": "Chạm vào các cạnh để di chuyển; chạm vào giữa để hiển thị các điều khiển.",
+  "comic_scroll_start": "Bắt đầu cuộn tự động",
+  "comic_scroll_pause": "Tạm dừng cuộn tự động",
+  "comic_scroll_speed": "Tốc độ cuộn",
+  "comic_scroll_hint": "Bắt đầu khi bảng này đóng lại. Tạm dừng khi ứng dụng rời khỏi nền trước.",
+  "comic_save_failed": "Không thể lưu. Vui lòng thử lại.",
+  "comic_reading": "Đọc sách",
+  "comic_chapter_habits_hint": "Thói quen liệt kê chương áp dụng cho tất cả các cuốn sách.",
+  "browser_title": "Trình duyệt",
+  "translation_image_display": "Hiển thị hình ảnh",
+  "translation_display_hint": "Hiển thị bản dịch hiện có trước tiên. Giữ bản gốc khi không có bản dịch.",
+  "translation_sign_in_required": "Đăng nhập để bật dịch",
+  "translation_sign_in_hint": "Sau khi đăng nhập, chuyển sang hình ảnh đã dịch để dịch tự động.",
+  "translation_automatic": "Dịch tự động",
+  "translation_original_hint": "Hiển thị bản gốc. Chuyển sang hình ảnh đã dịch để dịch tự động.",
+  "translation_window_hint": "Chỉ xử lý hình ảnh hiện tại và sắp tới trong khi hiển thị bản dịch.",
+  "translation_channel": "Kênh dịch thuật",
+  "translation_no_images": "Chưa tìm thấy hình ảnh có thể dịch được trên trang này",
+  "translation_waiting_image": "Đang chờ hình ảnh hiện tại",
+  "translation_progress": "Đã hoàn thành {complete} / {total} hình ảnh{issues, plural, =0{} =1{ · 1 hình ảnh cần chú ý} other{ · {issues} hình ảnh cần chú ý}}",
+  "@translation_progress": {
+    "placeholders": {
+      "complete": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "issues": {
+        "type": "int"
+      }
+    }
+  },
+  "translation_image_actions_hint": "Chạm và giữ hình ảnh để thực hiện thêm thao tác, bao gồm dịch lại hình ảnh đó.",
+  "translation_title": "Dịch truyện tranh",
+  "translation_system_sign_in": "Đăng nhập bằng trình duyệt hệ thống của bạn",
+  "translation_target_language": "Ngôn ngữ đích",
+  "translation_clear_cache": "Xóa bộ đệm hình ảnh đã dịch",
+  "translation_cache_hint": "Lưu giữ hồ sơ dịch và truy xuất lại kết quả khi cần.",
+  "translation_saved_read_failed": "Không thể tải bản dịch đã lưu",
+  "translation_read_failed": "Không thể tải hình ảnh đã dịch",
+  "operation_retry": "Hành động chưa kết thúc. Vui lòng thử lại.",
+  "translation_original": "Bản gốc",
+  "translation_translated": "Đã dịch",
+  "translation_regenerate_image": "Dịch lại ảnh này",
+  "translation_read_image": "Tải lại ảnh đã dịch",
+  "translation_image_actions": "Thêm hành động hình ảnh",
+  "translation_processing": "Đang xử lý",
+  "translation_reading": "Đang tải hình ảnh đã dịch",
+  "translation_waiting": "Đang chờ dịch",
+  "translation_preparing": "Đang chuẩn bị dịch",
+  "translation_uploading": "Tải lên bản gốc",
+  "translation_running": "Dịch thuật",
+  "translation_uncertain": "Trạng thái cần xác minh",
+  "translation_failed": "Dịch không thành công",
+  "translation_verify": "Xác minh",
+  "translation_reread": "Tải lại",
+  "browser_back": "Trở lại",
+  "browser_translation": "Dịch trang web",
+  "browser_new_tab_action": "Mở tab mới",
+  "browser_current_tab": "Hiện tại",
+  "browser_close_tab": "Đóng tab",
+  "browser_new_tab": "Tab mới",
+  "browser_page": "Trang web",
+  "browser_unopened": "Chưa có trang nào được mở",
+  "browser_address_hint": "Nhập hoặc dán URL",
+  "browser_invalid_address": "Nhập URL hợp lệ",
+  "browser_clear_address": "Xóa URL",
+  "browser_paste_address": "URL",
+  "browser_open_address": "Mở URL",
+  "browser_tab_count": "Tab · {count}",
+  "@browser_tab_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "browser_load_failed": "Không thể mở trang này",
+  "browser_load_failed_hint": "Kiểm tra kết nối của bạn và URL.",
+  "browser_edit_address": "Chỉnh sửa URL",
+  "browser_clear_cookies_confirm": "Xóa phiên đăng nhập cho tất cả các trang web?",
+  "browser_clear_cookies_hint": "Các trang web trong tất cả các tab có thể yêu cầu bạn đăng nhập lại.",
+  "browser_clear_cookies_action": "Xóa phiên đăng nhập",
+  "browser_tab_limit": "Bạn có thể mở tối đa 12 tab. Đóng một cái trước.",
+  "browser_forward": "Chuyển tiếp",
+  "browser_clear_all_cookies": "Xóa tất cả các phiên đăng nhập trang web",
+  "browser_clear_failed": "Không thể xóa phiên. Vui lòng thử lại.",
+  "browser_save_failed": "Không thể lưu tab. Vui lòng thử lại.",
+  "browser_tabs_full": "12 tab đã được mở",
+  "browser_no_tabs": "Chưa có tab nào được mở",
+  "browser_close_failed": "Không thể lưu tab. Nhấn vào đóng lại để thử lại.",
+  "source_pinned_websites": "Trang web được ghim",
+  "manage": "Quản lý",
+  "translation_settings_hint": "Dịch tự động, ngôn ngữ đích và kênh",
+  "translation_show_original": "Nhấn để hiển thị bản gốc",
+  "translation_show_translated": "Nhấn để hiển thị bản dịch",
+  "source_display": "Hiển thị",
+  "source_cover_title": "Bìa và tựa đề",
+  "source_cover_only": "Chỉ bìa",
+  "source_save_search": "Lưu tìm kiếm hiện tại",
+  "source_saved_searches": "Tìm kiếm đã lưu",
+  "source_website_info": "Thông tin trang web",
+  "source_saved_search_title": "{title} · Nhấn để tìm kiếm",
+  "@source_saved_search_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "action_done": "Xong",
+  "source_search_keyword": "Từ khóa: {query}",
+  "@source_search_keyword": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "source_no_saved_searches": "Chưa lưu tìm kiếm nào",
+  "source_save_search_hint": "Tìm kiếm từ khóa, sau đó lưu nó từ các thao tác trên trang web.",
+  "source_saved_search_scope": "Từ khóa chỉ được lưu cho trang web này.",
+  "source_search_here": "Tìm kiếm tiêu đề trên trang web này",
+  "source_filter_results": "Kết quả đã lọc",
+  "source_search_results": "Kết quả tìm kiếm",
+  "source_return_popular": "Trở lại phổ biến",
+  "source_popular_titles": "Danh hiệu phổ biến",
+  "source_no_titles": "Không tìm thấy tiêu đề phù hợp",
+  "source_no_titles_hint": "Thay đổi từ khóa hoặc bộ lọc của bạn hoặc quay lại các tiêu đề phổ biến.",
+  "source_load_more_failed": "Không thể tải thêm. Vui lòng thử lại.",
+  "source_load_pull_retry": "Không thể tải trang web này. Kéo xuống để thử lại.",
+  "source_clear_failed": "Không thể hoàn tất việc xóa. Vui lòng thử lại.",
+  "source_uninstall_failed": "Không thể hoàn tất việc gỡ cài đặt. Vui lòng thử lại.",
+  "source_details": "Chi tiết nguồn",
+  "source_repository_website": "Trang web lưu trữ",
+  "source_provided_settings": "Cài đặt do nguồn cung cấp",
+  "source_advanced_actions": "Hành động nâng cao",
+  "source_edit_metadata": "Chỉnh sửa thông tin nguồn",
+  "source_clear_cookies": "Xóa cookie cho trang web này",
+  "source_clear_cookies_hint": "Bạn có thể cần phải đăng nhập lại vào lần truy cập tiếp theo.",
+  "source_uninstall": "Gỡ cài đặt nguồn",
+  "source_settings_save_failed": "Quá trình lưu chưa hoàn tất. Mở lại cài đặt nguồn để kiểm tra.",
+  "repository_third_party": "Kho lưu trữ của bên thứ ba",
+  "repository_refresh_failed": "Không thể làm mới danh mục. Nội dung được lưu trong bộ nhớ đệm sẽ được lưu giữ. Vui lòng thử lại.",
+  "repository_show_sources": "Hiển thị nguồn từ kho lưu trữ này",
+  "repository_copy_catalog": "Sao chép liên kết danh mục",
+  "repository_remove": "Xóa kho lưu trữ",
+  "repository_remove_hint": "Giữ các nguồn đã cài đặt và xóa các mục danh mục đã gỡ cài đặt.",
+  "repository_empty": "Chưa có kho lưu trữ của bên thứ ba nào được thêm vào",
+  "repository_built_in": "Danh mục chính thức tích hợp",
+  "repository_hidden": "Ẩn",
+  "repository_refreshing": "Đang làm mới…",
+  "repository_refresh": "Làm mới danh mục",
+  "repository_manage_hint": "Quản lý nơi tải xuống nguồn của bên thứ ba.",
+  "repository_invalid_address": "Nhập HTTP hoặc HTTPS URL hợp lệ",
+  "repository_already_added": "Kho lưu trữ này đã được thêm vào",
+  "repository_unrecognized": "Không tìm thấy danh mục được hỗ trợ. Hãy kiểm tra liên kết và thử lại.",
+  "repository_read_failed": "Không thể đọc được danh mục. Vui lòng thử lại.",
+  "repository_save_failed": "Quá trình lưu chưa hoàn tất. Kiểm tra danh sách kho lưu trữ của bạn.",
+  "repository_paste_hint": "Dán liên kết danh mục kho lưu trữ của bên thứ ba",
+  "repository_address": "URL",
+  "repository_paste_link": "Dán liên kết",
+  "repository_recognized": "{type} · Danh mục được công nhận",
+  "@repository_recognized": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "repository_choose_sources_hint": "Sau khi thêm kho lưu trữ, hãy chọn nguồn bạn cần.",
+  "search_scope": "Phạm vi tìm kiếm",
+  "search_scope_hint": "Chọn các trang web cần tìm kiếm",
+  "search_websites_action": "{count, plural, =1{Tìm kiếm 1 trang web} other{Tìm kiếm {count} website}}",
+  "@search_websites_action": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_find_website": "Tìm một trang web",
+  "search_selected_websites": "{count, plural, =1{1 trang web được chọn} other{{count} trang web được chọn}}",
+  "@search_selected_websites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "action_clear": "Xóa",
+  "search_deselect_results": "Bỏ chọn các trang web phù hợp",
+  "search_select_results": "Chọn trang web phù hợp",
+  "search_no_websites_hint": "Không có trang web phù hợp. Hãy thử tên hoặc ngôn ngữ khác.",
+  "search_select_website_hint": "Chọn ít nhất một trang web để tìm kiếm.",
+  "search_start_title": "Nhập từ khóa tìm tiêu đề",
+  "search_start_hint": "Tìm kiếm nhiều trang web cùng một lúc và hiển thị tiêu đề phù hợp.",
+  "search_empty_scope": "Không có trang web nào có thể tìm kiếm được trong phạm vi này",
+  "search_empty_scope_hint": "Chuyển sang tất cả các trang web hoặc chọn trang web để tìm kiếm.",
+  "search_result_count": "{count, plural, =1{1 kết quả} other{{count} kết quả}}",
+  "@search_result_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_titles": "Tìm kiếm tiêu đề",
+  "search_actions": "Hành động tìm kiếm",
+  "search_details": "Chi tiết tìm kiếm",
+  "search_title_hint": "Tìm kiếm theo tiêu đề",
+  "search_searching": "Đang tìm kiếm",
+  "search_found_results": "{count, plural, =1{Tìm thấy 1 kết quả} other{Đã tìm thấy {count} kết quả}}",
+  "@search_found_results": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_no_results": "Không có kết quả phù hợp",
+  "search_failed": "Tìm kiếm không thành công",
+  "search_found_titles": "{count, plural, =1{1 tiêu đề được tìm thấy} other{{count} tìm thấy tiêu đề}} · {websites, plural, =1{1 trang web} other{{websites} trang web}}",
+  "@search_found_titles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "websites": {
+        "type": "int"
+      }
+    }
+  },
+  "search_finding_titles": "Tìm tiêu đề",
+  "search_complete": "Tìm kiếm hoàn tất",
+  "search_in_progress": "Đang tìm kiếm",
+  "search_finding_related": "Đang tìm kiếm tiêu đề phù hợp…",
+  "search_no_results_yet": "Chưa có kết quả tìm kiếm",
+  "search_no_matching_titles": "Không tìm thấy tiêu đề phù hợp",
+  "search_results_appear_hint": "Kết quả sẽ xuất hiện ở đây khi chúng được tìm thấy.",
+  "search_failed_websites_hint": "Một số trang web không thể hoàn tất tìm kiếm. Hãy thử lại chúng trong chi tiết tìm kiếm.",
+  "search_change_keywords_hint": "Hãy thử từ khóa ngắn hơn hoặc tìm kiếm nhiều trang web hơn.",
+  "search_view_details": "Xem chi tiết tìm kiếm",
+  "search_adjust_scope": "Điều chỉnh phạm vi tìm kiếm",
+  "search_query_websites": "{query} · {count, plural, =1{1 trang web} other{{count} trang web}}",
+  "@search_query_websites": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_completed_count": "Đã hoàn thành {completed} / {total}",
+  "@search_completed_count": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "search_retry_website_hint": "Thử lại từng trang web bị lỗi",
+  "source_selected_count": "{count, plural, =1{Đã chọn 1 mục} other{{count} mục được chọn}}",
+  "@source_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_languages": "Tìm kiếm ngôn ngữ",
+  "source_deselect": "Bỏ chọn",
+  "source_select": "Chọn nguồn",
+  "source_multilingual": "Đa ngôn ngữ",
+  "source_language_unknown": "Ngôn ngữ không được chỉ định",
+  "source_adult_content": "Chứa nội dung 18+",
+  "source_classification_unknown": "Phân loại không được chỉ định",
+  "source_more_classifications": "{count, plural, =1{Xem tất cả thông tin nguồn, thêm 1 danh mục} other{Xem tất cả thông tin nguồn, {count} danh mục khác}}",
+  "@source_more_classifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_loading_website": "Đang tải trang web",
+  "source_unpin": "Bỏ ghim",
+  "source_pin": "Ghim",
+  "source_open": "Mở",
+  "source_metadata_hint": "Thông tin đến từ danh mục nguồn. Các danh mục mô tả nội dung được bao phủ bởi trang web.",
+  "source_region": "Vùng",
+  "source_format": "định dạng",
+  "source_creation": "Sáng tạo",
+  "source_unspecified": "Không được chỉ định",
+  "source_pricing": "Giá cả",
+  "source_region_jp": "truyện tranh Nhật Bản",
+  "source_region_kr": "truyện tranh Hàn Quốc",
+  "source_region_cn": "Truyện tranh Trung Quốc",
+  "source_region_hk_tw": "Truyện tranh Hồng Kông và Đài Loan",
+  "source_region_western": "Truyện tranh phương Tây",
+  "source_region_other": "Các vùng khác",
+  "source_format_page": "Truyện tranh phân trang",
+  "source_format_vertical": "Truyện tranh dọc",
+  "source_format_strip": "Truyện tranh",
+  "source_creation_original": "Bản gốc",
+  "source_creation_fan": "Tác phẩm của quạt",
+  "source_free_watch": "Xem miễn phí",
+  "source_free_read": "Đọc miễn phí",
+  "source_partial_paid": "Đã thanh toán một phần",
+  "source_paid_watch": "Xem trả phí",
+  "source_paid_read": "Đọc trả phí",
+  "source_pricing_unknown": "Giá cả không được chỉ định",
+  "source_language_filter": "Lọc theo ngôn ngữ",
+  "source_language_filter_hint": "Chỉ lọc danh mục này. Các nguồn được cài đặt không bị ảnh hưởng.",
+  "source_all_languages": "Tất cả ngôn ngữ",
+  "action_apply": "Áp dụng",
+  "source_load_retry": "Không thể tải trang web này. Vui lòng thử lại.",
+  "source_catalog_refresh_failed": "Không thể làm mới danh mục. Nội dung hiện tại được lưu giữ. Kéo xuống để thử lại.",
+  "source_uninstall_count": "{count, plural, =1{Gỡ bỏ 1 nguồn?} other{Gỡ cài đặt {count} nguồn?}}",
+  "@source_uninstall_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_uninstall_selected_hint": "Gỡ cài đặt các nguồn đã chọn và xóa cài đặt của chúng. Giữ tiêu đề thư viện và nội dung tải xuống.",
+  "source_failed_count": "{count, plural, =1{Hành động không thành công đối với 1 nguồn.} other{Hành động không thành công đối với nguồn {count}.}} Lựa chọn được giữ lại. Vui lòng thử lại.",
+  "@source_failed_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_latest_content": "Nội dung mới nhất",
+  "source_actions": "Hành động nguồn",
+  "source_bulk_manage": "Quản lý nhiều nguồn",
+  "source_update_installed": "Cập nhật các nguồn đã cài đặt",
+  "source_no_matching_websites": "Không có trang web phù hợp",
+  "source_no_websites": "Không có trang web nào",
+  "source_search_installed_hint": "Tìm kiếm tiêu đề trong các nguồn đã cài đặt",
+  "source_global_search": "Tìm kiếm trên các nguồn",
+  "source_manage_repositories": "Quản lý kho lưu trữ",
+  "source_view_third_party": "Xem nguồn của bên thứ ba",
+  "source_catalog_load_failed": "Không thể tải danh mục. Kéo xuống để thử lại.",
+  "source_all_websites": "Tất cả các trang web",
+  "source_available": "Có sẵn để cài đặt",
+  "source_third_party": "Bên thứ ba",
+  "source_name_or_title": "Tên hoặc tiêu đề trang web",
+  "view_all": "Xem tất cả",
+  "search_searching_ellipsis": "Đang tìm kiếm…",
+  "onboarding_untested_content": "{type} · Chưa được kiểm tra",
+  "@onboarding_untested_content": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "onboarding_untested": "Chưa được kiểm tra",
+  "source_custom_scope": "Tùy chỉnh",
+  "source_custom_websites": "Các trang web được chọn",
+  "tv_hidden_library_hint": "Mỗi tiêu đề đều nằm trong một danh mục ẩn.\nGiữ OK ở “Tất cả” để hiện một mục.",
+  "tv_no_matching_anime": "Không có anime phù hợp",
+  "tv_no_matching_category": "Không có anime phù hợp trong “{category}”",
+  "@tv_no_matching_category": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_filtered_empty_hint": "Không có anime nào phù hợp với bộ lọc hiện tại.\nThay đổi chúng từ nút bên cạnh tìm kiếm.",
+  "tv_new_episodes": "Tập Mới",
+  "tv_recently_added": "Đã thêm gần đây",
+  "tv_empty_category_hint": "Chưa có anime nào trong danh mục này.\nThêm tiêu đề cho nó từ trang chi tiết của tiêu đề.",
+  "tv_empty_library": "Thư viện anime của bạn trống",
+  "tv_empty_library_hint": "Thêm anime từ Duyệt để lấp đầy ngôi nhà của bạn",
+  "tv_browse_anime": "Duyệt phim hoạt hình",
+  "tv_new_count": "{count} mới",
+  "@tv_new_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tv_category_hidden": "Ẩn “{category}” · giữ OK ở “All” để hiện",
+  "@tv_category_hidden": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_no_hidden_categories": "Không có danh mục ẩn",
+  "import_torrent_file": "nhập tập tin .torrent",
+  "import_video_formats": ".mp4, .mkv, .avi, v.v.",
+  "cloudflare_proxy_optional": "FlareSolverr tùy chọn / Byparr URL",
+  "tv_home_layout_hint": "Trang chủ anime theo hàng (Tiếp tục · Tập mới · danh mục) thay vì lưới phẳng",
+  "tv_hide_libraries_hint": "Ẩn thư viện manga & tiểu thuyết (bật theo mặc định trên TV)",
+  "anime_only_hint": "Ẩn manga & tiểu thuyết trên ứng dụng. Tắt để hiển thị mọi thứ.",
+  "audio_auto_safe": "Tự động an toàn",
+  "tv_player_hint": "Bật: đầu phát TV chuyên dụng.  Tắt: trình phát gốc (máy tính để bàn).",
+  "release_open_failed": "Không thể mở bản phát hành",
+  "tv_replay": "Phát lại",
+  "tv_no_episodes": "Chưa có tập nào",
+  "tracker_continue_series": "Tiếp tục xem loạt phim",
+  "tracker_watchlist_series": "Chuỗi danh sách theo dõi",
+  "tracker_continue_movies": "Tiếp tục xem phim",
+  "tracker_watchlist_movies": "Danh sách phim theo dõi",
+  "tracker_trending_series": "Dòng Xu Hướng",
+  "tracker_trending_movies": "Phim thịnh hành",
+  "tracker_popular_series": "Series nổi tiếng",
+  "tracker_popular_movies": "Phim Nổi Tiếng",
+  "tracker_top_series": "Top Series (Mọi Thời Đại)",
+  "tracker_top_movies": "Phim Hay Nhất (Mọi Thời Đại)",
+  "tracker_airing_series": "Loạt phim đang phát sóng",
+  "tracker_airing_anime": "Anime đang phát sóng",
+  "tracker_popular_anime": "Anime nổi tiếng",
+  "tracker_upcoming_anime": "Anime sắp ra mắt",
+  "tracker_popular_manga": "Manga nổi tiếng",
+  "tracker_top_manga": "Manga hàng đầu",
+  "tracker_top_manhwa": "Manhwa hàng đầu",
+  "tracker_top_manhua": "Manhua hàng đầu",
+  "tracker_latest_anime": "Anime mới nhất",
+  "tracker_best_anime": "Anime được đánh giá tốt nhất",
+  "tracker_latest_manga": "Manga mới nhất",
+  "tracker_best_manga": "Manga được đánh giá hay nhất",
+  "tracker_trending_anime": "Anime thịnh hành",
+  "tracker_upcoming_manga": "Manga sắp ra mắt",
+  "tracker_trending_manga": "Manga thịnh hành",
+  "selection_progress": "{selected}/{total} đã chọn",
+  "@selection_progress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "source_code_editor": "Trình soạn thảo mã",
+  "source_code_execute": "Thực hiện",
+  "source_console_logs": "Nhật ký bảng điều khiển",
+  "source_no_logs": "Chưa có nhật ký nào",
+  "source_updated_successfully": "Đã cập nhật nguồn thành công",
+  "source_obsolete": "LỖI NGÀY",
+  "player_seek_forward_seconds": "Tua tới {seconds} giây",
+  "@player_seek_forward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_seek_backward_seconds": "Tua lùi {seconds} giây",
+  "@player_seek_backward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_autoplay_on": "Tự động phát tập tiếp theo: bật",
+  "player_autoplay_off": "Tự động phát tập tiếp theo: tắt",
+  "player_no_other_quality": "Không có chất lượng khác",
+  "player_no_subtitles": "Không có phụ đề",
+  "player_no_audio_tracks": "Không có bản âm thanh",
+  "player_seek_forward": "Tìm về phía trước",
+  "player_seek_backward": "Tìm về phía sau",
+  "player_seconds": "{seconds, plural, =1{1 giây} other{{seconds} giây}}",
+  "@player_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "subtitle_preview": "Lorem ipsum dolor ngồi amet",
+  "subtitle_style": "Phong cách",
+  "translation_official_channel": "NodeLane Chính thức",
+  "translation_auth_required": "Trước tiên hãy đăng nhập vào tài khoản dịch của bạn.",
+  "translation_source_changed": "Hình ảnh gốc đã thay đổi. Vui lòng tải lại nó.",
+  "translation_source_missing": "Hình ảnh gốc hiện không có sẵn.",
+  "translation_resource_limit": "Hình ảnh này vượt quá giới hạn xử lý của thiết bị. Bản gốc được giữ lại.",
+  "translation_storage_full": "Bộ nhớ dịch đã đầy. Xóa hình ảnh đã dịch trước.",
+  "translation_invalid_image": "Định dạng hoặc nội dung hình ảnh không hợp lệ.",
+  "translation_unsupported_image": "Bản dịch không được hỗ trợ cho hình ảnh này. Bản gốc được giữ lại.",
+  "translation_invalid_result": "Xác thực hình ảnh đã dịch không thành công. Vui lòng tải lại nó.",
+  "translation_result_unavailable": "Hình ảnh đã dịch không có sẵn. Vui lòng tải lại nó.",
+  "translation_result_expired": "Hình ảnh đã dịch đã hết hạn. Hãy dịch lại lần nữa.",
+  "translation_analysis_too_large": "Có quá nhiều nội dung hình ảnh cần phân tích. Hãy giảm kích thước hình ảnh và thử lại.",
+  "translation_region_limit": "Hình ảnh có quá nhiều vùng văn bản. Hãy tách nó ra và thử lại.",
+  "translation_text_limit": "Vùng văn bản quá dài. Điều chỉnh hình ảnh và thử lại.",
+  "translation_unavailable": "Bản dịch này không còn nữa.",
+  "translation_outcome_unknown": "Kết quả cần được xác minh. Nó chưa được gửi lại.",
+  "translation_rate_limited": "Yêu cầu bị hạn chế. Quá trình dịch sẽ tự động tiếp tục.",
+  "translation_quota_exhausted": "Hạn ngạch dịch không đủ.",
+  "translation_unsupported_language": "Dịch vụ không hỗ trợ ngôn ngữ đích này.",
+  "translation_upgrade_required": "Giao thức dịch thuật không tương thích. Cập nhật ứng dụng.",
+  "translation_remote_failed": "Dịch trang này không thành công. Bạn có thể thử lại bằng tay.",
+  "translation_bridge_invalid": "Trang web đã thay đổi. Bật dịch lại.",
+  "translation_connection_failed": "Kết nối không thành công. Vui lòng thử lại.",
+  "translation_paused": "Bản dịch bị tạm dừng. Bạn có thể xác minh tiến trình của nó.",
+  "translation_preparing_ellipsis": "Đang chuẩn bị dịch…",
+  "translation_checking_original": "Đang kiểm tra ảnh gốc…",
+  "translation_submitting": "Đang gửi…",
+  "translation_uploading_ellipsis": "Đang tải lên bản gốc…",
+  "translation_waiting_ellipsis": "Đang chờ dịch…",
+  "translation_running_ellipsis": "Dịch…",
+  "translation_verify_result": "Kết quả cần xác minh",
+  "translation_partial": "Một số nội dung đã được dịch",
+  "translation_ready": "Hình ảnh đã được dịch sẵn",
+  "list_separator": ", ",
+  "player_play": "Chơi",
+  "player_quality": "Chất lượng",
+  "player_subtitles": "Phụ đề",
+  "player_audio": "Âm thanh",
+  "player_statistics": "Thống kê cho người mọt sách",
+  "player_auto": "Tự động",
+  "source_information": "Nguồn thông tin",
+  "source_code_page": "Trang",
+  "source_code_query": "Truy vấn",
+  "repository_invalid_source": "Nguồn không hợp lệ - hãy xóa nó",
+  "player_fit_contain": "Chứa",
+  "player_fit_cover": "Bìa",
+  "player_fit_fill": "Điền vào",
+  "player_fit_height": "Chiều cao",
+  "player_fit_width": "Chiều rộng",
+  "player_fit_scale": "Cân",
+  "player_fit_none": "Không có",
+  "player_shader_clear": "Tắt (xóa bóng đổ)",
+  "player_shader_luma": "Nâng cấp Luma",
+  "player_decoder_auto": "Tự động (phần cứng)",
+  "player_decoder_software": "Phần mềm (không có phần cứng)",
+  "player_stats_toggle": "Chuyển đổi lớp phủ",
+  "player_stats_general": "Tổng quát",
+  "player_stats_frames": "Định giờ khung hình",
+  "player_stats_cache": "Bộ đệm đầu vào",
+  "player_stats_filters": "Bộ lọc hoạt động",
+  "player_stats_log": "Nhật ký",
+  "source_mark_pinned": "Ghim",
+  "translation_image_action": "{action} hình ảnh này",
+  "@translation_image_action": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_waiting": "bộ nhớ: chờ mẫu",
+  "memory_rss": "RSS {current} đỉnh {peak}",
+  "@memory_rss": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_cache": "bộ đệm {current} / {limit} đỉnh {peak}",
+  "@memory_cache": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_items": "mặt hàng {count} / {limit} trực tiếp {live} đỉnh cao {peak}",
+  "@memory_items": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "live": {
+        "type": "int"
+      },
+      "peak": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_full_samples": "đầy {percent}% của {count, plural, =1{1 mẫu} other{{count} mẫu}}",
+  "@memory_full_samples": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_reset_hint": "tắt và bật nó trong cài đặt để đặt lại",
+  "action_hide": "Ẩn",
+  "discord_get_app": "Nhận {app}",
+  "@discord_get_app": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_idle": "Nhàn rỗi",
+  "discord_watching_title": "Đang xem {title}",
+  "@discord_watching_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_reading_title": "Đọc {title}",
+  "@discord_reading_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
+}

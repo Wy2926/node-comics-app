@@ -26,6 +26,11 @@ Map<int?, double?> _chapterSortKeys(
     if (pair.$2 == null) continue;
     episodeToSeasons.putIfAbsent(pair.$2!, () => {}).add(pair.$1);
   }
+  final numbered = raw.values.where((pair) => pair.$2 != null).length;
+  final seasonLabelled = raw.values
+      .where((pair) => pair.$2 != null && pair.$1 > 0)
+      .length;
+  final mostlySeasonLabelled = numbered > 0 && seasonLabelled / numbered >= 0.5;
   // A single collision is more likely a stray "S1-5 Recap"-style title
   // falsely matching the season regex than a real reset — require several
   // before trusting it, since a genuine per-season reset repeats numbers
@@ -33,7 +38,7 @@ Map<int?, double?> _chapterSortKeys(
   final collisions = episodeToSeasons.values
       .where((seasons) => seasons.length > 1)
       .length;
-  final resets = collisions >= 3;
+  final resets = collisions >= 3 || (collisions >= 1 && mostlySeasonLabelled);
   return {
     for (final entry in raw.entries)
       entry.key: switch (entry.value.$2) {
@@ -68,7 +73,13 @@ extension MangaExtensions on Manga {
   /// Filtered chapters respecting the user's active filters (unread,
   /// bookmarked, downloaded, scanlator). Sorted by chapter number ascending.
   /// Base list — no user-chosen sort, no deduplication.
-  List<Chapter> getFilteredChapters([Settings? settingsOverride]) {
+  List<Chapter> getFilteredChapters([Settings? settingsOverride]) =>
+      _getFilteredChapters(settingsOverride);
+
+  List<Chapter> _getFilteredChapters(
+    Settings? settingsOverride, {
+    Chapter? anchor,
+  }) {
     final settings = settingsOverride ?? settingsRepository.current;
 
     final filterUnread =
@@ -114,28 +125,18 @@ extension MangaExtensions on Manga {
         ? const <int>{}
         : downloadRepository.getDownloadedIdsAmong(chapterIds).toSet();
 
-    return data
-        .where(
-          (e) => filterUnread == 1
-              ? e.isRead == false
-              : filterUnread == 2
-              ? e.isRead == true
-              : true,
-        )
-        .where(
-          (e) => filterBookmarked == 1
-              ? e.isBookmarked == true
-              : filterBookmarked == 2
-              ? e.isBookmarked == false
-              : true,
-        )
-        .where((e) {
-          if (filterDownloaded == 0) return true;
-          final dl = downloadedIds.contains(e.id);
-          return filterDownloaded == 1 ? dl : !dl;
-        })
-        .where((e) => !filterScanlator.contains(e.scanlator))
-        .toList();
+    return data.where((entry) {
+      if (anchor != null && entry.id == anchor.id) return true;
+      if (filterUnread == 1 && entry.isRead != false) return false;
+      if (filterUnread == 2 && entry.isRead != true) return false;
+      if (filterBookmarked == 1 && entry.isBookmarked != true) return false;
+      if (filterBookmarked == 2 && entry.isBookmarked != false) return false;
+      if (filterDownloaded != 0 &&
+          downloadedIds.contains(entry.id) != (filterDownloaded == 1)) {
+        return false;
+      }
+      return !filterScanlator.contains(entry.scanlator);
+    }).toList();
   }
 
   /// Filtered chapters for display in the chapter list UI: same filters as
@@ -165,9 +166,7 @@ extension MangaExtensions on Manga {
           if (s != 0) return s;
           final cmp = (sortKeys[a.id] ?? 0).compareTo(sortKeys[b.id] ?? 0);
           if (cmp != 0) return cmp;
-          return (originalIndex[a.id] ?? 0).compareTo(
-            originalIndex[b.id] ?? 0,
-          );
+          return (originalIndex[a.id] ?? 0).compareTo(originalIndex[b.id] ?? 0);
         });
         break;
       case 2: // by upload date
@@ -193,20 +192,37 @@ extension MangaExtensions on Manga {
     return reverse ? list : list.reversed.toList();
   }
 
-  /// Filtered chapters ready for sequential reading: same filters as
-  /// [getFilteredChapters] but with duplicate chapter numbers collapsed to a
-  /// single entry so the reader advances to the next story chapter rather than
-  /// another scanlator's copy of the same one. Chapters with no detectable
-  /// number (key is null — e.g. "Special") are never collapsed: there is no
-  /// reliable way to tell them apart, so treating them all as duplicates
-  /// would silently drop real chapters instead of just scanlator copies.
-  List<Chapter> getChapterListForReading() {
-    final list = getFilteredChapters();
+  /// Preserve distinct URLs, including same-number parts with no group label.
+  /// Only collapse alternatives with different, explicit scanlator labels and
+  /// one entry per group; ambiguous same-group numbering retains every part.
+  List<Chapter> getChapterListForReading({Chapter? anchor}) {
+    // Reading can mark the current chapter read or change its bookmark. Keep
+    // that chapter as the navigation anchor while filtering its neighbours.
+    final list = _getFilteredChapters(null, anchor: anchor);
     final sortKeys = _chapterSortKeys(name ?? '', list);
+    final groups = <(double, String), int>{};
+    final ambiguous = <double>{};
+    for (final c in list) {
+      final key = sortKeys[c.id];
+      final group = c.scanlator?.trim() ?? '';
+      if (key == null) continue;
+      final count = groups.update(
+        (key, group),
+        (n) => n + 1,
+        ifAbsent: () => 1,
+      );
+      if (group.isEmpty || count > 1) ambiguous.add(key);
+    }
     final seen = <double>{};
     return list.where((c) {
       final key = sortKeys[c.id];
-      return key == null || seen.add(key);
+      if (anchor != null &&
+          key != null &&
+          key == sortKeys[anchor.id] &&
+          !ambiguous.contains(key)) {
+        return c.id == anchor.id;
+      }
+      return key == null || ambiguous.contains(key) || seen.add(key);
     }).toList();
   }
 
@@ -219,24 +235,10 @@ extension MangaExtensions on Manga {
     return list.where((c) => sortKeys[c.id] == null).length;
   }
 
-  /// Count of whole numbers missing from the recognized chapter sequence —
-  /// e.g. chapters 1, 2, 4, 5 present means 1 (chapter 3) is missing. Decimal
-  /// extras (12.5) are floored into their whole chapter, since they aren't
-  /// part of the main numbering. Season-bucketed keys are unbucketed back to
-  /// their raw episode number first, since gaps only make sense within one
-  /// season's own numbering, not across a season * 100000 jump.
-  int missingChapterCount() {
-    final list = getFilteredChapters();
-    final mangaTitle = name ?? '';
-    final recognition = ChapterRecognition();
-    final numbers = <int>{};
-    for (final c in list) {
-      final (_, ep) = recognition.rawSeasonAndNumber(mangaTitle, c.name ?? '');
-      if (ep != null) numbers.add(ep.floor());
-    }
-    if (numbers.length < 2) return 0;
-    final lowest = numbers.reduce((a, b) => a < b ? a : b);
-    final highest = numbers.reduce((a, b) => a > b ? a : b);
-    return (highest - lowest + 1) - numbers.length;
-  }
+  /// Estimate numbering gaps in the full imported catalog. Display filters
+  /// (read, bookmarked, downloaded, scanlator) cannot make a chapter missing.
+  int missingChapterCount() => ChapterRecognition().missingChapterCount(
+    name ?? '',
+    chapters.map((chapter) => chapter.name ?? ''),
+  );
 }

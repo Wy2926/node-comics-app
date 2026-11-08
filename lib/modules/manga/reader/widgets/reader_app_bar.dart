@@ -3,13 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
+import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/utils.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 
 /// The app bar for the manga reader.
 ///
@@ -69,14 +71,54 @@ class ReaderAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fullScreenReader = ref.watch(fullScreenReaderStateProvider);
     final isLocalArchive = chapter.manga.value?.isLocalArchive ?? false;
+
+    if (isMobile && !isTv) {
+      final l10n = context.l10n;
+      return MobileReaderPanel(
+        visible: isVisible,
+        top: true,
+        child: MobileReaderHeading(
+          title: mangaName,
+          chapter: chapterTitle,
+          onBack: onBackPressed,
+          menu: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: l10n.chapter_swipe_toggle_bookmark,
+                onPressed: onBookmarkPressed,
+                icon: Icon(
+                  isBookmarked
+                      ? NodeLaneIcons.of(context).bookmark
+                      : NodeLaneIcons.of(context).bookmarkOutline,
+                ),
+              ),
+              if (!isLocalArchive &&
+                  (onRefreshPressed != null || onWebViewPressed != null))
+                PopupMenuButton<int>(
+                  tooltip: l10n.more,
+                  icon: Icon(NodeLaneIcons.of(context).more),
+                  onSelected: (value) {
+                    if (value == 0) onRefreshPressed?.call();
+                    if (value == 1) onWebViewPressed?.call();
+                  },
+                  itemBuilder: (_) => [
+                    if (onRefreshPressed != null)
+                      PopupMenuItem(value: 0, child: Text(l10n.refresh)),
+                    if (onWebViewPressed != null)
+                      PopupMenuItem(value: 1, child: Text(l10n.webview)),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      );
+    }
 
     double height = isVisible
         ? Platform.isIOS
               ? 120.0
-              : !fullScreenReader && !isDesktop
-              ? 55.0
               : 80.0
         : 0.0;
 
@@ -128,6 +170,7 @@ class ReaderAppBar extends ConsumerWidget {
   List<Widget> _buildActions(BuildContext context, bool isLocalArchive) {
     return [
       // Chapter list button
+      ReaderTranslationHost.button(context),
       btnToShowChapterListDialog(context, context.l10n.chapters, chapter),
 
       // Bookmark button

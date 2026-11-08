@@ -1,0 +1,27 @@
+Mode: built-in image_gen (ui-mockup)
+Status: approved and applied to the existing shared search field and glass surface.
+
+Use case: ui-mockup
+Asset type: high-fidelity NodeLane iOS settings search component redesign board.
+Primary request: Redesign the search field color and visual layering to feel calm, crisp and comfortable inside NodeLane's existing unified iOS liquid-glass UI. Show ONE coherent component in four real settings contexts, not alternative styles. Current grey hazy search feels muddy; make the replacement visibly clear and elegant with restrained glass edges, a bright neutral fill, and no broad blur glow.
+
+Composition: a polished landscape board, title "NodeLane · 搜索组件", FOUR aligned complete front-facing black iPhones, full screens and Dynamic Islands, matching scale. Captions below: "01 更多首页", "02 滚动吸顶", "03 设置选择", "04 深色模式". Tiny footer "设计示例 · 同一套搜索组件". Crisp readable Simplified Chinese. No spec labels inside the phone screens.
+
+Existing token system to preserve: iPhone logical viewport 390×844, page background #F5F6FA, grouped white settings cards with 18pt corner radius, main ink #171A21, secondary #697180, accent #006EFF. Body text 16–17pt, secondary 14pt, compact navigation title 22pt semibold, large page title 34pt bold. 20pt page gutters, 16pt card inner padding, 24pt section gap, 56pt setting rows. Thin SF Symbols-style black outline icons, muted disclosure arrows, subtle circular glass back buttons with 44pt targets. Native iOS tab bar on More screens. No colored icon tiles, oversized typography, extra settings, gradients or ornamental backgrounds.
+
+The NEW shared search component (must remain exact same geometry on all four screens):
+48pt high capsule with 24pt radius; nearly white neutral translucent glass fill (about 92% white over canvas, yielding a distinct bright surface), a precise faint neutral cool-gray edge #DDE2E9 at 0.75pt and a tiny localized drop shadow only, NOT a white halo, NOT a cloudy blurred band. No blue/lavender/grey haze within the capsule. Left SF magnifying glass 20pt muted at 16pt leading inset; 12pt gap to 16pt text, aligned baseline. Placeholder in #697180, actual typed text in dark ink. On active typed state show a 20pt gray circled x at right in a 44pt hit target; no separate search button. Caret uses blue. Search host padding 20pt left and right, 8pt above and 16pt below. At scroll pinning ONLY the capsule carries its subtle translucent material; entire rectangular surrounding header/padding area stays transparent. Content visible at side gaps and in space around search field, never a solid full-width rectangular background strip. Search capsule stays readable against passing white cards. Avoid strong shadows. Do not draw a keyboard in this board.
+
+PHONE 1 / More initial:
+Large title "更多", white grouped account summary row with neutral avatar outline, "登录 NodeLane", secondary "查看账号、订阅和翻译额度", right chevron. Search directly below account with placeholder "搜索设置". Section "常用" white card with "下载队列", "仅已下载" toggle off, "隐身模式" toggle off. Section "阅读与翻译" white card rows "翻译目标语言" value "简体中文", "漫画阅读", "小说阅读", "播放器". Native glass bottom tab bar labels "书架" "更新" "来源" "浏览器" "更多", More selected blue.
+
+PHONE 2 / Same More screen scrolled:
+Compact centered nav title "更多". Account and large title have scrolled away. New search capsule pinned below compact navigation bar, placeholder "搜索设置". Behind and around the floating capsule show the edge of a white setting card scrolling underneath; outer margins remain visibly transparent to the page; no rectangular painted background around search. Below show section "应用偏好" and rows "外观与界面" / value "跟随系统", "安全与隐私", "通用"; section "数据与管理" with "存储与备份", "下载设置", "同步", "追踪". Native tab bar same as phone1.
+
+PHONE 3 / Font selector:
+Circular glass back top left, centered compact title "字体". SAME search capsule at same horizontal insets below title, text "Noto", gray circled clear x right. No separate submit/search button. White group below with real existing font-name search-result examples: "Noto Sans", "Noto Sans SC", "Noto Serif", "Noto Serif SC". Unselected rows, dark text and fine gray separators. No keyboard, no bottom tab bar. Lots of calm whitespace. This is a settings picker with no new action.
+
+PHONE 4 / dark More:
+Exact Phone1 layout and labels, same unified component geometry, dark token counterpart canvas #13171D, grouped card #1E242C, text #F0F3F8, secondary #A9B4C4. Search distinct softly lit neutral graphite #303844, subtle neutral border #46505F; no blue glow or grey fog. Same 48pt capsule, magnifier, placeholder. White icons/text, primary blue only selected native More tab. Dark glass native tab bar.
+
+Quality: production mobile interface fidelity, restrained iOS liquid glass, well aligned glyphs, uniform margins and typography, clean high-contrast readable fields, full realistic phone frames, no fake depth/background blobs. Preserve the supplied existing UI semantics and do not introduce a new component family or features.

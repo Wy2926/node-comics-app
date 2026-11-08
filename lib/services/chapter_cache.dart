@@ -38,14 +38,9 @@ class ChapterCache {
     return dir;
   }
 
-  /// Builds a deterministic cache key for a chapter matching Mihon's model.
-  String getKey(Chapter chapter) {
-    return '${chapter.mangaId}_${chapter.url}';
-  }
-
   Future<File> _getCacheFile(Chapter chapter) async {
     final dir = await _getCacheDirectory();
-    final hash = keyToMd5(getKey(chapter));
+    final hash = keyToMd5('${chapter.mangaId}_${chapter.url}');
     return File('${dir.path}/$hash.json');
   }
 
@@ -71,9 +66,7 @@ class ChapterCache {
       final pageUrls = <PageUrl>[];
       for (final item in pagesRaw) {
         if (item is Map<String, dynamic>) {
-          final url = item['url'] as String? ?? '';
-          final headers = (item['headers'] as Map?)?.cast<String, String>();
-          pageUrls.add(PageUrl(url, headers: headers));
+          pageUrls.add(PageUrl.fromJson(item));
         } else if (item is String) {
           pageUrls.add(PageUrl(item));
         }
@@ -98,14 +91,7 @@ class ChapterCache {
       final data = {
         'timestamp': DateTime.now().millisecondsSinceEpoch,
         'chapterUrl': chapter.url,
-        'pages': pages
-            .map(
-              (p) => {
-                'url': p.url,
-                if (p.headers != null) 'headers': p.headers,
-              },
-            )
-            .toList(),
+        'pages': pages.map((p) => p.toJson()).toList(),
       };
 
       await file.writeAsString(jsonEncode(data), flush: true);

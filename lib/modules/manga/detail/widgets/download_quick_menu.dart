@@ -6,6 +6,9 @@ import 'package:mangayomi/repositories/download_repository.dart';
 import 'package:mangayomi/services/download_manager/next_downloads.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_detail_actions.dart';
 
 /// The detail page app bar's download shortcut: pick "next N" / "unread" /
 /// "all" and queue those chapters, without opening the full filter/sort
@@ -13,6 +16,7 @@ import 'package:mangayomi/utils/global_style.dart';
 class DownloadQuickMenu extends StatelessWidget {
   final ItemType itemType;
   final Manga manga;
+  final bool hasChapters;
   final Future<void> Function(BuildContext context, List<Chapter> chapters)
   onDownload;
 
@@ -20,12 +24,20 @@ class DownloadQuickMenu extends StatelessWidget {
     super.key,
     required this.itemType,
     required this.manga,
+    this.hasChapters = true,
     required this.onDownload,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
+    if (isMobile && !isTv && itemType == ItemType.manga) {
+      return MobileMangaDownloadActionsButton(
+        bookTitle: manga.name ?? '',
+        hasChapters: hasChapters,
+        onSelected: (value) => _download(context, value),
+      );
+    }
     return PopupMenuButton(
       popUpAnimationStyle: popupAnimationStyle,
       icon: const Icon(Icons.download_outlined),
@@ -82,19 +94,21 @@ class DownloadQuickMenu extends StatelessWidget {
           ),
         ];
       },
-      onSelected: (value) async {
-        final chapters = manga.getFilteredChapters();
-        final chaptersToDownload = value <= 3
-            ? selectNextDownloads(
-                chapters,
-                count: [1, 5, 10, 25][value],
-                downloads: downloadRepository.getAll(),
-              )
-            : chapters
-                  .where((chapter) => value == 5 || chapter.isRead != true)
-                  .toList();
-        await onDownload(context, chaptersToDownload);
-      },
+      onSelected: (value) => _download(context, value),
     );
+  }
+
+  Future<void> _download(BuildContext context, int value) async {
+    final chapters = manga.getFilteredChapters();
+    final chaptersToDownload = value <= 3
+        ? selectNextDownloads(
+            chapters,
+            count: [1, 5, 10, 25][value],
+            downloads: downloadRepository.getAll(),
+          )
+        : chapters
+              .where((chapter) => value == 5 || chapter.isRead != true)
+              .toList();
+    await onDownload(context, chaptersToDownload);
   }
 }

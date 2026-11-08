@@ -1,5 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:http_interceptor/http_interceptor.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -374,7 +374,9 @@ class Kitsu extends _$Kitsu implements BaseTracker {
     final expiresIn = DateTime.fromMillisecondsSinceEpoch(mAKOAuth.expiresIn!);
     if (DateTime.now().isAfter(expiresIn)) {
       widgetRef.read(tracksProvider(syncId: syncId).notifier).logout();
-      botToast(localizedMessage((l10n) => l10n.tracker_token_expired("Kitsu")));
+      showNodeLaneNotice(
+        localizedMessage((l10n) => l10n.tracker_token_expired("Kitsu")),
+      );
       throw Exception("Token expired");
     }
     return mAKOAuth.accessToken!;

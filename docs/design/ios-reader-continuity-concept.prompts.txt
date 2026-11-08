@@ -1,0 +1,32 @@
+模型：OpenAI gpt-image-2.6-sunburst（官方 API，本机 imagegen CLI）
+用途：章节衔接、章尾加载／重试和图片错误的视觉参考，不作为 App 运行时素材。
+规格：1536 × 1024，quality=high。
+来源：本项目原创提示词，未传入第三方参考图片；漫画为生成的示例内容。
+许可边界：生成概念图，无引入第三方代码／模型／字体文件；不改变仓库原有许可。
+图片 SHA-256：c713f5c6c9dca0d9da1a4ab338d249107f28e7a63bf47dc7f15d2ee3a9ec6fb3
+
+实际生成提示词（未自动增强）：
+
+Use case: ui-mockup.
+Asset type: high-fidelity implementation reference for NodeLane Comics iOS reader, four screen states in one wide design board.
+Primary request: Redesign chapter boundaries, in-reading loading and inline errors so reading stays continuous. Replace the old entire-screen chapter celebration with a nearly invisible inline seam. Keep error text comfortably wide. The design is restrained, practical, and directly buildable using the existing visual tokens.
+
+Composition: four equal-size full front-facing iPhones in a row on a quiet #F5F6FA landscape presentation canvas. Thin dark device edges, simple 9:41 status bars and home indicators. Large, legible phones occupying most of the canvas. Small title above: "NodeLane · 连续阅读". Captions below phones, respectively: "轻量跨章", "自然加载", "章尾重试", "图片加载失败". Small footer "视觉概念稿 · 示例内容". No perspective or decoration.
+
+Visual system: native SF Pro / PingFang system text. Primary ink #171A21, muted #697180, white surfaces, neutral canvas #F5F6FA, subtle divider #E7EAF0, accent #006EFF. Spacing 4/8/12/16/20/24 logical points. Body text 15–17 points, secondary 14, chapter seam label 14. Normal status icon 20; spinner 16; retry has a 44-point tap target. At most 18-point corners for a contained status surface. Use nearly full available width with 20-point outer gutters, not a narrow centered card. Avoid oversized icons, dense shadows, tinted blue pages, oversized headings, large empty blocks, or bright/looping shimmer. Accent is reserved for a small progress mark or retry. No raw URLs, API diagnostics, invented percentage, account features, ads or extra menus.
+
+Reader context: the same original black-and-white seaside manga in all four phones, an adult walking through a quiet coastal town, waves, a letter; no copyrighted characters and no speech-bubble text. Show manga artwork full width. Reader controls are hidden; only a very small quiet page count pill near the bottom. No root tab bar and no settings sheet. Keep at least 80 percent of each screen devoted to actual manga. The illustration is only context and not a reusable runtime asset.
+
+PHONE 1 — ready chapter boundary:
+Show the end of one manga page in the upper half and the next chapter's first manga page immediately below. Between them is ONLY one 44-point-high neutral white strip: a fine divider, a small muted left-aligned label "第13话 海风再起" with 20-point horizontal padding. No "章节结束", no current-chapter summary card, no arrow, no book icon, no instruction, no full-screen interstitial. The two artwork areas feel connected and the seam is barely noticeable.
+
+PHONE 2 — next chapter still loading:
+Keep the currently read manga page visible at full width, ending near the lower third of the screen. Immediately following it is a compact neutral 64-point status strip with a small 16-point progress ring and one clear line "正在加载下一章…". Use wide text space, quiet gray text, no large spinner, modal, scrim, floating toast, fake page preview, or giant blank replacement screen. Beneath it only the natural reader canvas continues. Do not shrink or dim the already loaded manga. The loading indicator does not pretend to know progress.
+
+PHONE 3 — recoverable chapter loading error:
+Keep the same current manga page visible. Its footer is a full available-width understated status area, about 96 points high, with 20-point side gutters and generous text width. First line uses a small neutral exclamation symbol and text "下一章暂时无法加载"; second line "请检查网络后重试". A compact blue text action "重试" occupies the trailing edge with a 44-point touch area. Text must have enough width to avoid awkward single-word wrapping; do not stack it inside a tiny centered badge. No title card for the completed chapter, giant blank screen, red banner or extra navigation. The art remains dominant.
+
+PHONE 4 — one image in the middle failed:
+Show a loaded manga image above and another loaded image below a missing image slot. In that slot, show a quiet centered status area stretching nearly the whole phone width, 20-point side gutters, about 112 points of content, with small neutral image/exclamation icon, title "这张图片暂时无法加载", secondary "其他页面仍可继续阅读", and one compact trailing blue "重试" action with a 44-point target. The slot background is neutral, not a bright error tile; neighboring images remain visible and readable. No narrow IntrinsicWidth card, no huge icon, no full-width filled button. The text should read naturally on long horizontal lines. The status surface is visually the same family as phone 3.
+
+Produce the clean design board only. Exact simplified Chinese. These are component states, not entire-page loading screens. Make the normal boundary and loading footer visibly much shorter than the old full-screen transition.

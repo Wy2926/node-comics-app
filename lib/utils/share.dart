@@ -1,8 +1,9 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/utils/localized_message.dart';
 import 'package:path/path.dart' as p;
@@ -45,9 +46,9 @@ Future<void> shareOrCopy(
   );
   if (text == null || text.isEmpty) return;
   await Clipboard.setData(ClipboardData(text: text));
-  botToast(
+  showNodeLaneNotice(
     localizedMessage((l10n) => l10n.share_unavailable_copied),
-    second: 5,
+    seconds: 5,
   );
 }
 

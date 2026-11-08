@@ -1,0 +1,479 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+
+/// Presentation tokens shared by mobile screens and Android navigation.
+/// The user's existing accent and font preferences remain authoritative.
+class NodeLaneTokens {
+  const NodeLaneTokens({
+    required this.canvas,
+    required this.surface,
+    required this.soft,
+    required this.ink,
+    required this.muted,
+    required this.line,
+    required this.searchSurface,
+    required this.searchLine,
+    required this.accent,
+    required this.onAccent,
+    this.typeface = const TextStyle(),
+  });
+
+  final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
+  final Color searchSurface, searchLine;
+  final TextStyle typeface;
+  static const disclosureDuration = Duration(milliseconds: 200);
+  static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
+  static const space16 = 16.0, space20 = 20.0, space24 = 24.0;
+  static const gutter = space20, coverRadius = 10.0, controlRadius = 12.0;
+  static const groupRadius = 18.0, capsuleRadius = 24.0;
+  static const glassBlur = 16.0, glassStroke = .75;
+  static const searchOpacity = .92, searchBlur = 8.0;
+  static const searchShadowBlur = 4.0, searchShadowOffset = 2.0;
+  static const floatingShadowBlur = 12.0, floatingShadowOffset = 4.0;
+  static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
+  static const emptyStateIconSize = 48.0, progressTrackHeight = 3.0;
+  static const numberPickerWidth = 184.0;
+  static const avatarSize = 64.0, searchHeight = 48.0;
+  static const brandMarkSize = 80.0, brandCompactMarkSize = 40.0;
+  static const accountHeroAvatarSize = 96.0, accountHeroIconSize = 56.0;
+  static const coverAspectRatio = 1.43;
+  static const shelfCoverAspectRatio = 1.08, shelfGap = space12;
+  static const bookTitleSize = 15.0, captionSize = 12.0;
+  static const resultCoverWidth = 140.0, resultCoverPeek = 32.0;
+  // Approved search board: compact portrait previews and one-line captions.
+  static const resultCoverAspectRatio = .9, resultTitleLines = 1;
+  static const shelfComfortableWidth = 168.0, shelfCompactWidth = 96.0;
+  static const shelfThumbnailWidth = 64.0, shelfThumbnailHeight = 92.0;
+  static const activityCoverSize = 72.0;
+  static const badgeHeight = 22.0, badgeIconSize = 14.0;
+  static const tagHeight = 32.0;
+  static const choicePreviewHeight = 40.0;
+  static const detailCoverWidth = 132.0, detailCoverHeight = 188.0;
+  static const readerEntryCoverWidth = 96.0, readerEntryCoverHeight = 136.0;
+  static const chapterRowHeight = 72.0;
+  static const defaultMobileAccent = Color(0xff006eff);
+  // Reader concept: all overlays use the same geometry, type and controls.
+  static const readerSheetFraction = .78, readerDisplayFraction = .86;
+  static const readerRowHeight = 62.0;
+  static const readerChapterHeight = 68.0, readerActionHeight = 64.0;
+  static const readerImageActionHeight = 72.0;
+  static const readerFilterRowHeight = 56.0;
+  static const readerPickerRowHeight = 56.0;
+  static const readerPickerPreviewRowHeight = 88.0;
+  static const readerPickerColorRowHeight = 80.0;
+  static const readerPickerLeadingWidth = 44.0, readerPickerSwatchSize = 40.0;
+  static const readerValueSwatchSize = 28.0;
+  static const readerPickerIconSize = 28.0;
+  static const readerPickerPreviewSize = Size(42, 48);
+  static const readerIconSize = 24.0, readerSliderTrack = 3.0;
+  static const readerSheetShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(modalRadius)),
+  );
+  static const segmentInset = 3.0;
+  static const pagePadding = EdgeInsets.fromLTRB(
+    gutter,
+    space8,
+    gutter,
+    space24,
+  );
+  static const headerPadding = EdgeInsets.fromLTRB(
+    gutter,
+    space8,
+    gutter,
+    space16,
+  );
+  static const groupPadding = EdgeInsets.all(space16);
+  static const buttonPadding = EdgeInsets.symmetric(
+    horizontal: space20,
+    vertical: space12,
+  );
+  static const rowPadding = EdgeInsets.symmetric(
+    horizontal: space16,
+    vertical: space8,
+  );
+  static const modalRadius = 24.0;
+  static const buttonHeight = 48.0;
+  static const closeSurfaceSize = 32.0;
+  static const sheetHandleSize = Size(44, 4);
+  static const minTapTarget = 44.0, menuItemHeight = 52.0;
+  static const menuMaxWidth = 280.0;
+  static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
+  static const catalogTabsWidth = 200.0;
+  // Source cards share geometry across directories, metadata and action states.
+  static const sourceCardTopInset = space8;
+  static const sourceCardClassificationHeight = minTapTarget;
+  static const sourceCardFooterHeight = minTapTarget;
+  static const sourceAdultCornerWidth = 52.0, sourceAdultCornerHeight = 32.0;
+  static const sourceCornerCut = 20.0;
+  static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
+  static const browserTabGap = 12.0;
+  static const navigationHeight = 64.0, navigationRadius = 32.0;
+  static const navigationInset = 6.0, navigationLabelSize = 12.0;
+  static const navigationLabelHeight = 1.3;
+  static const browserAddressHeight = 44.0, browserBackWidth = 64.0;
+  static const browserDisplayWidth = 176.0;
+  static const dialogMaxWidth = 480.0;
+  static const modalInset = EdgeInsets.symmetric(horizontal: 20, vertical: 24);
+  static const modalTitlePadding = EdgeInsets.fromLTRB(20, 20, 20, 12);
+  static const modalContentPadding = EdgeInsets.fromLTRB(20, 0, 20, 20);
+  static const sheetFooterPadding = EdgeInsets.fromLTRB(
+    gutter,
+    space24,
+    gutter,
+    space20,
+  );
+  static const modalActionsPadding = EdgeInsets.fromLTRB(12, 0, 12, 12);
+  static const modalTitleStyle = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+  );
+
+  static NodeLaneTokens of(BuildContext context) =>
+      fromTheme(Theme.of(context));
+
+  static NodeLaneTokens fromTheme(ThemeData theme) {
+    final dark = theme.brightness == Brightness.dark;
+    final pureBlack = dark && theme.scaffoldBackgroundColor == Colors.black;
+    return NodeLaneTokens(
+      canvas: pureBlack
+          ? Colors.black
+          : dark
+          ? const Color(0xff13171d)
+          : const Color(0xfff5f6fa),
+      surface: pureBlack
+          ? const Color(0xff0a0a0a)
+          : dark
+          ? const Color(0xff1e242c)
+          : Colors.white,
+      soft: dark ? const Color(0xff292f39) : const Color(0xffebeef4),
+      ink: dark ? const Color(0xfff0f3f8) : const Color(0xff171a21),
+      muted: dark ? const Color(0xffa9b4c4) : const Color(0xff697180),
+      line: dark ? const Color(0xff353e4a) : const Color(0xffe7eaf0),
+      searchSurface: dark ? const Color(0xff303844) : Colors.white,
+      searchLine: dark ? const Color(0xff46505f) : const Color(0xffdde2e9),
+      accent: theme.colorScheme.primary,
+      onAccent: theme.colorScheme.onPrimary,
+      typeface: (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
+        letterSpacing: 0,
+      ),
+    );
+  }
+
+  Color get accentOverlay => accent.withValues(alpha: .11);
+  Color get accentSoft => Color.alphaBlend(accentOverlay, surface);
+
+  Color get sourceFreeSurface =>
+      Color.alphaBlend(accent.withValues(alpha: .03), surface);
+  Color get sourceFreeOutline => accent.withValues(alpha: .35);
+  Color get sourcePaidBand =>
+      Color.alphaBlend(soft.withValues(alpha: .65), surface);
+  Color get sourceAdultSurface => ink;
+  Color get sourceAdultInk => surface;
+  TextStyle get sourceTitle =>
+      readerLabel.copyWith(fontWeight: FontWeight.w600, height: 1.2);
+  TextStyle get sourceMetadata => secondary.copyWith(height: 1.2);
+  TextStyle get sourceFooter =>
+      readerSecondary.copyWith(fontWeight: FontWeight.w600, height: 1.2);
+
+  Color get switchTrack =>
+      Color.alphaBlend(muted.withValues(alpha: .28), surface);
+
+  OutlinedBorder get buttonShape => const StadiumBorder();
+
+  BorderRadius get inputRadius => BorderRadius.circular(capsuleRadius);
+
+  TextStyle get pageTitle => typeface.copyWith(
+    fontSize: 34,
+    height: 1.2,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -.6,
+    color: ink,
+  );
+  TextStyle get title =>
+      typeface.merge(modalTitleStyle).copyWith(color: ink, height: 1.25);
+  TextStyle get detailTitle => typeface.copyWith(
+    fontSize: 26,
+    letterSpacing: 0,
+    height: 1.25,
+    fontWeight: FontWeight.w700,
+    color: ink,
+  );
+  TextStyle get detailMetadata =>
+      typeface.copyWith(fontSize: 15, height: 1.6, color: muted);
+  TextStyle get detailSectionTitle => typeface.copyWith(
+    fontSize: 18,
+    letterSpacing: 0,
+    height: 1.3,
+    fontWeight: FontWeight.w600,
+    color: ink,
+  );
+  Color get detailChipSurface =>
+      Color.alphaBlend(soft.withValues(alpha: .55), surface);
+  TextStyle get body =>
+      typeface.copyWith(fontSize: 16, height: 1.3, color: ink);
+  TextStyle get label => typeface.copyWith(
+    fontSize: bookTitleSize,
+    letterSpacing: 0,
+    height: 1.25,
+    fontWeight: FontWeight.w600,
+    color: ink,
+  );
+  TextStyle get bookTitle =>
+      label.copyWith(fontWeight: FontWeight.w500, height: 1.3);
+  TextStyle get secondary => typeface.copyWith(
+    fontSize: 13,
+    letterSpacing: 0,
+    height: 1.35,
+    color: muted,
+  );
+  TextStyle get readerTitle =>
+      title.copyWith(fontSize: 22, fontWeight: FontWeight.w700);
+  TextStyle get readerLabel =>
+      body.copyWith(fontSize: 17, fontWeight: FontWeight.w500);
+  TextStyle get readerSecondary => secondary.copyWith(fontSize: 14);
+  TextStyle get readerValue => body.copyWith(fontSize: 15, color: muted);
+  TextStyle get caption =>
+      typeface.copyWith(fontSize: captionSize, height: 1.3, color: muted);
+  TextStyle get sectionTitle => secondary.copyWith(fontWeight: FontWeight.w600);
+
+  InputDecoration inputDecoration(
+    String hint, {
+    Widget? suffixIcon,
+    Widget? prefixIcon,
+  }) => InputDecoration(
+    hintText: hint,
+    hintStyle: body.copyWith(color: muted),
+    prefixIcon: prefixIcon,
+    suffixIcon: suffixIcon,
+    filled: true,
+    fillColor: searchSurface,
+    isDense: true,
+    constraints: const BoxConstraints(minHeight: searchHeight),
+    prefixIconConstraints: const BoxConstraints(
+      minWidth: searchHeight,
+      minHeight: searchHeight,
+    ),
+    suffixIconConstraints: const BoxConstraints(
+      minWidth: minTapTarget,
+      minHeight: searchHeight,
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: space16,
+      vertical: space12,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: inputRadius,
+      borderSide: BorderSide(color: searchLine, width: glassStroke),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: inputRadius,
+      borderSide: BorderSide(color: searchLine, width: glassStroke),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: inputRadius,
+      borderSide: BorderSide(color: searchLine, width: glassStroke),
+    ),
+  );
+}
+
+SliderThemeData nodeLaneSliderTheme(ThemeData theme) {
+  final colors = NodeLaneTokens.fromTheme(theme);
+  return theme.sliderTheme.copyWith(
+    trackHeight: NodeLaneTokens.readerSliderTrack,
+    activeTrackColor: colors.accent,
+    inactiveTrackColor: colors.line,
+    thumbColor: colors.accent,
+    overlayColor: colors.accent.withValues(alpha: .12),
+    trackShape: const RoundedRectSliderTrackShape(),
+    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+    overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+    showValueIndicator: ShowValueIndicator.never,
+    tickMarkShape: SliderTickMarkShape.noTickMark,
+  );
+}
+
+/// Applied at the mobile app root so overlays on any navigator share tokens.
+/// Route ownership, dismissal, scrolling and save semantics stay with callers.
+ThemeData nodeLaneModalTheme(ThemeData base) {
+  final colors = NodeLaneTokens.fromTheme(base);
+  final dialogShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(NodeLaneTokens.modalRadius),
+  );
+  final buttonStyle = ButtonStyle(
+    minimumSize: const WidgetStatePropertyAll(
+      Size(NodeLaneTokens.minTapTarget, NodeLaneTokens.buttonHeight),
+    ),
+    shape: WidgetStatePropertyAll(colors.buttonShape),
+    textStyle: WidgetStatePropertyAll(colors.label),
+    padding: const WidgetStatePropertyAll(NodeLaneTokens.buttonPadding),
+  );
+  final input = colors.inputDecoration('');
+  return base.copyWith(
+    sliderTheme: nodeLaneSliderTheme(base),
+    iconTheme: base.iconTheme.copyWith(
+      color: colors.ink,
+      size: NodeLaneTokens.iconSize,
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: (base.iconButtonTheme.style ?? const ButtonStyle()).copyWith(
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled)
+              ? colors.muted.withValues(alpha: .5)
+              : colors.ink,
+        ),
+      ),
+    ),
+    listTileTheme: base.listTileTheme.copyWith(iconColor: colors.ink),
+    cupertinoOverrideTheme:
+        (base.cupertinoOverrideTheme ?? const CupertinoThemeData()).copyWith(
+          primaryColor: colors.accent,
+          applyThemeToAll: true,
+        ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(foregroundColor: colors.accent)
+          .merge(buttonStyle)
+          .copyWith(
+            minimumSize: const WidgetStatePropertyAll(
+              Size.square(NodeLaneTokens.minTapTarget),
+            ),
+          ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: colors.accent,
+        foregroundColor: colors.onAccent,
+      ).merge(buttonStyle),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: colors.accent,
+        side: BorderSide(color: colors.line),
+      ).merge(buttonStyle),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: colors.soft,
+        foregroundColor: colors.accent,
+        elevation: 0,
+      ).merge(buttonStyle),
+    ),
+    inputDecorationTheme: base.inputDecorationTheme.copyWith(
+      filled: input.filled,
+      fillColor: input.fillColor,
+      border: input.border,
+      enabledBorder: input.enabledBorder,
+      focusedBorder: input.focusedBorder,
+      contentPadding: input.contentPadding,
+      constraints: input.constraints,
+      prefixIconConstraints: input.prefixIconConstraints,
+      suffixIconConstraints: input.suffixIconConstraints,
+      hintStyle: input.hintStyle,
+      isDense: input.isDense,
+    ),
+    dialogTheme: base.dialogTheme.copyWith(
+      backgroundColor: colors.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: dialogShape,
+      insetPadding: NodeLaneTokens.modalInset,
+      constraints: const BoxConstraints(
+        minWidth: 280,
+        maxWidth: NodeLaneTokens.dialogMaxWidth,
+      ),
+      clipBehavior: Clip.antiAlias,
+      titleTextStyle: base.textTheme.titleLarge?.merge(
+        NodeLaneTokens.modalTitleStyle.copyWith(color: colors.ink),
+      ),
+      contentTextStyle: colors.readerSecondary,
+      actionsPadding: NodeLaneTokens.modalActionsPadding,
+      barrierColor: Colors.black54,
+    ),
+    bottomSheetTheme: base.bottomSheetTheme.copyWith(
+      backgroundColor: colors.surface,
+      modalBackgroundColor: colors.surface,
+      surfaceTintColor: Colors.transparent,
+      modalBarrierColor: Colors.black54,
+      elevation: 0,
+      modalElevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(NodeLaneTokens.modalRadius),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      dragHandleColor: colors.muted,
+      dragHandleSize: NodeLaneTokens.sheetHandleSize,
+    ),
+    popupMenuTheme: base.popupMenuTheme.copyWith(
+      color: colors.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 6,
+      shadowColor: Colors.black26,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+        side: BorderSide(color: colors.line, width: NodeLaneTokens.glassStroke),
+      ),
+      menuPadding: const EdgeInsets.all(6),
+      textStyle: base.textTheme.bodyLarge?.copyWith(color: colors.ink),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => colors.readerLabel.copyWith(
+          color: states.contains(WidgetState.disabled)
+              ? colors.muted
+              : colors.ink,
+        ),
+      ),
+      position: PopupMenuPosition.under,
+    ),
+  );
+}
+
+/// Page colors and the shared control theme; surface materials own their effects.
+class NodeLaneSurface extends StatelessWidget {
+  const NodeLaneSurface({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = NodeLaneTokens.of(context);
+    final base = Theme.of(context);
+    final theme = nodeLaneModalTheme(base);
+    return Theme(
+      data: theme.copyWith(
+        scaffoldBackgroundColor: colors.canvas,
+        dividerColor: colors.line,
+        listTileTheme: theme.listTileTheme.copyWith(
+          minLeadingWidth: 28,
+          horizontalTitleGap: NodeLaneTokens.space12,
+          selectedColor: colors.accent,
+          selectedTileColor: colors.accentSoft,
+          textColor: colors.ink,
+        ),
+        badgeTheme: base.badgeTheme.copyWith(
+          backgroundColor: colors.accent,
+          textColor: colors.onAccent,
+          textStyle: colors.caption,
+          largeSize: 22,
+        ),
+        chipTheme: base.chipTheme.copyWith(
+          selectedColor: colors.accentSoft,
+          backgroundColor: colors.soft,
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+          ),
+          labelStyle: colors.label,
+        ),
+        appBarTheme: base.appBarTheme.copyWith(
+          centerTitle: true,
+          titleTextStyle: colors.readerTitle,
+          scrolledUnderElevation: 0,
+          backgroundColor: colors.canvas,
+          foregroundColor: colors.ink,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+      ),
+      child: child,
+    );
+  }
+}

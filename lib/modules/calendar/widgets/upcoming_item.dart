@@ -6,18 +6,82 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/headers.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/deferred_cover_image.dart';
 
 const _upcomingItemHeight = 96.0;
 
 class UpcomingItem extends ConsumerWidget {
   final Manga manga;
   final VoidCallback onTap;
+  final bool mobile;
 
-  const UpcomingItem({required this.manga, required this.onTap, super.key});
+  const UpcomingItem({
+    required this.manga,
+    required this.onTap,
+    this.mobile = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    if (mobile) {
+      final colors = NodeLaneTokens.of(context);
+      final imageProvider = _getImageProvider(ref);
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Material(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: DeferredCoverImage(
+                      width: 56,
+                      height: 80,
+                      builder: (_) => Image(
+                        image: ResizeImage.resizeIfNeeded(
+                          168,
+                          240,
+                          imageProvider,
+                        ),
+                        width: 56,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => SizedBox(
+                          width: 56,
+                          height: 80,
+                          child: ColoredBox(
+                            color: colors.soft,
+                            child: const Icon(Icons.image_outlined),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      manga.name ?? '',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(Icons.chevron_right_rounded, color: colors.muted),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return InkWell(
       onTap: onTap,
@@ -64,7 +128,10 @@ class UpcomingItem extends ConsumerWidget {
 
   ImageProvider _getImageProvider(WidgetRef ref) {
     if (manga.customCoverImage != null) {
-      return MemoryImage(manga.customCoverImage as Uint8List);
+      final bytes = manga.customCoverImage!;
+      return MemoryImage(
+        bytes is Uint8List ? bytes : Uint8List.fromList(bytes),
+      );
     }
     return coverProvider(
       toImgUrl(manga.customCoverFromTracker ?? manga.imageUrl ?? ''),

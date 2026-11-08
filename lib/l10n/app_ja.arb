@@ -1,6 +1,28 @@
 {
   "@@locale": "ja",
+  "app_update_details_hint": "リリース ノートとインストール オプションを表示する",
+  "app_update_download": "ダウンロードアップデート",
+  "app_update_download_hint": "ダウンロード後、プロンプトに従ってアップデートをインストールします。",
+  "bookshelf_all": "すべて",
+  "bookshelf_search": "ライブラリの検索",
+  "app_update_allow_install": "システム設定でアプリのインストールを許可し、戻って「インストール」をタップします。",
+  "app_update_waiting": "システムがダウンロードを再開するのを待っています…",
+  "app_update_cancel_download": "ダウンロードのキャンセル",
+  "app_update_remove_package": "ダウンロードしたパッケージを削除する",
+  "app_name": "NodeLane Comics",
+  "settings_search_empty": "一致する設定がありません",
+  "search_empty_hint": "別のキーワードを試すか、検索をクリアしてすべてを表示してください。",
+  "search_clear": "検索をクリアする",
+  "app_updates": "アプリのアップデート",
+  "app_update_auto": "起動時のチェック",
+  "app_update_view": "ビューの更新",
+  "app_update_later": "その後",
+  "app_update_external_hint": "ブラウザで更新リンクを開きます",
+  "app_update_failed": "更新をチェックできない。もう一度試してください。",
+  "app_update_opened": "更新リンクが開きました",
+  "app_diagnostics": "診断とログ",
   "library": "ライブラリ",
+  "updates_search": "検索の更新",
   "updates": "更新",
   "history": "履歴",
   "browse": "ブラウズ",
@@ -21,6 +43,7 @@
   "last_update_check": "最終更新確認",
   "last_entry_delete_warning": "{count, plural, =1{この{mediaType}の唯一の{entryType}をライブラリから削除しようとしています。} other{この{mediaType}のすべての{count}個の{entryTypePlural}をライブラリから削除しようとしています。}}\nこれにより、{mediaType}全体もライブラリから削除されます。\n\n注：ファイル自体は削除されません。",
   "@last_entry_delete_warning": {
+    "description": "Warning when deleting all entries (chapters/episodes) of a manga/anime.",
     "placeholders": {
       "count": {},
       "entryType": {},
@@ -38,6 +61,8 @@
   "display": "表示",
   "display_mode": "表示モード",
   "compact_grid": "コンパクトグリッド",
+  "compression_level": "圧縮レベル",
+  "compression_info": "圧縮が高い=スペースが少ないがCPUが多い。デフォルト: {level}",
   "comfortable_grid": "快適グリッド",
   "cover_only_grid": "カバーのみグリッド",
   "list": "リスト",
@@ -47,267 +72,443 @@
   "language": "言語",
   "local_source": "ローカルソース",
   "tabs": "タブ",
-  "show_continue_reading_button": "読み続けるボタンを表示",
-  "show_continue_watching_buttons": "視聴を続けるボタンを表示",
-  "categories": "カテゴリ",
-  "edit_categories": "カテゴリ編集",
-  "category_rename": "名前変更",
-  "category_edit": "編集",
-  "default_category": "デフォルトカテゴリ",
-  "set_categories": "カテゴリを設定",
-  "remove_all_update_msg": "本当によろしいですか？すべての更新がクリアされます",
-  "remove_all_history": "すべての履歴を削除",
-  "remove_all_update": "すべての更新を削除",
-  "manga": "マンガ",
-  "anime": "アニメ",
-  "novel": "小説",
-  "manga_extensions": "マンガ拡張機能",
-  "anime_extensions": "アニメ拡張機能",
-  "novel_extensions": "小説拡張機能",
-  "manga_sources": "マンガソース",
-  "anime_sources": "アニメソース",
-  "novel_sources": "小説ソース",
-  "library_no_category_exist": "まだカテゴリがありません",
-  "reading": "読書中",
-  "watching": "視聴中",
-  "plan_to_read": "読む予定",
-  "plan_to_watch": "視聴予定",
-  "completed": "完了",
-  "re_reading": "再読中",
-  "re_watching": "再視聴中",
-  "on_hold": "保留中",
-  "dropped": "中断",
-  "select_category": "カテゴリを選択",
-  "about": "について",
-  "description": "説明",
-  "author": "作者",
-  "artist": "アーティスト",
-  "status": "ステータス",
-  "source": "ソース",
-  "search": "検索",
-  "genre": "ジャンル",
-  "in_library": "ライブラリに追加済み",
-  "add_to_library": "ライブラリに追加",
-  "remove_from_library": "ライブラリから削除",
-  "chapters": "チャプター",
-  "episodes": "エピソード",
-  "season": "シーズン",
-  "n_chapters": "{n} チャプター",
-  "n_episodes": "{n} エピソード",
-  "start": "開始",
-  "resume": "再開",
-  "next_chapter": "次のチャプター",
-  "next_5_chapters": "次の5チャプター",
-  "next_10_chapters": "次の10チャプター",
-  "next_25_chapters": "次の25チャプター",
-  "all_chapters": "すべてのチャプター",
-  "next_episode": "次のエピソード",
-  "next_5_episodes": "次の5エピソード",
-  "next_10_episodes": "次の10エピソード",
-  "next_25_episodes": "次の25エピソード",
-  "all_episodes": "すべてのエピソード",
-  "migrate": "移行",
-  "migrate_confirm": "別のソースに移行",
-  "migrate_search": "移行先を検索",
-  "sources": "ソース",
-  "sources_settings": "ソース設定",
-  "popular": "人気",
-  "latest": "最新",
-  "no_results_found": "結果が見つかりません",
-  "settings": "設定",
-  "appearance": "外観",
-  "general": "一般",
-  "reader": "リーダー",
-  "downloads": "ダウンロード",
-  "backup_and_restore": "バックアップと復元",
-  "about_app": "アプリについて",
-  "theme": "テーマ",
-  "light": "ライト",
-  "dark": "ダーク",
-  "pure_black_dark_mode": "純黒ダークモード",
-  "pure_black_dark_mode_info": "ダークモードで純黒の背景を使用",
-  "anime_pure_black_dark_mode": "アニメ純黒ダークモード",
-  "anime_pure_black_dark_mode_info": "アニメタブで純黒の背景を使用",
-  "manga_pure_black_dark_mode": "マンガ純黒ダークモード",
-  "manga_pure_black_dark_mode_info": "マンガタブで純黒の背景を使用",
-  "novel_pure_black_dark_mode": "小説純黒ダークモード",
-  "novel_pure_black_dark_mode_info": "小説タブで純黒の背景を使用",
-  "follow_system_theme": "システムテーマに従う",
-  "reader_mode": "リーダーモード",
-  "default_reader_mode": "デフォルトリーダーモード",
-  "vertical": "縦型",
-  "right_to_left": "右から左",
-  "left_to_right": "左から右",
-  "horizontal_continious": "横スクロール連続",
-  "webtoon": "ウェブトゥーン",
-  "crop_borders": "境界をトリミング",
-  "crop_borders_info": "ページの端の黒い境界を削除",
-  "animate_page_transitions": "ページ遷移をアニメーション化",
-  "animate_page_transitions_info": "ページめくり時にアニメーション効果を追加",
-  "background_color": "背景色",
-  "download_location": "ダウンロード場所",
-  "download_location_info": "チャプターダウンロードに使用",
-  "only_on_wifi": "Wi-Fiのみ",
-  "downloads_are_limited_to_wifi": "ダウンロードはWi-Fiに制限されています",
-  "backup": "バックアップ",
-  "restore": "復元",
-  "create_backup": "バックアップを作成",
-  "restore_backup": "バックアップを復元",
-  "version": "バージョン",
-  "check_for_updates": "更新を確認",
-  "download": "ダウンロード",
-  "delete": "削除",
-  "delete_all": "すべて削除",
-  "mark_as_read": "既読にする",
-  "mark_as_unread": "未読にする",
-  "mark_previous_as_read": "前を既読にする",
-  "mark_as_seen": "視聴済みにする",
-  "mark_as_unseen": "未視聴にする",
-  "mark_previous_as_seen": "前を視聴済みにする",
-  "cancel": "キャンセル",
-  "ok": "OK",
-  "yes": "はい",
-  "no": "いいえ",
-  "reset": "リセット",
-  "save": "保存",
-  "edit": "編集",
-  "rename": "名前変更",
-  "create": "作成",
-  "update": "更新",
-  "remove": "削除",
-  "add": "追加",
-  "error": "エラー",
-  "loading": "読み込み中",
-  "no_data": "データなし",
-  "confirm": "確認",
-  "warning": "警告",
-  "information": "情報",
-  "success": "成功",
-  "failed": "失敗！",
-  "close": "閉じる",
-  "continue_text": "続ける",
-  "share": "共有",
-  "copy": "コピー",
-  "paste": "貼り付け",
-  "clear": "クリア",
-  "select_all": "すべて選択",
-  "deselect_all": "すべて選択解除",
-  "invert_selection": "選択を反転",
-  "search_result": "検索結果",
-  "no_search_result": "検索結果なし",
-  "refresh": "更新",
-  "retry": "再試行",
-  "previous": "前へ",
-  "next": "次へ",
-  "page": "ページ",
-  "show_all": "すべて表示",
-  "hide": "非表示",
-  "show": "表示",
-  "enable": "有効化",
-  "disable": "無効化",
-  "enable_all": "すべて有効化",
-  "disable_all": "すべて無効化",
-  "default_text": "デフォルト",
-  "custom": "カスタム",
-  "auto": "自動",
-  "manual": "手動",
-  "none": "なし",
-  "all": "すべて",
+  "show_category_tabs": "カテゴリタブを表示",
+  "show_numbers_of_items": "アイテム数を表示",
   "other": "その他",
-  "advanced": "詳細設定",
-  "advanced_info": "mpv設定",
-  "name": "名前",
-  "value": "値",
-  "type": "タイプ",
-  "size": "サイズ",
-  "duration": "期間",
-  "date": "日付",
-  "time": "時刻",
-  "unknown": "不明",
-  "undefined": "未定義",
-  "downloading": "ダウンロード中",
-  "installing": "インストール中",
-  "installed": "インストール済み",
-  "not_installed": "未インストール",
-  "install": "インストール",
-  "uninstall": "アンインストール",
-  "update_available": "更新あり",
-  "up_to_date": "最新",
-  "obsolete": "廃止",
-  "nsfw": "NSFW",
-  "pinned_sources": "固定ソース",
+  "show_continue_reading_buttons": "読み続けるボタンを表示",
+  "show_continue_watching_buttons": "視聴を続けるボタンを表示",
+  "empty_library": "ライブラリが空です",
+  "search": "検索",
+  "no_recent_updates": "最近の更新がありません",
+  "remove_everything": "すべて削除",
+  "remove_everything_msg": "本当にすべてを削除しますか？すべての履歴が失われます",
+  "remove_all_update_msg": "本当によろしいですか？すべての更新がクリアされます",
+  "ok": "OK",
+  "cancel": "キャンセル",
+  "remove": "削除",
+  "remove_history_msg": "このチャプターの読取日を削除します。よろしいですか？",
   "last_used": "最後に使用",
-  "incognito_mode": "シークレットモード",
-  "incognito_mode_info": "履歴を一時停止",
-  "when_incognito_mode_is_on": "シークレットモード有効時、マンガとアニメの履歴は保存されません",
-  "pause_history": "履歴を一時停止",
-  "show_nsfw_source": "NSFWソースを表示",
-  "show_nsfw_source_info": "NSFWタグ付きの拡張機能を表示",
-  "auto_refresh": "自動更新",
-  "auto_refresh_info": "起動時にライブラリを自動更新",
-  "only_update_ongoing_manga": "進行中のマンガのみ更新",
-  "only_update_ongoing_manga_info": "完結していないマンガのみ更新",
-  "update_library_on_app_launch": "アプリ起動時にライブラリを更新",
-  "update_library": "ライブラリを更新",
-  "updating_library": "ライブラリを更新中 ({cur} / {max}) - 失敗: {failed}",
-  "check_for_app_updates": "起動時にアプリ更新を確認",
-  "page_preload_amount": "ページプリロード量",
-  "scale_type": "スケールタイプ",
-  "fit_screen": "画面に合わせる",
-  "stretch": "引き伸ばす",
-  "fit_width": "幅に合わせる",
-  "fit_height": "高さに合わせる",
-  "original_size": "オリジナルサイズ",
-  "smart_fit": "スマートフィット",
-  "rotation": "回転",
-  "no_rotation": "回転なし",
-  "rotate_left": "左回転",
-  "rotate_right": "右回転",
-  "reading_direction": "読み方向",
-  "show_page_number": "ページ番号を表示",
-  "show_page_number_info": "リーダーでページ番号を表示",
-  "auto_scroll": "自動スクロール",
-  "video_audio": "オーディオ",
-  "player": "プレーヤー",
-  "markEpisodeAsSeenSetting": "エピソードを視聴済みにするタイミング",
-  "default_skip_intro_length": "デフォルトイントロスキップ長",
-  "default_playback_speed_length": "デフォルト再生速度長",
-  "updateProgressAfterReading": "読後にプログレスを更新",
-  "no_sources_installed": "ソースがインストールされていません！",
-  "show_extensions": "拡張機能を表示",
+  "pinned": "ピン留め済み",
+  "sources": "ソース",
+  "install": "インストール",
+  "update": "更新",
+  "latest": "最新",
+  "extensions": "拡張機能",
+  "migrate": "移行",
+  "mass_migration_title": "一括移行",
+  "mass_migration_preview_items": "プレビューアイテム",
+  "mass_migration_destination_source": "Destination source",
+  "mass_migration_no_library_items": "No library items are available for mass migration.",
+  "mass_migration_no_destination_sources": "No installed destination sources are available.",
+  "mass_migration_installed": "Installed",
+  "mass_migration_items_ready_for_review": "{count, plural, =1{1 item ready for review} other{{count} items ready for review}}",
+  "@mass_migration_items_ready_for_review": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_item_count": "{count, plural, =1{1 item} other{{count} items}}",
+  "@mass_migration_item_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_select_destination_source": "Select destination source",
+  "mass_migration_finding_matches": "Finding matches in {source} • {language}",
+  "@mass_migration_finding_matches": {
+    "placeholders": {
+      "source": {},
+      "language": {}
+    }
+  },
+  "mass_migration_processing_item": "Processing item {current} of {total}",
+  "@mass_migration_processing_item": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_waiting_next_item": "Waiting 2 seconds before the next item...",
+  "mass_migration_waiting_next_migration": "Waiting 2 seconds before the next migration...",
+  "mass_migration_matched_so_far": "Matched so far: {count}",
+  "@mass_migration_matched_so_far": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_no_match_count": "No match: {count}",
+  "@mass_migration_no_match_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_review_matches": "Review matches for {source}",
+  "@mass_migration_review_matches": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "mass_migration_found_matches": "Found matches: {count}",
+  "@mass_migration_found_matches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_no_matches": "No matches: {count}",
+  "@mass_migration_no_matches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_selected_to_migrate": "Selected to migrate: {count}",
+  "@mass_migration_selected_to_migrate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_finish_review": "Finish review",
+  "mass_migration_migrate_selected": "Migrate selected items ({count})",
+  "@mass_migration_migrate_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_migrating_selected": "Migrating selected items to {source}",
+  "@mass_migration_migrating_selected": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "mass_migration_no_items_selected": "No items selected for migration.",
+  "mass_migration_migrating_item": "Migrating item {current} of {total}",
+  "@mass_migration_migrating_item": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_complete": "Mass migration complete",
+  "mass_migration_complete_success_message": "All selected items were processed successfully.",
+  "mass_migration_complete_partial_message": "Migration finished with a few items that still need manual attention.",
+  "mass_migration_route_summary": "{source} → {destination}",
+  "@mass_migration_route_summary": {
+    "placeholders": {
+      "source": {},
+      "destination": {}
+    }
+  },
+  "mass_migration_processed": "Processed",
+  "mass_migration_matched": "Matched",
+  "mass_migration_migrated": "Migrated",
+  "mass_migration_skipped": "Skipped",
+  "mass_migration_failed": "Failed",
+  "mass_migration_failed_items": "Failed Items",
+  "mass_migration_exit": "Exit Mass Migration",
+  "mass_migration_no_destination_match": "No destination match found",
+  "mass_migration_query": "Query: {query}",
+  "@mass_migration_query": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "mass_migration_skip": "Skip",
+  "mass_migration_loading": "Loading...",
+  "mass_migration_choose_another_result": "Choose another result",
+  "mass_migration_source_chapters": "Source chapters",
+  "mass_migration_destination_chapters": "Destination chapters",
+  "mass_migration_chapter_count": "{count, plural, =1{1 chapter} other{{count} chapters}}",
+  "@mass_migration_chapter_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_source_chapter_count": "{count, plural, =1{1 source chapter} other{{count} source chapters}}",
+  "@mass_migration_source_chapter_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_destination_chapter_count": "{count, plural, =1{1 destination chapter} other{{count} destination chapters}}",
+  "@mass_migration_destination_chapter_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_no_chapters_found": "No chapters found.",
+  "mass_migration_and_more_chapters": "And {count} more...",
+  "@mass_migration_and_more_chapters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mass_migration_unknown_title": "Unknown title",
+  "mass_migration_unknown_match": "Unknown match",
+  "mass_migration_unknown_source": "Unknown source",
+  "mass_migration_unknown_chapter": "Unknown chapter",
+  "migrate_confirm": "別のソースに移行",
   "clean_database": "データベースをクリーン",
   "cleaned_database": "データベースがクリーンされました！{x}個のエントリが削除されました",
   "clean_database_desc": "これによりライブラリに追加されていないすべてのアイテムが削除されます！",
+  "incognito_mode": "シークレットモード",
+  "incognito_mode_description": "読取履歴を一時停止",
   "downloaded_only": "ダウンロード済みのみ",
   "downloaded_only_description": "ライブラリにダウンロード済みエントリのみを表示",
+  "download_queue": "ダウンロードキュー",
+  "categories": "カテゴリ",
   "statistics": "統計",
+  "settings": "設定",
+  "about": "について",
+  "help": "ヘルプ",
+  "no_downloads": "ダウンロードなし",
+  "edit_categories": "カテゴリ編集",
+  "edit_categories_description": "カテゴリがありません。プラスボタンをタップして、ライブラリを整理するためのカテゴリを作成してください",
+  "add": "追加",
+  "add_category": "カテゴリを追加",
+  "name": "名前",
+  "label_value": "{label}: {value}",
+  "@label_value": {
+    "placeholders": {
+      "label": {},
+      "value": {}
+    }
+  },
+  "url": "URL",
+  "category_name_required": "*必須",
+  "add_category_error_exist": "このカテゴリ名は既に存在します！",
+  "delete_category": "カテゴリを削除",
+  "delete_category_msg": "カテゴリ{name}を削除しますか？",
+  "rename_category": "カテゴリ名を変更",
+  "general": "一般",
+  "general_subtitle": "アプリ言語",
+  "app_language": "アプリ言語",
   "default_subtitle_language": "デフォルト字幕言語",
+  "appearance": "外観",
+  "appearance_subtitle": "テーマ、日時形式",
+  "theme": "テーマ",
+  "dark_mode": "ダークモード",
+  "follow_system_theme": "システムテーマに従う",
+  "on": "オン",
+  "off": "オフ",
+  "pure_black_dark_mode": "純黒ダークモード",
+  "timestamp": "タイムスタンプ",
+  "relative_timestamp": "相対タイムスタンプ",
+  "relative_timestamp_short": "短い(今日、昨日)",
+  "relative_timestamp_long": "長い(短い+、n日前)",
+  "date_format": "日付形式",
+  "reader": "リーダー",
+  "refresh": "更新",
+  "reader_subtitle": "読取モード、表示、ナビゲーション",
+  "default_reading_mode": "デフォルト読取モード",
+  "reading_mode_vertical": "垂直",
+  "reading_mode_horizontal": "水平",
+  "reading_mode_left_to_right": "左から右へ",
+  "reading_mode_right_to_left": "右から左へ",
+  "reading_mode_vertical_continuous": "垂直連続",
+  "reading_mode_webtoon": "ウェブトゥーン",
+  "double_tap_animation_speed": "ダブルタップアニメーション速度",
+  "normal": "普通",
+  "fast": "速い",
+  "no_animation": "アニメーションなし",
+  "animate_page_transitions": "ページ遷移をアニメーション化",
+  "crop_borders": "境界をトリミング",
+  "downloads": "ダウンロード",
+  "downloads_subtitle": "ダウンロード設定",
+  "download_location": "ダウンロード場所",
+  "custom_location": "カスタムロケーション",
+  "only_on_wifi": "Wi-Fiのみ",
+  "save_as_cbz_archive": "CBZアーカイブとして保存",
+  "delete_download_after_reading": "読後に削除",
   "concurrent_downloads": "同時ダウンロード",
+  "browse_subtitle": "ソース、グローバル検索",
+  "only_include_pinned_sources": "ピン留め済みソースのみを含める",
+  "nsfw_sources": "NSFW (+18) ソース",
+  "nsfw_sources_show": "ソースと拡張機能のリストに表示",
+  "nsfw_sources_info": "これは、非公式またはおそらく不正にフラグが付いた拡張機能がアプリ内でNSFW（18+）コンテンツをサーフェスするのを防ぎません",
+  "version": "バージョン",
+  "beta_version": "ベータ ({version})",
+  "@beta_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "check_for_update": "更新を確認",
   "logs_on": "ログを有効にする",
   "share_app_logs": "アプリログを共有",
   "no_app_logs": "log.txtファイルが利用できません！",
+  "failed": "失敗！",
+  "n_days_ago": "{days}日前",
+  "today": "今日",
+  "yesterday": "昨日",
+  "a_week_ago": "1週間前",
   "next_week": "来週",
+  "add_to_library": "ライブラリに追加",
+  "completed": "完了",
+  "ongoing": "進行中",
+  "on_hiatus": "休止中",
+  "canceled": "キャンセル",
+  "publishing_finished": "出版が終了",
+  "unknown": "不明",
+  "empty_placeholder": "空",
+  "error": "エラー",
+  "error_with_message": "エラー: {error}",
+  "@error_with_message": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "no_pages_available": "エラー: 利用可能なページがありません",
+  "set_categories": "カテゴリを設定",
+  "edit": "編集",
+  "in_library": "ライブラリに追加済み",
+  "filter_scanlator_groups": "スキャンレータグループをフィルター",
+  "reset": "リセット",
+  "by_source": "ソース別",
+  "by_chapter_number": "チャプター番号別",
   "by_episode_number": "エピソード番号別",
+  "by_upload_date": "アップロード日時別",
+  "source_title": "ソースタイトル",
+  "create_extension": "拡張機能を作成",
+  "developer_mode": "開発者モード",
+  "developer_mode_subtitle": "拡張機能の開発者ツール（拡張機能の作成、コード編集）を表示",
+  "choose_extension_language": "拡張機能の言語を選択",
+  "lang": "言語",
+  "base_url": "ベースURL",
+  "api_url_optional": "API URL（任意）",
+  "icon_url": "アイコンURL",
+  "source_icon_url": "ソースアイコンURL",
+  "notes": "備考",
+  "extension_name_example": "例: myAnime",
+  "language_code_example": "例: ja",
+  "base_url_example": "例: https://example.com",
+  "api_url_example": "例: https://api.example.com",
+  "extension_notes_example": "例: この拡張機能にはログインが必要です",
+  "type": "タイプ",
+  "target": "ターゲット",
+  "source_type_single": "単一",
+  "source_type_multi": "複数",
+  "source_type_torrent": "トレント",
+  "source_language_dart": "Dart",
+  "source_language_javascript": "JavaScript",
+  "source_language_lnreader_compiled_js": "LNReaderコンパイル済みJS",
+  "source_created_successfully": "ソースが正常に作成されました",
+  "source_already_exists": "ソースは既に存在します",
+  "error_when_creating_source": "ソース作成エラー",
+  "cookies_deleted": "Cookieを削除しました！",
+  "delete_all_cookies": "すべてのCookieを削除",
+  "chapter_number": "チャプター番号",
   "episode_number": "エピソード番号",
+  "share": "共有",
+  "n_chapters": "{n} チャプター",
+  "missing_chapters": "不足している話数: {count}",
+  "no_description": "説明なし",
+  "resume": "再開",
+  "read": "読む",
   "watch": "視聴",
+  "popular": "人気",
+  "open_in_browser": "ブラウザーで開く",
+  "clear_cookie": "クッキーをクリア",
+  "show_page_number": "ページ番号を表示",
+  "from_library": "ライブラリから",
+  "downloaded_chapter": "ダウンロード済みチャプター",
+  "page": "{page} ページ",
+  "global_search": "グローバル検索",
+  "color_blend_level": "カラーブレンドレベル",
+  "current": "現在の{char}",
+  "finished": "完了した{char}",
+  "next": "次の{char}",
+  "previous": "前の{char}",
+  "no_more_chapter": "もうチャプターはありません",
+  "no_result": "結果がありません",
+  "send": "送信",
+  "delete": "削除",
+  "start_downloading": "今すぐダウンロード開始",
+  "retry": "再試行",
+  "add_chapters": "チャプターを追加",
+  "delete_chapters": "チャプターを削除しますか？",
+  "default0": "デフォルト",
+  "total_chapters": "総チャプター数",
   "total_episodes": "総エピソード数",
+  "import_local_file": "ローカルファイルをインポート",
+  "import_files": "ファイル",
+  "split_epub_chapters": "チャプターに分割",
+  "split_epub_chapters_description": "各EPUBチャプターを別のエントリとしてインポート",
+  "nothing_read_recently": "最近読んだものがありません",
+  "status": "ステータス",
+  "not_started": "未開始",
+  "score": "スコア",
+  "start_date": "開始日",
+  "finish_date": "完了日",
+  "reading": "読書中",
+  "on_hold": "保留中",
+  "dropped": "中断",
+  "plan_to_read": "読む予定",
+  "re_reading": "再読中",
+  "chapters": "チャプター",
+  "add_tracker": "トラッキングを追加",
+  "one_tracker": "1トラッカー",
+  "n_tracker": "{n}トラッカー",
+  "tracking": "トラッキング",
   "syncing": "同期中",
-  "sync_password": "パスワード（8文字以上）",
   "sync_logged": "ログイン成功",
-  "syncing_subtitle": "セルフホストサーバーを通じて複数デバイス間で進行状況を同期します。詳細はDiscordサーバーをご覧ください！",
-  "last_sync_manga": "最終マンガ同期: ",
-  "last_sync_history": "最終履歴同期: ",
-  "last_sync_update": "最終更新同期: ",
+  "syncing_subtitle": "同期サーバーのアドレスを入力し、ブラウザーでログインすると、読書の進行状況をデバイス間で同期できます。",
+  "sync_service": "セルフホスト同期",
+  "last_sync": "最終同期日時: ",
+  "sync_login_browser": "ブラウザでログイン",
   "sync_server": "同期サーバーアドレス",
-  "sync_login_invalid_creds": "無効なメールアドレスまたはパスワード",
   "sync_starting": "同期を開始しています...",
   "sync_finished": "同期完了",
   "sync_failed": "同期失敗",
+  "sync_restore_in_progress": "同期をスキップ — 復元中",
+  "sync_progress_percent": "同期中… {percent}%",
+  "@sync_progress_percent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "sync_progress_indeterminate": "同期中…",
   "sync_button_sync": "進行状況を同期",
   "sync_button_upload": "アップロードのみ",
   "sync_button_upload_info": "この操作はリモートデータを完全にローカルデータで置き換えます！",
   "sync_button_download": "ダウンロードのみ",
   "sync_button_download_info": "この操作はローカルデータを完全にリモートデータで置き換えます！",
+  "sync_status_not_configured": "未接続",
+  "sync_status_checking": "接続を確認中...",
+  "sync_status_connected": "接続済み",
+  "sync_status_unauthorized": "セッションが切れました。再ログインしてください",
+  "sync_status_unreachable": "サーバーに接続できません",
+  "sync_section_general": "一般",
   "sync_on": "同期を有効化",
   "sync_auto": "自動同期",
   "sync_auto_warning": "自動同期は現在実験的な機能です！",
@@ -321,12 +522,149 @@
   "sync_auto_12_hours": "12時間ごと",
   "server_error": "サーバーエラー！",
   "dialog_confirm": "確認",
+  "description": "説明",
   "reorder_navigation": "ナビゲーションをカスタマイズ",
   "reorder_navigation_description": "ニーズに合わせて各ナビゲーションを並べ替えたり切り替えたりします。",
+  "floating_navigation_bar": "フローティング ナビゲーション バー",
+  "floating_navigation_bar_description": "標準付属のナビゲーション バーの代わりにフローティング カプセルを使用します。",
   "full_screen_player": "フルスクリーンを使用",
   "full_screen_player_info": "動画再生時に自動的にフルスクリーンを使用します。",
+  "episode_progress": "進行状況: {n}",
+  "n_episodes": "{n} エピソード",
+  "@n_episodes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "missing_episodes": "不足しているエピソード: {count}",
+  "manga_sources": "マンガソース",
+  "anime_sources": "アニメソース",
+  "novel_sources": "小説ソース",
+  "anime_extensions": "アニメ拡張機能",
+  "manga_extensions": "マンガ拡張機能",
+  "novel_extensions": "小説拡張機能",
   "extension_settings": "拡張機能設定",
+  "anime": "アニメ",
+  "manga": "マンガ",
+  "novel": "小説",
+  "library_no_category_exist": "まだカテゴリがありません",
+  "watching": "視聴中",
+  "plan_to_watch": "視聴予定",
+  "re_watching": "再視聴中",
+  "episodes": "エピソード",
+  "download": "ダウンロード",
+  "new_update_available": "新しい更新が利用可能です",
+  "app_version": "アプリバージョン : v{v}",
+  "searching_for_updates": "更新を検索しています...",
+  "no_new_updates_available": "新しい更新は利用できません",
+  "uninstall": "アンインストール",
+  "uninstall_extension": "{ext}拡張機能をアンインストールしますか？",
+  "double_tap_search_hint": "ダブルタップしてすべての{type}を検索",
+  "show_nav_double_tap_tooltip": "ダブルタップ検索のヒントを表示",
+  "show_nav_double_tap_tooltip_subtitle": "マンガ/アニメ/ノベルのナビゲーションで、ダブルタップで全体検索が開くことを示すツールチップを表示します。",
+  "already_in_library": "「{title}」はすでに{source}経由でライブラリに存在します。",
+  "add_anyway": "それでも追加",
+  "langauage": "言語",
+  "extension_detail": "拡張機能の詳細",
+  "scale_type": "スケールタイプ",
+  "scale_type_fit_screen": "画面にフィット",
+  "scale_type_stretch": "ストレッチ",
+  "scale_type_fit_width": "幅にフィット",
+  "scale_type_fit_height": "高さにフィット",
+  "scale_type_original_size": "オリジナルサイズ",
+  "scale_type_smart_fit": "スマートフィット",
+  "page_preload_amount": "ページプリロード量",
+  "page_preload_amount_subtitle": "読取時にプリロードするページ数。値が高いほど、スムーズな読取体験が得られます。ただし、キャッシュとネットワーク使用量が増加します。",
+  "image_loading_error": "この画像を読み込めませんでした",
+  "add_episodes": "エピソードを追加",
+  "video_quality": "品質",
+  "video_subtitle": "字幕",
+  "check_for_extension_updates": "拡張機能の更新を確認",
+  "auto_extensions_updates": "自動拡張機能更新",
+  "auto_extensions_updates_subtitle": "新しいバージョンが利用可能な場合は、拡張機能を自動的に更新します。",
+  "check_for_app_updates": "起動時にアプリ更新を確認",
+  "reading_mode": "読取モード",
+  "custom_filter": "カスタムフィルター",
+  "background_color": "背景色",
+  "white": "白",
+  "black": "黒",
+  "grey": "グレー",
+  "automaic": "自動",
+  "preferred_domain": "推奨ドメイン",
+  "load_more": "もっと読み込む",
+  "cancel_all_for_this_series": "このシリーズのすべてをキャンセル",
+  "login": "ログイン",
+  "login_into": "{tracker}にログイン",
+  "email_adress": "メールアドレス",
+  "password": "パスワード",
+  "log_out_from": "{tracker}からログアウトしますか？",
+  "log_out": "ログアウト",
+  "update_pending": "更新保留中",
+  "update_all": "すべて更新",
+  "backup_and_restore": "バックアップと復元",
+  "create_backup": "バックアップを作成",
+  "create_backup_dialog_title": "何をバックアップしたいですか？",
+  "create_backup_subtitle": "現在のライブラリを復元するために使用できます",
+  "restore_backup": "バックアップを復元",
+  "encrypt_backups": "バックアップを暗号化",
+  "encrypt_backups_info": "AES暗号化によりバックアップをパスワード保護します",
+  "no_secure_storage": "安全なストレージが見つかりません",
+  "no_keyring_warning": "キーリングサービスがないためパスワードを安全に保存できません。\n\nローカルデータベースに暗号化なしで保存しますか？",
+  "enter_backup_password": "バックアップパスワードを入力",
+  "incorrect_password_try_again": "パスワードが正しくありません。再試行してください。",
+  "set_backup_password": "バックアップパスワードを設定",
+  "confirm_password": "パスワードを確認",
+  "passwords_do_not_match": "パスワードが一致しません",
+  "password_required_to_restore": "復元にはパスワードが必要です。",
+  "restore_backup_subtitle": "バックアップファイルからライブラリを復元",
+  "automatic_backups": "自動バックアップ",
+  "backup_frequency": "バックアップ頻度",
+  "backup_location": "バックアップロケーション",
+  "backup_options": "バックアップオプション",
+  "backup_options_dialog_title": "何をバックアップしたいですか？",
+  "backup_options_subtitle": "バックアップファイルに含める情報",
+  "backup_and_restore_warning_info": "バックアップのコピーを他の場所にも保管することをお勧めします",
+  "library_entries": "ライブラリエントリ",
+  "chapters_and_episode": "チャプターとエピソード",
+  "every_6_hours": "6時間ごと",
+  "every_12_hours": "12時間ごと",
+  "daily": "毎日",
+  "every_2_days": "2日ごと",
+  "weekly": "週ごと",
+  "restore_backup_warning_title": "バックアップを復元すると、すべての既存データが上書きされます。\\n\\n復元を続けますか？",
+  "restore_sync_question_title": "この復元を同期しますか？",
+  "restore_sync_question_message": "復元されたデータを今すぐ同期サーバーにアップロードしますか？",
+  "restore_sync_question_confirm": "はい、同期する",
+  "restore_sync_question_deny": "いいえ、同期を無効化",
+  "sync_disabled_after_restore": "同期が無効になりました。設定から再度有効にできます。",
+  "restore_sync_disabled_question_title": "同期は現在無効です",
+  "restore_sync_disabled_question_message": "同期を再有効化してサーバーにアップロードしますか？",
+  "restore_sync_question_reenable": "はい、有効化して同期",
+  "restore_sync_question_keep_disabled": "無効のままにする",
+  "restore_sync_uploading": "復元データをサーバーに同期中…",
+  "restore_sync_upload_success": "復元データをサーバーに同期しました",
+  "services": "サービス",
+  "tracking_warning_info": "トラッキングサービスのチャプター進度を更新するための一方向同期。トラッキングボタンから個々のエントリの追跡を設定します。",
+  "use_page_tap_zones": "ページタップゾーンを使用",
+  "manage_trackers": "トラッカーを管理",
+  "restore": "復元",
+  "backups": "バックアップ",
+  "by_scanlator": "スキャンレーター別",
+  "by_name": "名前別",
+  "installed": "インストール済み",
+  "auto_scroll": "自動スクロール",
+  "video_audio": "オーディオ",
   "video_audio_info": "優先言語、ピッチ補正、オーディオチャンネル",
+  "player": "プレーヤー",
+  "markEpisodeAsSeenSetting": "エピソードを視聴済みにするタイミング",
+  "mark_duplicate_chapters_read": "重複する章番号を読済みとしてマーク",
+  "default_skip_intro_length": "デフォルトイントロスキップ長",
+  "default_playback_speed_length": "デフォルト再生速度長",
+  "updateProgressAfterReading": "読後にプログレスを更新",
+  "no_sources_installed": "ソースがインストールされていません！",
+  "show_extensions": "拡張機能を表示",
   "default_skip_forward_skip_length": "デフォルトスキップフォワードスキップ長",
   "aniskip_requires_info": "AniSkipを機能させるには、アニメをMALまたはAnilistで追跡する必要があります。",
   "enable_aniskip": "AniSkipを有効化",
@@ -335,9 +673,21 @@
   "skip_opening": "オープニングをスキップ",
   "skip_ending": "エンディングをスキップ",
   "fullscreen": "フルスクリーン",
+  "update_library": "ライブラリを更新",
+  "next_chapter": "次のチャプター",
+  "next_5_chapters": "次の5チャプター",
+  "next_10_chapters": "次の10チャプター",
+  "next_25_chapters": "次の25チャプター",
+  "all_chapters": "すべてのチャプター",
+  "next_episode": "次のエピソード",
+  "next_5_episodes": "次の5エピソード",
+  "next_10_episodes": "次の10エピソード",
+  "next_25_episodes": "次の25エピソード",
+  "all_episodes": "すべてのエピソード",
   "cover_saved": "カバーを保存しました",
   "set_as_cover": "カバーに設定",
   "use_this_as_cover_art": "これをカバーアートとして使用しますか？",
+  "save": "保存",
   "picture_saved": "画像を保存しました",
   "cover_updated": "カバーを更新しました",
   "include_subtitles": "字幕を含める",
@@ -356,6 +706,8 @@
   "blend_mode_exclusion": "除外",
   "custom_color_filter": "カスタムカラーフィルター",
   "color_filter_blend_mode": "カラーフィルターブレンドモード",
+  "enable_all": "すべて有効化",
+  "disable_all": "すべて無効化",
   "font": "フォント",
   "color": "色",
   "font_size": "フォントサイズ",
@@ -365,15 +717,20 @@
   "no_subtite_warning_message": "このビデオには字幕トラックがないため効果はありません",
   "grid_size": "グリッドサイズ",
   "n_per_row": "1行あたり{n}個",
+  "horizontal_continious": "横スクロール連続",
   "edit_code": "コードを編集",
   "use_libass": "libassを有効化",
   "use_libass_info": "ネイティブバックエンドにlibassベースの字幕レンダリングを使用します。",
   "libass_not_disable_message": "字幕をカスタマイズできるようにするには、プレーヤー設定で「libassを使用」を無効にしてください。",
+  "override_ass_subtitles": "ASS字幕をオーバーライド",
+  "override_ass_subtitles_info": "ASS/SSA字幕にカスタムスタイルを適用",
   "torrent_stream": "トレントストリーム",
   "add_torrent": "トレントを追加",
   "enter_torrent_hint_text": "マグネットまたはトレントファイルurlを入力",
   "torrent_url": "トレントurl",
   "or": "または",
+  "advanced": "詳細設定",
+  "advanced_info": "mpv設定",
   "use_native_http_client": "ネイティブhttpクライアントを使用",
   "use_native_http_client_info": "VPNのようなプラットフォーム機能を自動的にサポートし、HTTP/3のようなより多くのHTTP機能をサポートし、カスタムリダイレクト処理",
   "n_hour_ago": "{hour}時間前",
@@ -384,12 +741,16 @@
   "now": "今",
   "library_last_updated": "ライブラリ最終更新: {lastUpdated}",
   "data_and_storage": "データとストレージ",
+  "download_location_info": "チャプターダウンロードに使用",
   "storage": "ストレージ",
   "clear_chapter_and_episode_cache": "チャプターとエピソードキャッシュをクリア",
   "cache_cleared": "キャッシュをクリアしました",
   "clear_chapter_or_episode_cache_on_app_launch": "アプリ起動時にチャプター/エピソードキャッシュをクリア",
   "app_settings": "アプリ設定",
+  "sources_settings": "ソース設定",
   "include_sensitive_settings": "機密設定を含める（例：トラッカーログイントークン）",
+  "create": "作成",
+  "downloads_are_limited_to_wifi": "ダウンロードはWi-Fiに制限されています",
   "recommendations": "おすすめ",
   "recommendations_similar": "類似",
   "recommendations_weights": "おすすめの重み",
@@ -403,7 +764,7 @@
   "custom_dns": "カスタムDNS（システムDNSを使用する場合は空のままにしてください）",
   "android_proxy_server": "Androidプロキシサーバー（M-Extension-Server）",
   "get_m_extension_server": "M-Extension-Serverを入手",
-  "get_sync_server": "同期サーバーをここで入手",
+  "undefined": "未定義",
   "empty_extensions_repo": "リポジトリURLがありません。追加するにはプラスボタンをクリックしてください！",
   "add_extensions_repo": "リポジトリURLを追加",
   "remove_extensions_repo": "リポジトリURLを削除",
@@ -418,20 +779,18 @@
   "clear_all_sources_msg": "これによりアプリケーションのすべてのソースが完全に削除されます。続行してもよろしいですか？",
   "sources_cleared": "ソースがクリアされました！！！",
   "repo_added": "ソースリポジトリが追加されました！",
+  "repo_already_exists": "リポジトリは既に存在します！",
   "add_repo": "リポジトリを追加しますか？",
+  "add_repo_sources_to_add": "追加される拡張子リスト:",
+  "add_repo_warning": "これらのリポジトリからの拡張機能は、アプリ内で実行される。信頼できるリポジトリのみを追加してください。",
   "genre_search_library": "ライブラリでジャンル検索",
   "genre_search_source": "ソースでブラウズ",
   "source_not_added": "ソースがインストールされていません！",
   "load_own_subtitles": "独自の字幕を読み込む...",
   "search_subtitles": "オンラインで字幕を検索...",
   "extension_notes": "注：{notes}",
-  "unsupported_repo": "サポートされていないリポジトリを追加しようとしています。サポートについてはDiscordサーバーを確認してください！",
-  "end_of_chapter": "チャプターの終わり",
-  "chapter_completed": "チャプター完了",
-  "continue_to_next_chapter": "次のチャプターを読むにはスクロールを続けてください",
-  "no_next_chapter": "次のチャプターはありません",
+  "unsupported_repo": "このソースリポジトリを追加できませんでした。リポジトリのアドレスを確認するか、管理者にお問い合わせください。",
   "you_have_finished_reading": "読了しました",
-  "return_to_the_list_of_chapters": "チャプターリストに戻る",
   "hwdec": "ハードウェアデコーダー",
   "enable_hardware_accel": "ハードウェアアクセラレーション",
   "enable_hardware_accel_info": "バグやクラッシュが発生している場合はオン/オフを切り替えてください",
@@ -447,9 +806,6 @@
   "rpc_show_reading_watching_progress": "Discordに現在のチャプターを表示（再起動が必要）",
   "rpc_show_title": "Discordに現在のタイトルを表示",
   "rpc_show_cover_image": "Discordに現在のカバー画像を表示",
-  "sync_enable_histories": "履歴データを同期",
-  "sync_enable_updates": "更新データを同期",
-  "sync_enable_settings": "設定を同期",
   "enable_mpv": "mpvシェーダー/スクリプトを有効化",
   "mpv_info": "mpv/scripts/配下の.jsスクリプトをサポート",
   "mpv_redownload": "mpv設定ファイルを再ダウンロード",
@@ -467,6 +823,7 @@
   "custom_buttons_js_code_req": "luaコードが必要です",
   "custom_buttons_js_code_long": "luaコード（長押し時）",
   "custom_buttons_startup": "luaコード（起動時）",
+  "custom_buttons_add_warning": "このボタンは、ビデオ プレーヤーで以下の Lua コードを実行し、ファイルにアクセスしてプログラムを実行できます。このリンクの出所が信頼できる場合にのみ追加してください。",
   "n_days": "{n}日",
   "decoder": "デコーダー",
   "decoder_info": "ハードウェアデコーディング、ピクセル形式、デバンディング",
@@ -486,6 +843,10 @@
   "subtitle_delay_text": "字幕遅延",
   "subtitle_delay": "遅延（ms）",
   "subtitle_speed": "速度",
+  "tracks": "トラック",
+  "playback_speed": "再生速度",
+  "shaders": "シェーダー",
+  "video_fit": "画面サイズに合わせる",
   "calendar": "カレンダー",
   "calendar_no_data": "まだデータがありません。",
   "calendar_info": "カレンダーは過去のアップロードに基づいて次のチャプターアップロードを予測できるだけです。一部のデータは100％正確ではない可能性があります！",
@@ -495,14 +856,183 @@
   "clear_library_desc": "すべてのマンガ、アニメ、および/または小説エントリをクリアする選択",
   "clear_library_input": "すべての関連エントリを削除するには「manga」、「anime」、および/または「novel」と入力してください（カンマ区切り）",
   "watch_order": "視聴順",
+  "watch_order_role_current": "現在",
+  "@watch_order_role_current": {
+    "description": "Role label for the title currently being viewed in a watch order."
+  },
+  "watch_order_role_previous": "前へ",
+  "@watch_order_role_previous": {
+    "description": "Role label for an earlier title in a watch order."
+  },
+  "watch_order_role_next": "次へ",
+  "@watch_order_role_next": {
+    "description": "Role label for a later title in a watch order."
+  },
+  "watch_order_source_release_order": "リリース命令",
+  "@watch_order_source_release_order": {
+    "description": "Source label for a watch order based on release dates."
+  },
+  "watch_order_source_community_list": "{name} by {author}",
+  "@watch_order_source_community_list": {
+    "description": "Source label for a community-created Trakt list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_official_collection": "公式 Trakt コレクション: {name}",
+  "@watch_order_source_official_collection": {
+    "description": "Source label for an official Trakt collection.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_trakt_collection": "Trakt コレクション: {name}",
+  "@watch_order_source_trakt_collection": {
+    "description": "Source label for a Trakt collection when it is not marked as official.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_seasons": "{title}の季節",
+  "@watch_order_source_seasons": {
+    "description": "Fallback source label when the watch order contains a show's seasons.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_select_source": "注文元",
+  "@watch_order_select_source": {
+    "description": "Label for choosing among available watch-order sources."
+  },
+  "watch_order_season": "シーズン{number}",
+  "@watch_order_season": {
+    "description": "Season metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "watch_order_episode": "エピソード{number}",
+  "@watch_order_episode": {
+    "description": "Episode metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "sequels": "続編",
   "recommendations_similarity": "類似度：",
+  "recommendation_rating_accessibility": "評価{rating}",
+  "@recommendation_rating_accessibility": {
+    "description": "Accessible label for a recommendation rating in the provider's display format.",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "local_folder_structure": "ローカルフォルダ構造",
   "local_folder": "ローカルフォルダ",
   "add_local_folder": "ローカルフォルダを追加",
   "rescan_local_folder": "すべてのローカルフォルダを今すぐ再スキャン",
+  "default_download_destination": "デフォルトのダウンロード先",
+  "ask_download_destination": "ダウンロード先を毎回確認",
+  "ask_download_destination_desc": "ダウンロード開始時にフォルダを選択します。",
+  "select_download_destination": "ダウンロード先を選択",
+  "clear_local_library": "ローカルライブラリをクリア",
+  "clear_local_library_desc": "ローカルフォルダおよびアーカイブをライブラリから削除します。",
+  "clear_local_library_msg": "ライブラリから削除されます（ファイル自体は削除されません）。",
+  "custom": "カスタム",
+  "no_local_folder_available_for_downloads": "利用可能なダウンロードフォルダがありません",
+  "failed_to_create_cbz": "CBZの作成に失敗しました: {error}",
+  "@failed_to_create_cbz": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_cover_image": "カバー画像の読み込みエラー: {error}",
+  "@error_reading_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_metadata": "メタデータの読み込みエラー: {error}",
+  "@error_reading_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_saving_chapter_episode_to_library": "ライブラリ保存エラー: {error}",
+  "@error_saving_chapter_episode_to_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_chapter_cover_image": "章カバー画像の読み込みエラー: {error}",
+  "@error_reading_chapter_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_reading_archive_cover_image": "アーカイブカバー画像の読み込みエラー: {error}",
+  "@error_reading_archive_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "error_getting_local_library": "ローカルライブラリ取得エラー: {error}",
+  "@error_getting_local_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "export_metadata": "メタデータをエクスポート",
   "exported": "エクスポートしました",
+  "failed_to_export_metadata": "メタデータのエクスポートに失敗: {error}",
+  "@failed_to_export_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "unrecognized_chapter_numbers": "{count}話の番号を自動取得できませんでした。",
+  "@unrecognized_chapter_numbers": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cloudflare_resolution_webview_server_start_failed": "Cloudflare解決サーバーを起動できませんでした。",
+  "tracker_token_expired": "{tracker}のトークンが期限切れです",
+  "@tracker_token_expired": {
+    "placeholders": {
+      "tracker": {}
+    }
+  },
+  "video_list_empty": "動画リストが空です",
+  "playback_speed_multiplier": "x{value}",
+  "@playback_speed_multiplier": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "could_not_launch_url": "{url} を開けませんでした",
+  "@could_not_launch_url": {
+    "placeholders": {
+      "url": {}
+    }
+  },
   "text_size": "テキストサイズ：",
   "text_align": "テキスト配置",
   "line_height": "行の高さ",
@@ -515,10 +1045,11 @@
   "dns_over_https": "DNS-over-HTTPS (DoH)",
   "dns_provider": "DNSプロバイダー",
   "tracked": "追跡中",
-  "auth_unlock_msg": "Mangayomiのロックを解除するために認証してください",
-  "app_locked": "Mangayomiはロックされています",
+  "auth_unlock_msg": "NodeLane Comicsのロックを解除するために認証してください",
+  "app_locked": "NodeLane Comicsはロックされています",
   "auth_to_continue": "続行するために認証してください",
   "authenticating": "認証中です...",
+  "lock": "ロック",
   "unlock": "ロック解除",
   "security": "セキュリティ",
   "auth_to_change_security_setting": "セキュリティ設定を変更するために認証してください",
@@ -526,6 +1057,8 @@
   "require_biometric_or_device_credential": "アプリを開くには、生体認証またはデバイスの認証情報が必要です",
   "biometric_or_device_credential_not_available": "このデバイスでは生体認証は使用できません",
   "app_lock_description": "アプリのロックが有効な場合、アプリを開くたびに認証するよう求められます\\nバックグラウンドから戻る場合。",
+  "checking_device_authentication": "デバイス認証を確認しています…",
+  "device_authentication_incomplete": "認証が完了しませんでした。設定は変更されていません。",
   "keep_screen_on": "画面をオンに保つ",
   "webtoon_side_padding": "ウェブトゥーンのサイドパディング",
   "show_page_gaps": "ページギャップを表示",
@@ -542,269 +1075,86 @@
   "nav_layout_right_and_left": "右と左",
   "nav_layout_disabled": "無効",
   "color_enhancements": "色の強化",
-  "show_category_tabs": "カテゴリタブを表示",
-  "show_numbers_of_items": "アイテム数を表示",
-  "show_continue_reading_buttons": "読み続けるボタンを表示",
-  "empty_library": "ライブラリが空です",
-  "no_recent_updates": "最近の更新がありません",
-  "remove_everything": "すべて削除",
-  "remove_everything_msg": "本当にすべてを削除しますか？すべての履歴が失われます",
-  "remove_history_msg": "このチャプターの読取日を削除します。よろしいですか？",
-  "pinned": "ピン留め済み",
-  "extensions": "拡張機能",
-  "incognito_mode_description": "読取履歴を一時停止",
-  "download_queue": "ダウンロードキュー",
-  "help": "ヘルプ",
-  "no_downloads": "ダウンロードなし",
-  "edit_categories_description": "カテゴリがありません。プラスボタンをタップして、ライブラリを整理するためのカテゴリを作成してください",
-  "add_category": "カテゴリを追加",
-  "category_name_required": "*必須",
-  "add_category_error_exist": "このカテゴリ名は既に存在します！",
-  "delete_category": "カテゴリを削除",
-  "delete_category_msg": "カテゴリ{name}を削除しますか？",
-  "rename_category": "カテゴリ名を変更",
-  "general_subtitle": "アプリ言語",
-  "app_language": "アプリ言語",
-  "appearance_subtitle": "テーマ、日時形式",
-  "dark_mode": "ダークモード",
-  "on": "オン",
-  "off": "オフ",
-  "timestamp": "タイムスタンプ",
-  "relative_timestamp": "相対タイムスタンプ",
-  "relative_timestamp_short": "短い(今日、昨日)",
-  "relative_timestamp_long": "長い(短い+、n日前)",
-  "date_format": "日付形式",
-  "reader_subtitle": "読取モード、表示、ナビゲーション",
-  "default_reading_mode": "デフォルト読取モード",
-  "reading_mode_vertical": "垂直",
-  "reading_mode_horizontal": "水平",
-  "reading_mode_left_to_right": "左から右へ",
-  "reading_mode_right_to_left": "右から左へ",
-  "reading_mode_vertical_continuous": "垂直連続",
-  "reading_mode_webtoon": "ウェブトゥーン",
-  "double_tap_animation_speed": "ダブルタップアニメーション速度",
-  "normal": "普通",
-  "fast": "速い",
-  "no_animation": "アニメーションなし",
-  "downloads_subtitle": "ダウンロード設定",
-  "custom_location": "カスタムロケーション",
-  "save_as_cbz_archive": "CBZアーカイブとして保存",
-  "browse_subtitle": "ソース、グローバル検索",
-  "only_include_pinned_sources": "ピン留め済みソースのみを含める",
-  "nsfw_sources": "NSFW (+18) ソース",
-  "nsfw_sources_show": "ソースと拡張機能のリストに表示",
-  "nsfw_sources_info": "これは、非公式またはおそらく不正にフラグが付いた拡張機能がアプリ内でNSFW（18+）コンテンツをサーフェスするのを防ぎません",
-  "check_for_update": "更新を確認",
-  "n_days_ago": "{days}日前",
-  "today": "今日",
-  "yesterday": "昨日",
-  "a_week_ago": "1週間前",
-  "ongoing": "進行中",
-  "on_hiatus": "休止中",
-  "canceled": "キャンセル",
-  "publishing_finished": "出版が終了",
-  "filter_scanlator_groups": "スキャンレータグループをフィルター",
-  "by_source": "ソース別",
-  "by_chapter_number": "チャプター番号別",
-  "by_upload_date": "アップロード日時別",
-  "source_title": "ソースタイトル",
-  "chapter_number": "チャプター番号",
-  "no_description": "説明なし",
-  "read": "読む",
-  "open_in_browser": "ブラウザーで開く",
-  "clear_cookie": "クッキーをクリア",
-  "from_library": "ライブラリから",
-  "downloaded_chapter": "ダウンロード済みチャプター",
-  "global_search": "グローバル検索",
-  "color_blend_level": "カラーブレンドレベル",
-  "current": "現在の{char}",
-  "finished": "完了した{char}",
-  "no_more_chapter": "もうチャプターはありません",
-  "no_result": "結果がありません",
-  "send": "送信",
-  "start_downloading": "今すぐダウンロード開始",
-  "add_chapters": "チャプターを追加",
-  "delete_chapters": "チャプターを削除しますか？",
-  "default0": "デフォルト",
-  "total_chapters": "総チャプター数",
-  "import_local_file": "ローカルファイルをインポート",
-  "import_files": "ファイル",
-  "nothing_read_recently": "最近読んだものがありません",
-  "not_started": "未開始",
-  "score": "スコア",
-  "start_date": "開始日",
-  "finish_date": "完了日",
-  "add_tracker": "トラッキングを追加",
-  "one_tracker": "1トラッカー",
-  "n_tracker": "{n}トラッカー",
-  "tracking": "トラッキング",
-  "episode_progress": "進行状況: {n}",
-  "new_update_available": "新しい更新が利用可能です",
-  "app_version": "アプリバージョン : v{v}",
-  "searching_for_updates": "更新を検索しています...",
-  "no_new_updates_available": "新しい更新は利用できません",
-  "uninstall_extension": "{ext}拡張機能をアンインストールしますか？",
-  "langauage": "言語",
-  "extension_detail": "拡張機能の詳細",
-  "scale_type_fit_screen": "画面にフィット",
-  "scale_type_stretch": "ストレッチ",
-  "scale_type_fit_width": "幅にフィット",
-  "scale_type_fit_height": "高さにフィット",
-  "scale_type_original_size": "オリジナルサイズ",
-  "scale_type_smart_fit": "スマートフィット",
-  "page_preload_amount_subtitle": "読取時にプリロードするページ数。値が高いほど、スムーズな読取体験が得られます。ただし、キャッシュとネットワーク使用量が増加します。",
-  "image_loading_error": "この画像を読み込めませんでした",
-  "add_episodes": "エピソードを追加",
-  "video_quality": "品質",
-  "video_subtitle": "字幕",
-  "check_for_extension_updates": "拡張機能の更新を確認",
-  "auto_extensions_updates": "自動拡張機能更新",
-  "auto_extensions_updates_subtitle": "新しいバージョンが利用可能な場合は、拡張機能を自動的に更新します。",
-  "reading_mode": "読取モード",
-  "custom_filter": "カスタムフィルター",
-  "white": "白",
-  "black": "黒",
-  "grey": "グレー",
-  "automaic": "自動",
-  "preferred_domain": "推奨ドメイン",
-  "load_more": "もっと読み込む",
-  "cancel_all_for_this_series": "このシリーズのすべてをキャンセル",
-  "login": "ログイン",
-  "login_into": "{tracker}にログイン",
-  "email_adress": "メールアドレス",
-  "password": "パスワード",
-  "log_out_from": "{tracker}からログアウトしますか？",
-  "log_out": "ログアウト",
-  "update_pending": "更新保留中",
-  "update_all": "すべて更新",
-  "create_backup_dialog_title": "何をバックアップしたいですか？",
-  "create_backup_subtitle": "現在のライブラリを復元するために使用できます",
-  "restore_backup_subtitle": "バックアップファイルからライブラリを復元",
-  "automatic_backups": "自動バックアップ",
-  "backup_frequency": "バックアップ頻度",
-  "backup_location": "バックアップロケーション",
-  "backup_options": "バックアップオプション",
-  "backup_options_dialog_title": "何をバックアップしたいですか？",
-  "backup_options_subtitle": "バックアップファイルに含める情報",
-  "backup_and_restore_warning_info": "バックアップのコピーを他の場所にも保管することをお勧めします",
-  "library_entries": "ライブラリエントリ",
-  "chapters_and_episode": "チャプターとエピソード",
-  "every_6_hours": "6時間ごと",
-  "every_12_hours": "12時間ごと",
-  "daily": "毎日",
-  "every_2_days": "2日ごと",
-  "weekly": "週ごと",
-  "restore_backup_warning_title": "バックアップを復元すると、すべての既存データが上書きされます。\\n\\n復元を続けますか？",
-  "services": "サービス",
-  "tracking_warning_info": "トラッキングサービスのチャプター進度を更新するための一方向同期。トラッキングボタンから個々のエントリの追跡を設定します。",
-  "use_page_tap_zones": "ページタップゾーンを使用",
-  "manage_trackers": "トラッカーを管理",
-  "backups": "バックアップ",
-  "by_scanlator": "スキャンレーター別",
-  "by_name": "名前別",
-  "split_epub_chapters": "チャプターに分割",
-  "split_epub_chapters_description": "各EPUBチャプターを別のエントリとしてインポート",
-  "compression_level": "圧縮レベル",
-  "compression_info": "圧縮が高い=スペースが少ないがCPUが多い。デフォルト: {level}",
-  "mass_migration_title": "一括移行",
-  "mass_migration_preview_items": "プレビューアイテム",
-  "delete_download_after_reading": "読後に削除",
   "total": "合計",
   "mean_per_title": "タイトルごとの平均",
   "completion_rate": "完了率",
   "watching_time": "視聴時間",
   "reading_time": "読書時間",
-  "average_chapters_per_title": "タイトルあたりの平均章数",
+  "average_chapters_per_title": "{title} あたりの平均チャプター数",
   "read_percentage": "読みの割合",
   "entries": "エントリ",
-  "mass_migration_destination_source": "Destination source",
-  "mass_migration_no_library_items": "No library items are available for mass migration.",
-  "mass_migration_no_destination_sources": "No installed destination sources are available.",
-  "mass_migration_installed": "Installed",
-  "mass_migration_items_ready_for_review": "{count, plural, =1{1 item ready for review} other{{count} items ready for review}}",
-  "mass_migration_item_count": "{count, plural, =1{1 item} other{{count} items}}",
-  "mass_migration_select_destination_source": "Select destination source",
-  "mass_migration_finding_matches": "Finding matches in {source} • {language}",
-  "mass_migration_processing_item": "Processing item {current} of {total}",
-  "mass_migration_waiting_next_item": "Waiting 2 seconds before the next item...",
-  "mass_migration_waiting_next_migration": "Waiting 2 seconds before the next migration...",
-  "mass_migration_matched_so_far": "Matched so far: {count}",
-  "mass_migration_no_match_count": "No match: {count}",
-  "mass_migration_review_matches": "Review matches for {source}",
-  "mass_migration_found_matches": "Found matches: {count}",
-  "mass_migration_no_matches": "No matches: {count}",
-  "mass_migration_selected_to_migrate": "Selected to migrate: {count}",
-  "mass_migration_finish_review": "Finish review",
-  "mass_migration_migrate_selected": "Migrate selected items ({count})",
-  "mass_migration_migrating_selected": "Migrating selected items to {source}",
-  "mass_migration_no_items_selected": "No items selected for migration.",
-  "mass_migration_migrating_item": "Migrating item {current} of {total}",
-  "mass_migration_complete": "Mass migration complete",
-  "mass_migration_complete_success_message": "All selected items were processed successfully.",
-  "mass_migration_complete_partial_message": "Migration finished with a few items that still need manual attention.",
-  "mass_migration_route_summary": "{source} → {destination}",
-  "mass_migration_processed": "Processed",
-  "mass_migration_matched": "Matched",
-  "mass_migration_migrated": "Migrated",
-  "mass_migration_skipped": "Skipped",
-  "mass_migration_failed": "Failed",
-  "mass_migration_failed_items": "Failed Items",
-  "mass_migration_exit": "Exit Mass Migration",
-  "mass_migration_no_destination_match": "No destination match found",
-  "mass_migration_query": "Query: {query}",
-  "mass_migration_skip": "Skip",
-  "mass_migration_loading": "Loading...",
-  "mass_migration_choose_another_result": "Choose another result",
-  "mass_migration_source_chapters": "Source chapters",
-  "mass_migration_destination_chapters": "Destination chapters",
-  "mass_migration_chapter_count": "{count, plural, =1{1 chapter} other{{count} chapters}}",
-  "mass_migration_source_chapter_count": "{count, plural, =1{1 source chapter} other{{count} source chapters}}",
-  "mass_migration_destination_chapter_count": "{count, plural, =1{1 destination chapter} other{{count} destination chapters}}",
-  "mass_migration_no_chapters_found": "No chapters found.",
-  "mass_migration_and_more_chapters": "And {count} more...",
-  "mass_migration_unknown_title": "Unknown title",
-  "mass_migration_unknown_match": "Unknown match",
-  "mass_migration_unknown_source": "Unknown source",
-  "mass_migration_unknown_chapter": "Unknown chapter",
-  "no_extension_server_bundle_available_for_this_platform": "No extension server bundle is available for this platform.",
-  "extension_server_intro_with_jre": "Download the proxy server bundle before using Mihon extensions. The bundle includes the JRE and extension server JAR.",
-  "failed_to_download_bundle": "Failed to download bundle ({statusCode}).",
-  "selected_folder_does_not_exist": "The selected folder does not exist.",
-  "jre_executable": "JRE executable",
-  "installed_version": "Installed version",
-  "choose_location": "Choose location",
-  "extension_server_intro_ios": "Download the proxy server JAR before using Mihon extensions. iOS only needs the extension server JAR.",
-  "import_existing_jar": "Import existing JAR",
-  "android_proxy_server_mihon_description": "Download and configure the proxy server required to use Mihon extensions.",
-  "files_missing": "Files missing",
-  "select_extension_server_folder": "Select extension server folder",
-  "preparing_download": "Preparing download...",
-  "could_not_launch_apk_bridge_page": "Could not launch the M-Extension-Server page.",
-  "could_not_check_proxy_server_updates": "Could not check for proxy server updates.",
-  "m_extension_server_description": "Use M-Extension-Server when you need a separate Android device proxy. Set the proxy address here and download the APK from GitHub.",
-  "install_location": "Install location",
-  "not_configured": "Not configured",
-  "detect_files_in_selected_folder": "Detect files in selected folder",
-  "ios_extension_server_import_hint": "On iOS the server is installed inside the app sandbox. Use \"Import existing JAR\" to bring in a downloaded file.",
-  "app_install_location": "App install location",
-  "files_installed": "Files installed",
-  "no_extension_server_files_found_in_selected_folder": "No extension server files were found in the selected folder.",
-  "extension_server_jar_imported": "Extension server JAR was imported.",
-  "proxy_server_ip_hint": "Server IP (e.g., 10.0.0.5 or https://example.com)",
-  "selected_file_could_not_be_accessed": "The selected file could not be accessed.",
-  "no_newer_proxy_server_release_available": "No newer proxy server release is available.",
-  "latest_version": "Latest version",
-  "extension_server_jar": "Extension server JAR",
-  "set_proxy_address": "Set proxy address",
-  "mihon_proxy_server": "Mihon proxy server",
-  "extension_server_files_linked": "Extension server files were linked.",
-  "extension_server_files_ready": "Extension server files are ready.",
-  "webview": "Webview",
-  "update_files": "Update files",
-  "checking_files": "Checking files",
-  "downloaded_bundle_missing_expected_files": "The downloaded bundle does not contain the expected files.",
   "android_proxy_server_mihon": "Android Proxy Server (Mihon)",
+  "android_proxy_server_mihon_description": "Download and configure the proxy server required to use Mihon extensions.",
+  "mihon_proxy_server": "Mihon proxy server",
+  "extension_server_intro_with_jre": "Download the proxy server bundle before using Mihon extensions. The bundle includes the JRE and extension server JAR.",
+  "extension_server_intro_ios": "Download the proxy server JAR before using Mihon extensions. iOS only needs the extension server JAR.",
+  "checking_files": "Checking files",
+  "files_installed": "Files installed",
+  "files_missing": "Files missing",
+  "update_files": "Update files",
+  "up_to_date": "最新",
+  "choose_location": "Choose location",
+  "import_existing_jar": "Import existing JAR",
+  "detect_files_in_selected_folder": "Detect files in selected folder",
+  "preparing_download": "Preparing download...",
+  "app_install_location": "App install location",
+  "install_location": "Install location",
+  "jre_executable": "JRE executable",
+  "extension_server_jar": "Extension server JAR",
+  "installed_version": "Installed version",
+  "latest_version": "Latest version",
+  "m_extension_server_description": "Use M-Extension-Server when you need a separate Android device proxy. Set the proxy address here and download the APK from GitHub.",
+  "set_proxy_address": "Set proxy address",
+  "no_newer_proxy_server_release_available": "No newer proxy server release is available.",
+  "could_not_check_proxy_server_updates": "Could not check for proxy server updates.",
+  "no_extension_server_bundle_available_for_this_platform": "No extension server bundle is available for this platform.",
+  "failed_to_download_bundle": "Failed to download bundle ({statusCode}).",
+  "@failed_to_download_bundle": {
+    "placeholders": {
+      "statusCode": {}
+    }
+  },
+  "downloaded_bundle_missing_expected_files": "The downloaded bundle does not contain the expected files.",
+  "extension_server_files_ready": "Extension server files are ready.",
+  "ios_extension_server_import_hint": "On iOS the server is installed inside the app sandbox. Use \"Import existing JAR\" to bring in a downloaded file.",
+  "select_extension_server_folder": "Select extension server folder",
+  "selected_folder_does_not_exist": "The selected folder does not exist.",
+  "no_extension_server_files_found_in_selected_folder": "No extension server files were found in the selected folder.",
+  "extension_server_files_linked": "Extension server files were linked.",
   "select_extension_server_jar": "Select extension server JAR",
+  "selected_file_could_not_be_accessed": "The selected file could not be accessed.",
+  "extension_server_jar_imported": "Extension server JAR was imported.",
+  "could_not_launch_apk_bridge_page": "Could not launch the M-Extension-Server page.",
+  "proxy_server_ip_hint": "Server IP (e.g., 10.0.0.5 or https://example.com)",
+  "not_configured": "Not configured",
+  "zero_interpreter": "Zero インタープリタ",
+  "zero_interpreter_description": "Zero インタープリタサーバーを制御します。",
+  "start_server_on_launch": "起動時にサーバーを開始",
+  "runtime_status": "実行状態",
+  "running": "実行中",
+  "stopped": "停止",
+  "start": "開始",
+  "stop": "停止",
+  "webview": "Webview",
+  "tts": "テキスト読み上げ",
+  "tts_speed": "速度",
+  "tts_pitch": "ピッチ",
+  "tts_language": "言語",
+  "tts_voice": "ボイス",
+  "tts_stop": "停止",
+  "tts_play": "再生",
+  "tts_pause": "一時停止",
+  "tts_previous": "前の段落",
+  "tts_next": "次の段落",
+  "tts_paragraph_progress": "段落{current}/{total}",
+  "@tts_paragraph_progress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "tts_settings": "TTS設定",
+  "tts_default": "デフォルト",
   "webtoon_disable_zoom_out": "Webtoonの縮小を無効化",
   "webtoon_double_tap_zoom_enabled": "Webtoonダブルタップズーム",
   "navigate_to_pan": "ナビゲーションをスクロールに変換",
@@ -813,6 +1163,10 @@
   "dual_page_invert": "分割した半ページの左右を反転",
   "dual_page_rotate_to_fit": "画面に合わせて回転",
   "dual_page_rotate_to_fit_invert": "回転方向を反転",
+  "double_page_single_first_page": "最初のページを単独表示",
+  "double_page_single_first_page_subtitle": "見開きモードで最初のページ（表紙）を単独で表示する",
+  "double_page_auto": "自動見開き表示",
+  "double_page_auto_subtitle": "横向き時に自動で見開き表示モードに切り替える",
   "landscape_zoom": "横画面自動ズーム",
   "zoom_start_position": "ズーム開始位置",
   "zoom_start_left": "左",
@@ -830,8 +1184,26 @@
   "flash_color_black": "黒",
   "flash_color_white": "白",
   "flash_color_white_black": "白 & 黒",
+  "flash_interval_label": "点滅間隔",
+  "flash_interval_value": "{n}ページ",
+  "@flash_interval_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
   "flash_interval": "点滅間隔：{n}ページ",
   "@flash_interval": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration_label": "点滅時間",
+  "flash_duration_value": "{n}ミリ秒",
+  "@flash_duration_value": {
     "placeholders": {
       "n": {
         "type": "String"
@@ -853,20 +1225,6 @@
   "reader_hide_threshold_low": "低い (31 px)",
   "reader_hide_threshold_lowest": "最も低い (47 px)",
   "error_no_pages_available": "エラー：利用可能なページがありません",
-  "mark_duplicate_chapters_read": "重複する章番号を読済みとしてマーク",
-  "tts": "テキスト読み上げ",
-  "tts_speed": "速度",
-  "tts_pitch": "ピッチ",
-  "tts_language": "言語",
-  "tts_voice": "ボイス",
-  "tts_stop": "停止",
-  "tts_play": "再生",
-  "tts_pause": "一時停止",
-  "tts_previous": "前の段落",
-  "tts_next": "次の段落",
-  "tts_paragraph_progress": "段落{current}/{total}",
-  "tts_settings": "TTS設定",
-  "tts_default": "デフォルト",
   "app_ui_scale": "インターフェーススケール",
   "app_ui_scale_subtitle": "インターフェースをお使いのスクリーンと視聴距離に合わせて大きくまたは小さくします。",
   "allow_concurrent_downloads": "同時ダウンロードを許可",
@@ -877,100 +1235,18 @@
   "saved_searches": "保存済み検索",
   "enter_search_to_save_first": "まず検索を入力して保存してください",
   "no_saved_searches": "このソースの保存済み検索はまだありません。\n検索を実行してから、「検索を保存」を選択してください。",
-  "label_value": "{label}: {value}",
-  "url": "URL",
-  "beta_version": "ベータ ({version})",
-  "empty_placeholder": "空",
-  "error_with_message": "エラー: {error}",
-  "no_pages_available": "エラー: 利用可能なページがありません",
-  "create_extension": "拡張機能を作成",
-  "choose_extension_language": "拡張機能の言語を選択",
-  "lang": "言語",
-  "base_url": "ベースURL",
-  "api_url_optional": "API URL（任意）",
-  "icon_url": "アイコンURL",
-  "source_icon_url": "ソースアイコンURL",
-  "notes": "備考",
-  "extension_name_example": "例: myAnime",
-  "language_code_example": "例: ja",
-  "base_url_example": "例: https://example.com",
-  "api_url_example": "例: https://api.example.com",
-  "extension_notes_example": "例: この拡張機能にはログインが必要です",
-  "target": "ターゲット",
-  "source_type_single": "単一",
-  "source_type_multi": "複数",
-  "source_type_torrent": "トレント",
-  "source_language_dart": "Dart",
-  "source_language_javascript": "JavaScript",
-  "source_language_lnreader_compiled_js": "LNReaderコンパイル済みJS",
-  "source_created_successfully": "ソースが正常に作成されました",
-  "source_already_exists": "ソースは既に存在します",
-  "error_when_creating_source": "ソース作成エラー",
-  "cookies_deleted": "Cookieを削除しました！",
-  "delete_all_cookies": "すべてのCookieを削除",
-  "missing_chapters": "不足している話数: {count}",
-  "sync_restore_in_progress": "同期をスキップ — 復元中",
-  "sync_status_not_configured": "未接続",
-  "sync_status_checking": "接続を確認中...",
-  "sync_status_connected": "接続済み",
-  "sync_status_unauthorized": "セッションが切れました。再ログインしてください",
-  "sync_status_unreachable": "サーバーに接続できません",
-  "sync_section_general": "一般",
-  "sync_section_data_types": "同期する項目",
-  "missing_episodes": "不足しているエピソード: {count}",
-  "encrypt_backups": "バックアップを暗号化",
-  "encrypt_backups_info": "AES暗号化によりバックアップをパスワード保護します",
-  "no_secure_storage": "安全なストレージが見つかりません",
-  "no_keyring_warning": "キーリングサービスがないためパスワードを安全に保存できません。\n\nローカルデータベースに暗号化なしで保存しますか？",
-  "enter_backup_password": "バックアップパスワードを入力",
-  "incorrect_password_try_again": "パスワードが正しくありません。再試行してください。",
-  "set_backup_password": "バックアップパスワードを設定",
-  "confirm_password": "パスワードを確認",
-  "passwords_do_not_match": "パスワードが一致しません",
-  "password_required_to_restore": "復元にはパスワードが必要です。",
-  "restore_sync_question_title": "この復元を同期しますか？",
-  "restore_sync_question_message": "復元されたデータを今すぐ同期サーバーにアップロードしますか？",
-  "restore_sync_question_confirm": "はい、同期する",
-  "restore_sync_question_deny": "いいえ、同期を無効化",
-  "sync_disabled_after_restore": "同期が無効になりました。設定から再度有効にできます。",
-  "restore_sync_disabled_question_title": "同期は現在無効です",
-  "restore_sync_disabled_question_message": "同期を再有効化してサーバーにアップロードしますか？",
-  "restore_sync_question_reenable": "はい、有効化して同期",
-  "restore_sync_question_keep_disabled": "無効のままにする",
-  "restore_sync_uploading": "復元データをサーバーに同期中…",
-  "restore_sync_upload_success": "復元データをサーバーに同期しました",
-  "default_download_destination": "デフォルトのダウンロード先",
-  "ask_download_destination": "ダウンロード先を毎回確認",
-  "ask_download_destination_desc": "ダウンロード開始時にフォルダを選択します。",
-  "select_download_destination": "ダウンロード先を選択",
-  "clear_local_library": "ローカルライブラリをクリア",
-  "clear_local_library_desc": "ローカルフォルダおよびアーカイブをライブラリから削除します。",
-  "clear_local_library_msg": "ライブラリから削除されます（ファイル自体は削除されません）。",
-  "no_local_folder_available_for_downloads": "利用可能なダウンロードフォルダがありません",
-  "failed_to_create_cbz": "CBZの作成に失敗しました: {error}",
-  "error_reading_cover_image": "カバー画像の読み込みエラー: {error}",
-  "error_reading_metadata": "メタデータの読み込みエラー: {error}",
-  "error_saving_chapter_episode_to_library": "ライブラリ保存エラー: {error}",
-  "error_reading_chapter_cover_image": "章カバー画像の読み込みエラー: {error}",
-  "error_reading_archive_cover_image": "アーカイブカバー画像の読み込みエラー: {error}",
-  "error_getting_local_library": "ローカルライブラリ取得エラー: {error}",
-  "failed_to_export_metadata": "メタデータのエクスポートに失敗: {error}",
-  "unrecognized_chapter_numbers": "{count}話の番号を自動取得できませんでした。",
-  "cloudflare_resolution_webview_server_start_failed": "Cloudflare解決サーバーを起動できませんでした。",
-  "tracker_token_expired": "{tracker}のトークンが期限切れです",
-  "video_list_empty": "動画リストが空です",
-  "playback_speed_multiplier": "x{value}",
-  "could_not_launch_url": "{url} を開けませんでした",
-  "zero_interpreter": "Zero インタープリタ",
-  "zero_interpreter_description": "Zero インタープリタサーバーを制御します。",
-  "start_server_on_launch": "起動時にサーバーを開始",
-  "runtime_status": "実行状態",
-  "running": "実行中",
-  "stopped": "停止",
-  "stop": "停止",
+  "source": "ソース",
   "something_went_wrong": "問題が発生しました",
-  "startup_failed": "Mangayomiの起動に失敗しました",
+  "startup_failed": "NodeLane Comicsの起動に失敗しました",
   "sources_with_no_results": "{count, plural, other{{count}件のソースで結果なし}}",
+  "@sources_with_no_results": {
+    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "import_mode_title": "どのようにインポートしますか？",
   "import_mode_message": "現在のライブラリに統合するか、完全に置き換えるか選択してください。",
   "import_mode_keep_existing": "統合",
@@ -979,8 +1255,19 @@
   "import_mode_replace_subtitle": "現在のライブラリを削除しバックアップで置き換えます。",
   "replace_summary_title": "ライブラリを置き換える準備ができました",
   "replace_summary_message": "現在の{currentCount}作品を削除し、バックアップの{backupCount}作品に置き換えます。",
+  "@replace_summary_message": {
+    "placeholders": {
+      "currentCount": {},
+      "backupCount": {}
+    }
+  },
   "replace_summary_confirm": "置換",
   "replace_result_message": "ライブラリを{count}作品に置き換えました。",
+  "@replace_result_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "category_conflict_title": "既存のカテゴリが見つかりました",
   "category_conflict_message": "バックアップに既存のカテゴリが含まれています。",
   "category_conflict_keep": "保持 — 既存カテゴリに統合",
@@ -990,26 +1277,70 @@
   "source_conflict_keep": "元の名前を保持",
   "import_summary_title": "インポート準備完了",
   "import_summary_message": "新規{newSeries}作品、更新{updatedSeries}作品、新規{newChapters}話を追加します。",
+  "@import_summary_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "import_summary_confirm": "インポート",
   "import_result_message": "新規{newSeries}作品、更新{updatedSeries}作品、{newChapters}話を追加しました。",
+  "@import_result_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "roll_back": "ロールバック",
   "roll_back_confirm_message": "変更前のスナップショットにライブラリを復元します。",
   "roll_back_done": "以前のスナップショットにロールバックしました。",
   "restoring_backup": "ライブラリを復元中…",
   "roll_back_last_change": "前回の変更をロールバック",
   "roll_back_last_change_subtitle": "{date} のスナップショット — {description}",
+  "@roll_back_last_change_subtitle": {
+    "placeholders": {
+      "date": {},
+      "description": {}
+    }
+  },
   "roll_back_available_count": "ロールバック可能な変更: {count}件",
+  "@roll_back_available_count": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "delete_source_title": "ソースと作品を削除",
   "delete_source_subtitle": "選択したソースの作品、話、ダウンロード、履歴をすべて削除します。",
   "delete_source_pick_title": "削除するソースを選択",
   "delete_source_empty": "ライブラリにソースが見つかりません。",
   "delete_source_confirm_title": "{sourceName}を削除しますか？",
-  "delete_source_confirm_message": "{mangaCount}作品、{chapterCount}話、{historyCount}件の履歴が完全に削除されます。",
+  "@delete_source_confirm_title": {
+    "placeholders": {
+      "sourceName": {}
+    }
+  },
+  "delete_source_confirm_message": "これにより、{mangaCount} マンガ、{chapterCount} 章、{historyCount} 履歴エントリ、{updateCount} 更新エントリが完全に削除されます。追跡リンクは保持されます。これを元に戻すには、ロールバックする必要があります。",
+  "@delete_source_confirm_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "chapterCount": {},
+      "historyCount": {},
+      "updateCount": {}
+    }
+  },
   "delete_source_also_remove_extension": "インストール済み拡張機能も削除",
   "delete_source_keep_history": "読書履歴を保持",
   "delete_source_keep_downloads": "ダウンロード記録を保持",
   "delete_source_button": "削除",
   "delete_source_result_message": "{sourceName}から{mangaCount}作品を削除しました。",
+  "@delete_source_result_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "sourceName": {}
+    }
+  },
   "merge_manga_title": "重複作品を統合",
   "merge_manga_subtitle": "同じソース内の同名作品を統合します。",
   "merge_manga_none_found": "重複作品は見つかりませんでした。",
@@ -1017,10 +1348,33 @@
   "merge_manga_choose_primary_title": "どの作品に統合しますか？",
   "merge_manga_choose_primary_message": "話、履歴、追跡情報が選択した作品に集約されます。",
   "merge_manga_chapters_subtitle": "{count, plural, other{{count} 話}}",
+  "@merge_manga_chapters_subtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "merge_manga_button": "統合",
   "merge_manga_result_message": "{count}件の重複作品を{mangaName}に統合しました。",
+  "@merge_manga_result_message": {
+    "placeholders": {
+      "count": {},
+      "mangaName": {}
+    }
+  },
   "merge_preview_title": "統合の確認",
-  "merge_manga_preview_message": "{totalChapters}話見つかりました。{duplicateChapters}件の重複を除外し、{keptChapters}話を追加します。",
+  "merge_manga_preview_message": "{totalChapters} 章が他のエントリ全体で見つかりました。 {duplicateChapters} は重複しているため、削除されます (読み取りが進行しているコピーを保持します)。 {keptChapters} が追加されます。 {duplicateTracks} 重複したトラッキング リンクも削除されます。",
+  "@merge_manga_preview_message": {
+    "placeholders": {
+      "totalChapters": {},
+      "duplicateChapters": {},
+      "keptChapters": {},
+      "duplicateTracks": {}
+    }
+  },
+  "memory_overlay": "メモリ使用量を表示",
+  "memory_overlay_subtitle": "アプリが保持しているメモリのリアルタイム表示。推測ではなく端末上で測定するために、ライブラリのスクロールや閲覧中に確認できます。",
   "beta": "ベータ",
   "error_reports": "エラーレポート",
   "error_reports_subtitle": "アプリで発生したエラーの確認と報告",
@@ -1032,8 +1386,11 @@
   "error_reports_copy": "コピー",
   "error_reports_copied": "クリップボードにコピーしました",
   "error_reports_clear": "クリア",
+  "error_reports_extension_failure": "これはNodeLane Comicsではなく拡張機能に起因するエラーです。拡張機能はインストール元のリポジトリ管理者によって作成・管理されているため、そちらで修正する必要があります。ソース名と開こうとした項目を伝えると役立ちます。",
+  "error_reports_already_reported": "報告済み",
+  "error_reports_expected_failure": "これは通常、アプリではなくソースまたはネットワークの問題です（リンクの期限切れ、サーバーダウン、接続切断など）。他では動作しているソースで発生し続ける場合にのみ報告することをお勧めします。",
   "share_unavailable_copied": "共有機能が利用できないためクリップボードにコピーしました。",
-  "onboarding_title": "Mangayomiへようこそ",
+  "onboarding_title": "NodeLane Comicsへようこそ",
   "onboarding_libraries_body": "読みたいもの、観たいものを選択してください。",
   "onboarding_nav_title": "ライブラリ",
   "onboarding_nav_body": "個別のタブで表示するか、1つのライブラリタブにまとめるか選択できます。",
@@ -1045,9 +1402,19 @@
   "onboarding_or_local": "または手持ちのファイルを使用",
   "onboarding_local_folder": "フォルダを追加",
   "onboarding_local_existing": "設定済みフォルダ: {count}個",
+  "@onboarding_local_existing": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_any_type": "マンガ、アニメ、小説に対応しています。",
   "onboarding_local_scanning": "フォルダをスキャン中",
   "onboarding_local_found": "{count}作品見つかりました",
+  "@onboarding_local_found": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_remove": "フォルダを削除",
   "onboarding_local_in_downloads": "これはアプリのダウンロードフォルダです。",
   "onboarding_local_empty": "見つかりませんでした。親フォルダを選択してください。",
@@ -1064,319 +1431,6 @@
   "missing_source_check_subtitle": "拡張機能が未インストールの作品を検出します。",
   "missing_source_check_none_found": "すべてのソースがインストールされています。",
   "missing_source_check_result_title": "{count, plural, other{{count}件のソースが未インストール}}",
-  "missing_source_check_result_message": "これらの作品のソースがインストールされていません。移行するか拡張機能をインストールしてください。",
-  "@mass_migration_items_ready_for_review": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_item_count": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_finding_matches": {
-    "placeholders": {
-      "source": {},
-      "language": {}
-    }
-  },
-  "@mass_migration_processing_item": {
-    "placeholders": {
-      "current": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_matched_so_far": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_no_match_count": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_review_matches": {
-    "placeholders": {
-      "source": {}
-    }
-  },
-  "@mass_migration_found_matches": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_no_matches": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_selected_to_migrate": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_migrate_selected": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_migrating_selected": {
-    "placeholders": {
-      "source": {}
-    }
-  },
-  "@mass_migration_migrating_item": {
-    "placeholders": {
-      "current": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_route_summary": {
-    "placeholders": {
-      "source": {},
-      "destination": {}
-    }
-  },
-  "@mass_migration_query": {
-    "placeholders": {
-      "query": {}
-    }
-  },
-  "@mass_migration_chapter_count": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_source_chapter_count": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_destination_chapter_count": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@mass_migration_and_more_chapters": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@failed_to_download_bundle": {
-    "placeholders": {
-      "statusCode": {}
-    }
-  },
-  "@tts_paragraph_progress": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
-  "@label_value": {
-    "placeholders": {
-      "label": {},
-      "value": {}
-    }
-  },
-  "@beta_version": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "@error_with_message": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_create_cbz": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_saving_chapter_episode_to_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_chapter_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_archive_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_getting_local_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_export_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@unrecognized_chapter_numbers": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@tracker_token_expired": {
-    "placeholders": {
-      "tracker": {}
-    }
-  },
-  "@playback_speed_multiplier": {
-    "placeholders": {
-      "value": {}
-    }
-  },
-  "@could_not_launch_url": {
-    "placeholders": {
-      "url": {}
-    }
-  },
-  "@sources_with_no_results": {
-    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@replace_summary_message": {
-    "placeholders": {
-      "currentCount": {},
-      "backupCount": {}
-    }
-  },
-  "@replace_result_message": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@import_summary_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@import_result_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@roll_back_last_change_subtitle": {
-    "placeholders": {
-      "date": {},
-      "description": {}
-    }
-  },
-  "@roll_back_available_count": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@delete_source_confirm_title": {
-    "placeholders": {
-      "sourceName": {}
-    }
-  },
-  "@delete_source_confirm_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "chapterCount": {},
-      "historyCount": {},
-      "updateCount": {}
-    }
-  },
-  "@delete_source_result_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "sourceName": {}
-    }
-  },
-  "@merge_manga_chapters_subtitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@merge_manga_result_message": {
-    "placeholders": {
-      "count": {},
-      "mangaName": {}
-    }
-  },
-  "@merge_manga_preview_message": {
-    "placeholders": {
-      "totalChapters": {},
-      "duplicateChapters": {},
-      "keptChapters": {},
-      "duplicateTracks": {}
-    }
-  },
-  "@onboarding_local_existing": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@onboarding_local_found": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "@missing_source_check_result_title": {
     "placeholders": {
       "count": {
@@ -1384,31 +1438,6 @@
       }
     }
   },
-  "developer_mode": "開発者モード",
-  "developer_mode_subtitle": "拡張機能の開発者ツール（拡張機能の作成、コード編集）を表示",
-  "last_sync": "最終同期日時: ",
-  "sync_login_browser": "ブラウザでログイン",
-  "sync_progress_percent": "同期中… {percent}%",
-  "@sync_progress_percent": {
-    "placeholders": {
-      "percent": {}
-    }
-  },
-  "sync_progress_indeterminate": "同期中…",
-  "override_ass_subtitles": "ASS字幕をオーバーライド",
-  "override_ass_subtitles_info": "ASS/SSA字幕にカスタムスタイルを適用",
-  "repo_already_exists": "リポジトリは既に存在します！",
-  "tracks": "トラック",
-  "playback_speed": "再生速度",
-  "shaders": "シェーダー",
-  "video_fit": "画面サイズに合わせる",
-  "double_page_single_first_page": "最初のページを単独表示",
-  "double_page_single_first_page_subtitle": "見開きモードで最初のページ（表紙）を単独で表示する",
-  "memory_overlay": "メモリ使用量を表示",
-  "memory_overlay_subtitle": "アプリが保持しているメモリのリアルタイム表示。推測ではなく端末上で測定するために、ライブラリのスクロールや閲覧中に確認できます。",
-  "error_reports_extension_failure": "これはMangayomiではなく拡張機能に起因するエラーです。拡張機能はインストール元のリポジトリ管理者によって作成・管理されているため、そちらで修正する必要があります。ソース名と開こうとした項目を伝えると役立ちます。",
-  "error_reports_already_reported": "報告済み",
-  "error_reports_expected_failure": "これは通常、アプリではなくソースまたはネットワークの問題です（リンクの期限切れ、サーバーダウン、接続切断など）。他では動作しているソースで発生し続ける場合にのみ報告することをお勧めします。",
   "global_search_no_sources": "{itemType}のソースがインストールされていません。",
   "@global_search_no_sources": {
     "placeholders": {
@@ -1429,6 +1458,7 @@
   "global_search_only_pinned_hint": "ソースをピン留めするか、ブラウズ設定で「固定されたソースのみ含める」を無効にしてください。",
   "global_search_all_nsfw": "この項目のすべてのソースがNSFWに設定されており、非表示になっています。",
   "global_search_all_nsfw_hint": "検索するにはブラウズ設定でNSFWソースを有効にしてください。",
+  "missing_source_check_result_message": "これらの作品のソースがインストールされていません。移行するか拡張機能をインストールしてください。",
   "related_titles": "関連作品",
   "related_none": "この作品に関連する作品は見つかりませんでした。",
   "relation_adaptation": "メディアミックス",
@@ -1447,13 +1477,6 @@
   "auto_library_update_weekly": "毎週",
   "auto_library_update_wifi_only": "Wi-Fi接続時のみ",
   "auto_library_update_wifi_only_subtitle": "モバイルデータ通信中は予定された更新をスキップします。",
-  "double_tap_search_hint": "ダブルタップしてすべての{type}を検索",
-  "show_nav_double_tap_tooltip": "ダブルタップ検索のヒントを表示",
-  "show_nav_double_tap_tooltip_subtitle": "マンガ/アニメ/ノベルのナビゲーションで、ダブルタップで全体検索が開くことを示すツールチップを表示します。",
-  "already_in_library": "「{title}」はすでに{source}経由でライブラリに存在します。",
-  "add_anyway": "それでも追加",
-  "double_page_auto": "自動見開き表示",
-  "double_page_auto_subtitle": "横向き時に自動で見開き表示モードに切り替える",
   "padding": "余白",
   "page_mode": "ページモード",
   "single_page": "単一ページ",
@@ -1471,5 +1494,1189 @@
   "chapter_swipe_toggle_bookmark": "ブックマークを切り替え",
   "chapter_swipe_toggle_read": "既読/未読を切り替え",
   "chapter_swipe_download": "ダウンロード",
-  "chapter_swipe_disabled": "無効"
+  "chapter_swipe_disabled": "無効",
+  "update_errors": "アップデートエラー",
+  "no_update_errors": "更新エラーがない",
+  "clear_all": "全てクリア",
+  "dismiss": "却下",
+  "previous_episode": "前のエピソード",
+  "clear_logs": "ログをクリアする",
+  "bold": "太字",
+  "italic": "斜体",
+  "color_yellow": "イエロー",
+  "color_cyan": "シアン",
+  "color_green": "グリーン",
+  "color_orange": "オレンジ",
+  "continue_watching": "視聴を続ける",
+  "search_your_anime": "アニメを検索する",
+  "category": "カテゴリー",
+  "hidden_categories": "隠しカテゴリー",
+  "new_category": "新しいカテゴリー",
+  "local": "ローカル",
+  "tv_home_rows": "行",
+  "genre_rows": "ジャンル行",
+  "share_backup_file": "NodeLane Comics バックアップ ファイルを共有します",
+  "close": "閉じる",
+  "migrate_source": "移行元",
+  "cloudflare_bypass_proxy": "Cloudflareバイパスプロキシ",
+  "custom_doh_url": "カスタム DoH URL",
+  "custom_doh_url_helper": "https DoH (JSON) エンドポイントである必要があります",
+  "anime_only_tv_layout": "アニメ専用TVレイアウト",
+  "anime_only_beta": "アニメのみ（ベータ版）",
+  "tv_home_beta": "テレビホーム（ベータ版）",
+  "tv_player_beta": "TVプレーヤー（ベータ版）",
+  "network_settings": "ネットワーク",
+  "reader_page_layout": "ページレイアウト",
+  "reader_continuous_options": "連続読み取り",
+  "reader_default_mode_hint": "デフォルトの読み取りモードは、読み取り中に個別のモードが設定されていないタイトルに適用されます。",
+  "extension_service": "延長サービス",
+  "extension_service_description": "拡張機能のランタイムとプロキシ アドレスを管理します。",
+  "proxy_address": "プロキシアドレス",
+  "checking_runtime_status": "ステータスを確認中…",
+  "download_delay_value": "{seconds} s + ランダムな遅延",
+  "@download_delay_value": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_count": "{count, plural, one{1章} other{{count} 章}}",
+  "@download_queue_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_empty_hint": "タイトルのチャプターリストからダウンロードを追加します。",
+  "download_queue_order_hint": "ハンドルをドラッグして並べ替えます",
+  "download_queue_empty": "キューにダウンロードはありません",
+  "download_queue_actions": "ダウンロードアクション",
+  "download_queue_cancel_chapter": "この章のダウンロードをキャンセルします",
+  "download_queue_cancel_series": "このタイトルのすべてのダウンロードをキャンセルします",
+  "download_queue_start": "ダウンロードの開始",
+  "download_queue_retry": "ダウンロードを再試行する",
+  "download_queue_active": "ダウンロード中",
+  "download_queue_waiting": "ダウンロードを待っています",
+  "download_queue_failed": "ダウンロードに失敗しました",
+  "cf_proxy_helper": "FlareSolver/Byparr エンドポイント。無効にするには空のままにします。",
+  "mobile_navigation_description": "ドラッグして並べ替えます。マンガ、アニメ、小説は「ライブラリ」タブを共有します。最初に表示されるアイテムは起動時に開きます。 「参照」と「その他」は表示されたままになります。 [その他] の下に追加のタブが表示されます。",
+  "text_align_justify": "正当化する",
+  "novel_session_modes_hint": "タイトルを読みながら、読み取りモードと 1 ページまたは 2 ページを設定します。",
+  "tts_languages_failed": "音声エンジンから言語をロードできなかった。",
+  "tts_languages_empty": "音声エンジンは言語を返さなかった。保存した選択内容は保持されます。",
+  "tts_language_unavailable": "この保存された言語は、デバイスの現在のリストには含まれていません。",
+  "tts_apply_failed": "この設定を音声エンジンに適用することはできなかった。再試行できます。",
+  "player_controls": "コントロール",
+  "audio_channel_auto": "自動",
+  "audio_channel_auto_safe": "自動（安全）",
+  "audio_channel_mono": "モノラル",
+  "audio_channel_stereo": "ステレオ",
+  "audio_channel_reverse_stereo": "逆ステレオ",
+  "mpv_bundled_config_hint": "アプリに含まれる構成、スクリプト、およびシェーダを復元する。同名のファイルは上書きされます。",
+  "mpv_restore_bundled": "バンドルされた構成を復元する",
+  "mpv_restore_confirm": "バンドルされた MPV 構成を復元しますか?同じ名前の既存の設定、スクリプト、シェーダーは上書きされます。他のファイルは保持されます。",
+  "player_operation_incomplete": "操作を完了できませんでした。ファイルアクセスを確認して、再試行してください。",
+  "custom_buttons_empty_hint": "ラベルおよびプレスアクションを備えたプレーヤーボタンを追加する。",
+  "custom_button_primary": "デフォルトボタン",
+  "show_password": "パスワードを表示する",
+  "hide_password": "パスワードを隠す",
+  "tracking_accounts_empty": "トラッキング設定でサービスを接続して、そのエントリを管理する。",
+  "tracking_entries_empty": "このメディアタイプには追跡されたエントリが存在しない。タイトルの詳細ページからトラッキングを追加します。",
+  "change_tracking_match": "一致するタイトルを変更する",
+  "remove_tracking": "追跡を削除する",
+  "remove_tracking_confirm": "「{title}」のトラッキングリンクを削除しますか?追跡サービスへの入力は保持されます。",
+  "@remove_tracking_confirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "tracking_refresh_required": "トラッキング状態は確認できませんでした。別の変更を加える前に更新してください。",
+  "tracking_entry_unlinked": "このレコードはローカルタイトルにリンクされていないため、ここで編集することはできない。",
+  "backup_selection_shared": "これらの選択に対する変更はすぐに保存され、自動バックアップにも適用されます。",
+  "library_snapshot_history": "ライブラリスナップショットを復元する",
+  "library_snapshot_empty": "利用可能な安全スナップショットは存在しない。",
+  "library_snapshot_restore_message": "現在のデータは、このスナップショットによって置き換えられる。それ以降に行われた変更は失われます。削除したダウンロードは復元できません。利用可能な安全スナップショットは成功後にクリアされます。",
+  "library_maintenance_working": "ライブラリを更新中…",
+  "library_safety_snapshot_note": "安全スナップショットは、この操作の前に保存される。ダウンロードしたファイルは含まれません。",
+  "library_delete_summary": "ライブラリ エントリ: {mangaCount}。章: {chapterCount}。履歴エントリ: {historyCount}。更新: {updateCount}。\n\n以下に保持するものを選択してください。",
+  "@library_delete_summary": {
+    "placeholders": {
+      "mangaCount": {
+        "type": "int"
+      },
+      "chapterCount": {
+        "type": "int"
+      },
+      "historyCount": {
+        "type": "int"
+      },
+      "updateCount": {
+        "type": "int"
+      }
+    }
+  },
+  "library_delete_pick_message": "ソースを選択して、その内容と削除オプションを確認します。",
+  "mobile_categories_hint": "ドラッグして並べ替える。カテゴリを開いて名前を変更するか、その表示と更新を変更します。",
+  "mobile_category_visible": "図書館で見せる",
+  "mobile_category_hidden": "ライブラリから隠されている",
+  "mobile_category_updates": "ライブラリ更新に含める",
+  "statistics_watched": "見ました",
+  "calendar_month": "月",
+  "calendar_two_weeks": "2週間",
+  "calendar_week": "週",
+  "calendar_show_all_dates": "すべての日付を表示",
+  "update_check_no_result": "インストール可能なアップデートが見つからない。後でもう一度試すことができます。",
+  "release_notes": "リリースノート",
+  "no_release_notes": "リリースノートは提供されていない。",
+  "downloading_update": "アップデートをダウンロード中…",
+  "preparing_installation": "インストールを準備しています…",
+  "onboarding_mobile_libraries_body": "何を読むかを選択してください。これは後で変更できます。",
+  "onboarding_content_title": "読書を開始する",
+  "onboarding_mobile_sources_body": "開始方法を選択するか、後でコンテンツを追加します。",
+  "onboarding_step_count": "{total} のステップ {step}",
+  "@onboarding_step_count": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_results_for": "「{query}」の結果",
+  "@global_search_results_for": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "global_search_scope": "{type} · {count, plural, =1{1 ソース} other{{count} ソース}}",
+  "@global_search_scope": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "migration_search_prompt": "目的のタイトルを検索します。",
+  "migration_original_item": "現行品",
+  "migration_target_item": "選択項目",
+  "migration_partial_failure": "操作は終了しなかった。一部の変更が保存されている可能性があります。再試行する前に、ライブラリでこのアイテムを確認してください。",
+  "migration_no_categories": "カテゴリはありません。このアイテムはカテゴリなしで追加できます。",
+  "mass_migration_select_source": "電流源を選択する",
+  "mass_migration_select_all": "すべて選択",
+  "mass_migration_deselect_all": "すべての選択を解除する",
+  "mass_migration_needs_review": "不完全な移行を確認する",
+  "bookshelf_actions": "本棚アクション",
+  "bookshelf_ignore_filters": "検索時にフィルタを無視する",
+  "bookshelf_ignore_filters_hint": "フィルタによって隠されている作品も含めて、このカテゴリ内のすべての作品を検索します。",
+  "bookshelf_stop_update": "ライブラリ更新の停止",
+  "bookshelf_selected_count": "{count}作品が選ばれました",
+  "@bookshelf_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_remove_library": "本棚から取り出す",
+  "bookshelf_remove_library_hint": "お気に入りを削除する。現地輸入者も蔵書や読書記録を失う。",
+  "bookshelf_remove_downloads": "ダウンロードしたファイルを削除する",
+  "bookshelf_remove_downloads_hint": "作品情報を保持したまま、ダウンロードされたファイルを削除する。",
+  "bookshelf_remove_local_files_hint": "また、選択されたローカルインポートファイルを削除し、それらのライブラリレコードを削除する。これらのファイルはここでは回復できません。",
+  "bookshelf_remove_incomplete": "操作は終了しなかった。一部の作品やファイルは加工されている場合があります。続行する前に、このダイアログを閉じて本棚とダウンロードを確認してください。",
+  "bookshelf_processing": "処理中…",
+  "bookshelf_mark_read": "既読マーク",
+  "bookshelf_mark_unread": "未読としてマークを付ける",
+  "bookshelf_select_all": "すべて選択",
+  "bookshelf_invert_selection": "選択の反転",
+  "bookshelf_settings": "本棚設定",
+  "bookshelf_settings_live": "フィルタ、ソートおよび表示の変更は直ちに有効になる。",
+  "bookshelf_filter_any": "任意",
+  "bookshelf_filter_include": "以下を含む",
+  "bookshelf_filter_exclude": "除外する",
+  "bookshelf_all_sources": "すべての情報源",
+  "bookshelf_sources_selected": "{count} 個のソースが選択されました",
+  "@bookshelf_sources_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_sort_ascending": "昇順",
+  "bookshelf_sort_descending": "降順",
+  "bookshelf_layout": "本棚のレイアウト",
+  "bookshelf_sources_hint": "すべてのソースを表示するには、何も選択しません。 「フィルター」をタップすると、変更が適用されます。",
+  "bookshelf_choose_files": "ファイルを選択する",
+  "bookshelf_import_wait": "ピッカーでファイルを選択し、インポートが完了するのを待ちます。",
+  "bookshelf_import_incomplete": "インポートは完了しなかった。一部のファイルはすでに本棚にある可能性があります。再度インポートする前に、このダイアログを閉じて確認してください。",
+  "bookshelf_categories_replace": "保存すると、これらのカテゴリが選択されたすべての作品に割り当てられ、以前のカテゴリが置き換えられます。",
+  "bookshelf_categories_hint": "１つ以上のカテゴリを選択するか、選択を空のままにして何も割り当てない。",
+  "bookshelf_categories_hidden": "既存の隠しカテゴリは、この作業のために保持される。",
+  "bookshelf_categories_incomplete": "カテゴリを完全に保存できなかった。再試行する前に、このダイアログを閉じて本棚を確認してください。",
+  "bookshelf_categories_none_visible": "ここでは利用可能なカテゴリは存在しない。カテゴリ管理を開いて確認してください。",
+  "bookshelf_manage_categories": "カテゴリの管理",
+  "manga_actions": "コミックアクション",
+  "manga_download_scope": "章をダウンロードする",
+  "manga_download_scope_hint": "現在のフィルター内のチャプターを選択します。ダウンロードしたチャプターはスキップされます。",
+  "manga_download_scope_empty": "現在のフィルターに一致するチャプターはありません。このメニューを閉じて、チャプターフィルターを調整します。",
+  "manga_action_incomplete": "アクションは終了しなかった。再試行する前に現在の状態を確認してください。",
+  "chapter_settings": "チャプター設定",
+  "chapter_settings_live": "フィルタおよびソートの変更は直ちに適用される。",
+  "chapter_scanlators_all": "すべてのスキャンレータ グループを表示",
+  "chapter_scanlators_hint": "チャプタを非表示にするグループを選択します。 「フィルター」をタップすると、変更が適用されます。",
+  "chapter_scanlators_hidden": "{count} スキャンレータ グループが隠されています",
+  "@chapter_scanlators_hidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_selected_count": "{count} 章が選択されました",
+  "@chapter_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_add_bookmark": "ブックマーク",
+  "chapter_remove_bookmark": "ブックマークを解除する",
+  "chapter_read_following": "以下を読んでください",
+  "chapter_delete_records": "チャプターレコードの削除",
+  "chapter_delete_local_hint": "選択した章の記録と読書の進行状況を削除します。オリジナルのローカル アーカイブは保持されます。ダウンロードされたコピーはクリーンアップされます。",
+  "chapter_delete_last_hint": "これらはこのコミックのすべての章です。削除すると、本棚からもコミックが削除されます。",
+  "chapter_action_incomplete": "アクションは終了しませんでした。一部の変更はすでに保存されている可能性があります。続行する前に、章とダウンロードを閉じて確認してください。",
+  "reader_display_scope": "このコミックには読書モードとマニュアルページレイアウトが適用されます。変更を選択して読書に戻ります。",
+  "reader_display_single_only": "横方向の連続読み取りでは、単一ページが使用されます。",
+  "reader_display_manual_pages": "ページ レイアウトを変更すると、すべてのコミックの自動見開きページがオフになります。",
+  "reader_display_crop_scope": "すべてのコミックに適用されます。",
+  "reader_chapter_locate": "現在の章を見つける",
+  "reader_chapter_search": "チャプターまたはスキャンレーターを検索する",
+  "reader_chapter_scope": "章フィルタとコミックの詳細からのソート順序を使用する。ブックマークはすぐに保存されます。",
+  "reader_chapter_current_hidden": "あなたが読んでいる章は現在のフィルタの外にあります。",
+  "reader_chapter_current": "今読んでいます",
+  "reader_chapter_read": "読み取り",
+  "reader_chapter_bookmark_failed": "ブックマークの保存が確認できませんでした。リストを閉じて、現在の状態を確認します。",
+  "reader_image_actions": "イメージアクション",
+  "reader_image_original": "翻訳、トリミング、またはリーダーカラーフィルターを使用せずに、オリジナルのページ全体を使用します。",
+  "reader_image_save_ios": "現在のアプリの保存場所のピクチャフォルダに保存します。",
+  "reader_image_save_android": "デバイスのPictures/nodelane-comicsフォルダに保存します。",
+  "reader_image_share": "システム共有シートを開きます。",
+  "reader_image_cover": "確認後、このコミックの表紙を変更します。",
+  "reader_image_cover_limit": "カバー画像は 5 MB 未満である必要があります。保存と共有は引き続き利用できます。",
+  "reader_image_action_failed": "動作は確認できませんでした。再試行する前に、このメニューを閉じて結果を確認してください。",
+  "reader_settings_book_scope": "この設定はこの漫画にのみ適用されます。",
+  "reader_settings_global_scope": "これらの設定はすべてのコミックに適用され、すぐに保存されます。",
+  "reader_filters": "画像フィルター",
+  "reader_filter_scope": "すべてのコミックに適用されます。元の画像を変更せずに読み取り表示を変更します。",
+  "reader_auto_scroll_pause": "設定が開いている間、スクロールは一時停止します。",
+  "manga_synopsis": "概要",
+  "manga_author": "著者: {author}",
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "manga_continue_reading": "続きを読む",
+  "reader_settings_title": "リーダーの設定",
+  "reader_picker_book_scope": "このコミックス限定",
+  "reader_picker_global_scope": "すべてのコミックに適用",
+  "reader_picker_apply_hint": "タップして保存し、前のレベルに戻ります。",
+  "reader_scale_fit_screen_hint": "ページ全体を画面に合わせる",
+  "reader_scale_stretch_hint": "読み取り領域を埋める",
+  "reader_scale_fit_width_hint": "ページを幅に合わせる",
+  "reader_scale_fit_height_hint": "ページを高さに合わせる",
+  "source_filter_active": "適用",
+  "source_filter_apply": "フィルタを適用する",
+  "source_filter_scope": "フィルタはこのウェブサイトにのみ適用される。",
+  "source_filter_apply_hint": "フィルタを適用して、選択したものを使用します。",
+  "source_filter_term": "{term, select, genres{ジャンル} author{著者} artist{アーティスト} title{タイトル} year{年} tags{タグ} format{フォーマット} publisher{出版社} relevance{関連性} rating{評価} views{ビュー} random{ランダム} all{すべて} none{なし} action{アクション} adventure{冒険} comedy{コメディ} drama{ドラマ} fantasy{ファンタジー} romance{ロマンス} science_fiction{サイエンスフィクション} slice_of_life{人生の一部} mystery{ミステリー} horror{ホラー} psychological{心理学} historical{歴史的} sports{スポーツ} supernatural{スーパーナチュラル} school_life{学校生活} tragedy{悲劇} shounen{少年} shoujo{少女} seinen{青年} josei{じょうせい} isekai{異世界} martial_arts{武道} mecha{メカ} music{音楽} doujinshi{同人誌} trending{トレンド} new{新しい} adult_content{アダルトコンテンツ} only{のみ} other{{term}}}",
+  "@source_filter_term": {
+    "description": "Common extension filter display labels. Plugin values are never translated.",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "bookshelf_more_display": "さらなる表示オプション",
+  "bookshelf_more_display_hint": "バッジ、ソース、カテゴリ",
+  "bookshelf_download_count": "ダウンロード数",
+  "bookshelf_source_global_hint": "ソース可視性は、共有表示設定を使用する。",
+  "bookshelf_select_entries": "セレクト作品",
+  "bookshelf_search_options": "検索オプション",
+  "bookshelf_empty_hint": "ソースから作品を収集するか、ローカルファイルをインポートします。",
+  "bookshelf_no_match_hint": "他のキーワードを試すか、現在のフィルタを調整してください。",
+  "bookshelf_clear_query": "キーワードを明確にする",
+  "bookshelf_view_selection": "選択した作品を見る",
+  "bookshelf_import_formats": "ローカルファイルを選択して、それを本棚に追加します。",
+  "bookshelf_import_canceled_hint": "ファイルピッカーをキャンセルした後、再度選択することができます。",
+  "bookshelf_browse_sources": "ソースを閲覧する",
+  "bookshelf_empty_title": "あなたの本棚は空です",
+  "bookshelf_no_match_title": "一致する作品がない",
+  "bookshelf_mark_watched": "マークは見ました",
+  "bookshelf_mark_unwatched": "未視聴のマークを付ける",
+  "nodelane_account": "NodeLane アカウント",
+  "nodelane_sign_in": "NodeLane にサインインします",
+  "nodelane_account_intro": "アカウント、サブスクリプション、および翻訳割り当てを表示します",
+  "nodelane_login_action": "サインインを続ける",
+  "nodelane_login_browser": "システムブラウザを通じてサインインし、アプリに戻ります。",
+  "nodelane_account_id": "アカウントID",
+  "nodelane_account_init_error": "アカウントストレージは利用できない。アプリを再起動して、もう一度試してください。",
+  "nodelane_account_refresh_error": "アカウント情報を更新できませんでした",
+  "nodelane_account_auth_error": "セッションの有効期限が切れました。再度サインインしてください",
+  "nodelane_account_unknown": "購読情報が利用できない",
+  "nodelane_account_current": "現在のサブスクリプション",
+  "nodelane_account_free": "無料アカウント",
+  "nodelane_account_no_subscription": "アクティブなサブスクリプションがありません",
+  "nodelane_account_active": "アクティブ",
+  "nodelane_account_expired": "期限切れ",
+  "nodelane_account_expiry": "まで有効",
+  "nodelane_account_renewal": "リニューアル",
+  "nodelane_renewal_auto": "自動更新",
+  "nodelane_renewal_manual": "手動更新",
+  "nodelane_renewal_stopped": "自動更新停止",
+  "nodelane_renewal_gift": "ギフト会員権",
+  "nodelane_renewal_attention": "ウェブサイトで更新ステータスを確認する",
+  "nodelane_next_billing": "次回の請求日",
+  "nodelane_billing_unavailable": "更新情報が入手できない",
+  "nodelane_manage_account": "ウェブサイトで管理",
+  "nodelane_view_plans": "サブスクリプションプランを表示する",
+  "nodelane_translation_quota": "翻訳割り当て",
+  "nodelane_quota_free": "無料割り当て",
+  "nodelane_quota_subscription": "サブスクリプション割り当て",
+  "nodelane_quota_purchase": "購入した割り当て",
+  "nodelane_quota_details": "クォータの詳細を表示する",
+  "nodelane_quota_expanded": "クォータの詳細",
+  "nodelane_quota_unlimited": "無制限",
+  "nodelane_quota_not_subscribed": "購読していません",
+  "nodelane_quota_unknown": "利用不可",
+  "nodelane_quota_used": "使用済み",
+  "nodelane_quota_reserved": "進行中",
+  "nodelane_quota_reset": "次のリセット",
+  "nodelane_quota_expiry": "次の有効期限",
+  "nodelane_quota_no_expiry": "有効期限なし",
+  "nodelane_quota_reservation_note": "進行中のページは、利用可能なクォータからすでに差し引かれています",
+  "nodelane_quota_available": "残り{count}ページ",
+  "@nodelane_quota_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_quota_pages": "{count} ページ",
+  "@nodelane_quota_pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_sign_out": "サインアウト",
+  "nodelane_sign_out_confirm": "サインアウトすると、このデバイス上の公式翻訳が一時停止される。ライブラリと読書の進捗状況は保持されます。",
+  "settings_search_hint": "検索設定",
+  "settings_frequent": "頻繁に使用される",
+  "settings_reading_translation": "読書と翻訳",
+  "settings_app_preferences": "アプリの設定",
+  "settings_data_management": "データと管理",
+  "settings_more_tools": "その他のツール",
+  "settings_more_tools_hint": "カテゴリ、統計およびカレンダー",
+  "settings_appearance_interface": "外観とインターフェース",
+  "settings_security_privacy": "セキュリティとプライバシー",
+  "settings_source_preferences": "ソース設定",
+  "settings_about_help": "概要とヘルプ",
+  "settings_storage_backup": "ストレージとバックアップ",
+  "settings_pending_downloads": "{count} 保留中",
+  "@settings_pending_downloads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_translation_language": "翻訳言語",
+  "settings_translation_scope": "リーダーおよびウェブページの翻訳で使用される",
+  "settings_immediate_choice": "変更はすぐに適用されます",
+  "settings_translation_init_error": "翻訳設定は使用できません。アプリを再起動して、もう一度試してください。",
+  "settings_local_cache": "ローカルキャッシュ",
+  "settings_chapter_cache": "チャプターおよびエピソードのキャッシュ",
+  "settings_cover_cache": "カバーキャッシュ",
+  "settings_translation_cache": "翻訳画像キャッシュ",
+  "settings_translation_cache_hint": "翻訳記録を保持し、必要に応じて翻訳済み画像を再度取得する",
+  "settings_cache_clear": "クリア",
+  "settings_translation_cache_done": "翻訳された画像キャッシュがクリアされる。翻訳記録が保存される",
+  "settings_cache_confirmation": "{name}をクリアしますか？キャッシュされたコンテンツは再度取得できます。ライブラリのエントリは保持されます。",
+  "@settings_cache_confirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_advanced_options": "高度なオプション",
+  "settings_manga_reader": "マンガリーダー",
+  "settings_novel_reader": "小説リーダー",
+  "settings_downloads": "ダウンロード設定",
+  "onboarding_welcome": "へようこそ",
+  "onboarding_reading_content": "読書内容",
+  "onboarding_choose_one": "少なくとも 1 つを選択してください",
+  "onboarding_restore_hint": "バックアップからライブラリを復元する",
+  "onboarding_browse_hint": "サポートされている Web サイトでタイトルを検索する",
+  "onboarding_import_folder": "ローカルフォルダをインポートする",
+  "onboarding_import_folder_hint": "マンガ、小説、アニメをデバイス上で読む",
+  "onboarding_third_party": "サードパーティのリポジトリを追加する",
+  "onboarding_third_party_hint": "すでに持っているリポジトリ アドレスを使用する",
+  "onboarding_repository_hint": "リポジトリによって提供されるアドレスを入力します。",
+  "onboarding_repository_address": "住所",
+  "onboarding_repository_address_hint": "リポジトリアドレスを入力してください",
+  "onboarding_add_repository": "リポジトリの追加",
+  "onboarding_start": "始めましょう",
+  "onboarding_open_library": "オープンライブラリ",
+  "onboarding_view_imports": "インポートされたコンテンツを表示する",
+  "onboarding_view_folders": "フォルダを表示する",
+  "notice_backup_created": "バックアップが作成されました",
+  "notice_backup_ready": "バックアップファイルを保存または共有する。",
+  "notice_backup_restored": "バックアップが復元されました",
+  "notice_backup_unsupported": "このバックアップ形式はサポートされていません。",
+  "notice_verification_required": "ウェブサイト認証が必要",
+  "notice_verification_hint": "閲覧を続けるには検証を完了してください。",
+  "notice_verify": "ウェブサイトを確認する",
+  "notice_action_incomplete": "アクションは終了しなかった。再試行する前に結果を確認してください。",
+  "notice_library_updating": "ライブラリの更新",
+  "notice_library_progress": "{current} / {total} タイトルをチェックしました",
+  "notice_library_failed": "一部のタイトルが更新できなかった",
+  "notice_import_completed": "インポート完了",
+  "notice_operation_incomplete": "アクションが不完全",
+  "subtitle_service": "オンライン字幕サービス",
+  "subtitle_service_mode": "字幕ソース",
+  "subtitle_service_disabled": "オフ - 保存された認証情報をクリア",
+  "subtitle_personal_key": "私の Wyzie キー",
+  "subtitle_custom_service": "私の字幕サービス",
+  "subtitle_key": "Wyzie API キー",
+  "subtitle_key_hint": "独自の Wyzie キーを入力します。このデバイス上に残り、アプリのバックアップには含まれません。",
+  "subtitle_get_key": "個人キーを取得する",
+  "subtitle_service_address": "字幕検索 URL",
+  "subtitle_service_token": "サービスアクセストークン（オプション）",
+  "subtitle_custom_hint": "パス (/search など) を含む、Wyzie-compatible サービスの完全な HTTPS 検索 URL を使用します。サービスでアクセス トークンが必要な場合にのみ、アクセス トークンを入力します。",
+  "subtitle_service_off_hint": "オンライン字幕検索はオフである。埋め込み、ソース提供、ローカル字幕は引き続き利用可能です。",
+  "subtitle_setup_required": "検索する前に字幕サービスを選択する。",
+  "subtitle_invalid_key": "スペースを入れずにキーを入力してください。",
+  "subtitle_invalid_address": "クエリ、フラグメント、または埋め込まれた認証情報を含まない完全な HTTPS URL を使用します。",
+  "subtitle_invalid_token": "アクセス トークンにはスペースを含めることはできません。",
+  "subtitle_storage_failed": "字幕設定を読み取ることも保存することもできなかった。もう一度試してください。",
+  "subtitle_auth_failed": "字幕サービスはアクセスを拒否した。キーまたはサービス トークンを確認してください。",
+  "subtitle_quota_exhausted": "字幕サービス割り当ては使い果たされている。そのサービスのアカウントを確認してください。",
+  "subtitle_network_failed": "字幕サービスにアクセスできませんでした。もう一度試してください。",
+  "subtitle_response_invalid": "字幕サービスは、サポートされていない応答またはファイルを返した。",
+  "detail_loading_chapters": "章をロード中…",
+  "reader_opening_chapter": "冒頭の章",
+  "reader_open_chapter": "章を開く",
+  "reader_loading_pages": "チャプター画像を取得しています…",
+  "reader_loading_pages_hint": "準備が整うと自動的に読み取りが開始されます。",
+  "reader_loading_failed": "この章をロードできませんでした",
+  "reader_loading_retry_hint": "接続を確認して、再試行してください。",
+  "reader_no_pages": "この章の画像は見つかりませんでした",
+  "reader_loading_previous": "前の章をロード中…",
+  "reader_previous_failed": "前の章をロードできませんでした",
+  "reader_reached_start": "最初の章に到達しました",
+  "reader_loading_next": "次の章を読み込んでいます…",
+  "reader_next_failed": "次の章をロードできませんでした",
+  "reader_image_loading": "画像を読み込み中…",
+  "reader_image_failure_hint": "他のページを読み続けることができます。",
+  "comic_paged": "ページごとに",
+  "comic_scroll": "下にスクロールします",
+  "comic_book_scope": "この本にのみ適用されます。変更はすぐに保存されます",
+  "comic_defaults_title": "デフォルトと習慣",
+  "comic_defaults_hint": "デフォルトは、書籍用にカスタマイズしていないフィールドに適用されます。",
+  "comic_habits_hint": "これらの習慣はどの漫画にも当てはまります。",
+  "comic_turn": "スワイプして次のページへ",
+  "comic_left": "左",
+  "comic_right": "そうです",
+  "comic_up": "アップ",
+  "comic_fit": "ページフィット",
+  "comic_fit_contain": "ページ全体",
+  "comic_fit_width": "フィット幅",
+  "comic_fit_height": "フィット高さ",
+  "comic_layout": "ページレイアウト",
+  "comic_auto": "自動",
+  "comic_layout_hint": "十分な幅がある場合、自動は広がりを示します。",
+  "comic_width": "コンテンツ幅",
+  "comic_full": "フル",
+  "comic_comfortable": "快適",
+  "comic_narrow": "狭い",
+  "comic_gap": "ページ間隔",
+  "comic_no_gap": "シームレス",
+  "comic_small_gap": "小",
+  "comic_image_title": "画像の微調整",
+  "comic_image_hint": "トリミングとトーンはこの本にのみ影響します。",
+  "comic_wide": "ワイドページ",
+  "comic_intact": "丸ごと保存",
+  "comic_split": "分割",
+  "comic_rotate": "回転",
+  "comic_wide_hint": "分割はページめくりの方向に従います。単一ページの読み取りに適用されます。",
+  "comic_cover": "章ごとに 1 つの表紙",
+  "comic_effects_reset": "画像調整をリセットする",
+  "comic_book_reset": "ブックのデフォルトを復元する",
+  "comic_book_reset_hint": "この本のカスタム読書設定をクリアします。翻訳は変更されていません。",
+  "comic_canvas": "読者の背景",
+  "comic_system": "システム",
+  "comic_black": "ブラック",
+  "comic_gray": "グレー",
+  "comic_paper": "紙",
+  "comic_tap": "タップしてページをめくる",
+  "comic_tap_hint": "移動するにはエッジをタップします。中央をタップしてコントロールを表示します。",
+  "comic_scroll_start": "自動スクロールの開始",
+  "comic_scroll_pause": "自動スクロールを一時停止する",
+  "comic_scroll_speed": "スクロール速度",
+  "comic_scroll_hint": "このパネルが閉じるとスタートします。アプリがフォアグラウンドを離れると一時停止します。",
+  "comic_save_failed": "保存できませんでした。もう一度試してください。",
+  "comic_reading": "読書",
+  "comic_chapter_habits_hint": "章リストの習慣はすべての本に適用されます。",
+  "browser_title": "ブラウザ",
+  "translation_image_display": "画像表示",
+  "translation_display_hint": "最初に既存の翻訳を表示します。翻訳が入手できない場合は、原本を保管してください。",
+  "translation_sign_in_required": "サインインして翻訳を有効にする",
+  "translation_sign_in_hint": "サインイン後、翻訳済み画像に切り替えて自動的に翻訳する。",
+  "translation_automatic": "自動翻訳",
+  "translation_original_hint": "オリジナルを表示する。翻訳された画像に切り替えて自動的に翻訳します。",
+  "translation_window_hint": "翻訳を表示している間のみ、現在および今後の画像を処理する。",
+  "translation_channel": "翻訳チャネル",
+  "translation_no_images": "このページには翻訳可能な画像がまだ見つかりません",
+  "translation_waiting_image": "現在の画像を待っています",
+  "translation_progress": "完成した{complete} / {total}画像{issues, plural, =0{} =1{ · 1 枚の画像に注意が必要です} other{ · {issues}画像には注意が必要です}}",
+  "@translation_progress": {
+    "placeholders": {
+      "complete": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "issues": {
+        "type": "int"
+      }
+    }
+  },
+  "translation_image_actions_hint": "画像をタッチアンドホールドすると、再度翻訳するなどのさらなるアクションが可能になる。",
+  "translation_title": "マンガ翻訳",
+  "translation_system_sign_in": "システムブラウザを使用してサインインします。",
+  "translation_target_language": "ターゲット言語",
+  "translation_clear_cache": "翻訳された画像キャッシュをクリアする",
+  "translation_cache_hint": "翻訳記録を保持し、必要に応じて結果を再度取得する。",
+  "translation_saved_read_failed": "保存された翻訳をロードできませんでした",
+  "translation_read_failed": "翻訳された画像をロードできませんでした",
+  "operation_retry": "アクションは終了しなかった。もう一度試してください。",
+  "translation_original": "オリジナル",
+  "translation_translated": "翻訳済み",
+  "translation_regenerate_image": "この画像を再度翻訳します",
+  "translation_read_image": "翻訳された画像をリロードする",
+  "translation_image_actions": "さらなる画像アクション",
+  "translation_processing": "処理",
+  "translation_reading": "翻訳された画像のロード",
+  "translation_waiting": "翻訳を待っています",
+  "translation_preparing": "翻訳の準備",
+  "translation_uploading": "オリジナルのアップロード",
+  "translation_running": "翻訳",
+  "translation_uncertain": "ステータスの確認が必要です",
+  "translation_failed": "翻訳に失敗しました",
+  "translation_verify": "検証する",
+  "translation_reread": "リロード",
+  "browser_back": "戻る",
+  "browser_translation": "ウェブページの翻訳",
+  "browser_new_tab_action": "新しいタブを開く",
+  "browser_current_tab": "電流",
+  "browser_close_tab": "タブを閉じる",
+  "browser_new_tab": "新しいタブ",
+  "browser_page": "ウェブページ",
+  "browser_unopened": "まだページが開いていません",
+  "browser_address_hint": "URL を入力または貼り付けてください",
+  "browser_invalid_address": "有効な URL を入力してください",
+  "browser_clear_address": "URL をクリア",
+  "browser_paste_address": "URL を貼り付け",
+  "browser_open_address": "URL を開く",
+  "browser_tab_count": "タブ · {count}",
+  "@browser_tab_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "browser_load_failed": "このページを開けませんでした",
+  "browser_load_failed_hint": "接続と URL を確認してください。",
+  "browser_edit_address": "URL を編集",
+  "browser_clear_cookies_confirm": "すべての Web サイトのサインイン セッションをクリアしますか?",
+  "browser_clear_cookies_hint": "ウェブサイトのすべてのタブでは、再度サインインする必要がある場合があります。",
+  "browser_clear_cookies_action": "サインイン セッションをクリアします",
+  "browser_tab_limit": "最大 12 個のタブを開いたままにすることができます。まず 1 つを閉じます。",
+  "browser_forward": "前進",
+  "browser_clear_all_cookies": "すべての Web サイトのサインイン セッションをクリアする",
+  "browser_clear_failed": "セッションをクリアできませんでした。もう一度試してください。",
+  "browser_save_failed": "タブを保存できませんでした。もう一度試してください。",
+  "browser_tabs_full": "12 個のタブがすでに開いています",
+  "browser_no_tabs": "開いているタブはまだありません",
+  "browser_close_failed": "タブを保存できませんでした。再試行するには、もう一度「閉じる」をタップします。",
+  "source_pinned_websites": "ピン留めされたウェブサイト",
+  "manage": "管理する",
+  "translation_settings_hint": "自動翻訳、ターゲット言語、およびチャネル",
+  "translation_show_original": "タップするとオリジナルが表示されます",
+  "translation_show_translated": "タップすると翻訳が表示されます",
+  "source_display": "ディスプレイ",
+  "source_cover_title": "表紙とタイトル",
+  "source_cover_only": "カバーのみ",
+  "source_save_search": "現在の検索を保存する",
+  "source_saved_searches": "保存された検索",
+  "source_website_info": "ウェブサイト情報",
+  "source_saved_search_title": "{title} · タップして検索",
+  "@source_saved_search_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "action_done": "完了",
+  "source_search_keyword": "キーワード:{query}",
+  "@source_search_keyword": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "source_no_saved_searches": "保存された検索はまだありません",
+  "source_save_search_hint": "キーワードを検索し、Web サイトのアクションから保存します。",
+  "source_saved_search_scope": "キーワードはこの Web サイトのみに保存されます。",
+  "source_search_here": "このウェブサイトのタイトルを検索する",
+  "source_filter_results": "フィルタリングされた結果",
+  "source_search_results": "検索結果",
+  "source_return_popular": "人気に戻る",
+  "source_popular_titles": "人気タイトル",
+  "source_no_titles": "一致するタイトルが見つかりませんでした",
+  "source_no_titles_hint": "キーワードやフィルタを変更するか、人気のあるタイトルに戻ります。",
+  "source_load_more_failed": "これ以上ロードできませんでした。もう一度試してください。",
+  "source_load_pull_retry": "この Web サイトを読み込めませんでした。プルダウンして再試行してください。",
+  "source_clear_failed": "クリアできませんでした。もう一度試してください。",
+  "source_uninstall_failed": "アンインストールを完了できませんでした。もう一度試してください。",
+  "source_details": "ソースの詳細",
+  "source_repository_website": "リポジトリウェブサイト",
+  "source_provided_settings": "ソースによって提供される設定",
+  "source_advanced_actions": "高度なアクション",
+  "source_edit_metadata": "ソース情報の編集",
+  "source_clear_cookies": "このウェブサイトの Cookie をクリアします",
+  "source_clear_cookies_hint": "次回の訪問時に再度サインインする必要がある場合があります。",
+  "source_uninstall": "アンインストールソース",
+  "source_settings_save_failed": "保存が完了しなかった。ソース設定を再度開いて確認します。",
+  "repository_third_party": "サードパーティのリポジトリ",
+  "repository_refresh_failed": "カタログを更新できませんでした。キャッシュされたコンテンツは保持されます。もう一度試してください。",
+  "repository_show_sources": "このリポジトリからのソースを表示",
+  "repository_copy_catalog": "カタログリンクのコピー",
+  "repository_remove": "リポジトリを削除する",
+  "repository_remove_hint": "インストールされたソースを保持し、アンインストールされたカタログエントリを削除する。",
+  "repository_empty": "サードパーティのリポジトリはまだ追加されていません",
+  "repository_built_in": "公式カタログ内蔵",
+  "repository_hidden": "隠された",
+  "repository_refreshing": "さわやか…",
+  "repository_refresh": "カタログを更新する",
+  "repository_manage_hint": "サードパーティのソースがどこからダウンロードされるかを管理する。",
+  "repository_invalid_address": "有効な HTTP または HTTPS URL を入力してください",
+  "repository_already_added": "このリポジトリはすでに追加されています",
+  "repository_unrecognized": "サポートされているカタログが見つかりません。リンクを確認して、もう一度試してください。",
+  "repository_read_failed": "カタログを読み取れませんでした。もう一度試してください。",
+  "repository_save_failed": "保存が完了しませんでした。リポジトリ リストを確認してください。",
+  "repository_paste_hint": "サードパーティのリポジトリカタログリンクを貼り付けます",
+  "repository_address": "リポジトリ URL",
+  "repository_paste_link": "リンクの貼り付け",
+  "repository_recognized": "{type} · カタログが認識されました",
+  "@repository_recognized": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "repository_choose_sources_hint": "リポジトリを追加した後、必要なソースを選択します。",
+  "search_scope": "検索範囲",
+  "search_scope_hint": "検索する Web サイトを選択してください",
+  "search_websites_action": "{count, plural, =1{1 つのウェブサイトを検索} other{{count} ウェブサイトを検索}}",
+  "@search_websites_action": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_find_website": "ウェブサイトを探す",
+  "search_selected_websites": "{count, plural, =1{1 つの Web サイトが選択されました} other{{count} 個の Web サイトが選択されました}}",
+  "@search_selected_websites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "action_clear": "クリア",
+  "search_deselect_results": "一致するウェブサイトの選択を解除する",
+  "search_select_results": "一致するウェブサイトを選択する",
+  "search_no_websites_hint": "一致するウェブサイトがありません。別の名前または言語を試してください。",
+  "search_select_website_hint": "検索する少なくとも１つのウェブサイトを選択する。",
+  "search_start_title": "キーワードを入力してタイトルを検索する",
+  "search_start_hint": "一度に複数のウェブサイトを検索し、一致するタイトルを表示する。",
+  "search_empty_scope": "この範囲では検索可能なウェブサイトはありません",
+  "search_empty_scope_hint": "すべてのウェブサイトに切り替えるか、検索するウェブサイトを選択します。",
+  "search_result_count": "{count, plural, =1{1 件の結果} other{{count}の結果}}",
+  "@search_result_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_titles": "タイトルの検索",
+  "search_actions": "検索アクション",
+  "search_details": "検索詳細",
+  "search_title_hint": "タイトルによる検索",
+  "search_searching": "検索",
+  "search_found_results": "{count, plural, =1{1 件の結果が見つかりました} other{{count}の結果が見つかりました}}",
+  "@search_found_results": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_no_results": "一致する結果はありません",
+  "search_failed": "検索に失敗しました",
+  "search_found_titles": "{count, plural, =1{1 タイトルが見つかりました} other{{count} タイトルが見つかりました}} · {websites, plural, =1{１つのウェブサイト} other{{websites} ウェブサイト}}",
+  "@search_found_titles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "websites": {
+        "type": "int"
+      }
+    }
+  },
+  "search_finding_titles": "タイトルの検索",
+  "search_complete": "検索完了",
+  "search_in_progress": "検索",
+  "search_finding_related": "一致するタイトルを探しています…",
+  "search_no_results_yet": "検索結果はまだありません",
+  "search_no_matching_titles": "一致するタイトルが見つかりませんでした",
+  "search_results_appear_hint": "結果は、見つかったときにここに表示されます。",
+  "search_failed_websites_hint": "一部のウェブサイトは検索を完了できなかった。検索の詳細で再試行してください。",
+  "search_change_keywords_hint": "より短いキーワードを試すか、より多くのウェブサイトを検索してください。",
+  "search_view_details": "検索の詳細を表示する",
+  "search_adjust_scope": "検索範囲を調整する",
+  "search_query_websites": "{query} · {count, plural, =1{１つのウェブサイト} other{{count} ウェブサイト}}",
+  "@search_query_websites": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_completed_count": "{completed} / {total} を完了しました",
+  "@search_completed_count": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "search_retry_website_hint": "失敗したウェブサイトを個別に再試行する",
+  "source_selected_count": "{count, plural, =1{1 つのアイテムが選択されました} other{{count}項目が選択されました}}",
+  "@source_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_languages": "検索言語",
+  "source_deselect": "選択を解除する",
+  "source_select": "ソースの選択",
+  "source_multilingual": "多言語対応",
+  "source_language_unknown": "言語が指定されていない",
+  "source_adult_content": "18 歳以上のコンテンツが含まれています",
+  "source_classification_unknown": "分類は特定されていない",
+  "source_more_classifications": "{count, plural, =1{すべてのソース情報を表示、さらに 1 つのカテゴリ} other{すべてのソース情報、{count} のその他のカテゴリを表示}}",
+  "@source_more_classifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_loading_website": "ウェブサイトの読み込み中",
+  "source_unpin": "ピン留めを解除する",
+  "source_pin": "ピン",
+  "source_open": "開く",
+  "source_metadata_hint": "情報はソースカタログから得られる。カテゴリは、Web サイトでカバーされるコンテンツを説明します。",
+  "source_region": "地域",
+  "source_format": "フォーマット",
+  "source_creation": "創造",
+  "source_unspecified": "指定なし",
+  "source_pricing": "価格設定",
+  "source_region_jp": "日本の漫画",
+  "source_region_kr": "韓国の漫画",
+  "source_region_cn": "中国の漫画",
+  "source_region_hk_tw": "香港と台湾の漫画",
+  "source_region_western": "西洋漫画",
+  "source_region_other": "その他の地域",
+  "source_format_page": "ページ付き漫画",
+  "source_format_vertical": "縦型コミック",
+  "source_format_strip": "漫画",
+  "source_creation_original": "オリジナル",
+  "source_creation_fan": "ファン作品",
+  "source_free_watch": "視聴無料",
+  "source_free_read": "無料で読むことができます",
+  "source_partial_paid": "一部支払い済み",
+  "source_paid_watch": "有料視聴",
+  "source_paid_read": "有料読書",
+  "source_pricing_unknown": "価格は指定されていない",
+  "source_language_filter": "言語によるフィルタリング",
+  "source_language_filter_hint": "このカタログのみをフィルタリングします。インストールされているソースは影響を受けません。",
+  "source_all_languages": "すべての言語",
+  "action_apply": "適用する",
+  "source_load_retry": "このウェブサイトをロードできませんでした。もう一度試してください。",
+  "source_catalog_refresh_failed": "カタログを更新できませんでした。現在のコンテンツは保持されます。プルダウンして再試行してください。",
+  "source_uninstall_count": "{count, plural, =1{1 つのソースをアンインストールしますか?} other{{count}ソースをアンインストールしますか?}}",
+  "@source_uninstall_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_uninstall_selected_hint": "選択したソースをアンインストールし、その設定をクリアします。ライブラリのタイトルとダウンロードを保持します。",
+  "source_failed_count": "{count, plural, =1{1 つのソースに対するアクションが失敗しました。} other{{count} ソースのアクションが失敗しました。}} 選択は維持されました。もう一度試してください。",
+  "@source_failed_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_latest_content": "最新コンテンツ",
+  "source_actions": "ソースアクション",
+  "source_bulk_manage": "複数のソースを管理する",
+  "source_update_installed": "インストールされているソースを更新します",
+  "source_no_matching_websites": "一致する Web サイトがありません",
+  "source_no_websites": "利用可能なウェブサイトがありません",
+  "source_search_installed_hint": "インストールされているソース内のタイトルを検索する",
+  "source_global_search": "ソース全体の検索",
+  "source_manage_repositories": "リポジトリの管理",
+  "source_view_third_party": "サードパーティのソースを表示する",
+  "source_catalog_load_failed": "カタログをロードできませんでした。プルダウンして再試行してください。",
+  "source_all_websites": "すべてのウェブサイト",
+  "source_available": "インストール可能",
+  "source_third_party": "サードパーティ",
+  "source_name_or_title": "ウェブサイトの名前またはタイトル",
+  "view_all": "全て見る",
+  "search_searching_ellipsis": "検索中…",
+  "onboarding_untested_content": "{type} · 未テスト",
+  "@onboarding_untested_content": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "onboarding_untested": "未テスト",
+  "source_custom_scope": "カスタム",
+  "source_custom_websites": "選択されたウェブサイト",
+  "tv_hidden_library_hint": "あらゆるタイトルは、隠されたカテゴリに位置する。\n「すべて」で OK を押したままにすると、1 つが再表示されます。",
+  "tv_no_matching_anime": "一致するアニメがありません",
+  "tv_no_matching_category": "「{category}」には一致するアニメがありません",
+  "@tv_no_matching_category": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_filtered_empty_hint": "現在のフィルタに一致するアニメはない。\n検索の横にあるボタンから変更します。",
+  "tv_new_episodes": "新しいエピソード",
+  "tv_recently_added": "最近追加されたもの",
+  "tv_empty_category_hint": "このカテゴリにはまだアニメがありません。\nタイトルの詳細ページからタイトルを追加します。",
+  "tv_empty_library": "あなたのアニメライブラリは空です",
+  "tv_empty_library_hint": "ブラウズからアニメを追加して家を満たす",
+  "tv_browse_anime": "アニメを閲覧する",
+  "tv_new_count": "{count} 新しい",
+  "@tv_new_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tv_category_hidden": "「{category}」を非表示にする・「すべて」でOKを押し続けると再表示されます",
+  "@tv_category_hidden": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_no_hidden_categories": "隠しカテゴリなし",
+  "import_torrent_file": ".torrentファイルをインポートする",
+  "import_video_formats": ".mp4、.mkv、.aviなど",
+  "cloudflare_proxy_optional": "オプションの FlareSolver / Byparr URL",
+  "tv_home_layout_hint": "フラットグリッドの代わりに行ベースのアニメホーム（継続・新しいエピソード・カテゴリー）",
+  "tv_hide_libraries_hint": "漫画および小説ライブラリを非表示にする（テレビではデフォルトでオン）",
+  "anime_only_hint": "アプリ全体でマンガと小説を非表示にします。すべてを表示するにはオフにします。",
+  "audio_auto_safe": "オートセーフ",
+  "tv_player_hint": "オン：専用のＴＶプレーヤー。  オフ: オリジナル (デスクトップ) プレーヤー。",
+  "release_open_failed": "リリースを開けません",
+  "tv_replay": "リプレイ",
+  "tv_no_episodes": "エピソードはまだありません",
+  "tracker_continue_series": "シリーズの視聴を続ける",
+  "tracker_watchlist_series": "ウォッチリストシリーズ",
+  "tracker_continue_movies": "映画を見続ける",
+  "tracker_watchlist_movies": "ウォッチリストの映画",
+  "tracker_trending_series": "トレンドシリーズ",
+  "tracker_trending_movies": "トレンド映画",
+  "tracker_popular_series": "人気シリーズ",
+  "tracker_popular_movies": "人気の映画",
+  "tracker_top_series": "トップシリーズ（オールタイム）",
+  "tracker_top_movies": "トップ映画 (オールタイム)",
+  "tracker_airing_series": "放映シリーズ",
+  "tracker_airing_anime": "放送中のアニメ",
+  "tracker_popular_anime": "人気アニメ",
+  "tracker_upcoming_anime": "今後のアニメ",
+  "tracker_popular_manga": "人気マンガ",
+  "tracker_top_manga": "トップマンガ",
+  "tracker_top_manhwa": "トップ漫画",
+  "tracker_top_manhua": "トップマンファ",
+  "tracker_latest_anime": "最新アニメ",
+  "tracker_best_anime": "最高評価のアニメ",
+  "tracker_latest_manga": "最新マンガ",
+  "tracker_best_manga": "最高評価のマンガ",
+  "tracker_trending_anime": "トレンドアニメ",
+  "tracker_upcoming_manga": "今後のマンガ",
+  "tracker_trending_manga": "トレンドマンガ",
+  "selection_progress": "{selected}/{total} が選択されました",
+  "@selection_progress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "source_code_editor": "コードエディタ",
+  "source_code_execute": "実行",
+  "source_console_logs": "コンソールログ",
+  "source_no_logs": "ログはまだありません",
+  "source_updated_successfully": "ソースは正常に更新されました",
+  "source_obsolete": "廃止されました",
+  "player_seek_forward_seconds": "{seconds}秒前方シーク",
+  "@player_seek_forward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_seek_backward_seconds": "{seconds}秒後方へシークする",
+  "@player_seek_backward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_autoplay_on": "次のエピソードを自動再生: オン",
+  "player_autoplay_off": "次のエピソードの自動再生: オフ",
+  "player_no_other_quality": "他の品質はありません",
+  "player_no_subtitles": "字幕なし",
+  "player_no_audio_tracks": "オーディオトラックなし",
+  "player_seek_forward": "前方を探す",
+  "player_seek_backward": "後方探索",
+  "player_seconds": "{seconds, plural, =1{1秒} other{{seconds}秒}}",
+  "@player_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "subtitle_preview": "ロレム・イプサム・ドール・シット・アメット",
+  "subtitle_style": "スタイル",
+  "translation_official_channel": "NodeLane 公式",
+  "translation_auth_required": "まず、翻訳アカウントにサインインします。",
+  "translation_source_changed": "元の画像が変化した。リロードしてください。",
+  "translation_source_missing": "元の画像は現在入手できない。",
+  "translation_resource_limit": "この画像はデバイスの処理制限を超えています。原本は保管されています。",
+  "translation_storage_full": "翻訳ストレージがいっぱいです。まず翻訳された画像をクリアしてください。",
+  "translation_invalid_image": "無効な画像フォーマットまたはコンテンツ。",
+  "translation_unsupported_image": "この画像の翻訳はサポートされていません。原本は保管されています。",
+  "translation_invalid_result": "翻訳された画像の検証に失敗しました。リロードしてください。",
+  "translation_result_unavailable": "翻訳された画像は利用できません。リロードしてください。",
+  "translation_result_expired": "翻訳された画像の有効期限が切れました。もう一度訳してください。",
+  "translation_analysis_too_large": "分析するには画像コンテンツが多すぎる。画像サイズを小さくして再試行してください。",
+  "translation_region_limit": "画像にはテキスト領域が多すぎる。分割して再試行してください。",
+  "translation_text_limit": "テキスト領域が長すぎる。画像を調整して再試行してください。",
+  "translation_unavailable": "この翻訳はもう入手できません。",
+  "translation_outcome_unknown": "結果は検証が必要です。再提出されていません。",
+  "translation_rate_limited": "リクエストには制限があります。翻訳は自動的に再開されます。",
+  "translation_quota_exhausted": "翻訳割り当てが不十分です。",
+  "translation_unsupported_language": "このサービスはこのターゲット言語をサポートしていません。",
+  "translation_upgrade_required": "変換プロトコルに互換性がありません。アプリを更新します。",
+  "translation_remote_failed": "このページの翻訳は失敗しました。手動で再試行できます。",
+  "translation_bridge_invalid": "Web ページが変更されました。翻訳を再度有効にします。",
+  "translation_connection_failed": "接続に失敗しました。もう一度試してください。",
+  "translation_paused": "翻訳は一時停止した。進捗状況を確認できます。",
+  "translation_preparing_ellipsis": "翻訳を準備中…",
+  "translation_checking_original": "元の画像を確認中…",
+  "translation_submitting": "送信中…",
+  "translation_uploading_ellipsis": "オリジナルをアップロード中…",
+  "translation_waiting_ellipsis": "翻訳を待っています…",
+  "translation_running_ellipsis": "翻訳中…",
+  "translation_verify_result": "結果は検証が必要である",
+  "translation_partial": "一部のコンテンツは翻訳されています",
+  "translation_ready": "翻訳済み画像の準備完了",
+  "list_separator": ", ",
+  "player_play": "遊び",
+  "player_quality": "品質",
+  "player_subtitles": "字幕",
+  "player_audio": "オーディオ",
+  "player_statistics": "オタクのための統計",
+  "player_auto": "自動",
+  "source_information": "出典情報",
+  "source_code_page": "ページ",
+  "source_code_query": "クエリ",
+  "repository_invalid_source": "無効なソース - 削除してください",
+  "player_fit_contain": "含有する",
+  "player_fit_cover": "カバー",
+  "player_fit_fill": "フィル",
+  "player_fit_height": "高さ",
+  "player_fit_width": "幅",
+  "player_fit_scale": "スケール",
+  "player_fit_none": "なし",
+  "player_shader_clear": "オフ（シェーダをクリア）",
+  "player_shader_luma": "ルマアップスケーリング",
+  "player_decoder_auto": "自動 (ハードウェア)",
+  "player_decoder_software": "ソフトウェア (ハードウェアなし)",
+  "player_stats_toggle": "オーバーレイの切り替え",
+  "player_stats_general": "一般",
+  "player_stats_frames": "フレームタイミング",
+  "player_stats_cache": "入力キャッシュ",
+  "player_stats_filters": "アクティブフィルタ",
+  "player_stats_log": "ログ",
+  "source_mark_pinned": "ピン",
+  "translation_image_action": "{action} この画像",
+  "@translation_image_action": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_waiting": "メモリ：サンプルを待っています",
+  "memory_rss": "RSS {current} ピーク {peak}",
+  "@memory_rss": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_cache": "キャッシュ{current} / {limit} ピーク{peak}",
+  "@memory_cache": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_items": "アイテム {count} / {limit} ライブ {live} ピーク {peak}",
+  "@memory_items": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "live": {
+        "type": "int"
+      },
+      "peak": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_full_samples": "{count, plural, =1{１サンプル} other{{count}サンプル}} の完全な {percent}%",
+  "@memory_full_samples": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_reset_hint": "設定でオフとオンを切り替えてリセットします",
+  "action_hide": "隠す",
+  "discord_get_app": "{app}を取得する",
+  "@discord_get_app": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_idle": "アイドル",
+  "discord_watching_title": "{title}を視聴中",
+  "@discord_watching_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_reading_title": "{title}の読み取り",
+  "@discord_reading_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

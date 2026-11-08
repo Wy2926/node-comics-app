@@ -1,3 +1,4 @@
+import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,9 +8,8 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/extension_list_tile_widget.dart';
 import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
@@ -76,6 +76,7 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
     final showNSFW = ref.watch(showNSFWStateProvider);
 
     final l10n = l10nLocalizations(context)!;
+    final tvHorizontalInset = tvHorizontalSafeInset(context);
 
     return RefreshIndicator(
       onRefresh: _refreshSources,
@@ -83,8 +84,8 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
         // Match the sources tab's inset so the two Browse tabs line up on TV.
         padding: EdgeInsets.only(
           top: 10,
-          left: isTv ? 8 : 0,
-          right: isTv ? 8 : 0,
+          left: tvHorizontalInset,
+          right: tvHorizontalInset,
         ),
         child: streamExtensions.when(
           data: (data) {
@@ -123,10 +124,10 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
                   isInstalled &&
                   !(element.isObsolete ?? false) &&
                   compareVersions(
-                    element.version ?? '',
-                    element.versionLast ?? '',
-                  ) <
-                  0;
+                        element.version ?? '',
+                        element.versionLast ?? '',
+                      ) <
+                      0;
 
               if (hasUpdate) {
                 updateEntries.add(element);
@@ -144,6 +145,7 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
               radius: const Radius.circular(10),
               child: CustomScrollView(
                 controller: controller,
+                physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   if (showWarning)
                     const SliverToBoxAdapter(
@@ -155,6 +157,12 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
                     _buildInstalledSection(installedEntries, l10n),
                   if (notInstalledEntries.isNotEmpty)
                     _buildNotInstalledSection(notInstalledEntries),
+                  // Trailing room rather than padding around the viewport, so
+                  // rows scroll under the translucent bar (which is what gives
+                  // it something to blur) and only the last one clears it.
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: pageBottomInsets(context).bottom),
+                  ),
                 ],
               ),
             );
@@ -165,7 +173,7 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
               child: Text(context.l10n.refresh),
             ),
           ),
-          loading: () => const ProgressCenter(),
+          loading: () => const NodeLaneEmptyState.loading(),
         ),
       ),
     );
@@ -182,13 +190,16 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.update_pending,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                Expanded(
+                  child: Text(
+                    l10n.update_pending,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: isUpdating
                       ? null

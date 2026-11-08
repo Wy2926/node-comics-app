@@ -18,114 +18,118 @@ class SourcesFilterScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = l10nLocalizations(context)!;
     final showNSFW = ref.watch(showNSFWStateProvider);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.sources)),
-      body: Padding(
-        // Same inset as the other TV list screens; zero off-TV.
-        padding: const EdgeInsets.only(top: 10).add(tvPageInsets),
-        child: StreamBuilder(
-          stream: sourceRepository.watchWithCodeByItemType(itemType),
-          builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              final entries = snapshot.data!
-                  .where((e) => showNSFW || !(e.isNsfw ?? false))
-                  .toList();
-              return CustomScrollView(
-                slivers: [
-                  CustomSliverGroupedListView<Source, String>(
-                    elements: entries,
-                    groupBy: (element) => element.lang!,
-                    groupSeparatorBuilder: (String groupByValue) =>
-                        SwitchListTile(
-                          value: entries
-                              .where(
-                                (element) =>
-                                    element.lang!.toLowerCase() ==
-                                        groupByValue &&
-                                    element.isActive! &&
-                                    element.itemType == itemType,
-                              )
-                              .isNotEmpty,
-                          onChanged: (val) {
-                            final now = DateTime.now().millisecondsSinceEpoch;
-                            final toUpdate = entries
-                                .where(
-                                  (source) =>
-                                      source.lang!.toLowerCase() ==
-                                      groupByValue,
-                                )
-                                .map(
-                                  (source) => source
-                                    ..isActive = val == true
-                                    ..updatedAt = now,
-                                )
-                                .toList();
-                            sourceRepository.putAll(toUpdate);
-                          },
-                          title: Text(
-                            completeLanguageName(groupByValue),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                    itemBuilder: (context, Source element) {
-                      if (entries
+    final body = Padding(
+      // Same inset as the other TV list screens; zero off-TV.
+      padding: const EdgeInsets.only(top: 10).add(tvPageInsets),
+      child: StreamBuilder(
+        stream: sourceRepository.watchWithCodeByItemType(itemType),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final entries = snapshot.data!
+                .where((e) => showNSFW || !(e.isNsfw ?? false))
+                .toList();
+            return CustomScrollView(
+              slivers: [
+                CustomSliverGroupedListView<Source, String>(
+                  elements: entries,
+                  groupBy: (element) => element.lang!,
+                  groupSeparatorBuilder: (String groupByValue) {
+                    final value = entries
+                        .where(
+                          (element) =>
+                              element.lang!.toLowerCase() == groupByValue &&
+                              element.isActive! &&
+                              element.itemType == itemType,
+                        )
+                        .isNotEmpty;
+                    void onChanged(bool val) {
+                      final now = DateTime.now().millisecondsSinceEpoch;
+                      final toUpdate = entries
                           .where(
-                            (s) =>
-                                s.lang!.toLowerCase() == element.lang &&
-                                s.isActive! &&
-                                s.itemType == itemType,
+                            (source) =>
+                                source.lang!.toLowerCase() == groupByValue,
                           )
-                          .isEmpty) {
-                        return Container();
-                      }
-                      return CheckboxListTile(
-                        secondary: Container(
-                          height: 37,
-                          width: 37,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).secondaryHeaderColor
-                                .withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: element.iconUrl!.isEmpty
-                              ? const Icon(Icons.source_outlined)
-                              : cachedNetworkImage(
-                                  imageUrl: element.iconUrl!,
-                                  fit: BoxFit.contain,
+                          .map(
+                            (source) => source
+                              ..isActive = val
+                              ..updatedAt = now,
+                          )
+                          .toList();
+                      sourceRepository.putAll(toUpdate);
+                    }
+
+                    final title = Text(
+                      completeLanguageName(groupByValue),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    );
+                    return SwitchListTile(
+                      value: value,
+                      onChanged: onChanged,
+                      title: title,
+                    );
+                  },
+                  itemBuilder: (context, Source element) {
+                    if (entries
+                        .where(
+                          (s) =>
+                              s.lang!.toLowerCase() == element.lang &&
+                              s.isActive! &&
+                              s.itemType == itemType,
+                        )
+                        .isEmpty) {
+                      return Container();
+                    }
+                    final tile = CheckboxListTile(
+                      secondary: Container(
+                        height: 37,
+                        width: 37,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).secondaryHeaderColor
+                              .withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: element.iconUrl!.isEmpty
+                            ? const Icon(Icons.source_outlined)
+                            : cachedNetworkImage(
+                                imageUrl: element.iconUrl!,
+                                fit: BoxFit.contain,
+                                width: 37,
+                                height: 37,
+                                errorWidget: const SizedBox(
                                   width: 37,
                                   height: 37,
-                                  errorWidget: const SizedBox(
-                                    width: 37,
-                                    height: 37,
-                                    child: Center(
-                                      child: Icon(Icons.source_outlined),
-                                    ),
+                                  child: Center(
+                                    child: Icon(Icons.source_outlined),
                                   ),
                                 ),
-                        ),
-                        onChanged: (bool? value) {
-                          sourceRepository.save(element..isAdded = value);
-                        },
-                        value: element.isAdded!,
-                        title: Text(element.name!),
-                      );
-                    },
-                    groupComparator: (group1, group2) =>
-                        group1.compareTo(group2),
-                    itemComparator: (item1, item2) =>
-                        item1.name!.compareTo(item2.name!),
-                    order: GroupedListOrder.ASC,
-                  ),
-                ],
-              );
-            }
-            return Container();
-          },
-        ),
+                              ),
+                      ),
+                      onChanged: (bool? value) {
+                        sourceRepository.save(element..isAdded = value);
+                      },
+                      value: element.isAdded!,
+                      title: Text(element.name!),
+                    );
+                    return tile;
+                  },
+                  groupComparator: (group1, group2) => group1.compareTo(group2),
+                  itemComparator: (item1, item2) =>
+                      item1.name!.compareTo(item2.name!),
+                  order: GroupedListOrder.ASC,
+                ),
+              ],
+            );
+          }
+          return Container();
+        },
       ),
+    );
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.sources)),
+      body: body,
     );
   }
 }

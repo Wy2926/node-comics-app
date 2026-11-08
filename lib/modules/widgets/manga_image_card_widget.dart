@@ -1,5 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,6 +42,15 @@ class MangaImageCardWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) {
+      return _MobileSourceImageCard(
+        source: source,
+        itemType: itemType,
+        manga: getMangaDetail!,
+        libraryManga: libraryManga,
+        compact: !isComfortableGrid,
+      );
+    }
     final hasData = libraryManga != null;
     return CoverViewWidget(
       autofocus: autofocus,
@@ -137,6 +150,15 @@ class MangaImageCardListTileWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (isMobile && !isTv) {
+      return _MobileSourceImageCard(
+        source: source,
+        itemType: itemType,
+        manga: getMangaDetail!,
+        libraryManga: libraryManga,
+        list: true,
+      );
+    }
     final hasData = libraryManga != null;
     final image = hasData && libraryManga!.customCoverImage != null
         ? MemoryImage(libraryManga!.customCoverImage as Uint8List)
@@ -208,6 +230,11 @@ class MangaImageCardListTileWidget extends ConsumerWidget {
                         width: 40,
                         fit: BoxFit.cover,
                         image: image,
+                        errorBuilder: (_, _, _) => const SizedBox(
+                          width: 40,
+                          height: 55,
+                          child: Icon(Icons.auto_stories_outlined),
+                        ),
                       ),
                     ),
                     Container(
@@ -256,6 +283,90 @@ class MangaImageCardListTileWidget extends ConsumerWidget {
   }
 }
 
+class _MobileSourceImageCard extends ConsumerWidget {
+  const _MobileSourceImageCard({
+    required this.source,
+    required this.itemType,
+    required this.manga,
+    required this.libraryManga,
+    this.list = false,
+    this.compact = false,
+  });
+  final Source source;
+  final ItemType itemType;
+  final MManga manga;
+  final Manga? libraryManga;
+  final bool list, compact;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => LayoutBuilder(
+    builder: (context, constraints) {
+      final placeholder = Icon(
+        Icons.auto_stories_outlined,
+        size: 36,
+        color: NodeLaneTokens.of(context).muted,
+      );
+      final bytes = libraryManga?.customCoverImage;
+      final rawUrl = libraryManga == null
+          ? manga.imageUrl ?? ''
+          : libraryManga!.customCoverFromTracker ??
+                libraryManga!.imageUrl ??
+                '';
+      Widget cover = placeholder;
+      if (bytes != null || rawUrl.trim().isNotEmpty) {
+        try {
+          final image = bytes != null
+              ? ResizeImage.resizeIfNeeded(
+                  ((list ? 78 : constraints.maxWidth) *
+                          MediaQuery.devicePixelRatioOf(context))
+                      .round(),
+                  null,
+                  MemoryImage(bytes as Uint8List),
+                )
+              : coverProvider(
+                  toImgUrl(rawUrl),
+                  headers: ref.watch(
+                    headersProvider(
+                      source: source.name!,
+                      lang: source.lang!,
+                      sourceId: source.id,
+                    ),
+                  ),
+                  cacheMaxAge: const Duration(days: 7),
+                );
+          cover = Image(
+            image: image,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => placeholder,
+          );
+        } catch (_) {
+          // A failing source header parser must not hide the result's actions.
+        }
+      }
+      void open(bool favorite) => pushToMangaReaderDetail(
+        ref: ref,
+        context: context,
+        getManga: manga,
+        lang: source.lang!,
+        source: source.name!,
+        itemType: itemType,
+        addToFavourite: favorite,
+        sourceId: source.id,
+      );
+      return MobileSourceMangaCard(
+        title: manga.name ?? '',
+        author: manga.author,
+        cover: cover,
+        inLibrary: libraryManga?.favorite ?? false,
+        list: list,
+        compact: compact,
+        onOpen: () => open(false),
+        onQuickAdd: () => open(true),
+      );
+    },
+  );
+}
+
 Future<void> pushToMangaReaderDetail({
   MManga? getManga,
   required WidgetRef ref,
@@ -269,57 +380,60 @@ Future<void> pushToMangaReaderDetail({
   bool useMaterialRoute = false,
   bool addToFavourite = false,
 }) async {
-  int? mangaId =
-      (await mangaRepository.findLocalArchiveByName(getManga?.name))?.id;
+  int? mangaId;
+  if (archiveId != null) {
+    mangaId = archiveId;
+  } else if (mangaM?.id != null) {
+    mangaId = mangaM!.id;
+  } else if (source == "local") {
+    mangaId = (await mangaRepository.findLocalArchiveByName(getManga?.name))
+        ?.id;
+  }
 
   if (mangaId == null) {
-    if (archiveId == null) {
-      final manga =
-          mangaM ??
-          Manga(
-            imageUrl: getManga!.imageUrl,
-            name: getManga.name!.trim(),
-            genre: getManga.genre?.map((e) => e.toString()).toList() ?? [],
-            author: getManga.author ?? "",
-            status: getManga.status ?? Status.unknown,
-            description: getManga.description ?? "",
-            link: getManga.link,
-            source: source,
-            lang: lang,
-            lastUpdate: 0,
-            itemType: itemType ?? ItemType.manga,
-            artist: getManga.artist ?? '',
-            sourceId: sourceId,
-          );
-      final empty = await mangaRepository.isEmptyByLangNameSource(
-        lang,
-        manga.name,
-        manga.source,
-      );
-      if (empty) {
-        await mangaRepository.save(manga);
-      }
-
-      final foundMangas = await mangaRepository.findAllByLangNameSource(
-        lang,
-        manga.name,
-        manga.source,
-      );
-      Manga? matchedManga;
-      for (final foundManga in foundMangas) {
-        if (foundManga.sourceId == null || foundManga.sourceId == sourceId) {
-          matchedManga = foundManga;
-          break;
-        }
-      }
-      if (matchedManga == null) {
-        await mangaRepository.save(manga);
-        matchedManga = manga;
-      }
-      mangaId = matchedManga.id!;
-    } else {
-      mangaId = archiveId;
+    final manga =
+        mangaM ??
+        Manga(
+          imageUrl: getManga!.imageUrl,
+          name: getManga.name!.trim(),
+          genre: getManga.genre?.map((e) => e.toString()).toList() ?? [],
+          author: getManga.author ?? "",
+          status: getManga.status ?? Status.unknown,
+          description: getManga.description ?? "",
+          link: getManga.link,
+          source: source,
+          lang: lang,
+          lastUpdate: 0,
+          itemType: itemType ?? ItemType.manga,
+          artist: getManga.artist ?? '',
+          sourceId: sourceId,
+        );
+    final empty = await mangaRepository.isEmptyByLangNameSource(
+      lang,
+      manga.name,
+      manga.source,
+    );
+    if (empty) {
+      await mangaRepository.save(manga);
     }
+
+    final foundMangas = await mangaRepository.findAllByLangNameSource(
+      lang,
+      manga.name,
+      manga.source,
+    );
+    Manga? matchedManga;
+    for (final foundManga in foundMangas) {
+      if (foundManga.sourceId == null || foundManga.sourceId == sourceId) {
+        matchedManga = foundManga;
+        break;
+      }
+    }
+    if (matchedManga == null) {
+      await mangaRepository.save(manga);
+      matchedManga = manga;
+    }
+    mangaId = matchedManga.id!;
   }
 
   final mang = await mangaRepository.findByIdAsync(mangaId);

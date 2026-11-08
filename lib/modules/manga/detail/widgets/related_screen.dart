@@ -1,9 +1,10 @@
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/related_titles.dart';
 import 'package:mangayomi/utils/cached_network.dart';
@@ -70,16 +71,18 @@ class _RelatedScreenState extends State<RelatedScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.related_titles)),
+    final page = Scaffold(
+      appBar: isMobile && !isTv
+          ? nodeLaneAppBar(context, title: l10n.related_titles)
+          : AppBar(title: Text(l10n.related_titles)),
       body: _isLoading
-          ? const ProgressCenter()
+          ? const NodeLaneEmptyState.loading()
           : _errorMessage.isNotEmpty
           // The cause goes in detail, not message: a lookup that failed and a
           // title with nothing related to it are different answers, and only
           // one of them is worth a stack.
-          ? ErrorState(
-              detail: _errorMessage,
+          ? NodeLaneEmptyState.error(
+              message: _errorMessage,
               onRetry: () {
                 setState(() {
                   _isLoading = true;
@@ -107,6 +110,7 @@ class _RelatedScreenState extends State<RelatedScreen> {
                   _card(context, data![index], index),
             ),
     );
+    return isMobile && !isTv ? NodeLaneSurface(child: page) : page;
   }
 
   Widget _card(BuildContext context, RelatedTitle related, int index) {

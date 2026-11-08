@@ -1,6 +1,8 @@
-import 'package:mangayomi/utils/platform_utils.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
@@ -10,15 +12,24 @@ import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/library/widgets/library_settings_sheet.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
+import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
+import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
-import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
-import 'package:mangayomi/modules/widgets/tv_menu.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_bookshelf_actions.dart';
+import 'mobile_bookshelf_header.dart';
 
 /// AppBar for the library screen.
 ///
@@ -29,6 +40,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final bool showNumbersOfItems;
   final int numberOfItems;
   final List<Manga> entries;
+  final List<Manga>? selectionEntries;
   final bool isCategory;
   final int? categoryId;
   final Settings settings;
@@ -39,6 +51,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback onSearchClear;
   final ValueChanged<bool> onIgnoreFiltersChanged;
   final TickerProvider vsync;
+  final double mobileHeaderHeight;
 
   const LibraryAppBar({
     super.key,
@@ -47,6 +60,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.showNumbersOfItems,
     required this.numberOfItems,
     required this.entries,
+    this.selectionEntries,
     required this.isCategory,
     required this.categoryId,
     required this.settings,
@@ -57,10 +71,13 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onSearchClear,
     required this.onIgnoreFiltersChanged,
     required this.vsync,
+    required this.mobileHeaderHeight,
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+  Size get preferredSize => Size.fromHeight(
+    isMobile && !isTv ? mobileHeaderHeight : AppBar().preferredSize.height,
+  );
 
   /// The library menu actions, shared by the popup off-TV and the centred TV
   /// menu.
@@ -81,7 +98,8 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
       });
     } else if (value == 1) {
       manga.whenData((value) {
-        var randomManga = (value..shuffle()).first;
+        if (value.isEmpty) return;
+        final randomManga = value[Random().nextInt(value.length)];
         pushToMangaReaderDetail(
           ref: ref,
           archiveId: randomManga.isLocalArchive ?? false
@@ -128,10 +146,83 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         data: (data) => _SelectionAppBar(
           itemType: itemType,
           mangaIdsList: mangaIdsList,
-          data: data,
+          data: selectionEntries ?? data,
         ),
         error: (error, _) => ErrorText(error),
-        loading: () => const ProgressCenter(),
+        loading: () => const NodeLaneEmptyState.loading(),
+      );
+    }
+
+    if (isMobile && !isTv) {
+      final hidden = ref.watch(hideItemsStateProvider);
+      const routes = {
+        ItemType.manga: '/MangaLibrary',
+        ItemType.anime: '/AnimeLibrary',
+        ItemType.novel: '/NovelLibrary',
+      };
+      return MobileBookshelfHeader(
+        searchLabel: l10n.bookshelf_search,
+        importLabel: l10n.import,
+        filterLabel: l10n.filter,
+        controller: textEditingController,
+        onSearchChanged: onSearchClear,
+        filtered: !isNotFiltering,
+        onImport: () => showImportLocalDialog(context, itemType),
+        onFilter: () => showLibrarySettingsSheet(
+          context: context,
+          vsync: vsync,
+          settings: settings,
+          itemType: itemType,
+          entries: entries,
+        ),
+        mediaMenu: MobileMediaMenu(
+          value: itemType,
+          availableTypes: ItemType.values.where(
+            (type) => !hidden.contains(routes[type]),
+          ),
+          onChanged: (type) => context.go(routes[type]!),
+        ),
+        updateControl: ref.watch(libraryUpdateProvider).running
+            ? NodeLaneIconButton(
+                tooltip: l10n.cancel,
+                icon: NodeLaneIcons.of(context).stop,
+                onPressed: () =>
+                    ref.read(libraryUpdateProvider.notifier).requestCancel(),
+              )
+            : null,
+        menu: NodeLaneIconButton(
+          tooltip: l10n.bookshelf_actions,
+          icon: NodeLaneIcons.of(context).more,
+          onPressed: () async {
+            final action = await showNodeLaneCatalogSheet<int>(
+              context,
+              Builder(
+                builder: (sheetContext) => Consumer(
+                  builder: (_, sheetRef, _) => MobileBookshelfMenu(
+                    hasEntries: manga.asData?.value.isNotEmpty == true,
+                    updating: sheetRef.watch(libraryUpdateProvider).running,
+                    ignoreFilters: ignoreFiltersOnSearch,
+                    anime: itemType == ItemType.anime,
+                    onSelected: (value) => Navigator.pop(sheetContext, value),
+                  ),
+                ),
+              ),
+            );
+            if (!context.mounted || action == null) return;
+            if (action == 4) {
+              onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
+            } else if (action == 5) {
+              ref.read(libraryUpdateProvider.notifier).requestCancel();
+            } else if (action == 6) {
+              ref.read(mangasListStateProvider.notifier).clear();
+              ref.read(isLongPressedStateProvider.notifier).update(true);
+            } else if (action == 7) {
+              context.push('/categories', extra: (false, itemType.index));
+            } else {
+              _onLibraryMenu(context, ref, action, manga);
+            }
+          },
+        ),
       );
     }
 
@@ -297,12 +388,42 @@ class _SelectionAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLongPressed = ref.watch(isLongPressedStateProvider);
+    if (isMobile && !isTv) {
+      final l10n = context.l10n;
+      return nodeLaneSelectionAppBar(
+        context,
+        title: l10n.bookshelf_selected_count(mangaIdsList.length),
+        cancelLabel: l10n.cancel,
+        selectAllLabel: l10n.bookshelf_select_all,
+        invertLabel: l10n.bookshelf_invert_selection,
+        onCancel: () {
+          ref.read(mangasListStateProvider.notifier).clear();
+          ref.read(isLongPressedStateProvider.notifier).update(false);
+        },
+        onSelectAll: data.isEmpty
+            ? null
+            : () {
+                for (final entry in data) {
+                  ref.read(mangasListStateProvider.notifier).selectAll(entry);
+                }
+              },
+        onInvert: data.isEmpty
+            ? null
+            : () {
+                for (final entry in data) {
+                  ref.read(mangasListStateProvider.notifier).selectSome(entry);
+                }
+              },
+      );
+    }
+
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: AppBar(
         title: Text(mangaIdsList.length.toString()),
         backgroundColor: context.primaryColor.withValues(alpha: 0.2),
         leading: IconButton(
+          tooltip: context.l10n.cancel,
           onPressed: () {
             ref.read(mangasListStateProvider.notifier).clear();
             ref
@@ -313,6 +434,7 @@ class _SelectionAppBar extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            tooltip: context.l10n.bookshelf_select_all,
             onPressed: () {
               for (var manga in data) {
                 ref.read(mangasListStateProvider.notifier).selectAll(manga);
@@ -321,6 +443,7 @@ class _SelectionAppBar extends ConsumerWidget {
             icon: const Icon(Icons.select_all),
           ),
           IconButton(
+            tooltip: context.l10n.bookshelf_invert_selection,
             onPressed: () {
               if (data.length == mangaIdsList.length) {
                 for (var manga in data) {

@@ -10,7 +10,6 @@ import 'api/rar.dart';
 import 'api/rhttp/client.dart';
 import 'api/rhttp/error.dart';
 import 'api/rhttp/http.dart';
-import 'api/translation_image.dart';
 
 import 'dart:async';
 import 'dart:convert';
@@ -75,7 +74,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1230741912;
+  int get rustContentHash => -707951366;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -251,20 +250,6 @@ abstract class RustLibApi extends BaseApi {
     required String key,
     required int valueType,
     required String value,
-  });
-
-  Future<String> crateApiTranslationImageTranslationCompose({
-    required String input,
-    required String artifact,
-    required String resultJson,
-    required String output,
-  });
-
-  Future<String> crateApiTranslationImageTranslationPrepare({
-    required String source,
-    required String output,
-    required BigInt maxBytes,
-    required int maxDimension,
   });
 
   RustArcIncrementStrongCountFnType
@@ -1585,84 +1570,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "set_aidoku_default_setting",
         argNames: ["key", "valueType", "value"],
-      );
-
-  @override
-  Future<String> crateApiTranslationImageTranslationCompose({
-    required String input,
-    required String artifact,
-    required String resultJson,
-    required String output,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(input, serializer);
-          sse_encode_String(artifact, serializer);
-          sse_encode_String(resultJson, serializer);
-          sse_encode_String(output, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 36,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_String,
-        ),
-        constMeta: kCrateApiTranslationImageTranslationComposeConstMeta,
-        argValues: [input, artifact, resultJson, output],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiTranslationImageTranslationComposeConstMeta =>
-      const TaskConstMeta(
-        debugName: "translation_compose",
-        argNames: ["input", "artifact", "resultJson", "output"],
-      );
-
-  @override
-  Future<String> crateApiTranslationImageTranslationPrepare({
-    required String source,
-    required String output,
-    required BigInt maxBytes,
-    required int maxDimension,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(source, serializer);
-          sse_encode_String(output, serializer);
-          sse_encode_u_64(maxBytes, serializer);
-          sse_encode_u_32(maxDimension, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 37,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_String,
-        ),
-        constMeta: kCrateApiTranslationImageTranslationPrepareConstMeta,
-        argValues: [source, output, maxBytes, maxDimension],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiTranslationImageTranslationPrepareConstMeta =>
-      const TaskConstMeta(
-        debugName: "translation_prepare",
-        argNames: ["source", "output", "maxBytes", "maxDimension"],
       );
 
   Future<void> Function(int, dynamic)
@@ -3145,12 +3052,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   int dco_decode_u_16(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
-  }
-
-  @protected
-  int dco_decode_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
   }
@@ -4682,12 +4583,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int sse_decode_u_16(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint16();
-  }
-
-  @protected
-  int sse_decode_u_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint32();
   }
 
   @protected
@@ -6227,12 +6122,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_u_16(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint16(self);
-  }
-
-  @protected
-  void sse_encode_u_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint32(self);
   }
 
   @protected

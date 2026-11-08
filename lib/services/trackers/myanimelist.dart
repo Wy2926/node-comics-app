@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:flutter/foundation.dart';
+import 'package:mangayomi/utils/url_protocol/protocol.dart' show appUrlScheme;
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:intl/intl.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -13,122 +12,150 @@ import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/more/settings/track/myanimelist/model.dart';
 import 'package:mangayomi/modules/more/settings/track/providers/track_providers.dart';
 import 'package:mangayomi/services/http/m_client.dart';
-import 'package:mangayomi/utils/localized_message.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 
 import 'base_tracker.dart';
+import 'expiring_oauth_tracker.dart';
+import 'oauth_browser.dart';
 import 'tracker_account.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'myanimelist.g.dart';
 
 @riverpod
-class MyAnimeList extends _$MyAnimeList implements BaseTracker {
-  final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
+class MyAnimeList extends _$MyAnimeList
+    with ExpiringOAuthTracker
+    implements BaseTracker {
+  MyAnimeList({Client? client})
+    : http = client ?? MClient.init(reqcopyWith: {'useDartHttpClient': true});
+
+  final Client http;
   static const _baseOAuthUrl = 'https://myanimelist.net/v1/oauth2';
   static const _baseApiUrl = 'https://api.myanimelist.net/v2';
-  String codeVerifier = "";
-  static final _isDesktop = (Platform.isWindows || Platform.isLinux);
-  static const _desktopClientId = '39e9be346b4e7dbcc59a98357e2f8472';
-  static const _mobileClientId = '0c9100ccd443ddb441a319a881180f7f';
-  final _clientId = _isDesktop ? _desktopClientId : _mobileClientId;
+  static const _redirectUri = '$appUrlScheme://myanimelist-auth';
+  Future<bool>? _loginFuture;
+  final _browser = TrackerOAuthBrowser();
 
-  String getFallbackClientId(String usedId) {
-    return usedId == _desktopClientId ? _mobileClientId : _desktopClientId;
-  }
+  String get _clientId => switch (defaultTargetPlatform) {
+    TargetPlatform.iOS => '79c9fc22f3d141372e12b62e48ffddfd',
+    TargetPlatform.android => '8205c12a0bef7f51110aa5ba5bcc8533',
+    _ => 'd3e6963529b9fe709b42e6dc3eb24856',
+  };
 
   @override
   void build({
     required int syncId,
     required ItemType? itemType,
     required dynamic widgetRef,
-  }) {}
+  }) {
+    ref.onDispose(_browser.dispose);
+  }
 
-  Future<bool?> login() async {
-    final callbackUrlScheme = _isDesktop
-        ? 'http://localhost:43824'
-        : 'mangayomi';
-    final loginUrl = _authUrl();
+  Future<bool> login() =>
+      _loginFuture ??= _login().whenComplete(() => _loginFuture = null);
 
+  Future<bool> _login() async {
+    final clientId = _clientId;
+    final keepAlive = ref.keepAlive();
     try {
-      final uri = await FlutterWebAuth2.authenticate(
-        url: loginUrl,
-        callbackUrlScheme: callbackUrlScheme,
+      final verifier = _randomToken();
+      final state = _randomToken();
+      final authorization = Uri.parse('$_baseOAuthUrl/authorize').replace(
+        queryParameters: {
+          'client_id': clientId,
+          'redirect_uri': _redirectUri,
+          'response_type': 'code',
+          'code_challenge': verifier,
+          'code_challenge_method': 'plain',
+          'state': state,
+        },
       );
-      final code = Uri.parse(uri).queryParameters['code'];
-      if (code == null) return null;
+      final started = DateTime.now();
+      final returned = await _browser.authenticate(
+        authorization,
+        callbackHost: 'myanimelist-auth',
+      );
+      if (!ref.mounted ||
+          DateTime.now().difference(started) > const Duration(minutes: 10) ||
+          returned.scheme != appUrlScheme ||
+          returned.authority != 'myanimelist-auth' ||
+          returned.path.isNotEmpty ||
+          returned.hasFragment) {
+        return false;
+      }
+      final params = returned.queryParametersAll;
+      final codes = params['code'];
+      final states = params['state'];
+      if (params.containsKey('error') ||
+          codes == null ||
+          codes.length != 1 ||
+          codes.single.isEmpty ||
+          states == null ||
+          states.length != 1 ||
+          states.single != state) {
+        return false;
+      }
 
-      final oAuthData = await _getOAuth(code);
-      final oAuth = _buildOAuth(oAuthData, _clientId);
+      final oAuth = await _getOAuth(codes.single, verifier, clientId);
+      if (!ref.mounted) return false;
       final username = await _getUserName(oAuth.accessToken!);
       _saveOAuth(username, oAuth);
 
       return true;
     } catch (_) {
       return false;
+    } finally {
+      keepAlive.close();
     }
   }
 
-  Future<String> _getAccessToken({bool bypass = false}) async {
-    final track = widgetRef.read(tracksProvider(syncId: syncId));
-    final mALOAuth = OAuth.fromJson(
-      jsonDecode(track!.oAuth!) as Map<String, dynamic>,
+  @override
+  String get trackerName => "MyAnimeList";
+
+  @override
+  Future<void> saveRefreshedOAuth(OAuth oAuth) async =>
+      _saveOAuth(await _getUserName(oAuth.accessToken!), oAuth);
+
+  @override
+  Future<OAuth?> refreshOAuth(OAuth oldOAuth) async {
+    final clientId = _clientId;
+    if (oldOAuth.clientId != clientId ||
+        oldOAuth.refreshToken?.isNotEmpty != true) {
+      return null;
+    }
+    final response = await http.post(
+      Uri.parse('$_baseOAuthUrl/token'),
+      body: {
+        'client_id': clientId,
+        'grant_type': 'refresh_token',
+        'refresh_token': oldOAuth.refreshToken!,
+      },
     );
-    final expiresIn = DateTime.fromMillisecondsSinceEpoch(mALOAuth.expiresIn!);
-    if (DateTime.now().isBefore(expiresIn)) return mALOAuth.accessToken!;
-    if (!bypass &&
-        (widgetRef.read(tracksProvider(syncId: syncId))?.refreshing ?? false)) {
-      return mALOAuth.accessToken!;
-    }
-    widgetRef.read(tracksProvider(syncId: syncId).notifier).setRefreshing(true);
-    final refreshed = await _tryRefreshToken(mALOAuth);
-    if (refreshed == null) {
-      widgetRef.read(tracksProvider(syncId: syncId).notifier).logout();
-      botToast(
-        localizedMessage((l10n) => l10n.tracker_token_expired("MyAnimeList")),
-      );
-      throw Exception("Token expired");
-    }
-    final username = await _getUserName(refreshed.accessToken!);
-    _saveOAuth(username, refreshed);
-    await Future.delayed(Duration(seconds: 3));
-    widgetRef
-        .read(tracksProvider(syncId: syncId).notifier)
-        .setRefreshing(false);
-    return refreshed.accessToken!;
+    if (response.statusCode != 200) return null;
+    return _readOAuth(response, clientId);
   }
 
-  Future<OAuth?> _tryRefreshToken(OAuth oldOAuth) async {
-    String primaryClientId = oldOAuth.clientId ?? _clientId;
-
-    Future<OAuth?> tryRefresh(String cid) async {
-      final response = await http.post(
-        Uri.parse('$_baseOAuthUrl/token'),
-        body: {
-          'client_id': cid,
-          'grant_type': 'refresh_token',
-          'refresh_token': oldOAuth.refreshToken,
-        },
-      );
-      if (response.statusCode != 200) return null;
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      return _buildOAuth(body, cid);
+  @override
+  Future<String> getAccessToken({bool bypass = false}) async {
+    final track = ref.read(tracksProvider(syncId: syncId));
+    OAuth? oauth;
+    try {
+      oauth = OAuth.fromJson(jsonDecode(track?.oAuth ?? '{}'));
+    } catch (_) {
+      // Invalid or foreign credentials must never reach the API.
     }
-
-    return await tryRefresh(primaryClientId) ??
-        await tryRefresh(getFallbackClientId(primaryClientId));
-  }
-
-  OAuth _buildOAuth(Map<String, dynamic> json, String clientId) {
-    return OAuth.fromJson(json)
-      ..expiresIn = DateTime.now()
-          .add(Duration(seconds: json['expires_in']))
-          .millisecondsSinceEpoch
-      ..clientId = clientId;
+    if (oauth?.clientId != _clientId ||
+        oauth?.accessToken?.isNotEmpty != true ||
+        oauth?.expiresIn == null) {
+      ref.read(tracksProvider(syncId: syncId).notifier).logout();
+      throw StateError('MyAnimeList login required');
+    }
+    return super.getAccessToken(bypass: bypass);
   }
 
   void _saveOAuth(TrackerAccount user, OAuth oAuth) {
-    widgetRef
+    if (!ref.mounted) throw StateError('MyAnimeList login cancelled');
+    ref
         .read(tracksProvider(syncId: syncId).notifier)
         .login(
           TrackPreference(
@@ -144,7 +171,7 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
 
   @override
   Future<List<TrackSearch>> search(String query, isManga) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final url = Uri.parse('$_baseApiUrl/${isManga ? "manga" : "anime"}')
         .replace(queryParameters: {'q': query.trim(), 'nsfw': 'true'});
     final result = await _makeGetRequest(url, accessToken);
@@ -199,7 +226,7 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
     bool isManga = true,
     String rankingType = "airing",
   }) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final item = isManga ? "manga" : "anime";
     final contentUnit = isManga ? "num_chapters" : "num_episodes";
     final url = Uri.parse('$_baseApiUrl/$item/ranking').replace(
@@ -236,7 +263,7 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
 
   @override
   Future<List<TrackSearch>> fetchUserData({bool isManga = true}) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final item = isManga ? "mangalist" : "animelist";
     final contentUnit = isManga ? "num_chapters" : "num_episodes";
     final currentStatus = isManga ? "reading" : "watching";
@@ -293,16 +320,10 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
     return date;
   }
 
-  String _codeVerifier() {
+  String _randomToken() {
     final random = Random.secure();
-    final values = List<int>.generate(200, (i) => random.nextInt(256));
-    codeVerifier = base64UrlEncode(values).substring(0, 128);
-    return codeVerifier;
-  }
-
-  String _authUrl() {
-    _codeVerifier();
-    return '$_baseOAuthUrl/authorize?client_id=$_clientId&code_challenge=$codeVerifier&response_type=code';
+    final values = List<int>.generate(32, (_) => random.nextInt(256));
+    return base64UrlEncode(values).replaceAll('=', '');
   }
 
   TrackStatus _getMALTrackStatus(String status, bool isManga) {
@@ -354,18 +375,34 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
     };
   }
 
-  Future<dynamic> _getOAuth(String code) async {
+  Future<OAuth> _getOAuth(String code, String verifier, String clientId) async {
     final params = {
-      'client_id': _clientId,
+      'client_id': clientId,
       'code': code,
-      'code_verifier': codeVerifier,
+      'code_verifier': verifier,
       'grant_type': 'authorization_code',
+      'redirect_uri': _redirectUri,
     };
     final response = await http.post(
       Uri.parse('$_baseOAuthUrl/token'),
       body: params,
     );
-    return jsonDecode(response.body);
+    return _readOAuth(response, clientId);
+  }
+
+  OAuth _readOAuth(Response response, String clientId) {
+    if (response.statusCode != 200) {
+      throw StateError('MyAnimeList authorization failed');
+    }
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final oauth = OAuth.fromJson(data);
+    if (oauth.tokenType?.toLowerCase() != 'bearer' ||
+        oauth.accessToken?.isNotEmpty != true ||
+        oauth.refreshToken?.isNotEmpty != true ||
+        (oauth.expiresIn ?? 0) <= 0) {
+      throw const FormatException('Invalid MyAnimeList token response');
+    }
+    return buildExpiringOAuth(data, clientId);
   }
 
   /// The account behind the token.
@@ -377,14 +414,23 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
       Uri.parse('$_baseApiUrl/users/@me'),
       accessToken,
     );
-    return malAccount(jsonDecode(response.body) as Map<String, dynamic>);
+    if (response.statusCode != 200) {
+      throw StateError('MyAnimeList account verification failed');
+    }
+    final account = malAccount(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+    if (account.id.trim().isEmpty) {
+      throw const FormatException('Invalid MyAnimeList account');
+    }
+    return account;
   }
 
   @override
   Future<Track?> findLibItem(Track track, bool isManga) async {
     final type = isManga ? "manga" : "anime";
     final contentUnit = isManga ? 'num_chapters' : 'num_episodes';
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final uri = Uri.parse('$_baseApiUrl/$type/${track.mediaId}').replace(
       queryParameters: {
         'fields': '$contentUnit,my_list_status{start_date,finish_date}',
@@ -425,7 +471,7 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
 
   @override
   Future<Track> update(Track track, bool isManga) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final formBody = {
       'status':
           (toMyAnimeListStatus(track.status, isManga) ??
@@ -486,18 +532,17 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
 
   @override
   Future<bool> checkRefresh() async {
+    final keepAlive = ref.keepAlive();
     try {
-      await _getAccessToken(bypass: true);
-      AppLogger.log("Refreshed MAL token!");
+      await getAccessToken(bypass: true);
       return true;
-    } catch (e) {
-      AppLogger.log("Failed to refresh MAL token:", logLevel: LogLevel.error);
-      AppLogger.log(e.toString(), logLevel: LogLevel.error);
+    } catch (_) {
       return false;
     } finally {
-      widgetRef
-          .read(tracksProvider(syncId: syncId).notifier)
-          .setRefreshing(false);
+      if (ref.mounted) {
+        ref.read(tracksProvider(syncId: syncId).notifier).setRefreshing(false);
+      }
+      keepAlive.close();
     }
   }
 }

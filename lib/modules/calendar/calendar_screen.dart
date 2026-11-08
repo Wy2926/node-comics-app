@@ -9,13 +9,16 @@ import 'package:mangayomi/modules/calendar/widgets/upcoming_calendar.dart';
 import 'package:mangayomi/modules/calendar/widgets/upcoming_item.dart'
     as widgets;
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/utils/fetch_interval.dart';
 import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_calendar.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   final ItemType? itemType;
@@ -55,6 +58,21 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      final data = itemType == null
+          ? const AsyncData<List<Manga>>([])
+          : ref.watch(getCalendarStreamProvider(itemType: itemType));
+      return MobileCalendar(
+        types: _visibleTypes,
+        itemType: itemType,
+        data: data.whenData((mangaList) => _buildUpcomingData(mangaList).items),
+        onTypeChanged: (value) => setState(() => itemType = value),
+        onRetry: () =>
+            ref.invalidate(getCalendarStreamProvider(itemType: itemType)),
+        onOpen: (manga) =>
+            context.push('/manga-reader/detail', extra: manga.id),
+      );
+    }
     final l10n = context.l10n;
     final data = ref.watch(getCalendarStreamProvider(itemType: itemType));
 
@@ -104,7 +122,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           );
         },
-        loading: () => const ProgressCenter(),
+        loading: () => const NodeLaneEmptyState.loading(),
       ),
     );
   }

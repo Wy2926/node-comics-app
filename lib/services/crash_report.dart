@@ -205,10 +205,7 @@ bool isExtensionFailure(Object error, {String? source, String? stack}) {
       // missing field, named by its JVM package.
       text.contains('eu.kanade.tachiyomi.extension') ||
       text.contains("is required for type with serial name") ||
-      // LNReader plugins. #936 is a plugin returning a novel with no path.
-      // The old wording is still matched because reports keep arriving from
-      // builds that predate the clearer message.
-      text.contains('path is null') ||
+      // LNReader plugins returning a novel without a usable path.
       text.contains('returned a novel with no path');
 }
 
@@ -232,10 +229,10 @@ CrashReportScope crashReportScope(CrashReport report) {
   return CrashReportScope.app;
 }
 
-/// Whether this report belongs in Mangayomi's issue tracker.
+/// Whether this report belongs in NodeLane Comics' issue tracker.
 ///
 /// Network/image failures need retry or source-specific help, while extension
-/// failures belong to the extension. Offering either a Mangayomi bug button
+/// failures belong to the extension. Offering either a NodeLane app bug button
 /// creates reports that cannot lead to an app fix.
 bool isReportableFailure(CrashReport report) =>
     crashReportScope(report) == CrashReportScope.app;

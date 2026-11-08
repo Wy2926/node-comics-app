@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/gridview_widget.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Placeholder grid shown while a page of covers is loading.
 ///
@@ -97,11 +99,10 @@ class _CoverPlaceholder extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: tint,
-                borderRadius: BorderRadius.circular(6),
-              ),
+            child: NodeLaneSkeleton(
+              height: double.infinity,
+              radius: NodeLaneTokens.coverRadius,
+              color: tint,
             ),
           ),
           const SizedBox(height: 6),
@@ -109,12 +110,9 @@ class _CoverPlaceholder extends StatelessWidget {
           FractionallySizedBox(
             alignment: Alignment.centerLeft,
             widthFactor: 0.72,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: tint,
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: const SizedBox(height: 10),
+            child: NodeLaneSkeleton(
+              height: NodeLaneTokens.space12,
+              color: tint,
             ),
           ),
         ],

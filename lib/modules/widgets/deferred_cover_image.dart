@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// Skips building the real cover — a network fetch + decode — while the
 /// nearest Scrollable is flinging fast, showing an empty box of the same
@@ -21,6 +22,7 @@ class DeferredCoverImage extends StatefulWidget {
 
 class _DeferredCoverImageState extends State<DeferredCoverImage> {
   ScrollPosition? _scrollPosition;
+  bool _rebuildScheduled = false;
 
   @override
   void didChangeDependencies() {
@@ -34,6 +36,17 @@ class _DeferredCoverImageState extends State<DeferredCoverImage> {
   }
 
   void _onScrollingChanged() {
+    // A shrinking list can change its scroll activity during layout.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      if (_rebuildScheduled) return;
+      _rebuildScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _rebuildScheduled = false;
+        if (mounted) setState(() {});
+      });
+      return;
+    }
     if (mounted) setState(() {});
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/main.dart';
+// import 'package:mangayomi/main.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/memory_probe_provider.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/providers/algorithm_weights_state_provider.dart';
@@ -18,15 +18,27 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/widgets/tv_escapable_slider.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
+import 'package:mangayomi/modules/more/widgets/outlined_field_decoration.dart';
 
-class GeneralScreen extends ConsumerStatefulWidget {
+import 'mobile_general_screen.dart';
+
+class GeneralScreen extends StatelessWidget {
   const GeneralScreen({super.key});
 
   @override
-  ConsumerState<GeneralScreen> createState() => _GeneralStateScreen();
+  Widget build(BuildContext context) => isMobile && !isTv
+      ? const MobileGeneralScreen()
+      : const _LegacyGeneralScreen();
 }
 
-class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
+class _LegacyGeneralScreen extends ConsumerStatefulWidget {
+  const _LegacyGeneralScreen();
+
+  @override
+  ConsumerState<_LegacyGeneralScreen> createState() => _GeneralStateScreen();
+}
+
+class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
   int _genre = 0;
   int _setting = 0;
   int _synopsis = 0;
@@ -47,6 +59,7 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
     final l10n = l10nLocalizations(context);
     final customDns = ref.watch(customDnsStateProvider);
     final userAgent = ref.watch(userAgentStateProvider);
+    /* Discord settings are temporarily hidden.
     final enableDiscordRpc = ref.watch(enableDiscordRpcStateProvider);
     final hideDiscordRpcInIncognito = ref.watch(
       hideDiscordRpcInIncognitoStateProvider,
@@ -56,6 +69,7 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
     );
     final rpcShowTitleState = ref.watch(rpcShowTitleStateProvider);
     final rpcShowCoverImage = ref.watch(rpcShowCoverImageStateProvider);
+    */
     final showNavDoubleTapTooltip = ref.watch(
       showNavDoubleTapTooltipStateProvider,
     );
@@ -158,11 +172,11 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
                                 itemBuilder: (context, index) {
                                   // Last row: the user-supplied custom endpoint.
                                   if (index == availableProviders.length) {
-                                    return const RadioListTile(
+                                    return RadioListTile(
                                       dense: true,
-                                      contentPadding: EdgeInsets.all(0),
+                                      contentPadding: const EdgeInsets.all(0),
                                       value: DoHProviders.customId,
-                                      title: Text('Custom'),
+                                      title: Text(context.l10n.custom),
                                     );
                                   }
                                   final provider = availableProviders[index];
@@ -233,10 +247,10 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
             ),
             ListTile(
               onTap: () => _showCfProxyDialog(context),
-              title: const Text('Cloudflare bypass proxy'),
+              title: Text(context.l10n.cloudflare_bypass_proxy),
               subtitle: Text(
                 CfProxyStore.url.isEmpty
-                    ? 'Optional FlareSolverr / Byparr URL'
+                    ? context.l10n.cloudflare_proxy_optional
                     : CfProxyStore.url,
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
@@ -517,6 +531,7 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
                   .read(showNavDoubleTapTooltipStateProvider.notifier)
                   .set(value),
             ),
+            /* Discord settings are temporarily hidden.
             SwitchListTile(
               value: enableDiscordRpc,
               title: Text(l10n.enable_discord_rpc),
@@ -561,6 +576,7 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
                 ref.read(rpcShowCoverImageStateProvider.notifier).set(value);
               },
             ),
+            */
           ],
         ),
       ),
@@ -640,7 +656,10 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
               parsed.scheme == 'https' &&
               parsed.host.isNotEmpty;
           return AlertDialog(
-            title: const Text('Custom DoH URL', style: TextStyle(fontSize: 24)),
+            title: Text(
+              context.l10n.custom_doh_url,
+              style: const TextStyle(fontSize: 24),
+            ),
             content: SizedBox(
               width: context.width(0.8),
               child: Column(
@@ -655,23 +674,9 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
                       autofocus: true,
                       keyboardType: TextInputType.url,
                       onChanged: (value) => setState(() => url = value),
-                      decoration: InputDecoration(
+                      decoration: outlinedFieldDecoration(
                         hintText: 'https://example.com/dns-query',
-                        helperText: 'Must be an https DoH (JSON) endpoint',
-                        filled: false,
-                        contentPadding: const EdgeInsets.all(12),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(width: 0.4),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: const BorderSide(),
-                        ),
+                        helperText: context.l10n.custom_doh_url_helper,
                       ),
                     ),
                   ),
@@ -712,8 +717,8 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
               trimmed.startsWith('http://') ||
               trimmed.startsWith('https://');
           return AlertDialog(
-            title: const Text(
-              'Cloudflare bypass proxy',
+            title: Text(
+              context.l10n.cloudflare_bypass_proxy,
               style: TextStyle(fontSize: 24),
             ),
             content: SizedBox(
@@ -730,26 +735,10 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
                       autofocus: true,
                       keyboardType: TextInputType.url,
                       onChanged: (value) => setLocalState(() => url = value),
-                      decoration: InputDecoration(
+                      decoration: outlinedFieldDecoration(
                         hintText: 'http://localhost:8191/v1',
-                        helperText:
-                            'FlareSolverr / Byparr endpoint. Leave empty to '
-                            'disable.',
+                        helperText: context.l10n.cf_proxy_helper,
                         helperMaxLines: 2,
-                        filled: false,
-                        contentPadding: const EdgeInsets.all(12),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(width: 0.4),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: const BorderSide(),
-                        ),
                       ),
                     ),
                   ),
@@ -807,23 +796,7 @@ class _GeneralStateScreen extends ConsumerState<GeneralScreen> {
                       onChanged: (value) => setState(() {
                         dns = value;
                       }),
-                      decoration: InputDecoration(
-                        hintText: "8.8.8.8",
-                        filled: false,
-                        contentPadding: const EdgeInsets.all(12),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(width: 0.4),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: const BorderSide(),
-                        ),
-                      ),
+                      decoration: outlinedFieldDecoration(hintText: "8.8.8.8"),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -878,22 +851,8 @@ void _showDefaultUserAgentDialog(
                     controller: uaController,
                     autofocus: true,
 
-                    decoration: InputDecoration(
+                    decoration: outlinedFieldDecoration(
                       hintText: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
-                      filled: false,
-                      contentPadding: const EdgeInsets.all(12),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(width: 0.4),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                        borderSide: const BorderSide(),
-                      ),
                     ),
                   ),
                 ),

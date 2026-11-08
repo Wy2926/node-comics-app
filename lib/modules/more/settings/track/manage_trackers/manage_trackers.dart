@@ -7,6 +7,9 @@ import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_manage_trackers.dart';
 
 class ManageTrackersScreen extends StatefulWidget {
   const ManageTrackersScreen({super.key});
@@ -26,6 +29,13 @@ class _ManageTrackersScreenState extends State<ManageTrackersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      return MobileManageTrackers(
+        preferences: trackPreferences,
+        onOpen: (preference) =>
+            context.push('/trackingDetail', extra: preference),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.manage_trackers)),
       body: GridViewWidget(

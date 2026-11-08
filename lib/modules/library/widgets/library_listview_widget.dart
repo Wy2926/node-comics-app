@@ -3,14 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/widgets/continue_reader_button.dart';
-import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/extensions/manga_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_bookshelf_card.dart';
 
 class LibraryListViewWidget extends StatelessWidget {
   final List<Manga> entriesManga;
   final bool language;
+  final bool sourceBadge;
   final bool downloadedChapter;
   final Set<int> mangaIdsList;
   final bool continueReaderBtn;
@@ -20,6 +27,7 @@ class LibraryListViewWidget extends StatelessWidget {
     super.key,
     required this.entriesManga,
     required this.language,
+    this.sourceBadge = false,
     required this.downloadedChapter,
     required this.continueReaderBtn,
     required this.mangaIdsList,
@@ -36,6 +44,46 @@ class LibraryListViewWidget extends StatelessWidget {
         return Consumer(
           builder: (context, ref, child) {
             final isLongPressed = ref.watch(isLongPressedStateProvider);
+            if (isMobile && !isTv) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NodeLaneTokens.gutter,
+                ),
+                child: MobileBookshelfCard(
+                  title: entry.name ?? '',
+                  source: sourceBadge ? entry.source : null,
+                  language: language ? entry.lang : null,
+                  isLocal: entry.isLocalArchive ?? false,
+                  showLocal: localSource || sourceBadge,
+                  image: resolveCoverImage(entry, ref),
+                  list: true,
+                  first: index == 0,
+                  last: index == entriesManga.length - 1,
+                  selected: mangaIdsList.contains(entry.id),
+                  onTap: () => onTapEntry(
+                    isLongPressed: isLongPressed,
+                    ref: ref,
+                    context: context,
+                    entry: entry,
+                  ),
+                  onLongPress: () =>
+                      handleLongOrSecondaryTap(isLongPressed, ref, entry),
+                  selectionMode: isLongPressed,
+                  unreadCount: entry.unreadChaptersCount(settings),
+                  unreadLabel: entry.itemType == ItemType.anime
+                      ? context.l10n.unwatched
+                      : context.l10n.unread,
+                  downloadCount: libraryDownloadedCount(
+                    entry,
+                    ref,
+                    enabled: downloadedChapter,
+                  ),
+                  continueButton: continueReaderBtn && entry.chapters.isNotEmpty
+                      ? ContinueReaderButton(entry: entry, large: true)
+                      : null,
+                ),
+              );
+            }
             return Material(
               borderRadius: BorderRadius.circular(5),
               color: Colors.transparent,

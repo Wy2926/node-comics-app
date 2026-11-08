@@ -1,29 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/widgets/list_tile_widget.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 class DownloadedOnlyWidget extends ConsumerWidget {
-  const DownloadedOnlyWidget({super.key});
+  const DownloadedOnlyWidget({super.key, this.mobile = false});
+  final bool mobile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = l10nLocalizations(context);
     final downloadedOnly = ref.watch(downloadedOnlyStateProvider);
+    void change(bool value) =>
+        ref.read(downloadedOnlyStateProvider.notifier).setDownloadedOnly(value);
+    if (mobile) {
+      return NodeLaneSwitchRow(
+        title: l10n!.downloaded_only,
+        icon: NodeLaneIcons.of(context).download,
+        value: downloadedOnly,
+        onChanged: change,
+      );
+    }
     return ListTileWidget(
-      onTap: () => ref
-          .read(downloadedOnlyStateProvider.notifier)
-          .setDownloadedOnly(!downloadedOnly),
+      onTap: () => change(!downloadedOnly),
       icon: Icons.cloud_off_outlined,
       subtitle: l10n!.downloaded_only_description,
       title: l10n.downloaded_only,
-      trailing: Switch(
-        value: downloadedOnly,
-        onChanged: (value) => ref
-            .read(downloadedOnlyStateProvider.notifier)
-            .setDownloadedOnly(value),
-      ),
+      trailing: Switch(value: downloadedOnly, onChanged: change),
     );
   }
 }

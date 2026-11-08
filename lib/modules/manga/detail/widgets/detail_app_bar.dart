@@ -4,12 +4,16 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/download_quick_menu.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_actions.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 /// The detail page's app bar: the normal title/actions bar, or - while a
 /// long-press has put the chapter list into multi-select - a count plus
@@ -19,6 +23,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final Manga manga;
   final ItemType itemType;
   final bool isLocalArchive;
+  final double toolbarHeight;
 
   /// Every chapter currently shown, needed for "select all" - not
   /// derivable from a provider, it's whatever _buildWidget's own sort/filter
@@ -41,23 +46,87 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onDownload,
     required this.onShowFilterMenu,
     required this.onOverflowAction,
+    this.toolbarHeight = kToolbarHeight,
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+  Size get preferredSize => Size.fromHeight(toolbarHeight);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = l10nLocalizations(context)!;
+    final mobile = isMobile && !isTv;
     final isLongPressed = ref.watch(isLongPressedStateProvider);
     final chapterList = ref.watch(chaptersListStateProvider);
+    final mobileManga = mobile && itemType == ItemType.manga;
+
+    void cancelSelection() {
+      ref.read(chaptersListStateProvider.notifier).clear();
+      ref.read(isLongPressedStateProvider.notifier).update(false);
+    }
+
+    void selectAll() {
+      for (final chapter in chapters) {
+        ref.read(chaptersListStateProvider.notifier).selectAll(chapter);
+      }
+    }
+
+    void invertSelection() {
+      final allSelected = chapters.length == chapterList.length;
+      for (final chapter in chapters) {
+        ref.read(chaptersListStateProvider.notifier).selectSome(chapter);
+      }
+      if (allSelected && !mobileManga) {
+        ref.read(isLongPressedStateProvider.notifier).update(false);
+      }
+    }
+
+    if (mobileManga) {
+      if (isLongPressed) {
+        return nodeLaneSelectionAppBar(
+          context,
+          title: l10n.chapter_selected_count(chapterList.length),
+          cancelLabel: l10n.cancel,
+          selectAllLabel: l10n.bookshelf_select_all,
+          invertLabel: l10n.bookshelf_invert_selection,
+          onCancel: cancelSelection,
+          onSelectAll: chapters.isEmpty ? null : selectAll,
+          onInvert: chapters.isEmpty ? null : invertSelection,
+        );
+      }
+      return nodeLaneAppBar(
+        context,
+        title: ref.watch(offsetProvider.select((value) => value > 200))
+            ? manga.name ?? ''
+            : '',
+        titleStyle: NodeLaneTokens.of(context).readerLabel,
+        actions: [
+          if (!isLocalArchive) ...[
+            DownloadQuickMenu(
+              itemType: itemType,
+              manga: manga,
+              hasChapters: chapters.isNotEmpty,
+              onDownload: onDownload,
+            ),
+            const SizedBox(width: NodeLaneTokens.space8),
+          ],
+          MobileMangaDetailActionsButton(
+            bookTitle: manga.name ?? '',
+            localArchive: isLocalArchive,
+            favorite: manga.favorite ?? false,
+            onSelected: onOverflowAction,
+          ),
+        ],
+      );
+    }
+
     final checkCategoryList =
-        ref
+        (ref
             .watch(getMangaCategorieStreamProvider(itemType: itemType))
             .asData
             ?.value
             .isNotEmpty ??
-        false;
+        false);
     final isNotFiltering = ref.watch(
       chapterFilterResultStateProvider(manga: manga),
     );
@@ -69,53 +138,42 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
               title: Text(chapterList.length.toString()),
               backgroundColor: context.primaryColor.withValues(alpha: 0.2),
               leading: IconButton(
-                onPressed: () {
-                  ref.read(chaptersListStateProvider.notifier).clear();
-                  ref
-                      .read(isLongPressedStateProvider.notifier)
-                      .update(!isLongPressed);
-                },
-                icon: const Icon(Icons.clear),
+                tooltip: l10n.cancel,
+                onPressed: cancelSelection,
+                icon: Icon(
+                  mobile ? NodeLaneIcons.of(context).close : Icons.clear,
+                ),
               ),
               actions: [
                 IconButton(
-                  onPressed: () {
-                    for (var chapter in chapters) {
-                      ref.read(chaptersListStateProvider.notifier).selectAll(chapter);
-                    }
-                  },
+                  tooltip: MaterialLocalizations.of(context)
+                      .selectAllButtonLabel,
+                  onPressed: selectAll,
                   icon: const Icon(Icons.select_all),
                 ),
                 IconButton(
-                  onPressed: () {
-                    if (chapters.length == chapterList.length) {
-                      for (var chapter in chapters) {
-                        ref
-                            .read(chaptersListStateProvider.notifier)
-                            .selectSome(chapter);
-                      }
-                      ref
-                          .read(isLongPressedStateProvider.notifier)
-                          .update(false);
-                    } else {
-                      for (var chapter in chapters) {
-                        ref
-                            .read(chaptersListStateProvider.notifier)
-                            .selectSome(chapter);
-                      }
-                    }
-                  },
+                  tooltip: l10n.bookshelf_invert_selection,
+                  onPressed: invertSelection,
                   icon: const Icon(Icons.flip_to_back_rounded),
                 ),
               ],
             ),
           )
         : AppBar(
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
             title: ref.watch(offsetProvider.select((val) => val > 200))
-                ? Text(manga.name!, style: const TextStyle(fontSize: 17))
+                ? Text(
+                    manga.name!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 17),
+                  )
                 : null,
-            backgroundColor:
-                ref.watch(offsetProvider.select((val) => val == 0.0))
+            backgroundColor: mobile
+                ? NodeLaneTokens.of(context).canvas
+                : ref.watch(offsetProvider.select((val) => val == 0.0))
                 ? Colors.transparent
                 : Theme.of(context).scaffoldBackgroundColor,
             actions: [
@@ -124,17 +182,20 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 DownloadQuickMenu(
                   itemType: itemType,
                   manga: manga,
+                  hasChapters: chapters.isNotEmpty,
                   onDownload: onDownload,
                 ),
               ],
-              IconButton(
-                splashRadius: 20,
-                onPressed: onShowFilterMenu,
-                icon: Icon(
-                  Icons.filter_list_sharp,
-                  color: isNotFiltering ? null : Colors.yellow,
+              if (!mobile)
+                IconButton(
+                  tooltip: l10n.filter,
+                  splashRadius: 20,
+                  onPressed: onShowFilterMenu,
+                  icon: Icon(
+                    Icons.filter_list_sharp,
+                    color: isNotFiltering ? null : Colors.yellow,
+                  ),
                 ),
-              ),
               // The menu's items are conditional, so its values
               // are not its indices: keep label and value paired so
               // the centred TV menu cannot fire the wrong action.
@@ -170,28 +231,23 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 )
               else
                 PopupMenuButton(
+                  tooltip: l10n.more,
+                  icon: Icon(
+                    mobile && isApple ? Icons.more_horiz : Icons.more_vert,
+                  ),
                   popUpAnimationStyle: popupAnimationStyle,
                   itemBuilder: (context) {
                     return [
                       if (!isLocalArchive)
-                        PopupMenuItem<int>(
-                          value: 0,
-                          child: Text(l10n.refresh),
-                        ),
+                        PopupMenuItem<int>(value: 0, child: Text(l10n.refresh)),
                       if (manga.favorite! && checkCategoryList)
                         PopupMenuItem<int>(
                           value: 1,
                           child: Text(l10n.set_categories),
                         ),
                       if (!isLocalArchive)
-                        PopupMenuItem<int>(
-                          value: 2,
-                          child: Text(l10n.share),
-                        ),
-                      PopupMenuItem<int>(
-                        value: 3,
-                        child: Text(l10n.migrate),
-                      ),
+                        PopupMenuItem<int>(value: 2, child: Text(l10n.share)),
+                      PopupMenuItem<int>(value: 3, child: Text(l10n.migrate)),
                       PopupMenuItem<int>(
                         value: 6,
                         child: Text(l10n.mass_migration_title),

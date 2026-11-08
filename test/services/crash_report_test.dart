@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/eval/lnreader/m_plugin.dart';
 import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/services/crash_report_issue.dart';
 import 'package:path/path.dart' as p;
@@ -339,14 +340,21 @@ void main() {
     });
 
     test('and an LNReader plugin returning nothing usable', () {
-      // #936, in both the old wording and the clearer one that replaced it.
-      expect(isExtensionFailure('path is null'), true);
       expect(
-        isExtensionFailure(
-          'Exception: The source returned a novel with no path, so it cannot '
-          'be opened. This is the extension rather than Mangayomi.',
+        () => SourceNovel.fromJson({'name': 'Missing path'}),
+        throwsA(
+          isA<Exception>()
+              .having(
+                (error) => error.toString(),
+                'description',
+                contains('NodeLane Comics'),
+              )
+              .having(
+                (error) => isExtensionFailure(error.toString()),
+                'extension classification',
+                isTrue,
+              ),
         ),
-        true,
       );
     });
 
@@ -588,32 +596,42 @@ void main() {
     );
 
     test('opens the repository form with the fields already filled', () {
-      final url = buildIssueUrl(report, appVersion: '0.8.8', device: 'Pixel 5');
+      final url = buildIssueUrl(
+        report,
+        appVersion: '0.1.0 (1)',
+        device: 'iPhone, iOS 18.0',
+      );
 
+      expect(url.scheme, 'https');
       expect(url.host, 'github.com');
-      expect(url.path, '/kodjodevf/mangayomi/issues/new');
+      expect(url.path, '/Wy2926/node-comics-app/issues/new');
       expect(url.queryParameters['template'], 'report_issue.yml');
-      expect(url.queryParameters['mangayomi-version'], '0.8.8');
-      expect(url.queryParameters['device'], 'Pixel 5');
+      expect(url.queryParameters['nodelane-comics-version'], '0.1.0 (1)');
+      expect(url.queryParameters, isNot(contains('mangayomi-version')));
+      expect(url.queryParameters['device'], 'iPhone, iOS 18.0');
       expect(url.queryParameters['title'], contains('RangeError'));
       expect(url.queryParameters['title'], contains('/browse'));
-    });
-
-    test('says what happened and what the app thinks caused it', () {
-      final url = buildIssueUrl(report, appVersion: '0.8.8', device: 'Pixel 5');
-
       expect(url.queryParameters['reproduce-steps'], contains('/browse'));
       expect(url.queryParameters['actual-behavior'], contains('RangeError'));
       expect(url.queryParameters['actual-behavior'], contains('Likely cause'));
       expect(url.queryParameters['other-details'], contains('#0 somewhere'));
-    });
 
-    test('is a link, so nothing is sent by building it', () {
-      final url = buildIssueUrl(report, appVersion: '0.8.8', device: 'Pixel 5');
-      expect(url.scheme, 'https');
-      // Everything travels as query parameters on a page the reader lands on
-      // and can read before submitting.
-      expect(url.queryParameters.keys, contains('actual-behavior'));
+      // Every prefilled value must reach a real field in the shipped form.
+      final template = File(
+        '.github/ISSUE_TEMPLATE/${url.queryParameters['template']}',
+      ).readAsStringSync();
+      final fieldIds = RegExp(
+        r'^\s+id: ([\w-]+)$',
+        multiLine: true,
+      ).allMatches(template).map((match) => match.group(1)!).toSet();
+      expect(
+        fieldIds,
+        containsAll(
+          url.queryParameters.keys.where(
+            (key) => key != 'template' && key != 'title',
+          ),
+        ),
+      );
     });
 
     test('refuses to build links for external and extension failures', () {

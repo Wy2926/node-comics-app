@@ -1,8 +1,8 @@
-import 'package:bot_toast/bot_toast.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/backup_decoder.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/backup_format.dart';
@@ -12,8 +12,12 @@ import 'package:mangayomi/modules/more/data_and_storage/widgets/rollback_last_ch
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
 import 'package:mangayomi/modules/more/widgets/dialog_actions.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/utils/error_toast.dart';
+import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_restore_choices.dart';
 
 /// Whether there's a sync server configured to ask about (regardless of
 /// whether sync is currently on or off) and, if so, whether it's on.
@@ -44,14 +48,20 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
     final (hasServer, syncOn) = _syncState(ref);
 
     final backupType = peekBackupType(path);
+    if (backupType == BackupType.unknown) {
+      showNodeLaneNotice(
+        context.l10n.notice_backup_unsupported,
+        kind: NodeLaneNoticeKind.error,
+      );
+      return false;
+    }
     final isMihonFamily =
         backupType == BackupType.mihon ||
         backupType == BackupType.aniyomi ||
         backupType == BackupType.neko;
 
-    if (backupType == BackupType.mangayomi) {
-      await _performMangayomiRestore(context, ref, path);
-      return true;
+    if (backupType == BackupType.nodeLane) {
+      return await _performNodeLaneRestore(context, ref, path);
     }
 
     if (!isMihonFamily) {
@@ -85,7 +95,10 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final preview = previewTachiBkImport(path);
     if (preview == null) {
-      botToast("Unsupported or unrecognized backup file.");
+      showNodeLaneNotice(
+        "Unsupported or unrecognized backup file.",
+        kind: NodeLaneNoticeKind.error,
+      );
       return false;
     }
 
@@ -151,8 +164,14 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
             description: resultDescription,
           ),
         );
-      } catch (_) {
+      } catch (e, s) {
         safetyBackupPath = null;
+        recordError(
+          e,
+          stack: s,
+          source: "safety_backup",
+          level: LogLevel.warning,
+        );
       }
 
       // false, not a bare return: performRestore reports whether anything was
@@ -175,10 +194,10 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) return false;
     ref.invalidate(lastLibrarySnapshotProvider);
 
-    _showImportResultToast(context, ref, resultDescription, safetyBackupPath);
+    _showImportResultNotice(context, ref, resultDescription, safetyBackupPath);
     return true;
-  } catch (e) {
-    botToast("Error restoring backup: $e");
+  } catch (e, s) {
+    toastError(e, stack: s, source: 'restore');
     if (safetyBackupPath != null && context.mounted) {
       offerLibraryRollback(context, ref, safetyBackupPath);
     }
@@ -186,10 +205,10 @@ Future<bool> performRestore(BuildContext context, WidgetRef ref) async {
   }
 }
 
-/// Native mangayomi-format restore, with the same merge/replace choice and
+/// Native NodeLane restore, with the same merge/replace choice and
 /// category/source conflict resolution the Mihon-family path already has -
 /// the dialogs below are shared with it, not duplicated.
-Future<void> _performMangayomiRestore(
+Future<bool> _performNodeLaneRestore(
   BuildContext context,
   WidgetRef ref,
   String path,
@@ -198,46 +217,63 @@ Future<void> _performMangayomiRestore(
   try {
     final Map<String, dynamic> backup;
     try {
-      backup = await decodeMangayomiBackup(path, context);
-    } catch (e) {
-      if (context.mounted) botToast("$e");
-      return;
+      backup = await decodeNodeLaneBackup(path, context);
+    } catch (e, s) {
+      recordError(
+        e,
+        stack: s,
+        source: 'restore_decode',
+        level: LogLevel.warning,
+      );
+      if (context.mounted) {
+        showNodeLaneNotice("$e", kind: NodeLaneNoticeKind.error);
+      }
+      return false;
     }
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
     final l10n = context.l10n;
-    final preview = previewMangayomiBackup(backup);
+    final preview = previewNodeLaneBackup(backup);
 
     final keepExisting = await _chooseImportMode(context);
-    if (keepExisting == null || !context.mounted) return;
+    if (keepExisting == null || !context.mounted) return false;
 
     var categoryDecisions = const <String, bool>{};
     var sourceDecisions = const <String, int>{};
 
     if (keepExisting && preview.conflictingCategories.isNotEmpty) {
-      if (!context.mounted) return;
+      if (!context.mounted) return false;
       final decisions = await _resolveCategoryConflicts(
         context,
         preview.conflictingCategories,
       );
-      if (decisions == null || !context.mounted) return;
+      if (decisions == null || !context.mounted) return false;
       categoryDecisions = decisions;
     }
 
     if (preview.unmatchedSourceNames.isNotEmpty) {
-      if (!context.mounted) return;
+      if (!context.mounted) return false;
       final decisions = await _resolveSourceConflicts(
         context,
         preview.unmatchedSourceNames,
       );
-      if (decisions == null || !context.mounted) return;
+      if (decisions == null || !context.mounted) return false;
       sourceDecisions = decisions;
     }
 
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
     final proceed = keepExisting
         ? await _confirmImportSummary(context, preview)
         : await _confirmReplaceSummary(context, preview);
-    if (proceed != true || !context.mounted) return;
+    if (proceed != true || !context.mounted) return false;
+
+    // Same question the other backup formats ask: a restore that the sync
+    // server is never told about leaves the server on the old library.
+    bool? syncAfterRestore;
+    final (hasServer, syncOn) = _syncState(ref);
+    if (hasServer) {
+      syncAfterRestore = await confirmSyncAfterRestore(context, syncOn: syncOn);
+      if (!context.mounted) return false;
+    }
 
     final resultDescription = keepExisting
         ? l10n.import_result_message(
@@ -249,7 +285,7 @@ Future<void> _performMangayomiRestore(
             preview.newSeriesCount + preview.updatedSeriesCount,
           );
 
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
     showBusyDialog(context, l10n.restoring_backup);
     try {
       try {
@@ -261,11 +297,17 @@ Future<void> _performMangayomiRestore(
             description: resultDescription,
           ),
         );
-      } catch (_) {
+      } catch (e, s) {
         safetyBackupPath = null;
+        recordError(
+          e,
+          stack: s,
+          source: "safety_backup",
+          level: LogLevel.warning,
+        );
       }
 
-      if (!context.mounted) return;
+      if (!context.mounted) return false;
       await ref.watch(
         doRestoreProvider(
           path: path,
@@ -273,21 +315,24 @@ Future<void> _performMangayomiRestore(
           merge: keepExisting,
           categoryDecisions: categoryDecisions,
           sourceDecisions: sourceDecisions,
-          decodedMangayomiBackup: backup,
+          decodedNodeLaneBackup: backup,
+          syncAfterRestore: syncAfterRestore,
         ).future,
       );
     } finally {
       if (context.mounted) hideBusyDialog(context);
     }
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
     ref.invalidate(lastLibrarySnapshotProvider);
 
-    _showImportResultToast(context, ref, resultDescription, safetyBackupPath);
-  } catch (e) {
-    botToast("Error restoring backup: $e");
+    _showImportResultNotice(context, ref, resultDescription, safetyBackupPath);
+    return true;
+  } catch (e, s) {
+    toastError(e, stack: s, source: 'restore');
     if (safetyBackupPath != null && context.mounted) {
       offerLibraryRollback(context, ref, safetyBackupPath);
     }
+    return false;
   }
 }
 
@@ -296,7 +341,8 @@ Future<bool?> _confirmPlainRestore(BuildContext context) {
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
+        scrollable: isMobile && !isTv,
         title: Text(l10n.restore_backup),
         content: Row(
           children: [
@@ -315,11 +361,16 @@ Future<bool?> _confirmPlainRestore(BuildContext context) {
 }
 
 Future<bool?> _chooseImportMode(BuildContext context) {
+  if (isMobile && !isTv) {
+    return Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const MobileRestoreMode()));
+  }
   final l10n = context.l10n;
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
         title: Text(l10n.import_mode_title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -367,6 +418,13 @@ Future<Map<String, bool>?> _resolveCategoryConflicts(
   BuildContext context,
   List<String> conflicts,
 ) async {
+  if (isMobile && !isTv) {
+    return Navigator.of(context).push<Map<String, bool>>(
+      MaterialPageRoute(
+        builder: (_) => MobileRestoreCategories(conflicts: conflicts),
+      ),
+    );
+  }
   final l10n = context.l10n;
   final decisions = {for (final name in conflicts) name: true};
   return showDialog<Map<String, bool>>(
@@ -374,7 +432,7 @@ Future<Map<String, bool>?> _resolveCategoryConflicts(
     builder: (dialogContext) {
       return StatefulBuilder(
         builder: (dialogContext, setState) {
-          return AlertDialog(
+          return NodeLaneAlertDialog(
             title: Text(l10n.category_conflict_title),
             content: SizedBox(
               width: double.maxFinite,
@@ -435,6 +493,18 @@ Future<Map<String, int>?> _resolveSourceConflicts(
   BuildContext context,
   Map<String, ItemType> unmatched,
 ) async {
+  if (isMobile && !isTv) {
+    final sources = {
+      for (final type in unmatched.values.toSet())
+        type: installedSourcesFor(type),
+    };
+    return Navigator.of(context).push<Map<String, int>>(
+      MaterialPageRoute(
+        builder: (_) =>
+            MobileRestoreSources(unmatched: unmatched, sources: sources),
+      ),
+    );
+  }
   final l10n = context.l10n;
   final selections = <String, int?>{
     for (final name in unmatched.keys) name: null,
@@ -444,7 +514,7 @@ Future<Map<String, int>?> _resolveSourceConflicts(
     builder: (dialogContext) {
       return StatefulBuilder(
         builder: (dialogContext, setState) {
-          return AlertDialog(
+          return NodeLaneAlertDialog(
             title: Text(l10n.source_conflict_title),
             content: SizedBox(
               width: double.maxFinite,
@@ -565,7 +635,8 @@ Future<bool?> _confirmImportSummary(
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
+        scrollable: isMobile && !isTv,
         title: Text(l10n.import_summary_title),
         content: Text(
           l10n.import_summary_message(
@@ -593,51 +664,38 @@ Future<bool?> _confirmReplaceSummary(
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) {
-      return AlertDialog(
+      return NodeLaneAlertDialog(
+        scrollable: isMobile && !isTv,
         title: Text(l10n.replace_summary_title),
         content: Text(l10n.replace_summary_message(currentCount, backupCount)),
         actions: dialogCancelConfirmActions(
           dialogContext: dialogContext,
           confirmLabel: l10n.replace_summary_confirm,
-          confirmColor: Colors.red,
+          destructive: true,
         ),
       );
     },
   );
 }
 
-void _showImportResultToast(
+void _showImportResultNotice(
   BuildContext context,
   WidgetRef ref,
   String resultDescription,
   String? safetyBackupPath,
 ) {
   final l10n = context.l10n;
-  BotToast.showNotification(
-    animationDuration: const Duration(milliseconds: 200),
-    animationReverseDuration: const Duration(milliseconds: 200),
-    duration: const Duration(seconds: 8),
-    backButtonBehavior: BackButtonBehavior.none,
-    leading: (_) => Image.asset(appIconAssets[1], height: 32),
-    title: (_) => Text(
-      resultDescription,
-      style: const TextStyle(fontWeight: FontWeight.bold),
-    ),
-    trailing: safetyBackupPath == null
+  showNodeLaneNotice(
+    l10n.notice_import_completed,
+    description: resultDescription,
+    kind: NodeLaneNoticeKind.recovery,
+    actionLabel: safetyBackupPath == null ? null : l10n.roll_back,
+    onAction: safetyBackupPath == null
         ? null
-        : (_) => UnconstrainedBox(
-            alignment: Alignment.topLeft,
-            child: TextButton(
-              onPressed: () =>
-                  offerLibraryRollback(context, ref, safetyBackupPath),
-              child: Text(
-                l10n.roll_back,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          ),
-    enableSlideOff: true,
-    onlyOne: true,
-    crossPage: true,
+        : () {
+            if (context.mounted) {
+              offerLibraryRollback(context, ref, safetyBackupPath);
+            }
+          },
   );
 }

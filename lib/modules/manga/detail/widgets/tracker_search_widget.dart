@@ -7,9 +7,11 @@ import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+
+import 'mobile_tracker_search.dart';
 
 class TrackerWidgetSearch extends ConsumerStatefulWidget {
   final ItemType itemType;
@@ -82,7 +84,7 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
               height: context.height(0.3),
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: const ProgressCenter(),
+                child: const NodeLaneEmptyState.loading(),
               ),
             )
           : Padding(
@@ -285,6 +287,14 @@ Future<dynamic> trackersSearchDraggableMenu(
   required Track track,
   required ItemType itemType,
 }) async {
+  if (isMobile && !isTv) {
+    return Navigator.of(context).push<TrackSearch>(
+      MaterialPageRoute(
+        builder: (_) =>
+            MobileTrackerSearchScreen(track: track, itemType: itemType),
+      ),
+    );
+  }
   var padding = MediaQuery.of(context).padding;
   return await showDialog(
     context: context,

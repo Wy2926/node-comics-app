@@ -1,9 +1,12 @@
+import 'package:mangayomi/utils/nodelane_brand.dart';
+
 class ChapterItem {
   String name;
   String path;
   String? releaseTime;
   int? chapterNumber;
   String? page;
+  String? scanlator;
 
   ChapterItem({
     required this.name,
@@ -11,6 +14,7 @@ class ChapterItem {
     this.releaseTime,
     this.chapterNumber,
     this.page,
+    this.scanlator,
   });
 
   factory ChapterItem.fromJson(Map<String, dynamic> json) {
@@ -20,9 +24,12 @@ class ChapterItem {
       releaseTime: json['releaseTime'],
       chapterNumber: json['chapterNumber'] != null
           ? (json['chapterNumber'] as num?)?.toInt() ??
-                int.tryParse(json['chapterNumber'])
+                int.tryParse(json['chapterNumber'].toString())
           : null,
       page: json['page'],
+      scanlator: json['scanlator'] is List
+          ? (json['scanlator'] as List).join(', ')
+          : json['scanlator']?.toString(),
     );
   }
 
@@ -33,6 +40,7 @@ class ChapterItem {
       'releaseTime': releaseTime,
       'chapterNumber': chapterNumber,
       'page': page,
+      'scanlator': scanlator,
     };
   }
 }
@@ -65,6 +73,7 @@ class SourceNovel extends NovelItem {
   String? status;
   double? rating;
   List<ChapterItem>? chapters;
+  int? totalPages;
 
   SourceNovel({
     required super.name,
@@ -77,17 +86,15 @@ class SourceNovel extends NovelItem {
     this.status,
     this.rating,
     this.chapters,
+    this.totalPages,
   });
 
   factory SourceNovel.fromJson(Map<String, dynamic> json) {
     if (json['path'] == null) {
-      // Reported as "path is null" and filed as an app bug (#936), because a
-      // bare string says nothing about whose fault it is. A novel with no
-      // path came from the plugin, and the fix belongs wherever that plugin
-      // is maintained.
+      // Missing paths are source failures; direct readers to its maintainer.
       throw Exception(
-        'The source returned a novel with no path, so it cannot be opened. '
-        'This is the extension rather than Mangayomi'
+        'The source returned a novel with no path, so '
+        '${NodeLaneBrand.displayName} cannot open it. Contact the source maintainer'
         '${json['name'] is String ? ' (while reading "${json['name']}")' : ''}.',
       );
     }
@@ -106,6 +113,9 @@ class SourceNovel extends NovelItem {
       chapters: (json['chapters'] as List<dynamic>?)
           ?.map((item) => ChapterItem.fromJson(item))
           .toList(),
+      totalPages: json['totalPages'] is int
+          ? json['totalPages'] as int
+          : int.tryParse(json['totalPages']?.toString() ?? ''),
     );
   }
 
@@ -122,6 +132,7 @@ class SourceNovel extends NovelItem {
       'status': status,
       'rating': rating,
       'chapters': chapters?.map((item) => item.toJson()).toList(),
+      'totalPages': totalPages,
     };
   }
 }

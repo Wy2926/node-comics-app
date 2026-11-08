@@ -1,9 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http_interceptor/http_interceptor.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -11,31 +8,22 @@ import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/more/settings/track/myanimelist/model.dart';
 import 'package:mangayomi/modules/more/settings/track/providers/track_providers.dart';
 import 'package:mangayomi/services/http/m_client.dart';
-import 'package:mangayomi/utils/localized_message.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 
 import 'base_tracker.dart';
+import 'expiring_oauth_tracker.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'trakt_tv.g.dart';
 
 @riverpod
-class TraktTv extends _$TraktTv implements BaseTracker {
+class TraktTv extends _$TraktTv
+    with ExpiringOAuthTracker
+    implements BaseTracker {
   final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
   static const _baseOAuthUrl = 'https://api.trakt.tv/oauth';
   static const _baseApiUrl = 'https://api.trakt.tv';
-  static final _isDesktop = (Platform.isWindows || Platform.isLinux);
-  static final _redirectUri = _isDesktop
-      ? 'http://localhost:43824'
-      : 'mangayomi://';
-  static const _clientId =
-      '5520c7e24da0d8d73ec80315b61b9849483583b013cb7f296c6db723eb9886a1';
-  static const _clientSecret =
-      'b512565ad92d4179290de257b6e435d03ee47b2e4371b3bd918081beb6121734';
-
-  String getFallbackClientId(String usedId) {
-    return _clientId;
-  }
+  static const _clientId = '';
 
   @override
   void build({
@@ -44,31 +32,6 @@ class TraktTv extends _$TraktTv implements BaseTracker {
     required dynamic widgetRef,
   }) {}
 
-  Future<bool?> login() async {
-    final callbackUrlScheme = _isDesktop
-        ? 'http://localhost:43824'
-        : 'mangayomi';
-    final loginUrl = _authUrl();
-
-    try {
-      final uri = await FlutterWebAuth2.authenticate(
-        url: "$loginUrl&redirect_uri=$_redirectUri",
-        callbackUrlScheme: callbackUrlScheme,
-      );
-      final code = Uri.parse(uri).queryParameters['code'];
-      if (code == null) return null;
-
-      final oAuthData = await _getOAuth(code);
-      final oAuth = _buildOAuth(oAuthData, _clientId);
-      final username = await _getUserName(oAuth.accessToken!);
-      _saveOAuth(username, oAuth);
-
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
   @override
   Future<List<TrackSearch>> fetchGeneralData({
     bool isManga = true,
@@ -76,7 +39,7 @@ class TraktTv extends _$TraktTv implements BaseTracker {
   }) async {
     /// isManga <> isMovie
     final type = isManga ? "movies" : "shows";
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final url = Uri.parse('$_baseApiUrl/$type/$rankingType').replace(
       queryParameters: {
         'extended': 'full,images',
@@ -126,73 +89,147 @@ class TraktTv extends _$TraktTv implements BaseTracker {
 
   @override
   Future<List<TrackSearch>> fetchUserData({bool isManga = true}) async {
+    // NOTE: In Trakt, isManga=true maps to "movies" and isManga=false to "shows".
+    // This follows the existing convention in the Trakt tracker implementation.
     final type = isManga ? "movies" : "shows";
-    final accessToken = await _getAccessToken();
-    final url = Uri.parse('$_baseApiUrl/sync/watched/$type')
+    final accessToken = await getAccessToken();
+
+    // Fetch watched items only
+    final watchedUrl = Uri.parse('$_baseApiUrl/sync/watched/$type')
         .replace(queryParameters: {"extended": "full,images"});
-    final result = await _makeGetRequest(url, accessToken);
-    final data = jsonDecode(result.body) as List?;
-    return data?.map((e) {
-          final type = e['movie'] != null ? "movie" : "show";
-          final typeName = type == 'movie' ? 'movies' : 'shows';
-          return TrackSearch(
-            mediaId: e[type]?['ids']?['trakt'],
-            summary: e[type]?['overview'] ?? 'No summary available.',
-            totalChapter: e[type]?['aired_episodes'] ?? 1,
-            coverUrl: (e['images']?['fanart'] as List?)?.isNotEmpty ?? false
-                ? 'https://wsrv.nl/?url=${e['images']?['fanart'][0]}'
-                : (e[type]?['images']?['fanart'] as List?)?.isNotEmpty ?? false
-                ? 'https://wsrv.nl/?url=${e[type]?['images']?['fanart'][0]}'
-                : (e['images']?['poster'] as List?)?.isNotEmpty ?? false
-                ? 'https://wsrv.nl/?url=${e['images']?['poster'][0]}'
-                : (e[type]?['images']?['poster'] as List?)?.isNotEmpty ?? false
-                ? 'https://wsrv.nl/?url=${e[type]?['images']?['poster'][0]}'
-                : '',
-            title: e[type]['title'] ?? 'Unknown Title',
-            score: double.tryParse(
-              (e[type]?["rating"] as num?)?.toDouble().toStringAsFixed(2) ?? "",
-            ),
-            startDate: e[type]?["first_aired"] ?? "",
-            publishingType: type,
-            publishingStatus: e[type]["status"],
-            trackingUrl:
-                "https://trakt.tv/$typeName/${e[type]?['ids']?['slug']}",
-            syncId: syncId,
-          );
-        }).toList() ??
-        [];
+    final watchedResult = await _makeGetRequest(watchedUrl, accessToken);
+    final watchedData = (jsonDecode(watchedResult.body) as List?) ?? [];
+
+    return _parseTraktItems(watchedData);
+  }
+
+  // Watchlist backlog fetching
+  Future<List<TrackSearch>> fetchWatchlistData({bool isManga = true}) async {
+    // NOTE: isManga=true maps to "movies", isManga=false to "shows" (Trakt convention).
+    final type = isManga ? "movies" : "shows";
+    final accessToken = await getAccessToken();
+
+    // Fetch watchlist items only
+    final watchlistUrl = Uri.parse('$_baseApiUrl/sync/watchlist/$type')
+        .replace(queryParameters: {"extended": "full,images"});
+    final watchlistResult = await _makeGetRequest(watchlistUrl, accessToken);
+    final watchlistData = (jsonDecode(watchlistResult.body) as List?) ?? [];
+
+    return _parseTraktItems(watchlistData);
+  }
+
+  // Shared parser helper that identifies items by inspecting JSON keys ('movie' vs 'show')
+  List<TrackSearch> _parseTraktItems(List items) {
+    final Set<int> seenMediaIds = {};
+    final List<TrackSearch> resultList = [];
+
+    for (final e in items) {
+      final itemType = e['movie'] != null ? "movie" : "show";
+      final typeName = itemType == 'movie' ? 'movies' : 'shows';
+      final mediaId = e[itemType]?['ids']?['trakt'] as int?;
+      if (mediaId == null || seenMediaIds.contains(mediaId)) continue;
+      seenMediaIds.add(mediaId);
+
+      resultList.add(
+        TrackSearch(
+          mediaId: mediaId,
+          summary: e[itemType]?['overview'] ?? 'No summary available.',
+          totalChapter: e[itemType]?['aired_episodes'] ?? 1,
+          coverUrl: (e['images']?['fanart'] as List?)?.isNotEmpty ?? false
+              ? 'https://wsrv.nl/?url=${e['images']?['fanart'][0]}'
+              : (e[itemType]?['images']?['fanart'] as List?)?.isNotEmpty ?? false
+              ? 'https://wsrv.nl/?url=${e[itemType]?['images']?['fanart'][0]}'
+              : (e['images']?['poster'] as List?)?.isNotEmpty ?? false
+              ? 'https://wsrv.nl/?url=${e['images']?['poster'][0]}'
+              : (e[itemType]?['images']?['poster'] as List?)?.isNotEmpty ?? false
+              ? 'https://wsrv.nl/?url=${e[itemType]?['images']?['poster'][0]}'
+              : '',
+          title: e[itemType]['title'] ?? 'Unknown Title',
+          score: double.tryParse(
+            (e[itemType]?["rating"] as num?)?.toDouble().toStringAsFixed(2) ?? "",
+          ),
+          startDate: e[itemType]?["first_aired"] ?? "",
+          publishingType: itemType,
+          publishingStatus: e[itemType]["status"],
+          trackingUrl:
+              "https://trakt.tv/$typeName/${e[itemType]?['ids']?['slug']}",
+          syncId: syncId,
+        ),
+      );
+    }
+    return resultList;
   }
 
   @override
   Future<Track?> findLibItem(Track track, bool isManga) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final isMovie =
         track.trackingUrl?.replaceAll("https://trakt.tv/", "").split("/")[0] ==
         "movies";
-    final url = Uri.parse(
-      '$_baseApiUrl/sync/history/${isMovie ? "movies" : "shows"}/${track.mediaId}',
+    final type = isMovie ? "movies" : "shows";
+
+    // Check history first
+    final historyUrl = Uri.parse(
+      '$_baseApiUrl/sync/history/$type/${track.mediaId}',
     ).replace(queryParameters: {"extended": "full", "page": "1", "limit": "3000"});
-    final result = await _makeGetRequest(url, accessToken);
-    final data = jsonDecode(result.body) as List?;
-    if (data?.isNotEmpty ?? false) {
-      if (!isMovie) {
-        track.lastChapterRead = data!
+    final historyResult = await _makeGetRequest(historyUrl, accessToken);
+    final historyData = jsonDecode(historyResult.body) as List?;
+
+    if (historyData?.isNotEmpty ?? false) {
+      final data = historyData!;
+      if (isMovie) {
+        track.lastChapterRead = 1;
+        track.status = TrackStatus.completed;
+      } else {
+        track.lastChapterRead = data
             .where((e) => e["type"] == "episode")
+            .map((e) => e["episode"]?["ids"]?["trakt"])
+            .whereType<int>()
+            .toSet()
             .length;
+        if ((track.totalChapter ?? 0) > 0 &&
+            (track.lastChapterRead ?? 0) >= (track.totalChapter ?? 0)) {
+          track.status = TrackStatus.completed;
+        } else {
+          track.status = TrackStatus.watching;
+        }
       }
-      if ((track.lastChapterRead ?? 0) >= (track.totalChapter ?? 0)) {
-        track.finishedReadingDate = DateTime.tryParse(
-          data!.firstOrNull?["watched_at"],
-        )?.millisecondsSinceEpoch;
-      }
+      track.finishedReadingDate = DateTime.tryParse(
+        data.firstOrNull?["watched_at"] ?? "",
+      )?.millisecondsSinceEpoch;
       return track;
     }
-    return await update(track, isManga);
+
+    // Check watchlist if not in history
+    try {
+      final watchlistUrl = Uri.parse(
+        '$_baseApiUrl/sync/watchlist/$type',
+      ).replace(queryParameters: {"extended": "full"});
+      final watchlistResult = await _makeGetRequest(watchlistUrl, accessToken);
+      final watchlistData = jsonDecode(watchlistResult.body) as List?;
+
+      final inWatchlist = watchlistData?.any((e) {
+            final item = e[isMovie ? 'movie' : 'show'];
+            return item?['ids']?['trakt'] == track.mediaId;
+          }) ??
+          false;
+
+      if (inWatchlist) {
+        track.status = TrackStatus.planToWatch;
+        track.lastChapterRead = 0;
+        return track;
+      }
+    } catch (_) {}
+
+    // Not in history or watchlist - default to plan to watch without modifying remote
+    track.status = TrackStatus.planToWatch;
+    track.lastChapterRead = 0;
+    return track;
   }
 
   @override
   Future<List<TrackSearch>> search(String query, bool isManga) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final url = Uri.parse('$_baseApiUrl/search/movie,show').replace(
       queryParameters: {
         'query': query,
@@ -238,127 +275,200 @@ class TraktTv extends _$TraktTv implements BaseTracker {
   }
 
   @override
-  List<TrackStatus> statusList(bool isManga) => [];
+  List<TrackStatus> statusList(bool isManga) => [
+    TrackStatus.watching,
+    TrackStatus.completed,
+    TrackStatus.planToWatch,
+  ];
 
   @override
   Future<Track> update(Track track, bool isManga) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await getAccessToken();
     final isMovie =
         track.trackingUrl?.replaceAll("https://trakt.tv/", "").split("/")[0] ==
         "movies";
-    /*final urlRemove = Uri.parse(
-      "$_baseApiUrl/sync/history/remove",
-    ).replace(queryParameters: {'clientId': _clientId});
-    final bodyRemove = isMovie
-        ? {
-            'movies': [
-              {
-                'ids': {'trakt': track.mediaId},
-              },
-            ],
-          }
-        : {
-            'shows': [
-              {
-                'ids': {'trakt': track.mediaId},
-              },
-            ],
-          };
-    await _makePostRequest(urlRemove, accessToken, bodyRemove);*/
-    final url = Uri.parse("$_baseApiUrl/sync/history")
-        .replace(queryParameters: {'extended': 'full', 'clientId': _clientId});
-    final body = isMovie
-        ? {
-            'movies': [
-              {
-                'watched_at': DateTime.timestamp().toIso8601String(),
-                'ids': {'trakt': track.mediaId},
-              },
-            ],
-          }
-        : {
-            'shows': [
-              {
-                'ids': {'trakt': track.mediaId},
-                'seasons': [
+
+    // 1. planToWatch 상태 -> Watchlist에 추가
+    if (track.status == TrackStatus.planToWatch) {
+      final watchlistUrl = Uri.parse("$_baseApiUrl/sync/watchlist")
+          .replace(queryParameters: {'clientId': _clientId});
+      final watchlistBody = isMovie
+          ? {
+              'movies': [
+                {
+                  'ids': {'trakt': track.mediaId},
+                },
+              ],
+            }
+          : {
+              'shows': [
+                {
+                  'ids': {'trakt': track.mediaId},
+                },
+              ],
+            };
+      await _makePostRequest(watchlistUrl, accessToken, watchlistBody);
+    } else {
+      // 2. watching / completed -> History에 동기화
+      // 실제로 본 에피소드 수를 결정: completed이고 totalChapter가 있으면 전체 수, 아니면 lastChapterRead
+      final lastRead = track.lastChapterRead ?? 0;
+      final episodesCount = track.status == TrackStatus.completed &&
+              (track.totalChapter ?? 0) > 0
+          ? track.totalChapter!
+          : lastRead;
+
+      // 에피소드가 0개이면 Trakt API가 빈 배열 에러를 냄 -> 건너뜀
+      if (!isMovie && episodesCount <= 0) return track;
+
+      List<Map<String, dynamic>> seasonPayload = [];
+      if (!isMovie) {
+        final seasons = await _getSeasonStructure(track.mediaId!, accessToken);
+        seasonPayload = seasons.isNotEmpty
+            ? _mapAbsoluteToSeasons(episodesCount, seasons)
+            : [
+                {
+                  'number': 1,
+                  'episodes': [
+                    for (int i = 1; i <= episodesCount; i++)
+                      {
+                        'watched_at': DateTime.timestamp().toIso8601String(),
+                        'number': i,
+                      },
+                  ],
+                }
+              ];
+      }
+
+      final historyUrl = Uri.parse("$_baseApiUrl/sync/history")
+          .replace(queryParameters: {'extended': 'full', 'clientId': _clientId});
+
+      final historyBody = isMovie
+          ? {
+              'movies': [
+                {
+                  'watched_at': DateTime.timestamp().toIso8601String(),
+                  'ids': {'trakt': track.mediaId},
+                },
+              ],
+            }
+          : {
+              'shows': [
+                {
+                  'ids': {'trakt': track.mediaId},
+                  'seasons': seasonPayload,
+                },
+              ],
+            };
+      await _makePostRequest(historyUrl, accessToken, historyBody);
+    }
+
+    // 3. Sync rating if user set a score (1-10)
+    if (track.score != null && track.score! > 0) {
+      try {
+        final ratingsUrl = Uri.parse("$_baseApiUrl/sync/ratings")
+            .replace(queryParameters: {'clientId': _clientId});
+        final ratingsBody = isMovie
+            ? {
+                'movies': [
                   {
-                    'number': 1,
-                    'episodes': [
-                      for (int i = 1; i <= (track.lastChapterRead ?? 1); i++)
-                        {
-                          'watched_at': DateTime.timestamp().toIso8601String(),
-                          'number': i,
-                        },
-                    ],
+                    'rating': track.score,
+                    'ids': {'trakt': track.mediaId},
                   },
                 ],
-              },
-            ],
-          };
-    await _makePostRequest(url, accessToken, body);
+              }
+            : {
+                'shows': [
+                  {
+                    'rating': track.score,
+                    'ids': {'trakt': track.mediaId},
+                  },
+                ],
+              };
+        await _makePostRequest(ratingsUrl, accessToken, ratingsBody);
+      } catch (e) {
+        AppLogger.log("Trakt sync rating error: $e");
+      }
+    }
+
     return track;
   }
 
-  Future<String> _getAccessToken({bool bypass = false}) async {
-    final track = widgetRef.read(tracksProvider(syncId: syncId));
-    final mALOAuth = OAuth.fromJson(
-      jsonDecode(track!.oAuth!) as Map<String, dynamic>,
-    );
-    final expiresIn = DateTime.fromMillisecondsSinceEpoch(mALOAuth.expiresIn!);
-    if (DateTime.now().isBefore(expiresIn)) return mALOAuth.accessToken!;
-    if (!bypass &&
-        (widgetRef.read(tracksProvider(syncId: syncId))?.refreshing ?? false)) {
-      return mALOAuth.accessToken!;
-    }
-    widgetRef.read(tracksProvider(syncId: syncId).notifier).setRefreshing(true);
-    final refreshed = await _tryRefreshToken(mALOAuth);
-    if (refreshed == null) {
-      widgetRef.read(tracksProvider(syncId: syncId).notifier).logout();
-      botToast(
-        localizedMessage((l10n) => l10n.tracker_token_expired("Trakt.tv")),
+  /// Returns a list of (seasonNumber, episodeCount) pairs, excluding season 0 (specials).
+  /// e.g. [(1, 26), (2, 11), (3, 24)]
+  Future<List<(int, int)>> _getSeasonStructure(
+    int mediaId,
+    String accessToken,
+  ) async {
+    try {
+      final url = Uri.parse('$_baseApiUrl/shows/$mediaId/seasons').replace(
+        queryParameters: {'extended': 'episodes'},
       );
-      throw Exception("Token expired");
+      final result = await _makeGetRequest(url, accessToken);
+      final data = jsonDecode(result.body) as List?;
+      if (data == null) return [];
+
+      return data
+          .where((s) => (s['number'] as int? ?? 0) > 0) // 시즌 0(스페셜) 제외
+          .map((s) {
+            final seasonNum = s['number'] as int;
+            final episodes = (s['episodes'] as List?)?.length ?? 0;
+            return (seasonNum, episodes);
+          })
+          .where((s) => s.$2 > 0) // 에피소드가 없는 시즌 제외
+          .toList();
+    } catch (e) {
+      AppLogger.log("Trakt getSeasonStructure error: $e");
+      return [];
     }
-    final username = await _getUserName(refreshed.accessToken!);
-    _saveOAuth(username, refreshed);
-    await Future.delayed(Duration(seconds: 3));
-    widgetRef
-        .read(tracksProvider(syncId: syncId).notifier)
-        .setRefreshing(false);
-    return refreshed.accessToken!;
   }
 
-  Future<OAuth?> _tryRefreshToken(OAuth oldOAuth) async {
-    String primaryClientId = oldOAuth.clientId ?? _clientId;
+  /// Maps an absolute episode count to a list of season/episode payloads for Trakt API.
+  /// e.g. absoluteEp=27, seasons=[(1,26),(2,11)] → [{season:1, episodes:[1..26]}, {season:2, episodes:[1]}]
+  List<Map<String, dynamic>> _mapAbsoluteToSeasons(
+    int absoluteEp,
+    List<(int, int)> seasons,
+  ) {
+    final result = <Map<String, dynamic>>[];
+    int remaining = absoluteEp;
+    final now = DateTime.timestamp().toIso8601String();
 
-    Future<OAuth?> tryRefresh(String cid) async {
-      final params = {
+    for (final (seasonNum, epCount) in seasons) {
+      if (remaining <= 0) break;
+
+      final watchCount = remaining >= epCount ? epCount : remaining;
+      result.add({
+        'number': seasonNum,
+        'episodes': [
+          for (int i = 1; i <= watchCount; i++)
+            {'watched_at': now, 'number': i},
+        ],
+      });
+      remaining -= watchCount;
+    }
+
+    return result;
+  }
+
+  @override
+  String get trackerName => "Trakt.tv";
+
+  @override
+  Future<void> saveRefreshedOAuth(OAuth oAuth) async =>
+      _saveOAuth(await _getUserName(oAuth.accessToken!), oAuth);
+
+  @override
+  Future<OAuth?> refreshOAuth(OAuth oldOAuth) async {
+    final response = await http.post(
+      Uri.parse('$_baseOAuthUrl/token'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
         'refresh_token': oldOAuth.refreshToken,
-        'client_id': cid,
-        'client_secret': _clientSecret,
-        'redirect_uri': _redirectUri,
+        'client_id': _clientId,
         'grant_type': 'refresh_token',
-      };
-      final response = await http.post(
-        Uri.parse('$_baseOAuthUrl/token'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(params),
-      );
-      if (response.statusCode != 200) return null;
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      return _buildOAuth(body, cid);
-    }
-
-    return await tryRefresh(primaryClientId) ??
-        await tryRefresh(getFallbackClientId(primaryClientId));
-  }
-
-  OAuth _buildOAuth(Map<String, dynamic> json, String clientId) {
-    return OAuth.fromJson(json)
-      ..expiresIn = DateTime.now()
-          .add(Duration(seconds: json['expires_in']))
-          .millisecondsSinceEpoch
-      ..clientId = clientId;
+      }),
+    );
+    if (response.statusCode != 200) return null;
+    return buildExpiringOAuth(jsonDecode(response.body), _clientId);
   }
 
   void _saveOAuth(String username, OAuth oAuth) {
@@ -380,26 +490,6 @@ class TraktTv extends _$TraktTv implements BaseTracker {
       accessToken,
     );
     return "${jsonDecode(response.body)['user']['username']}";
-  }
-
-  String _authUrl() {
-    return '$_baseOAuthUrl/authorize?client_id=$_clientId&response_type=code';
-  }
-
-  Future<dynamic> _getOAuth(String code) async {
-    final params = {
-      'code': code,
-      'client_id': _clientId,
-      'client_secret': _clientSecret,
-      'redirect_uri': _redirectUri,
-      'grant_type': 'authorization_code',
-    };
-    final response = await http.post(
-      Uri.parse('$_baseOAuthUrl/token'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(params),
-    );
-    return jsonDecode(response.body);
   }
 
   Future<Response> _makeGetRequest(Uri url, String accessToken) async {
@@ -433,18 +523,18 @@ class TraktTv extends _$TraktTv implements BaseTracker {
 
   @override
   String displayScore(int score) {
-    throw UnimplementedError();
+    return score.toString();
   }
 
   @override
   (int, int) getScoreValue() {
-    throw UnimplementedError();
+    return (10, 1);
   }
 
   @override
   Future<bool> checkRefresh() async {
     try {
-      await _getAccessToken(bypass: true);
+      await getAccessToken(bypass: true);
       AppLogger.log("Refreshed Trakt.tv token!");
       return true;
     } catch (e) {

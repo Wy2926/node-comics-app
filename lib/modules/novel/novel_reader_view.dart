@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -17,6 +16,9 @@ import 'package:mangayomi/modules/anime/widgets/desktop.dart';
 import 'package:mangayomi/modules/manga/reader/mixins/reader_gestures.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/auto_scroll_button.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_app_bar.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_novel_reader_screen.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_tts_settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/novel/novel_reader_controller_provider.dart';
 import 'package:mangayomi/modules/novel/tts/novel_tts_service.dart';
@@ -24,9 +26,12 @@ import 'package:mangayomi/modules/novel/tts/tts_player_bar.dart';
 import 'package:mangayomi/modules/novel/tts/tts_settings_tab.dart';
 import 'package:mangayomi/modules/novel/utils/novel_paginator.dart';
 import 'package:mangayomi/modules/novel/utils/novel_reader_fonts.dart';
+import 'package:mangayomi/modules/novel/widgets/novel_general_settings_tab.dart';
 import 'package:mangayomi/modules/novel/widgets/novel_reader_settings_sheet.dart';
+import 'package:mangayomi/modules/novel/widgets/mobile_novel_controls.dart';
+import 'package:mangayomi/modules/novel/widgets/mobile_novel_session_settings.dart';
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/get_html_content.dart';
 import 'package:mangayomi/src/rust/api/epub.dart';
@@ -42,6 +47,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:flutter/widgets.dart' as widgets;
+import 'package:mangayomi/modules/manga/reader/mixins/reader_auto_scroll.dart';
 
 typedef DoubleClickAnimationListener = void Function();
 
@@ -70,7 +76,16 @@ class NovelWebView extends ConsumerStatefulWidget {
 }
 
 class _NovelWebViewState extends ConsumerState<NovelWebView>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver, ReaderAutoScroll {
+  @override
+  ValueNotifier<bool> get autoScrollEnabled => _autoScroll;
+  @override
+  ValueNotifier<double> get autoScrollSpeed => _pageOffset;
+  @override
+  ScrollController get autoScrollController => _scrollController;
+  @override
+  bool get canAutoScroll => _isContinuousMode();
+
   /// Resolved in [initState], not lazily.
   ///
   /// As a `late` field with an initialiser this was read for the first time
@@ -139,8 +154,8 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
     _scrollController.dispose();
     _spreadController.dispose();
     _rebuildDetail.close();
-    _autoScrollTicker?.dispose();
-    _autoScroll.removeListener(_onAutoScrollChanged);
+    disposeAutoScroll();
+    _autoScroll.removeListener(onAutoScrollChanged);
     _autoScroll.value = false;
     _autoScroll.dispose();
     _autoScrollPage.dispose();
@@ -202,7 +217,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
     );
     WidgetsBinding.instance.addObserver(this);
     _readingStopwatch.start();
-    _autoScroll.addListener(_onAutoScrollChanged);
+    _autoScroll.addListener(onAutoScrollChanged);
     _initWakelock();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.addListener(onScroll);
@@ -211,7 +226,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
         fontSize = initFontSize;
       });
       if (_autoScroll.value && _isContinuousMode()) {
-        _startAutoScroll();
+        startAutoScroll();
       }
     });
     if (!isDesktop) SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -254,6 +269,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   bool _isView = false;
   final _keyboardFocusNode = FocusNode();
   bool _showTts = false;
+  bool _mobileControlOpen = false;
   String? _currentHtmlContent;
   final ValueNotifier<({int paragraph, int wordStart, int wordEnd})>
   _ttsProgress = ValueNotifier((paragraph: -1, wordStart: -1, wordEnd: -1));
@@ -285,78 +301,8 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   );
   late final _autoScrollPage = ValueNotifier(_autoScroll.value);
 
-  Ticker? _autoScrollTicker;
-  Duration _lastAutoScrollTick = Duration.zero;
-  bool _isUserDragging = false;
-
   bool _isContinuousMode() {
     return _readerMode.isContinuous;
-  }
-
-  void _onAutoScrollChanged() {
-    if (_autoScroll.value && _isContinuousMode()) {
-      _startAutoScroll();
-    } else {
-      _stopAutoScroll();
-    }
-  }
-
-  void _startAutoScroll() {
-    _autoScrollTicker ??= createTicker(_onAutoScrollTick);
-    _lastAutoScrollTick = Duration.zero;
-    if (!_autoScrollTicker!.isActive) {
-      _autoScrollTicker!.start();
-    }
-  }
-
-  void _stopAutoScroll() {
-    if (_autoScrollTicker != null && _autoScrollTicker!.isActive) {
-      _autoScrollTicker!.stop();
-    }
-    _lastAutoScrollTick = Duration.zero;
-  }
-
-  void _onAutoScrollTick(Duration elapsed) {
-    if (!mounted || !_autoScroll.value || !_isContinuousMode()) {
-      _stopAutoScroll();
-      return;
-    }
-    if (_isUserDragging) {
-      _lastAutoScrollTick = elapsed;
-      return;
-    }
-    if (_lastAutoScrollTick == Duration.zero) {
-      _lastAutoScrollTick = elapsed;
-      return;
-    }
-    final double dt =
-        (elapsed - _lastAutoScrollTick).inMicroseconds / 1000000.0;
-    _lastAutoScrollTick = elapsed;
-
-    if (dt <= 0 || dt > 0.1) return;
-
-    if (_scrollController.hasClients) {
-      final position = _scrollController.position;
-      final double pixelsPerSecond = _pageOffset.value * 10.0;
-      final double delta = pixelsPerSecond * dt;
-      final double currentOffset = position.pixels;
-      final double maxScroll = position.maxScrollExtent;
-      final double minScroll = position.minScrollExtent;
-
-      if (currentOffset >= maxScroll && delta > 0) {
-        _autoScroll.value = false;
-        _stopAutoScroll();
-        return;
-      }
-
-      final double newOffset = (currentOffset + delta).clamp(
-        minScroll,
-        maxScroll,
-      );
-      if (newOffset != currentOffset) {
-        _scrollController.jumpTo(newOffset);
-      }
-    }
   }
 
   void _scrollToTtsParagraph(int index) {
@@ -398,7 +344,6 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
         WakelockPlus.disable();
       }
     });
-    final backgroundColor = ref.watch(backgroundColorStateProvider);
     final fullScreenReader = ref.watch(fullScreenReaderStateProvider);
     final doublePageAuto = ref.watch(doublePageAutoStateProvider);
     final orientation = MediaQuery.orientationOf(context);
@@ -410,14 +355,16 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
 
     final prevEffectiveMode = _lastEffectivePageMode ?? effectivePageMode;
     final prevReaderMode = _lastReaderMode ?? _readerMode;
-    if (prevEffectiveMode != effectivePageMode || prevReaderMode != _readerMode) {
+    if (prevEffectiveMode != effectivePageMode ||
+        prevReaderMode != _readerMode) {
       if (!_readerMode.isContinuous) {
         _autoScroll.value = false;
-        _stopAutoScroll();
+        stopAutoScroll();
         final double progress;
         if (prevReaderMode.isContinuous) {
           progress = maxOffset > 0 ? (offset / maxOffset).clamp(0.0, 1.0) : 0.0;
-        } else if (_cachedPagination != null && _cachedPagination!.pageCount > 0) {
+        } else if (_cachedPagination != null &&
+            _cachedPagination!.pageCount > 0) {
           progress = prevEffectiveMode == PageMode.doublePage
               ? _cachedPagination!.progressForSpread(_currentSpreadIndex)
               : _cachedPagination!.progressForPage(_currentSpreadIndex);
@@ -436,10 +383,11 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
           }
         });
       } else {
-        final progress = _cachedPagination != null && _cachedPagination!.pageCount > 0
+        final progress =
+            _cachedPagination != null && _cachedPagination!.pageCount > 0
             ? (prevEffectiveMode == PageMode.doublePage
-                ? _cachedPagination!.progressForSpread(_currentSpreadIndex)
-                : _cachedPagination!.progressForPage(_currentSpreadIndex))
+                  ? _cachedPagination!.progressForSpread(_currentSpreadIndex)
+                  : _cachedPagination!.progressForPage(_currentSpreadIndex))
             : (maxOffset > 0 ? (offset / maxOffset).clamp(0.0, 1.0) : 0.0);
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
@@ -448,7 +396,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                 progress * _scrollController.position.maxScrollExtent;
             _scrollController.jumpTo(targetOffset);
             if (_autoScroll.value) {
-              _startAutoScroll();
+              startAutoScroll();
             }
           }
         });
@@ -469,10 +417,10 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
         onNotification: (notification) {
           if (notification is ScrollStartNotification) {
             if (notification.dragDetails != null) {
-              _isUserDragging = true;
+              isUserDragging = true;
             }
           } else if (notification is ScrollEndNotification) {
-            _isUserDragging = false;
+            isUserDragging = false;
           }
           if (notification is UserScrollNotification) {
             if (notification.direction == ScrollDirection.idle) {
@@ -549,7 +497,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                             scrolled = true;
                                             if (_autoScroll.value &&
                                                 _isContinuousMode()) {
-                                              _startAutoScroll();
+                                              startAutoScroll();
                                             }
                                           });
                                     }
@@ -603,7 +551,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                 PageMode.doublePage;
                                             final singlePageWidth = isDouble
                                                 ? (constraints.maxWidth - 1.0) /
-                                                    2
+                                                      2
                                                 : constraints.maxWidth;
                                             final pageHeight =
                                                 constraints.maxHeight;
@@ -669,15 +617,14 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                   0.0;
                                               final targetIndex = isDouble
                                                   ? _cachedPagination!
-                                                      .spreadForProgress(
-                                                        progress,
-                                                      )
+                                                        .spreadForProgress(
+                                                          progress,
+                                                        )
                                                   : _cachedPagination!
-                                                      .pageForProgress(
-                                                        progress,
-                                                      );
-                                              _currentSpreadIndex =
-                                                  targetIndex;
+                                                        .pageForProgress(
+                                                          progress,
+                                                        );
+                                              _currentSpreadIndex = targetIndex;
                                               WidgetsBinding.instance
                                                   .addPostFrameCallback((_) {
                                                     if (!mounted) return;
@@ -708,16 +655,17 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                   // from the expensive reader
                                                   // tree. The bottom bar already
                                                   // listens to this stream.
-                                                  _currentSpreadIndex = pageIndex;
+                                                  _currentSpreadIndex =
+                                                      pageIndex;
                                                   final progress = isDouble
                                                       ? pagination
-                                                          .progressForSpread(
-                                                            pageIndex,
-                                                          )
+                                                            .progressForSpread(
+                                                              pageIndex,
+                                                            )
                                                       : pagination
-                                                          .progressForPage(
-                                                            pageIndex,
-                                                          );
+                                                            .progressForPage(
+                                                              pageIndex,
+                                                            );
                                                   offset =
                                                       progress *
                                                       (maxOffset > 0
@@ -756,14 +704,18 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                               physics:
                                                                   const NeverScrollableScrollPhysics(),
                                                               child: _buildNovelHtmlWidget(
-                                                                context: context,
-                                                                htmlData: leftHtml,
+                                                                context:
+                                                                    context,
+                                                                htmlData:
+                                                                    leftHtml,
                                                                 fontFamily:
                                                                     fontFamily,
-                                                                fontSize: fontSize,
+                                                                fontSize:
+                                                                    fontSize,
                                                                 lineHeight:
                                                                     lineHeight,
-                                                                padding: padding,
+                                                                padding:
+                                                                    padding,
                                                                 textAlign:
                                                                     textAlignEnum,
                                                                 removeExtraSpacing:
@@ -772,7 +724,8 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                                     parsedTextColor,
                                                                 backgroundColor:
                                                                     parsedBackgroundColor,
-                                                                showTts: _showTts,
+                                                                showTts:
+                                                                    _showTts,
                                                                 tts: tts,
                                                               ),
                                                             ),
@@ -787,7 +740,8 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                               ),
                                                         ),
                                                         Expanded(
-                                                          child: rightHtml != null
+                                                          child:
+                                                              rightHtml != null
                                                               ? ClipRect(
                                                                   child: SingleChildScrollView(
                                                                     physics:
@@ -836,14 +790,18 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                         child: _buildNovelHtmlWidget(
                                                           context: context,
                                                           htmlData: pageHtml,
-                                                          fontFamily: fontFamily,
+                                                          fontFamily:
+                                                              fontFamily,
                                                           fontSize: fontSize,
-                                                          lineHeight: lineHeight,
+                                                          lineHeight:
+                                                              lineHeight,
                                                           padding: padding,
-                                                          textAlign: textAlignEnum,
+                                                          textAlign:
+                                                              textAlignEnum,
                                                           removeExtraSpacing:
                                                               removeExtraSpacing,
-                                                          textColor: parsedTextColor,
+                                                          textColor:
+                                                              parsedTextColor,
                                                           backgroundColor:
                                                               parsedBackgroundColor,
                                                           showTts: _showTts,
@@ -917,16 +875,14 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                   if (!_readerMode.isContinuous &&
                                       _cachedPagination != null &&
                                       _cachedPagination!.pageCount > 0) {
-                                    displayLabel = effectivePageMode ==
-                                            PageMode.doublePage
-                                        ? _cachedPagination!
-                                            .pageLabelForSpread(
-                                              _currentSpreadIndex,
-                                            )
-                                        : _cachedPagination!
-                                            .pageLabelForIndex(
-                                              _currentSpreadIndex,
-                                            );
+                                    displayLabel =
+                                        effectivePageMode == PageMode.doublePage
+                                        ? _cachedPagination!.pageLabelForSpread(
+                                            _currentSpreadIndex,
+                                          )
+                                        : _cachedPagination!.pageLabelForIndex(
+                                            _currentSpreadIndex,
+                                          );
                                   } else {
                                     final scrollPercentage = maxOffset > 0
                                         ? ((offset / maxOffset) * 100)
@@ -978,17 +934,21 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                     _gestureRightLeft(ref.watch(novelTapToScrollStateProvider)),
                     _gestureTopBottom(ref.watch(novelTapToScrollStateProvider)),
                     _appBar(),
-                    _bottomBar(backgroundColor, effectivePageMode),
+                    if (isMobile && !isTv)
+                      _mobileBottomBar(effectivePageMode)
+                    else
+                      _bottomBar(effectivePageMode),
                     ReaderAutoScrollButton(
                       isContinuousMode: _readerMode.isContinuous,
-                      isUiVisible: _isView,
+                      isUiVisible: _isView || (isMobile && !isTv && _showTts),
                       autoScrollPage: _autoScrollPage,
                       autoScroll: _autoScroll,
                       onToggle: () {
                         _autoScroll.value = !_autoScroll.value;
                       },
                     ),
-                    if (_ttsSupported &&
+                    if (!(isMobile && !isTv) &&
+                        _ttsSupported &&
                         _showTts &&
                         _currentHtmlContent != null)
                       Positioned(
@@ -1007,21 +967,19 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                   ],
                 );
               },
-              loading: () => scaffoldWith(
-                context,
-                Center(child: CircularProgressIndicator()),
-              ),
+              loading: () =>
+                  scaffoldWith(context, const NodeLaneEmptyState.loading()),
               error: (err, stack) {
                 if (widget.result.isRefreshing || widget.result.isReloading) {
                   return scaffoldWith(
                     context,
-                    Center(child: CircularProgressIndicator()),
+                    const NodeLaneEmptyState.loading(),
                   );
                 }
                 return scaffoldWith(
                   context,
-                  ErrorState(
-                    detail: err.toString(),
+                  NodeLaneEmptyState.error(
+                    message: err.toString(),
                     onRetry: () => ref.invalidate(
                       getHtmlContentProvider(chapter: widget.chapter),
                     ),
@@ -1209,6 +1167,156 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                 );
               }
             },
+    );
+  }
+
+  Future<void> _presentMobileControl(Future<void> Function() show) async {
+    if (_mobileControlOpen) return;
+    _mobileControlOpen = true;
+    final wasRunning = _autoScroll.value;
+    if (wasRunning) _autoScroll.value = false;
+    try {
+      await show();
+    } finally {
+      if (mounted) {
+        _mobileControlOpen = false;
+        if ((wasRunning || _autoScroll.value) &&
+            _autoScrollPage.value &&
+            _isContinuousMode()) {
+          _autoScroll.value = true;
+        }
+      }
+    }
+  }
+
+  Future<void> _openMobileSettings() => _presentMobileControl(() async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (settingsContext) => MobileNovelReaderScreen(
+          sessionControls: MobileNovelSessionSettings(
+            readerMode: _readerMode,
+            pageMode: _pageMode,
+            autoScroll: _autoScrollPage,
+            speed: _pageOffset,
+            onReaderModeChanged: (mode) {
+              _readerController.setReaderMode(mode);
+              setState(() => _readerMode = mode);
+            },
+            onPageModeChanged: (mode) {
+              _readerController.setPageMode(mode);
+              setState(() => _pageMode = mode);
+            },
+            onAutoScrollChanged: (value) {
+              _readerController.setAutoScroll(value, _pageOffset.value);
+              _autoScrollPage.value = value;
+              _autoScroll.value = value;
+            },
+            onSpeedPreview: (value) => _pageOffset.value = value,
+            onSpeedChanged: (value) =>
+                _readerController.setAutoScroll(_autoScrollPage.value, value),
+          ),
+          onOpenTts: _ttsSupported
+              ? () => Navigator.push<void>(
+                  settingsContext,
+                  MaterialPageRoute(
+                    builder: (_) => const MobileTtsSettingsScreen(),
+                  ),
+                )
+              : null,
+        ),
+      ),
+    );
+  });
+
+  Widget _mobileBottomBar(PageMode effectivePageMode) {
+    return MobileNovelPanel(
+      controlsVisible: _isView,
+      player: _ttsSupported && _showTts && _currentHtmlContent != null
+          ? TtsPlayerBar(
+              key: const ValueKey('novel-tts-player'),
+              mobile: true,
+              htmlContent: _currentHtmlContent!,
+              onClose: () {
+                if (mounted) setState(() => _showTts = false);
+              },
+            )
+          : null,
+      controls: StreamBuilder<double>(
+        stream: _rebuildDetail.stream,
+        builder: (context, _) {
+          final pagination = _cachedPagination;
+          final doublePage = effectivePageMode == PageMode.doublePage;
+          final total = doublePage
+              ? (pagination?.spreadCount ?? 1)
+              : (pagination?.pageCount ?? 1);
+          final index = _currentSpreadIndex.clamp(0, max(0, total - 1)).toInt();
+          final extent = _scrollController.hasClients
+              ? _scrollController.position.maxScrollExtent
+              : maxOffset;
+          final position = _scrollController.hasClients
+              ? _scrollController.offset
+              : offset;
+          final percentage = extent > 0
+              ? ((position / extent) * 100).clamp(0, 100).toInt()
+              : 0;
+          final label = doublePage
+              ? (pagination?.spreadLabelForSpread(index) ?? '${index + 1}')
+              : '${index + 1}';
+          return MobileNovelControls(
+            progress: _isContinuousMode()
+                ? percentage / 100
+                : total > 1
+                ? index / (total - 1)
+                : 0,
+            progressLabel: _isContinuousMode()
+                ? '$percentage%'
+                : '$label / ${pagination?.pageCount ?? total}',
+            onSeek: _isContinuousMode()
+                ? extent > 0
+                      ? (value) {
+                          if (_scrollController.hasClients) {
+                            _scrollController.jumpTo(
+                              _scrollController.position.maxScrollExtent *
+                                  value,
+                            );
+                          }
+                        }
+                      : null
+                : total > 1
+                ? (value) {
+                    if (_spreadController.hasClients) {
+                      _spreadController.jumpToPage(
+                        (value * (total - 1)).round(),
+                      );
+                    }
+                  }
+                : null,
+            onPreviousChapter: _readerController.hasPreviousChapter
+                ? () => _goToChapter(false)
+                : null,
+            onNextChapter: _readerController.hasNextChapter
+                ? () => _goToChapter(true)
+                : null,
+            chapterAction: btnToShowChapterListDialog(
+              context,
+              context.l10n.chapters,
+              chapter,
+              labeled: true,
+            ),
+            fontSize: ref.watch(novelFontSizeStateProvider),
+            onFontSizeChanged: (value) {
+              ref.read(novelFontSizeStateProvider.notifier).set(value);
+              setState(() => fontSize = value);
+            },
+            onSettings: _openMobileSettings,
+            listening: _showTts,
+            onListen: _ttsSupported
+                ? () => setState(() => _showTts = !_showTts)
+                : null,
+          );
+        },
+      ),
     );
   }
 
@@ -1404,10 +1512,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
     );
   }
 
-  Widget _bottomBar(
-    BackgroundColor backgroundColor,
-    PageMode effectivePageMode,
-  ) {
+  Widget _bottomBar(PageMode effectivePageMode) {
     if (!_isView && Platform.isIOS) {
       return const SizedBox.shrink();
     }
@@ -1484,16 +1589,15 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                     builder: (context, ref, child) {
                                       if (!_readerMode.isContinuous) {
                                         final pagination = _cachedPagination;
-                                        final isDouble = effectivePageMode ==
+                                        final isDouble =
+                                            effectivePageMode ==
                                             PageMode.doublePage;
                                         final totalItems = isDouble
                                             ? (pagination?.spreadCount ?? 1)
                                             : (pagination?.pageCount ?? 1);
-                                        final currentIndex =
-                                            _currentSpreadIndex.clamp(
-                                              0,
-                                              max(0, totalItems - 1),
-                                            ).toInt();
+                                        final currentIndex = _currentSpreadIndex
+                                            .clamp(0, max(0, totalItems - 1))
+                                            .toInt();
                                         final currentLabel = isDouble
                                             ? (pagination?.spreadLabelForSpread(
                                                     currentIndex,
@@ -1520,27 +1624,23 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                             ),
                                             Expanded(
                                               child: SliderTheme(
-                                                data: SliderTheme.of(context)
-                                                    .copyWith(
-                                                      trackHeight: 2.5,
-                                                      thumbShape:
-                                                          const RoundSliderThumbShape(
-                                                            enabledThumbRadius:
-                                                                6.0,
-                                                          ),
-                                                      overlayShape:
-                                                          const RoundSliderOverlayShape(
-                                                            overlayRadius: 12.0,
-                                                          ),
-                                                      activeTrackColor:
-                                                          Theme.of(context)
-                                                              .colorScheme
-                                                              .primary,
-                                                      thumbColor:
-                                                          Theme.of(context)
-                                                              .colorScheme
-                                                              .primary,
-                                                    ),
+                                                data: SliderTheme.of(context).copyWith(
+                                                  trackHeight: 2.5,
+                                                  thumbShape:
+                                                      const RoundSliderThumbShape(
+                                                        enabledThumbRadius: 6.0,
+                                                      ),
+                                                  overlayShape:
+                                                      const RoundSliderOverlayShape(
+                                                        overlayRadius: 12.0,
+                                                      ),
+                                                  activeTrackColor: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                  thumbColor: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
+                                                ),
                                                 child: Slider(
                                                   onChanged: (value) {
                                                     if (totalItems > 1 &&
@@ -1595,26 +1695,23 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                           ),
                                           Expanded(
                                             child: SliderTheme(
-                                              data: SliderTheme.of(context)
-                                                  .copyWith(
-                                                    trackHeight: 2.5,
-                                                    thumbShape:
-                                                        const RoundSliderThumbShape(
-                                                          enabledThumbRadius:
-                                                              6.0,
-                                                        ),
-                                                    overlayShape:
-                                                        const RoundSliderOverlayShape(
-                                                          overlayRadius: 12.0,
-                                                        ),
-                                                    activeTrackColor: Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary,
-                                                    thumbColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .primary,
-                                                  ),
+                                              data: SliderTheme.of(context).copyWith(
+                                                trackHeight: 2.5,
+                                                thumbShape:
+                                                    const RoundSliderThumbShape(
+                                                      enabledThumbRadius: 6.0,
+                                                    ),
+                                                overlayShape:
+                                                    const RoundSliderOverlayShape(
+                                                      overlayRadius: 12.0,
+                                                    ),
+                                                activeTrackColor: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                                thumbColor: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ),
                                               child: Slider(
                                                 onChanged: (value) {
                                                   if (_scrollController
@@ -1723,7 +1820,9 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                     PageMode.onePage,
                                   );
                                   ref
-                                      .read(doublePageAutoStateProvider.notifier)
+                                      .read(
+                                        doublePageAutoStateProvider.notifier,
+                                      )
                                       .set(false);
                                   setState(() {
                                     _readerMode = ReaderMode.ltr;
@@ -1735,7 +1834,9 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                     PageMode.doublePage,
                                   );
                                   ref
-                                      .read(doublePageAutoStateProvider.notifier)
+                                      .read(
+                                        doublePageAutoStateProvider.notifier,
+                                      )
                                       .set(false);
                                   setState(() {
                                     _pageMode = PageMode.doublePage;
@@ -1745,8 +1846,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                     ReaderMode.verticalContinuous,
                                   );
                                   setState(() {
-                                    _readerMode =
-                                        ReaderMode.verticalContinuous;
+                                    _readerMode = ReaderMode.verticalContinuous;
                                   });
                                 }
                               },
@@ -1763,8 +1863,8 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                               ),
                               tooltip: _readerMode.isContinuous
                                   ? context
-                                      .l10n
-                                      .reading_mode_vertical_continuous
+                                        .l10n
+                                        .reading_mode_vertical_continuous
                                   : (effectivePageMode == PageMode.doublePage
                                         ? context.l10n.double_page
                                         : context.l10n.single_page),

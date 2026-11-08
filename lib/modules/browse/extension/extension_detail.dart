@@ -1,9 +1,15 @@
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:convert';
+
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/source.dart';
@@ -18,6 +24,9 @@ import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 class ExtensionDetail extends ConsumerStatefulWidget {
   final Source source;
@@ -50,9 +59,156 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     }
   }
 
+  Future<void> _editCode() async {
+    final res = await context.push('/codeEditor', extra: source.id);
+    if (res != null && mounted) {
+      setState(() {
+        source = res as Source;
+        sourcePreference = getSourcePreference(source: source)
+            .map((e) => getSourcePreferenceEntry(e.key!, source.id!))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> _editMetadata() async {
+    final res = await context.push('/createExtension', extra: source);
+    if (res != null && mounted) setState(() => source = res as Source);
+  }
+
+  bool _busy = false;
+
+  Future<void> _clearCookies() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await MClient.deleteAllCookies(source.baseUrl ?? '');
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.cookies_deleted,
+          kind: NodeLaneNoticeKind.success,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.source_clear_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _confirmUninstall() async {
+    if (_busy) return;
+    final l10n = context.l10n;
+    final confirmed = await showNodeLaneConfirmation(
+      context,
+      title: source.name ?? '',
+      message: l10n.uninstall_extension(source.name ?? ''),
+      confirmLabel: l10n.uninstall,
+      destructive: true,
+    );
+    if (!mounted || confirmed != true || _busy) return;
+    setState(() => _busy = true);
+    try {
+      await sourceRepository.uninstall(ref, source);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.source_uninstall_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Widget _mobileView(BuildContext context) {
+    final icons = NodeLaneIcons.of(context);
+    final developerMode = ref.watch(developerModeStateProvider);
+    return MobileBrowsePage(
+      title: context.l10n.source_details,
+      leading: NodeLaneIconButton(
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        onPressed: () => Navigator.pop(context, source),
+        icon: icons.back,
+      ),
+      body: ListView(
+        padding: NodeLaneTokens.pagePadding,
+        children: [
+          if (source.sourceCodeLanguage == SourceCodeLanguage.mihon)
+            const ExtensionServerWarningBanner(),
+          NodeLaneRow.card(
+            title: source.name ?? '',
+            subtitle: [
+              completeLanguageName(source.lang ?? ''),
+              if (source.version?.isNotEmpty == true) 'v${source.version}',
+              if (source.isNsfw == true) '18+',
+            ].where((value) => value.isNotEmpty).join(' · '),
+            leading: NodeLaneWebsiteIcon(url: source.iconUrl),
+          ),
+          if (source.repo?.website?.isNotEmpty == true) ...[
+            const SizedBox(height: NodeLaneTokens.space24),
+            NodeLaneRow.card(
+              title: context.l10n.source_repository_website,
+              icon: icons.external,
+              onTap: () => _launchInBrowser(Uri.parse(source.repo!.website!)),
+            ),
+          ],
+          if (sourcePreference?.isNotEmpty == true) ...[
+            NodeLaneCatalogHeading(context.l10n.source_provided_settings),
+            SourcePreferenceWidget(
+              sourcePreference: sourcePreference!,
+              source: source,
+            ),
+          ],
+          const SizedBox(height: NodeLaneTokens.space24),
+          NodeLaneDisclosure(
+            title: context.l10n.source_advanced_actions,
+            icon: icons.extensions,
+            child: Column(
+              children: [
+                if (developerMode)
+                  NodeLaneRow(
+                    title: context.l10n.edit_code,
+                    icon: icons.code,
+                    onTap: _editCode,
+                  ),
+                if (developerMode && source.isLocal == true)
+                  NodeLaneRow(
+                    title: context.l10n.source_edit_metadata,
+                    icon: icons.edit,
+                    onTap: _editMetadata,
+                  ),
+                NodeLaneRow(
+                  title: context.l10n.source_clear_cookies,
+                  subtitle: context.l10n.source_clear_cookies_hint,
+                  icon: icons.cookies,
+                  onTap: _busy ? null : _clearCookies,
+                ),
+                NodeLaneRow(
+                  title: context.l10n.source_uninstall,
+                  icon: icons.delete,
+                  destructive: true,
+                  onTap: _busy ? null : _confirmUninstall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
+    if (isMobile && !isTv) return _mobileView(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.extension_detail),
@@ -193,23 +349,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                       elevation: 0,
                       shadowColor: Colors.transparent,
                     ),
-                    onPressed: () async {
-                      final res = await context.push(
-                        '/codeEditor',
-                        extra: source.id,
-                      );
-                      if (res != null && mounted) {
-                        setState(() {
-                          source = res as Source;
-                          sourcePreference = getSourcePreference(source: source)
-                              .map(
-                                (e) =>
-                                    getSourcePreferenceEntry(e.key!, source.id!),
-                              )
-                              .toList();
-                        });
-                      }
-                    },
+                    onPressed: _editCode,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -245,24 +385,14 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                       elevation: 0,
                       shadowColor: Colors.transparent,
                     ),
-                    onPressed: () async {
-                      final res = await context.push(
-                        '/createExtension',
-                        extra: source,
-                      );
-                      if (res != null && mounted) {
-                        setState(() {
-                          source = res as Source;
-                        });
-                      }
-                    },
+                    onPressed: _editMetadata,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
-                            "Edit metadata",
+                            context.l10n.source_edit_metadata,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -289,10 +419,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                     elevation: 0,
                     shadowColor: Colors.transparent,
                   ),
-                  onPressed: () async {
-                    MClient.deleteAllCookies(source.baseUrl ?? "");
-                    botToast(context.l10n.cookies_deleted);
-                  },
+                  onPressed: _clearCookies,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
@@ -321,42 +448,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                     elevation: 0,
                     shadowColor: Colors.transparent,
                   ),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) {
-                        return AlertDialog(
-                          title: Text(widget.source.name!),
-                          content: Text(
-                            l10n.uninstall_extension(widget.source.name!),
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                  },
-                                  child: Text(l10n.cancel),
-                                ),
-                                const SizedBox(width: 15),
-                                TextButton(
-                                  onPressed: () {
-                                    sourceRepository.uninstall(ref, source);
-
-                                    Navigator.pop(ctx);
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(l10n.ok),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: _confirmUninstall,
                   child: Text(
                     l10n.uninstall,
                     style: const TextStyle(

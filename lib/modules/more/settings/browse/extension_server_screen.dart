@@ -1,3 +1,6 @@
+import 'package:mangayomi/utils/version.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -7,7 +10,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/modules/more/settings/browse/extension_server/android_proxy_server_dialog.dart';
 import 'package:mangayomi/modules/more/settings/browse/extension_server/extension_server_release.dart';
 import 'package:mangayomi/modules/more/settings/browse/extension_server/extension_server_tiles.dart';
@@ -16,7 +18,6 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/services/crash_report.dart';
-import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/services/m_extension_server.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -24,6 +25,7 @@ import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../providers/storage_provider.dart';
+import 'mobile_extension_server_settings.dart';
 
 class ExtensionServerScreen extends ConsumerStatefulWidget {
   const ExtensionServerScreen({super.key});
@@ -47,15 +49,12 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   String _latestVersion = '';
   String _releaseCheckMessage = '';
   ExtensionServerRelease? _latestRelease;
-  bool _runtimeRunning = false;
-  bool _runtimeBusy = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_refreshStatus());
-      unawaited(_refreshRuntimeStatus());
+      if (mounted && (!isMobile || isTv)) unawaited(_refreshStatus());
     });
   }
 
@@ -89,6 +88,25 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     final autoStartServer = ref.watch(
       autoStartExtensionServerOnLaunchStateProvider,
     );
+    if (isMobile && !isTv) {
+      final server = MExtensionServerPlatform(ref);
+      return MobileExtensionServerSettings(
+        proxyAddress: androidProxyServer,
+        onProxyAddressChanged: ref
+            .read(androidProxyServerStateProvider.notifier)
+            .set,
+        onGetServer: _openMExtensionServerRelease,
+        showRuntime: Platform.isIOS,
+        autoStart: autoStartServer,
+        onAutoStartChanged: ref
+            .read(autoStartExtensionServerOnLaunchStateProvider.notifier)
+            .set,
+        checkRuntime: server.checkLocalServer,
+        onRuntimeChange: (running) => running
+            ? server.startServer(forceLocal: true)
+            : server.stopServer(),
+      );
+    }
     final actionLabel = !_isInstalled
         ? l10n.download
         : (_hasUpdateAvailable ? l10n.update_files : l10n.up_to_date);
@@ -287,47 +305,6 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
                   ),
                 ],
               ),
-              if (Platform.isIOS) ...[
-                const SizedBox(height: 24),
-                Text(
-                  l10n.zero_interpreter,
-                  style: TextStyle(fontSize: 13, color: context.primaryColor),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.zero_interpreter_description,
-                  style: TextStyle(color: context.secondaryColor),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.start_server_on_launch),
-                  value: autoStartServer,
-                  onChanged: ref
-                      .read(
-                        autoStartExtensionServerOnLaunchStateProvider.notifier,
-                      )
-                      .set,
-                ),
-                const SizedBox(height: 12),
-                ExtensionServerStatusTile(
-                  label: l10n.runtime_status,
-                  value: _runtimeRunning ? l10n.running : l10n.stopped,
-                  exists: _runtimeRunning,
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _runtimeBusy ? null : _toggleRuntime,
-                    icon: Icon(
-                      _runtimeRunning
-                          ? Icons.stop_circle_outlined
-                          : Icons.play_circle_outline,
-                    ),
-                    label: Text(_runtimeRunning ? l10n.stop : l10n.start),
-                  ),
-                ),
-              ],
             ],
             if (_showDesktopAdvancedMExtensionServerSection) ...[
               const SizedBox(height: 24),
@@ -443,34 +420,6 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     });
   }
 
-  Future<void> _refreshRuntimeStatus() async {
-    if (!Platform.isIOS) return;
-    var running = false;
-    try {
-      running = await MExtensionServerPlatform(ref).checkLocalServer();
-    } catch (_) {
-      // A missing local runtime is a stopped server, not a global app crash.
-    }
-    if (mounted) setState(() => _runtimeRunning = running);
-  }
-
-  Future<void> _toggleRuntime() async {
-    setState(() => _runtimeBusy = true);
-    final server = MExtensionServerPlatform(ref);
-    if (_runtimeRunning) {
-      await server.stopServer();
-    } else {
-      await server.startServer(forceLocal: true);
-    }
-    final running = await server.checkLocalServer();
-    if (mounted) {
-      setState(() {
-        _runtimeRunning = running;
-        _runtimeBusy = false;
-      });
-    }
-  }
-
   Future<void> _downloadOrUpdate() async {
     final l10n = l10nLocalizations(context)!;
     final release = _validateDownloadAction(l10n);
@@ -485,14 +434,17 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
       await MExtensionServerPlatform(ref).stopServer();
       await _installDownloadedBundle(bundleZip, installDir, l10n);
       await _startServerAndRefresh();
-      botToast(l10n.extension_server_files_ready);
+      showNodeLaneNotice(
+        l10n.extension_server_files_ready,
+        kind: NodeLaneNoticeKind.success,
+      );
     } catch (e) {
       if (wasInstalled) {
         await _startServerAndRefresh();
       } else {
         await _refreshStatus();
       }
-      botToast(e.toString(), second: 5);
+      showNodeLaneNotice(e.toString(), seconds: 5);
     } finally {
       await _cleanupTempDirectory(tempDir);
       _setDownloadState(isDownloading: false);
@@ -502,7 +454,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   Future<void> _chooseInstallDirectory() async {
     final l10n = l10nLocalizations(context)!;
     if (!_requiresJre) {
-      botToast(l10n.ios_extension_server_import_hint, second: 5);
+      showNodeLaneNotice(l10n.ios_extension_server_import_hint, seconds: 5);
       return;
     }
     final initialDirectory = _selectedInstallDirectory.isNotEmpty
@@ -529,20 +481,27 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     }
     final installDir = await _selectedInstallDirectoryOrNull();
     if (installDir == null || !await installDir.exists()) {
-      botToast(l10n.selected_folder_does_not_exist, second: 5);
+      showNodeLaneNotice(
+        l10n.selected_folder_does_not_exist,
+        seconds: 5,
+        kind: NodeLaneNoticeKind.error,
+      );
       return;
     }
     final resolvedPaths = await _resolvePathsInDirectory(installDir);
     if (!_hasResolvedPaths(resolvedPaths)) {
-      botToast(
+      showNodeLaneNotice(
         l10n.no_extension_server_files_found_in_selected_folder,
-        second: 5,
+        seconds: 5,
       );
       return;
     }
     await _persistResolvedPaths(resolvedPaths, installDir.path);
     await _restartServerAndRefresh();
-    botToast(l10n.extension_server_files_linked);
+    showNodeLaneNotice(
+      l10n.extension_server_files_linked,
+      kind: NodeLaneNoticeKind.success,
+    );
   }
 
   Future<void> _importExistingIosJar() async {
@@ -550,7 +509,11 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     final sourceFile = await _pickIosJarFile(l10n);
     if (sourceFile == null) return;
     if (!await sourceFile.exists()) {
-      botToast(l10n.selected_file_could_not_be_accessed, second: 5);
+      showNodeLaneNotice(
+        l10n.selected_file_could_not_be_accessed,
+        seconds: 5,
+        kind: NodeLaneNoticeKind.error,
+      );
       return;
     }
     final installDir = await _defaultInstallDirectory();
@@ -565,7 +528,10 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
       installDirectory: installDir.path,
     );
     await _restartServerAndRefresh();
-    botToast(l10n.extension_server_jar_imported);
+    showNodeLaneNotice(
+      l10n.extension_server_jar_imported,
+      kind: NodeLaneNoticeKind.success,
+    );
   }
 
   Future<void> _extractArchive(File archiveFile, Directory installDir) async {
@@ -640,7 +606,10 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
       Uri.parse(mExtensionServerReleaseUrl),
       mode: LaunchMode.externalApplication,
     )) {
-      botToast(l10n.could_not_launch_apk_bridge_page);
+      showNodeLaneNotice(
+        l10n.could_not_launch_apk_bridge_page,
+        kind: NodeLaneNoticeKind.error,
+      );
     }
   }
 
@@ -763,11 +732,13 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   ExtensionServerRelease? _validateDownloadAction(dynamic l10n) {
     final release = _latestRelease;
     if (release == null) {
-      botToast(l10n.no_extension_server_bundle_available_for_this_platform);
+      showNodeLaneNotice(
+        l10n.no_extension_server_bundle_available_for_this_platform,
+      );
       return null;
     }
     if (_isInstalled && !_hasUpdateAvailable) {
-      botToast(l10n.no_newer_proxy_server_release_available);
+      showNodeLaneNotice(l10n.no_newer_proxy_server_release_available);
       return null;
     }
     return release;

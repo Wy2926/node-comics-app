@@ -8,7 +8,7 @@ import 'pure_black_dark_mode_state_provider.dart';
 import 'app_font_family.dart';
 
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/modules/nodelane/nodelane_theme.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Material draws a focused InkWell's highlight from the ambient
 /// [ThemeData.focusColor], and the default is nearly invisible on a TV
@@ -43,80 +43,100 @@ ThemeData _tvFocus(ThemeData theme) {
   );
 }
 
+// The existing default blue preset uses the concept's blue on phones.
+// Other selected palettes and desktop/TV themes keep their own accent.
+ThemeData _mobileAccent(ThemeData theme, int schemeIndex) {
+  if (!isMobile ||
+      isTv ||
+      schemeIndex != 2 ||
+      theme.brightness == Brightness.dark) {
+    return theme;
+  }
+  const accent = NodeLaneTokens.defaultMobileAccent;
+  return theme.copyWith(
+    primaryColor: accent,
+    colorScheme: theme.colorScheme.copyWith(
+      primary: accent,
+      onPrimary: Colors.white,
+    ),
+  );
+}
+
 /// Provides the light theme for the app, recomputed only when
 /// flex scheme colors, blend level, or font family change.
 final lightThemeProvider = Provider<ThemeData>((ref) {
-  final colors = ref.watch(flexSchemeColorStateProvider.select((t) => t.$1));
+  final schemeIndex = ref.watch(
+    flexSchemeColorStateProvider.select((theme) => theme.$2),
+  );
+  final colors = ThemeAA.schemes[schemeIndex].light;
   final blendLevel = ref.watch(blendLevelStateProvider).toInt();
   final fontFamily = ref.watch(appFontFamilyProvider.select((t) => t.$2));
 
-  final theme = FlexThemeData.light(
-    colors: colors,
-    surfaceMode: FlexSurfaceMode.highScaffoldLevelSurface,
-    blendLevel: blendLevel,
-    appBarOpacity: 0.00,
-    subThemesData: const FlexSubThemesData(
-      blendOnLevel: 10,
-      thinBorderWidth: 2.0,
-      unselectedToggleIsColored: true,
-      inputDecoratorRadius: 24.0,
-      chipRadius: 24.0,
-    ),
-    useMaterial3ErrorColors: true,
-    visualDensity: FlexColorScheme.comfortablePlatformDensity,
-    useMaterial3: true,
-    fontFamily: fontFamily,
-  );
   return _tvFocus(
-    ref.watch(flexSchemeColorStateProvider.select((t) => t.$2)) ==
-            ThemeAA.nodeLaneIndex
-        ? NodeLaneTheme.apply(theme)
-        : theme,
+    _mobileAccent(
+      FlexThemeData.light(
+        colors: colors,
+        surfaceMode: FlexSurfaceMode.highScaffoldLevelSurface,
+        blendLevel: blendLevel,
+        appBarOpacity: 0.00,
+        subThemesData: const FlexSubThemesData(
+          blendOnLevel: 10,
+          thinBorderWidth: 2.0,
+          unselectedToggleIsColored: true,
+          inputDecoratorRadius: 24.0,
+          chipRadius: 24.0,
+        ),
+        useMaterial3ErrorColors: true,
+        visualDensity: FlexColorScheme.comfortablePlatformDensity,
+        useMaterial3: true,
+        fontFamily: fontFamily,
+      ),
+      schemeIndex,
+    ),
   );
 });
 
 /// Provides the dark theme for the app, recomputed only when
 /// flex scheme colors, blend level, font family, or pure-black toggle change.
 final darkThemeProvider = Provider<ThemeData>((ref) {
-  final colors = ref.watch(flexSchemeColorStateProvider.select((t) => t.$1));
+  final schemeIndex = ref.watch(
+    flexSchemeColorStateProvider.select((theme) => theme.$2),
+  );
+  final colors = ThemeAA.schemes[schemeIndex].dark;
   final blendLevel = ref.watch(blendLevelStateProvider).toInt();
   final fontFamily = ref.watch(appFontFamilyProvider.select((t) => t.$2));
   final pureBlack = ref.watch(pureBlackDarkModeStateProvider);
 
-  final theme = FlexThemeData.dark(
-    colors: colors,
-    surfaceMode: FlexSurfaceMode.level,
-    // Pure black means pure black. The slider that sets this is hidden while
-    // the toggle is on, but hiding a control does not stop it applying, so a
-    // blend chosen beforehand went on tinting every surface that is not the
-    // scaffold: cards, sheets, dialogs, the nav bar. The result was a black
-    // page with visibly grey-blue things floating on it, and no way to
-    // correct it without turning pure black back off.
-    //
-    // The stored level is left alone, so turning the toggle off restores
-    // whatever blend was chosen.
-    blendLevel: pureBlack ? 0 : blendLevel,
-    appBarOpacity: 0.00,
-    // The framework's own switch rather than painting the scaffold black by
-    // hand: it takes the surfaces down with it, which is the half that was
-    // missing.
-    darkIsTrueBlack: pureBlack,
-    subThemesData: const FlexSubThemesData(
-      blendOnLevel: 10,
-      thinBorderWidth: 2.0,
-      unselectedToggleIsColored: true,
-      inputDecoratorRadius: 24.0,
-      chipRadius: 24.0,
-    ),
-    useMaterial3ErrorColors: true,
-    visualDensity: FlexColorScheme.comfortablePlatformDensity,
-    useMaterial3: true,
-    fontFamily: fontFamily,
-  );
   return _tvFocus(
-    ref.watch(flexSchemeColorStateProvider.select((t) => t.$2)) ==
-            ThemeAA.nodeLaneIndex
-        ? NodeLaneTheme.apply(theme, pureBlack: pureBlack)
-        : theme,
+    FlexThemeData.dark(
+      colors: colors,
+      surfaceMode: FlexSurfaceMode.level,
+      // Pure black means pure black. The slider that sets this is hidden while
+      // the toggle is on, but hiding a control does not stop it applying, so a
+      // blend chosen beforehand went on tinting every surface that is not the
+      // scaffold: cards, sheets, dialogs, the nav bar. The result was a black
+      // page with visibly grey-blue things floating on it, and no way to
+      // correct it without turning pure black back off.
+      //
+      // The stored level is left alone, so turning the toggle off restores
+      // whatever blend was chosen.
+      blendLevel: pureBlack ? 0 : blendLevel,
+      appBarOpacity: 0.00,
+      // The framework's own switch rather than painting the scaffold black by
+      // hand: it takes the surfaces down with it, which is the half that was
+      // missing.
+      darkIsTrueBlack: pureBlack,
+      subThemesData: const FlexSubThemesData(
+        blendOnLevel: 10,
+        thinBorderWidth: 2.0,
+        unselectedToggleIsColored: true,
+        inputDecoratorRadius: 24.0,
+        chipRadius: 24.0,
+      ),
+      useMaterial3ErrorColors: true,
+      visualDensity: FlexColorScheme.comfortablePlatformDensity,
+      useMaterial3: true,
+      fontFamily: fontFamily,
+    ),
   );
 });

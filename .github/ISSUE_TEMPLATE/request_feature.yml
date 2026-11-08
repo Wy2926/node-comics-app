@@ -1,12 +1,19 @@
-name: ⭐ Feature request
-description: Suggest a feature to improve Mangayomi
+name: ⭐ NodeLane feature request
+description: Suggest a feature for NodeLane Comics
 labels: [Feature request]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for NodeLane Comics app features.
+        Request official sources in [NodeLane source plugins](https://github.com/Wy2926/nodelane-comics-extensions/issues/new/choose).
+        For third-party sources, use the source's own repository.
+
   - type: textarea
     id: feature-description
     attributes:
       label: Describe your suggested feature
-      description: How can Mangayomi be improved?
+      description: How can NodeLane Comics be improved?
       placeholder: |
         Example:
           "It should work like this..."
@@ -24,7 +31,7 @@ body:
     id: acknowledgements
     attributes:
       label: Acknowledgements
-      description: Read this carefully, we will close and ignore your issue if you skimmed through this.
+      description: Check these before submitting your request.
       options:
         - label: I have searched the existing issues and this is a new ticket, **NOT** a duplicate or related to another open or closed issue.
           required: true

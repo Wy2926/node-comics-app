@@ -1,21 +1,22 @@
 import 'dart:io';
 
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/more/about/mobile_about_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
-import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/get_package_info.dart';
 import 'package:mangayomi/modules/more/about/providers/logs_state.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
-import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
-import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/utils/log/logger.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/share.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
@@ -29,6 +30,31 @@ class AboutScreen extends ConsumerWidget {
     final l10n = l10nLocalizations(context);
     final checkForUpdates = ref.watch(checkForAppUpdatesProvider);
     final enableLogs = ref.watch(logsStateProvider);
+    if (isMobile && !isTv) {
+      return MobileAboutScreen(
+        packageInfo: ref.watch(getPackageInfoProvider),
+        onRetryPackageInfo: () => ref.invalidate(getPackageInfoProvider),
+        checkForUpdates: checkForUpdates,
+        onAutoCheckChanged: ref.read(checkForAppUpdatesProvider.notifier).set,
+        logsEnabled: enableLogs,
+        onLogsChanged: (value) async {
+          ref.read(logsStateProvider.notifier).set(value);
+          if (value) {
+            await AppLogger.init();
+          } else {
+            await AppLogger.dispose();
+          }
+        },
+        reportCount: () => CrashReports.reports.length,
+        onReports: () async {
+          await context.push('/errorReports');
+        },
+        onUpdates: () => context.push('/appUpdate'),
+        onShareLogs: () => _shareLogs(context),
+        onGitHub: () =>
+            _launchInBrowser(Uri.parse(NodeLaneBrand.repositoryUrl)),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text(l10n!.about)),
       body: ref
@@ -39,20 +65,12 @@ class AboutScreen extends ConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Image.asset(
-                      appIconAssets[2],
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Colors.black
-                          : Colors.white,
-                      fit: BoxFit.cover,
-                      height: 100,
-                    ),
+                    child: const NodeLaneBrandMark(),
                   ),
                   Column(
                     children: [
                       const Divider(),
                       ListTile(
-                        onTap: () {},
                         title: Text(l10n.version),
                         subtitle: Text(
                           l10n.beta_version(data.version),
@@ -69,34 +87,7 @@ class AboutScreen extends ConsumerWidget {
                         },
                       ),
                       ListTile(
-                        onTap: () async {
-                          BotToast.showText(text: l10n.searching_for_updates);
-                          try {
-                            final updateInfo = await performManualUpdateCheck();
-                            if (updateInfo != null) {
-                              BotToast.showText(
-                                text: l10n.new_update_available,
-                              );
-                              await Future.delayed(const Duration(seconds: 1));
-                              if (context.mounted) {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => DownloadFileScreen(
-                                    updateAvailable: updateInfo,
-                                  ),
-                                );
-                              }
-                            } else {
-                              BotToast.showText(
-                                text: l10n.no_new_updates_available,
-                              );
-                            }
-                          } catch (_) {
-                            BotToast.showText(
-                              text: l10n.no_new_updates_available,
-                            );
-                          }
-                        },
+                        onTap: () => context.push('/appUpdate'),
                         title: Text(l10n.check_for_update),
                       ),
                       ListTile(
@@ -121,75 +112,16 @@ class AboutScreen extends ConsumerWidget {
                       ),
                       if (enableLogs)
                         ListTile(
-                          onTap: () async {
-                            final storage = StorageProvider();
-                            final directory = await storage
-                                .getDefaultDirectory();
-                            final file = File(
-                              path.join(directory!.path, 'logs.txt'),
-                            );
-                            if (await file.exists()) {
-                              if (context.mounted) {
-                                final box =
-                                    context.findRenderObject() as RenderBox?;
-                                await shareOrCopy(
-                                  ShareParams(
-                                    files: [XFile(file.path)],
-                                    text: "log.txt",
-                                    sharePositionOrigin:
-                                        box!.localToGlobal(Offset.zero) &
-                                        box.size,
-                                  ),
-                                );
-                              }
-                            } else {
-                              botToast(l10n.no_app_logs);
-                            }
-                          },
+                          onTap: () => _shareLogs(context),
                           title: Text(l10n.share_app_logs),
                         ),
-                      // ListTile(
-                      //   onTap: () {},
-                      //   title: const Text("What's news"),
-                      // ),
-                      // ListTile(
-                      //   onTap: () {},
-                      //   title: const Text('Help translation'),
-                      // ),
-                      // ListTile(
-                      //   onTap: () {},
-                      //   title: const Text('Privacy policy'),
-                      // ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              _launchInBrowser(
-                                Uri.parse(
-                                  'https://github.com/kodjodevf/mangayomi',
-                                ),
-                              );
-                            },
-                            icon: const Padding(
-                              padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                              child: FaIcon(FontAwesomeIcons.github),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _launchInBrowser(
-                                Uri.parse(
-                                  'https://discord.com/invite/EjfBuYahsP',
-                                ),
-                              );
-                            },
-                            icon: const Padding(
-                              padding: EdgeInsets.only(right: 5),
-                              child: FaIcon(FontAwesomeIcons.discord),
-                            ),
-                          ),
-                        ],
+                      ListTile(
+                        leading: const FaIcon(FontAwesomeIcons.github),
+                        title: const Text('GitHub'),
+                        subtitle: const Text(NodeLaneBrand.repository),
+                        onTap: () => _launchInBrowser(
+                          Uri.parse(NodeLaneBrand.repositoryUrl),
+                        ),
                       ),
                     ],
                   ),
@@ -197,7 +129,7 @@ class AboutScreen extends ConsumerWidget {
               ),
             ),
             error: (error, stackTrace) => ErrorWidget(error),
-            loading: () => const ProgressCenter(),
+            loading: () => const NodeLaneEmptyState.loading(),
           ),
     );
   }
@@ -207,4 +139,23 @@ Future<void> _launchInBrowser(Uri url) async {
   if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
     throw 'Could not launch $url';
   }
+}
+
+Future<void> _shareLogs(BuildContext context) async {
+  final storage = StorageProvider();
+  final directory = await storage.getDefaultDirectory();
+  final file = File(path.join(directory!.path, 'logs.txt'));
+  if (!await file.exists()) {
+    if (context.mounted) showNodeLaneNotice(context.l10n.no_app_logs);
+    return;
+  }
+  if (!context.mounted) return;
+  final box = context.findRenderObject() as RenderBox?;
+  await shareOrCopy(
+    ShareParams(
+      files: [XFile(file.path)],
+      text: 'log.txt',
+      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+    ),
+  );
 }

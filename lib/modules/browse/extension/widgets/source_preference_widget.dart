@@ -1,284 +1,251 @@
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extension_preferences_providers.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
+import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 class SourcePreferenceWidget extends StatefulWidget {
-  final List<SourcePreference> sourcePreference;
-  final Source source;
   const SourcePreferenceWidget({
     super.key,
     required this.sourcePreference,
     required this.source,
+    this.onSave,
   });
-
+  final List<SourcePreference> sourcePreference;
+  final Source source;
+  final Future<void> Function(SourcePreference, Source)? onSave;
   @override
   State<SourcePreferenceWidget> createState() => _SourcePreferenceWidgetState();
 }
 
 class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
+  late List<SourcePreference> values = [...widget.sourcePreference];
+  bool saving = false;
+  int revision = 0;
+  String? error;
+  bool get mobile => isMobile && !isTv;
+
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (var index = 0; index < widget.sourcePreference.length; index++)
-          Builder(
-            builder: (context) {
-              final preference = widget.sourcePreference[index];
-              Widget? w;
-              if (preference.editTextPreference != null) {
-                final pref = preference.editTextPreference!;
-                w = ListTile(
-                  title: Text(pref.title!),
-                  subtitle: Text(
-                    pref.summary!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
+  void didUpdateWidget(SourcePreferenceWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.source.id != widget.source.id ||
+        !identical(oldWidget.sourcePreference, widget.sourcePreference)) {
+      revision++;
+      values = [...widget.sourcePreference];
+      error = null;
+    }
+  }
+
+  Future<void> save(int index, void Function(SourcePreference) change) async {
+    if (saving) return;
+    final source = widget.source, generation = revision;
+    final copy = SourcePreference.fromJson(values[index].toJson());
+    change(copy);
+    setState(() {
+      saving = true;
+      error = null;
+    });
+    try {
+      await (widget.onSave ?? savePreferenceSetting)(copy, source);
+      if (mounted && revision == generation) {
+        setState(() => values[index] = copy);
+      }
+    } catch (_) {
+      if (mounted && revision == generation) {
+        setState(() => error = context.l10n.source_settings_save_failed);
+      }
+    } finally {
+      if (mounted) setState(() => saving = false);
+    }
+  }
+
+  Future<void> edit(int i) async {
+    if (saving) return;
+    final pref = values[i], owner = revision;
+    final subtitle = widget.source.name;
+    if (pref.editTextPreference case final text?) {
+      final result = mobile
+          ? await showSourceTextEditor(
+              context,
+              title: text.dialogTitle?.isNotEmpty == true
+                  ? text.dialogTitle!
+                  : text.title ?? '',
+              subtitle: subtitle,
+              description: text.dialogMessage,
+              initialValue: text.value ?? '',
+            )
+          : await showDialog<String>(
+              context: context,
+              builder: (_) => EditTextDialogWidget(
+                text: text.value ?? '',
+                dialogTitle: text.dialogTitle ?? text.title ?? '',
+                dialogMessage: text.dialogMessage ?? '',
+                onChanged: (v) {},
+                returnValue: true,
+              ),
+            );
+      if (mounted &&
+          owner == revision &&
+          result != null &&
+          result != text.value) {
+        await save(i, (p) => p.editTextPreference!.value = result);
+      }
+    } else if (pref.listPreference case final list?) {
+      final options = [
+        for (var n = 0; n < (list.entries?.length ?? 0); n++)
+          SourceOption(n, list.entries![n]),
+      ];
+      final result = mobile
+          ? await showSourceChoice<int>(
+              context,
+              title: list.title ?? '',
+              subtitle: subtitle,
+              current: list.valueIndex,
+              options: options,
+            )
+          : await showDialog<int>(
+              context: context,
+              builder: (ctx) => SimpleDialog(
+                title: Text(list.title ?? ''),
+                children: [
+                  for (final o in options)
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(ctx, o.value),
+                      child: Text(o.label),
                     ),
-                  ),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => EditTextDialogWidget(
-                        text: pref.value ?? "",
-                        onChanged: (value) {
-                          setState(() {
-                            pref.value = value;
-                          });
-                          setPreferenceSetting(preference, widget.source);
-                        },
-                        dialogTitle: pref.dialogTitle ?? "",
-                        dialogMessage: pref.dialogMessage ?? "",
-                      ),
-                    );
-                  },
-                );
-              } else if (preference.checkBoxPreference != null) {
-                final pref = preference.checkBoxPreference!;
-                w = CheckboxListTile(
-                  title: Text(pref.title!),
-                  subtitle: Text(
-                    pref.summary!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
-                    ),
-                  ),
-                  value: pref.value,
-                  onChanged: (value) {
-                    setState(() {
-                      pref.value = value;
-                    });
-                    setPreferenceSetting(preference, widget.source);
-                  },
-                  controlAffinity: ListTileControlAffinity.trailing,
-                );
-              } else if (preference.switchPreferenceCompat != null) {
-                final pref = preference.switchPreferenceCompat!;
-                w = SwitchListTile(
-                  title: Text(pref.title!),
-                  subtitle: Text(
-                    pref.summary!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
-                    ),
-                  ),
-                  value: pref.value!,
-                  onChanged: (value) {
-                    setState(() {
-                      pref.value = value;
-                    });
-                    setPreferenceSetting(preference, widget.source);
-                  },
-                  controlAffinity: ListTileControlAffinity.trailing,
-                );
-              } else if (preference.listPreference != null) {
-                final pref = preference.listPreference!;
-                w = ListTile(
-                  title: Text(pref.title!),
-                  subtitle: Text(
-                    pref.entries![pref.valueIndex!],
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
-                    ),
-                  ),
-                  onTap: () async {
-                    final res = await showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(text: pref.title!),
-                              if (pref.summary?.isNotEmpty ?? false)
-                                TextSpan(
-                                  text: "\n\n${pref.summary!}",
-                                  style: TextStyle(fontSize: 13),
-                                ),
-                            ],
-                          ),
-                        ),
-                        content: SizedBox(
-                          width: context.width(0.8),
-                          child: RadioGroup(
-                            groupValue: pref.valueIndex,
-                            onChanged: (value) {
-                              Navigator.pop(context, value);
-                            },
-                            child: SuperListView.builder(
-                              shrinkWrap: true,
-                              itemCount: pref.entries!.length,
-                              itemBuilder: (context, index) {
-                                return RadioListTile(
-                                  dense: true,
-                                  contentPadding: const EdgeInsets.all(0),
-                                  value: index,
-                                  title: Row(
-                                    children: [Text(pref.entries![index])],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        actions: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                },
-                                child: Text(
-                                  context.l10n.cancel,
-                                  style: TextStyle(color: context.primaryColor),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                    if (res != null) {
-                      setState(() {
-                        pref.valueIndex = res;
-                      });
+                ],
+              ),
+            );
+      if (mounted &&
+          owner == revision &&
+          result != null &&
+          result != list.valueIndex) {
+        await save(i, (p) => p.listPreference!.valueIndex = result);
+      }
+    } else if (pref.multiSelectListPreference case final list?) {
+      final entries = list.entries ?? [], keys = list.entryValues ?? [];
+      final options = [
+        for (var n = 0; n < entries.length && n < keys.length; n++)
+          SourceOption(keys[n], entries[n]),
+      ];
+      final result = await showSourceMultiChoice<String>(
+        context,
+        title: list.title ?? '',
+        subtitle: subtitle,
+        current: {...?list.values},
+        options: options,
+      );
+      if (mounted &&
+          owner == revision &&
+          result != null &&
+          !setEquals(result, {...?list.values})) {
+        await save(
+          i,
+          (p) => p.multiSelectListPreference!.values = result.toList(),
+        );
+      }
+    }
+  }
+
+  Widget row(int i) {
+    final p = values[i];
+    String title = '', summary = '';
+    IconData icon = NodeLaneIcons.of(context).settings;
+    bool? checked;
+    if (p.editTextPreference case final v?) {
+      title = v.title ?? '';
+      summary = v.summary ?? '';
+      icon = NodeLaneIcons.of(context).edit;
+    } else if (p.listPreference case final v?) {
+      title = v.title ?? '';
+      final n = v.valueIndex;
+      summary = n != null && n >= 0 && n < (v.entries?.length ?? 0)
+          ? v.entries![n]
+          : '';
+      icon = NodeLaneIcons.of(context).chapters;
+    } else if (p.multiSelectListPreference case final v?) {
+      title = v.title ?? '';
+      summary = [
+        for (
+          var j = 0;
+          j < (v.entries?.length ?? 0) && j < (v.entryValues?.length ?? 0);
+          j++
+        )
+          if (v.values?.contains(v.entryValues![j]) == true) v.entries![j],
+      ].join('、');
+      icon = NodeLaneIcons.of(context).chapters;
+    } else if (p.checkBoxPreference case final v?) {
+      title = v.title ?? '';
+      summary = v.summary ?? '';
+      checked = v.value ?? false;
+    } else if (p.switchPreferenceCompat case final v?) {
+      title = v.title ?? '';
+      summary = v.summary ?? '';
+      checked = v.value ?? false;
+    } else {
+      return const SizedBox.shrink();
+    }
+    final toggle = checked == null
+        ? null
+        : NodeLaneSwitch(
+            value: checked,
+            onChanged: saving
+                ? null
+                : (v) => save(i, (copy) {
+                    if (copy.checkBoxPreference != null) {
+                      copy.checkBoxPreference!.value = v;
+                    } else {
+                      copy.switchPreferenceCompat!.value = v;
                     }
-                    setPreferenceSetting(preference, widget.source);
-                  },
-                );
-              } else if (preference.multiSelectListPreference != null) {
-                final pref = preference.multiSelectListPreference!;
-                w = ListTile(
-                  title: Text(pref.title!),
-                  subtitle: Text(
-                    pref.summary!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
-                    ),
-                  ),
-                  onTap: () {
-                    List<String> indexList = [];
-                    indexList.addAll(pref.values!);
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return StatefulBuilder(
-                          builder: (context, setState) {
-                            return AlertDialog(
-                              title: Text(pref.title!),
-                              content: SizedBox(
-                                width: context.width(0.8),
-                                child: SuperListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: pref.entries!.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTileChapterFilter(
-                                      label: pref.entries![index],
-                                      type:
-                                          indexList.contains(
-                                            pref.entryValues![index],
-                                          )
-                                          ? 1
-                                          : 0,
-                                      onTap: () {
-                                        if (indexList.contains(
-                                          pref.entryValues![index],
-                                        )) {
-                                          setState(() {
-                                            indexList.remove(
-                                              pref.entryValues![index],
-                                            );
-                                            pref.values = indexList;
-                                          });
-                                        } else {
-                                          setState(() {
-                                            indexList.add(
-                                              pref.entryValues![index],
-                                            );
-                                            pref.values = indexList;
-                                          });
-                                        }
-                                        setPreferenceSetting(
-                                          preference,
-                                          widget.source,
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
-                              actions: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        context.l10n.cancel,
-                                        style: TextStyle(
-                                          color: context.primaryColor,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        context.l10n.ok,
-                                        style: TextStyle(
-                                          color: context.primaryColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              }
-              return w ?? Container();
-            },
-          ),
-      ],
+                  }),
+          );
+    if (mobile) {
+      return NodeLaneRow(
+        title: title,
+        subtitle: checked != null || p.editTextPreference != null
+            ? summary
+            : null,
+        value: checked == null && p.editTextPreference == null ? summary : null,
+        icon: icon,
+        trailing: toggle,
+        onTap: saving || checked != null ? null : () => edit(i),
+      );
+    }
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(summary),
+      trailing: toggle,
+      onTap: saving || checked != null ? null : () => edit(i),
     );
   }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      if (mobile)
+        NodeLaneGroupSurface(
+          children: [for (var i = 0; i < values.length; i++) row(i)],
+        )
+      else ...[
+        for (var i = 0; i < values.length; i++) row(i),
+      ],
+      if (saving) const LinearProgressIndicator(),
+      if (error != null)
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            error!,
+            style: NodeLaneTokens.of(context).readerSecondary,
+          ),
+        ),
+    ],
+  );
 }
 
 class EditTextDialogWidget extends StatefulWidget {
@@ -286,10 +253,12 @@ class EditTextDialogWidget extends StatefulWidget {
   final String dialogTitle;
   final String dialogMessage;
   final Function(String) onChanged;
+  final bool returnValue;
   const EditTextDialogWidget({
     super.key,
     required this.text,
     required this.onChanged,
+    this.returnValue = false,
     required this.dialogTitle,
     required this.dialogMessage,
   });
@@ -310,6 +279,7 @@ class _EditTextDialogWidgetState extends State<EditTextDialogWidget> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -317,45 +287,21 @@ class _EditTextDialogWidgetState extends State<EditTextDialogWidget> {
           Text(widget.dialogMessage, style: const TextStyle(fontSize: 13)),
         ],
       ),
-      content: Padding(
-        padding: const EdgeInsets.only(top: 20),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              isDense: true,
-              filled: false,
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: context.secondaryColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: context.primaryColor),
-              ),
-              border: const OutlineInputBorder(borderSide: BorderSide()),
-            ),
-          ),
-        ),
-      ),
+      content: NodeLaneTextField(controller: _controller),
       actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(context.l10n.cancel),
-            ),
-            const SizedBox(width: 15),
-            TextButton(
-              onPressed: () {
-                widget.onChanged(_controller.text);
-                Navigator.pop(context);
-              },
-              child: Text(context.l10n.ok),
-            ),
-          ],
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            widget.onChanged(_controller.text);
+            Navigator.pop(
+              context,
+              widget.returnValue ? _controller.text : null,
+            );
+          },
+          child: Text(context.l10n.ok),
         ),
       ],
     );

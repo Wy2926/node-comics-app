@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,8 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
+import 'mobile_bookshelf_settings.dart';
+
 /// Shows the library filter/sort/display settings sheet.
 void showLibrarySettingsSheet({
   required BuildContext context,
@@ -22,6 +25,17 @@ void showLibrarySettingsSheet({
   required ItemType itemType,
   required List<Manga> entries,
 }) {
+  if (isMobile && !isTv) {
+    showNodeLaneCatalogSheet<void>(
+      context,
+      MobileBookshelfSettings(
+        settings: settings,
+        entries: entries,
+        itemType: itemType,
+      ),
+    );
+    return;
+  }
   final l10n = l10nLocalizations(context)!;
   customDraggableTabBar(
     tabs: [
@@ -613,14 +627,14 @@ class _DisplayTab extends ConsumerWidget {
           if (isTv && itemType == ItemType.anime) ...[
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
-              child: Row(children: [const Text('Rows')]),
+              child: Row(children: [Text(context.l10n.tv_home_rows)]),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 5),
               child: Column(
                 children: [
                   ListTileChapterFilter(
-                    label: 'Genre rows',
+                    label: context.l10n.genre_rows,
                     type: ref.watch(tvHomeGenreRowsProvider) ? 1 : 0,
                     onTap: () => ref
                         .read(tvHomeGenreRowsProvider.notifier)

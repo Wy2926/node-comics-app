@@ -6,6 +6,10 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/page.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
 
+enum ChapterDirection { previous, next }
+
+enum ChapterLoadState { loading, failed, empty, exhausted }
+
 class UChapDataPreload {
   Chapter? chapter;
   Directory? directory;
@@ -16,9 +20,11 @@ class UChapDataPreload {
   GetChapterPagesModel? chapterUrlModel;
   int? pageIndex;
   bool isTransitionPage;
-  Chapter? nextChapter;
-  String? mangaName;
-  bool? isLastChapter;
+  final ChapterDirection? boundaryDirection;
+
+  // Present only on the pending chapter boundary; cleared on success/disposal.
+  ChapterLoadState? chapterState;
+  VoidCallback? onRetryChapter;
   Rect? srcRect;
 
   /// The real on-disk path of this page, for local image-folder chapters
@@ -35,6 +41,7 @@ class UChapDataPreload {
 
   /// Cached decoded image for MinSubsamplingImage to avoid re-decoding on scroll
   Image? decodedImage;
+  bool decodedImageCropped = false;
 
   /// Cached resolved local file path for SubsamplingScaleImageView to avoid resolving on scroll
   String? resolvedFilePath;
@@ -49,19 +56,29 @@ class UChapDataPreload {
     this.chapterUrlModel,
     this.pageIndex, {
     this.isTransitionPage = false,
-    this.nextChapter,
-    this.mangaName,
-    this.isLastChapter = false,
+    this.boundaryDirection,
     this.srcRect,
     this.localImagePath,
   });
 
+  /// Identifies this page among its neighbours in a list or page view, for
+  /// widget keys. The two halves of a split wide page share [index] and only
+  /// differ by [srcRect].
+  String get identity {
+    if (isTransitionPage) {
+      return '${chapter?.id}-boundary-${boundaryDirection?.name}';
+    }
+    final rect = srcRect;
+    final crop = rect == null
+        ? ''
+        : '-${rect.left},${rect.top},${rect.width},${rect.height}';
+    return '${chapter?.id}-$index$crop';
+  }
+
   UChapDataPreload.transition({
     required Chapter currentChapter,
-    required this.nextChapter,
-    required String this.mangaName,
     required int this.pageIndex,
-    this.isLastChapter = false,
+    this.boundaryDirection = ChapterDirection.next,
   }) : chapter = currentChapter,
        isTransitionPage = true,
        directory = null,

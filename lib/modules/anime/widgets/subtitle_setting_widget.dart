@@ -227,9 +227,15 @@ class _SubtitleAppearanceWidgetState
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: SettingsDrilldownScope.of(context)?.mobile == true
+                ? BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(12),
+                  )
+                : null,
             child: Center(
               child: Text(
-                "Lorem ipsum dolor sit amet",
+                context.l10n.subtitle_preview,
                 style: subtileTextStyle(ref).copyWith(
                   fontSize: ((subSets.fontSize ?? 45) * 0.45).clamp(14.0, 24.0),
                 ),
@@ -243,6 +249,7 @@ class _SubtitleAppearanceWidgetState
           SettingsStepperRow(
             label: context.l10n.font_size,
             controller: _fontSizeController,
+            focusNode: _fontSizeFocusNode,
             suffix: ' pt',
             keyboardType: TextInputType.number,
             onDecrement: () {
@@ -268,7 +275,7 @@ class _SubtitleAppearanceWidgetState
               children: [
                 Expanded(
                   child: Text(
-                    "Style",
+                    context.l10n.subtitle_style,
                     style: (textTheme.bodyMedium ?? const TextStyle()).copyWith(
                       fontSize: 13,
                       color: colorScheme.onSurfaceVariant,
@@ -276,16 +283,16 @@ class _SubtitleAppearanceWidgetState
                   ),
                 ),
                 SegmentedButton<String>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: 'bold',
-                      icon: Icon(Icons.format_bold, size: 18),
-                      tooltip: 'Bold',
+                      icon: const Icon(Icons.format_bold, size: 18),
+                      tooltip: context.l10n.bold,
                     ),
                     ButtonSegment(
                       value: 'italic',
-                      icon: Icon(Icons.format_italic, size: 18),
-                      tooltip: 'Italic',
+                      icon: const Icon(Icons.format_italic, size: 18),
+                      tooltip: context.l10n.italic,
                     ),
                   ],
                   selected: {
@@ -381,32 +388,32 @@ class _SubtitleAppearanceWidgetState
               children: [
                 _PresetChip(
                   color: const Color(0xFFFFFFFF),
-                  tooltip: 'White',
+                  tooltip: context.l10n.white,
                   onTap: () => _applyPresetColor(255, 255, 255),
                 ),
                 _PresetChip(
                   color: const Color(0xFFFFEB3B),
-                  tooltip: 'Yellow',
+                  tooltip: context.l10n.color_yellow,
                   onTap: () => _applyPresetColor(255, 235, 59),
                 ),
                 _PresetChip(
                   color: const Color(0xFF00E5FF),
-                  tooltip: 'Cyan',
+                  tooltip: context.l10n.color_cyan,
                   onTap: () => _applyPresetColor(0, 229, 255),
                 ),
                 _PresetChip(
                   color: const Color(0xFF69F0AE),
-                  tooltip: 'Green',
+                  tooltip: context.l10n.color_green,
                   onTap: () => _applyPresetColor(105, 240, 174),
                 ),
                 _PresetChip(
                   color: const Color(0xFFFFAB40),
-                  tooltip: 'Orange',
+                  tooltip: context.l10n.color_orange,
                   onTap: () => _applyPresetColor(255, 171, 64),
                 ),
                 _PresetChip(
                   color: const Color(0xFF000000),
-                  tooltip: 'Black',
+                  tooltip: context.l10n.black,
                   onTap: () => _applyPresetColor(0, 0, 0),
                 ),
               ],

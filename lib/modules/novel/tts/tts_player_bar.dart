@@ -6,16 +6,20 @@ import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_pr
 import 'package:mangayomi/modules/novel/tts/novel_tts_service.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
+import 'mobile_tts_player_controls.dart';
+
 class TtsPlayerBar extends ConsumerStatefulWidget {
   final String htmlContent;
   final VoidCallback onClose;
   final void Function(int paragraphIndex)? onParagraphChanged;
+  final bool mobile;
 
   const TtsPlayerBar({
     super.key,
     required this.htmlContent,
     required this.onClose,
     this.onParagraphChanged,
+    this.mobile = false,
   });
 
   @override
@@ -27,6 +31,8 @@ class _TtsPlayerBarState extends ConsumerState<TtsPlayerBar> {
   TtsState _state = TtsState.stopped;
   int _currentIndex = 0;
   int _totalParagraphs = 0;
+  bool _failed = false, _pending = false, _closed = false;
+  int _command = 0;
   StreamSubscription<TtsState>? _stateSub;
   StreamSubscription<int>? _indexSub;
 
@@ -35,15 +41,21 @@ class _TtsPlayerBarState extends ConsumerState<TtsPlayerBar> {
     super.initState();
     _stateSub = _tts.stateStream.listen((s) {
       if (mounted) {
-        setState(() => _state = s);
+        setState(() {
+          _state = s;
+          _pending = false;
+        });
         if (s == TtsState.stopped) {
-          widget.onClose();
+          _close();
         }
       }
     });
     _indexSub = _tts.paragraphIndexStream.listen((i) {
       if (mounted) {
-        setState(() => _currentIndex = i);
+        setState(() {
+          _currentIndex = i;
+          _pending = false;
+        });
         widget.onParagraphChanged?.call(i);
       }
     });
@@ -55,27 +67,81 @@ class _TtsPlayerBarState extends ConsumerState<TtsPlayerBar> {
     final pitch = ref.read(ttsPitchStateProvider);
     final language = ref.read(ttsLanguageStateProvider);
 
-    await _tts.setSpeed(speed);
-    await _tts.setPitch(pitch);
-    if (language != null) {
-      await _tts.setLanguage(language);
-    }
+    try {
+      await _tts.setSpeed(speed);
+      if (!mounted || _closed) return;
+      await _tts.setPitch(pitch);
+      if (!mounted || _closed) return;
+      if (language != null) {
+        await _tts.setLanguage(language);
+        if (!mounted || _closed) return;
+      }
 
-    final paragraphs = _tts.extractParagraphs(widget.htmlContent);
-    setState(() => _totalParagraphs = paragraphs.length);
-    await _tts.speak(widget.htmlContent);
+      final paragraphs = _tts.extractParagraphs(widget.htmlContent);
+      setState(() => _totalParagraphs = paragraphs.length);
+      await _tts.speak(widget.htmlContent);
+    } catch (_) {
+      if (mounted && !_closed) setState(() => _failed = true);
+    }
+  }
+
+  void _close() {
+    if (!mounted || _closed) return;
+    _closed = true;
+    widget.onClose();
+  }
+
+  Future<void> _invoke(Future<void> Function() action) async {
+    if (_pending || _closed || _failed) return;
+    final command = ++_command;
+    setState(() => _pending = true);
+    try {
+      // Speech futures can last until the utterance ends. Streamed state or
+      // paragraph changes make controls available as soon as the action applies.
+      await action();
+    } catch (_) {
+      if (mounted && command == _command && !_closed) {
+        setState(() => _failed = true);
+      }
+    } finally {
+      if (mounted && command == _command && !_closed) {
+        setState(() => _pending = false);
+      }
+    }
+  }
+
+  Future<void> _stopAndClose() async {
+    try {
+      await _tts.stop();
+    } finally {
+      _close();
+    }
   }
 
   @override
   void dispose() {
     _stateSub?.cancel();
     _indexSub?.cancel();
-    _tts.stop();
+    unawaited(_tts.stop().catchError((Object _) {}));
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.mobile) {
+      return MobileTtsPlayerControls(
+        state: _state,
+        index: _currentIndex,
+        total: _totalParagraphs,
+        failed: _failed,
+        busy: _pending,
+        onPrevious: () => _invoke(_tts.skipPrevious),
+        onNext: () => _invoke(_tts.skipNext),
+        onPlayPause: () =>
+            _invoke(_state == TtsState.playing ? _tts.pause : _tts.resume),
+        onStop: () => unawaited(_stopAndClose().catchError((Object _) {})),
+      );
+    }
     final theme = Theme.of(context);
 
     return Container(

@@ -3,27 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/eval/model/m_pages.dart';
+import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/models/track_search.dart';
+import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
+import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
+import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_migration.dart';
+import 'package:mangayomi/modules/mass_migration/services/mass_migration_service.dart';
+import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
+import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
+import 'package:mangayomi/modules/widgets/global_search_result_card.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
-import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/models/track_search.dart';
-import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
-import 'package:mangayomi/modules/mass_migration/services/mass_migration_service.dart';
-import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
-import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/error_state.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/services/get_detail.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/language.dart';
-import 'package:mangayomi/modules/widgets/global_search_result_card.dart';
-import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/utils/list_extent_precalculation.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/utils/source_fetch_gate.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 class MigrationScreen extends ConsumerStatefulWidget {
   final Manga manga;
@@ -35,12 +42,86 @@ class MigrationScreen extends ConsumerStatefulWidget {
 }
 
 class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
-  String _query = "";
+  late String _query;
+  int _searchVersion = 0;
   final _textEditingController = TextEditingController();
-  late final List<Source> sourceList =
-      ref.read(onlyIncludePinnedSourceStateProvider)
-      ? sourceRepository.getPinnedByItemType(widget.manga.itemType)
-      : sourceRepository.getAddedByItemType(widget.manga.itemType);
+  final _fetchGate = FetchGate(3);
+  late List<Source> sourceList;
+  void _readSources() {
+    sourceList = ref.read(onlyIncludePinnedSourceStateProvider)
+        ? sourceRepository.getPinnedByItemType(widget.manga.itemType)
+        : sourceRepository.getAddedByItemType(widget.manga.itemType);
+  }
+
+  void _submit(String value) {
+    FocusScope.of(context).unfocus();
+    final query = value.trim();
+    if (_query == query) return;
+    setState(() {
+      _query = query;
+      _searchVersion++;
+      _autofocusClaimed = false;
+    });
+  }
+
+  void _clear() {
+    _textEditingController.clear();
+    _submit('');
+  }
+
+  Future<void> _openSources(bool installed) async {
+    if (!installed) {
+      ref
+          .read(browseInitialTabProvider.notifier)
+          .request(BrowseTab(widget.manga.itemType, BrowseTabKind.extensions));
+      context.go('/browse');
+      return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const BrowseSScreen()),
+    );
+    if (!mounted) return;
+    setState(() {
+      _readSources();
+      _searchVersion++;
+    });
+  }
+
+  Widget _noSources() {
+    final l10n = context.l10n;
+    final installed = sourceRepository.getAddedByItemType(
+      widget.manga.itemType,
+    );
+    return NodeLaneEmptyState(
+      icon: Icons.extension_outlined,
+      title: installed.isEmpty
+          ? l10n.global_search_no_sources(widget.manga.itemType.localized(l10n))
+          : l10n.global_search_only_pinned(installed.length),
+      message: installed.isEmpty
+          ? l10n.global_search_no_sources_hint
+          : l10n.global_search_only_pinned_hint,
+      action: FilledButton(
+        onPressed: () => _openSources(installed.isNotEmpty),
+        child: Text(installed.isEmpty ? l10n.show_extensions : l10n.settings),
+      ),
+    );
+  }
+
+  Widget _sourceRow(BuildContext context, int index) {
+    final source = sourceList[index];
+    return MigrationSourceSearchScreen(
+      key: ValueKey((_searchVersion, source.id, index)),
+      query: _query,
+      manga: widget.manga,
+      source: source,
+      trackSearch: widget.trackSearch,
+      fetchGate: _fetchGate,
+      isFirst: index == 0,
+      claimAutofocus: isTv ? _claimAutofocus : null,
+    );
+  }
+
   // Set once the first source row with results has taken the TV autofocus, so
   // no other row steals it afterwards.
   bool _autofocusClaimed = false;
@@ -54,15 +135,32 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
   void initState() {
     super.initState();
     final query = widget.manga.name ?? widget.manga.author ?? "";
-    _textEditingController.text = query;
+    _query = query.trim();
+    _textEditingController.text = _query;
+    _readSources();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
-    final query = _query.isNotEmpty
-        ? _query
-        : widget.manga.name ?? widget.manga.author ?? "";
+    if (isMobile && !isTv) {
+      return MobileMigrationSearchPage(
+        title: widget.trackSearch == null
+            ? l10n.migrate
+            : l10n.track_library_add,
+        subject: [
+          widget.manga.name ?? widget.manga.author ?? '',
+          if (widget.manga.source?.isNotEmpty == true) widget.manga.source!,
+        ].join(' · '),
+        query: _query,
+        controller: _textEditingController,
+        onSubmit: () => _submit(_textEditingController.text),
+        onClear: _clear,
+        sourceCount: sourceList.length,
+        sourceBuilder: _sourceRow,
+        empty: sourceList.isEmpty ? _noSources() : null,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -76,50 +174,21 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
             onPressed: () {
               Navigator.pop(context);
             },
-            onFieldSubmitted: (value) async {
-              if (!(_query == _textEditingController.text)) {
-                setState(() {
-                  _query = "";
-                });
-                // Yield a frame so the empty state is rendered before re-querying
-                await WidgetsBinding.instance.endOfFrame;
-                setState(() {
-                  _query = value;
-                });
-              }
-            },
-            onSuffixPressed: () {
-              _textEditingController.clear();
-              setState(() {
-                _query = "";
-              });
-            },
+            onFieldSubmitted: _submit,
+            onSuffixPressed: _clear,
             controller: _textEditingController,
             autofocus: false,
           ),
         ],
       ),
-      body:
-          _query.isNotEmpty ||
-              (widget.manga.name != null && widget.manga.author != null)
+      body: _query.isNotEmpty
           ? SuperListView.builder(
               padding: tvPageInsets,
               itemCount: sourceList.length,
-              extentPrecalculationPolicy: SuperPrecalculationPolicy(),
-              itemBuilder: (context, index) {
-                final source = sourceList[index];
-                return MigrationSourceSearchScreen(
-                  key: ValueKey(query),
-                  query: query,
-                  manga: widget.manga,
-                  source: source,
-                  trackSearch: widget.trackSearch,
-                  isFirst: index == 0,
-                  claimAutofocus: isTv ? _claimAutofocus : null,
-                );
-              },
+              extentPrecalculationPolicy: SmallListPrecalculationPolicy(),
+              itemBuilder: _sourceRow,
             )
-          : Container(),
+          : const SizedBox.shrink(),
     );
   }
 
@@ -132,6 +201,7 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
 
 class MigrationSourceSearchScreen extends ConsumerStatefulWidget {
   final String query;
+  final FetchGate? fetchGate;
   final Manga manga;
   final TrackSearch? trackSearch;
 
@@ -146,6 +216,7 @@ class MigrationSourceSearchScreen extends ConsumerStatefulWidget {
   const MigrationSourceSearchScreen({
     super.key,
     required this.query,
+    this.fetchGate,
     required this.manga,
     required this.source,
     this.trackSearch,
@@ -167,20 +238,27 @@ class _MigrationSourceSearchScreenState
   }
 
   String _errorMessage = "";
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _autofocusFirst = false;
   MPages? pages;
-  Future<void> _init() async {
+  Future<void> _init({bool retry = false}) async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+    final gate = widget.fetchGate;
+    await gate?.acquire();
     try {
-      _errorMessage = "";
-      pages = await ref.read(
-        searchProvider(
-          source: widget.source,
-          page: 1,
-          query: widget.query,
-          filterList: const [],
-        ).future,
+      if (!mounted) return;
+      final provider = searchProvider(
+        source: widget.source,
+        page: 1,
+        query: widget.query,
+        filterList: const [],
       );
+      if (retry) ref.invalidate(provider);
+      pages = await ref.read(provider.future);
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -206,12 +284,44 @@ class _MigrationSourceSearchScreenState
           _isLoading = false;
         });
       }
+    } finally {
+      gate?.release();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
+
+    if (isMobile && !isTv) {
+      return SourceResultSection(
+        title: widget.source.name ?? '',
+        metadata: completeLanguageName(widget.source.lang ?? ''),
+        loading: _isLoading,
+        count: pages?.list.length ?? 0,
+        status: _errorMessage.isNotEmpty
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(_errorMessage),
+                  const SizedBox(height: 8),
+                  FilledButton.tonal(
+                    onPressed: () => _init(retry: true),
+                    child: Text(l10n.retry),
+                  ),
+                ],
+              )
+            : pages?.list.isNotEmpty != true
+            ? Text(l10n.no_result)
+            : null,
+        itemBuilder: (context, index) => MigrationMangaGlobalImageCard(
+          oldManga: widget.manga,
+          manga: pages!.list[index],
+          source: widget.source,
+          trackSearch: widget.trackSearch,
+        ),
+      );
+    }
 
     // IntrinsicHeight instead of a fixed pixel height: sizes to the actual
     // (up to 2-line) title instead of a magic number that kept overflowing.
@@ -235,19 +345,13 @@ class _MigrationSourceSearchScreenState
               : Builder(
                   builder: (context) {
                     if (_errorMessage.isNotEmpty) {
-                      return ErrorState(
+                      return NodeLaneEmptyState.error(
                         compact: true,
-                        detail: _errorMessage,
-                        onRetry: () {
-                          setState(() {
-                            _isLoading = true;
-                            _errorMessage = "";
-                          });
-                          _init();
-                        },
+                        message: _errorMessage,
+                        onRetry: () => _init(retry: true),
                       );
                     }
-                    if (pages!.list.isNotEmpty) {
+                    if (pages?.list.isNotEmpty == true) {
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -316,7 +420,65 @@ class _MigrationMangaGlobalImageCardState
     );
   }
 
+  bool _opening = false;
+  Future<void> _openMobilePreview() async {
+    if (_opening) return;
+    _opening = true;
+    var previewRequested = false;
+    try {
+      final result = await Navigator.of(context).push<MigrationPreviewOutcome>(
+        MaterialPageRoute(
+          builder: (context) => MobileMigrationPreviewPage(
+            oldTitle: widget.oldManga.name ?? '',
+            oldSource: widget.oldManga.source ?? '',
+            targetTitle: widget.manga.name ?? '',
+            targetSource:
+                '${widget.source.name ?? ''} · ${completeLanguageName(widget.source.lang ?? '')}',
+            loadPreview: () {
+              final link = widget.manga.link;
+              if (link == null || link.isEmpty) {
+                return Future.error(
+                  StateError(context.l10n.something_went_wrong),
+                );
+              }
+              final provider = getDetailProvider(
+                url: link,
+                source: widget.source,
+              );
+              if (previewRequested) ref.invalidate(provider);
+              previewRequested = true;
+              return ref.read(provider.future);
+            },
+            formatDate: (value) =>
+                dateFormat(value, ref: ref, context: context),
+            watchCategories: widget.trackSearch == null
+                ? null
+                : () => categoryRepository.watchByItemType(
+                    widget.oldManga.itemType,
+                  ),
+            onEditCategories: () async {
+              await context.push(
+                '/categories',
+                extra: (true, widget.oldManga.itemType.index),
+              );
+            },
+            onConfirm: (preview, categoryIds) => widget.trackSearch == null
+                ? _migrateManga(preview)
+                : _addTrackedManga(categoryIds),
+          ),
+        ),
+      );
+      if (mounted && result != null) Navigator.pop(context);
+    } finally {
+      _opening = false;
+    }
+  }
+
   void _showMigrateDialog(BuildContext context, dynamic l10n) {
+    if (isMobile && !isTv) {
+      _openMobilePreview();
+      return;
+    }
     ref
         .watch(
           getDetailProvider(
@@ -513,41 +675,7 @@ class _MigrationMangaGlobalImageCardState
                         const SizedBox(width: 15),
                         TextButton(
                           onPressed: () async {
-                            final model = widget.manga;
-                            final manga = Manga(
-                              name: model.name,
-                              artist: model.artist,
-                              author: model.author,
-                              description: model.description,
-                              imageUrl: model.imageUrl,
-                              link: model.link,
-                              genre: model.genre,
-                              status: model.status ?? Status.unknown,
-                              source: widget.source.name,
-                              lang: widget.source.lang,
-                              itemType: widget.oldManga.itemType,
-                              favorite: true,
-                              categories: categoryIds,
-                              dateAdded: DateTime.now().millisecondsSinceEpoch,
-                              updatedAt: DateTime.now().millisecondsSinceEpoch,
-                              sourceId: widget.source.id,
-                            );
-                            final mangaId = await mangaRepository.put(manga);
-                            if (mangaId != -1) {
-                              await ref
-                                  .read(
-                                    trackStateProvider(
-                                      track: null,
-                                      itemType: widget.oldManga.itemType,
-                                      widgetRef: ref,
-                                    ).notifier,
-                                  )
-                                  .setTrackSearch(
-                                    widget.trackSearch!,
-                                    mangaId,
-                                    widget.trackSearch!.syncId!,
-                                  );
-                            }
+                            await _addTrackedManga(categoryIds);
                             if (context.mounted) {
                               Navigator.pop(context);
                               Navigator.pop(context);
@@ -567,6 +695,46 @@ class _MigrationMangaGlobalImageCardState
     );
   }
 
+  Future<void> _addTrackedManga(List<int> categoryIds) async {
+    final failureMessage = context.l10n.something_went_wrong;
+    final model = widget.manga;
+    final manga = Manga(
+      name: model.name,
+      artist: model.artist,
+      author: model.author,
+      description: model.description,
+      imageUrl: model.imageUrl,
+      link: model.link,
+      genre: model.genre,
+      status: model.status ?? Status.unknown,
+      source: widget.source.name,
+      lang: widget.source.lang,
+      itemType: widget.oldManga.itemType,
+      favorite: true,
+      categories: categoryIds,
+      dateAdded: DateTime.now().millisecondsSinceEpoch,
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+      sourceId: widget.source.id,
+    );
+    final mangaId = await mangaRepository.put(manga);
+    if (mangaId != -1) {
+      await ref
+          .read(
+            trackStateProvider(
+              track: null,
+              itemType: widget.oldManga.itemType,
+              widgetRef: ref,
+            ).notifier,
+          )
+          .setTrackSearch(
+            widget.trackSearch!,
+            mangaId,
+            widget.trackSearch!.syncId!,
+          );
+    }
+    if (mangaId == -1) throw StateError(failureMessage);
+  }
+
   Future<void> _migrateManga(MManga preview) async {
     await migrateLibraryItem(
       ref: ref,
@@ -575,12 +743,5 @@ class _MigrationMangaGlobalImageCardState
       preview: preview,
       destinationSource: widget.source,
     );
-  }
-}
-
-class SuperPrecalculationPolicy extends ExtentPrecalculationPolicy {
-  @override
-  bool shouldPrecalculateExtents(ExtentPrecalculationContext context) {
-    return context.numberOfItems < 100;
   }
 }

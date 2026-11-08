@@ -1,0 +1,58 @@
+NodeLane iOS manga detail concept
+Generation method: built-in image_gen (not CLI).
+Purpose: design reference only; no detail-page implementation changes.
+Visual reference reviewed: ios-interface-concept.png.
+Code/layout references: manga_info_header.dart, mobile_detail_widgets.dart, mobile_chapter_settings.dart, mobile_detail_actions.dart.
+Example manga/author/source and cover art are generated illustrative content, not actual connected catalog data.
+
+=== Initial generation ===
+Use case: ui-mockup.
+Asset type: project design reference, a high-fidelity iOS comic detail page design board for NodeLane.
+Primary request: Design the existing Chinese NodeLane manga DETAIL experience using the same visual system as the approved iOS bookshelf / browse / More design: very light cool gray canvas #F5F6FA, white inset grouped surfaces, clear blue accent, dark almost-black text, restrained secondary gray, SF / PingFang-style system typography, compact consistent SF Symbols-like line icons. Preserve existing functionality and hierarchy. This is a visual concept, not an implementation screenshot.
+
+Composition: high-resolution wide landscape 16:9 presentation, FOUR complete equally-sized front-facing iPhone screens aligned side by side. Thin restrained dark device outlines, 9:41 status bar, Dynamic Island and bottom home indicators. No perspective, no desk, no hands. Small heading at top "NodeLane", subtitle "iOS · 漫画详情". Small captions beneath the four screens: "详情总览", "章节目录", "章节设置", "更多操作". Tiny footer "视觉概念稿 · 示例内容". Aim for legible accurate simplified Chinese, real shippable UI rather than a marketing poster.
+
+Shared layout: 20 pt gutters, white groups with 18 pt radius, 12 pt button radius, 10 pt cover radius, sheet radius 24 pt. Fine separators, no heavy outlines or card shadows. Blue 44–48 pt primary actions. iOS navigation chrome with back chevron left, download-arrow and ellipsis at right. No bottom app tab bar on ANY of these screens: this is a pushed detail route in the existing app, not a root tab. Do not redesign or reproduce the root bottom navigation here. Glass only very subtly in navigation, never behind text-heavy content or covers. Keep the same original illustrative cover and book identity across all four panels.
+
+Example book: title exactly "海岸来信". Original illustrated coastal manga cover: warm cream sky, ocean teal, blue sea, small sailboats, young adult seen from behind, gentle ink-and-watercolor Japanese-comic atmosphere, no known franchise and no tiny English lettering. Author line "作者：海野", status "连载中", source metadata "示例来源 · 中文". This is illustrative content, not a real connected source.
+
+SCREEN 1 — detail overview:
+Top navigation back chevron, download icon, ellipsis. Compact cover on left (about 100 by 145 pt), text on right with large 24 pt title "海岸来信", then author and status/source on separate secondary lines. Cover is NOT a full-screen hero or blurred background.
+Below, horizontal action row: blue filled "继续阅读" with book icon, secondary soft blue-gray "已在书架" with check.
+Synopsis area with section label "简介", short readable paragraph exactly "一封寄错地址的信，让少女回到久别的海边小镇。在潮汐与旧日回忆之间，她逐渐找到了自己的答案。" with subtle blue "展开".
+Three small restrained genre chips "日常" "治愈" "成长".
+White collapsed disclosure row "更多" with down chevron; this retains access to web / tracking / update calendar / recommendations and related works without a grid of extra primary buttons.
+Section header "章节 · 12" with filter icon on right.
+White grouped chapter list beginning with "第12话  海风的回信", secondary "10月28日 · 海岸汉化组", then "第11话  潮汐之间", secondary "10月21日 · 海岸汉化组", and partly/fully third row if space permits. Small blue unread dot on left, independent outlined download control at right. Clear whitespace and hierarchy. No invented rating, star score, reviews, membership, translation CTA or promotional banner.
+
+SCREEN 2 — scrolled chapter directory:
+Same book but scrolled down past cover and summary. Compact sticky navigation title "海岸来信", back/download/ellipsis.
+Below top nav show the existing "更多" disclosure expanded as a compact white group with low emphasis icon-and-text actions "网页", "追踪", "更新日历", "推荐", "相关作品".
+Then "章节 · 12" heading and filter button. Seven generous separated chapter rows from "第12话  海风的回信", "第11话  潮汐之间", "第10话  夏末的灯塔", "第9话  未寄出的信", "第8话  回到海边", "第7话  旧书店", "第6话  雨后的街道".
+Each row has title, small date / scanlator or reading-progress metadata, distinct independent download status on right. Unread rows use dark text with small blue dot, read rows use muted gray and check; one row has a bookmark icon; "第8话  回到海边" secondary text "已读至第6页". Do not put a giant play button on every chapter. Rows remain 60–76 pt tall with touch-safe spacing. No new search function, rating, pagination, catalog tabs, or permanent floating reading bar.
+
+SCREEN 3 — chapter settings bottom sheet:
+Dim the same detail page behind ONE opaque rounded grouped sheet occupying roughly lower 70–75 percent; no nesting. Grabber, title "章节设置", close x button. Book name "海岸来信" and small helper "筛选与排序即时生效，仅用于当前漫画。".
+Two-way rounded blue-filled segmented control "筛选" selected and "排序".
+White grouped rows with inline labels on left and compact three-part controls on right:
+"已下载" — "不限" selected / "包含" / "排除"
+"未读" — "不限" selected / "包含" / "排除"
+"已书签" — "不限" selected / "包含" / "排除".
+Below separate white disclosure row with people icon, "汉化组", secondary "全部显示", right chevron. Strong readable selected-state blue, no save/apply button because changes apply immediately. No display tab, no library-wide source filter. Generous bottom safe area; sheet content not stretched awkwardly.
+
+SCREEN 4 — manga actions bottom sheet:
+Dim the same detail page behind ONE opaque rounded sheet around lower 75 percent; grabber, title "漫画操作", subtitle "海岸来信", close x button.
+White grouped rows with consistent blue line icons, dark labels, fine separators and spacious touch targets:
+first group "刷新", "设置分类", "分享";
+second group "迁移", "批量迁移", "扩展设置";
+third group "导出元数据".
+No extra destructive button or login action. Use familiar SF-like symbols: refresh arrow, folder, square-and-up-arrow, swapping arrows, stacked transfer, grid/extension, document-and-up-arrow. Sheet has no duplicated nested navigation bar and does not show root tab navigation.
+Constraints: faithfully keep the detail-page structural logic above, all four screens are the SAME manga at different view states. Chinese is carefully typeset, consistent real UI scale, readable hierarchy. No code, token numbers, designer annotations, watermarks, random English filler, decorative dashboards, giant gradients, purple accents, or feature promises.
+
+=== Final refinement ===
+Use case: precise-object-edit.
+Edit the attached NodeLane iOS manga-detail design board. Preserve the full four-screen composition, every device frame, cover illustration, typography, Chinese labels, colors, layout, selected states and all content, except these precise refinements:
+1. On the first and second phones, reserve a clean opaque bottom safe-area strip behind the black home indicator. Scrollable chapter text and controls must be clipped ABOVE that strip; no text or download icon may overlap the home indicator. It is fine for the next chapter row to be partially cut at the scrolling viewport edge. Do not shrink the entire UI.
+2. On the fourth phone, remove the right-pointing chevron ONLY from the three action rows "刷新", "分享", and "导出元数据" because they invoke actions rather than opening another list. Preserve their left blue icons and all row labels. Keep other chevrons unchanged.
+Everything else remains identical. No new UI elements, captions or branding. Output the complete corrected design board, not a crop.
+

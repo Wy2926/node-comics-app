@@ -1,7 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/archive_reader/models/models.dart';
@@ -12,15 +13,17 @@ import 'package:mangayomi/src/rust/api/epub.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'local_archive.g.dart';
 
+const maxMangaCoverImageBytes = 5 * 1024 * 1024;
+
 @riverpod
-Future importArchivesFromFile(
+Future<int> importArchivesFromFile(
   Ref ref,
   Manga? mManga, {
   required ItemType itemType,
   required bool init,
   bool splitChapters = true,
 }) async {
-  final keepAlile = ref.keepAlive();
+  final keepAlive = ref.keepAlive();
   try {
     List<PlatformFile> files = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -126,11 +129,10 @@ Future importArchivesFromFile(
         });
       }
     }
-    keepAlile.close();
-    return "";
-  } catch (e) {
-    keepAlile.close();
-    rethrow;
+    // Zero distinguishes picker cancellation from completed file imports.
+    return files.length;
+  } finally {
+    keepAlive.close();
   }
 }
 
@@ -149,10 +151,10 @@ String _getName(String path) {
 extension Uint8ListExtensions on Uint8List {
   Uint8List? get getCoverImage {
     final length = lengthInBytes / (1024 * 1024);
-    if (length < 5) {
+    if (lengthInBytes < maxMangaCoverImageBytes) {
       return this;
     }
-    botToast(
+    showNodeLaneNotice(
       "Cover image is larger than 5MB (${length.toStringAsFixed(2)}MB). Skipping cover image.",
     );
     return null;

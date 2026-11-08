@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class CustomPopupMenuButton<T> extends StatelessWidget {
   final String label;
@@ -20,6 +22,29 @@ class CustomPopupMenuButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      final colors = NodeLaneTokens.of(context);
+      return PopupMenuButton<T>(
+        tooltip: label,
+        onSelected: onSelected,
+        itemBuilder: (_) => [
+          for (final item in list)
+            CheckedPopupMenuItem<T>(
+              value: item,
+              checked: item == value,
+              child: Text(itemText(item)),
+            ),
+        ],
+        child: ListTile(
+          title: Text(label, style: TextStyle(fontSize: 15, color: colors.ink)),
+          subtitle: Text(
+            title,
+            style: TextStyle(fontSize: 13, color: colors.muted),
+          ),
+          trailing: const Icon(Icons.unfold_more_rounded),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: PopupMenuButton(

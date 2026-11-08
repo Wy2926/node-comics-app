@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_qjs/flutter_qjs.dart';
+import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:mangayomi/eval/javascript/js_errors.dart';
+import 'package:mangayomi/eval/javascript/service.dart';
+import 'package:mangayomi/models/source.dart';
 
 /// #873 reported "Video list is empty" on sources that worked on 0.8.0, and
 /// occasionally `ReferenceError: 'extention' is not defined` instead.
@@ -10,6 +14,44 @@ import 'package:mangayomi/eval/javascript/js_errors.dart';
 /// runtime was marked initialized anyway. Every later call then answered its
 /// default, which looked like an empty list.
 void main() {
+  test('successful and failed initialization release engines, callbacks and timers', () async {
+    final engines = runtimeOpaques.length;
+    final callbacks = JavascriptRuntime.channelFunctionsRegistered.length;
+    for (var i = 0; i < 10; i++) {
+      for (final broken in [false, true]) {
+        final service = JsExtensionService(
+          Source(
+            id: 99,
+            name: 'Lifecycle fixture',
+            baseUrl: 'https://example.test',
+            sourceCode:
+                '''
+setTimeout(() => { throw new Error('timer survived disposal'); }, 500);
+${broken ? "throw new Error('bad initialization');" : ''}
+class DefaultExtension extends MProvider {
+  getHeaders() { return {}; }
+  async getPopular() { return {list: [], hasNextPage: false}; }
+}
+''',
+          ),
+        );
+        if (broken) {
+          expect(service.getHeaders, throwsException);
+        } else {
+          expect(service.getHeaders(), isEmpty);
+          expect((await service.getPopular(1)).list, isEmpty);
+        }
+        service.dispose();
+        service.dispose();
+        expect(JavascriptRuntime.channelFunctionsRegistered.length, callbacks);
+        expect(runtimeOpaques.length, engines);
+      }
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 550));
+    expect(runtimeOpaques.length, engines);
+    expect(JavascriptRuntime.channelFunctionsRegistered.length, callbacks);
+  });
+
   group('telling an unimplemented method from a broken source', () {
     test('the base class saying so is not a failure', () {
       // MProvider throws these on purpose for anything a source leaves out,

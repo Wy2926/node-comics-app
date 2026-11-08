@@ -118,15 +118,13 @@ class SortChapterState extends _$SortChapterState {
       ..index = index
       ..mangaId = mangaId
       ..reverse = state.index == index ? !reverse : reverse;
-    final settings = settingsRepository.current;
-    List<SortChapter>? sortChapterList = [];
-    for (var sortChapter in settings.sortChapterList!) {
-      if (sortChapter.mangaId != mangaId) {
-        sortChapterList.add(sortChapter);
-      }
-    }
-    sortChapterList.add(value);
-    settingsRepository.save(settings..sortChapterList = sortChapterList);
+    settingsRepository.update((settings) {
+      settings.sortChapterList = [
+        for (final entry in settings.sortChapterList ?? <SortChapter>[])
+          if (entry.mangaId != value.mangaId) entry,
+        value,
+      ];
+    });
 
     state = value;
   }
@@ -165,10 +163,16 @@ class ChapterFilterDownloadedState extends _$ChapterFilterDownloadedState
       ChapterFilterDownloaded(mangaId: mangaId, type: type);
 
   @override
-  void persist(List<ChapterFilterDownloaded> updated) {
-    settingsRepository.save(
-      settingsRepository.current..chapterFilterDownloadedList = updated,
-    );
+  void persist(ChapterFilterDownloaded value) {
+    settingsRepository.update((settings) {
+      settings.chapterFilterDownloadedList = [
+        for (final entry
+            in settings.chapterFilterDownloadedList ??
+                <ChapterFilterDownloaded>[])
+          if (entry.mangaId != value.mangaId) entry,
+        value,
+      ];
+    });
   }
 }
 
@@ -196,10 +200,15 @@ class ChapterFilterUnreadState extends _$ChapterFilterUnreadState
       ChapterFilterUnread(mangaId: mangaId, type: type);
 
   @override
-  void persist(List<ChapterFilterUnread> updated) {
-    settingsRepository.save(
-      settingsRepository.current..chapterFilterUnreadList = updated,
-    );
+  void persist(ChapterFilterUnread value) {
+    settingsRepository.update((settings) {
+      settings.chapterFilterUnreadList = [
+        for (final entry
+            in settings.chapterFilterUnreadList ?? <ChapterFilterUnread>[])
+          if (entry.mangaId != value.mangaId) entry,
+        value,
+      ];
+    });
   }
 }
 
@@ -227,10 +236,16 @@ class ChapterFilterBookmarkedState extends _$ChapterFilterBookmarkedState
       ChapterFilterBookmarked(mangaId: mangaId, type: type);
 
   @override
-  void persist(List<ChapterFilterBookmarked> updated) {
-    settingsRepository.save(
-      settingsRepository.current..chapterFilterBookmarkedList = updated,
-    );
+  void persist(ChapterFilterBookmarked value) {
+    settingsRepository.update((settings) {
+      settings.chapterFilterBookmarkedList = [
+        for (final entry
+            in settings.chapterFilterBookmarkedList ??
+                <ChapterFilterBookmarked>[])
+          if (entry.mangaId != value.mangaId) entry,
+        value,
+      ];
+    });
   }
 }
 
@@ -351,22 +366,21 @@ class ScanlatorsFilterState extends _$ScanlatorsFilterState {
     return scanlators;
   }
 
-  void set(List<String> filterScanlators) async {
-    final settings = settingsRepository.current;
+  void set(List<String> filterScanlators) {
+    final selected = List<String>.of(filterScanlators);
     var value = FilterScanlator()
-      ..scanlators = filterScanlators
+      ..scanlators = selected
       ..mangaId = manga.id;
-    List<FilterScanlator>? filterScanlatorList = [];
-    for (var filterScanlator in settings.filterScanlatorList ?? []) {
-      if (filterScanlator.mangaId != manga.id) {
-        filterScanlatorList.add(filterScanlator);
-      }
-    }
-    filterScanlatorList.add(value);
-    settingsRepository.save(
-      settings..filterScanlatorList = filterScanlatorList,
-    );
-    state = (_getScanlators(), _getFilterScanlator()!, filterScanlators);
+    settingsRepository.update((settings) {
+      settings.filterScanlatorList = [
+        for (final entry in settings.filterScanlatorList ?? <FilterScanlator>[])
+          if (entry.mangaId != value.mangaId) entry,
+        value,
+      ];
+    });
+    // Do not read the old row before the queued write has run, especially
+    // when this is the first scanlator selection for this comic.
+    state = (_getScanlators(), List.of(selected), List.of(selected));
   }
 
   List<String>? _getFilterScanlator() {

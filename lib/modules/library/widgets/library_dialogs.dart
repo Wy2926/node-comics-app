@@ -8,14 +8,19 @@ import 'package:mangayomi/modules/library/providers/library_state_provider.dart'
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as p;
+
+import 'mobile_bookshelf_actions.dart';
+import 'mobile_bookshelf_import_sheet.dart';
 
 /// Shows a dialog for deleting selected manga from library and/or device.
 void showDeleteMangaDialog({
@@ -23,6 +28,37 @@ void showDeleteMangaDialog({
   required WidgetRef ref,
   required ItemType itemType,
 }) {
+  if (isMobile && !isTv) {
+    // Freeze this confirmation's scope; changing the underlying selection must
+    // never add another book to an already-open removal operation.
+    final mangas = ref
+        .read(mangasListStateProvider)
+        .map(mangaRepository.findById)
+        .whereType<Manga>()
+        .where((manga) => manga.itemType == itemType)
+        .toList(growable: false);
+    showNodeLaneCatalogSheet<bool>(
+      context,
+      MobileBookshelfRemoveSheet(
+        titles: [for (final manga in mangas) manga.name ?? ''],
+        hasLocalArchives: mangas.any((manga) => manga.isLocalArchive ?? false),
+        onRemove: (fromLibrary, downloads) async {
+          await removeMobileLibrarySelection(
+            mangas,
+            fromLibrary: fromLibrary,
+            downloads: downloads,
+            removeFromLibrary: (manga) =>
+                mangaRepository.removeFromLibrary(ref, manga),
+          );
+          if (!context.mounted) return;
+          ref.read(mangasListStateProvider.notifier).clear();
+          ref.read(isLongPressedStateProvider.notifier).update(false);
+        },
+      ),
+      dismissible: false,
+    );
+    return;
+  }
   bool deleteFromLib = false;
   bool deleteDownloads = false;
   showDialog(
@@ -144,7 +180,11 @@ void showDeleteMangaDialog({
 /// Deletes the physical archive files (zip/cbz/mp4/epub) for a local-archive
 /// manga from disk. Returns the parent directory path so the caller can clean
 /// up the now-empty folder afterwards.
-Future<String> _deleteImport(Manga manga, String mangaDirectory) async {
+Future<String> _deleteImport(
+  Manga manga,
+  String mangaDirectory, {
+  bool reportErrors = false,
+}) async {
   for (var chapter in manga.chapters) {
     final path = chapter.archivePath;
     if (path == null) continue;
@@ -157,9 +197,41 @@ Future<String> _deleteImport(Manga manga, String mangaDirectory) async {
       if (chapterFile.existsSync()) {
         chapterFile.deleteSync();
       }
-    } catch (_) {}
+    } catch (_) {
+      if (reportErrors) rethrow;
+    }
   }
   return mangaDirectory;
+}
+
+/// Reuses the existing file/record operations. Local files have to be handled
+/// before removing their chapter records; a local book is removed only once
+/// even when both choices are selected. No retries after a partial failure.
+Future<void> removeMobileLibrarySelection(
+  List<Manga> mangas, {
+  required bool fromLibrary,
+  required bool downloads,
+  required Future<void> Function(Manga) removeFromLibrary,
+}) async {
+  if (!fromLibrary && !downloads) return;
+  for (final manga in mangas) {
+    final local = manga.isLocalArchive ?? false;
+    var directory = '';
+    if (downloads) {
+      directory = local
+          ? await _deleteImport(manga, directory, reportErrors: true)
+          : await _deleteDownload(manga, directory);
+    }
+    if (fromLibrary || (downloads && local)) {
+      await removeFromLibrary(manga);
+    }
+    if (directory.isNotEmpty) {
+      final folder = Directory(directory);
+      if (folder.existsSync() && folder.listSync().isEmpty) {
+        folder.deleteSync();
+      }
+    }
+  }
 }
 
 /// Deletes the downloaded chapter files for a regular (non-local-archive)
@@ -186,10 +258,30 @@ Future<String> _deleteDownload(Manga manga, String mangaDirectory) async {
 
 /// Shows a dialog for importing local files (zip, cbz, epub, video).
 void showImportLocalDialog(BuildContext context, ItemType itemType) {
+  if (isMobile && !isTv) {
+    showNodeLaneCatalogSheet<int>(
+      context,
+      Consumer(
+        builder: (_, sheetRef, _) => MobileBookshelfImportSheet(
+          itemType: itemType,
+          onImport: (splitChapters) => sheetRef.refresh(
+            importArchivesFromFileProvider(
+              null,
+              itemType: itemType,
+              init: true,
+              splitChapters: splitChapters,
+            ).future,
+          ),
+        ),
+      ),
+      dismissible: false,
+    );
+    return;
+  }
   final l10n = l10nLocalizations(context)!;
   final filesText = switch (itemType) {
-    ItemType.manga => ".zip, .cbz, .rar, .cbr",
-    ItemType.anime => ".mp4, .mkv, .avi, and more",
+    ItemType.manga => ".zip, .cbz",
+    ItemType.anime => context.l10n.import_video_formats,
     ItemType.novel => ".epub",
   };
   bool isLoading = false;
@@ -293,7 +385,7 @@ void showImportLocalDialog(BuildContext context, ItemType itemType) {
                               ),
                               height: 50,
                               width: 50,
-                              child: const Center(child: ProgressCenter()),
+                              child: const NodeLaneEmptyState.loading(),
                             ),
                           ),
                         ),

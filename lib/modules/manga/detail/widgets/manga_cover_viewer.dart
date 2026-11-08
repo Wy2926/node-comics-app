@@ -1,14 +1,15 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/tracker_search_widget.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
@@ -54,7 +55,7 @@ void showMangaCoverViewer(
                   );
                 },
                 loadingBuilder: (context, event) {
-                  return const ProgressCenter();
+                  return const NodeLaneEmptyState.loading();
                 },
               ),
             ),
@@ -105,9 +106,9 @@ void showMangaCoverViewer(
                                         );
                                         if (context.mounted) {
                                           Navigator.pop(context);
-                                          botToast(
+                                          showNodeLaneNotice(
                                             context.l10n.cover_updated,
-                                            second: 3,
+                                            seconds: 3,
                                           );
                                         }
                                       }
@@ -208,9 +209,9 @@ void showMangaCoverViewer(
                                           ),
                                         );
                                         file.writeAsBytesSync(bytes);
-                                        botToast(
+                                        showNodeLaneNotice(
                                           context.l10n.cover_saved,
-                                          second: 3,
+                                          seconds: 3,
                                         );
                                       }
                                     }

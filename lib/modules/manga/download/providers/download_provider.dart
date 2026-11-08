@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
@@ -5,7 +7,6 @@ import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mangayomi/eval/lib.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/page.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
@@ -84,7 +85,9 @@ Future<void> downloadChapter(
         connectivity.contains(ConnectivityResult.wifi) ||
         connectivity.contains(ConnectivityResult.ethernet);
     if (onlyOnWifi && !isOnWifi) {
-      botToast(localizedMessage((l10n) => l10n.downloads_are_limited_to_wifi));
+      showNodeLaneNotice(
+        localizedMessage((l10n) => l10n.downloads_are_limited_to_wifi),
+      );
       keepAlive.close();
       return;
     }
@@ -211,7 +214,9 @@ Future<void> downloadChapter(
           ).future,
         );
       } catch (error) {
-        botToast(localizedMessage((l10n) => l10n.failed_to_create_cbz(error)));
+        showNodeLaneNotice(
+          localizedMessage((l10n) => l10n.failed_to_create_cbz(error)),
+        );
       }
     }
 
@@ -361,7 +366,10 @@ Future<void> downloadChapter(
     });
 
     if (!isOk) {
-      botToast(startFailure ?? "Couldn't start the download");
+      showNodeLaneNotice(
+        startFailure ?? "Couldn't start the download",
+        kind: NodeLaneNoticeKind.error,
+      );
       await markDownloadFailed(chapter);
       if (callback != null) callback();
       keepAlive.close();
@@ -409,7 +417,7 @@ Future<void> downloadChapter(
           !mp4FileExist && itemType == ItemType.anime ||
           !htmlFileExist && itemType == ItemType.novel) {
         final mainDirectory = (await storageProvider.getDirectory())!;
-        storageProvider.createDirectorySafely(mainDirectory.path);
+        await storageProvider.createDirectorySafely(mainDirectory.path);
         for (var index = 0; index < pageUrls.length; index++) {
           if (Platform.isAndroid) {
             if (!(await File(p.join(mainDirectory.path, ".nomedia"))
@@ -435,7 +443,7 @@ Future<void> downloadChapter(
             headers.addAll(cookie);
             headers[HttpHeaders.userAgentHeader] = userAgent;
           }
-          Map<String, String> pageHeaders = headers;
+          Map<String, String> pageHeaders = {...headers};
           pageHeaders.addAll(page.headers ?? {});
 
           if (itemType == ItemType.manga) {
@@ -445,6 +453,7 @@ Future<void> downloadChapter(
                 PageUrl(
                   page.url.trim(),
                   headers: pageHeaders,
+                  imageProcessing: page.imageProcessing,
                   // No extension - the real one is only knowable once the
                   // response arrives (see download_isolate_pool.dart), which
                   // appends whatever detectImageExtension() finds. Every
@@ -463,6 +472,7 @@ Future<void> downloadChapter(
                 PageUrl(
                   page.url.trim(),
                   headers: pageHeaders,
+                  imageProcessing: page.imageProcessing,
                   fileName: p.join(mangaMainDirectory.path, "$chapterName.mp4"),
                 ),
               );
@@ -526,7 +536,9 @@ Future<void> downloadChapter(
   } catch (e) {
     // Surface the failure instead of swallowing it — a silent catch here is
     // exactly how "downloads just don't start" stays invisible.
-    if (!isDownloadCancelled(chapter)) botToast("Download failed: $e");
+    if (!isDownloadCancelled(chapter)) {
+      showNodeLaneNotice("Download failed: $e", kind: NodeLaneNoticeKind.error);
+    }
     await markDownloadFailed(chapter);
     if (callback != null) callback();
     keepAlive.close();
@@ -570,7 +582,10 @@ Future<void> processDownloads(Ref ref, {bool? useWifi}) async {
       ref.read(provider);
     }
   } catch (error) {
-    botToast('Could not start download queue: $error');
+    showNodeLaneNotice(
+      'Could not start download queue: $error',
+      kind: NodeLaneNoticeKind.error,
+    );
   } finally {
     keepAlive.close();
   }

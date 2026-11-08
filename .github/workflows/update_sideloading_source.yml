@@ -1,44 +1,46 @@
-name: Update Sideloading Source
+name: Update NodeLane Sideloading Source
 
 on:
   workflow_call:
-  workflow_dispatch: # Allow manual triggering of this workflow
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nodelane-comics-sideloading-source
+  cancel-in-progress: false
 
 jobs:
   update-source:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           ref: main
-  
-      - name: Get Latest Release Tag
-        run: echo "RELEASE_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-        
+
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
-      - name: Install Python Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
+      - name: Test source updater
+        run: python -B -m unittest discover -s repo -p 'test_*.py'
 
       - name: Run source updater
         run: python repo/update_source.py
 
       - name: Commit and Push changes
         run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add repo/source.json
           if git diff --cached --quiet; then
             echo "No changes detected, skipping commit."
           else
-            git commit -m "source update: $RELEASE_TAG"
+            git commit -m "chore: update nodelane-comics sideloading source"
             git push
           fi

@@ -1,3 +1,4 @@
+import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/history.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -17,6 +18,25 @@ import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 /// [incognitoMode] and [getIsarSetting] are concrete in the mixin but can be
 /// overridden — [ReaderController] overrides [getIsarSetting] to add caching.
 mixin ChapterControllerMixin {
+  /// Toggles the bookmark state of the current [chapter].
+  ///
+  /// Updates the persisted chapter and bumps its [updatedAt] timestamp.
+  /// No-op in incognito mode.
+  void setChapterBookmarked() {
+    if (incognitoMode) return;
+    final isBookmarked = getChapterBookmarked();
+    final chap = chapter;
+    chap.isBookmarked = !isBookmarked;
+    chapterRepository.save(chap);
+  }
+
+  /// Returns whether the current [chapter] is bookmarked.
+  ///
+  /// Reads directly from the database to ensure consistency.
+  bool getChapterBookmarked() {
+    return chapterRepository.getById(chapter.id!).isBookmarked!;
+  }
+
   // ---------------------------------------------------------------------------
   // Contract – provided by the Riverpod-generated superclass
   // ---------------------------------------------------------------------------
@@ -35,11 +55,11 @@ mixin ChapterControllerMixin {
   bool get incognitoMode => settingsRepository.current.incognitoMode!;
 
   bool get hasNextChapter {
-    final idx = getChapterIndex();
-    return idx.$1 < getChaptersLength(idx.$2) - 1;
+    final chapters = _readingChapters;
+    return _chapterIndex(chapters) < chapters.length - 1;
   }
 
-  bool get hasPreviousChapter => getChapterIndex().$1 > 0;
+  bool get hasPreviousChapter => _chapterIndex(_readingChapters) > 0;
 
   Settings getIsarSetting() => settingsRepository.current;
 
@@ -51,44 +71,28 @@ mixin ChapterControllerMixin {
   // Chapter / episode navigation
   // ---------------------------------------------------------------------------
 
-  (int, bool) getChapterIndex() => _chapterIndexWithOffset(0);
   Chapter getPrevChapter() => _chapterWithOffset(-1);
   Chapter getNextChapter() => _chapterWithOffset(1);
 
-  /// Finds this [chapter] in either the filtered list or the raw list and
-  /// returns [index + offset]. The boolean indicates whether the filtered list
-  /// was used (true) or the full list (false).
-  (int, bool) _chapterIndexWithOffset(int offset) {
-    final manga = getManga();
+  /// Preserve the current chapter in the sorted reading list even after its
+  /// progress changes a filter match. Raw database link order is not reading order.
+  List<Chapter> get _readingChapters =>
+      getManga().getChapterListForReading(anchor: chapter);
 
-    int? findIn(List<Chapter> list) {
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].id == chapter.id) return i + offset;
-      }
-      return null;
-    }
-
-    final index = findIn(manga.getChapterListForReading());
-    if (index != null) return (index, true);
-    // Fallback to raw list if chapter was filtered out.
-    final all = manga.chapters.toList();
-    return (findIn(all)!, false);
+  int _chapterIndex(List<Chapter> chapters) {
+    final index = chapters.indexWhere((entry) => entry.id == chapter.id);
+    if (index >= 0) return index;
+    throw StateError('Current chapter is missing from the catalog');
   }
 
   Chapter _chapterWithOffset(int offset) {
-    final idx = _chapterIndexWithOffset(offset);
-    final list = idx.$2
-        ? getManga().getChapterListForReading()
-        : getManga().chapters.toList();
-    if (idx.$1 < 0 || idx.$1 >= list.length) {
+    final chapters = _readingChapters;
+    final index = _chapterIndex(chapters) + offset;
+    if (index < 0 || index >= chapters.length) {
       throw RangeError('No chapter at offset $offset from ${chapter.id}');
     }
-    return list[idx.$1];
+    return chapters[index];
   }
-
-  int getChaptersLength(bool isInFilterList) => isInFilterList
-      ? getManga().getChapterListForReading().length
-      : getManga().chapters.length;
 
   // ---------------------------------------------------------------------------
   // History

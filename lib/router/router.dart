@@ -1,3 +1,4 @@
+import 'package:mangayomi/services/app_update_manifest.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,7 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/models/track_search.dart';
+import 'package:mangayomi/services/discovery/media_lookup_context.dart';
 import 'package:mangayomi/modules/anime/anime_player_view.dart';
 import 'package:mangayomi/modules/browse/extension/edit_code.dart';
 import 'package:mangayomi/modules/browse/extension/extension_detail.dart';
@@ -42,16 +44,19 @@ import 'package:mangayomi/modules/more/settings/track/track.dart';
 import 'package:mangayomi/modules/more/settings/track/manage_trackers/manage_trackers.dart';
 import 'package:mangayomi/modules/more/settings/track/manage_trackers/tracking_detail.dart';
 import 'package:mangayomi/modules/webview/webview.dart';
+import 'package:mangayomi/modules/webview/mobile_browser.dart';
 import 'package:mangayomi/modules/browse/browse_screen.dart';
 import 'package:mangayomi/modules/browse/extension/extension_lang.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
 import 'package:mangayomi/modules/main_view/main_screen.dart';
-import 'package:mangayomi/modules/history/history_screen.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
+import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
 import 'package:mangayomi/modules/manga/detail/manga_detail_main.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/manga/reader/reader_view.dart';
 import 'package:mangayomi/modules/more/about/about_screen.dart';
+import 'package:mangayomi/modules/more/about/software_update_screen.dart';
 import 'package:mangayomi/modules/more/about/error_reports_screen.dart';
 import 'package:mangayomi/modules/more/download_queue/download_queue_screen.dart';
 import 'package:mangayomi/modules/more/more_screen.dart';
@@ -63,10 +68,11 @@ import 'package:mangayomi/modules/more/settings/reader/novel_reader_screen.dart'
 import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
 import 'package:mangayomi/modules/more/settings/settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/security/security_screen.dart';
-import 'package:mangayomi/modules/nodelane/account_screen.dart';
 import 'package:mangayomi/services/crash_route_observer.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_tts_settings_screen.dart';
 part 'router.g.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -74,8 +80,10 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 GoRouter router(Ref ref) {
   final router = RouterNotifier();
   final hiddenItems = ref.read(hideItemsStateProvider);
+  // This is a launch preference. Reordering the visible tabs must not replace
+  // the router and discard the settings page or retained tab stacks.
   final initLocation = ref
-      .watch(navigationOrderStateProvider)
+      .read(navigationOrderStateProvider)
       .where((e) => !hiddenItems.contains(e))
       .first;
 
@@ -174,9 +182,18 @@ class RouterNotifier extends ChangeNotifier {
             builder: (id) => TrackerLibraryScreen(presetInput: id),
           ),
         ),
-        _branch(_genericRoute(name: "history", child: const HistoryScreen())),
+        _branch(
+          _genericRoute(name: "browser", child: const MobileBrowserHome()),
+        ),
         _branch(_genericRoute(name: "updates", child: const UpdatesScreen())),
-        _branch(_genericRoute(name: "browse", child: const BrowseScreen())),
+        _branch(
+          _genericRoute(
+            name: "browse",
+            child: isMobile && !isTv
+                ? const MobileSourcesScreen()
+                : const BrowseScreen(),
+          ),
+        ),
         _branch(_genericRoute(name: "more", child: const MoreScreen())),
       ],
     ),
@@ -205,15 +222,13 @@ class RouterNotifier extends ChangeNotifier {
       builder: (id) =>
           NovelReaderView(key: ValueKey('novelReader-$id'), chapterId: id),
     ),
-    _genericRoute<ItemType>(
-      name: "ExtensionLang",
-      builder: (itemType) => ExtensionsLang(itemType: itemType),
-    ),
-    _genericRoute(name: "settings", child: const SettingsScreen()),
-    _genericRoute(
-      name: "nodelaneAccount",
-      child: const NodeLaneAccountScreen(),
-    ),
+    if (!(isMobile && !isTv))
+      _genericRoute<ItemType>(
+        name: "ExtensionLang",
+        builder: (itemType) => ExtensionsLang(itemType: itemType),
+      ),
+    if (!(isMobile && !isTv))
+      _genericRoute(name: "settings", child: const SettingsScreen()),
     _genericRoute(name: "appearance", child: const AppearanceScreen()),
     _genericRoute<Source>(
       name: "extension_detail",
@@ -224,17 +239,28 @@ class RouterNotifier extends ChangeNotifier {
       builder: (data) => GlobalSearchScreen(search: data.$1, itemType: data.$2),
     ),
     _genericRoute(name: "about", child: const AboutScreen()),
+    _genericRoute<UpdateInfo?>(
+      name: 'appUpdate',
+      builder: (update) => SoftwareUpdateScreen(update: update),
+    ),
     _genericRoute(name: "errorReports", child: const ErrorReportsScreen()),
     _genericRoute(name: "track", child: const TrackScreen()),
     _genericRoute(name: "sync", child: const SyncScreen()),
-    _genericRoute<ItemType>(
-      name: "sourceFilter",
-      builder: (itemType) => SourcesFilterScreen(itemType: itemType),
-    ),
+    if (!(isMobile && !isTv))
+      _genericRoute<ItemType>(
+        name: "sourceFilter",
+        builder: (itemType) => SourcesFilterScreen(itemType: itemType),
+      ),
     _genericRoute(name: "downloadQueue", child: const DownloadQueueScreen()),
     _genericRoute<Map<String, dynamic>>(
       name: "mangawebview",
-      builder: (data) => MangaWebView(url: data["url"]!, title: data['title']!),
+      builder: (data) => isMobile
+          ? MobileComicBrowser(
+              url: data['url']!,
+              title: data['title']!,
+              tabId: data['tabId'],
+            )
+          : MangaWebView(url: data["url"]!, title: data['title']!),
     ),
     _genericRoute<(bool, int)>(
       name: "categories",
@@ -244,6 +270,11 @@ class RouterNotifier extends ChangeNotifier {
     _genericRoute(name: "general", child: const GeneralScreen()),
     _genericRoute(name: "readerMode", child: const ReaderScreen()),
     _genericRoute(name: "novelReaderMode", child: const NovelReaderScreen()),
+    if (isMobile && !isTv)
+      _genericRoute(
+        name: "ttsSettings",
+        child: const MobileTtsSettingsScreen(),
+      ),
     _genericRoute(name: "browseS", child: const BrowseSScreen()),
     _genericRoute(
       name: "extensionServer",
@@ -324,17 +355,14 @@ class RouterNotifier extends ChangeNotifier {
       name: "related",
       builder: (data) => RelatedScreen(name: data.$1, itemType: data.$2),
     ),
-    _genericRoute<(String, ItemType, AlgorithmWeights)>(
+    _genericRoute<(MediaLookupContext, AlgorithmWeights)>(
       name: "recommendations",
-      builder: (data) => RecommendationScreen(
-        name: data.$1,
-        itemType: data.$2,
-        algorithmWeights: data.$3,
-      ),
+      builder: (data) =>
+          RecommendationScreen(media: data.$1, algorithmWeights: data.$2),
     ),
-    _genericRoute<(String, Track?)>(
+    _genericRoute<(MediaLookupContext, Track?)>(
       name: "watchOrder",
-      builder: (data) => WatchOrderScreen(name: data.$1, track: data.$2),
+      builder: (data) => WatchOrderScreen(media: data.$1, track: data.$2),
     ),
   ];
 
@@ -347,23 +375,28 @@ class RouterNotifier extends ChangeNotifier {
     Widget Function(T extra)? builder,
     Widget? child,
   }) {
+    Widget pageChild(GoRouterState state) {
+      final page = builder != null ? builder(state.extra as T) : child!;
+      final target = state.uri.queryParametersAll['setting'];
+      return target == null || target.isEmpty
+          ? page
+          : NodeLaneRevealScope(
+              key: ValueKey(state.uri),
+              path: target,
+              child: page,
+            );
+    }
+
     return GoRoute(
       path: path ?? (name != null ? "/$name" : "/"),
       name: name,
-      builder: (context, state) {
-        if (builder != null) {
-          final id = state.extra as T;
-          return builder(id);
-        } else {
-          return child!;
-        }
-      },
+      builder: (context, state) => pageChild(state),
       pageBuilder: isApple
           ? (context, state) {
-              final pageChild = builder != null
-                  ? builder(state.extra as T)
-                  : child!;
-              return transitionPage(key: state.pageKey, child: pageChild);
+              return transitionPage(
+                key: state.pageKey,
+                child: pageChild(state),
+              );
             }
           : null,
     );

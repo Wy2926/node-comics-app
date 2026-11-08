@@ -1,12 +1,10 @@
+import 'package:mangayomi/modules/updates/update_errors_screen.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:bot_toast/bot_toast.dart';
-import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_providers.dart';
-import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/security/providers/security_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -20,21 +18,33 @@ import 'package:mangayomi/services/update_errors_provider.dart';
 class LibraryUpdateState {
   final bool running;
   final bool cancelRequested;
+  final int done, total;
   const LibraryUpdateState({
     this.running = false,
     this.cancelRequested = false,
+    this.done = 0,
+    this.total = 0,
   });
-  LibraryUpdateState copyWith({bool? running, bool? cancelRequested}) =>
-      LibraryUpdateState(
-        running: running ?? this.running,
-        cancelRequested: cancelRequested ?? this.cancelRequested,
-      );
+  LibraryUpdateState copyWith({
+    bool? running,
+    bool? cancelRequested,
+    int? done,
+    int? total,
+  }) => LibraryUpdateState(
+    running: running ?? this.running,
+    cancelRequested: cancelRequested ?? this.cancelRequested,
+    done: done ?? this.done,
+    total: total ?? this.total,
+  );
 }
 
 class LibraryUpdateNotifier extends Notifier<LibraryUpdateState> {
   @override
   LibraryUpdateState build() => const LibraryUpdateState();
-  void begin() => state = const LibraryUpdateState(running: true);
+  void begin({int total = 0}) =>
+      state = LibraryUpdateState(running: true, total: total);
+  void progress(int done, int total) =>
+      state = state.copyWith(done: done, total: total);
   void requestCancel() {
     if (state.running) state = state.copyWith(cancelRequested: true);
   }
@@ -49,24 +59,25 @@ final libraryUpdateProvider =
 
 /// Refreshes every entry in [mangaList], reporting progress through
 /// [onProgress] rather than touching the UI, so the same loop can run both
-/// behind the library's update button and unattended on launch.
+/// behind the library's update button and unattended on launch. The app-owned
+/// container keeps the task alive when the initiating page or notice closes.
 ///
 /// Returns the entries that failed. Honours the Stop button: the caller has
 /// already marked the run as started, and this checks for a cancellation
 /// between entries.
 Future<List<UpdateError>> _runUpdate({
-  required WidgetRef ref,
+  required ProviderContainer container,
   required List<Manga> mangaList,
   required String itemtype,
-  void Function(int done, int failed, int total)? onProgress,
+  void Function(int done, int total)? onProgress,
 }) async {
   final failures = <UpdateError>[];
   for (var i = 0; i < mangaList.length; i++) {
     // Stop early if the user pressed Stop.
-    if (ref.read(libraryUpdateProvider).cancelRequested) break;
+    if (container.read(libraryUpdateProvider).cancelRequested) break;
     final manga = mangaList[i];
     try {
-      await ref.read(
+      await container.read(
         updateMangaDetailProvider(
           mangaId: manga.id,
           isInit: false,
@@ -84,7 +95,10 @@ Future<List<UpdateError>> _runUpdate({
         ),
       );
     }
-    onProgress?.call(i + 1, failures.length, mangaList.length);
+    container
+        .read(libraryUpdateProvider.notifier)
+        .progress(i + 1, mangaList.length);
+    onProgress?.call(i + 1, mangaList.length);
   }
   return failures;
 }
@@ -94,83 +108,55 @@ Future<void> updateLibrary({
   required BuildContext context,
   required List<Manga> mangaList,
   required ItemType itemType,
+  bool showProgressNotice = true,
 }) async {
-  final itemtype = itemType.name[0].toUpperCase() + itemType.name.substring(1);
-  AppLogger.log("Starting $itemtype library update...");
-  if (mangaList.isEmpty) {
-    AppLogger.log("$itemtype library is empty. Nothing to update.");
+  final container = ProviderScope.containerOf(ref.context, listen: false);
+  if (mangaList.isEmpty || container.read(libraryUpdateProvider).running) {
     return;
   }
-  // Don't start a second concurrent run.
-  if (ref.read(libraryUpdateProvider).running) return;
-  ref.read(libraryUpdateProvider.notifier).begin();
-  bool isDark = ref.read(themeModeStateProvider);
-  botToast(
-    context.l10n.updating_library("0", "0", "0"),
-    fontSize: 13,
-    second: 30,
-    alignY: !context.isTablet ? 0.85 : 1,
-    themeDark: isDark,
-  );
-  final failures = await _runUpdate(
-    ref: ref,
-    mangaList: mangaList,
-    itemtype: itemtype,
-    onProgress: (done, failed, total) {
-      if (!context.mounted) return;
-      botToast(
-        context.l10n.updating_library(done, failed, total),
-        fontSize: 13,
-        second: 10,
-        alignY: !context.isTablet ? 0.85 : 1,
-        animationDuration: 0,
-        dismissDirections: [DismissDirection.none],
-        onlyOne: false,
-        themeDark: isDark,
-      );
-    },
-  );
-  final failed = failures.length;
-  ref.read(libraryUpdateProvider.notifier).end();
-  await Future.delayed(const Duration(seconds: 1));
-  BotToast.cleanAll();
-  // Persist this run's failures (empty list clears any previous ones) so they
-  // can be reviewed and migrated away later from the Updates tab's error
-  // screen, in addition to the dialog below.
-  ref.read(updateErrorsProvider.notifier).set(failures);
-  if (context.mounted && failures.isNotEmpty) {
-    final plural = failed == 1 ? itemtype : "${itemtype}s";
-    // Show the failures in a dismissible dialog rather than a transient toast,
-    // so the list can be reviewed at the user's pace and isn't missed when many
-    // entries fail. See #623.
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Failed to update $failed $plural"),
-        content: SizedBox(
-          width: context.width(0.8),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: context.height(0.5)),
-            // ListView.builder so rows are built lazily - a large library with
-            // many failed updates won't build one widget per entry up front.
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: failures.length,
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Text("• ${failures[index].name}"),
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.ok),
-          ),
-        ],
+  final l10n = context.l10n;
+  final notifier = container.read(libraryUpdateProvider.notifier);
+  notifier.begin(total: mangaList.length);
+  final notice = showProgressNotice
+      ? showNodeLaneNotice(
+          l10n.notice_library_updating,
+          description: l10n.notice_library_progress(0, mangaList.length),
+          kind: NodeLaneNoticeKind.progress,
+          progress: 0,
+        )
+      : null;
+  try {
+    final failures = await _runUpdate(
+      container: container,
+      mangaList: mangaList,
+      itemtype: itemType.name,
+      onProgress: (done, total) => notice?.update(
+        l10n.notice_library_updating,
+        description: l10n.notice_library_progress(done, total),
+        progress: total == 0 ? 0 : done / total,
       ),
     );
+    container.read(updateErrorsProvider.notifier).set(failures);
+    notice?.dismiss();
+    if (context.mounted && failures.isNotEmpty && showProgressNotice) {
+      showNodeLaneNotice(
+        l10n.notice_library_failed,
+        kind: NodeLaneNoticeKind.error,
+        actionLabel: l10n.update_errors,
+        onAction: () {
+          if (context.mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const UpdateErrorsScreen(),
+              ),
+            );
+          }
+        },
+      );
+    }
+  } finally {
+    notice?.dismiss();
+    notifier.end();
   }
 }
 
@@ -200,10 +186,11 @@ bool isLibraryUpdateDue({
 /// the same Stop button the manual update uses, and its failures land in the
 /// Updates tab's error screen like any other run's.
 Future<void> autoUpdateLibraryIfDue(WidgetRef ref) async {
+  final container = ProviderScope.containerOf(ref.context, listen: false);
   // Behind the app lock, nothing should be happening yet. Checked before the
   // timestamp below is written, so a launch that stops at the lock screen
   // leaves the refresh due rather than burning the interval on it.
-  if (!ref.read(appUnlockedStateProvider)) return;
+  if (!container.read(appUnlockedStateProvider)) return;
 
   final settings = settingsRepository.current;
   if (!isLibraryUpdateDue(
@@ -217,8 +204,8 @@ Future<void> autoUpdateLibraryIfDue(WidgetRef ref) async {
   // Never fight a run the user started themselves. Claimed here, before the
   // first await, so that a launch and a resume arriving together can't both
   // get past this check and start a run each.
-  if (ref.read(libraryUpdateProvider).running) return;
-  ref.read(libraryUpdateProvider.notifier).begin();
+  if (container.read(libraryUpdateProvider).running) return;
+  container.read(libraryUpdateProvider.notifier).begin();
 
   try {
     if (settings.autoLibraryUpdateWifiOnly ?? true) {
@@ -240,6 +227,7 @@ Future<void> autoUpdateLibraryIfDue(WidgetRef ref) async {
       );
     }
     if (entries.isEmpty) return;
+    container.read(libraryUpdateProvider.notifier).progress(0, entries.length);
 
     // Stamped before the run rather than after: a run cut short by the app
     // closing shouldn't make every following launch start over. Nothing above
@@ -252,16 +240,16 @@ Future<void> autoUpdateLibraryIfDue(WidgetRef ref) async {
       "Starting scheduled library update (${entries.length} entries)...",
     );
     final failures = await _runUpdate(
-      ref: ref,
+      container: container,
       mangaList: entries,
       itemtype: "Library",
     );
-    ref.read(updateErrorsProvider.notifier).set(failures);
+    container.read(updateErrorsProvider.notifier).set(failures);
     AppLogger.log(
       "Scheduled library update finished, ${failures.length} of "
       "${entries.length} failed.",
     );
   } finally {
-    ref.read(libraryUpdateProvider.notifier).end();
+    container.read(libraryUpdateProvider.notifier).end();
   }
 }

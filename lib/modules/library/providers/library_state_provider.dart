@@ -40,22 +40,20 @@ class LibraryDisplayTypeState extends _$LibraryDisplayTypeState {
   }
 
   void setLibraryDisplayType(DisplayType displayType) {
-    Settings appSettings = Settings();
-
     state = displayType;
 
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..displayType = displayType;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeDisplayType = displayType;
-        break;
-      default:
-        appSettings = settings..novelDisplayType = displayType;
-    }
-
-    settingsRepository.save(appSettings);
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.displayType = displayType;
+          break;
+        case ItemType.anime:
+          s.animeDisplayType = displayType;
+          break;
+        default:
+          s.novelDisplayType = displayType;
+      }
+    });
   }
 }
 
@@ -126,7 +124,7 @@ class MangaFilterDownloadedState extends _$MangaFilterDownloadedState
 
 @riverpod
 class MangaFilterUnreadState extends _$MangaFilterUnreadState
-    with TriStateFilterField {
+    with TriStateFilterField, TriStateFilterCycle {
   @override
   int build({
     required List<Manga> mangaList,
@@ -150,44 +148,11 @@ class MangaFilterUnreadState extends _$MangaFilterUnreadState
       _ => s..libraryFilterNovelUnreadType = type,
     },
   );
-
-  List<Manga> getData() {
-    if (getType() == 1) {
-      return mangaList
-          .where((element) => element.chapters.any((chap) => !chap.isRead!))
-          .toList();
-    } else if (getType() == 2) {
-      return mangaList
-          .where((element) => element.chapters.every((chap) => chap.isRead!))
-          .toList();
-    } else {
-      return mangaList;
-    }
-  }
-
-  List<Manga> update() {
-    if (state == 0) {
-      final data = mangaList
-          .where((element) => element.chapters.any((chap) => !chap.isRead!))
-          .toList();
-      setType(1);
-      return data;
-    } else if (state == 1) {
-      final data = mangaList
-          .where((element) => element.chapters.every((chap) => chap.isRead!))
-          .toList();
-      setType(2);
-      return data;
-    } else {
-      setType(0);
-      return mangaList;
-    }
-  }
 }
 
 @riverpod
 class MangaFilterStartedState extends _$MangaFilterStartedState
-    with TriStateFilterField {
+    with TriStateFilterField, TriStateFilterCycle {
   @override
   int build({
     required List<Manga> mangaList,
@@ -211,44 +176,11 @@ class MangaFilterStartedState extends _$MangaFilterStartedState
       _ => s..libraryFilterNovelStartedType = type,
     },
   );
-
-  List<Manga> getData() {
-    if (getType() == 1) {
-      return mangaList
-          .where((element) => element.chapters.any((chap) => !chap.isRead!))
-          .toList();
-    } else if (getType() == 2) {
-      return mangaList
-          .where((element) => element.chapters.every((chap) => chap.isRead!))
-          .toList();
-    } else {
-      return mangaList;
-    }
-  }
-
-  List<Manga> update() {
-    if (state == 0) {
-      final data = mangaList
-          .where((element) => element.chapters.any((chap) => !chap.isRead!))
-          .toList();
-      setType(1);
-      return data;
-    } else if (state == 1) {
-      final data = mangaList
-          .where((element) => element.chapters.every((chap) => chap.isRead!))
-          .toList();
-      setType(2);
-      return data;
-    } else {
-      setType(0);
-      return mangaList;
-    }
-  }
 }
 
 @riverpod
 class MangaFilterBookmarkedState extends _$MangaFilterBookmarkedState
-    with TriStateFilterField {
+    with TriStateFilterField, TriStateFilterCycle {
   @override
   int build({
     required List<Manga> mangaList,
@@ -272,47 +204,6 @@ class MangaFilterBookmarkedState extends _$MangaFilterBookmarkedState
       _ => s..libraryFilterNovelBookMarkedType = type,
     },
   );
-
-  List<Manga> getData() {
-    if (getType() == 1) {
-      return mangaList
-          .where(
-            (element) => element.chapters.any((chap) => chap.isBookmarked!),
-          )
-          .toList();
-    } else if (getType() == 2) {
-      return mangaList
-          .where(
-            (element) => element.chapters.every((chap) => !chap.isBookmarked!),
-          )
-          .toList();
-    } else {
-      return mangaList;
-    }
-  }
-
-  List<Manga> update() {
-    if (state == 0) {
-      final data = mangaList
-          .where(
-            (element) => element.chapters.any((chap) => chap.isBookmarked!),
-          )
-          .toList();
-      setType(1);
-      return data;
-    } else if (state == 1) {
-      final data = mangaList
-          .where(
-            (element) => element.chapters.every((chap) => !chap.isBookmarked!),
-          )
-          .toList();
-      setType(2);
-      return data;
-    } else {
-      setType(0);
-      return mangaList;
-    }
-  }
 }
 
 // ── Completed filter ──────────────────────────────────────────────────────────
@@ -410,18 +301,18 @@ class MangaFilterSourceState extends _$MangaFilterSourceState {
   }
 
   void _persist(List<String> names) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryFilterMangasSourceIds = names;
-        break;
-      case ItemType.anime:
-        appSettings = settings..libraryFilterAnimeSourceIds = names;
-        break;
-      default:
-        appSettings = settings..libraryFilterNovelSourceIds = names;
-    }
-    settingsRepository.save(appSettings);
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryFilterMangasSourceIds = names;
+          break;
+        case ItemType.anime:
+          s.libraryFilterAnimeSourceIds = names;
+          break;
+        default:
+          s.libraryFilterNovelSourceIds = names;
+      }
+    });
   }
 
   void setFilteredList(String source) {
@@ -515,28 +406,28 @@ class LibraryShowCategoryTabsState extends _$LibraryShowCategoryTabsState {
   bool build({required ItemType itemType, required Settings settings}) {
     switch (itemType) {
       case ItemType.manga:
-        return settings.libraryShowCategoryTabs!;
+        return settings.libraryShowCategoryTabs ?? true;
       case ItemType.anime:
-        return settings.animeLibraryShowCategoryTabs!;
+        return settings.animeLibraryShowCategoryTabs ?? true;
       default:
-        return settings.novelLibraryShowCategoryTabs ?? false;
+        return settings.novelLibraryShowCategoryTabs ?? true;
     }
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowCategoryTabs = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowCategoryTabs = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowCategoryTabs = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowCategoryTabs = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowCategoryTabs = value;
+          break;
+        default:
+          s.novelLibraryShowCategoryTabs = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -546,28 +437,28 @@ class LibraryDownloadedChaptersState extends _$LibraryDownloadedChaptersState {
   bool build({required ItemType itemType, required Settings settings}) {
     switch (itemType) {
       case ItemType.manga:
-        return settings.libraryDownloadedChapters!;
+        return settings.libraryDownloadedChapters ?? true;
       case ItemType.anime:
-        return settings.animeLibraryDownloadedChapters!;
+        return settings.animeLibraryDownloadedChapters ?? true;
       default:
-        return settings.novelLibraryDownloadedChapters ?? false;
+        return settings.novelLibraryDownloadedChapters ?? true;
     }
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryDownloadedChapters = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryDownloadedChapters = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryDownloadedChapters = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryDownloadedChapters = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryDownloadedChapters = value;
+          break;
+        default:
+          s.novelLibraryDownloadedChapters = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -577,28 +468,28 @@ class LibraryLanguageState extends _$LibraryLanguageState {
   bool build({required ItemType itemType, required Settings settings}) {
     switch (itemType) {
       case ItemType.manga:
-        return settings.libraryShowLanguage!;
+        return settings.libraryShowLanguage ?? true;
       case ItemType.anime:
-        return settings.animeLibraryShowLanguage!;
+        return settings.animeLibraryShowLanguage ?? true;
       default:
-        return settings.novelLibraryShowLanguage ?? false;
+        return settings.novelLibraryShowLanguage ?? true;
     }
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowLanguage = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowLanguage = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowLanguage = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowLanguage = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowLanguage = value;
+          break;
+        default:
+          s.novelLibraryShowLanguage = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -608,28 +499,28 @@ class LibraryLocalSourceState extends _$LibraryLocalSourceState {
   bool build({required ItemType itemType, required Settings settings}) {
     switch (itemType) {
       case ItemType.manga:
-        return settings.libraryLocalSource ?? false;
+        return settings.libraryLocalSource ?? true;
       case ItemType.anime:
-        return settings.animeLibraryLocalSource ?? false;
+        return settings.animeLibraryLocalSource ?? true;
       default:
-        return settings.novelLibraryLocalSource ?? false;
+        return settings.novelLibraryLocalSource ?? true;
     }
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryLocalSource = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryLocalSource = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryLocalSource = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryLocalSource = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryLocalSource = value;
+          break;
+        default:
+          s.novelLibraryLocalSource = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -639,28 +530,28 @@ class LibraryShowNumbersOfItemsState extends _$LibraryShowNumbersOfItemsState {
   bool build({required ItemType itemType, required Settings settings}) {
     switch (itemType) {
       case ItemType.manga:
-        return settings.libraryShowNumbersOfItems!;
+        return settings.libraryShowNumbersOfItems ?? true;
       case ItemType.anime:
-        return settings.animeLibraryShowNumbersOfItems!;
+        return settings.animeLibraryShowNumbersOfItems ?? true;
       default:
-        return settings.novelLibraryShowNumbersOfItems ?? false;
+        return settings.novelLibraryShowNumbersOfItems ?? true;
     }
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowNumbersOfItems = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowNumbersOfItems = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowNumbersOfItems = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowNumbersOfItems = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowNumbersOfItems = value;
+          break;
+        default:
+          s.novelLibraryShowNumbersOfItems = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -680,19 +571,19 @@ class LibraryShowContinueReadingButtonState
   }
 
   void set(bool value) {
-    Settings appSettings = Settings();
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..libraryShowContinueReadingButton = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..animeLibraryShowContinueReadingButton = value;
-        break;
-      default:
-        appSettings = settings..novelLibraryShowContinueReadingButton = value;
-    }
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.libraryShowContinueReadingButton = value;
+          break;
+        case ItemType.anime:
+          s.animeLibraryShowContinueReadingButton = value;
+          break;
+        default:
+          s.novelLibraryShowContinueReadingButton = value;
+      }
+    });
     state = value;
-    settingsRepository.save(appSettings);
   }
 }
 
@@ -714,22 +605,22 @@ class SortLibraryMangaState extends _$SortLibraryMangaState {
   }
 
   void update(bool reverse, int index) {
-    Settings appSettings = Settings();
     var value = SortLibraryManga()
       ..index = index
       ..reverse = state.index == index ? !reverse : reverse;
 
-    switch (itemType) {
-      case ItemType.manga:
-        appSettings = settings..sortLibraryManga = value;
-        break;
-      case ItemType.anime:
-        appSettings = settings..sortLibraryAnime = value;
-        break;
-      default:
-        appSettings = settings..sortLibraryNovel = value;
-    }
-    settingsRepository.save(appSettings);
+    settingsRepository.update((s) {
+      switch (itemType) {
+        case ItemType.manga:
+          s.sortLibraryManga = value;
+          break;
+        case ItemType.anime:
+          s.sortLibraryAnime = value;
+          break;
+        default:
+          s.sortLibraryNovel = value;
+      }
+    });
     state = value;
   }
 

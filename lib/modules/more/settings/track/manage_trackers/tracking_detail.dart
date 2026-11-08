@@ -8,6 +8,9 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'mobile_tracking_detail.dart';
 
 class TrackingDetail extends StatefulWidget {
   final TrackPreference trackerPref;
@@ -38,6 +41,13 @@ class _TrackingDetailState extends State<TrackingDetail>
 
   @override
   Widget build(BuildContext context) {
+    if (isMobile && !isTv) {
+      return MobileTrackingDetail(
+        preference: widget.trackerPref,
+        controller: _tabBarController,
+        moviesOnly: isMovies,
+      );
+    }
     final l10n = l10nLocalizations(context)!;
 
     return DefaultTabController(

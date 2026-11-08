@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/extensions/manga_extensions.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -11,6 +13,9 @@ import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart';
 import 'package:mangayomi/modules/widgets/bottom_text_widget.dart';
 import 'package:mangayomi/modules/widgets/cover_view_widget.dart';
 import 'package:mangayomi/modules/widgets/gridview_widget.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+import 'mobile_bookshelf_card.dart';
 
 class LibraryGridViewWidget extends StatefulWidget {
   final bool isCoverOnlyGrid;
@@ -48,6 +53,91 @@ class _LibraryGridViewWidgetState extends State<LibraryGridViewWidget> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
+        if (isMobile && !isTv) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth - NodeLaneTokens.gutter * 2;
+              final scale = MediaQuery.textScalerOf(context);
+              final columns = mobileBookshelfColumns(
+                width,
+                comfortable: widget.isComfortableGrid,
+                textScaler: scale,
+              );
+              final coverWidth =
+                  (width - (columns - 1) * NodeLaneTokens.shelfGap) / columns;
+              final coverOnly =
+                  widget.isCoverOnlyGrid && !widget.isComfortableGrid;
+              final captionHeight = coverOnly
+                  ? 0.0
+                  : MobileBookshelfCard.captionHeight(
+                      context,
+                      metadata:
+                          widget.sourceBadge ||
+                          widget.language ||
+                          widget.localSource,
+                    );
+              return GridView.builder(
+                key: PageStorageKey('mobile-shelf-${widget.itemType}'),
+                physics: const AlwaysScrollableScrollPhysics(),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space12,
+                  NodeLaneTokens.gutter,
+                  NodeLaneTokens.space24,
+                ).add(pageBottomInsets(context)),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  crossAxisSpacing: NodeLaneTokens.shelfGap,
+                  mainAxisSpacing: NodeLaneTokens.space24,
+                  mainAxisExtent:
+                      coverWidth * NodeLaneTokens.shelfCoverAspectRatio +
+                      captionHeight,
+                ),
+                itemCount: widget.entriesManga.length,
+                itemBuilder: (context, index) {
+                  final entry = widget.entriesManga[index];
+                  return MobileBookshelfCard(
+                    title: entry.name ?? '',
+                    source: widget.sourceBadge ? entry.source : null,
+                    language: widget.language ? entry.lang : null,
+                    isLocal: entry.isLocalArchive ?? false,
+                    showLocal: widget.localSource || widget.sourceBadge,
+                    image: resolveCoverImage(entry, ref),
+                    selected: widget.mangaIdsList.contains(entry.id),
+                    coverOnly: coverOnly,
+                    onTap: () => onTapEntry(
+                      isLongPressed: ref.read(isLongPressedStateProvider),
+                      ref: ref,
+                      context: context,
+                      entry: entry,
+                    ),
+                    onLongPress: () => handleLongOrSecondaryTap(
+                      ref.read(isLongPressedStateProvider),
+                      ref,
+                      entry,
+                    ),
+                    selectionMode: ref.watch(isLongPressedStateProvider),
+                    unreadCount: entry.unreadChaptersCount(widget.settings),
+                    unreadLabel: entry.itemType == ItemType.anime
+                        ? context.l10n.unwatched
+                        : context.l10n.unread,
+                    downloadCount: libraryDownloadedCount(
+                      entry,
+                      ref,
+                      enabled: widget.downloadedChapter,
+                    ),
+                    continueButton:
+                        widget.continueReaderBtn && entry.chapters.isNotEmpty
+                        ? ContinueReaderButton(entry: entry, large: true)
+                        : null,
+                  );
+                },
+              );
+            },
+          );
+        }
         final gridSize = ref.watch(
           libraryGridSizeStateProvider(itemType: widget.itemType),
         );

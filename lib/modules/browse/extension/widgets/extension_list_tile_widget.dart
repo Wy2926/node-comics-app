@@ -1,3 +1,4 @@
+import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +7,6 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/widgets/tv_row_button.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
@@ -29,10 +29,10 @@ class _ExtensionListTileWidgetState
       (widget.source.isAdded ?? false) &&
       !(widget.source.isObsolete ?? false) &&
       compareVersions(
-        widget.source.version ?? '',
-        widget.source.versionLast ?? '',
-      ) <
-      0;
+            widget.source.version ?? '',
+            widget.source.versionLast ?? '',
+          ) <
+          0;
 
   bool get _sourceNotEmpty =>
       widget.source.sourceCode != null && widget.source.sourceCode!.isNotEmpty;
@@ -123,7 +123,7 @@ class _ExtensionListTileWidgetState
         color: Theme.of(context).secondaryHeaderColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(5),
       ),
-      child: widget.source.iconUrl!.isEmpty
+      child: (widget.source.iconUrl ?? '').isEmpty
           ? const Icon(Icons.extension_rounded)
           : cachedNetworkImage(
               imageUrl: widget.source.iconUrl!,
@@ -187,7 +187,7 @@ class _ExtensionListTileWidgetState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                "OBSOLETE",
+                context.l10n.source_obsolete,
                 style: TextStyle(
                   color: context.primaryColor,
                   fontWeight: FontWeight.bold,

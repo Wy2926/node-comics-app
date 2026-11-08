@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -136,17 +138,11 @@ class LibraryBadgeWidget extends ConsumerWidget {
     final isLocalArchive = entry.isLocalArchive ?? false;
     final hasLocal = showLocal && isLocalArchive;
 
-    int downloadCount = 0;
-    if (showDownloaded) {
-      final downloadedIds =
-          ref.watch(downloadedChapterIdsProvider).asData?.value ??
-          const <int>{};
-      for (final c in entry.chapters) {
-        if (c.id != null && downloadedIds.contains(c.id)) {
-          downloadCount++;
-        }
-      }
-    }
+    final downloadCount = libraryDownloadedCount(
+      entry,
+      ref,
+      enabled: showDownloaded,
+    );
 
     // Scanlator-aware: the badge count respects the per-manga scanlator filter.
     final unreadCount = entry.unreadChaptersCount(settings);
@@ -165,7 +161,7 @@ class LibraryBadgeWidget extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (hasLocal) const EntryBadgeChip(label: 'Local'),
+          if (hasLocal) EntryBadgeChip(label: context.l10n.local),
           if (downloadCount > 0)
             EntryBadgeChip(label: downloadCount.toString()),
           if (unreadCount > 0)
@@ -180,4 +176,16 @@ class LibraryBadgeWidget extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Counts only the visible entry against the already shared download snapshot.
+int libraryDownloadedCount(
+  Manga entry,
+  WidgetRef ref, {
+  required bool enabled,
+}) {
+  if (!enabled) return 0;
+  final ids =
+      ref.watch(downloadedChapterIdsProvider).asData?.value ?? const <int>{};
+  return entry.chapters.where((c) => c.id != null && ids.contains(c.id)).length;
 }

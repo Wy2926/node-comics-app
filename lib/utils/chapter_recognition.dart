@@ -2,20 +2,24 @@ import 'package:mangayomi/utils/log/logger.dart';
 
 class ChapterRecognition {
   static final _unwanted = RegExp(
-    r"\b(?:v|ver|vol|version|volume|season|staffel|saison|temporada|s)[^a-z]?[0-9]+",
+    r"\b(?:v|ver|vol|version|volume|season|staffel|saison|temporada|s|t)[^a-z]?[0-9]+",
   );
   static final _unwantedWhiteSpace = RegExp(r"\s(?=extra|special|omake)");
   static final _seasonKeyword = RegExp(
-    r"\b(?:staffel|season|saison|temporada|s)\s*([0-9]+)",
+    r"\b(?:staffel|season|saison|temporada|s|t)\s*([0-9]+)",
   );
   static final _episodeKeyword = RegExp(
-    r"\b(?:folge|episode|ep\.?)\s*([0-9]+(?:\.[0-9]+)?)",
+    r"\b(?:folge|episode|episodio|ep\.?)\s*([0-9]+(?:\.[0-9]+)?)",
   );
   // lookbehind for "ch." then zero or more spaces.
   static final _chNotation = RegExp(
     r"(?<=ch\.) *([0-9]+)(\.[0-9]+)?(\.?[a-z]+)?",
   );
   static final _bareNumber = RegExp(r"([0-9]+)(\.[0-9]+)?(\.?[a-z]+)?");
+  static final _annualIssue = RegExp(
+    r'^#?\s*(?:annual\b|(?:19|20)\d{2}\s+annual\b)',
+    caseSensitive: false,
+  );
 
   // Dedup so a repeatedly-rebuilt chapter list doesn't spam the log file
   // with the same unrecognized name on every rebuild.
@@ -36,20 +40,35 @@ class ChapterRecognition {
     return (ep ?? 0).toInt();
   }
 
-  /// The key that answers "are these two the same chapter".
-  ///
-  /// Season is part of the answer. Without it, episode 1 of season 2 is the
-  /// same chapter as episode 1 of season 1, and whichever arrives second is
-  /// dropped before it reaches the library. A show with two seasons then
-  /// displays one of them.
-  ///
-  /// Null when the name carries no number at all, because "Special" and
-  /// "Prologue" are not all the same chapter either. Callers skip the
-  /// composite check in that case rather than folding them together.
-  ///
-  /// [scanlator] is omitted by callers deciding whether read state carries
-  /// over, since the same episode from a different group is still that
-  /// episode.
+  /// Estimate internal whole-number gaps per season, not catalog completeness.
+  /// Annuals have a separate sequence, often a year; decimal parts share their
+  /// whole-number slot. Neither creates gaps in the regular series. Unknown
+  /// names and numbers outside each observed range cannot establish a gap.
+  /// Sorting and progress identities are independent of this estimate.
+  int missingChapterCount(String mangaTitle, Iterable<String> chapterNames) {
+    final seasons = <int, Set<int>>{};
+    for (final chapterName in chapterNames) {
+      final label = chapterName
+          .toLowerCase()
+          .replaceAll(mangaTitle.toLowerCase(), '')
+          .trim();
+      if (_annualIssue.hasMatch(label)) continue;
+      final (season, ep) = rawSeasonAndNumber(mangaTitle, chapterName);
+      if (ep != null) seasons.putIfAbsent(season, () => {}).add(ep.floor());
+    }
+    var missing = 0;
+    for (final numbers in seasons.values) {
+      if (numbers.length < 2) continue;
+      final lowest = numbers.reduce((a, b) => a < b ? a : b);
+      final highest = numbers.reduce((a, b) => a > b ? a : b);
+      missing += (highest - lowest + 1) - numbers.length;
+    }
+    return missing;
+  }
+
+  /// Numeric grouping key for cross-release progress matching, with an optional
+  /// [scanlator]. Null when no positive number is recognized. This is not a
+  /// unique catalog identity: different URLs can carry the same numeric key.
   String? chapterIdentityKey(
     String mangaTitle,
     String chapterName, [
@@ -61,12 +80,9 @@ class ChapterRecognition {
   }
 
   /// Raw (season, episode) pair, unbucketed — season is 0 if none matched.
-  /// Episode keeps its fractional part (e.g. 12.5) so callers needing exact
-  /// chapter identity (dedup, stable sort of split chapters) don't collide
-  /// at the same truncated integer. Episode is null when the name has no
-  /// detectable number at all (e.g. "Special", "Prologue") — distinct from
-  /// a genuine chapter 0, so callers can avoid treating every such chapter
-  /// as a duplicate of every other one.
+  /// Episode keeps its fractional part (e.g. 12.5) for sorting and grouping.
+  /// Null means no number was detected (e.g. "Special", "Prologue"), distinct
+  /// from a genuine chapter 0. Different URLs still require separate records.
   (int, double?) rawSeasonAndNumber(String mangaTitle, String chapterName) {
     final name = chapterName
         .toLowerCase()
