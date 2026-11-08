@@ -12,7 +12,6 @@ class UpdateDownload {
   const UpdateDownload({
     required this.version,
     required this.build,
-    required this.sha256,
     required this.url,
     required this.phase,
     this.notes = '',
@@ -20,7 +19,7 @@ class UpdateDownload {
     this.total = 0,
   });
 
-  final String version, url, notes, sha256;
+  final String version, url, notes;
   final int build;
   final UpdateDownloadPhase phase;
   final int received, total;
@@ -39,7 +38,6 @@ abstract class AppUpdateDownloads {
     required String version,
     required int build,
     required String url,
-    required String sha256,
     required String title,
     required String notes,
   });
@@ -59,7 +57,6 @@ class AndroidAppUpdateDownloads implements AppUpdateDownloads {
       : UpdateDownload(
           version: value['version'] as String,
           build: (value['build'] as num).toInt(),
-          sha256: value['sha256'] as String,
           url: value['url'] as String,
           phase: UpdateDownloadPhase.values.byName(value['phase'] as String),
           notes: value['notes'] as String? ?? '',
@@ -76,7 +73,6 @@ class AndroidAppUpdateDownloads implements AppUpdateDownloads {
     required String version,
     required int build,
     required String url,
-    required String sha256,
     required String title,
     required String notes,
   }) async {
@@ -84,7 +80,6 @@ class AndroidAppUpdateDownloads implements AppUpdateDownloads {
       await _channel.invokeMapMethod('start', {
         'version': version,
         'build': build,
-        'sha256': sha256,
         'url': url,
         'title': '$title $version',
         'notes': notes,

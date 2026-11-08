@@ -23,10 +23,7 @@ void main() {
       ('android', false, ['x86'], '0.1.0', 'universal'),
       ('android', true, ['arm64-v8a'], '0.3.0', 'arm64-v8a'),
       ('android', true, ['x86_64'], null, null),
-      ('ios', false, <String>[], '0.2.0', 'any'),
       ('macos', false, <String>[], '0.3.0', 'any'),
-      ('windows', false, <String>[], '0.1.0', 'any'),
-      ('linux', false, <String>[], '0.1.0', 'any'),
     ]) {
       final selected = selectAppUpdate(
         updates,
@@ -39,16 +36,64 @@ void main() {
       expect(selected?.version, version, reason: '$platform / $abis / TV=$tv');
       expect(selected?.arch, arch);
     }
-    for (final (version, build) in [('0.2.0', 1), ('0.1.0', 2)]) {
+  });
+
+  test(
+    'custom hosts, ports and URL parameters work without optional metadata',
+    () {
+      for (final url in [
+        'https://cdn.example:8443/download?id=42&token=example#package',
+        'http://192.0.2.1:8080/app.apk',
+      ]) {
+        final update = parseAppUpdateManifest(
+          jsonEncode({
+            'schema': 1,
+            'updates': [
+              {'platform': 'android', 'version': 'v1.2-beta+7', 'url': url},
+              {
+                'platform': 'future-platform',
+                'arch': 'new-arch',
+                'version': '2',
+                'url': url,
+              },
+            ],
+          }),
+        ).first;
+        expect(update.url, url);
+        expect(update.externalUrl, url);
+        expect(update.arch, 'universal');
+        expect(update.build, 0);
+        expect(update.notes, isEmpty);
+      }
+    },
+  );
+
+  test('new versions do not require a higher build; equal versions use build order', () {
+    const low = UpdateInfo(
+      version: '1.0',
+      build: 3,
+      url: 'https://cdn.example/a',
+    );
+    const high = UpdateInfo(
+      version: '1.0',
+      build: 4,
+      url: 'https://cdn.example/b',
+    );
+    for (final (updates, version, build, expected) in [
+      ([low, high], '1.0', 2, high),
+      ([high, low], '1.0', 2, high),
+      ([low, high], '0.9', 100, high),
+      ([low, high], '1.0', 4, null),
+      ([low, high], '1.1', 1, null),
+    ]) {
       expect(
         selectAppUpdate(
           updates,
           platform: 'android',
-          androidAbis: ['arm64-v8a'],
           currentVersion: version,
           currentBuild: build,
         ),
-        isNull,
+        expected,
       );
     }
   });
@@ -64,17 +109,10 @@ void main() {
       expect(() => parseAppUpdateManifest(body), throwsFormatException);
     }
     for (final (field, value) in [
-      ('version', '0.2.0-beta'),
-      ('build', 0),
-      ('sha256', 'not-a-digest'),
-      ('platform', 'unknown'),
-      ('arch', 'unknown'),
-      ('notes', null),
-      ('url', 'https://other.invalid/app.apk'),
-      (
-        'page_url',
-        'http://github.com/Wy2926/node-comics-app/releases/tag/v0.2.0',
-      ),
+      ('version', 'latest'),
+      ('build', '2'),
+      ('url', 'file:///app.apk'),
+      ('page_url', 'javascript:alert(1)'),
     ]) {
       final root = jsonDecode(fixture) as Map<String, dynamic>;
       (root['updates'] as List).first[field] = value;
@@ -156,7 +194,6 @@ void main() {
     await feed.load();
     final original = await cache.readAsString();
     for (final failure in [
-      http.Response('', 404),
       http.Response('', 503),
       http.Response('{}', 200),
       http.ClientException('offline'),

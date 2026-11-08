@@ -67,14 +67,14 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get app_update_external_hint =>
-      'Opens the release page in your browser';
+      'Opens the update link in your browser';
 
   @override
   String get app_update_failed =>
       'Unable to check for updates. Please try again.';
 
   @override
-  String get app_update_opened => 'Release page opened';
+  String get app_update_opened => 'Update link opened';
 
   @override
   String get app_diagnostics => 'Diagnostics and logs';

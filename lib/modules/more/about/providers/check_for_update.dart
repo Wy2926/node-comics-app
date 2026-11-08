@@ -59,7 +59,7 @@ Future<UpdateInfo?> _getUpdateIfAvailable(
     await feed.load(force: force),
     platform: Platform.operatingSystem,
     currentVersion: info.version,
-    currentBuild: Platform.isAndroid ? int.parse(info.buildNumber) : 0,
+    currentBuild: int.tryParse(info.buildNumber) ?? 0,
     androidAbis: abis,
     androidTv: isTv,
   );

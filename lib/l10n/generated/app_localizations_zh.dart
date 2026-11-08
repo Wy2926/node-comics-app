@@ -61,13 +61,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get app_update_later => '稍后';
 
   @override
-  String get app_update_external_hint => '在浏览器中打开发布页面';
+  String get app_update_external_hint => '在浏览器中打开更新链接';
 
   @override
   String get app_update_failed => '暂时无法检查更新，请重试。';
 
   @override
-  String get app_update_opened => '已打开发布页面';
+  String get app_update_opened => '已打开更新链接';
 
   @override
   String get app_diagnostics => '诊断与日志';

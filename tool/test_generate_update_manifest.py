@@ -16,10 +16,10 @@ def release(version, *suffixes):
     tag = f"v{version}"
     return {
         "tag_name": tag, "draft": False, "prerelease": False, "body": f"更新 {version}",
+        "html_url": f"https://github.com/{generator.REPOSITORY}/releases/tag/{tag}",
         "assets": [{
-            "name": f"nodelane-comics-{tag}-{suffix}", "state": "uploaded", "size": 1234,
-            "browser_download_url": f"{generator.BASE}/releases/download/{tag}/nodelane-comics-{tag}-{suffix}",
-            "digest": "sha256:" + "a" * 64,
+            "name": f"nodelane-comics-{tag}-{suffix}", "state": "uploaded",
+            "browser_download_url": f"https://github.com/{generator.REPOSITORY}/releases/download/{tag}/nodelane-comics-{tag}-{suffix}",
         } for suffix in suffixes],
     }
 
@@ -54,10 +54,10 @@ class ManifestTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / "index.json"
             target.write_text("previous feed")
-            for field, value in [("digest", None), ("size", 0), ("browser_download_url", "https://other.invalid/a.apk")]:
-                with self.subTest(field=field):
+            for value in [None, "file:///a.apk"]:
+                with self.subTest(url=value):
                     candidate = release("0.2.0", "android-arm64-v8a.apk")
-                    candidate["assets"][0][field] = value
+                    candidate["assets"][0]["browser_download_url"] = value
                     with patch.object(generator, "fetch_releases", return_value=[candidate]), redirect_stderr(io.StringIO()):
                         self.assertEqual(generator.main(["--output", str(target)]), 1)
                     self.assertEqual(target.read_text(), "previous feed")
@@ -67,6 +67,27 @@ class ManifestTests(unittest.TestCase):
             with patch.object(generator, "fetch_releases", return_value=[]), redirect_stdout(io.StringIO()):
                 self.assertEqual(generator.main(["--output", str(target)]), 0)
             self.assertEqual(json.loads(target.read_text()), {"schema": 1, "updates": []})
+
+    def test_cli_uses_source_urls_or_download_mirror(self):
+        candidate = release("0.2.0", "macos.dmg")
+        asset_url = "https://cdn.example:8443/get?package=app.dmg#download"
+        page_url = "http://example.org:8080/updates?version=0.2.0"
+        candidate["assets"][0]["browser_download_url"] = asset_url
+        candidate["html_url"] = page_url
+        for mirror in [None, "http://cdn.example:8080/packages?key=example"]:
+            with self.subTest(mirror=mirror), tempfile.TemporaryDirectory() as directory:
+                target = Path(directory) / "index.json"
+                args = ["--output", str(target)]
+                if mirror is not None:
+                    args += ["--download-base-url", mirror]
+                with patch.object(generator, "fetch_releases", return_value=[candidate]), \
+                        patch.object(generator, "urlopen", return_value=io.BytesIO(b"version: 0.2.0+2\n")), \
+                        redirect_stdout(io.StringIO()):
+                    self.assertEqual(generator.main(args), 0)
+                entry = json.loads(target.read_text())["updates"][0]
+                self.assertEqual(entry["url"], asset_url if mirror is None else
+                    "http://cdn.example:8080/packages/v0.2.0/nodelane-comics-v0.2.0-macos.dmg?key=example")
+                self.assertEqual(entry["page_url"], page_url if mirror is None else "")
 
     def test_pagination_failure_does_not_return_partial_releases(self):
         first = [copy.deepcopy(release("0.1.0", "ios.ipa")) for _ in range(100)]

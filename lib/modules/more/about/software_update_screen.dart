@@ -53,7 +53,6 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
     build: task.build,
     notes: task.notes,
     url: task.url,
-    sha256: task.sha256,
   );
 
   Future<void> _check() async {
@@ -166,7 +165,7 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
       final downloads = _downloads;
       if (downloads == null) {
         final opened = await launchUrl(
-          Uri.parse(_update!.pageUrl),
+          Uri.parse(_update!.externalUrl),
           mode: LaunchMode.externalApplication,
         );
         if (!opened) throw StateError('Unable to open release');
@@ -188,7 +187,6 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
             version: current?.version ?? _update!.version,
             build: current?.build ?? _update!.build,
             url: current?.url ?? _update!.url,
-            sha256: current?.sha256 ?? _update!.sha256,
             title: title,
             notes: current?.notes ?? _update!.notes,
           );
@@ -245,15 +243,7 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
                   ? SoftwareUpdateView(
                       currentVersion: currentVersion,
                       targetVersion: download?.version ?? release.version,
-                      notes: (download?.notes ?? release.notes)
-                          .split('\n')
-                          .where(
-                            (line) =>
-                                !line.trim().startsWith('**Full Changelog**') &&
-                                !line.trim().startsWith('Full Changelog:'),
-                          )
-                          .join('\n')
-                          .trim(),
+                      notes: download?.notes ?? release.notes,
                       downloadOnDevice: _downloads != null,
                       busy: _busy || download?.active == true,
                       installing: _busy && ready,

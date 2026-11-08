@@ -27,15 +27,12 @@ final _package = PackageInfo(
   version: '0.1.0',
   buildNumber: '1',
 );
-const _digest =
-    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const _update = UpdateInfo(
   version: '1.0.0',
   build: 2,
   notes: 'Sample release notes',
   pageUrl: 'https://example.invalid/release',
   url: 'https://example.invalid/app.apk',
-  sha256: _digest,
 );
 
 class _Launcher extends UrlLauncherPlatform {
@@ -68,7 +65,6 @@ class _Downloads implements AppUpdateDownloads {
     required String version,
     required int build,
     required String url,
-    required String sha256,
     required String title,
     required String notes,
   }) async {
@@ -284,21 +280,28 @@ void main() {
   );
 
   testWidgets(
-    'browser action stays on the page, recovers from failure and ignores late completion',
+    'browser opens direct or page URLs, preserves notes, retries and ignores late completion',
     (tester) async {
       final oldLauncher = UrlLauncherPlatform.instance;
       final launcher = _Launcher();
       UrlLauncherPlatform.instance = launcher;
       addTearDown(() => UrlLauncherPlatform.instance = oldLauncher);
-      final router = await start(tester);
+      var release = const UpdateInfo(
+        version: '1.2',
+        platform: 'ios',
+        url: 'http://cdn.example:8080/get?package=app.ipa',
+        notes: 'Changes\nFull Changelog: https://example.org/changes',
+      );
+      final router = await start(tester, check: () async => release);
       await tester.pumpAndSettle();
+      expect(find.text(release.notes), findsOneWidget);
       expect(launcher.calls, isEmpty);
       final open = find.widgetWithText(FilledButton, 'Open in browser');
       await tester.tap(open);
       await tester.tap(open);
       await tester.pump();
       expect(launcher.calls, [
-        (_update.pageUrl, PreferredLaunchMode.externalApplication),
+        (release.url, PreferredLaunchMode.externalApplication),
       ]);
       launcher.result.complete(false);
       await tester.pumpAndSettle();
@@ -308,7 +311,7 @@ void main() {
       await tester.pump();
       launcher.result.complete(true);
       await tester.pumpAndSettle();
-      expect(find.text('Release page opened'), findsOneWidget);
+      expect(find.text('Update link opened'), findsOneWidget);
       expect(router.state.uri.path, '/appUpdate');
       launcher.result = Completer<bool>();
       await tester.tap(open);
@@ -318,6 +321,18 @@ void main() {
       launcher.result.complete(true);
       await tester.pumpAndSettle();
       expect(router.state.uri.path, '/');
+      release = _update;
+      launcher.result = Completer<bool>();
+      await tester.tap(find.text('Check for update'));
+      await tester.pumpAndSettle();
+      await tester.tap(open);
+      await tester.pump();
+      expect(launcher.calls.last, (
+        _update.pageUrl,
+        PreferredLaunchMode.externalApplication,
+      ));
+      launcher.result.complete(true);
+      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     },
   );
@@ -365,7 +380,6 @@ void main() {
         UpdateDownload(
           version: '1.0.0',
           build: 2,
-          sha256: _digest,
           url: 'https://example.invalid/app.apk',
           phase: UpdateDownloadPhase.downloading,
           notes: List.filled(30, 'Saved release notes').join('\n'),
@@ -415,7 +429,6 @@ void main() {
       downloads.task = const UpdateDownload(
         version: '1.0.0',
         build: 2,
-        sha256: _digest,
         url: 'https://example.invalid/app.apk',
         phase: UpdateDownloadPhase.ready,
         notes: 'Saved release notes',

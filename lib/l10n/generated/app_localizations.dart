@@ -233,7 +233,7 @@ abstract class AppLocalizations {
   /// No description provided for @app_update_external_hint.
   ///
   /// In en, this message translates to:
-  /// **'Opens the release page in your browser'**
+  /// **'Opens the update link in your browser'**
   String get app_update_external_hint;
 
   /// No description provided for @app_update_failed.
@@ -245,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @app_update_opened.
   ///
   /// In en, this message translates to:
-  /// **'Release page opened'**
+  /// **'Update link opened'**
   String get app_update_opened;
 
   /// No description provided for @app_diagnostics.

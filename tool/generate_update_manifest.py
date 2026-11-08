@@ -7,12 +7,11 @@ import re
 import sys
 import tempfile
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
 REPOSITORY = "Wy2926/node-comics-app"
-BASE = f"https://github.com/{REPOSITORY}"
 VERSION = r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
 
 
@@ -62,7 +61,17 @@ def asset_target(suffix):
     return None
 
 
-def build_manifest(releases, build_for_version=read_build):
+def web_url(value):
+    if not isinstance(value, str):
+        raise ValueError("Expected an HTTP or HTTPS URL")
+    parsed = urlsplit(value)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise ValueError("Expected an HTTP or HTTPS URL")
+    return parsed
+
+
+def build_manifest(releases, build_for_version=read_build, download_base_url=None):
+    mirror = web_url(download_base_url) if download_base_url is not None else None
     candidates = {}
     for release in releases:
         if release.get("draft") or release.get("prerelease"):
@@ -79,17 +88,19 @@ def build_manifest(releases, build_for_version=read_build):
             if target is None or asset.get("state") != "uploaded":
                 continue
             platform, arch, rank = target
-            url = f"{BASE}/releases/download/{quote(tag, safe='')}/{quote(name, safe='')}"
-            digest = asset.get("digest", "")
-            if (asset.get("browser_download_url") != url or
-                    type(asset.get("size")) is not int or asset["size"] <= 0 or
-                    not isinstance(digest, str) or not re.fullmatch(r"sha256:[a-f0-9]{64}", digest)):
-                raise ValueError(f"Invalid URL, size or SHA-256 for {name}")
+            if mirror is not None:
+                path = f"{mirror.path.rstrip('/')}/{quote(tag, safe='')}/{quote(name, safe='')}"
+                url = mirror._replace(path=path).geturl()
+            else:
+                url = asset.get("browser_download_url")
+                web_url(url)
+            page_url = "" if mirror is not None else release.get("html_url") or ""
+            if page_url:
+                web_url(page_url)
             candidate = (order, -rank, {
                 "platform": platform, "arch": arch, "version": version,
                 "notes": release.get("body") or "",
-                "page_url": f"{BASE}/releases/tag/{tag}",
-                "url": asset["browser_download_url"], "sha256": digest.removeprefix("sha256:"),
+                "page_url": page_url, "url": url,
             })
             key = platform, arch
             existing = candidates.get(key)
@@ -129,9 +140,10 @@ def write_manifest(path, manifest):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "build/app-updates/stable/index.json")
+    parser.add_argument("--download-base-url", help="Serve packages from this URL under <tag>/<filename>")
     args = parser.parse_args(argv)
     try:
-        manifest = build_manifest(fetch_releases())
+        manifest = build_manifest(fetch_releases(), download_base_url=args.download_base_url)
         write_manifest(args.output, manifest)
     except Exception as error:
         print(f"Update manifest generation failed: {error}", file=sys.stderr)
