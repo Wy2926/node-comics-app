@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/source.dart';
@@ -31,6 +32,7 @@ void main() {
     double width = 350,
     Brightness brightness = Brightness.light,
     TextDirection direction = TextDirection.ltr,
+    double? lineHeight,
   }) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -45,8 +47,11 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(scale)),
+          data: MediaQueryData(
+            size: MediaQuery.sizeOf(context),
+            textScaler: TextScaler.linear(scale),
+            lineHeightScaleFactorOverride: lineHeight,
+          ),
           child: Directionality(textDirection: direction, child: child!),
         ),
         home: Scaffold(
@@ -59,44 +64,68 @@ void main() {
     await tester.pump();
   }
 
-  for (final layout in [(350.0, 1.0), (280.0, 2.0), (350.0, 3.0)]) {
-    for (final brightness in Brightness.values) {
-      testWidgets(
-        'card dimensions survive pricing, adult and action changes at $layout $brightness',
-        (tester) async {
-          Size? reference;
-          for (final action in SourceCardAction.values) {
-            for (final pricing in SourcePricing.values) {
-              await mount(
-                tester,
-                SourceWebsiteCard(
-                  source: _source(pricing, adult: pricing.index.isEven),
-                  action: action,
-                  onOpen: () {},
-                  onAction: () {},
-                  onDetails: () {},
-                  onLongPress: () {},
-                ),
-                width: layout.$1,
-                scale: layout.$2,
-                brightness: brightness,
-              );
-              final size = tester.getSize(find.byType(SourceWebsiteCard));
-              reference ??= size;
+  for (final (width, scale, lineHeight, brightness) in [
+    (350.0, 1.0, null, Brightness.light),
+    (280.0, 2.0, null, Brightness.dark),
+    (350.0, 3.0, null, Brightness.light),
+    (350.0, 1.1, 1.6, Brightness.dark),
+    (280.0, 2.0, 2.0, Brightness.light),
+  ]) {
+    testWidgets(
+      'card dimensions and text fit at width $width, scale $scale, line height $lineHeight',
+      (tester) async {
+        Size? reference;
+        for (final action in SourceCardAction.values) {
+          for (final pricing in SourcePricing.values) {
+            final source = _source(pricing, adult: pricing.index.isEven);
+            await mount(
+              tester,
+              SourceWebsiteCard(
+                source: source,
+                action: action,
+                onOpen: () {},
+                onAction: () {},
+                onDetails: () {},
+                onLongPress: () {},
+              ),
+              width: width,
+              scale: scale,
+              lineHeight: lineHeight,
+              brightness: brightness,
+            );
+            final size = tester.getSize(find.byType(SourceWebsiteCard));
+            reference ??= size;
+            expect(
+              size,
+              reference,
+              reason: '$action $pricing changed the geometry',
+            );
+            final language = tester.getRect(find.text('中文(Zhōngwén)'));
+            final classification = tester.getRect(
+              find.textContaining('日漫 / 韩漫'),
+            );
+            expect(language.bottom, lessThanOrEqualTo(classification.top));
+            for (final element
+                in find
+                    .descendant(
+                      of: find.byType(SourceWebsiteCard),
+                      matching: find.byType(RichText),
+                    )
+                    .evaluate()) {
+              final paragraph = element.renderObject! as RenderParagraph;
               expect(
-                size,
-                reference,
-                reason: '$action $pricing changed the geometry',
+                paragraph.size.height,
+                greaterThanOrEqualTo(
+                  paragraph.getMaxIntrinsicHeight(paragraph.size.width) - .001,
+                ),
+                reason: '${paragraph.text.toPlainText()} is clipped',
               );
-              if (layout.$2 == 1) {
-                expect(size.height, NodeLaneTokens.sourceCardHeight);
-              }
-              expect(tester.takeException(), isNull);
             }
+            expect(tester.takeException(), isNull);
           }
-        },
-      );
-    }
+        }
+      },
+    );
   }
 
   testWidgets(

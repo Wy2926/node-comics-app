@@ -101,14 +101,8 @@ class NodeLaneTokens {
   static const catalogTabsWidth = 200.0;
   // Source cards share geometry across directories, metadata and action states.
   static const sourceCardTopInset = space8;
-  static const sourceCardIdentityHeight = websiteIconSize;
   static const sourceCardClassificationHeight = minTapTarget;
   static const sourceCardFooterHeight = minTapTarget;
-  static const sourceCardHeight =
-      sourceCardTopInset +
-      sourceCardIdentityHeight +
-      sourceCardClassificationHeight +
-      sourceCardFooterHeight;
   static const sourceAdultCornerWidth = 52.0, sourceAdultCornerHeight = 32.0;
   static const sourceCornerCut = 20.0;
   static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;

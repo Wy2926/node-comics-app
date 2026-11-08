@@ -41,16 +41,13 @@ class SourceWebsiteCard extends StatelessWidget {
     final adult = source.isNsfw == true;
     final labels = metadata.classificationLabels;
     final scaler = MediaQuery.textScalerOf(context);
-    final identityHeight = math.max(
-      NodeLaneTokens.sourceCardIdentityHeight,
-      scaler.scale(t.sourceTitle.fontSize!) * t.sourceTitle.height! +
-          scaler.scale(t.sourceMetadata.fontSize!) * t.sourceMetadata.height! +
-          NodeLaneTokens.space4,
-    );
+    final lineHeight = MediaQuery.maybeLineHeightScaleFactorOverrideOf(context);
+    double textHeight(TextStyle style) =>
+        (scaler.scale(style.fontSize!) * (lineHeight ?? style.height!))
+            .ceilToDouble();
     final classificationHeight = math.max(
       NodeLaneTokens.sourceCardClassificationHeight,
-      scaler.scale(t.sourceMetadata.fontSize!) * t.sourceMetadata.height! +
-          NodeLaneTokens.space16,
+      textHeight(t.sourceMetadata) + NodeLaneTokens.space16,
     );
     final cornerWidth = math.max(
       NodeLaneTokens.sourceAdultCornerWidth,
@@ -58,8 +55,7 @@ class SourceWebsiteCard extends StatelessWidget {
     );
     final cornerHeight = math.max(
       NodeLaneTokens.sourceAdultCornerHeight,
-      scaler.scale(t.sourceFooter.fontSize!) * t.sourceFooter.height! +
-          NodeLaneTokens.space8,
+      textHeight(t.sourceFooter) + NodeLaneTokens.space8,
     );
     final band = free
         ? t.accentSoft
@@ -91,8 +87,7 @@ class SourceWebsiteCard extends StatelessWidget {
                 NodeLaneTokens.space16 * 2;
         final footerRowHeight = math.max(
           NodeLaneTokens.sourceCardFooterHeight,
-          scaler.scale(t.sourceFooter.fontSize!) * t.sourceFooter.height! +
-              NodeLaneTokens.space16,
+          textHeight(t.sourceFooter) + NodeLaneTokens.space16,
         );
         final visibleCount =
             scaler.scale(t.sourceMetadata.fontSize!) > t.sourceTitle.fontSize!
@@ -150,145 +145,137 @@ class SourceWebsiteCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  height:
-                      NodeLaneTokens.sourceCardTopInset +
-                      identityHeight +
-                      classificationHeight,
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          NodeLaneTokens.space16,
-                          NodeLaneTokens.sourceCardTopInset,
-                          NodeLaneTokens.space16,
-                          0,
-                        ),
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: identityHeight,
-                              child: Row(
-                                children: [
-                                  NodeLaneWebsiteIcon(url: source.iconUrl),
-                                  const SizedBox(width: NodeLaneTokens.space12),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.only(
-                                        end: adult
-                                            ? cornerWidth -
-                                                  NodeLaneTokens.space8
-                                            : 0,
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            source.name ?? '',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: t.sourceTitle,
-                                          ),
-                                          const SizedBox(
-                                            height: NodeLaneTokens.space4,
-                                          ),
-                                          Text(
-                                            language == 'all'
-                                                ? '多语言'
-                                                : language.isEmpty
-                                                ? '语言未标注'
-                                                : completeLanguageName(
-                                                    language,
-                                                  ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: t.sourceMetadata,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: classificationHeight,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      classification,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: t.sourceMetadata.copyWith(
-                                        color: labels.isEmpty ? t.muted : t.ink,
-                                      ),
-                                    ),
-                                  ),
-                                  if (remaining > 0)
-                                    TextButton(
-                                      onPressed: onDetails,
-                                      style: TextButton.styleFrom(
-                                        minimumSize: const Size.square(
-                                          NodeLaneTokens.minTapTarget,
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: NodeLaneTokens.space4,
-                                        ),
-                                      ),
-                                      child: Semantics(
-                                        label: '查看全部来源资料，另有 $remaining 个分类',
-                                        child: ExcludeSemantics(
-                                          child: Text(
-                                            '+$remaining',
-                                            style: t.sourceMetadata.copyWith(
-                                              color: t.accent,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        NodeLaneTokens.space16,
+                        NodeLaneTokens.sourceCardTopInset,
+                        NodeLaneTokens.space16,
+                        0,
                       ),
-                      if (adult)
-                        PositionedDirectional(
-                          top: 0,
-                          end: 0,
-                          child: Semantics(
-                            label: '含 18+ 内容',
-                            child: ExcludeSemantics(
-                              child: ClipPath(
-                                clipper: _AdultCornerClipper(
-                                  Directionality.of(context),
-                                ),
-                                child: Container(
-                                  width: cornerWidth,
-                                  height: cornerHeight,
-                                  color: t.sourceAdultSurface,
-                                  alignment: AlignmentDirectional.centerEnd,
-                                  padding: const EdgeInsetsDirectional.only(
-                                    end: NodeLaneTokens.space8,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              NodeLaneWebsiteIcon(url: source.iconUrl),
+                              const SizedBox(width: NodeLaneTokens.space12),
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.only(
+                                    end: adult
+                                        ? cornerWidth - NodeLaneTokens.space8
+                                        : 0,
                                   ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        source.name ?? '',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: t.sourceTitle,
+                                      ),
+                                      const SizedBox(
+                                        height: NodeLaneTokens.space4,
+                                      ),
+                                      Text(
+                                        language == 'all'
+                                            ? '多语言'
+                                            : language.isEmpty
+                                            ? '语言未标注'
+                                            : completeLanguageName(language),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: t.sourceMetadata,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: classificationHeight,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
                                   child: Text(
-                                    '18+',
-                                    style: t.sourceFooter.copyWith(
-                                      color: t.sourceAdultInk,
+                                    classification,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: t.sourceMetadata.copyWith(
+                                      color: labels.isEmpty ? t.muted : t.ink,
                                     ),
+                                  ),
+                                ),
+                                if (remaining > 0)
+                                  TextButton(
+                                    onPressed: onDetails,
+                                    style: TextButton.styleFrom(
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      minimumSize: const Size.square(
+                                        NodeLaneTokens.minTapTarget,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: NodeLaneTokens.space4,
+                                      ),
+                                    ),
+                                    child: Semantics(
+                                      label: '查看全部来源资料，另有 $remaining 个分类',
+                                      child: ExcludeSemantics(
+                                        child: Text(
+                                          '+$remaining',
+                                          style: t.sourceMetadata.copyWith(
+                                            color: t.accent,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (adult)
+                      PositionedDirectional(
+                        top: 0,
+                        end: 0,
+                        child: Semantics(
+                          label: '含 18+ 内容',
+                          child: ExcludeSemantics(
+                            child: ClipPath(
+                              clipper: _AdultCornerClipper(
+                                Directionality.of(context),
+                              ),
+                              child: Container(
+                                width: cornerWidth,
+                                height: cornerHeight,
+                                color: t.sourceAdultSurface,
+                                alignment: AlignmentDirectional.centerEnd,
+                                padding: const EdgeInsetsDirectional.only(
+                                  end: NodeLaneTokens.space8,
+                                ),
+                                child: Text(
+                                  '18+',
+                                  style: t.sourceFooter.copyWith(
+                                    color: t.sourceAdultInk,
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
                 Ink(
                   color: band,
@@ -311,21 +298,28 @@ class SourceWebsiteCard extends StatelessWidget {
                         child: stackedFooter
                             ? Column(
                                 children: [
-                                  SizedBox(
-                                    height: footerRowHeight,
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: footerRowHeight,
+                                    ),
                                     child: pricing,
                                   ),
-                                  SizedBox(
-                                    height: footerRowHeight,
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: footerRowHeight,
+                                    ),
                                     child: Align(
+                                      heightFactor: 1,
                                       alignment: AlignmentDirectional.centerEnd,
                                       child: actionWidget,
                                     ),
                                   ),
                                 ],
                               )
-                            : SizedBox(
-                                height: footerRowHeight,
+                            : ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: footerRowHeight,
+                                ),
                                 child: Row(
                                   children: [
                                     Expanded(child: pricing),
@@ -386,6 +380,7 @@ class _SourceAction extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
         padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space4),
         foregroundColor: t.accent,
