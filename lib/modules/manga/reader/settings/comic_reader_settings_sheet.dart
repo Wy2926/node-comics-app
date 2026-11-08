@@ -142,6 +142,7 @@ class ComicReaderSettingsContent extends ConsumerWidget {
       required Map<T, String> labels,
       required ValueChanged<T> onChanged,
       Map<T, String>? hints,
+      Map<T, IconData>? optionIcons,
       Widget Function(T)? preview,
     }) => MobileSettingsChoice<T>(
       title: title,
@@ -154,6 +155,7 @@ class ComicReaderSettingsContent extends ConsumerWidget {
             entry.key,
             entry.value,
             subtitle: hints?[entry.key],
+            icon: optionIcons?[entry.key],
             leading: preview?.call(entry.key),
           ),
       ],
@@ -183,6 +185,10 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                 ComicReadingMode.paged: l.comic_paged,
                 ComicReadingMode.scroll: l.comic_scroll,
               },
+              optionIcons: {
+                ComicReadingMode.paged: icons.manga,
+                ComicReadingMode.scroll: icons.continuousVertical,
+              },
               onChanged: (mode) => bookId == null
                   ? defaults((v) => v.copyWith(mode: mode))
                   : book((v) => v.copyWith(mode: mode)),
@@ -197,6 +203,11 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                   ComicPageTurn.right: l.comic_right,
                   ComicPageTurn.up: l.comic_up,
                 },
+                optionIcons: {
+                  ComicPageTurn.left: icons.readingLeft,
+                  ComicPageTurn.right: icons.readingRight,
+                  ComicPageTurn.up: icons.ascending,
+                },
                 onChanged: (turn) => bookId == null
                     ? defaults((v) => v.copyWith(turn: turn))
                     : book((v) => v.copyWith(turn: turn)),
@@ -209,6 +220,11 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                   ComicPageFit.contain: l.comic_fit_contain,
                   ComicPageFit.width: l.comic_fit_width,
                   ComicPageFit.height: l.comic_fit_height,
+                },
+                optionIcons: {
+                  ComicPageFit.contain: icons.fullscreen,
+                  ComicPageFit.width: icons.fitWidth,
+                  ComicPageFit.height: icons.fitHeight,
                 },
                 onChanged: (fit) => bookId == null
                     ? defaults((v) => v.copyWith(fit: fit))
@@ -223,6 +239,11 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                     ComicPageLayout.automatic: l.comic_auto,
                     ComicPageLayout.single: l.single_page,
                     ComicPageLayout.double: l.double_page,
+                  },
+                  optionIcons: {
+                    ComicPageLayout.automatic: icons.automaticPages,
+                    ComicPageLayout.single: icons.singlePage,
+                    ComicPageLayout.double: icons.horizontalPages,
                   },
                   hints: {ComicPageLayout.automatic: l.comic_layout_hint},
                   onChanged: (layout) => bookId == null
@@ -246,6 +267,10 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                 icon: icons.lineSpacing,
                 value: profile.gap,
                 labels: {false: l.comic_no_gap, true: l.comic_small_gap},
+                optionIcons: {
+                  false: icons.seamlessPages,
+                  true: icons.spacedPages,
+                },
                 onChanged: (gap) => book((v) => v.copyWith(gap: gap)),
               ),
             ],
@@ -300,6 +325,11 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                             ComicWidePage.intact: l.comic_intact,
                             ComicWidePage.split: l.comic_split,
                             ComicWidePage.rotate: l.comic_rotate,
+                          },
+                          optionIcons: {
+                            ComicWidePage.intact: icons.intactPage,
+                            ComicWidePage.split: icons.horizontalPages,
+                            ComicWidePage.rotate: icons.rotate,
                           },
                           hints: {ComicWidePage.split: l.comic_wide_hint},
                           onChanged: (widePage) =>

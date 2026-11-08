@@ -111,6 +111,13 @@ class NodeLaneIcons {
   IconData get readingRight => CupertinoIcons.arrow_right;
   IconData get continuousVertical => CupertinoIcons.arrow_up_down_square;
   IconData get horizontalPages => CupertinoIcons.square_split_2x1;
+  IconData get automaticPages => CupertinoIcons.rectangle_grid_2x2;
+  IconData get singlePage => CupertinoIcons.doc;
+  IconData get intactPage => CupertinoIcons.rectangle;
+  IconData get fitWidth => CupertinoIcons.arrow_left_right;
+  IconData get fitHeight => CupertinoIcons.arrow_up_down;
+  IconData get seamlessPages => CupertinoIcons.rectangle_compress_vertical;
+  IconData get spacedPages => CupertinoIcons.rectangle_expand_vertical;
 
   IconData get memory => CupertinoIcons.cube;
   IconData get headphones => CupertinoIcons.headphones;

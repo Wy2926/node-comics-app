@@ -10,11 +10,13 @@ class MobileSettingOption<T> {
     this.value,
     this.label, {
     this.subtitle,
+    this.icon,
     this.leading,
   });
   final T value;
   final String label;
   final String? subtitle;
+  final IconData? icon;
   final Widget? leading;
 }
 
@@ -109,7 +111,12 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
               if (widget.description != null)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+                    padding: const EdgeInsets.fromLTRB(
+                      NodeLaneTokens.space24,
+                      NodeLaneTokens.space8,
+                      NodeLaneTokens.space24,
+                      NodeLaneTokens.space20,
+                    ),
                     child: Text(
                       widget.description!,
                       style: colors.readerSecondary,
@@ -148,7 +155,7 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  padding: NodeLaneTokens.pagePadding.copyWith(top: 0),
                   sliver: SliverList.builder(
                     itemCount: options.length,
                     itemBuilder: (context, index) {
@@ -160,6 +167,7 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                         child: NodeLaneRow.card(
                           title: option.label,
                           subtitle: option.subtitle,
+                          icon: option.icon,
                           leading: option.leading,
                           selected: selected,
                           first: index == 0,
