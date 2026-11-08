@@ -85,11 +85,8 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   bool _forward = true;
 
   /// A television only ever reads anime, so the question is not asked there
-  /// and this is the answer. Everywhere else it starts with everything ticked
-  /// and the reader narrows it.
-  final Set<ItemType> _libraries = isTv
-      ? {ItemType.anime}
-      : {...ItemType.values};
+  /// and this is the answer. Everywhere else only manga starts ticked.
+  final Set<ItemType> _libraries = isTv ? {ItemType.anime} : {ItemType.manga};
   bool _mergeLibraries = false;
   ItemType _repoType = ItemType.manga;
 
@@ -757,7 +754,9 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     _Step.libraries => [
       OnboardingChoiceRow<ItemType>(
         values: ItemType.values,
-        label: (type) => _libraryLabel(l10n, type),
+        label: (type) => type == ItemType.manga
+            ? _libraryLabel(l10n, type)
+            : '${_libraryLabel(l10n, type)} · 待测试',
         isSelected: _libraries.contains,
         onTap: _busy ? null : _toggleLibrary,
       ),

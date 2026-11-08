@@ -43,6 +43,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilterChip, 'Anime · 待测试'));
+    await tester.pumpAndSettle();
   }
 
   Future<void> systemBack(WidgetTester tester) async {

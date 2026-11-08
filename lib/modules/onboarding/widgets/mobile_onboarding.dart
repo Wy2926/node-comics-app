@@ -165,6 +165,9 @@ class MobileOnboardingLibraries extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n, t = NodeLaneTokens.of(context);
     final icons = NodeLaneIcons.of(context);
+    final testingColor = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xffffcb70)
+        : const Color(0xff956315);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -183,6 +186,40 @@ class MobileOnboardingLibraries extends StatelessWidget {
             for (final type in _mediaOrder)
               NodeLaneRow(
                 title: _label(context, type),
+                valueLeading: type == ItemType.manga
+                    ? null
+                    : Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: testingColor.withValues(alpha: .1),
+                          border: Border.all(
+                            color: testingColor.withValues(alpha: .3),
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.science_outlined,
+                              size: 13,
+                              color: testingColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '待测试',
+                              style: t.caption.copyWith(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: testingColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                 icon: switch (type) {
                   ItemType.manga => icons.manga,
                   ItemType.novel => icons.novel,

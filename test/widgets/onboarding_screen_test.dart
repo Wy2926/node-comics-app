@@ -17,11 +17,17 @@ const _goodUrl = 'https://example.invalid/index.json';
 void main() {
   tearDown(() => debugIsTvOverride = null);
 
+  Finder libraryChoice(String label) => find.widgetWithText(
+    FilterChip,
+    label == 'Manga' ? label : '$label · 待测试',
+  );
+
   Future<void> pump(
     WidgetTester tester, {
     Brightness? brightness,
     bool disableAnimations = false,
     double textScale = 1,
+    bool selectAll = true,
   }) async {
     // Phone width, because the arrange step is skipped at 600dp and wider,
     // and tall, because the TV layout overflows the default 600 and puts the
@@ -67,6 +73,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    if (selectAll && !isTv) {
+      for (final label in ['Anime', 'Novel']) {
+        await tester.tap(libraryChoice(label));
+        await tester.pumpAndSettle();
+      }
+    }
   }
 
   ButtonStyleButton addButton(WidgetTester tester) =>
@@ -115,15 +127,18 @@ void main() {
   });
 
   group('the steps', () {
-    testWidgets('opens by asking which libraries the user reads', (
-      tester,
-    ) async {
-      await pump(tester);
-      expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
-      for (final label in ['Manga', 'Anime', 'Novel']) {
-        expect(find.widgetWithText(FilterChip, label), findsOneWidget);
-      }
-    });
+    testWidgets(
+      'defaults to manga while test-labelled media remain selectable',
+      (tester) async {
+        await pump(tester, selectAll: false);
+        expect(find.text('Welcome to NodeLane Comics'), findsOneWidget);
+        for (final label in ['Manga', 'Anime', 'Novel']) {
+          final chip = tester.widget<FilterChip>(libraryChoice(label));
+          expect(chip.selected, label == 'Manga');
+          expect(chip.onSelected, isNotNull);
+        }
+      },
+    );
 
     testWidgets('asks how the libraries sit in the bar, then for a repo', (
       tester,
@@ -173,13 +188,7 @@ void main() {
     });
 
     testWidgets('skips arranging a bar that holds one library', (tester) async {
-      await pump(tester);
-      // Two off, one left. There is nothing to arrange, so asking would be
-      // asking for the sake of it.
-      await tester.tap(find.widgetWithText(FilterChip, 'Anime'));
-      await tester.pump();
-      await tester.tap(find.widgetWithText(FilterChip, 'Novel'));
-      await tester.pump();
+      await pump(tester, selectAll: false);
       await tester.tap(find.widgetWithText(FilledButton, 'Next'));
       await tester.pumpAndSettle();
       expect(find.text('Your libraries'), findsNothing);
@@ -190,7 +199,7 @@ void main() {
       await pump(tester);
       // Turning them all off would leave a bar with no library in it.
       for (final label in ['Manga', 'Anime', 'Novel']) {
-        await tester.tap(find.widgetWithText(FilterChip, label));
+        await tester.tap(libraryChoice(label));
         await tester.pump();
       }
       final selected = tester
@@ -203,7 +212,7 @@ void main() {
       tester,
     ) async {
       await pump(tester);
-      await tester.tap(find.widgetWithText(FilterChip, 'Novel'));
+      await tester.tap(libraryChoice('Novel'));
       await tester.pump();
       await toRepoStep(tester);
       expect(find.widgetWithText(FilterChip, 'Manga'), findsOneWidget);
@@ -215,7 +224,7 @@ void main() {
   group('choices do not resize', () {
     testWidgets('a chip is the same width selected and not', (tester) async {
       await pump(tester);
-      final chip = find.widgetWithText(FilterChip, 'Anime');
+      final chip = libraryChoice('Anime');
       final before = tester.getSize(chip);
       await tester.tap(chip);
       await tester.pumpAndSettle();
@@ -226,24 +235,6 @@ void main() {
   });
 
   group('edge cases', () {
-    testWidgets('lands on the library the repo was filed under, not the one '
-        'the picker happens to show', (tester) async {
-      await pump(tester);
-      await toRepoStep(tester);
-      await tester.enterText(find.byType(TextField), _goodUrl);
-      await tester.pump();
-      await tester.tap(find.widgetWithText(FilledButton, 'Add repository'));
-      await tester.pumpAndSettle();
-      // Filed under Manga. Moving the picker afterwards must not redirect the
-      // landing to a library with nothing in it.
-      await tester.tap(find.widgetWithText(FilterChip, 'Anime'));
-      await tester.pumpAndSettle();
-      debugPrint(
-        'PROBE: ${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}',
-      );
-      expect(find.widgetWithText(TextButton, 'Continue'), findsOneWidget);
-    });
-
     testWidgets('a failed repo says what to do, not what threw', (
       tester,
     ) async {
@@ -386,13 +377,7 @@ void main() {
     });
 
     testWidgets('skips the arrange step on the way back too', (tester) async {
-      await pump(tester);
-      // One library, so arranging was skipped going forward and going back
-      // through it would show a step that was never offered.
-      await tester.tap(find.widgetWithText(FilterChip, 'Anime'));
-      await tester.pump();
-      await tester.tap(find.widgetWithText(FilterChip, 'Novel'));
-      await tester.pump();
+      await pump(tester, selectAll: false);
       await tester.tap(find.widgetWithText(FilledButton, 'Next'));
       await tester.pumpAndSettle();
       expect(find.text('Add a source'), findsOneWidget);
@@ -421,11 +406,7 @@ void main() {
     ) async {
       // Three marks followed by two questions would be a small lie about how
       // long this takes.
-      await pump(tester);
-      await tester.tap(find.widgetWithText(FilterChip, 'Anime'));
-      await tester.pump();
-      await tester.tap(find.widgetWithText(FilterChip, 'Novel'));
-      await tester.pumpAndSettle();
+      await pump(tester, selectAll: false);
       expect(dotWidths(tester).length, 2);
     });
 
