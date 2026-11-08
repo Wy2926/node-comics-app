@@ -394,6 +394,14 @@ void main() {
       expect(settingsRepository.current.sortLibraryManga?.index, 6);
       expect(settingsRepository.current.sortLibraryManga?.reverse, true);
       await tab(tester, 'Display');
+      expect(
+        tester
+            .widget<NodeLaneChoiceCard>(
+              find.widgetWithText(NodeLaneChoiceCard, 'Comfortable grid'),
+            )
+            .selected,
+        true,
+      );
       await tester.tap(find.widgetWithText(NodeLaneChoiceCard, 'List'));
       await settle(tester);
       expect(settingsRepository.current.displayType, DisplayType.list);
@@ -418,8 +426,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Language'));
       await settle(tester);
-      expect(settingsRepository.current.showSourceBadge, true);
-      expect(settingsRepository.current.libraryShowLanguage, true);
+      expect(settingsRepository.current.showSourceBadge, false);
+      expect(settingsRepository.current.libraryShowLanguage, false);
       expect(settingsRepository.current.mangaGridSize, 2);
       expect(settingsRepository.current.sortLibraryManga?.reverse, true);
       expect(settingsRepository.current.libraryFilterMangasSourceIds, [

@@ -182,8 +182,10 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: ComicReaderScope(
-            profile: const ComicBookSettings(layout: ComicPageLayout.double)
-                .resolve(const ComicReaderDefaults()),
+            profile: const ComicBookSettings(
+              mode: ComicReadingMode.paged,
+              layout: ComicPageLayout.double,
+            ).resolve(const ComicReaderDefaults()),
             habits: const ComicReaderHabits(),
             child: Center(
               child: SizedBox(

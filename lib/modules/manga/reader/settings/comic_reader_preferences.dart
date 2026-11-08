@@ -19,7 +19,7 @@ T _enum<T extends Enum>(List<T> values, Object? name, T fallback) =>
 
 class ComicReaderDefaults {
   const ComicReaderDefaults({
-    this.mode = ComicReadingMode.paged,
+    this.mode = ComicReadingMode.scroll,
     this.turn = ComicPageTurn.left,
     this.fit = ComicPageFit.contain,
     this.layout = ComicPageLayout.automatic,
@@ -44,7 +44,7 @@ class ComicReaderDefaults {
         mode: _enum(
           ComicReadingMode.values,
           json['mode'],
-          ComicReadingMode.paged,
+          ComicReadingMode.scroll,
         ),
         turn: _enum(ComicPageTurn.values, json['turn'], ComicPageTurn.left),
         fit: _enum(ComicPageFit.values, json['fit'], ComicPageFit.contain),
@@ -138,7 +138,7 @@ class ComicBookSettings {
   ) => ComicBookSettings(
     mode: json['mode'] == null
         ? null
-        : _enum(ComicReadingMode.values, json['mode'], ComicReadingMode.paged),
+        : _enum(ComicReadingMode.values, json['mode'], ComicReadingMode.scroll),
     turn: json['turn'] == null
         ? null
         : _enum(ComicPageTurn.values, json['turn'], ComicPageTurn.left),

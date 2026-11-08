@@ -16,7 +16,7 @@ import 'package:mangayomi/repositories/settings_repository.dart';
 void main() {
   test('defaults reach untouched fields without creating book overrides', () {
     const initial = ComicReaderPreferences();
-    initial.resolve(1);
+    expect(initial.resolve(1).mode, ComicReadingMode.scroll);
     expect(initial.books, isEmpty);
     final edited = initial.updateBook(
       1,
@@ -24,11 +24,11 @@ void main() {
     );
     final changed = edited.copyWith(
       defaults: edited.defaults.copyWith(
-        mode: ComicReadingMode.scroll,
+        mode: ComicReadingMode.paged,
         fit: ComicPageFit.height,
       ),
     );
-    expect(changed.resolve(1).mode, ComicReadingMode.scroll);
+    expect(changed.resolve(1).mode, ComicReadingMode.paged);
     expect(changed.resolve(1).fit, ComicPageFit.width);
     expect(changed.resolve(2).fit, ComicPageFit.height);
     expect(changed.resetBook(1).resolve(1).fit, ComicPageFit.height);
@@ -36,7 +36,7 @@ void main() {
   });
 
   test('automatic spreads use available width and only horizontal paging', () {
-    const defaults = ComicReaderDefaults();
+    const defaults = ComicReaderDefaults(mode: ComicReadingMode.paged);
     final automatic = const ComicBookSettings().resolve(defaults);
     expect(automatic.doublePage(647), isFalse);
     expect(automatic.doublePage(648), isTrue);
@@ -66,6 +66,7 @@ void main() {
             ..loadedHeight = 1000;
       final sources = [source];
       const book = ComicBookSettings(
+        mode: ComicReadingMode.paged,
         widePage: ComicWidePage.split,
         layout: ComicPageLayout.single,
       );

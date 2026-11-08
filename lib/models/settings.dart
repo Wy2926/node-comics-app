@@ -370,7 +370,7 @@ class Settings {
 
   bool? showNSFW;
 
-  /// Show a small source badge on library covers. Off by default.
+  /// Show a small source badge on library covers. On by default.
   bool? showSourceBadge;
 
   double? ttsSpeechRate;
@@ -396,7 +396,7 @@ class Settings {
   Settings({
     this.id = 227,
     this.updatedAt = 0,
-    this.displayType = DisplayType.compactGrid,
+    this.displayType = DisplayType.comfortableGrid,
     this.libraryFilterMangasDownloadType = 0,
     this.libraryFilterMangasUnreadType = 0,
     this.libraryFilterMangasStartedType = 0,
@@ -404,10 +404,10 @@ class Settings {
     this.libraryFilterMangasSourceIds,
     this.libraryFilterAnimeSourceIds,
     this.libraryFilterNovelSourceIds,
-    this.libraryShowCategoryTabs = false,
-    this.libraryDownloadedChapters = false,
-    this.libraryShowLanguage = false,
-    this.libraryShowNumbersOfItems = false,
+    this.libraryShowCategoryTabs = true,
+    this.libraryDownloadedChapters = true,
+    this.libraryShowLanguage = true,
+    this.libraryShowNumbersOfItems = true,
     this.libraryShowContinueReadingButton = false,
     this.sortLibraryManga,
     this.sortChapterList,
@@ -438,22 +438,22 @@ class Settings {
     this.downloadDelaySeconds = 0,
     this.downloadQueueOrder,
     this.downloadLocation = "",
-    this.libraryLocalSource,
+    this.libraryLocalSource = true,
     this.autoExtensionsUpdates = false,
     this.autoLibraryUpdateInterval = 0,
     this.lastAutoLibraryUpdate,
     this.autoLibraryUpdateWifiOnly = true,
-    this.animeDisplayType = DisplayType.compactGrid,
+    this.animeDisplayType = DisplayType.comfortableGrid,
     this.libraryFilterAnimeDownloadType = 0,
     this.libraryFilterAnimeUnreadType = 0,
     this.libraryFilterAnimeStartedType = 0,
     this.libraryFilterAnimeBookMarkedType = 0,
-    this.animeLibraryShowCategoryTabs = false,
-    this.animeLibraryDownloadedChapters = false,
-    this.animeLibraryShowLanguage = false,
-    this.animeLibraryShowNumbersOfItems = false,
+    this.animeLibraryShowCategoryTabs = true,
+    this.animeLibraryDownloadedChapters = true,
+    this.animeLibraryShowLanguage = true,
+    this.animeLibraryShowNumbersOfItems = true,
     this.animeLibraryShowContinueReadingButton = false,
-    this.animeLibraryLocalSource,
+    this.animeLibraryLocalSource = true,
     this.sortLibraryAnime,
     this.enableLogs = false,
     this.checkForAppUpdates = true,
@@ -495,12 +495,12 @@ class Settings {
     this.libraryFilterNovelUnreadType = 0,
     this.libraryFilterNovelStartedType = 0,
     this.libraryFilterNovelBookMarkedType = 0,
-    this.novelLibraryShowCategoryTabs = false,
-    this.novelLibraryDownloadedChapters = false,
-    this.novelLibraryShowLanguage = false,
-    this.novelLibraryShowNumbersOfItems = false,
+    this.novelLibraryShowCategoryTabs = true,
+    this.novelLibraryDownloadedChapters = true,
+    this.novelLibraryShowLanguage = true,
+    this.novelLibraryShowNumbersOfItems = true,
     this.novelLibraryShowContinueReadingButton = false,
-    this.novelLibraryLocalSource,
+    this.novelLibraryLocalSource = true,
     this.sortLibraryNovel,
     this.novelDisplayType = DisplayType.comfortableGrid,
     this.novelFontSize = 14,
@@ -558,7 +558,7 @@ class Settings {
     this.backupCompressionLevel,
     this.backupEncryptionEnabled = false,
     this.showNSFW = defaultShowNSFW,
-    this.showSourceBadge = false,
+    this.showSourceBadge = true,
     this.ttsSpeechRate = 0.5,
     this.ttsPitch = 1.0,
     this.ttsLanguage,
@@ -577,7 +577,7 @@ class Settings {
   Settings.fromJson(Map<String, dynamic> json) {
     updatedAt = json["updatedAt"];
     animeDisplayType = DisplayType
-        .values[json['animeDisplayType'] ?? DisplayType.compactGrid.index];
+        .values[json['animeDisplayType'] ?? DisplayType.comfortableGrid.index];
     animeLibraryDownloadedChapters = json['animeLibraryDownloadedChapters'];
     animeLibraryLocalSource = json['animeLibraryLocalSource'];
     animeLibraryShowCategoryTabs = json['animeLibraryShowCategoryTabs'];
@@ -632,7 +632,8 @@ class Settings {
     }
     dateFormat = json['dateFormat'];
     comicReaderPreferences = json['comicReaderPreferences'] as String?;
-    displayType = DisplayType.values[json['displayType']];
+    displayType = DisplayType
+        .values[json['displayType'] ?? DisplayType.comfortableGrid.index];
     downloadLocation = json['downloadLocation'];
     downloadOnlyOnWifi = json['downloadOnlyOnWifi'];
     concurrentDownloads = json['concurrentDownloads'];

@@ -14,7 +14,9 @@ class MemoryPreferences extends ComicReaderPreferencesController {
   int writes = 0;
   bool fail = false;
   @override
-  ComicReaderPreferences build() => const ComicReaderPreferences();
+  ComicReaderPreferences build() => const ComicReaderPreferences(
+    defaults: ComicReaderDefaults(mode: ComicReadingMode.paged),
+  );
   @override
   Future<void> update(
     ComicReaderPreferences Function(ComicReaderPreferences) edit,

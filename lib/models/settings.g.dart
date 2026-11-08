@@ -1915,7 +1915,7 @@ Settings _settingsDeserialize(
         _SettingsanimeDisplayTypeValueEnumMap[reader.readByteOrNull(
           offsets[4],
         )] ??
-        DisplayType.compactGrid,
+        DisplayType.comfortableGrid,
     animeExtensionsRepo: reader.readObjectList<Repo>(
       offsets[5],
       RepoSchema.deserialize,
@@ -2004,7 +2004,7 @@ Settings _settingsDeserialize(
         SectionType.all,
     displayType:
         _SettingsdisplayTypeValueEnumMap[reader.readByteOrNull(offsets[57])] ??
-        DisplayType.compactGrid,
+        DisplayType.comfortableGrid,
     doHEnabled: reader.readBoolOrNull(offsets[58]),
     doHProviderId: reader.readLongOrNull(offsets[59]),
     doublePageAuto: reader.readBoolOrNull(offsets[60]),
@@ -2254,7 +2254,7 @@ P _settingsDeserializeProp<P>(
       return (_SettingsanimeDisplayTypeValueEnumMap[reader.readByteOrNull(
                 offset,
               )] ??
-              DisplayType.compactGrid)
+              DisplayType.comfortableGrid)
           as P;
     case 5:
       return (reader.readObjectList<Repo>(
@@ -2421,7 +2421,7 @@ P _settingsDeserializeProp<P>(
           as P;
     case 57:
       return (_SettingsdisplayTypeValueEnumMap[reader.readByteOrNull(offset)] ??
-              DisplayType.compactGrid)
+              DisplayType.comfortableGrid)
           as P;
     case 58:
       return (reader.readBoolOrNull(offset)) as P;
