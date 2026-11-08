@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_settings_sheet.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -9,22 +10,16 @@ class MobileReaderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NodeLaneSurface(
     child: Scaffold(
-      appBar: nodeLaneAppBar(context, title: context.l10n.comic_defaults_title),
-      body: SafeArea(
+      appBar: nodeLaneAppBar(
+        context,
+        title: context.l10n.settings_manga_reader,
+      ),
+      body: const SafeArea(
         top: false,
-        child: SingleChildScrollView(
+        child: MobileSettingsList(
+          key: PageStorageKey('mobile-comic-reader-settings'),
           padding: NodeLaneTokens.pagePadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                context.l10n.comic_defaults_hint,
-                style: NodeLaneTokens.of(context).readerSecondary,
-              ),
-              const SizedBox(height: NodeLaneTokens.space16),
-              const ComicReaderSettingsContent(),
-            ],
-          ),
+          children: [ComicReaderSettingsContent()],
         ),
       ),
     ),

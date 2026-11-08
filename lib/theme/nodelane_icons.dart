@@ -61,6 +61,8 @@ class NodeLaneIcons {
   IconData get info => CupertinoIcons.info;
   IconData get history => CupertinoIcons.clock;
   IconData get stop => CupertinoIcons.stop_circle;
+  IconData get play => CupertinoIcons.play;
+  IconData get pause => CupertinoIcons.pause;
   IconData get latest => CupertinoIcons.sparkles;
   IconData get pin => CupertinoIcons.pin;
   IconData get pinSelected => CupertinoIcons.pin_fill;

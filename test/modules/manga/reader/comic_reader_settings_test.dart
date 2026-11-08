@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_reader_screen.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences_provider.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_settings_sheet.dart';
@@ -27,6 +29,7 @@ void main() {
   Future<ProviderContainer> mount(
     WidgetTester tester, {
     double scale = 1,
+    bool global = false,
     Locale locale = const Locale('en'),
   }) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -55,33 +58,35 @@ void main() {
             ),
             child: child!,
           ),
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => Center(
-                child: TextButton(
-                  child: const Text('Open'),
-                  onPressed: () => showNodeLaneCatalogSheet<void>(
-                    context,
-                    ComicReaderSettingsSheet(
-                      bookId: 1,
-                      bookTitle: '海风中的来信',
-                      autoScroll: running,
+          home: global
+              ? const MobileReaderScreen()
+              : Scaffold(
+                  body: Builder(
+                    builder: (context) => Center(
+                      child: TextButton(
+                        child: const Text('Open'),
+                        onPressed: () => showNodeLaneCatalogSheet<void>(
+                          context,
+                          ComicReaderSettingsSheet(
+                            bookId: 1,
+                            bookTitle: '海风中的来信',
+                            autoScroll: running,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
         ),
       ),
     );
-    await tester.tap(find.text('Open'));
+    if (!global) await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     return container;
   }
 
   testWidgets(
-    'two modes update only this book; subpanels replace the same sheet',
+    'shared choice navigation preserves book scope and cancellation; image options expand inline',
     (tester) async {
       final container = await mount(tester);
       final controller = container.read(
@@ -89,6 +94,13 @@ void main() {
       ) as MemoryPreferences;
       expect(controller.writes, 0);
       expect(find.text('Left'), findsOneWidget);
+      await tester.tap(find.widgetWithText(NodeLaneRow, 'Reading mode'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(controller.writes, 0);
+      await tester.tap(find.widgetWithText(NodeLaneRow, 'Reading mode'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Scroll down'));
       await tester.pumpAndSettle();
       expect(find.text('Content width'), findsOneWidget);
@@ -106,12 +118,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
       expect(find.text('Wide pages'), findsNothing);
-      await tester.tap(find.byTooltip('Back'));
-      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.text('Defaults & habits'), 200);
       await tester.tap(find.text('Defaults & habits'));
       await tester.pumpAndSettle();
       expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      await tester.tap(
+        find.widgetWithText(NodeLaneRow, 'Swipe to the next page'),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Right'));
       await tester.pumpAndSettle();
       expect(
@@ -127,21 +141,26 @@ void main() {
   );
 
   testWidgets(
-    'large Chinese text keeps navigation and final controls reachable',
+    'global settings reuse novel-style controls and stay reachable with large Chinese text',
     (tester) async {
-      await mount(tester, scale: 2.5, locale: const Locale('zh'));
+      await mount(tester, scale: 2.5, locale: const Locale('zh'), global: true);
       final context = tester.element(find.byType(ComicReaderSettingsContent));
       final l = AppLocalizations.of(context)!;
-      final backLabel = MaterialLocalizations.of(context).backButtonTooltip;
-      await tester.scrollUntilVisible(find.text(l.comic_defaults_title), 240);
-      await tester.tap(find.text(l.comic_defaults_title));
-      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.text(l.comic_tap), 240);
-      expect(find.text(l.comic_tap).hitTestable(), findsOneWidget);
-      expect(find.byTooltip(l.close).hitTestable(), findsOneWidget);
-      await tester.tap(find.byTooltip(backLabel));
       await tester.pumpAndSettle();
-      expect(find.text(l.comic_reading), findsOneWidget);
+      expect(find.text(l.comic_tap).hitTestable(), findsOneWidget);
+      expect(find.byType(NodeLaneSwitchRow), findsNWidgets(3));
+      await tester.scrollUntilVisible(
+        find.widgetWithText(NodeLaneRow, l.reading_mode),
+        -240,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.comic_scroll));
+      await tester.pumpAndSettle();
+      expect(find.text(l.comic_turn), findsNothing);
+      expect(find.text(l.comic_layout), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -153,6 +172,8 @@ void main() {
       (container.read(
         comicReaderPreferencesProvider.notifier,
       ) as MemoryPreferences).fail = true;
+      await tester.tap(find.widgetWithText(NodeLaneRow, 'Reading mode'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Scroll down'));
       await tester.pumpAndSettle();
       expect(
