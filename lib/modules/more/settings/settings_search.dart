@@ -181,79 +181,15 @@ List<SettingsSearchEntry> settingsSearchEntries(
   if (!hidden.contains('/MangaLibrary')) {
     final reader = l.settings_manga_reader;
     rows(reader, '/readerMode', i.manga, [
-      l.default_reading_mode,
-      l.scale_type,
-      l.background_color,
+      l.reading_mode,
+      l.comic_turn,
+      l.comic_fit,
+      l.comic_layout,
+      l.comic_canvas,
       l.show_page_number,
       l.keep_screen_on,
-      l.crop_borders,
-      l.reader_page_layout,
-      l.reader_continuous_options,
-      l.navigation_layout,
-      l.advanced,
+      l.comic_tap,
     ]);
-    rows(
-      reader,
-      '/readerMode',
-      i.pageLayout,
-      [
-        l.split_wide_pages,
-        l.dual_page_invert,
-        l.dual_page_rotate_to_fit,
-        l.dual_page_rotate_to_fit_invert,
-        l.double_page_single_first_page,
-        l.double_page_auto,
-        l.landscape_zoom,
-        l.zoom_start_position,
-      ],
-      section: [l.reader_page_layout],
-    );
-    rows(
-      reader,
-      '/readerMode',
-      i.manga,
-      [
-        l.webtoon_disable_zoom_out,
-        l.webtoon_double_tap_zoom_enabled,
-        l.show_page_gaps,
-      ],
-      section: [l.reader_continuous_options],
-    );
-    rows(
-      reader,
-      '/readerMode',
-      i.navigation,
-      [
-        l.use_page_tap_zones,
-        l.tapping_inversion,
-        l.reader_hide_threshold,
-        l.show_navigation_overlay_on_start,
-        l.navigate_to_pan,
-        l.chapter_swipe_start,
-        l.chapter_swipe_end,
-      ],
-      section: [l.navigation_layout],
-    );
-    rows(
-      reader,
-      '/readerMode',
-      i.adjustments,
-      [
-        l.page_preload_amount,
-        l.animate_page_transitions,
-        l.double_tap_animation_speed,
-        l.mark_duplicate_chapters_read,
-        l.flash_on_page_change,
-      ],
-      section: [l.advanced],
-    );
-    rows(
-      reader,
-      '/readerMode',
-      i.palette,
-      [l.flash_color],
-      section: [l.advanced, l.flash_on_page_change],
-    );
   }
   if (!hidden.contains('/NovelLibrary')) {
     final reader = l.settings_novel_reader;

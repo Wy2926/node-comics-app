@@ -1,3 +1,4 @@
+import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/history.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -17,6 +18,25 @@ import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 /// [incognitoMode] and [getIsarSetting] are concrete in the mixin but can be
 /// overridden — [ReaderController] overrides [getIsarSetting] to add caching.
 mixin ChapterControllerMixin {
+  /// Toggles the bookmark state of the current [chapter].
+  ///
+  /// Updates the persisted chapter and bumps its [updatedAt] timestamp.
+  /// No-op in incognito mode.
+  void setChapterBookmarked() {
+    if (incognitoMode) return;
+    final isBookmarked = getChapterBookmarked();
+    final chap = chapter;
+    chap.isBookmarked = !isBookmarked;
+    chapterRepository.save(chap);
+  }
+
+  /// Returns whether the current [chapter] is bookmarked.
+  ///
+  /// Reads directly from the database to ensure consistency.
+  bool getChapterBookmarked() {
+    return chapterRepository.getById(chapter.id!).isBookmarked!;
+  }
+
   // ---------------------------------------------------------------------------
   // Contract – provided by the Riverpod-generated superclass
   // ---------------------------------------------------------------------------

@@ -237,26 +237,6 @@ void main() {
   });
 
   group('splitting a wide page', () {
-    test('every later page moves one slot down', () {
-      final manager = ChapterPreloadManager(chapterPages(ch1, 4));
-      final wide = manager.pages[1];
-
-      manager.splitPage(
-        1,
-        UChapDataPreload(ch1, null, null, null, null, 1, null, 1)
-          ..srcRect = const Rect.fromLTWH(0, 0, 500, 1400),
-        UChapDataPreload(ch1, null, null, null, null, 1, null, 1)
-          ..srcRect = const Rect.fromLTWH(500, 0, 500, 1400),
-      );
-
-      expect(manager.pages, hasLength(5));
-      expect(manager.pages.map((p) => p.pageIndex), [0, 1, 2, 3, 4]);
-      // The pages after the split still know which page of the chapter
-      // they are.
-      expect(manager.pages.map((p) => p.index), [0, 1, 1, 2, 3]);
-      expect(manager.pages, isNot(contains(wide)));
-    });
-
     test('the two halves get different widget keys', () {
       final left = UChapDataPreload(ch1, null, null, null, null, 1, null, 1)
         ..srcRect = const Rect.fromLTWH(0, 0, 500, 1400);

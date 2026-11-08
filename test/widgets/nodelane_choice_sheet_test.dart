@@ -3,8 +3,6 @@ import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/modules/more/settings/reader/mobile_reader_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/translation/translation_language_picker.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
@@ -124,98 +122,4 @@ void main() {
       },
     );
   }
-
-  testWidgets(
-    'short choices stay compact, long choices scroll to selection and keyboard keeps close reachable',
-    (tester) async {
-      var count = 2;
-      MobileSettingOption<int>? result;
-      await mount(tester, (context) async {
-        result = await showMobileReaderPicker<int>(
-          context,
-          title: 'Choice',
-          current: count - 1,
-          description: 'Applies to all comics',
-          options: [
-            for (var i = 0; i < count; i++) MobileSettingOption(i, 'Option $i'),
-          ],
-        );
-      });
-      final compact = tester.getSize(find.byType(NodeLaneReaderSurface)).height;
-      expect(compact, lessThan(350));
-      await tester.tap(find.byTooltip('Close'));
-      await tester.pumpAndSettle();
-      expect(result, isNull);
-      count = 30;
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      expect(
-        tester.getSize(find.byType(NodeLaneReaderSurface)).height,
-        greaterThan(compact),
-      );
-      expect(find.text('Option 29').hitTestable(), findsOneWidget);
-      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-      await tester.pumpAndSettle();
-      expect(find.byTooltip('Close').hitTestable(), findsOneWidget);
-      final sheet = tester.getRect(find.byType(NodeLaneReaderSurface));
-      expect(sheet.bottom, lessThanOrEqualTo(544));
-      await tester.scrollUntilVisible(
-        find.text('Option 29'),
-        250,
-        scrollable: find.byType(Scrollable).last,
-      );
-      await tester.tap(find.text('Option 29'));
-      await tester.pumpAndSettle();
-      expect(result?.value, 29);
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets(
-    'nested reader choices resize the existing sheet and restore its settings height',
-    (tester) async {
-      await mount(tester, (context) async {
-        await showModalBottomSheet<void>(
-          context: context,
-          isScrollControlled: true,
-          useSafeArea: true,
-          builder: (context) => NodeLaneReaderSurface(
-            child: MobileReaderPickerHost(
-              bookTitle: 'Book',
-              onClose: () => Navigator.pop(context),
-              child: Builder(
-                builder: (context) => Center(
-                  child: TextButton(
-                    child: const Text('Select'),
-                    onPressed: () => showMobileReaderPicker<int>(
-                      context,
-                      title: 'Choice',
-                      current: 0,
-                      description: 'Applies to this comic',
-                      options: const [
-                        MobileSettingOption(0, 'First'),
-                        MobileSettingOption(1, 'Second'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      });
-      final host = find.byType(MobileReaderPickerHost);
-      final settingsHeight = tester.getSize(host).height;
-      for (var i = 0; i < 2; i++) {
-        await tester.tap(find.text('Select'));
-        await tester.pumpAndSettle();
-        expect(tester.getSize(host).height, lessThan(400));
-        expect(find.text('Second').hitTestable(), findsOneWidget);
-        await tester.tap(find.byTooltip('Back'));
-        await tester.pumpAndSettle();
-        expect(tester.getSize(host).height, settingsHeight);
-      }
-      expect(tester.takeException(), isNull);
-    },
-  );
 }

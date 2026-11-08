@@ -1,100 +1,16 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/foundation.dart';
-
-import 'dart:math';
-
-import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:mangayomi/models/chapter.dart';
-import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/custom_value_indicator_shape.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_display.dart';
 
-/// The bottom bar for the manga reader.
-///
-/// This is a complete drop-in replacement for the _bottomBar() method in reader_view.dart.
-/// It handles all the complex interactions including:
-/// - Page slider with real-time updates via Consumer
-/// - Chapter navigation
-/// - Reader mode selection
-/// - Crop borders toggle
-/// - Double page mode toggle
-/// - Settings access
 class ReaderBottomBar extends ConsumerWidget {
-  /// The chapter being read
-  final Chapter chapter;
-
-  /// Whether the bar is visible
-  final bool isVisible;
-
-  /// Whether there is a previous chapter
-  final bool hasPreviousChapter;
-
-  /// Whether there is a next chapter
-  final bool hasNextChapter;
-
-  /// Callback when previous chapter button is pressed
-  final VoidCallback? onPreviousChapter;
-
-  /// Callback when next chapter button is pressed
-  final VoidCallback? onNextChapter;
-
-  final VoidCallback? onChaptersClosed;
-
-  /// Callback when slider value changes (for updating provider)
-  final void Function(int value, WidgetRef ref) onSliderChanged;
-
-  /// Callback when slider drag ends (for navigation)
-  final void Function(int value) onSliderChangeEnd;
-
-  /// Callback when reader mode is changed
-  final void Function(ReaderMode mode, WidgetRef ref) onReaderModeChanged;
-
-  /// Callback when page mode toggle button is pressed
-  final VoidCallback? onPageModeToggle;
-
-  /// Callback when settings button is pressed
-  final ValueChanged<BuildContext> onSettingsPressed;
-
-  /// Provider for watching current reader mode
-  /// Accepts any ProviderListenable that returns ReaderMode?
-  /// (StateProvider, NotifierProvider, etc.)
-  final ProviderListenable<ReaderMode?> currentReaderModeProvider;
-
-  /// Session-local current page index for the visible reader state.
-  final ValueListenable<int> currentPageListenable;
-
-  /// Current page mode (nullable for safety)
-  final PageMode? currentPageMode;
-
-  /// Reads the owning reader's effective layout after orientation changes.
-  final PageMode Function() readPageMode;
-
-  /// Whether RTL reading direction is active
-  final bool isReverseHorizontal;
-
-  /// Total number of pages in current chapter
-  final int totalPages;
-
-  /// Function to get current page index label
-  final String Function(int currentIndex) currentIndexLabel;
-
-  /// Background color getter
-  final Color Function(BuildContext) backgroundColor;
-
   const ReaderBottomBar({
     super.key,
     required this.chapter,
@@ -104,389 +20,82 @@ class ReaderBottomBar extends ConsumerWidget {
     this.onPreviousChapter,
     this.onNextChapter,
     this.onChaptersClosed,
+    this.onChaptersOpened,
     required this.onSliderChanged,
     required this.onSliderChangeEnd,
-    required this.onReaderModeChanged,
-    this.onPageModeToggle,
     required this.onSettingsPressed,
-    required this.currentReaderModeProvider,
     required this.currentPageListenable,
-    required this.currentPageMode,
-    required this.readPageMode,
     required this.isReverseHorizontal,
     required this.totalPages,
     required this.currentIndexLabel,
     required this.backgroundColor,
   });
-
-  bool get _isDoublePageMode => currentPageMode == PageMode.doublePage;
-
+  final Chapter chapter;
+  final bool isVisible, hasPreviousChapter, hasNextChapter, isReverseHorizontal;
+  final VoidCallback? onPreviousChapter,
+      onNextChapter,
+      onChaptersClosed,
+      onChaptersOpened;
+  final void Function(int, WidgetRef) onSliderChanged;
+  final ValueChanged<int> onSliderChangeEnd;
+  final ValueChanged<BuildContext> onSettingsPressed;
+  final ValueListenable<int> currentPageListenable;
+  final int totalPages;
+  final String Function(int) currentIndexLabel;
+  final Color Function(BuildContext) backgroundColor;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final readerMode = ref.watch(currentReaderModeProvider);
-    if (readerMode == null) return const SizedBox.shrink();
-    final isHorizontalContinuous = readerMode.isHorizontalContinuous;
-    if (isMobile && !isTv) {
-      return MobileReaderPanel(
-        visible: isVisible,
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ValueListenableBuilder<int>(
-              valueListenable: currentPageListenable,
-              builder: (context, index, _) => MobileReaderProgress(
-                currentIndex: index,
-                totalPages: totalPages,
-                label: currentIndexLabel(index),
-                reverse: isReverseHorizontal,
-                previousLabel: context.l10n.previous(context.l10n.chapter),
-                nextLabel: context.l10n.next_chapter,
-                onPrevious: hasPreviousChapter ? onPreviousChapter : null,
-                onNext: hasNextChapter ? onNextChapter : null,
-                onChanged: (value) => onSliderChanged(value, ref),
-                onChangeEnd: onSliderChangeEnd,
-              ),
+    return MobileReaderPanel(
+      visible: isVisible,
+      top: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ValueListenableBuilder<int>(
+            valueListenable: currentPageListenable,
+            builder: (context, index, _) => MobileReaderProgress(
+              currentIndex: index,
+              totalPages: totalPages,
+              label: currentIndexLabel(index),
+              reverse: isReverseHorizontal,
+              previousLabel: context.l10n.previous(context.l10n.chapter),
+              nextLabel: context.l10n.next_chapter,
+              onPrevious: hasPreviousChapter ? onPreviousChapter : null,
+              onNext: hasNextChapter ? onNextChapter : null,
+              onChanged: (value) => onSliderChanged(value, ref),
+              onChangeEnd: onSliderChangeEnd,
             ),
-            Divider(height: 1, color: NodeLaneTokens.of(context).line),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: btnToShowChapterListDialog(
-                    context,
-                    context.l10n.chapters,
-                    chapter,
-                    labeled: true,
-                    onChanged: (closed) {
-                      if (closed) onChaptersClosed?.call();
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ReaderTranslationHost.button(context, labeled: true),
-                ),
-                Expanded(
-                  child: MobileReaderDisplayButton(
-                    bookTitle: chapter.manga.value?.name ?? '',
-                    currentReaderModeProvider: currentReaderModeProvider,
-                    readPageMode: readPageMode,
-                    onReaderModeChanged: onReaderModeChanged,
-                    onPageModeToggle: onPageModeToggle,
-                  ),
-                ),
-                Expanded(
-                  child: NodeLaneToolbarAction(
-                    label: context.l10n.settings,
-                    icon: NodeLaneIcons.of(context).adjustments,
-                    onPressed: () => onSettingsPressed(context),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-    final mediaQuery = MediaQuery.of(context);
-    final bottomInset = max(
-      mediaQuery.viewPadding.bottom,
-      mediaQuery.systemGestureInsets.bottom,
-    );
-
-    return Positioned(
-      bottom: bottomInset,
-      child: AnimatedContainer(
-        curve: Curves.ease,
-        duration: const Duration(milliseconds: 300),
-        width: context.width(1),
-        height: isVisible ? 130 : 0,
-        child: ClipRect(
-          child: Column(
+          ),
+          Divider(height: 1, color: NodeLaneTokens.of(context).line),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Page slider section
-              Flexible(
-                child: _buildPageSlider(context, ref, isHorizontalContinuous),
-              ),
-
-              // Quick actions section
-              Flexible(
-                child: _buildQuickActions(
+              Expanded(
+                child: btnToShowChapterListDialog(
                   context,
-                  ref,
-                  readerMode,
-                  isHorizontalContinuous,
+                  context.l10n.chapters,
+                  chapter,
+                  labeled: true,
+                  onChanged: (closed) {
+                    if (closed) {
+                      onChaptersClosed?.call();
+                    } else {
+                      onChaptersOpened?.call();
+                    }
+                  },
+                ),
+              ),
+              Expanded(
+                child: ReaderTranslationHost.button(context, labeled: true),
+              ),
+              Expanded(
+                child: NodeLaneToolbarAction(
+                  label: context.l10n.comic_reading,
+                  icon: NodeLaneIcons.of(context).adjustments,
+                  onPressed: () => onSettingsPressed(context),
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPageSlider(
-    BuildContext context,
-    WidgetRef ref,
-    bool isHorizontalContinuous,
-  ) {
-    return Transform.scale(
-      scaleX: !isReverseHorizontal ? 1 : -1,
-      child: Row(
-        children: [
-          // Previous chapter button
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 23,
-              backgroundColor: backgroundColor(context),
-              child: IconButton(
-                onPressed: hasPreviousChapter ? onPreviousChapter : null,
-                icon: Transform.scale(
-                  scaleX: 1,
-                  child: Icon(
-                    Icons.skip_previous_rounded,
-                    color: hasPreviousChapter
-                        ? Theme.of(context).textTheme.bodyLarge!.color
-                        : Theme.of(context).textTheme.bodyLarge!.color!
-                              .withValues(alpha: 0.4),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Slider container
-          Flexible(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Container(
-                height: 70,
-                decoration: BoxDecoration(
-                  color: backgroundColor(context),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Current page label
-                    Transform.scale(
-                      scaleX: !isReverseHorizontal ? 1 : -1,
-                      child: SizedBox(
-                        width: 55,
-                        child: Center(
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              return ValueListenableBuilder<int>(
-                                valueListenable: currentPageListenable,
-                                builder: (context, currentIndex, child) {
-                                  return Text(
-                                    currentIndexLabel(currentIndex),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Slider (needs at least one page for a valid range)
-                    if (isVisible && totalPages > 0)
-                      Flexible(
-                        flex: 14,
-                        child: _buildSlider(
-                          context,
-                          ref,
-                          isHorizontalContinuous,
-                        ),
-                      ),
-
-                    // Total pages label
-                    Transform.scale(
-                      scaleX: !isReverseHorizontal ? 1 : -1,
-                      child: SizedBox(
-                        width: 55,
-                        child: Center(
-                          child: Text(
-                            "$totalPages",
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Next chapter button
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 23,
-              backgroundColor: backgroundColor(context),
-              child: IconButton(
-                onPressed: hasNextChapter ? onNextChapter : null,
-                icon: Transform.scale(
-                  scaleX: 1,
-                  child: Icon(
-                    Icons.skip_next_rounded,
-                    color: hasNextChapter
-                        ? Theme.of(context).textTheme.bodyLarge!.color
-                        : Theme.of(context).textTheme.bodyLarge!.color!
-                              .withValues(alpha: 0.4),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSlider(
-    BuildContext context,
-    WidgetRef ref,
-    bool isHorizontalContinuous,
-  ) {
-    return Consumer(
-      builder: (context, ref, child) {
-        return ValueListenableBuilder<int>(
-          valueListenable: currentPageListenable,
-          builder: (context, currentIndex, child) {
-            final maxValue = (totalPages - 1).toDouble();
-
-            final divisions = totalPages <= 1 ? null : totalPages - 1;
-
-            final currentValue = min(currentIndex.toDouble(), maxValue);
-
-            return SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                valueIndicatorShape: CustomValueIndicatorShape(
-                  tranform: isReverseHorizontal,
-                ),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 5.0),
-              ),
-              child: Slider(
-                onChanged: (value) {
-                  onSliderChanged(value.toInt(), ref);
-                },
-                onChangeEnd: (newValue) {
-                  onSliderChangeEnd(newValue.toInt());
-                },
-                divisions: divisions,
-                value: currentValue,
-                label: currentIndexLabel(currentIndex),
-                min: 0,
-                max: maxValue,
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildQuickActions(
-    BuildContext context,
-    WidgetRef ref,
-    ReaderMode? readerMode,
-    bool isHorizontalContinuous,
-  ) {
-    return Container(
-      height: 65,
-      color: backgroundColor(context),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // Reader mode button
-          PopupMenuButton<ReaderMode>(
-            popUpAnimationStyle: popupAnimationStyle,
-            color: Colors.black,
-            onSelected: (value) {
-              onReaderModeChanged(value, ref);
-            },
-            itemBuilder: (context) => [
-              for (var mode in ReaderMode.values)
-                PopupMenuItem(
-                  value: mode,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check,
-                        color: readerMode == mode
-                            ? Colors.white
-                            : Colors.transparent,
-                      ),
-                      const SizedBox(width: 7),
-                      Text(
-                        getReaderModeName(mode, context),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-            child: const Icon(Icons.app_settings_alt_outlined),
-          ),
-
-          // Crop borders button
-          Consumer(
-            builder: (context, ref, child) {
-              final cropBorders = ref.watch(cropBordersStateProvider);
-              return IconButton(
-                onPressed: () {
-                  ref.read(cropBordersStateProvider.notifier).set(!cropBorders);
-                },
-                icon: Stack(
-                  children: [
-                    const Icon(Icons.crop_rounded),
-                    if (!cropBorders)
-                      Positioned(
-                        right: 8,
-                        child: Transform.scale(
-                          scaleX: 2.5,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('\\', style: TextStyle(fontSize: 17)),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-
-          // Double page mode button
-          IconButton(
-            onPressed: !isHorizontalContinuous ? onPageModeToggle : null,
-            icon: Icon(
-              _isDoublePageMode
-                  ? CupertinoIcons.book_solid
-                  : CupertinoIcons.book,
-            ),
-          ),
-
-          // Settings button
-          IconButton(
-            onPressed: () => onSettingsPressed(context),
-            icon: const Icon(Icons.settings_rounded),
           ),
         ],
       ),

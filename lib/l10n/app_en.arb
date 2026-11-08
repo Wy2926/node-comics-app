@@ -1183,7 +1183,13 @@
   "flash_color_white_black": "White & Black",
   "flash_interval_label": "Flash Interval",
   "flash_interval_value": "{n} pages",
-  "@flash_interval_value": {"placeholders": {"n": {"type": "String"}}},
+  "@flash_interval_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
   "flash_interval": "Flash Interval: {n} pages",
   "@flash_interval": {
     "placeholders": {
@@ -1194,7 +1200,13 @@
   },
   "flash_duration_label": "Flash Duration",
   "flash_duration_value": "{n} ms",
-  "@flash_duration_value": {"placeholders": {"n": {"type": "String"}}},
+  "@flash_duration_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
   "flash_duration": "Flash Duration: {n} ms",
   "@flash_duration": {
     "placeholders": {
@@ -1982,5 +1994,54 @@
   "reader_loading_next": "Loading next chapter…",
   "reader_next_failed": "Could not load the next chapter",
   "reader_image_loading": "Loading image…",
-  "reader_image_failure_hint": "You can keep reading other pages."
+  "reader_image_failure_hint": "You can keep reading other pages.",
+  "comic_paged": "Page by page",
+  "comic_scroll": "Scroll down",
+  "comic_book_scope": "Applies only to this book · changes save immediately",
+  "comic_defaults_title": "Defaults & habits",
+  "comic_defaults_hint": "Defaults apply to fields you have not customized for a book.",
+  "comic_habits_hint": "These habits apply to every comic.",
+  "comic_turn": "Swipe to the next page",
+  "comic_left": "Left",
+  "comic_right": "Right",
+  "comic_up": "Up",
+  "comic_fit": "Page fit",
+  "comic_fit_contain": "Whole page",
+  "comic_fit_width": "Fit width",
+  "comic_fit_height": "Fit height",
+  "comic_layout": "Page layout",
+  "comic_auto": "Auto",
+  "comic_layout_hint": "Auto shows a spread when there is enough width.",
+  "comic_width": "Content width",
+  "comic_full": "Full",
+  "comic_comfortable": "Comfortable",
+  "comic_narrow": "Narrow",
+  "comic_gap": "Page spacing",
+  "comic_no_gap": "Seamless",
+  "comic_small_gap": "Small",
+  "comic_image_title": "Fine-tune image",
+  "comic_image_hint": "Crop and tone affect only this book.",
+  "comic_wide": "Wide pages",
+  "comic_intact": "Keep whole",
+  "comic_split": "Split",
+  "comic_rotate": "Rotate",
+  "comic_wide_hint": "Splitting follows the page-turn direction. Applies to single-page reading.",
+  "comic_cover": "One cover per chapter",
+  "comic_effects_reset": "Reset image adjustments",
+  "comic_book_reset": "Restore book defaults",
+  "comic_book_reset_hint": "Clears this book’s custom reading settings. Translation is unchanged.",
+  "comic_canvas": "Reader background",
+  "comic_system": "System",
+  "comic_black": "Black",
+  "comic_gray": "Gray",
+  "comic_paper": "Paper",
+  "comic_tap": "Tap to turn pages",
+  "comic_tap_hint": "Tap the edges to move; tap the center to show controls.",
+  "comic_scroll_start": "Start auto scroll",
+  "comic_scroll_pause": "Pause auto scroll",
+  "comic_scroll_speed": "Scroll speed",
+  "comic_scroll_hint": "Starts when this panel closes. Pauses when the app leaves the foreground.",
+  "comic_save_failed": "Could not save. Please try again.",
+  "comic_reading": "Reading",
+  "comic_chapter_habits_hint": "Chapter list habits apply to all books."
 }

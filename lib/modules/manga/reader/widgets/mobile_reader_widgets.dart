@@ -2,8 +2,6 @@ import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 
 /// Chrome is an overlay: opening it never changes the page viewport. Hidden
 /// controls yield pointer/keyboard input and semantics to the reader beneath them.
@@ -110,7 +108,7 @@ class MobileReaderHeading extends StatelessWidget {
           onPressed: onBack,
           icon: Icon(NodeLaneIcons.of(context).back, color: colors.ink),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: NodeLaneTokens.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,23 +117,19 @@ class MobileReaderHeading extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: colors.ink,
-                ),
+                style: colors.readerLabel.copyWith(fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: NodeLaneTokens.space4),
               Text(
                 chapter,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 13, color: colors.muted),
+                style: colors.readerSecondary,
               ),
             ],
           ),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: NodeLaneTokens.space4),
         menu,
       ],
     );
@@ -223,39 +217,3 @@ class MobileReaderProgress extends StatelessWidget {
 
 /// Settings pages already own their scroll views; the sheet only supplies
 /// bounded space, tabs, and a close target.
-class MobileReaderSettingsTabs extends StatelessWidget {
-  const MobileReaderSettingsTabs({
-    super.key,
-    required this.labels,
-    this.title = 'Reader settings',
-    required this.closeLabel,
-    required this.onClose,
-    required this.children,
-  });
-  final List<String> labels;
-  final String title, closeLabel;
-  final VoidCallback onClose;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) => DefaultTabController(
-    length: labels.length,
-    child: Column(
-      children: [
-        NodeLaneReaderHeading(
-          title: title,
-          closeLabel: closeLabel,
-          onClose: onClose,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-          child: NodeLaneTabSegments(
-            labels: labels,
-            labelStyle: NodeLaneTokens.of(context).readerLabel,
-          ),
-        ),
-        Expanded(child: TabBarView(children: children)),
-      ],
-    ),
-  );
-}

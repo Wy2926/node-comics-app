@@ -8,16 +8,9 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/page.dart';
-import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/src/min_subsampling_image_view.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/utils/headers.dart';
-
-class _Background extends BackgroundColorState {
-  @override
-  BackgroundColor build() => BackgroundColor.black;
-}
 
 void main() {
   testWidgets(
@@ -58,7 +51,6 @@ void main() {
       var headerReads = 0;
       final container = ProviderContainer(
         overrides: [
-          backgroundColorStateProvider.overrideWith(_Background.new),
           headersProvider.overrideWith((ref, args) {
             headerReads++;
             return {'Referer': 'https://fixture.test/'};

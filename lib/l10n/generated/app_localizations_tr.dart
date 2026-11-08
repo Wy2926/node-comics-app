@@ -4877,4 +4877,159 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get reader_image_failure_hint => 'You can keep reading other pages.';
+
+  @override
+  String get comic_paged => 'Page by page';
+
+  @override
+  String get comic_scroll => 'Scroll down';
+
+  @override
+  String get comic_book_scope =>
+      'Applies only to this book · changes save immediately';
+
+  @override
+  String get comic_defaults_title => 'Defaults & habits';
+
+  @override
+  String get comic_defaults_hint =>
+      'Defaults apply to fields you have not customized for a book.';
+
+  @override
+  String get comic_habits_hint => 'These habits apply to every comic.';
+
+  @override
+  String get comic_turn => 'Swipe to the next page';
+
+  @override
+  String get comic_left => 'Left';
+
+  @override
+  String get comic_right => 'Right';
+
+  @override
+  String get comic_up => 'Up';
+
+  @override
+  String get comic_fit => 'Page fit';
+
+  @override
+  String get comic_fit_contain => 'Whole page';
+
+  @override
+  String get comic_fit_width => 'Fit width';
+
+  @override
+  String get comic_fit_height => 'Fit height';
+
+  @override
+  String get comic_layout => 'Page layout';
+
+  @override
+  String get comic_auto => 'Auto';
+
+  @override
+  String get comic_layout_hint =>
+      'Auto shows a spread when there is enough width.';
+
+  @override
+  String get comic_width => 'Content width';
+
+  @override
+  String get comic_full => 'Full';
+
+  @override
+  String get comic_comfortable => 'Comfortable';
+
+  @override
+  String get comic_narrow => 'Narrow';
+
+  @override
+  String get comic_gap => 'Page spacing';
+
+  @override
+  String get comic_no_gap => 'Seamless';
+
+  @override
+  String get comic_small_gap => 'Small';
+
+  @override
+  String get comic_image_title => 'Fine-tune image';
+
+  @override
+  String get comic_image_hint => 'Crop and tone affect only this book.';
+
+  @override
+  String get comic_wide => 'Wide pages';
+
+  @override
+  String get comic_intact => 'Keep whole';
+
+  @override
+  String get comic_split => 'Split';
+
+  @override
+  String get comic_rotate => 'Rotate';
+
+  @override
+  String get comic_wide_hint =>
+      'Splitting follows the page-turn direction. Applies to single-page reading.';
+
+  @override
+  String get comic_cover => 'One cover per chapter';
+
+  @override
+  String get comic_effects_reset => 'Reset image adjustments';
+
+  @override
+  String get comic_book_reset => 'Restore book defaults';
+
+  @override
+  String get comic_book_reset_hint =>
+      'Clears this book’s custom reading settings. Translation is unchanged.';
+
+  @override
+  String get comic_canvas => 'Reader background';
+
+  @override
+  String get comic_system => 'System';
+
+  @override
+  String get comic_black => 'Black';
+
+  @override
+  String get comic_gray => 'Gray';
+
+  @override
+  String get comic_paper => 'Paper';
+
+  @override
+  String get comic_tap => 'Tap to turn pages';
+
+  @override
+  String get comic_tap_hint =>
+      'Tap the edges to move; tap the center to show controls.';
+
+  @override
+  String get comic_scroll_start => 'Start auto scroll';
+
+  @override
+  String get comic_scroll_pause => 'Pause auto scroll';
+
+  @override
+  String get comic_scroll_speed => 'Scroll speed';
+
+  @override
+  String get comic_scroll_hint =>
+      'Starts when this panel closes. Pauses when the app leaves the foreground.';
+
+  @override
+  String get comic_save_failed => 'Could not save. Please try again.';
+
+  @override
+  String get comic_reading => 'Reading';
+
+  @override
+  String get comic_chapter_habits_hint =>
+      'Chapter list habits apply to all books.';
 }

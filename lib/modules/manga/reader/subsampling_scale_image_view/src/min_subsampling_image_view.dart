@@ -7,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
@@ -17,6 +15,7 @@ import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subs
 class MinSubsamplingImage extends ConsumerStatefulWidget {
   final UChapDataPreload data;
   final BoxFit fit;
+  final Color backgroundColor;
   final Color? color;
   final BlendMode? colorBlendMode;
   final bool cropBorders;
@@ -31,6 +30,7 @@ class MinSubsamplingImage extends ConsumerStatefulWidget {
     super.key,
     required this.data,
     required this.fit,
+    this.backgroundColor = Colors.transparent,
     this.color,
     this.colorBlendMode,
     required this.cropBorders,
@@ -48,6 +48,9 @@ class MinSubsamplingImage extends ConsumerStatefulWidget {
 
 class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
   ui.Image? _uiImage;
+  int _loadGeneration = 0;
+  bool _isCurrent(int generation, UChapDataPreload data) =>
+      mounted && generation == _loadGeneration && identical(data, widget.data);
   bool _isLoading = true;
   bool _hasError = false;
   ImageStreamListener? _streamListener;
@@ -57,7 +60,8 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
   @override
   void initState() {
     super.initState();
-    if (widget.data.decodedImage != null) {
+    if ((widget.data.decodedImage != null &&
+        widget.data.decodedImageCropped == widget.cropBorders)) {
       _uiImage = widget.data.decodedImage!.clone();
       _isLoading = false;
       _hasError = false;
@@ -71,11 +75,13 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
     super.didUpdateWidget(oldWidget);
     final bool dataChanged = widget.data != oldWidget.data;
     if (dataChanged) {
+      _loadGeneration++;
       _cleanStream();
       ffiImageDecoder.cancel(this);
       _uiImage?.dispose();
       _uiImage = null;
-      if (widget.data.decodedImage != null) {
+      if ((widget.data.decodedImage != null &&
+          widget.data.decodedImageCropped == widget.cropBorders)) {
         _uiImage = widget.data.decodedImage!.clone();
         _isLoading = false;
         _hasError = false;
@@ -89,7 +95,9 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
       return;
     }
     final bool imageLoaded =
-        _uiImage == null && widget.data.decodedImage != null;
+        _uiImage == null &&
+        (widget.data.decodedImage != null &&
+            widget.data.decodedImageCropped == widget.cropBorders);
     if (imageLoaded) {
       _uiImage?.dispose();
       _uiImage = widget.data.decodedImage!.clone();
@@ -101,6 +109,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
 
   @override
   void dispose() {
+    _loadGeneration++;
     _cleanStream();
     ffiImageDecoder.cancel(this);
     _uiImage?.dispose();
@@ -119,27 +128,33 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
     bool refresh = false,
     bool evictCache = false,
   }) async {
+    final data = widget.data;
+    final generation = ++_loadGeneration;
     _cleanStream();
     ffiImageDecoder.cancel(this);
 
     if (evictCache) {
-      widget.data.decodedImage?.dispose();
-      widget.data.decodedImage = null;
-      widget.data.resolvedFilePath = null;
+      data.decodedImage?.dispose();
+      data.decodedImage = null;
+      data.resolvedFilePath = null;
       _uiImage?.dispose();
       _uiImage = null;
       try {
-        final provider = widget.data.getImageProvider(ref, true);
+        final provider = data.getImageProvider(ref, true);
         await provider.evict();
       } catch (_) {}
+      if (!_isCurrent(generation, data)) return;
     } else if (refresh) {
-      widget.data.decodedImage?.dispose();
-      widget.data.decodedImage = null;
+      data.decodedImage?.dispose();
+      data.decodedImage = null;
     }
 
-    if (widget.data.decodedImage != null && !refresh && !evictCache) {
-      _uiImage ??= widget.data.decodedImage!.clone();
-      if (mounted) {
+    if ((data.decodedImage != null &&
+            data.decodedImageCropped == widget.cropBorders) &&
+        !refresh &&
+        !evictCache) {
+      _uiImage ??= data.decodedImage!.clone();
+      if (_isCurrent(generation, data)) {
         setState(() {
           _isLoading = false;
           _hasError = false;
@@ -149,7 +164,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
       }
       return;
     }
-    if (mounted) {
+    if (_isCurrent(generation, data)) {
       setState(() {
         _isLoading = true;
         _hasError = false;
@@ -157,36 +172,41 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
       });
     }
 
-    final String? path =
-        widget.data.resolvedFilePath ?? await widget.data.getLocalFilePath;
+    final String? path = data.resolvedFilePath ?? await data.getLocalFilePath;
+    if (!_isCurrent(generation, data)) return;
     if (path != null) {
-      widget.data.resolvedFilePath = path;
+      data.resolvedFilePath = path;
     }
     if (path != null && widget.cropBorders) {
-      await _loadFromPath(path);
+      await _loadFromPath(path, generation, data);
     } else {
-      final provider = widget.data.getImageProvider(ref, true);
+      final provider = data.getImageProvider(ref, true);
       _imageStream = provider.resolve(ImageConfiguration.empty);
       _streamListener = ImageStreamListener(
         (info, syncCall) async {
           _cleanStream();
           final cachedPath =
-              widget.data.resolvedFilePath ??
-              await widget.data.getLocalFilePath;
+              data.resolvedFilePath ?? await data.getLocalFilePath;
+          if (!_isCurrent(generation, data)) {
+            info.dispose();
+            return;
+          }
           if (cachedPath != null) {
-            widget.data.resolvedFilePath = cachedPath;
+            data.resolvedFilePath = cachedPath;
           }
           if (widget.cropBorders) {
             if (cachedPath != null) {
-              await _loadFromPath(cachedPath);
+              info.dispose();
+              await _loadFromPath(cachedPath, generation, data);
               return;
             }
           }
-          if (mounted) {
-            widget.data.loadedWidth = info.image.width.toDouble();
-            widget.data.loadedHeight = info.image.height.toDouble();
-            widget.data.decodedImage?.dispose();
-            widget.data.decodedImage = info.image.clone();
+          if (_isCurrent(generation, data)) {
+            data.loadedWidth = info.image.width.toDouble();
+            data.loadedHeight = info.image.height.toDouble();
+            data.decodedImage?.dispose();
+            data.decodedImage = info.image.clone();
+            data.decodedImageCropped = false;
             final old = _uiImage;
             setState(() {
               _uiImage = info.image.clone();
@@ -200,9 +220,10 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
               info.image.height.toDouble(),
             );
           }
+          info.dispose();
         },
         onChunk: (ImageChunkEvent event) {
-          if (mounted) {
+          if (_isCurrent(generation, data)) {
             setState(() {
               _loadingProgress = event;
             });
@@ -210,7 +231,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
         },
         onError: (err, stack) {
           _cleanStream();
-          if (mounted) {
+          if (_isCurrent(generation, data)) {
             setState(() {
               _hasError = true;
               _isLoading = false;
@@ -224,9 +245,14 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
     }
   }
 
-  Future<void> _loadFromPath(String path) async {
-    if (!mounted) return;
+  Future<void> _loadFromPath(
+    String path,
+    int generation,
+    UChapDataPreload data,
+  ) async {
+    if (!_isCurrent(generation, data)) return;
 
+    final viewport = MediaQuery.of(context);
     try {
       final dims = await ffiImageDecoder.getImageDimensionsAsync(
         path,
@@ -242,7 +268,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
       final int croppedWidth = dims[0];
       final int croppedHeight = dims[1];
 
-      if (!mounted) return;
+      if (!_isCurrent(generation, data)) return;
 
       final bool isRotated = widget.rotation == 90 || widget.rotation == 270;
       final double aspect = isRotated
@@ -253,22 +279,23 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
 
       if (widget.isHorizontal) {
         final screenHeight =
-            MediaQuery.of(context).size.height -
-            MediaQuery.of(context).padding.top -
-            MediaQuery.of(context).padding.bottom;
+            viewport.size.height -
+            viewport.padding.top -
+            viewport.padding.bottom;
         targetHeight = screenHeight;
         targetWidth = screenHeight * aspect;
       } else {
-        final screenWidth = MediaQuery.of(context).size.width;
+        final screenWidth = viewport.size.width;
         targetWidth = screenWidth;
         targetHeight = screenWidth / aspect;
       }
 
-      widget.data.loadedWidth = targetWidth;
-      widget.data.loadedHeight = targetHeight;
+      data.loadedWidth = targetWidth;
+      data.loadedHeight = targetHeight;
 
       const int sampleSize = 1;
 
+      if (!_isCurrent(generation, data)) return;
       final result = await ffiImageDecoder.decodeRegionAsync(
         DecodeParams(
           filePath: path,
@@ -315,10 +342,11 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
 
       final ui.Image img = await completer.future;
 
-      if (mounted) {
-        widget.data.resolvedFilePath = path;
-        widget.data.decodedImage?.dispose();
-        widget.data.decodedImage = img.clone();
+      if (_isCurrent(generation, data)) {
+        data.resolvedFilePath = path;
+        data.decodedImage?.dispose();
+        data.decodedImage = img.clone();
+        data.decodedImageCropped = widget.cropBorders;
         final old = _uiImage;
         setState(() {
           _uiImage = img;
@@ -336,7 +364,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
       }
     } catch (e) {
       if (e.toString().contains('Cancelled')) return;
-      if (mounted) {
+      if (_isCurrent(generation, data)) {
         setState(() {
           _hasError = true;
           _isLoading = false;
@@ -349,14 +377,16 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_uiImage == null && widget.data.decodedImage != null) {
+    if (_uiImage == null &&
+        (widget.data.decodedImage != null &&
+            widget.data.decodedImageCropped == widget.cropBorders)) {
       _uiImage?.dispose();
       _uiImage = widget.data.decodedImage!.clone();
       _isLoading = false;
       _hasError = false;
     }
 
-    final backgroundColor = ref.watch(backgroundColorStateProvider);
+    final backgroundColor = widget.backgroundColor;
     final subsamplingState = SubsamplingImageState(
       loadState: _isLoading
           ? LoadState.loading
@@ -400,7 +430,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
                 _loadingProgress!.expectedTotalBytes!
           : null;
       return Container(
-        color: getBackgroundColor(backgroundColor),
+        color: backgroundColor,
         height: placeholderHeight,
         width: placeholderWidth,
         child: Center(
@@ -418,7 +448,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
     if (_hasError || _uiImage == null) {
       final l10n = l10nLocalizations(context)!;
       return Container(
-        color: getBackgroundColor(backgroundColor),
+        color: backgroundColor,
         height: placeholderHeight,
         width: placeholderWidth,
         child: Center(

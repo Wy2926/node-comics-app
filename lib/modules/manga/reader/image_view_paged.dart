@@ -1,15 +1,16 @@
-import 'dart:io';
+import 'widgets/reader_animated_image.dart';
+import 'reader_image_format.dart';
 
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/utils/downloaded_page_file.dart';
+
+import 'settings/comic_reader_scope.dart';
+import 'settings/comic_reader_preferences.dart';
+
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/color_filter_widget.dart';
-import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart'
     as ssiv;
 import 'package:mangayomi/utils/extensions/others.dart';
@@ -24,6 +25,7 @@ class ImageViewPaged extends ConsumerStatefulWidget {
   final PageController? pageController;
   final ssiv.SubsamplingScaleImageViewController? controller;
   final bool isVisible;
+  final ValueChanged<bool>? onFailure;
 
   const ImageViewPaged({
     super.key,
@@ -36,6 +38,7 @@ class ImageViewPaged extends ConsumerStatefulWidget {
     this.pageController,
     this.controller,
     this.isVisible = true,
+    this.onFailure,
   });
 
   @override
@@ -43,10 +46,6 @@ class ImageViewPaged extends ConsumerStatefulWidget {
 }
 
 class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
-  Color? _autoBgColor;
-
-  bool _hasLandscapeZoomed = false;
-
   String? _resolvedFilePath;
   bool _isAnimated = false;
   String? _displayPath;
@@ -55,7 +54,6 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
   @override
   void initState() {
     super.initState();
-    widget.controller?.addListener(_onControllerChanged);
     _resolvedFilePath = widget.data.resolvedFilePath;
     _resolveFilePath();
     _checkIfAnimated();
@@ -64,65 +62,19 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
   @override
   void didUpdateWidget(covariant ImageViewPaged oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.controller != oldWidget.controller) {
-      oldWidget.controller?.removeListener(_onControllerChanged);
-      widget.controller?.addListener(_onControllerChanged);
-    }
     final bool dataChanged = widget.data != oldWidget.data;
     final bool pathResolved = _resolvedFilePath != widget.data.resolvedFilePath;
     if (dataChanged || pathResolved) {
-      _hasLandscapeZoomed = false;
       _resolvedFilePath = widget.data.resolvedFilePath;
       _resolveFilePath();
       _checkIfAnimated();
     }
-    if (widget.isVisible && !oldWidget.isVisible) {
-      _checkLandscapeZoom();
-    }
   }
 
   Future<void> _checkIfAnimated() async {
-    bool isAnimated = false;
-    final url = widget.data.pageUrl?.url.trim().toLowerCase() ?? '';
-    if (url.contains('.gif')) {
-      isAnimated = true;
-    } else if (widget.data.archiveImage != null &&
-        widget.data.archiveImage!.length > 5) {
-      if (isGifImage(widget.data.archiveImage!)) isAnimated = true;
-    } else if (widget.data.localImagePath != null) {
-      // Local image-folder page: sniff the real file's bytes directly rather
-      // than trusting its extension.
-      try {
-        final raf = await File(widget.data.localImagePath!).open();
-        try {
-          if (isGifImage(await raf.read(6))) isAnimated = true;
-        } finally {
-          await raf.close();
-        }
-      } catch (_) {}
-    } else if (widget.data.directory != null && widget.data.index != null) {
-      try {
-        // Look up whatever extension this page was actually saved under
-        // (findDownloadedPageFile), rather than assuming .jpg - still
-        // sniffing the real bytes here rather than trusting the extension,
-        // so this keeps working for pages downloaded before this fix that
-        // may still be labeled .jpg despite actually being a GIF.
-        final file = await findDownloadedPageFileAsync(
-          widget.data.directory!,
-          widget.data.index!,
-        );
-        if (file != null) {
-          final raf = await file.open();
-          try {
-            if (isGifImage(await raf.read(6))) isAnimated = true;
-          } finally {
-            await raf.close();
-          }
-        }
-      } catch (_) {}
-    }
-
-    if (mounted && _isAnimated != isAnimated) {
+    final data = widget.data;
+    final isAnimated = await isReaderGif(data);
+    if (mounted && identical(data, widget.data) && _isAnimated != isAnimated) {
       setState(() {
         _isAnimated = isAnimated;
       });
@@ -138,9 +90,10 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
       }
       return;
     }
-    final path = await widget.data.getLocalFilePath;
-    if (path != null) {
-      widget.data.resolvedFilePath = path;
+    final data = widget.data;
+    final path = await data.getLocalFilePath;
+    if (path != null && mounted && identical(data, widget.data)) {
+      data.resolvedFilePath = path;
       if (mounted) {
         setState(() {
           _resolvedFilePath = path;
@@ -150,105 +103,8 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
   }
 
   @override
-  void dispose() {
-    widget.controller?.removeListener(_onControllerChanged);
-    super.dispose();
-  }
-
-  void _onControllerChanged() {
-    if (widget.isVisible) {
-      _checkLandscapeZoom();
-    }
-  }
-
-  void _checkLandscapeZoom() {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _performLandscapeZoom();
-    });
-  }
-
-  void _performLandscapeZoom() {
-    final controller = widget.controller;
-    if (controller == null ||
-        !controller.isReady ||
-        !widget.isVisible ||
-        !mounted) {
-      return;
-    }
-    if (_hasLandscapeZoomed) return;
-
-    final landscapeZoom = ref.read(landscapeZoomStateProvider);
-    if (!landscapeZoom) return;
-
-    final scaleType = ref.read(scaleTypeStateProvider);
-    if (scaleType != ScaleType.fitScreen) return;
-
-    final sWidth = controller.sWidth;
-    final sHeight = controller.sHeight;
-    if (sWidth <= sHeight) return;
-
-    final currentScale = controller.scale;
-    final minScale = controller.minScale;
-    if (minScale <= 0.0) return;
-    if ((currentScale - minScale).abs() > 0.01) return;
-
-    final viewHeight =
-        context.size?.height ?? MediaQuery.of(context).size.height;
-    final targetScale = viewHeight / sHeight;
-
-    final zoomStart = ref.read(zoomStartPositionStateProvider);
-    final readerMode = ref
-        .read(readerControllerProvider(chapter: widget.data.chapter!).notifier)
-        .getReaderMode();
-    final isRightToLeft = readerMode == ReaderMode.rtl;
-
-    Offset targetPoint;
-    if (zoomStart == 0) {
-      targetPoint = const Offset(0, 0);
-    } else if (zoomStart == 1) {
-      targetPoint = Offset(sWidth.toDouble(), 0);
-    } else if (zoomStart == 2) {
-      targetPoint = Offset(sWidth / 2, sHeight / 2);
-    } else {
-      targetPoint = isRightToLeft
-          ? Offset(sWidth.toDouble(), 0)
-          : const Offset(0, 0);
-    }
-
-    _hasLandscapeZoomed = true;
-    Future.delayed(Duration(milliseconds: 200), () {
-      // The PageView keeps the previous page mounted, so mounted alone would
-      // still zoom a page the reader has already swiped away from.
-      if (!mounted || !widget.isVisible || !controller.isReady) {
-        _hasLandscapeZoomed = false;
-        return;
-      }
-      if ((controller.scale - controller.minScale).abs() <= 0.01) {
-        controller.animateScaleAndCenter(
-          targetScale,
-          targetPoint,
-          duration: const Duration(milliseconds: 800),
-        );
-      }
-    });
-  }
-
-  Duration _doubleTapAnimationDuration() {
-    final doubleTapAnimationValue = ref.read(
-      doubleTapAnimationSpeedStateProvider,
-    );
-    return switch (doubleTapAnimationValue) {
-      0 => const Duration(milliseconds: 10),
-      1 => const Duration(milliseconds: 800),
-      _ => const Duration(milliseconds: 200),
-    };
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final scaleType = ref.watch(scaleTypeStateProvider);
+    final profile = ComicReaderScope.of(context).profile;
     final display = ReaderTranslationHost.display(context, widget.data);
     final translated = !identical(display, widget.data);
     final displayPath = translated
@@ -266,33 +122,15 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
     }
     _displayPath = displayPath;
     final image = display.getImageProvider(ref, true);
-    final (colorBlendMode, color) = chapterColorFIlterValues(context, ref);
-    final cropBorders = ref.watch(cropBordersStateProvider);
-    final dualPageRotateToFit = ref.watch(dualPageRotateToFitStateProvider);
-    final dualPageRotateToFitInvert = ref.watch(
-      dualPageRotateToFitInvertStateProvider,
-    );
-
-    // Determine background color
-    Color? pageBgColor = _autoBgColor;
-
-    // rotation calculation
-    int rotation = 0;
-    if (dualPageRotateToFit &&
-        widget.data.loadedWidth != null &&
-        widget.data.loadedHeight != null) {
-      if (widget.data.loadedWidth! > widget.data.loadedHeight!) {
-        rotation = dualPageRotateToFitInvert ? 270 : 90;
-      }
-    }
-
-    // Mappe le scaleType de Mangayomi vers le BoxFit
-    final effectiveFit = switch (scaleType) {
-      ScaleType.fitWidth => BoxFit.fitWidth,
-      ScaleType.fitHeight => BoxFit.fitHeight,
-      ScaleType.stretch => BoxFit.fill,
-      _ => BoxFit.contain,
-    };
+    final cropBorders = profile.crop;
+    final rotation =
+        profile.widePage == ComicWidePage.rotate &&
+            widget.data.loadedWidth != null &&
+            widget.data.loadedHeight != null &&
+            widget.data.loadedWidth! > widget.data.loadedHeight!
+        ? 90
+        : 0;
+    final effectiveFit = profile.boxFit;
 
     if (_resolvedFilePath != widget.data.resolvedFilePath &&
         widget.data.resolvedFilePath != null) {
@@ -301,43 +139,48 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
 
     final bool isAnimated = !translated && _isAnimated;
 
-    final ssivScaleType = switch (scaleType) {
-      ScaleType.fitScreen => ssiv.ScaleType.centerInside,
-      ScaleType.stretch => ssiv.ScaleType.centerCrop,
-      ScaleType.fitWidth => ssiv.ScaleType.fitWidth,
-      ScaleType.fitHeight => ssiv.ScaleType.fitHeight,
-      ScaleType.originalSize => ssiv.ScaleType.originalSize,
-      ScaleType.smartFit => ssiv.ScaleType.smartFit,
+    final ssivScaleType = switch (profile.fit) {
+      ComicPageFit.contain => ssiv.ScaleType.centerInside,
+      ComicPageFit.width => ssiv.ScaleType.fitWidth,
+      ComicPageFit.height => ssiv.ScaleType.fitHeight,
     };
 
     Widget content;
     if (isAnimated) {
-      content = Image(
+      content = ReaderAnimatedImage(
         image: image,
         fit: effectiveFit,
-        color: color,
-        colorBlendMode: colorBlendMode,
+        cropBorders: cropBorders,
+        onFailure: widget.onFailure,
+        rightHalf: display.srcRect == null ? null : display.srcRect!.left > 0,
+        onImageLoaded: (width, height) {
+          widget.data.loadedWidth = width.toDouble();
+          widget.data.loadedHeight = height.toDouble();
+          widget.onImageLoaded?.call(width, height);
+        },
       );
     } else {
       content = ssiv.SubsamplingScaleImageView(
         image: image,
         resolvedFilePath: displayPath,
         preloadData: display,
-        colorBlendMode: colorBlendMode,
-        color: color,
         minimumScaleType: ssivScaleType,
         filterQuality: FilterQuality.medium,
         zoomEnabled: widget.zoomEnabled,
         panEnabled: widget.panEnabled,
         cropBorders: cropBorders,
-        srcRect: display.srcRect,
+        normalizedSrcRect: display.srcRect == null
+            ? null
+            : Rect.fromLTWH(display.srcRect!.left == 0 ? 0 : .5, 0, .5, 1),
         onImageLoaded: widget.onImageLoaded,
         loadStateChanged: widget.loadStateChanged,
         pageController: widget.pageController,
         rotation: rotation,
         controller: widget.controller,
         isVisible: widget.isVisible,
-        doubleTapZoomDuration: _doubleTapAnimationDuration(),
+        doubleTapZoomDuration: Duration(
+          milliseconds: MediaQuery.disableAnimationsOf(context) ? 0 : 200,
+        ),
         onReady: () {
           final saved = _restoreView, control = widget.controller;
           _restoreView = null;
@@ -349,15 +192,13 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
                 saved.$2.dy * control.sHeight,
               ),
             );
-          } else {
-            _checkLandscapeZoom();
           }
         },
       );
     }
 
-    if (pageBgColor != null) {
-      content = Container(color: pageBgColor, child: content);
+    if (isAnimated && rotation != 0) {
+      content = RotatedBox(quarterTurns: 1, child: content);
     }
 
     return ReaderTranslationHost.withStatus(
@@ -369,7 +210,7 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
           onLongPress: () => widget.onLongPressData.call(widget.data),
           child: content,
         ),
-        ref,
+        profile,
       ),
     );
   }

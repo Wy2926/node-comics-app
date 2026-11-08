@@ -161,15 +161,14 @@ void main() {
                                 for (final label in [
                                   'Chapters',
                                   'Translate',
-                                  'Display',
-                                  'Settings',
+                                  'Reading',
                                 ])
                                   Expanded(
                                     child: NodeLaneToolbarAction(
                                       label: label,
                                       icon: Icons.tune,
                                       onPressed: () {
-                                        if (label == 'Settings') settingsTaps++;
+                                        if (label == 'Reading') settingsTaps++;
                                       },
                                     ),
                                   ),
@@ -187,12 +186,12 @@ void main() {
           height: 400,
         );
         final pageSize = tester.getSize(find.byKey(const Key('page')));
-        await tester.ensureVisible(find.text('Settings'));
+        await tester.ensureVisible(find.text('Reading'));
         expect(
-          Scrollable.of(tester.element(find.text('Settings'))).position.pixels,
+          Scrollable.of(tester.element(find.text('Reading'))).position.pixels,
           greaterThan(0),
         );
-        await tester.tap(find.text('Settings'));
+        await tester.tap(find.text('Reading'));
         expect(settingsTaps, 1);
         expect(pageTaps, 0);
         expect(pageScrolls, 0);
@@ -288,30 +287,4 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-
-  testWidgets('large-text reader settings tabs and close remain reachable', (
-    tester,
-  ) async {
-    var closes = 0;
-    await mount(
-      tester,
-      MobileReaderSettingsTabs(
-        labels: const ['Reading mode', 'General', 'Custom filter'],
-        closeLabel: 'Close',
-        onClose: () => closes++,
-        children: const [
-          SingleChildScrollView(child: Text('Reading options')),
-          SingleChildScrollView(child: Text('General options')),
-          SingleChildScrollView(child: Text('Color options')),
-        ],
-      ),
-    );
-    await tester.ensureVisible(find.text('Custom filter'));
-    await tester.tap(find.text('Custom filter'));
-    await tester.pumpAndSettle();
-    expect(find.text('Color options'), findsOneWidget);
-    await tester.tap(find.byTooltip('Close'));
-    expect(closes, 1);
-    expect(tester.takeException(), isNull);
-  });
 }

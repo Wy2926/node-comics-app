@@ -4619,4 +4619,151 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reader_image_failure_hint => '其他页面仍可继续阅读';
+
+  @override
+  String get comic_paged => '翻页';
+
+  @override
+  String get comic_scroll => '连续下滑';
+
+  @override
+  String get comic_book_scope => '仅本书生效 · 修改即保存';
+
+  @override
+  String get comic_defaults_title => '默认与操作习惯';
+
+  @override
+  String get comic_defaults_hint => '默认值用于尚未单独设置的书籍选项。';
+
+  @override
+  String get comic_habits_hint => '以下习惯对所有漫画生效。';
+
+  @override
+  String get comic_turn => '滑向下一页';
+
+  @override
+  String get comic_left => '向左';
+
+  @override
+  String get comic_right => '向右';
+
+  @override
+  String get comic_up => '向上';
+
+  @override
+  String get comic_fit => '画面适配';
+
+  @override
+  String get comic_fit_contain => '完整显示';
+
+  @override
+  String get comic_fit_width => '适合宽度';
+
+  @override
+  String get comic_fit_height => '适合高度';
+
+  @override
+  String get comic_layout => '页面排布';
+
+  @override
+  String get comic_auto => '自动';
+
+  @override
+  String get comic_layout_hint => '自动根据可用宽度显示单页或双页。';
+
+  @override
+  String get comic_width => '内容宽度';
+
+  @override
+  String get comic_full => '铺满';
+
+  @override
+  String get comic_comfortable => '舒适';
+
+  @override
+  String get comic_narrow => '收窄';
+
+  @override
+  String get comic_gap => '页间留白';
+
+  @override
+  String get comic_no_gap => '无缝';
+
+  @override
+  String get comic_small_gap => '少量';
+
+  @override
+  String get comic_image_title => '画面微调';
+
+  @override
+  String get comic_image_hint => '裁边与色调仅作用于本书。';
+
+  @override
+  String get comic_wide => '横幅页处理';
+
+  @override
+  String get comic_intact => '完整保留';
+
+  @override
+  String get comic_split => '拆为两页';
+
+  @override
+  String get comic_rotate => '旋转适配';
+
+  @override
+  String get comic_wide_hint => '拆页顺序跟随翻页方向，仅用于单页翻阅。';
+
+  @override
+  String get comic_cover => '每章首页单独显示';
+
+  @override
+  String get comic_effects_reset => '重置画面效果';
+
+  @override
+  String get comic_book_reset => '恢复本书默认';
+
+  @override
+  String get comic_book_reset_hint => '清除本书自定义阅读设置，翻译设置保持原样。';
+
+  @override
+  String get comic_canvas => '阅读背景';
+
+  @override
+  String get comic_system => '跟随系统';
+
+  @override
+  String get comic_black => '纯黑';
+
+  @override
+  String get comic_gray => '深灰';
+
+  @override
+  String get comic_paper => '纸白';
+
+  @override
+  String get comic_tap => '轻点翻页';
+
+  @override
+  String get comic_tap_hint => '轻点两侧翻页，中间显示工具栏；下滑阅读时轻点上、下方移动。';
+
+  @override
+  String get comic_scroll_start => '开始自动下滑';
+
+  @override
+  String get comic_scroll_pause => '暂停自动下滑';
+
+  @override
+  String get comic_scroll_speed => '下滑速度';
+
+  @override
+  String get comic_scroll_hint => '关闭面板后开始；离开应用会暂停。';
+
+  @override
+  String get comic_save_failed => '保存失败，请重试。';
+
+  @override
+  String get comic_reading => '阅读';
+
+  @override
+  String get comic_chapter_habits_hint => '章节列表操作习惯对所有书籍生效。';
 }

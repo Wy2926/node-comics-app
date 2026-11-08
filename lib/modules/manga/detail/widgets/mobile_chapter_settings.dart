@@ -1,3 +1,6 @@
+import 'package:mangayomi/models/settings.dart';
+import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
+import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -33,7 +36,7 @@ class MobileMangaChapterSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Builder(
         builder: (context) {
           final controller = DefaultTabController.of(context);
@@ -52,7 +55,7 @@ class MobileMangaChapterSettings extends StatelessWidget {
                       horizontal: NodeLaneTokens.gutter,
                     ),
                     child: NodeLaneTabSegments(
-                      labels: [l10n.filter, l10n.sort],
+                      labels: [l10n.filter, l10n.sort, l10n.settings],
                     ),
                   ),
                   Flexible(
@@ -68,7 +71,9 @@ class MobileMangaChapterSettings extends StatelessWidget {
                               manga: manga,
                               localArchive: localArchive,
                             )
-                          : _ChapterSort(manga: manga),
+                          : controller.index == 1
+                          ? _ChapterSort(manga: manga)
+                          : const _ChapterHabits(),
                     ),
                   ),
                 ],
@@ -406,6 +411,58 @@ class _MobileScanlatorFilterPageState extends State<MobileScanlatorFilterPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ChapterHabits extends ConsumerWidget {
+  const _ChapterHabits();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    Widget choices(
+      String title,
+      ChapterSwipeAction value,
+      ValueChanged<ChapterSwipeAction> onChanged,
+    ) => NodeLaneChoiceRow<ChapterSwipeAction>(
+      title: title,
+      value: value,
+      segments: [
+        for (final action in ChapterSwipeAction.values)
+          ButtonSegment(
+            value: action,
+            label: Text(getChapterSwipeActionName(action, context)),
+          ),
+      ],
+      onChanged: onChanged,
+    );
+    return Column(
+      children: [
+        Padding(
+          padding: NodeLaneTokens.groupPadding,
+          child: Text(
+            l.comic_chapter_habits_hint,
+            style: NodeLaneTokens.of(context).readerSecondary,
+          ),
+        ),
+        choices(
+          l.chapter_swipe_start,
+          ref.watch(chapterSwipeStartActionStateProvider),
+          ref.read(chapterSwipeStartActionStateProvider.notifier).set,
+        ),
+        choices(
+          l.chapter_swipe_end,
+          ref.watch(chapterSwipeEndActionStateProvider),
+          ref.read(chapterSwipeEndActionStateProvider.notifier).set,
+        ),
+        NodeLaneSwitchRow(
+          title: l.mark_duplicate_chapters_read,
+          value: ref.watch(autoReadDuplicateChaptersStateProvider),
+          onChanged: ref
+              .read(autoReadDuplicateChaptersStateProvider.notifier)
+              .set,
+        ),
+      ],
     );
   }
 }

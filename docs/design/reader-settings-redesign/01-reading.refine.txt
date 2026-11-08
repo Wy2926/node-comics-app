@@ -1,0 +1,4 @@
+Use case: text-localization.
+Edit the provided NodeLane two-phone reading-settings board. Preserve the full canvas, all device frames, all manga artwork, colors, layout and all other text exactly.
+Only on the RIGHT phone, in the bottom disclosure row titled "画面微调", change the right-side summary from "裁边、跨页、对比度" to the exact text "裁边、对比度". Continuous reading does not offer split/rotated wide-page handling.
+Do not change the same row on the LEFT phone. Output the complete board at the same composition and resolution.

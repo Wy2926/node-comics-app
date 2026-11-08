@@ -41,6 +41,7 @@ class UChapDataPreload {
 
   /// Cached decoded image for MinSubsamplingImage to avoid re-decoding on scroll
   Image? decodedImage;
+  bool decodedImageCropped = false;
 
   /// Cached resolved local file path for SubsamplingScaleImageView to avoid resolving on scroll
   String? resolvedFilePath;

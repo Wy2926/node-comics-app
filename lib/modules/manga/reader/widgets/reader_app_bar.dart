@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
@@ -72,7 +71,6 @@ class ReaderAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fullScreenReader = ref.watch(fullScreenReaderStateProvider);
     final isLocalArchive = chapter.manga.value?.isLocalArchive ?? false;
 
     if (isMobile && !isTv) {
@@ -121,8 +119,6 @@ class ReaderAppBar extends ConsumerWidget {
     double height = isVisible
         ? Platform.isIOS
               ? 120.0
-              : !fullScreenReader && !isDesktop
-              ? 55.0
               : 80.0
         : 0.0;
 

@@ -15,11 +15,9 @@ class ReaderAutoScrollButton extends StatelessWidget {
   /// Whether the UI is currently visible (hide button when UI is hidden).
   final bool isUiVisible;
 
-  /// ValueNotifier for auto-scroll page setting (user preference).
-  final ValueNotifier<bool> autoScrollPage;
-
   /// ValueNotifier for auto-scroll running state.
   final ValueNotifier<bool> autoScroll;
+  final ValueNotifier<bool>? autoScrollPage;
 
   /// Callback when play/pause is toggled.
   final VoidCallback onToggle;
@@ -28,8 +26,8 @@ class ReaderAutoScrollButton extends StatelessWidget {
     super.key,
     required this.isContinuousMode,
     required this.isUiVisible,
-    required this.autoScrollPage,
     required this.autoScroll,
+    this.autoScrollPage,
     required this.onToggle,
   });
 
@@ -41,6 +39,17 @@ class ReaderAutoScrollButton extends StatelessWidget {
 
     final mobile = isMobile && !isTv;
     final media = MediaQuery.of(context);
+    if (autoScrollPage != null) {
+      return ValueListenableBuilder<bool>(
+        valueListenable: autoScrollPage!,
+        builder: (context, enabled, _) =>
+            enabled ? _button(context, mobile, media) : const SizedBox.shrink(),
+      );
+    }
+    return _button(context, mobile, media);
+  }
+
+  Widget _button(BuildContext context, bool mobile, MediaQueryData media) {
     return Positioned(
       bottom: mobile
           ? max(media.viewPadding.bottom, media.systemGestureInsets.bottom) + 8
@@ -49,29 +58,20 @@ class ReaderAutoScrollButton extends StatelessWidget {
       child: isUiVisible
           ? const SizedBox.shrink()
           : ValueListenableBuilder(
-              valueListenable: autoScrollPage,
-              builder: (context, isEnabled, child) => isEnabled
-                  ? ValueListenableBuilder(
-                      valueListenable: autoScroll,
-                      builder: (context, isPlaying, child) => IconButton(
-                        tooltip: isPlaying
-                            ? context.l10n.tts_pause
-                            : context.l10n.resume,
-                        style: mobile
-                            ? IconButton.styleFrom(
-                                backgroundColor: Colors.black.withValues(
-                                  alpha: .6,
-                                ),
-                                foregroundColor: Colors.white,
-                              )
-                            : null,
-                        onPressed: onToggle,
-                        icon: Icon(
-                          isPlaying ? Icons.pause_circle : Icons.play_circle,
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+              valueListenable: autoScroll,
+              builder: (context, isPlaying, child) => IconButton(
+                tooltip: isPlaying
+                    ? context.l10n.tts_pause
+                    : context.l10n.resume,
+                style: mobile
+                    ? IconButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: .6),
+                        foregroundColor: Colors.white,
+                      )
+                    : null,
+                onPressed: onToggle,
+                icon: Icon(isPlaying ? Icons.pause_circle : Icons.play_circle),
+              ),
             ),
     );
   }

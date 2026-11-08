@@ -4,7 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
+
+import '../settings/comic_reader_scope.dart';
+
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Page indicator widget showing current page / total pages.
 ///
@@ -33,7 +36,7 @@ class PageIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showPagesNumber = ref.watch(showPagesNumberStateProvider);
+    final showPagesNumber = ComicReaderScope.of(context).habits.pageNumber;
 
     // Don't show when UI is visible or setting is disabled
     if (isUiVisible || !showPagesNumber) {
@@ -69,11 +72,8 @@ class PageIndicator extends ConsumerWidget {
                   ),
                   child: Text(
                     label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: NodeLaneTokens.of(context).readerValue
+                        .copyWith(color: Colors.white),
                   ),
                 ),
               ),

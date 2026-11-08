@@ -401,6 +401,7 @@ class SubsamplingScaleImageView extends StatefulWidget {
     this.parentScale = 1.0,
     this.isVisible = true,
     this.srcRect,
+    this.normalizedSrcRect,
     this.fit,
     this.minimumScaleType = ScaleType.centerInside,
     this.panLimit = PanLimit.inside,
@@ -424,6 +425,9 @@ class SubsamplingScaleImageView extends StatefulWidget {
   /// A source sub-region (srcRect) to display.
   /// If provided, the viewer will display only this sub-region and adapt all scales and translations.
   final Rect? srcRect;
+
+  /// A fraction of the decoded (possibly border-cropped) image.
+  final Rect? normalizedSrcRect;
 
   @override
   State<SubsamplingScaleImageView> createState() =>
@@ -474,6 +478,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
   double _lastNotifiedScale = 0;
   ui.Offset _lastNotifiedCenter = ui.Offset.zero;
   Timer? _resizeTimer;
+  Rect? _sourceRect;
 
   @override
   void initState() {
@@ -529,10 +534,14 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     final imageChanged =
         widget.resolvedFilePath != oldWidget.resolvedFilePath ||
         (widget.resolvedFilePath == null && widget.image != oldWidget.image);
-    final cropChanged = widget.cropBorders != oldWidget.cropBorders;
+    final cropChanged =
+        widget.cropBorders != oldWidget.cropBorders ||
+        widget.srcRect != oldWidget.srcRect ||
+        widget.normalizedSrcRect != oldWidget.normalizedSrcRect;
     final scaleTypeChanged =
         widget.minimumScaleType != oldWidget.minimumScaleType ||
-        widget.fit != oldWidget.fit;
+        widget.fit != oldWidget.fit ||
+        widget.rotation != oldWidget.rotation;
 
     if (imageChanged || cropChanged) {
       _isInitialized = false;
@@ -999,12 +1008,17 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
       return;
     }
 
-    _sWidth = widget.srcRect != null
-        ? widget.srcRect!.width.toInt()
-        : outSize[0];
-    _sHeight = widget.srcRect != null
-        ? widget.srcRect!.height.toInt()
-        : outSize[1];
+    final normalized = widget.normalizedSrcRect;
+    _sourceRect = normalized == null
+        ? widget.srcRect
+        : Rect.fromLTRB(
+            normalized.left * outSize[0],
+            normalized.top * outSize[1],
+            normalized.right * outSize[0],
+            normalized.bottom * outSize[1],
+          );
+    _sWidth = _sourceRect?.width.toInt() ?? outSize[0];
+    _sHeight = _sourceRect?.height.toInt() ?? outSize[1];
 
     if (widget.preloadData != null) {
       widget.preloadData!.resolvedFilePath = path;
@@ -1211,8 +1225,8 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     );
 
     var fileRect = transformer.fileSRect(tile.sRect);
-    if (widget.srcRect != null) {
-      fileRect = fileRect.translate(widget.srcRect!.left, widget.srcRect!.top);
+    if (_sourceRect != null) {
+      fileRect = fileRect.translate(_sourceRect!.left, _sourceRect!.top);
     }
 
     final params = DecodeParams(

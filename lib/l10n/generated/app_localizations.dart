@@ -8579,6 +8579,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You can keep reading other pages.'**
   String get reader_image_failure_hint;
+
+  /// No description provided for @comic_paged.
+  ///
+  /// In en, this message translates to:
+  /// **'Page by page'**
+  String get comic_paged;
+
+  /// No description provided for @comic_scroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll down'**
+  String get comic_scroll;
+
+  /// No description provided for @comic_book_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies only to this book · changes save immediately'**
+  String get comic_book_scope;
+
+  /// No description provided for @comic_defaults_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Defaults & habits'**
+  String get comic_defaults_title;
+
+  /// No description provided for @comic_defaults_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Defaults apply to fields you have not customized for a book.'**
+  String get comic_defaults_hint;
+
+  /// No description provided for @comic_habits_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'These habits apply to every comic.'**
+  String get comic_habits_hint;
+
+  /// No description provided for @comic_turn.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to the next page'**
+  String get comic_turn;
+
+  /// No description provided for @comic_left.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get comic_left;
+
+  /// No description provided for @comic_right.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get comic_right;
+
+  /// No description provided for @comic_up.
+  ///
+  /// In en, this message translates to:
+  /// **'Up'**
+  String get comic_up;
+
+  /// No description provided for @comic_fit.
+  ///
+  /// In en, this message translates to:
+  /// **'Page fit'**
+  String get comic_fit;
+
+  /// No description provided for @comic_fit_contain.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole page'**
+  String get comic_fit_contain;
+
+  /// No description provided for @comic_fit_width.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit width'**
+  String get comic_fit_width;
+
+  /// No description provided for @comic_fit_height.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit height'**
+  String get comic_fit_height;
+
+  /// No description provided for @comic_layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Page layout'**
+  String get comic_layout;
+
+  /// No description provided for @comic_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get comic_auto;
+
+  /// No description provided for @comic_layout_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto shows a spread when there is enough width.'**
+  String get comic_layout_hint;
+
+  /// No description provided for @comic_width.
+  ///
+  /// In en, this message translates to:
+  /// **'Content width'**
+  String get comic_width;
+
+  /// No description provided for @comic_full.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get comic_full;
+
+  /// No description provided for @comic_comfortable.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable'**
+  String get comic_comfortable;
+
+  /// No description provided for @comic_narrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Narrow'**
+  String get comic_narrow;
+
+  /// No description provided for @comic_gap.
+  ///
+  /// In en, this message translates to:
+  /// **'Page spacing'**
+  String get comic_gap;
+
+  /// No description provided for @comic_no_gap.
+  ///
+  /// In en, this message translates to:
+  /// **'Seamless'**
+  String get comic_no_gap;
+
+  /// No description provided for @comic_small_gap.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get comic_small_gap;
+
+  /// No description provided for @comic_image_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Fine-tune image'**
+  String get comic_image_title;
+
+  /// No description provided for @comic_image_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop and tone affect only this book.'**
+  String get comic_image_hint;
+
+  /// No description provided for @comic_wide.
+  ///
+  /// In en, this message translates to:
+  /// **'Wide pages'**
+  String get comic_wide;
+
+  /// No description provided for @comic_intact.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep whole'**
+  String get comic_intact;
+
+  /// No description provided for @comic_split.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get comic_split;
+
+  /// No description provided for @comic_rotate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate'**
+  String get comic_rotate;
+
+  /// No description provided for @comic_wide_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Splitting follows the page-turn direction. Applies to single-page reading.'**
+  String get comic_wide_hint;
+
+  /// No description provided for @comic_cover.
+  ///
+  /// In en, this message translates to:
+  /// **'One cover per chapter'**
+  String get comic_cover;
+
+  /// No description provided for @comic_effects_reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset image adjustments'**
+  String get comic_effects_reset;
+
+  /// No description provided for @comic_book_reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore book defaults'**
+  String get comic_book_reset;
+
+  /// No description provided for @comic_book_reset_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Clears this book’s custom reading settings. Translation is unchanged.'**
+  String get comic_book_reset_hint;
+
+  /// No description provided for @comic_canvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Reader background'**
+  String get comic_canvas;
+
+  /// No description provided for @comic_system.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get comic_system;
+
+  /// No description provided for @comic_black.
+  ///
+  /// In en, this message translates to:
+  /// **'Black'**
+  String get comic_black;
+
+  /// No description provided for @comic_gray.
+  ///
+  /// In en, this message translates to:
+  /// **'Gray'**
+  String get comic_gray;
+
+  /// No description provided for @comic_paper.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper'**
+  String get comic_paper;
+
+  /// No description provided for @comic_tap.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to turn pages'**
+  String get comic_tap;
+
+  /// No description provided for @comic_tap_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the edges to move; tap the center to show controls.'**
+  String get comic_tap_hint;
+
+  /// No description provided for @comic_scroll_start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start auto scroll'**
+  String get comic_scroll_start;
+
+  /// No description provided for @comic_scroll_pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause auto scroll'**
+  String get comic_scroll_pause;
+
+  /// No description provided for @comic_scroll_speed.
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll speed'**
+  String get comic_scroll_speed;
+
+  /// No description provided for @comic_scroll_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts when this panel closes. Pauses when the app leaves the foreground.'**
+  String get comic_scroll_hint;
+
+  /// No description provided for @comic_save_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Please try again.'**
+  String get comic_save_failed;
+
+  /// No description provided for @comic_reading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get comic_reading;
+
+  /// No description provided for @comic_chapter_habits_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter list habits apply to all books.'**
+  String get comic_chapter_habits_hint;
 }
 
 class _AppLocalizationsDelegate

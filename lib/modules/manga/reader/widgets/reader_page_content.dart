@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/manga/reader/controllers/reader_viewport_anchor.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/reader/image_view_paged.dart';
@@ -12,8 +12,10 @@ import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/image_actions_dialog.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
-import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
+
+import '../settings/comic_reader_scope.dart';
+import '../settings/comic_reader_preferences.dart';
+
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:photo_view/photo_view.dart';
@@ -22,16 +24,15 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 /// The reader's actual page content: the continuous (webtoon) list, or the
 /// paged (single/double-page) PageView, depending on [readerMode] and
 /// [pageMode]. Everything else in the reader (app bar, bottom bar, gesture
-/// overlay, flash overlay...) is layered on top of this by the caller, which
+/// overlay...) is layered on top of this by the caller, which
 /// also owns all the mutable state this widget only reads or reports back
 /// through callbacks.
-class ReaderPageContent extends ConsumerWidget {
+class ReaderPageContent extends StatelessWidget {
   final List<UChapDataPreload> pages;
   final Chapter chapter;
   final ReaderMode readerMode;
   final PageMode pageMode;
-  final BackgroundColor backgroundColor;
-  final int pagePreloadAmount;
+  final Color backgroundColor;
 
   /// The page currently shown by the paged PageView, for the single-page
   /// branch's `isVisible` check.
@@ -76,7 +77,6 @@ class ReaderPageContent extends ConsumerWidget {
     required this.readerMode,
     required this.pageMode,
     required this.backgroundColor,
-    required this.pagePreloadAmount,
     required this.currentPageViewIndex,
     required this.viewportAnchor,
     required this.isReverseHorizontal,
@@ -95,8 +95,8 @@ class ReaderPageContent extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bool isHorizontalContinuous = readerMode.isHorizontalContinuous;
+  Widget build(BuildContext context) {
+    final profile = ComicReaderScope.of(context).profile;
 
     if (readerMode.isContinuous) {
       return ImageViewWebtoon(
@@ -104,16 +104,11 @@ class ReaderPageContent extends ConsumerWidget {
         viewportAnchor: viewportAnchor,
         listController: listController,
         scrollController: continuousScrollController,
-        scrollDirection: isHorizontalContinuous
-            ? Axis.horizontal
-            : Axis.vertical,
+
         // Keep the *built* (decoded, in-memory) range small and constant;
-        // pagePreloadAmount only drives the network prefetch in
-        // _prefetchPagesInOrder. Tying this to pagePreloadAmount pinned up to
-        // 20 screens of decoded pages at once (OOM on webtoons).
-        minCacheExtent: isHorizontalContinuous
-            ? (pagePreloadAmount.clamp(1, 3) * 1.5) * context.width(1)
-            : (pagePreloadAmount.clamp(1, 3) * 1.5) * context.height(1),
+        // Network prefetch has its own bounded queue; decoding multiple
+        // screens for every prefetched page would exhaust memory on long strips.
+        minCacheExtent: 1.5 * context.height(1),
         physics: const ClampingScrollPhysics(),
         onLongPressData: (data) => ImageActionsDialog.show(
           context: context,
@@ -123,31 +118,18 @@ class ReaderPageContent extends ConsumerWidget {
         ),
         onFailedToLoadImage: onFailedToLoadImage,
         backgroundColor: backgroundColor,
-        isDoublePageMode:
-            pageMode == PageMode.doublePage && !isHorizontalContinuous,
-        isHorizontalContinuous: isHorizontalContinuous,
-        readerMode: readerMode,
-        webtoonSidePadding: ref.watch(webtoonSidePaddingStateProvider),
-        showPageGaps: ref.watch(showPageGapsStateProvider),
-        reverse: isReverseHorizontal,
-        zoomOutDisabled: ref.watch(webtoonDisableZoomOutStateProvider),
-        doubleTapZoomEnabled: ref.watch(
-          webtoonDoubleTapZoomEnabledStateProvider,
-        ),
+        widthFactor: profile.widthFactor,
+        gap: profile.gap ? NodeLaneTokens.space8 : 0,
         onImageLoaded: (page, width, height) {
-          if (ref.read(splitWidePagesStateProvider) && width > height * 1.2) {
-            onWidePage(page, width, height);
-          }
           if (width > height) onWideSinglePageLoaded(page);
         },
       );
     }
 
-    final doublePage =
-        pageMode == PageMode.doublePage && !isHorizontalContinuous;
+    final doublePage = pageMode == PageMode.doublePage;
     final spreads = ReaderPageIndexMath(
       isDoublePageActive: doublePage,
-      singleFirst: ref.watch(doublePageSingleFirstPageStateProvider),
+      singleFirst: profile.singleCover,
       pageCount: pages.length,
       pages: pages,
     ).spreads;
@@ -157,12 +139,10 @@ class ReaderPageContent extends ConsumerWidget {
     };
 
     return TweenAnimationBuilder<Color?>(
-      tween: ColorTween(
-        end:
-            getBackgroundColor(backgroundColor) ??
-            Theme.of(context).scaffoldBackgroundColor,
-      ),
-      duration: const Duration(milliseconds: 300),
+      tween: ColorTween(end: backgroundColor),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : NodeLaneTokens.disclosureDuration,
       builder: (context, animColor, animChild) {
         return Material(
           color: animColor,
@@ -170,101 +150,80 @@ class ReaderPageContent extends ConsumerWidget {
           child: animChild,
         );
       },
-      child: doublePage
-          ? PageView.builder(
-              controller: extendedController,
+      child: PageView.builder(
+        controller: extendedController,
+        scrollDirection: scrollDirection,
+        reverse: isReverseHorizontal,
+        physics: isCurrentPageZoomed
+            ? const NeverScrollableScrollPhysics()
+            : const ClampingScrollPhysics(),
+        itemBuilder: (context, index) {
+          if (doublePage) {
+            final spread = spreads[index];
+            final index1 = spread.firstIndex;
+            final index2 = spread.secondIndex;
+            final identity = pages[index1].identity;
+            final List<UChapDataPreload?> pageList = [
+              if (index1 < pages.length) pages[index1],
+              if (index2 != null && index2 < pages.length) pages[index2],
+            ];
+            return DoublePageView.paged(
+              key: ValueKey(identity),
+              pages: isReverseHorizontal
+                  ? pageList.reversed.toList()
+                  : pageList,
+              backgroundColor: backgroundColor,
               scrollDirection: scrollDirection,
-              reverse: isReverseHorizontal,
-              physics: isCurrentPageZoomed
-                  ? const NeverScrollableScrollPhysics()
-                  : const ClampingScrollPhysics(),
-              itemBuilder: (context, index) {
-                final spread = spreads[index];
-                final index1 = spread.firstIndex;
-                final index2 = spread.secondIndex;
-                final identity = pages[index1].identity;
-                final List<UChapDataPreload?> pageList = [
-                  if (index1 < pages.length) pages[index1],
-                  if (index2 != null && index2 < pages.length) pages[index2],
-                ];
-                return DoublePageView.paged(
-                  key: ValueKey(identity),
-                  pages: isReverseHorizontal
-                      ? pageList.reversed.toList()
-                      : pageList,
-                  backgroundColor: backgroundColor,
-                  scrollDirection: scrollDirection,
-                  onZoomChanged: (zoomed) {
-                    onDoublePageZoomChanged(identity, zoomed);
-                  },
-                  onControllerChanged: (controller, attached) {
-                    onDoublePageControllerChanged(
-                      identity,
-                      controller,
-                      attached,
-                    );
-                  },
-                  onFailedToLoadImage: onFailedToLoadImage,
-                  onImageLoaded: (pIdx, width, height) {
-                    if (ref.read(splitWidePagesStateProvider) &&
-                        width > height * 1.2) {
-                      onWidePage(pIdx, width, height);
-                    }
-                  },
-                  onWideSinglePageLoaded: onWideSinglePageLoaded,
-                  onLongPressData: (datas) {
-                    ImageActionsDialog.show(
-                      context: context,
-                      data: datas,
-                      manga: chapter.manga.value!,
-                      chapterName: chapter.name!,
-                    );
-                  },
+              onZoomChanged: (zoomed) {
+                onDoublePageZoomChanged(identity, zoomed);
+              },
+              onControllerChanged: (controller, attached) {
+                onDoublePageControllerChanged(identity, controller, attached);
+              },
+              onFailedToLoadImage: onFailedToLoadImage,
+              onImageLoaded: (pIdx, width, height) {},
+              onWideSinglePageLoaded: onWideSinglePageLoaded,
+              onLongPressData: (datas) {
+                ImageActionsDialog.show(
+                  context: context,
+                  data: datas,
+                  manga: chapter.manga.value!,
+                  chapterName: chapter.name!,
                 );
               },
-              itemCount: spreads.length,
-              findChildIndexCallback: (key) => indices[key],
-              onPageChanged: onPageChanged,
-            )
-          : PageView.builder(
-              controller: extendedController,
-              scrollDirection: scrollDirection,
-              reverse: isReverseHorizontal,
-              physics: isCurrentPageZoomed
-                  ? const NeverScrollableScrollPhysics()
-                  : const ClampingScrollPhysics(),
-              itemBuilder: (BuildContext context, int index) {
-                final page = pages[index];
-                return ReaderPagedItem(
-                  key: ValueKey(page.identity),
-                  page: page,
-                  chapter: chapter,
-                  pageController: extendedController,
-                  controller: pageControllerFor(page),
-                  isVisible: index == currentPageViewIndex,
-                  backgroundColor: backgroundColor,
-                  onFailedToLoadImage: onFailedToLoadImage,
-                  onWidePage: onWidePage,
-                  onWideSinglePageLoaded: onWideSinglePageLoaded,
-                );
-              },
-              itemCount: pages.length,
-              findChildIndexCallback: (key) => indices[key],
-              onPageChanged: onPageChanged,
-            ),
+            );
+          }
+          final page = pages[index];
+          return ReaderPagedItem(
+            key: ValueKey(page.identity),
+            page: page,
+            chapter: chapter,
+            pageController: extendedController,
+            controller: pageControllerFor(page),
+            isVisible: index == currentPageViewIndex,
+            backgroundColor: backgroundColor,
+            onFailedToLoadImage: onFailedToLoadImage,
+            onWidePage: onWidePage,
+            onWideSinglePageLoaded: onWideSinglePageLoaded,
+          );
+        },
+        itemCount: doublePage ? spreads.length : pages.length,
+        findChildIndexCallback: (key) => indices[key],
+        onPageChanged: onPageChanged,
+      ),
     );
   }
 }
 
 /// A single page in the (non-double-page) paged PageView: a transition page,
 /// or a zoomable [ImageViewPaged] with its own loading/error/retry states.
-class ReaderPagedItem extends ConsumerWidget {
+class ReaderPagedItem extends StatelessWidget {
   final UChapDataPreload page;
   final Chapter chapter;
   final PageController pageController;
   final ssiv.SubsamplingScaleImageViewController controller;
   final bool isVisible;
-  final BackgroundColor backgroundColor;
+  final Color backgroundColor;
   final void Function(UChapDataPreload page, bool failed) onFailedToLoadImage;
   final void Function(UChapDataPreload page, double width, double height)
   onWidePage;
@@ -284,7 +243,7 @@ class ReaderPagedItem extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (page.isTransitionPage) {
       return ReaderChapterBoundary(data: page, paged: true);
     }
@@ -294,8 +253,11 @@ class ReaderPagedItem extends ConsumerWidget {
       pageController: pageController,
       controller: controller,
       isVisible: isVisible,
+      onFailure: (failed) => onFailedToLoadImage(page, failed),
       onImageLoaded: (width, height) {
-        if (ref.read(splitWidePagesStateProvider) && width > height * 1.2) {
+        if (ComicReaderScope.of(context).profile.widePage ==
+                ComicWidePage.split &&
+            width > height * 1.2) {
           onWidePage(page, width.toDouble(), height.toDouble());
         }
         if (width > height) {
@@ -310,9 +272,7 @@ class ReaderPagedItem extends ConsumerWidget {
                     loadingProgress.expectedTotalBytes!
               : null;
           return Container(
-            color:
-                getBackgroundColor(backgroundColor) ??
-                Theme.of(context).scaffoldBackgroundColor,
+            color: backgroundColor,
             height: context.height(0.8),
             child: Center(
               child: SingleChildScrollView(
@@ -333,9 +293,7 @@ class ReaderPagedItem extends ConsumerWidget {
           onFailedToLoadImage(page, true);
           final l10n = l10nLocalizations(context)!;
           return Container(
-            color:
-                getBackgroundColor(backgroundColor) ??
-                Theme.of(context).scaffoldBackgroundColor,
+            color: backgroundColor,
             height: context.height(0.8),
             child: Center(
               child: SingleChildScrollView(

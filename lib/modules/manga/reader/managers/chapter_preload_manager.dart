@@ -263,19 +263,6 @@ class ChapterPreloadManager {
     }
   }
 
-  /// Splits a single page into two pages dynamically.
-  void splitPage(int index, UChapDataPreload page1, UChapDataPreload page2) {
-    if (index < 0 || index >= _pages.length) return;
-    _pages.removeAt(index);
-    _pages.insert(index, page1);
-    _pages.insert(index + 1, page2);
-    // Every page after the split moved one slot down.
-    for (int i = index; i < _pages.length; i++) {
-      _pages[i].pageIndex = i;
-    }
-    onPagesUpdated?.call();
-  }
-
   /// Disposes of all resources.
   void dispose() {
     _disposed = true;

@@ -1,0 +1,4 @@
+Use case: precise-object-edit.
+Edit the provided NodeLane two-phone scope board. Preserve the full canvas, both phone outlines, all manga artwork, spacing, headers, and all other controls and text.
+Only on the RIGHT phone, in the row labeled "阅读背景", replace the three-choice swatch group with FOUR evenly spaced swatches and their readable exact labels: "跟随系统", "黑色", "灰色", "纸白". Keep "跟随系统" selected with a blue outline/check. Swatches black, medium-neutral gray, and near-white for the respective other three options. The entire row must stay within its current width and height with no overlap. This preserves the existing useful gray-background preference.
+Do not modify any other rows. Output the entire complete board.

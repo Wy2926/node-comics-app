@@ -1,28 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
-/// Navigation layout variants matching Mihon.
-///
-///  0 = Default  – current three-column + top/bottom zones
-///  1 = L-shaped – top-left = prev, bottom-right = next, rest = UI
-///  2 = Kindle   – top = UI, bottom split left = prev / right = next
-///  3 = Edge     – thin side strips for prev/next, rest = UI
-///  4 = Right & Left – simple two-zone left = prev / right = next
-///  5 = Disabled – full screen = toggle UI
-///
-/// For horizontal reading (LTR), the default layout is:
-/// ```
-/// ┌─────────────────────────┐
-/// │     TOP (prev page)     │
-/// ├───────┬───────┬─────────┤
-/// │ LEFT  │CENTER │  RIGHT  │
-/// │(prev) │ (UI)  │ (next)  │
-/// ├───────┴───────┴─────────┤
-/// │   BOTTOM (next page)    │
-/// └─────────────────────────┘
-/// ```
-///
-/// For RTL mode, LEFT and RIGHT actions are reversed.
 class ReaderGestureHandler extends StatelessWidget {
   /// Whether tap zones are enabled for navigation
   final bool usePageTapZones;
@@ -36,11 +14,7 @@ class ReaderGestureHandler extends StatelessWidget {
   /// Whether the reader is in continuous scroll mode
   final bool isContinuousMode;
 
-  /// Navigation layout index (0-5), see class docs.
-  final int navigationLayout;
-
-  /// Tapping zone inversion mode (0 = None, 1 = Horizontal, 2 = Vertical, 3 = Both)
-  final int tappingInversion;
+  final bool vertical;
 
   /// Callback when UI should be toggled
   final VoidCallback onToggleUI;
@@ -72,8 +46,7 @@ class ReaderGestureHandler extends StatelessWidget {
     required this.onToggleUI,
     required this.onPreviousPage,
     required this.onNextPage,
-    this.navigationLayout = 0,
-    this.tappingInversion = 0,
+    this.vertical = false,
     this.onDoubleTapDown,
     this.onDoubleTap,
     this.onSecondaryTapDown,
@@ -91,8 +64,8 @@ class ReaderGestureHandler extends StatelessWidget {
       final topHeight = context.height(0.25);
       final bottomHeight = context.height(0.35);
       final sideWidth = context.width(0.20);
-      final prevAction = _shouldInvertHorizontal ? _next() : _prev();
-      final nextAction = _shouldInvertHorizontal ? _prev() : _next();
+      final prevAction = _prev();
+      final nextAction = _next();
 
       return Stack(
         children: [
@@ -144,22 +117,22 @@ class ReaderGestureHandler extends StatelessWidget {
       );
     }
 
-    return switch (navigationLayout) {
-      1 => _buildLShaped(context),
-      2 => _buildKindle(context),
-      3 => _buildEdge(context),
-      4 => _buildRightAndLeft(context),
-      5 => _buildDisabled(context),
-      _ => _buildDefault(context),
-    };
+    return vertical
+        ? Column(
+            children: [
+              Expanded(child: _zone(onPreviousPage)),
+              Expanded(child: _uiZone()),
+              Expanded(child: _zone(onNextPage)),
+            ],
+          )
+        : Row(
+            children: [
+              Expanded(child: _zone(_prev())),
+              Expanded(child: _uiZone()),
+              Expanded(child: _zone(_next())),
+            ],
+          );
   }
-
-  // ── helpers ──
-
-  bool get _shouldInvertHorizontal =>
-      tappingInversion == 1 || tappingInversion == 3;
-  bool get _shouldInvertVertical =>
-      tappingInversion == 2 || tappingInversion == 3;
 
   VoidCallback _prev() => isRTL ? onNextPage : onPreviousPage;
   VoidCallback _next() => isRTL ? onPreviousPage : onNextPage;
@@ -179,152 +152,6 @@ class ReaderGestureHandler extends StatelessWidget {
     onSecondaryTapDown: isContinuousMode ? onSecondaryTapDown : null,
     onSecondaryTap: isContinuousMode ? onSecondaryTap : null,
   );
-
-  // ── Layout 0: Default (original 3-col + top/bottom) ──
-
-  Widget _buildDefault(BuildContext context) {
-    return Stack(
-      children: [
-        _buildDefaultHorizontalZones(context),
-        _buildDefaultVerticalZones(context),
-      ],
-    );
-  }
-
-  Widget _buildDefaultHorizontalZones(BuildContext context) {
-    final leftAction = _shouldInvertHorizontal ? _next() : _prev();
-    final rightAction = _shouldInvertHorizontal ? _prev() : _next();
-    return Row(
-      children: [
-        Expanded(flex: 2, child: _zone(leftAction)),
-        Expanded(flex: 2, child: _uiZone()),
-        Expanded(flex: 2, child: _zone(rightAction)),
-      ],
-    );
-  }
-
-  Widget _buildDefaultVerticalZones(BuildContext context) {
-    final topAction = _shouldInvertVertical ? onNextPage : onPreviousPage;
-    final bottomAction = _shouldInvertVertical ? onPreviousPage : onNextPage;
-    return Column(
-      children: [
-        Expanded(flex: 2, child: _zone(topAction)),
-        const Expanded(flex: 5, child: SizedBox.shrink()),
-        Expanded(flex: 2, child: _zone(bottomAction)),
-      ],
-    );
-  }
-
-  // ── Layout 1: L-shaped ──
-  // ┌───────┬───────────────┐
-  // │ PREV  │               │
-  // ├───────┘               │
-  // │          UI           │
-  // │               ┌───────┤
-  // │               │ NEXT  │
-  // └───────────────┴───────┘
-
-  Widget _buildLShaped(BuildContext context) {
-    final action1 = (_shouldInvertHorizontal ^ _shouldInvertVertical)
-        ? _next()
-        : _prev();
-    final action2 = (_shouldInvertHorizontal ^ _shouldInvertVertical)
-        ? _prev()
-        : _next();
-    return Column(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Row(
-            children: [
-              Expanded(flex: 1, child: _zone(action1)),
-              Expanded(flex: 2, child: _uiZone()),
-            ],
-          ),
-        ),
-        Expanded(flex: 2, child: _uiZone()),
-        Expanded(
-          flex: 1,
-          child: Row(
-            children: [
-              Expanded(flex: 2, child: _uiZone()),
-              Expanded(flex: 1, child: _zone(action2)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── Layout 2: Kindle ──
-  // ┌───────────────────────┐
-  // │       UI (toggle)     │
-  // ├───────────┬───────────┤
-  // │   PREV    │   NEXT    │
-  // └───────────┴───────────┘
-
-  Widget _buildKindle(BuildContext context) {
-    final leftAction = _shouldInvertHorizontal ? _next() : _prev();
-    final rightAction = _shouldInvertHorizontal ? _prev() : _next();
-    return Column(
-      children: [
-        Expanded(flex: 1, child: _uiZone()),
-        Expanded(
-          flex: 3,
-          child: Row(
-            children: [
-              Expanded(child: _zone(leftAction)),
-              Expanded(child: _zone(rightAction)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── Layout 3: Edge ──
-  // ┌──┬──────────────┬──┐
-  // │P │              │N │
-  // │R │     UI       │E │
-  // │E │   (toggle)   │X │
-  // │V │              │T │
-  // └──┴──────────────┴──┘
-
-  Widget _buildEdge(BuildContext context) {
-    final leftAction = _shouldInvertHorizontal ? _next() : _prev();
-    final rightAction = _shouldInvertHorizontal ? _prev() : _next();
-    return Row(
-      children: [
-        Expanded(flex: 1, child: _zone(leftAction)),
-        Expanded(flex: 5, child: _uiZone()),
-        Expanded(flex: 1, child: _zone(rightAction)),
-      ],
-    );
-  }
-
-  // ── Layout 4: Right and Left ──
-  // ┌───────────┬───────────┐
-  // │           │           │
-  // │   PREV    │   NEXT    │
-  // │           │           │
-  // └───────────┴───────────┘
-
-  Widget _buildRightAndLeft(BuildContext context) {
-    final leftAction = _shouldInvertHorizontal ? _next() : _prev();
-    final rightAction = _shouldInvertHorizontal ? _prev() : _next();
-    return Row(
-      children: [
-        Expanded(child: _zone(leftAction)),
-        Expanded(child: _zone(rightAction)),
-      ],
-    );
-  }
-
-  // ── Layout 5: Disabled ──
-
-  Widget _buildDisabled(BuildContext context) {
-    return SizedBox.expand(child: _uiZone());
-  }
 }
 
 /// Individual gesture detector for a zone.

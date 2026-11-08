@@ -344,7 +344,6 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
         WakelockPlus.disable();
       }
     });
-    final backgroundColor = ref.watch(backgroundColorStateProvider);
     final fullScreenReader = ref.watch(fullScreenReaderStateProvider);
     final doublePageAuto = ref.watch(doublePageAutoStateProvider);
     final orientation = MediaQuery.orientationOf(context);
@@ -938,7 +937,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                     if (isMobile && !isTv)
                       _mobileBottomBar(effectivePageMode)
                     else
-                      _bottomBar(backgroundColor, effectivePageMode),
+                      _bottomBar(effectivePageMode),
                     ReaderAutoScrollButton(
                       isContinuousMode: _readerMode.isContinuous,
                       isUiVisible: _isView || (isMobile && !isTv && _showTts),
@@ -1513,10 +1512,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
     );
   }
 
-  Widget _bottomBar(
-    BackgroundColor backgroundColor,
-    PageMode effectivePageMode,
-  ) {
+  Widget _bottomBar(PageMode effectivePageMode) {
     if (!_isView && Platform.isIOS) {
       return const SizedBox.shrink();
     }

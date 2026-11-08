@@ -1,27 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/reader/mixins/chapter_controller_mixin.dart';
-import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 
-/// Shared reader-specific settings and actions for a [Chapter].
-///
-/// This mixin builds on top of [ChapterControllerMixin] and provides:
-/// - bookmark toggling
-/// - auto-scroll preferences
-///
-/// It is intended for reader-like controllers (manga/novel), not anime.
-///
-/// Classes using this mixin may override [onSettingsMutated] to react to
-/// settings changes (e.g. invalidate caches).
-mixin ChapterReaderSettingsMixin on ChapterControllerMixin {
+/// Novel-only preferences; manga display settings use ComicReaderPreferences.
+mixin NovelReaderPreferencesMixin on ChapterControllerMixin {
   // ---------------------------------------------------------------------------
   // Hooks
   // ---------------------------------------------------------------------------
 
-  /// Called after any settings mutation (e.g. [setAutoScroll], [setReaderMode],
-  /// [setPageMode], [setShowPageNumber], [setPageIndex]).
+  /// Called after a novel preference changes.
   ///
   /// Default is a no-op. Controllers can override this to invalidate caches
   /// or trigger updates when settings change.
@@ -29,33 +17,10 @@ mixin ChapterReaderSettingsMixin on ChapterControllerMixin {
   void onSettingsMutated() {}
 
   // ---------------------------------------------------------------------------
-  // Bookmarks
-  // ---------------------------------------------------------------------------
-
-  /// Toggles the bookmark state of the current [chapter].
-  ///
-  /// Updates the persisted chapter and bumps its [updatedAt] timestamp.
-  /// No-op in incognito mode.
-  void setChapterBookmarked() {
-    if (incognitoMode) return;
-    final isBookmarked = getChapterBookmarked();
-    final chap = chapter;
-    chap.isBookmarked = !isBookmarked;
-    chapterRepository.save(chap);
-  }
-
-  /// Returns whether the current [chapter] is bookmarked.
-  ///
-  /// Reads directly from the database to ensure consistency.
-  bool getChapterBookmarked() {
-    return chapterRepository.getById(chapter.id!).isBookmarked!;
-  }
-
-  // ---------------------------------------------------------------------------
   // Auto-scroll
   // ---------------------------------------------------------------------------
 
-  /// Returns the auto-scroll configuration for the current manga.
+  /// Returns the auto-scroll configuration for the current novel.
   ///
   /// The tuple contains:
   /// - whether auto-scroll is enabled
@@ -76,7 +41,7 @@ mixin ChapterReaderSettingsMixin on ChapterControllerMixin {
     return (false, 10);
   }
 
-  /// Persists auto-scroll settings for the current manga.
+  /// Persists auto-scroll settings for the current novel.
   ///
   /// Merges this manga's entry inside the existing settings write queue.
   /// Calls [onSettingsMutated] afterwards so
@@ -100,7 +65,7 @@ mixin ChapterReaderSettingsMixin on ChapterControllerMixin {
   // Page mode
   // ---------------------------------------------------------------------------
 
-  /// Returns the configured [PageMode] for the current manga / novel.
+  /// Returns the configured [PageMode] for the current novel.
   ///
   /// Falls back to [PageMode.onePage] if no custom setting exists.
   PageMode getPageMode() {
@@ -114,7 +79,7 @@ mixin ChapterReaderSettingsMixin on ChapterControllerMixin {
     return PageMode.onePage;
   }
 
-  /// Persists the [PageMode] for the current manga / novel.
+  /// Persists the [PageMode] for the current novel.
   void setPageMode(PageMode newPageMode) {
     final mangaId = getManga().id;
     settingsRepository.update((settings) {
