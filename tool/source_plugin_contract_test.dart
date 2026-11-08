@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/eval/javascript/service.dart';
+import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/models/source.dart';
 
 void main() {
@@ -64,11 +65,26 @@ ${contract['setup'] ?? ''}
             return {
               'count': filters.length,
               'types': filters.map((filter) => filter.type).toList(),
-              'options': filters.map((filter) => filter.values.length).toList(),
+              'options': filters
+                  .map(
+                    (filter) => switch (filter) {
+                      SelectFilter(:final values) => values.length,
+                      SortFilter(:final values) => values.length,
+                      GroupFilter(:final state) => state.length,
+                      _ => 0,
+                    },
+                  )
+                  .toList(),
               'preferences': service.getSourcePreferences().length,
             };
           case 'search':
-            final result = await service.search(args[0], args[1], []);
+            final result = await service.search(
+              args[0],
+              args[1],
+              contract['nativeFilters'] == true
+                  ? service.getFilterList().filters
+                  : [],
+            );
             return {
               'count': result.list.length,
               'name': result.list.firstOrNull?.name,
@@ -82,6 +98,9 @@ ${contract['setup'] ?? ''}
             return {
               'count': result.chapters?.length,
               'name': result.name,
+              'author': result.author,
+              'status': result.status?.name,
+              'hasCover': result.imageUrl?.isNotEmpty ?? false,
               'uploadDates': result.chapters?.map((chapter) {
                 final ms = int.tryParse(chapter.dateUpload ?? '');
                 return ms == null
