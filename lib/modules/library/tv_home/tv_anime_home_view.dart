@@ -322,8 +322,7 @@ class _TvAnimeHomeViewState extends ConsumerState<TvAnimeHomeView> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Every title sits in a hidden category.\n'
-                  'Hold OK on “All” to unhide one.',
+                  context.l10n.tv_hidden_library_hint,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Theme.of(context).hintColor),
                 ),
@@ -358,8 +357,8 @@ class _TvAnimeHomeViewState extends ConsumerState<TvAnimeHomeView> {
               child: TvMangaGrid(
                 items: matches,
                 emptyLabel: catName == null
-                    ? 'No matching anime'
-                    : 'No matching anime in “$catName”',
+                    ? context.l10n.tv_no_matching_anime
+                    : context.l10n.tv_no_matching_category(catName),
               ),
             );
           } else if (entries.isEmpty) {
@@ -367,8 +366,7 @@ class _TvAnimeHomeViewState extends ConsumerState<TvAnimeHomeView> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'No anime matches the current filters.\n'
-                  'Change them from the button beside search.',
+                  context.l10n.tv_filtered_empty_hint,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Theme.of(context).hintColor),
                 ),
@@ -396,10 +394,12 @@ class _TvAnimeHomeViewState extends ConsumerState<TvAnimeHomeView> {
             }
 
             if (continueList.isNotEmpty) {
-              addRow('Continue Watching', continueList);
+              addRow(context.l10n.continue_watching, continueList);
             }
-            if (newEpisodes.isNotEmpty) addRow('New Episodes', newEpisodes);
-            addRow('Recently Added', recent);
+            if (newEpisodes.isNotEmpty) {
+              addRow(context.l10n.tv_new_episodes, newEpisodes);
+            }
+            addRow(context.l10n.tv_recently_added, recent);
 
             // Genre rows — browse the library by genre (top few, ≥3 titles).
             // The one place a title can appear in more than one row, so they're
@@ -452,9 +452,7 @@ class _TvAnimeHomeViewState extends ConsumerState<TvAnimeHomeView> {
                 node: _scopeGrid,
                 child: TvMangaGrid(
                   items: inCat,
-                  emptyLabel:
-                      'No anime in this category yet.\n'
-                      'Add titles to it from a title’s detail page.',
+                  emptyLabel: context.l10n.tv_empty_category_hint,
                 ),
               );
             } else {

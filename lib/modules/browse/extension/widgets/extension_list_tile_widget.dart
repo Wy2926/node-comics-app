@@ -187,7 +187,7 @@ class _ExtensionListTileWidgetState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                "OBSOLETE",
+                context.l10n.source_obsolete,
                 style: TextStyle(
                   color: context.primaryColor,
                   fontWeight: FontWeight.bold,

@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/constant.dart';
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -475,17 +477,19 @@ class _LeftInfo extends StatelessWidget {
         .where((g) => g.trim().isNotEmpty)
         .toList();
     final metaBits = <String>[
-      manga.status.name.isNotEmpty ? _cap(manga.status.name) : '',
-      '$episodeCount episodes',
+      getMangaStatusName(manga.status, context),
+      context.l10n.n_episodes(episodeCount),
       if ((manga.source ?? '').isNotEmpty) manga.source!,
       if ((manga.author ?? '').isNotEmpty) manga.author!,
     ].where((s) => s.isNotEmpty).join('   ·   ');
     final favorite = manga.favorite ?? false;
     final resumeWord = resume == null
-        ? 'Play'
+        ? context.l10n.player_play
         : (resume!.isRead ?? false)
-        ? 'Replay'
-        : (watched > 0 ? 'Continue' : 'Play');
+        ? context.l10n.tv_replay
+        : (watched > 0
+              ? context.l10n.onboarding_continue
+              : context.l10n.player_play);
     final resumeName = resume?.name?.trim() ?? '';
     final resumeLabel = resumeName.isEmpty
         ? resumeWord
@@ -610,7 +614,9 @@ class _LeftInfo extends StatelessWidget {
                       focusNode: actionFocus[1],
                       accent: accent,
                       icon: favorite ? Icons.favorite : Icons.favorite_border,
-                      label: favorite ? 'In Library' : 'Add to Library',
+                      label: favorite
+                          ? context.l10n.in_library
+                          : context.l10n.add_to_library,
                       onPressed: onToggleLibrary,
                     ),
                     _VActionButton(
@@ -671,8 +677,6 @@ class _LeftInfo extends StatelessWidget {
       ),
     );
   }
-
-  String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
 
 /// A full-width, d-pad-focusable action row. Subtle until focused (the primary
@@ -820,7 +824,7 @@ class _EpisodesPanel extends StatelessWidget {
               : episodes.isEmpty
               ? Center(
                   child: Text(
-                    'No episodes yet',
+                    context.l10n.tv_no_episodes,
                     style: TextStyle(color: Theme.of(context).hintColor),
                   ),
                 )

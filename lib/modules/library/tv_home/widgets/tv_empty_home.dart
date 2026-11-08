@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -29,13 +30,13 @@ class _EmptyHomeState extends State<TvEmptyHome> {
         children: [
           Icon(Icons.video_library_outlined, size: 56, color: accent),
           const SizedBox(height: 16),
-          const Text(
-            'Your anime library is empty',
+          Text(
+            context.l10n.tv_empty_library,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
           Text(
-            'Add anime from Browse to fill your home',
+            context.l10n.tv_empty_library_hint,
             style: TextStyle(color: hint),
           ),
           const SizedBox(height: 22),
@@ -74,7 +75,7 @@ class _EmptyHomeState extends State<TvEmptyHome> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Browse anime',
+                      context.l10n.tv_browse_anime,
                       style: TextStyle(
                         color: _focused ? Colors.white : accent,
                         fontWeight: FontWeight.w600,

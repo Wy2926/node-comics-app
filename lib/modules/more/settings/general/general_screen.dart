@@ -250,7 +250,7 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
               title: Text(context.l10n.cloudflare_bypass_proxy),
               subtitle: Text(
                 CfProxyStore.url.isEmpty
-                    ? 'Optional FlareSolverr / Byparr URL'
+                    ? context.l10n.cloudflare_proxy_optional
                     : CfProxyStore.url,
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
@@ -717,8 +717,8 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
               trimmed.startsWith('http://') ||
               trimmed.startsWith('https://');
           return AlertDialog(
-            title: const Text(
-              'Cloudflare bypass proxy',
+            title: Text(
+              context.l10n.cloudflare_bypass_proxy,
               style: TextStyle(fontSize: 24),
             ),
             content: SizedBox(
@@ -737,9 +737,7 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
                       onChanged: (value) => setLocalState(() => url = value),
                       decoration: outlinedFieldDecoration(
                         hintText: 'http://localhost:8191/v1',
-                        helperText:
-                            'FlareSolverr / Byparr endpoint. Leave empty to '
-                            'disable.',
+                        helperText: context.l10n.cf_proxy_helper,
                         helperMaxLines: 2,
                       ),
                     ),

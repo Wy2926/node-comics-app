@@ -1,6 +1,28 @@
 {
   "@@locale": "tr",
+  "app_update_details_hint": "Sürüm notlarını ve yükleme seçeneklerini görüntüleyin",
+  "app_update_download": "Güncellemeyi indir",
+  "app_update_download_hint": "İndirdikten sonra güncellemeyi yüklemek için talimatları izleyin.",
+  "bookshelf_all": "Hepsi",
+  "bookshelf_search": "Kütüphanede arama yapın",
+  "app_update_allow_install": "Sistem ayarlarında uygulama kurulumuna izin verin, ardından geri dönün ve Yükle'ye dokunun.",
+  "app_update_waiting": "Sistemin indirmeyi sürdürmesi bekleniyor…",
+  "app_update_cancel_download": "İndirmeyi iptal et",
+  "app_update_remove_package": "İndirilen paketi kaldır",
+  "app_name": "NodeLane Comics",
+  "settings_search_empty": "Eşleşen ayar yok",
+  "search_empty_hint": "Başka bir anahtar kelime deneyin veya her şeyi görmek için aramayı temizleyin.",
+  "search_clear": "Aramayı temizle",
+  "app_updates": "Uygulama güncellemeleri",
+  "app_update_auto": "Başlatma sırasında kontrol edin",
+  "app_update_view": "Güncellemeyi görüntüle",
+  "app_update_later": "Daha sonra",
+  "app_update_external_hint": "Tarayıcınızda güncelleme bağlantısını açar",
+  "app_update_failed": "Güncellemeler kontrol edilemiyor. Lütfen tekrar deneyin.",
+  "app_update_opened": "Güncelleme bağlantısı açıldı",
+  "app_diagnostics": "Teşhis ve günlükler",
   "library": "Kütüphane",
+  "updates_search": "Arama güncellemeleri",
   "updates": "Güncellemeler",
   "history": "Geçmiş",
   "browse": "Gözat",
@@ -11,14 +33,17 @@
   "ignore_filters": "Filtreleri yok say",
   "downloaded": "İndirildi",
   "unread": "Okunmamış",
+  "unwatched": "İzlenmemiş",
   "started": "Başladı",
   "bookmarked": "Yer İmleri",
   "sort": "Sırala",
   "alphabetically": "Alfabetik Olarak",
   "last_read": "Son Okunan",
+  "last_watched": "Son İzlenen",
   "last_update_check": "Son Güncelleme Kontrolü",
   "last_entry_delete_warning": "{count, plural, =1{Kitaplığından bu {mediaType}’nin tek {entryType}’ünü siliyorsun.} other{Kitaplığından bu {mediaType}’nin tüm {count} {entryTypePlural}’ini siliyorsun.}}\nBu işlem {mediaType}’nin tamamını da kütüphanenden kaldıracak.\n\nNot: Dosyalar silinmeyecek.",
   "@last_entry_delete_warning": {
+    "description": "Warning when deleting all entries (chapters/episodes) of a manga/anime.",
     "placeholders": {
       "count": {},
       "entryType": {},
@@ -29,16 +54,21 @@
   "chapter": "bölüm",
   "episode": "bölüm",
   "unread_count": "Okunmamış Sayısı",
+  "unwatched_count": "İzlenmemiş Sayısı",
   "latest_chapter": "Son Bölüm",
+  "latest_episode": "Son Bölüm",
   "date_added": "Eklenme Tarihi",
   "display": "Görüntüle",
   "display_mode": "Görüntüleme Modu",
   "compact_grid": "Kompakt Izgara",
+  "compression_level": "Sıkıştırma düzeyi",
+  "compression_info": "Sıkıştırma ne kadar yüksek olursa, yedekleme dosyası o kadar az yer kaplar ancak daha fazla CPU kullanır. Varsayılan: {level}",
   "comfortable_grid": "Rahat Izgara",
   "cover_only_grid": "Sadece Kapak Izgarası",
   "list": "Liste",
   "badges": "Rozetler",
   "downloaded_chapters": "İndirilen Bölümler",
+  "downloaded_episodes": "İndirilen Bölümler",
   "language": "Dil",
   "local_source": "Yerel Kaynak",
   "tabs": "Sekmeler",
@@ -46,11 +76,13 @@
   "show_numbers_of_items": "Öğe Sayılarını Göster",
   "other": "Diğer",
   "show_continue_reading_buttons": "Okumaya Devam Et Düğmelerini Göster",
+  "show_continue_watching_buttons": "İzlemeye Devam Et Düğmelerini Göster",
   "empty_library": "Boş Kütüphane",
   "search": "Ara...",
   "no_recent_updates": "Yakın Zamanda Güncelleme Yok",
   "remove_everything": "Her Şeyi Kaldır",
   "remove_everything_msg": "Emin misiniz? Tüm geçmiş silinecek",
+  "remove_all_update_msg": "Emin misiniz? Tüm güncelleme silinecek",
   "ok": "Tamam",
   "cancel": "İptal",
   "remove": "Kaldır",
@@ -63,528 +95,6 @@
   "latest": "En Yeni",
   "extensions": "Uzantılar",
   "migrate": "Taşı",
-  "incognito_mode": "Gizli Mod",
-  "incognito_mode_description": "Okuma geçmişini duraklatır",
-  "download_queue": "İndirme Kuyruğu",
-  "categories": "Kategoriler",
-  "settings": "Ayarlar",
-  "about": "Hakkında",
-  "help": "Yardım",
-  "no_downloads": "İndirme Yok",
-  "edit_categories": "Kategorileri Düzenle",
-  "edit_categories_description": "Henüz kategoriniz yok. Kütüphanenizi organize etmek için bir tane oluşturmak için artı düğmesine dokunun",
-  "add": "Ekle",
-  "add_category": "Kategori Ekle",
-  "name": "İsim",
-  "category_name_required": "*Gerekli",
-  "add_category_error_exist": "Bu isimde zaten bir kategori var!",
-  "delete_category": "Kategoriyi Sil",
-  "delete_category_msg": "{name} kategorisini silmek istiyor musunuz?",
-  "rename_category": "Kategoriyi Yeniden Adlandır",
-  "general": "Genel",
-  "general_subtitle": "Uygulama dili",
-  "app_language": "Uygulama dili",
-  "appearance": "Görünüm",
-  "appearance_subtitle": "Tema, tarih ve saat formatı",
-  "theme": "Tema",
-  "dark_mode": "Karanlık Mod",
-  "on": "Açık",
-  "off": "Kapalı",
-  "pure_black_dark_mode": "Saf Siyah Karanlık Mod",
-  "timestamp": "Zaman Damgası",
-  "relative_timestamp": "Göreceli Zaman Damgası",
-  "relative_timestamp_short": "Kısa (Bugün, Dün)",
-  "relative_timestamp_long": "Uzun (Kısa+, n gün önce)",
-  "date_format": "Tarih Formatı",
-  "reader": "Okuyucu",
-  "refresh": "Yenile",
-  "reader_subtitle": "Okuma modu, görüntüleme, navigasyon",
-  "default_reading_mode": "Varsayılan Okuma Modu",
-  "reading_mode_vertical": "Dikey",
-  "reading_mode_horizontal": "Yatay",
-  "reading_mode_left_to_right": "Soldan Sağa",
-  "reading_mode_right_to_left": "Sağdan Sola",
-  "reading_mode_vertical_continuous": "Sürekli Dikey",
-  "reading_mode_webtoon": "Webtoon",
-  "double_tap_animation_speed": "Çift Dokunma Animasyon Hızı",
-  "normal": "Normal",
-  "fast": "Hızlı",
-  "no_animation": "Animasyon Yok",
-  "animate_page_transitions": "Sayfa Geçişlerini Animasyonla",
-  "crop_borders": "Kenarları Kırp",
-  "downloads": "İndirilenler",
-  "downloads_subtitle": "İndirme ayarları",
-  "download_location": "İndirme Yeri",
-  "custom_location": "Özel Yer",
-  "only_on_wifi": "Sadece Wifi Üzerinde",
-  "save_as_cbz_archive": "CBZ Arşivi Olarak Kaydet",
-  "browse_subtitle": "Kaynaklar, genel arama",
-  "only_include_pinned_sources": "Sadece Sabitlenmiş Kaynakları Dahil Et",
-  "nsfw_sources": "NSFW (+18) Kaynaklar",
-  "nsfw_sources_show": "Kaynak ve uzantı listelerinde göster",
-  "nsfw_sources_info": "Bu, resmi olmayan veya potansiyel olarak yanlış işaretlenmiş uzantıların uygulama içinde NSFW (18+) içerikleri yüzeye çıkarmasını engellemez",
-  "version": "Versiyon",
-  "check_for_update": "Güncelleme Kontrol Et",
-  "n_days_ago": "{days} gün önce",
-  "today": "Bugün",
-  "yesterday": "Dün",
-  "a_week_ago": "Bir Hafta Önce",
-  "add_to_library": "Kütüphaneye Ekle",
-  "completed": "Tamamlandı",
-  "ongoing": "Devam Ediyor",
-  "on_hiatus": "Ara Verildi",
-  "canceled": "İptal Edildi",
-  "publishing_finished": "Yayımlama Tamamlandı",
-  "unknown": "Bilinmiyor",
-  "set_categories": "Kategorileri Ayarla",
-  "edit": "Düzenle",
-  "in_library": "Kütüphanede",
-  "filter_scanlator_groups": "Tarama Gruplarını Filtrele",
-  "reset": "Sıfırla",
-  "by_source": "Kaynağa Göre",
-  "by_chapter_number": "Bölüm Numarasına Göre",
-  "by_upload_date": "Yükleme Tarihine Göre",
-  "source_title": "Kaynak Başlığı",
-  "chapter_number": "Bölüm Numarası",
-  "share": "Paylaş",
-  "n_chapters": "{n} bölüm",
-  "no_description": "Açıklama Yok",
-  "resume": "Devam Et",
-  "read": "Oku",
-  "watch": "İzle",
-  "popular": "Popüler",
-  "open_in_browser": "Tarayıcıda Aç",
-  "clear_cookie": "Çerezi Temizle",
-  "show_page_number": "Sayfa Numarasını Göster",
-  "from_library": "Kütüphaneden",
-  "downloaded_chapter": "İndirilen Bölüm",
-  "page": "Sayfa {page}",
-  "global_search": "Genel Arama",
-  "color_blend_level": "Renk Karışımı Seviyesi",
-  "current": "Şu Anki {char}",
-  "finished": "Bitmiş {char}",
-  "next": "Sonraki {char}",
-  "previous": "Önceki {char}",
-  "no_more_chapter": "Başka Bölüm Yok",
-  "no_result": "Sonuç Yok",
-  "send": "Gönder",
-  "delete": "Sil",
-  "start_downloading": "İndirmeye Hemen Başla",
-  "retry": "Tekrar Dene",
-  "add_chapters": "Bölümler Ekle",
-  "delete_chapters": "Bölüm Sil?",
-  "default0": "Varsayılan",
-  "total_chapters": "Toplam Bölümler",
-  "import_local_file": "Yerel Dosya İçe Aktar",
-  "import_files": "Dosyalar",
-  "nothing_read_recently": "Son Zamanlarda Okunan Bir Şey Yok",
-  "status": "Durum",
-  "not_started": "Başlamadı",
-  "score": "Puan",
-  "start_date": "Başlangıç Tarihi",
-  "finish_date": "Bitiş Tarihi",
-  "reading": "Okuyor",
-  "on_hold": "Beklemede",
-  "dropped": "Bırakıldı",
-  "plan_to_read": "Okumak İçin Planla",
-  "re_reading": "Tekrar Okuyor",
-  "chapters": "Bölümler",
-  "add_tracker": "Takip Ekle",
-  "one_tracker": "1 Takip",
-  "n_tracker": "{n} Takip",
-  "tracking": "Takip Ediliyor",
-  "description": "Açıklama",
-  "episode_progress": "İlerleme: {n}",
-  "n_episodes": "{n} bölüm",
-  "manga_sources": "Manga Kaynakları",
-  "anime_sources": "Anime Kaynakları",
-  "anime_extensions": "Anime Uzantıları",
-  "manga_extensions": "Manga Uzantıları",
-  "anime": "Anime",
-  "manga": "Manga",
-  "library_no_category_exist": "Henüz hiç kategoriniz yok",
-  "watching": "İzliyor",
-  "plan_to_watch": "İzlemek İçin Planla",
-  "re_watching": "Tekrar İzliyor",
-  "episodes": "Bölümler",
-  "download": "İndir",
-  "new_update_available": "Yeni güncelleme mevcut",
-  "app_version": "Uygulama Sürümü : v{v}",
-  "searching_for_updates": "Güncellemeler aranıyor...",
-  "no_new_updates_available": "Yeni güncelleme yok",
-  "uninstall": "Kaldır",
-  "uninstall_extension": "{ext} uzantısını kaldır?",
-  "langauage": "Dil",
-  "extension_detail": "Uzantı detayı",
-  "scale_type": "Ölçek Türü",
-  "scale_type_fit_screen": "Ekrana Sığdır",
-  "scale_type_stretch": "Esnet",
-  "scale_type_fit_width": "Genişliğe Sığdır",
-  "scale_type_fit_height": "Yüksekliğe Sığdır",
-  "scale_type_original_size": "Orijinal Boyut",
-  "scale_type_smart_fit": "Akıllı Sığdırma",
-  "page_preload_amount": "Sayfa Ön Yükleme Miktarı",
-  "page_preload_amount_subtitle": "Okurken ön yüklenen sayfa miktarı. Daha yüksek değerler, daha yüksek önbellek ve ağ kullanımı pahasına daha pürüzsüz bir okuma deneyimi sağlar.",
-  "image_loading_error": "Bu resim yüklenemedi",
-  "add_episodes": "Bölümler Ekle",
-  "video_quality": "Kalite",
-  "video_subtitle": "Altyazı",
-  "check_for_extension_updates": "Uzantı güncellemelerini kontrol et",
-  "auto_extensions_updates": "Otomatik Uzantı Güncellemeleri",
-  "auto_extensions_updates_subtitle": "Yeni bir sürümü mevcut olduğunda uzantıyı otomatik olarak günceller.",
-  "check_for_app_updates": "Uygulama başlatıldığında güncellemeleri kontrol et",
-  "reading_mode": "Okuma Modu",
-  "custom_filter": "Özel Filtre",
-  "background_color": "Arka Plan Rengi",
-  "white": "Beyaz",
-  "black": "Siyah",
-  "grey": "Gri",
-  "automaic": "Otomatik",
-  "preferred_domain": "Tercih Edilen Alan",
-  "load_more": "Daha Fazla Yükle",
-  "cancel_all_for_this_series": "Bu Seri İçin Tümünü İptal Et",
-  "login": "Giriş Yap",
-  "login_into": "{tracker} Oturum Aç",
-  "email_adress": "E-posta Adresi",
-  "password": "Şifre",
-  "log_out_from": "{tracker} Oturumu Kapat?",
-  "log_out": "Oturumu Kapat",
-  "update_pending": "Güncelleme Bekleniyor",
-  "update_all": "Tümünü Güncelle",
-  "backup_and_restore": "Yedekle ve Geri Yükle",
-  "create_backup": "Yedek Oluştur",
-  "create_backup_dialog_title": "Ne yedeklemek istiyorsun?",
-  "create_backup_subtitle": "Mevcut kütüphaneyi geri yüklemek için kullanılabilir",
-  "restore_backup": "Yedeği Geri Yükle",
-  "restore_backup_subtitle": "Yedek dosyasından kütüphaneyi geri yükle",
-  "automatic_backups": "Otomatik Yedeklemeler",
-  "backup_frequency": "Yedekleme Sıklığı",
-  "backup_location": "Yedekleme Konumu",
-  "backup_options": "Yedekleme Seçenekleri",
-  "backup_options_dialog_title": "Ne yedeklemek istiyorsun?",
-  "backup_options_subtitle": "Yedek dosyasına hangi bilgilerin dahil edileceği",
-  "backup_and_restore_warning_info": "Yedeklerin başka yerlerde de kopyalarını tutmalısınız",
-  "library_entries": "Kütüphane Girişleri",
-  "chapters_and_episode": "Bölümler ve Bölüm",
-  "every_6_hours": "Her 6 Saatte Bir",
-  "every_12_hours": "Her 12 Saatte Bir",
-  "daily": "Günlük",
-  "every_2_days": "Her 2 Günde Bir",
-  "weekly": "Haftalık",
-  "restore_backup_warning_title": "Bir yedeği geri yüklemek mevcut tüm verilerin üzerine yazacaktır.\n\nGeri yüklemeye devam et?",
-  "services": "Hizmetler",
-  "tracking_warning_info": "İzleme hizmetlerinde bölüm ilerlemesini güncellemek için tek yönlü senkronizasyon. Bireysel girişler için izlemeyi, izleme düğmesinden ayarlayın.",
-  "use_page_tap_zones": "Sayfa Dokunma Bölgelerini Kullan",
-  "manage_trackers": "İzleyicileri Yönet",
-  "restore": "Geri Yükle",
-  "backups": "Yedekler",
-  "by_scanlator": "Taramacıya Göre",
-  "by_name": "İsme Göre",
-  "installed": "Yüklendi",
-  "auto_scroll": "Otomatik Kaydırma",
-  "video_audio": "Ses",
-  "player": "Oyuncu",
-  "markEpisodeAsSeenSetting": "Bölümün izlendiği olarak işaretleneceği nokta",
-  "default_skip_intro_length": "Varsayılan Giriş Atla süresi",
-  "default_playback_speed_length": "Varsayılan Oynatma hızı süresi",
-  "updateProgressAfterReading": "Okuduktan Sonra İlerlemeyi Güncelle",
-  "no_sources_installed": "Hiçbir kaynak yüklü değil!",
-  "show_extensions": "uzantıları göster",
-  "default_skip_forward_skip_length": "Varsayılan ileri atlama atlama uzunluğu",
-  "aniskip_requires_info": "AniSkip, çalışması için animenin MAL veya Anilist ile takip edilmesini gerektirir.",
-  "enable_aniskip": "AniSkip'i Etkinleştir",
-  "enable_auto_skip": "Otomatik Atla'yı Etkinleştir",
-  "aniskip_button_timeout": "Düğme Zaman Aşımı",
-  "fullscreen": "Tam ekran",
-  "update_library": "Kütüphaneyi güncelle",
-  "next_chapter": "Sonraki bölüm",
-  "next_5_chapters": "Sonraki 5 bölüm",
-  "next_10_chapters": "Sonraki 10 bölüm",
-  "next_25_chapters": "Sonraki 25 bölüm",
-  "cover_saved": "Kapak kaydedildi",
-  "set_as_cover": "Kapak olarak ayarla",
-  "use_this_as_cover_art": "Bu resmi kapak sanatı olarak kullan?",
-  "save": "Kaydet",
-  "picture_saved": "Resim kaydedildi",
-  "cover_updated": "Kapak güncellendi",
-  "blend_mode_default": "Varsayılan",
-  "blend_mode_multiply": "Çarpma",
-  "blend_mode_screen": "Ekran",
-  "blend_mode_overlay": "Örtüşme",
-  "blend_mode_colorDodge": "RenkDodge",
-  "blend_mode_lighten": "Açık",
-  "blend_mode_colorBurn": "RenkYakma",
-  "blend_mode_darken": "Karart",
-  "blend_mode_difference": "Fark",
-  "blend_mode_saturation": "Doygunluk",
-  "blend_mode_softLight": "YumuşakIşık",
-  "blend_mode_plus": "Artı",
-  "blend_mode_exclusion": "Dışlama",
-  "custom_color_filter": "Özel renk filtresi",
-  "color_filter_blend_mode": "Renk filtresi karışım modu",
-  "enable_all": "Tümünü Etkinleştir",
-  "disable_all": "Tümünü Devre Dışı Bırak",
-  "font": "Yazı Tipi",
-  "color": "Renk",
-  "font_size": "Yazı Boyutu",
-  "text": "Metin",
-  "border": "Kenarlık",
-  "background": "Arka Plan",
-  "no_subtite_warning_message": "Bu videoda altyazı parçaları olmadığı için etkisi yok",
-  "grid_size": "Kılavuz Boyutu",
-  "n_per_row": "{n} satır başına",
-  "horizontal_continious": "Yatay sürekli",
-  "edit_code": "Kodu düzenle",
-  "use_libass": "libass'ı etkinleştir",
-  "use_libass_info": "Yerel arka uç için libass tabanlı altyazı rendere etmeyi kullanın.",
-  "libass_not_disable_message": "Altyazıları özelleştirmek için oyuncu ayarlarında `libass kullan` seçeneğini devre dışı bırakın.",
-  "torrent_stream": "Torrent Akışı",
-  "add_torrent": "Torrent ekle",
-  "enter_torrent_hint_text": "Manyetik veya torrent dosyası URL'sini girin",
-  "torrent_url": "Torrent URL'si",
-  "or": "VEYA",
-  "advanced": "Gelişmiş",
-  "use_native_http_client": "Yerel http istemcisini kullan",
-  "use_native_http_client_info": "otomatik olarak VPN'ler gibi platform özelliklerini destekler, HTTP/3 gibi daha fazla HTTP özelliğini ve özel yönlendirme işlemlerini destekler",
-  "unwatched": "İzlenmemiş",
-  "last_watched": "Son İzlenen",
-  "unwatched_count": "İzlenmemiş Sayısı",
-  "latest_episode": "Son Bölüm",
-  "downloaded_episodes": "İndirilen Bölümler",
-  "show_continue_watching_buttons": "İzlemeye Devam Et Düğmelerini Göster",
-  "by_episode_number": "Bölüm Sayısına Göre",
-  "episode_number": "Bölüm Sayısı",
-  "total_episodes": "Toplam Bölümler",
-  "next_episode": "Sonraki Bölüm",
-  "next_5_episodes": "Sonraki 5 Bölüm",
-  "next_10_episodes": "Sonraki 10 Bölüm",
-  "next_25_episodes": "Sonraki 25 Bölüm",
-  "remove_all_update_msg": "Emin misiniz? Tüm güncelleme silinecek",
-  "syncing": "Senkrone etme",
-  "sync_logged": "Giriş başarılı",
-  "syncing_subtitle": "Okuma ilerlemenizi cihazlar arasında senkronize etmek için sunucu adresinizi girin ve tarayıcı üzerinden oturum açın.",
-  "sync_service": "Kendi sunucunuzda senkronizasyon",
-  "sync_server": "Senkronizasyon Sunucu Adresi",
-  "sync_starting": "Senkronizasyonu başlatıyorum.",
-  "sync_finished": "Senkronizasyon tamamlandı",
-  "sync_failed": "Senkronizasyon başarısız",
-  "sync_button_sync": "İlerlemeyi senkronize et",
-  "dialog_confirm": "Onayla",
-  "full_screen_player": "Tam ekran kullan",
-  "full_screen_player_info": "Bir video oynatıldığında otomatik olarak tam ekran kullan.",
-  "novel_sources": "Hikaye Kaynakları",
-  "novel_extensions": "Hikaye Uzantıları",
-  "novel": "Hikaye",
-  "skip_opening": "Açılışı atla",
-  "skip_ending": "Sonu atla",
-  "n_hour_ago": "{hour} saat önce",
-  "n_hours_ago": "{hours} saat önce",
-  "n_minute_ago": "{minute} dakika önce",
-  "n_minutes_ago": "{minutes} dakika önce",
-  "n_day_ago": "{day} gün önce",
-  "now": "şimdi",
-  "library_last_updated": "Kütüphane son güncelleme: {lastUpdated}",
-  "data_and_storage": "Veri ve depolama",
-  "download_location_info": "Bölüm indirmeleri için kullanılır",
-  "storage": "Depolama",
-  "clear_chapter_and_episode_cache": "Bölüm ve bölüm önbelleğini temizle",
-  "cache_cleared": "Önbellek temizlendi",
-  "clear_chapter_or_episode_cache_on_app_launch": "Uygulama açıldığında bölüm/bölüm önbelleğini temizle",
-  "app_settings": "Uygulama ayarları",
-  "sources_settings": "Kaynak ayarları",
-  "include_sensitive_settings": "Hassas ayarları dahil et (ör. izleyici giriş token'ları)",
-  "create": "Oluştur",
-  "migrate_confirm": "Başka bir kaynağa geç",
-  "clean_database": "Veritabanını temizle",
-  "cleaned_database": "Veritabanı temizlendi! {x} giriş kaldırıldı",
-  "clean_database_desc": "Bu, kütüphaneye eklenmeyen tüm öğeleri kaldıracaktır!",
-  "statistics": "İstatistikler",
-  "default_subtitle_language": "Varsayılan altyazı dili",
-  "follow_system_theme": "Sistem temasını takip et",
-  "sync_on": "Senkronizasyonu etkinleştir",
-  "sync_auto": "Otomatik senkronizasyon",
-  "sync_auto_warning": "Otomatik senkronizasyon şu anda deneysel bir özelliktir!",
-  "sync_auto_off": "Kapalı",
-  "sync_auto_5_minutes": "Her 5 dakikada bir",
-  "sync_auto_10_minutes": "Her 10 dakikada bir",
-  "sync_auto_30_minutes": "Her 30 dakikada bir",
-  "sync_auto_1_hour": "Her 1 saatte bir",
-  "sync_auto_3_hours": "Her 3 saatte bir",
-  "sync_auto_6_hours": "Her 6 saatte bir",
-  "sync_auto_12_hours": "Her 12 saatte bir",
-  "server_error": "Sunucu hatası!",
-  "reorder_navigation": "Gezinmeyi özelleştir",
-  "reorder_navigation_description": "Gezinmeyi ihtiyaçlarınıza göre yeniden düzenleyin ve ayarlayın.",
-  "include_subtitles": "Altyazıları dahil et",
-  "downloads_are_limited_to_wifi": "İndirmeler yalnızca Wi-Fi ile sınırlıdır",
-  "manga_extensions_repo": "Manga uzantıları deposu",
-  "anime_extensions_repo": "Anime uzantıları deposu",
-  "novel_extensions_repo": "Roman uzantıları deposu",
-  "undefined": "Tanımsız",
-  "empty_extensions_repo": "Burada hiçbir depo URL'si yok. Bir tane eklemek için artı düğmesine tıklayın!",
-  "add_extensions_repo": "Depo URL'si ekle",
-  "remove_extensions_repo": "Depo URL'sini kaldır",
-  "manage_manga_repo_urls": "Manga depo URL'lerini yönet",
-  "manage_anime_repo_urls": "Anime depo URL'lerini yönet",
-  "manage_novel_repo_urls": "Roman depo URL'lerini yönet",
-  "url_cannot_be_empty": "URL boş olamaz",
-  "url_must_end_with_dot_json_or_dot_pb": "URL .json / .pb ile bitmelidir",
-  "repo_url": "Depo URL'si",
-  "invalid_url_format": "Geçersiz URL formatı",
-  "clear_all_sources": "Tüm kaynakları temizle",
-  "clear_all_sources_msg": "Bu, uygulamadaki tüm kaynakları tamamen temizleyecektir. Devam etmek istediğinizden emin misiniz?",
-  "sources_cleared": "Kaynaklar temizlendi!",
-  "repo_added": "Kaynak deposu eklendi!",
-  "add_repo": "Depo ekle?",
-  "genre_search_library": "Kütüphanede tür ara",
-  "genre_search_source": "Kaynağı keşfet",
-  "source_not_added": "Kaynak yüklenmedi!",
-  "load_own_subtitles": "Kendi altyazılarınızı yükleyin...",
-  "unsupported_repo": "Bu kaynak deposu eklenemedi. Depo adresini kontrol edin veya deponun bakımını yapan kişiyle iletişime geçin.",
-  "downloaded_only": "Sadece indirilmiş",
-  "downloaded_only_description": "Kütüphanenizde yalnızca indirilmiş girişleri göster",
-  "concurrent_downloads": "Eş zamanlı indirmeler",
-  "logs_on": "Günlük kaydını etkinleştir",
-  "share_app_logs": "Uygulama günlüklerini paylaş",
-  "no_app_logs": "log.txt dosyası yok!",
-  "failed": "Başarısız!",
-  "next_week": "Gelecek hafta",
-  "sync_button_upload": "Sadece yükle",
-  "sync_button_upload_info": "Bu işlem uzak verileri yerel verilerle tamamen değiştirecektir!",
-  "sync_button_download": "Sadece indir",
-  "sync_button_download_info": "Bu işlem yerel verileri uzak verilerle tamamen değiştirecektir!",
-  "extension_settings": "Uzantı ayarları",
-  "video_audio_info": "Tercih edilen diller, perde düzeltmesi, ses kanalları",
-  "all_chapters": "Tüm bölümler",
-  "all_episodes": "Tüm bölümler",
-  "advanced_info": "mpv yapılandırması",
-  "recommendations": "Öneriler",
-  "recommendations_similar": "benzer",
-  "recommendations_weights": "Öneri ağırlıkları",
-  "recommendations_weights_genre": "Tür benzerliği",
-  "recommendations_weights_setting": "Ortam benzerliği",
-  "recommendations_weights_synopsis": "Hikaye benzerliği",
-  "recommendations_weights_theme": "Tema benzerliği",
-  "custom_dns": "Özel DNS (sistem DNS'ini kullanmak için boş bırakın)",
-  "android_proxy_server": "Android Proxy Sunucusu (M-Extension-Server)",
-  "get_m_extension_server": "M-Extension-Server'i edinin",
-  "search_subtitles": "Çevrimiçi altyazı ara...",
-  "extension_notes": "Notlar: {notes}",
-  "you_have_finished_reading": "Okumayı bitirdiniz",
-  "hwdec": "Donanım kod çözücü",
-  "enable_hardware_accel": "Donanım hızlandırma",
-  "enable_hardware_accel_info": "Hata veya çökmelerle karşılaşırsanız açın/kapatın",
-  "track_library_navigate": "Mevcut yerel girişe git",
-  "track_library_add": "Yerel kütüphaneye ekle",
-  "track_library_add_confirm": "İzlenen öğeyi yerel kütüphaneye ekle",
-  "track_library_not_logged": "Bu özelliği kullanmak için ilgili izleyicide oturum açın!",
-  "track_library_switch": "Başka bir izleyiciye geç",
-  "go_back": "Geri dön",
-  "merge_library_nav_mobile": "Mobilde kütüphane gezinmesini birleştir",
-  "enable_discord_rpc": "Discord RPC'yi etkinleştir",
-  "hide_discord_rpc_incognito": "Gizli modda Discord RPC'yi gizle",
-  "rpc_show_reading_watching_progress": "Discord'da mevcut bölümü göster (yeniden başlatma gerektirir)",
-  "rpc_show_title": "Discord'da mevcut başlığı göster",
-  "rpc_show_cover_image": "Discord'da mevcut kapak resmini göster",
-  "sync_enable_histories": "Geçmiş verilerini senkronize et",
-  "sync_enable_updates": "Güncelleme verilerini senkronize et",
-  "sync_enable_settings": "Ayarları senkronize et",
-  "enable_mpv": "mpv gölgelendiricilerini / betiklerini etkinleştir",
-  "mpv_info": "mpv/scripts/ altında .js betiklerini destekler",
-  "mpv_redownload": "mpv yapılandırma dosyalarını yeniden indir",
-  "mpv_redownload_info": "Eski yapılandırma dosyalarını yenileriyle değiştirir!",
-  "mpv_download": "MPV yapılandırma dosyaları gerekli!\nŞimdi indir?",
-  "custom_buttons": "Özel düğmeler",
-  "custom_buttons_info": "Özel düğmelerle lua kodu çalıştır",
-  "custom_buttons_edit": "Özel düğmeleri düzenle",
-  "custom_buttons_add": "Özel düğme ekle",
-  "custom_buttons_added": "Özel düğme eklendi!",
-  "custom_buttons_delete": "Özel düğmeyi sil",
-  "custom_buttons_text": "Düğme metni",
-  "custom_buttons_text_req": "Düğme metni gerekli",
-  "custom_buttons_js_code": "lua kodu",
-  "custom_buttons_js_code_req": "lua kodu gerekli",
-  "custom_buttons_js_code_long": "lua kodu (uzun basışta)",
-  "custom_buttons_startup": "lua kodu (başlangıçta)",
-  "n_days": "{n} gün",
-  "decoder": "Kod çözücü",
-  "decoder_info": "Donanım kod çözme, piksel formatı, debanding",
-  "enable_gpu_next": "gpu-next'i etkinleştir (sadece Android)",
-  "enable_gpu_next_info": "Yeni video işleme motoru",
-  "debanding": "Debanding",
-  "use_yuv420p": "YUV420P piksel formatını kullan",
-  "use_yuv420p_info": "Bazı video codec'lerinde siyah ekranları düzeltebilir, kalite pahasına performansı da artırabilir",
-  "audio_preferred_languages": "Tercih edilen diller",
-  "audio_preferred_languages_info": "Birden fazla ses akışına sahip bir videoda varsayılan olarak seçilecek ses dil(ler)i, 2/3 harfli dil kodları (örn: tr, en, ja). Birden fazla değer virgülle ayrılabilir.",
-  "enable_audio_pitch_correction": "Ses perdesi düzeltmeyi etkinleştir",
-  "enable_audio_pitch_correction_info": "Daha yüksek hızlarda sesin tiz, daha düşük hızlarda pes olmasını önler",
-  "audio_channels": "Ses kanalları",
-  "volume_boost_cap": "Ses yükseltme sınırı",
-  "internal_player": "Dahili oynatıcı",
-  "internal_player_info": "İlerleme, kontroller, yönelim",
-  "subtitle_delay_text": "Altyazı gecikmesi",
-  "subtitle_delay": "Gecikme (ms)",
-  "subtitle_speed": "Hız",
-  "calendar": "Takvim",
-  "calendar_no_data": "Henüz veri yok.",
-  "calendar_info": "Takvim, bir sonraki bölüm yüklemesini yalnızca eski yüklemelere göre tahmin edebilir. Bazı veriler %100 doğru olmayabilir!",
-  "in_n_day": "{days} gün içinde",
-  "in_n_days": "{days} gün içinde",
-  "clear_library": "Kütüphaneyi temizle",
-  "clear_library_desc": "Tüm manga, anime ve/veya roman girişlerini temizlemeyi seçin",
-  "clear_library_input": "İlgili tüm girişleri kaldırmak için 'manga', 'anime' ve/veya 'novel' yazın (virgülle ayrılmış)",
-  "watch_order": "İzleme sırası",
-  "sequels": "Devam filmleri",
-  "recommendations_similarity": "Benzerlik:",
-  "local_folder_structure": "Yerel klasör yapısı",
-  "local_folder": "Yerel klasörler",
-  "add_local_folder": "Yerel klasör ekle",
-  "rescan_local_folder": "Tüm yerel klasörleri şimdi yeniden tara",
-  "export_metadata": "Meta verileri dışa aktar",
-  "exported": "Dışa aktarıldı",
-  "text_size": "Metin Boyutu:",
-  "text_align": "Metin Hizalama",
-  "line_height": "Satır Yüksekliği",
-  "show_scroll_percentage": "Kaydırma Yüzdesini Göster",
-  "remove_extra_paragraph_spacing": "Ekstra Paragraf Aralığını Kaldır",
-  "select_label_color": "{label} Rengini Seç",
-  "default_user_agent": "Varsayılan Kullanıcı Aracısı",
-  "forceLandscapeMode": "Yatay Modu Zorla",
-  "forceLandscapeModeSubtitle": "Oynatıcıyı yatay yönelim kullanmaya zorla.",
-  "dns_over_https": "DNS-over-HTTPS (DoH)",
-  "dns_provider": "DNS Sağlayıcısı",
-  "tracked": "İzlendi",
-  "auth_unlock_msg": "NodeLane Comics'yi kilitlemek için kimliğinizi doğrulayın",
-  "app_locked": "NodeLane Comics kilitli",
-  "auth_to_continue": "Devam etmek için kimliğinizi doğrulayın",
-  "authenticating": "Kimlik doğrulanıyor...",
-  "lock": "Kilitle",
-  "unlock": "Kilit Aç",
-  "security": "Güvenlik",
-  "auth_to_change_security_setting": "Güvenlik ayarlarını değiştirmek için kimliğinizi doğrulayın",
-  "app_lock": "Uygulama Kilidi",
-  "require_biometric_or_device_credential": "Uygulamayı açmak için biyometrik kimlik doğrulamak veya cihaz kimlik bilgileri gerekir",
-  "biometric_or_device_credential_not_available": "Biyometrik kimlik doğrulama bu cihazda kullanılamaz",
-  "app_lock_description": "Uygulama kilidi etkinleştirildiğinde, uygulamayı her açtığınızda veya arka plandan döndüğünüzde kimlik doğrulaması yapmanız istenir.",
-  "keep_screen_on": "Ekranı Açık Tut",
-  "webtoon_side_padding": "Webtoon Yan Dolgusu",
-  "show_page_gaps": "Sayfa Boşluklarını Göster",
-  "invert_colors": "Renkleri Ters Çevir",
-  "grayscale": "Gri Tonlama",
-  "brightness": "Parlaklık",
-  "contrast": "Kontrast",
-  "saturation": "Doyum",
-  "navigation_layout": "Navigasyon Düzeni",
-  "nav_layout_default": "Varsayılan",
-  "nav_layout_l_shaped": "L Şekil",
-  "nav_layout_kindle": "Kindle",
-  "nav_layout_edge": "Kenar",
-  "nav_layout_right_and_left": "Sağ ve Sol",
-  "nav_layout_disabled": "Devre Dışı",
-  "color_enhancements": "Renk İyileştirmeleri",
-  "split_epub_chapters": "Bölümlere ayır",
-  "split_epub_chapters_description": "Her EPUB bölümünü ayrı bir giriş olarak içe aktar",
-  "compression_info": "Sıkıştırma ne kadar yüksek olursa, yedekleme dosyası o kadar az yer kaplar ancak daha fazla CPU kullanır. Varsayılan: {level}",
   "mass_migration_title": "Toplu taşıma",
   "mass_migration_preview_items": "Öğeleri önizle",
   "mass_migration_destination_source": "Hedef kaynak",
@@ -767,146 +277,131 @@
   "mass_migration_unknown_match": "Bilinmeyen eşleşme",
   "mass_migration_unknown_source": "Bilinmeyen kaynak",
   "mass_migration_unknown_chapter": "Bilinmeyen bölüm",
-  "delete_download_after_reading": "Okuduktan sonra indirmeyi sil",
-  "total": "Toplam",
-  "mean_per_title": "Başlık başına ortalama",
-  "completion_rate": "Tamamlanma oranı",
-  "watching_time": "İzleme süresi",
-  "reading_time": "Okuma süresi",
-  "average_chapters_per_title": "Başlık başına ortalama bölüm",
-  "read_percentage": "Okuma yüzdesi",
-  "entries": "Girdiler",
-  "extension_server_intro_with_jre": "Mihon eklentilerini kullanmadan önce proxy sunucu paketini indirin. Paket, JRE ve eklenti sunucusu JAR dosyasını içerir.",
-  "extension_server_intro_ios": "Mihon eklentilerini kullanmadan önce proxy sunucusu JAR dosyasını indirin. iOS için sadece eklenti sunucusu JAR dosyası gereklidir.",
-  "checking_files": "Dosyalar kontrol ediliyor",
-  "files_installed": "Dosyalar yüklendi",
-  "files_missing": "Dosyalar eksik",
-  "update_files": "Dosyaları güncelle",
-  "up_to_date": "Güncel",
-  "choose_location": "Konum seç",
-  "import_existing_jar": "Mevcut JAR dosyasını içe aktar",
-  "detect_files_in_selected_folder": "Seçilen klasördeki dosyaları algıla",
-  "preparing_download": "İndirme hazırlanıyor...",
-  "app_install_location": "Uygulama yükleme konumu",
-  "install_location": "Yükleme konumu",
-  "jre_executable": "JRE yürütülebilir dosyası",
-  "extension_server_jar": "Eklenti sunucusu JAR'ı",
-  "installed_version": "Yüklü sürüm",
-  "latest_version": "Son sürüm",
-  "m_extension_server_description": "Ayrı bir Android cihaz proxy'sine ihtiyacınız olduğunda M-Extension-Server kullanın. Proxy adresini buradan ayarlayın ve APK'yı GitHub'dan indirin.",
-  "set_proxy_address": "Proxy adresini ayarla",
-  "no_extension_server_bundle_available_for_this_platform": "Bu platform için sunucu paketi mevcut değil.",
-  "failed_to_download_bundle": "Paket indirme başarısız oldu ({statusCode}).",
-  "@failed_to_download_bundle": {
-    "placeholders": {
-      "statusCode": {}
-    }
-  },
-  "downloaded_bundle_missing_expected_files": "İndirilen paket beklenen dosyaları içermiyor.",
-  "extension_server_files_ready": "Eklenti sunucusu dosyaları hazır.",
-  "ios_extension_server_import_hint": "iOS'ta sunucu uygulama sandbox'ı içine yüklenir. İndirilen bir dosyayı getirmek için \"Mevcut JAR dosyasını içe aktar\" seçeneğini kullanın.",
-  "select_extension_server_folder": "Eklenti sunucusu klasörünü seçin",
-  "selected_folder_does_not_exist": "Seçilen klasör mevcut değil.",
-  "no_extension_server_files_found_in_selected_folder": "Seçilen klasörde eklenti sunucusu dosyası bulunamadı.",
-  "extension_server_files_linked": "Eklenti sunucusu dosyaları bağlandı.",
-  "selected_file_could_not_be_accessed": "Seçilen dosyaya erişilemedi.",
-  "extension_server_jar_imported": "Eklenti sunucusu JAR'ı içe aktarıldı.",
-  "could_not_launch_apk_bridge_page": "M-Extension-Server sayfası başlatılamadı.",
-  "not_configured": "Yapılandırılmadı",
-  "webview": "Webview",
-  "compression_level": "Sıkıştırma düzeyi",
-  "android_proxy_server_mihon": "Android Proxy Sunucusu (Mihon)",
-  "android_proxy_server_mihon_description": "Mihon eklentilerini kullanmak için gereken proxy sunucusunu indirin ve yapılandırın.",
-  "mihon_proxy_server": "Mihon proxy sunucusu",
-  "no_newer_proxy_server_release_available": "Daha yeni bir proxy sunucusu sürümü mevcut değil.",
-  "could_not_check_proxy_server_updates": "Proxy sunucusu güncellemeleri kontrol edilemedi.",
-  "select_extension_server_jar": "Eklenti sunucusu JAR dosyasını seçin",
-  "proxy_server_ip_hint": "Sunucu IP'si (örn. 10.0.0.5 veya https://example.com)",
-  "webtoon_disable_zoom_out": "Webtoon uzaklaştırmayı devre dışı bırak",
-  "webtoon_double_tap_zoom_enabled": "Webtoon yakınlaştırma için çift dokun",
-  "navigate_to_pan": "Kaydırmak için gezin",
-  "navigate_to_pan_subtitle": "Sayfa çevirmeden önce yakınlaştırılmış resmi hareket ettir",
-  "split_wide_pages": "Geniş sayfaları böl",
-  "dual_page_invert": "Bölünen yarım sayfaları ters çevir",
-  "dual_page_rotate_to_fit": "Sığdırmak için döndür",
-  "dual_page_rotate_to_fit_invert": "Döndürme yönünü tersine çevir",
-  "landscape_zoom": "Otomatik yatay yakınlaştırma",
-  "zoom_start_position": "Yakınlaştırma başlangıç konumu",
-  "zoom_start_left": "Sol",
-  "zoom_start_right": "Sağ",
-  "zoom_start_center": "Orta",
-  "automatic_background": "Otomatik arka plan",
-  "tapping_inversion": "Dokunma tersine çevirme",
-  "tapping_inversion_none": "Hiçbiri",
-  "tapping_inversion_horizontal": "Yatay",
-  "tapping_inversion_vertical": "Dikey",
-  "tapping_inversion_both": "Her ikisi",
-  "flash_on_page_change": "Sayfa geçişinde flaş",
-  "flash_on_page_change_subtitle": "AMOLED iz önleme yardımcısı",
-  "flash_color": "Flaş Rengi",
-  "flash_color_black": "Siyah",
-  "flash_color_white": "Beyaz",
-  "flash_color_white_black": "Beyaz & Siyah",
-  "flash_interval_label": "Flaş Aralığı",
-  "flash_interval_value": "{n} sayfa",
-  "flash_interval": "Flaş Aralığı: {n} sayfa",
-  "@flash_interval": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "flash_duration_label": "Flaş Süresi",
-  "flash_duration_value": "{n} ms",
-  "flash_duration": "Flaş Süresi: {n} ms",
-  "@flash_duration": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "show_navigation_overlay_on_start": "Başlangıçta gezinme panelini göster",
-  "reader_hide_threshold": "Okuyucu Gizleme Eşiği",
-  "reader_hide_threshold_highest": "En yüksek (5 px)",
-  "reader_hide_threshold_high": "Yüksek (13 px)",
-  "reader_hide_threshold_low": "Düşük (31 px)",
-  "reader_hide_threshold_lowest": "En düşük (47 px)",
-  "error_no_pages_available": "Hata: kullanılabilir sayfa yok",
-  "mark_duplicate_chapters_read": "Yinelenen bölüm numaralarını okunmuş olarak işaretleyin",
-  "tts": "Metinden Sese",
-  "tts_speed": "Hız",
-  "tts_pitch": "Perde",
-  "tts_language": "Dil",
-  "tts_voice": "Ses",
-  "tts_stop": "Dur",
-  "tts_play": "Oynat",
-  "tts_pause": "Duraklat",
-  "tts_previous": "Önceki paragraf",
-  "tts_next": "Sonraki paragraf",
-  "tts_paragraph_progress": "Paragraf {current} / {total}",
-  "tts_settings": "TTS Ayarları",
-  "tts_default": "Varsayılan",
-  "app_ui_scale": "Arayüz ölçeği",
-  "app_ui_scale_subtitle": "Arayüzü ekranınıza ve görüntüleme mesafenize uyacak şekilde büyütün veya küçültün.",
-  "allow_concurrent_downloads": "Eş zamanlı indirmelere izin ver",
-  "allow_concurrent_downloads_subtitle": "Farklı kaynaklardan aynı anda indirin. Tek bir kaynak yine de bir seferde bir bölümü indirir, böylece yükü aşmaz. Her yerde tek tek indirmek için kapatın.",
-  "download_delay": "İndirme gecikmesi",
-  "download_delay_subtitle": "Kapalı. Kaynaklar için daha yumuşak olmak için bölümler arasında rastgele titreme ile bir bekleme ekleyin.",
-  "save_search": "Aramayı kaydet",
-  "saved_searches": "Kaydedilen aramalar",
-  "enter_search_to_save_first": "Kaydedilecek bir arama girin",
-  "no_saved_searches": "Bu kaynak için kaydedilen arama henüz yok.\nBir arama yapın, ardından \"Aramayı kaydet\" i seçin.",
-  "source": "Kaynak",
+  "migrate_confirm": "Başka bir kaynağa geç",
+  "clean_database": "Veritabanını temizle",
+  "cleaned_database": "Veritabanı temizlendi! {x} giriş kaldırıldı",
+  "clean_database_desc": "Bu, kütüphaneye eklenmeyen tüm öğeleri kaldıracaktır!",
+  "incognito_mode": "Gizli Mod",
+  "incognito_mode_description": "Okuma geçmişini duraklatır",
+  "downloaded_only": "Sadece indirilmiş",
+  "downloaded_only_description": "Kütüphanenizde yalnızca indirilmiş girişleri göster",
+  "download_queue": "İndirme Kuyruğu",
+  "categories": "Kategoriler",
+  "statistics": "İstatistikler",
+  "settings": "Ayarlar",
+  "about": "Hakkında",
+  "help": "Yardım",
+  "no_downloads": "İndirme Yok",
+  "edit_categories": "Kategorileri Düzenle",
+  "edit_categories_description": "Henüz kategoriniz yok. Kütüphanenizi organize etmek için bir tane oluşturmak için artı düğmesine dokunun",
+  "add": "Ekle",
+  "add_category": "Kategori Ekle",
+  "name": "İsim",
   "label_value": "{label}: {value}",
+  "@label_value": {
+    "placeholders": {
+      "label": {},
+      "value": {}
+    }
+  },
   "url": "URL",
+  "category_name_required": "*Gerekli",
+  "add_category_error_exist": "Bu isimde zaten bir kategori var!",
+  "delete_category": "Kategoriyi Sil",
+  "delete_category_msg": "{name} kategorisini silmek istiyor musunuz?",
+  "rename_category": "Kategoriyi Yeniden Adlandır",
+  "general": "Genel",
+  "general_subtitle": "Uygulama dili",
+  "app_language": "Uygulama dili",
+  "default_subtitle_language": "Varsayılan altyazı dili",
+  "appearance": "Görünüm",
+  "appearance_subtitle": "Tema, tarih ve saat formatı",
+  "theme": "Tema",
+  "dark_mode": "Karanlık Mod",
+  "follow_system_theme": "Sistem temasını takip et",
+  "on": "Açık",
+  "off": "Kapalı",
+  "pure_black_dark_mode": "Saf Siyah Karanlık Mod",
+  "timestamp": "Zaman Damgası",
+  "relative_timestamp": "Göreceli Zaman Damgası",
+  "relative_timestamp_short": "Kısa (Bugün, Dün)",
+  "relative_timestamp_long": "Uzun (Kısa+, n gün önce)",
+  "date_format": "Tarih Formatı",
+  "reader": "Okuyucu",
+  "refresh": "Yenile",
+  "reader_subtitle": "Okuma modu, görüntüleme, navigasyon",
+  "default_reading_mode": "Varsayılan Okuma Modu",
+  "reading_mode_vertical": "Dikey",
+  "reading_mode_horizontal": "Yatay",
+  "reading_mode_left_to_right": "Soldan Sağa",
+  "reading_mode_right_to_left": "Sağdan Sola",
+  "reading_mode_vertical_continuous": "Sürekli Dikey",
+  "reading_mode_webtoon": "Webtoon",
+  "double_tap_animation_speed": "Çift Dokunma Animasyon Hızı",
+  "normal": "Normal",
+  "fast": "Hızlı",
+  "no_animation": "Animasyon Yok",
+  "animate_page_transitions": "Sayfa Geçişlerini Animasyonla",
+  "crop_borders": "Kenarları Kırp",
+  "downloads": "İndirilenler",
+  "downloads_subtitle": "İndirme ayarları",
+  "download_location": "İndirme Yeri",
+  "custom_location": "Özel Yer",
+  "only_on_wifi": "Sadece Wifi Üzerinde",
+  "save_as_cbz_archive": "CBZ Arşivi Olarak Kaydet",
+  "delete_download_after_reading": "Okuduktan sonra indirmeyi sil",
+  "concurrent_downloads": "Eş zamanlı indirmeler",
+  "browse_subtitle": "Kaynaklar, genel arama",
+  "only_include_pinned_sources": "Sadece Sabitlenmiş Kaynakları Dahil Et",
+  "nsfw_sources": "NSFW (+18) Kaynaklar",
+  "nsfw_sources_show": "Kaynak ve uzantı listelerinde göster",
+  "nsfw_sources_info": "Bu, resmi olmayan veya potansiyel olarak yanlış işaretlenmiş uzantıların uygulama içinde NSFW (18+) içerikleri yüzeye çıkarmasını engellemez",
+  "version": "Versiyon",
   "beta_version": "Beta ({version})",
+  "@beta_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "check_for_update": "Güncelleme Kontrol Et",
+  "logs_on": "Günlük kaydını etkinleştir",
+  "share_app_logs": "Uygulama günlüklerini paylaş",
+  "no_app_logs": "log.txt dosyası yok!",
+  "failed": "Başarısız!",
+  "n_days_ago": "{days} gün önce",
+  "today": "Bugün",
+  "yesterday": "Dün",
+  "a_week_ago": "Bir Hafta Önce",
+  "next_week": "Gelecek hafta",
+  "add_to_library": "Kütüphaneye Ekle",
+  "completed": "Tamamlandı",
+  "ongoing": "Devam Ediyor",
+  "on_hiatus": "Ara Verildi",
+  "canceled": "İptal Edildi",
+  "publishing_finished": "Yayımlama Tamamlandı",
+  "unknown": "Bilinmiyor",
   "empty_placeholder": "BOŞ",
   "error": "Hata",
   "error_with_message": "Hata: {error}",
+  "@error_with_message": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "no_pages_available": "Hata: kullanılabilir sayfa yok",
+  "set_categories": "Kategorileri Ayarla",
+  "edit": "Düzenle",
+  "in_library": "Kütüphanede",
+  "filter_scanlator_groups": "Tarama Gruplarını Filtrele",
+  "reset": "Sıfırla",
+  "by_source": "Kaynağa Göre",
+  "by_chapter_number": "Bölüm Numarasına Göre",
+  "by_episode_number": "Bölüm Sayısına Göre",
+  "by_upload_date": "Yükleme Tarihine Göre",
+  "source_title": "Kaynak Başlığı",
   "create_extension": "Eklenti Oluştur",
+  "developer_mode": "Geliştirici modu",
+  "developer_mode_subtitle": "Uzantı geliştirici araçlarını göster (uzantı oluştur, kodu düzenle)",
   "choose_extension_language": "Eklenti dilini seçin",
   "lang": "Dil",
   "base_url": "Temel URL",
@@ -932,16 +427,187 @@
   "error_when_creating_source": "Kaynak oluşturulurken hata oluştu",
   "cookies_deleted": "Çerezler silindi!",
   "delete_all_cookies": "Tüm çerezleri sil",
+  "chapter_number": "Bölüm Numarası",
+  "episode_number": "Bölüm Sayısı",
+  "share": "Paylaş",
+  "n_chapters": "{n} bölüm",
   "missing_chapters": "{count} eksik bölüm",
+  "no_description": "Açıklama Yok",
+  "resume": "Devam Et",
+  "read": "Oku",
+  "watch": "İzle",
+  "popular": "Popüler",
+  "open_in_browser": "Tarayıcıda Aç",
+  "clear_cookie": "Çerezi Temizle",
+  "show_page_number": "Sayfa Numarasını Göster",
+  "from_library": "Kütüphaneden",
+  "downloaded_chapter": "İndirilen Bölüm",
+  "page": "Sayfa {page}",
+  "global_search": "Genel Arama",
+  "color_blend_level": "Renk Karışımı Seviyesi",
+  "current": "Şu Anki {char}",
+  "finished": "Bitmiş {char}",
+  "next": "Sonraki {char}",
+  "previous": "Önceki {char}",
+  "no_more_chapter": "Başka Bölüm Yok",
+  "no_result": "Sonuç Yok",
+  "send": "Gönder",
+  "delete": "Sil",
+  "start_downloading": "İndirmeye Hemen Başla",
+  "retry": "Tekrar Dene",
+  "add_chapters": "Bölümler Ekle",
+  "delete_chapters": "Bölüm Sil?",
+  "default0": "Varsayılan",
+  "total_chapters": "Toplam Bölümler",
+  "total_episodes": "Toplam Bölümler",
+  "import_local_file": "Yerel Dosya İçe Aktar",
+  "import_files": "Dosyalar",
+  "split_epub_chapters": "Bölümlere ayır",
+  "split_epub_chapters_description": "Her EPUB bölümünü ayrı bir giriş olarak içe aktar",
+  "nothing_read_recently": "Son Zamanlarda Okunan Bir Şey Yok",
+  "status": "Durum",
+  "not_started": "Başlamadı",
+  "score": "Puan",
+  "start_date": "Başlangıç Tarihi",
+  "finish_date": "Bitiş Tarihi",
+  "reading": "Okuyor",
+  "on_hold": "Beklemede",
+  "dropped": "Bırakıldı",
+  "plan_to_read": "Okumak İçin Planla",
+  "re_reading": "Tekrar Okuyor",
+  "chapters": "Bölümler",
+  "add_tracker": "Takip Ekle",
+  "one_tracker": "1 Takip",
+  "n_tracker": "{n} Takip",
+  "tracking": "Takip Ediliyor",
+  "syncing": "Senkrone etme",
+  "sync_logged": "Giriş başarılı",
+  "syncing_subtitle": "Okuma ilerlemenizi cihazlar arasında senkronize etmek için sunucu adresinizi girin ve tarayıcı üzerinden oturum açın.",
+  "sync_service": "Kendi sunucunuzda senkronizasyon",
+  "last_sync": "Son senkronizasyon: ",
+  "sync_login_browser": "Tarayıcı ile giriş yap",
+  "sync_server": "Senkronizasyon Sunucu Adresi",
+  "sync_starting": "Senkronizasyonu başlatıyorum.",
+  "sync_finished": "Senkronizasyon tamamlandı",
+  "sync_failed": "Senkronizasyon başarısız",
   "sync_restore_in_progress": "Senkronizasyon atlandı — geri yükleme sürüyor",
+  "sync_progress_percent": "Senkronize ediliyor… %{percent}",
+  "@sync_progress_percent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "sync_progress_indeterminate": "Senkronize ediliyor…",
+  "sync_button_sync": "İlerlemeyi senkronize et",
+  "sync_button_upload": "Sadece yükle",
+  "sync_button_upload_info": "Bu işlem uzak verileri yerel verilerle tamamen değiştirecektir!",
+  "sync_button_download": "Sadece indir",
+  "sync_button_download_info": "Bu işlem yerel verileri uzak verilerle tamamen değiştirecektir!",
   "sync_status_not_configured": "Bağlı değil",
   "sync_status_checking": "Bağlantı kontrol ediliyor...",
   "sync_status_connected": "Bağlandı",
   "sync_status_unauthorized": "Oturum süresi doldu, lütfen tekrar giriş yapın",
   "sync_status_unreachable": "Sunucuya ulaşılamıyor",
   "sync_section_general": "Genel",
-  "sync_section_data_types": "Senkronize edilecekler",
+  "sync_on": "Senkronizasyonu etkinleştir",
+  "sync_auto": "Otomatik senkronizasyon",
+  "sync_auto_warning": "Otomatik senkronizasyon şu anda deneysel bir özelliktir!",
+  "sync_auto_off": "Kapalı",
+  "sync_auto_5_minutes": "Her 5 dakikada bir",
+  "sync_auto_10_minutes": "Her 10 dakikada bir",
+  "sync_auto_30_minutes": "Her 30 dakikada bir",
+  "sync_auto_1_hour": "Her 1 saatte bir",
+  "sync_auto_3_hours": "Her 3 saatte bir",
+  "sync_auto_6_hours": "Her 6 saatte bir",
+  "sync_auto_12_hours": "Her 12 saatte bir",
+  "server_error": "Sunucu hatası!",
+  "dialog_confirm": "Onayla",
+  "description": "Açıklama",
+  "reorder_navigation": "Gezinmeyi özelleştir",
+  "reorder_navigation_description": "Gezinmeyi ihtiyaçlarınıza göre yeniden düzenleyin ve ayarlayın.",
+  "floating_navigation_bar": "Kayan gezinme çubuğu",
+  "floating_navigation_bar_description": "Standart olarak takılı gezinme çubuğu yerine yüzen bir kapsül kullanın.",
+  "full_screen_player": "Tam ekran kullan",
+  "full_screen_player_info": "Bir video oynatıldığında otomatik olarak tam ekran kullan.",
+  "episode_progress": "İlerleme: {n}",
+  "n_episodes": "{n} bölüm",
+  "@n_episodes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "missing_episodes": "{count} eksik bölüm",
+  "manga_sources": "Manga Kaynakları",
+  "anime_sources": "Anime Kaynakları",
+  "novel_sources": "Hikaye Kaynakları",
+  "anime_extensions": "Anime Uzantıları",
+  "manga_extensions": "Manga Uzantıları",
+  "novel_extensions": "Hikaye Uzantıları",
+  "extension_settings": "Uzantı ayarları",
+  "anime": "Anime",
+  "manga": "Manga",
+  "novel": "Hikaye",
+  "library_no_category_exist": "Henüz hiç kategoriniz yok",
+  "watching": "İzliyor",
+  "plan_to_watch": "İzlemek İçin Planla",
+  "re_watching": "Tekrar İzliyor",
+  "episodes": "Bölümler",
+  "download": "İndir",
+  "new_update_available": "Yeni güncelleme mevcut",
+  "app_version": "Uygulama Sürümü : v{v}",
+  "searching_for_updates": "Güncellemeler aranıyor...",
+  "no_new_updates_available": "Yeni güncelleme yok",
+  "uninstall": "Kaldır",
+  "uninstall_extension": "{ext} uzantısını kaldır?",
+  "double_tap_search_hint": "Tüm {type} aramak için çift dokunun",
+  "show_nav_double_tap_tooltip": "Çift dokunarak arama ipucunu göster",
+  "show_nav_double_tap_tooltip_subtitle": "Manga/Anime/Roman sekmelerinde çift dokunmanın Genel Aramayı açtığını açıklayan bir ipucu göster.",
+  "already_in_library": "\"{title}\" zaten {source} üzerinden kütüphanenizde var.",
+  "add_anyway": "Yine de Ekle",
+  "langauage": "Dil",
+  "extension_detail": "Uzantı detayı",
+  "scale_type": "Ölçek Türü",
+  "scale_type_fit_screen": "Ekrana Sığdır",
+  "scale_type_stretch": "Esnet",
+  "scale_type_fit_width": "Genişliğe Sığdır",
+  "scale_type_fit_height": "Yüksekliğe Sığdır",
+  "scale_type_original_size": "Orijinal Boyut",
+  "scale_type_smart_fit": "Akıllı Sığdırma",
+  "page_preload_amount": "Sayfa Ön Yükleme Miktarı",
+  "page_preload_amount_subtitle": "Okurken ön yüklenen sayfa miktarı. Daha yüksek değerler, daha yüksek önbellek ve ağ kullanımı pahasına daha pürüzsüz bir okuma deneyimi sağlar.",
+  "image_loading_error": "Bu resim yüklenemedi",
+  "add_episodes": "Bölümler Ekle",
+  "video_quality": "Kalite",
+  "video_subtitle": "Altyazı",
+  "check_for_extension_updates": "Uzantı güncellemelerini kontrol et",
+  "auto_extensions_updates": "Otomatik Uzantı Güncellemeleri",
+  "auto_extensions_updates_subtitle": "Yeni bir sürümü mevcut olduğunda uzantıyı otomatik olarak günceller.",
+  "check_for_app_updates": "Uygulama başlatıldığında güncellemeleri kontrol et",
+  "reading_mode": "Okuma Modu",
+  "custom_filter": "Özel Filtre",
+  "background_color": "Arka Plan Rengi",
+  "white": "Beyaz",
+  "black": "Siyah",
+  "grey": "Gri",
+  "automaic": "Otomatik",
+  "preferred_domain": "Tercih Edilen Alan",
+  "load_more": "Daha Fazla Yükle",
+  "cancel_all_for_this_series": "Bu Seri İçin Tümünü İptal Et",
+  "login": "Giriş Yap",
+  "login_into": "{tracker} Oturum Aç",
+  "email_adress": "E-posta Adresi",
+  "password": "Şifre",
+  "log_out_from": "{tracker} Oturumu Kapat?",
+  "log_out": "Oturumu Kapat",
+  "update_pending": "Güncelleme Bekleniyor",
+  "update_all": "Tümünü Güncelle",
+  "backup_and_restore": "Yedekle ve Geri Yükle",
+  "create_backup": "Yedek Oluştur",
+  "create_backup_dialog_title": "Ne yedeklemek istiyorsun?",
+  "create_backup_subtitle": "Mevcut kütüphaneyi geri yüklemek için kullanılabilir",
+  "restore_backup": "Yedeği Geri Yükle",
   "encrypt_backups": "Yedekleri şifrele",
   "encrypt_backups_info": "Yedekleme dosyalarını AES şifreleme ile parolayla koruyun",
   "no_secure_storage": "Güvenli depolama bulunamadı",
@@ -952,6 +618,22 @@
   "confirm_password": "Parolayı onayla",
   "passwords_do_not_match": "Parolalar eşleşmiyor",
   "password_required_to_restore": "Bu yedeği geri yüklemek için parola gereklidir.",
+  "restore_backup_subtitle": "Yedek dosyasından kütüphaneyi geri yükle",
+  "automatic_backups": "Otomatik Yedeklemeler",
+  "backup_frequency": "Yedekleme Sıklığı",
+  "backup_location": "Yedekleme Konumu",
+  "backup_options": "Yedekleme Seçenekleri",
+  "backup_options_dialog_title": "Ne yedeklemek istiyorsun?",
+  "backup_options_subtitle": "Yedek dosyasına hangi bilgilerin dahil edileceği",
+  "backup_and_restore_warning_info": "Yedeklerin başka yerlerde de kopyalarını tutmalısınız",
+  "library_entries": "Kütüphane Girişleri",
+  "chapters_and_episode": "Bölümler ve Bölüm",
+  "every_6_hours": "Her 6 Saatte Bir",
+  "every_12_hours": "Her 12 Saatte Bir",
+  "daily": "Günlük",
+  "every_2_days": "Her 2 Günde Bir",
+  "weekly": "Haftalık",
+  "restore_backup_warning_title": "Bir yedeği geri yüklemek mevcut tüm verilerin üzerine yazacaktır.\n\nGeri yüklemeye devam et?",
   "restore_sync_question_title": "Bu geri yükleme senkronize edilsin mi?",
   "restore_sync_question_message": "Cihaz bir senkronizasyon sunucusuna bağlı. Geri yüklenen veriler sunucuya yüklensin mi?",
   "restore_sync_question_confirm": "Evet, senkronize et",
@@ -963,6 +645,309 @@
   "restore_sync_question_keep_disabled": "Kapalı tut",
   "restore_sync_uploading": "Geri yüklenen veriler sunucuyla senkronize ediliyor…",
   "restore_sync_upload_success": "Veriler sunucuyla senkronize edildi",
+  "services": "Hizmetler",
+  "tracking_warning_info": "İzleme hizmetlerinde bölüm ilerlemesini güncellemek için tek yönlü senkronizasyon. Bireysel girişler için izlemeyi, izleme düğmesinden ayarlayın.",
+  "use_page_tap_zones": "Sayfa Dokunma Bölgelerini Kullan",
+  "manage_trackers": "İzleyicileri Yönet",
+  "restore": "Geri Yükle",
+  "backups": "Yedekler",
+  "by_scanlator": "Taramacıya Göre",
+  "by_name": "İsme Göre",
+  "installed": "Yüklendi",
+  "auto_scroll": "Otomatik Kaydırma",
+  "video_audio": "Ses",
+  "video_audio_info": "Tercih edilen diller, perde düzeltmesi, ses kanalları",
+  "player": "Oyuncu",
+  "markEpisodeAsSeenSetting": "Bölümün izlendiği olarak işaretleneceği nokta",
+  "mark_duplicate_chapters_read": "Yinelenen bölüm numaralarını okunmuş olarak işaretleyin",
+  "default_skip_intro_length": "Varsayılan Giriş Atla süresi",
+  "default_playback_speed_length": "Varsayılan Oynatma hızı süresi",
+  "updateProgressAfterReading": "Okuduktan Sonra İlerlemeyi Güncelle",
+  "no_sources_installed": "Hiçbir kaynak yüklü değil!",
+  "show_extensions": "uzantıları göster",
+  "default_skip_forward_skip_length": "Varsayılan ileri atlama atlama uzunluğu",
+  "aniskip_requires_info": "AniSkip, çalışması için animenin MAL veya Anilist ile takip edilmesini gerektirir.",
+  "enable_aniskip": "AniSkip'i Etkinleştir",
+  "enable_auto_skip": "Otomatik Atla'yı Etkinleştir",
+  "aniskip_button_timeout": "Düğme Zaman Aşımı",
+  "skip_opening": "Açılışı atla",
+  "skip_ending": "Sonu atla",
+  "fullscreen": "Tam ekran",
+  "update_library": "Kütüphaneyi güncelle",
+  "next_chapter": "Sonraki bölüm",
+  "next_5_chapters": "Sonraki 5 bölüm",
+  "next_10_chapters": "Sonraki 10 bölüm",
+  "next_25_chapters": "Sonraki 25 bölüm",
+  "all_chapters": "Tüm bölümler",
+  "next_episode": "Sonraki Bölüm",
+  "next_5_episodes": "Sonraki 5 Bölüm",
+  "next_10_episodes": "Sonraki 10 Bölüm",
+  "next_25_episodes": "Sonraki 25 Bölüm",
+  "all_episodes": "Tüm bölümler",
+  "cover_saved": "Kapak kaydedildi",
+  "set_as_cover": "Kapak olarak ayarla",
+  "use_this_as_cover_art": "Bu resmi kapak sanatı olarak kullan?",
+  "save": "Kaydet",
+  "picture_saved": "Resim kaydedildi",
+  "cover_updated": "Kapak güncellendi",
+  "include_subtitles": "Altyazıları dahil et",
+  "blend_mode_default": "Varsayılan",
+  "blend_mode_multiply": "Çarpma",
+  "blend_mode_screen": "Ekran",
+  "blend_mode_overlay": "Örtüşme",
+  "blend_mode_colorDodge": "RenkDodge",
+  "blend_mode_lighten": "Açık",
+  "blend_mode_colorBurn": "RenkYakma",
+  "blend_mode_darken": "Karart",
+  "blend_mode_difference": "Fark",
+  "blend_mode_saturation": "Doygunluk",
+  "blend_mode_softLight": "YumuşakIşık",
+  "blend_mode_plus": "Artı",
+  "blend_mode_exclusion": "Dışlama",
+  "custom_color_filter": "Özel renk filtresi",
+  "color_filter_blend_mode": "Renk filtresi karışım modu",
+  "enable_all": "Tümünü Etkinleştir",
+  "disable_all": "Tümünü Devre Dışı Bırak",
+  "font": "Yazı Tipi",
+  "color": "Renk",
+  "font_size": "Yazı Boyutu",
+  "text": "Metin",
+  "border": "Kenarlık",
+  "background": "Arka Plan",
+  "no_subtite_warning_message": "Bu videoda altyazı parçaları olmadığı için etkisi yok",
+  "grid_size": "Kılavuz Boyutu",
+  "n_per_row": "{n} satır başına",
+  "horizontal_continious": "Yatay sürekli",
+  "edit_code": "Kodu düzenle",
+  "use_libass": "libass'ı etkinleştir",
+  "use_libass_info": "Yerel arka uç için libass tabanlı altyazı rendere etmeyi kullanın.",
+  "libass_not_disable_message": "Altyazıları özelleştirmek için oyuncu ayarlarında `libass kullan` seçeneğini devre dışı bırakın.",
+  "override_ass_subtitles": "ASS altyazılarını geçersiz kıl",
+  "override_ass_subtitles_info": "ASS/SSA altyazılarına özel stil uygula",
+  "torrent_stream": "Torrent Akışı",
+  "add_torrent": "Torrent ekle",
+  "enter_torrent_hint_text": "Manyetik veya torrent dosyası URL'sini girin",
+  "torrent_url": "Torrent URL'si",
+  "or": "VEYA",
+  "advanced": "Gelişmiş",
+  "advanced_info": "mpv yapılandırması",
+  "use_native_http_client": "Yerel http istemcisini kullan",
+  "use_native_http_client_info": "otomatik olarak VPN'ler gibi platform özelliklerini destekler, HTTP/3 gibi daha fazla HTTP özelliğini ve özel yönlendirme işlemlerini destekler",
+  "n_hour_ago": "{hour} saat önce",
+  "n_hours_ago": "{hours} saat önce",
+  "n_minute_ago": "{minute} dakika önce",
+  "n_minutes_ago": "{minutes} dakika önce",
+  "n_day_ago": "{day} gün önce",
+  "now": "şimdi",
+  "library_last_updated": "Kütüphane son güncelleme: {lastUpdated}",
+  "data_and_storage": "Veri ve depolama",
+  "download_location_info": "Bölüm indirmeleri için kullanılır",
+  "storage": "Depolama",
+  "clear_chapter_and_episode_cache": "Bölüm ve bölüm önbelleğini temizle",
+  "cache_cleared": "Önbellek temizlendi",
+  "clear_chapter_or_episode_cache_on_app_launch": "Uygulama açıldığında bölüm/bölüm önbelleğini temizle",
+  "app_settings": "Uygulama ayarları",
+  "sources_settings": "Kaynak ayarları",
+  "include_sensitive_settings": "Hassas ayarları dahil et (ör. izleyici giriş token'ları)",
+  "create": "Oluştur",
+  "downloads_are_limited_to_wifi": "İndirmeler yalnızca Wi-Fi ile sınırlıdır",
+  "recommendations": "Öneriler",
+  "recommendations_similar": "benzer",
+  "recommendations_weights": "Öneri ağırlıkları",
+  "recommendations_weights_genre": "Tür benzerliği",
+  "recommendations_weights_setting": "Ortam benzerliği",
+  "recommendations_weights_synopsis": "Hikaye benzerliği",
+  "recommendations_weights_theme": "Tema benzerliği",
+  "manga_extensions_repo": "Manga uzantıları deposu",
+  "anime_extensions_repo": "Anime uzantıları deposu",
+  "novel_extensions_repo": "Roman uzantıları deposu",
+  "custom_dns": "Özel DNS (sistem DNS'ini kullanmak için boş bırakın)",
+  "android_proxy_server": "Android Proxy Sunucusu (M-Extension-Server)",
+  "get_m_extension_server": "M-Extension-Server'i edinin",
+  "undefined": "Tanımsız",
+  "empty_extensions_repo": "Burada hiçbir depo URL'si yok. Bir tane eklemek için artı düğmesine tıklayın!",
+  "add_extensions_repo": "Depo URL'si ekle",
+  "remove_extensions_repo": "Depo URL'sini kaldır",
+  "manage_manga_repo_urls": "Manga depo URL'lerini yönet",
+  "manage_anime_repo_urls": "Anime depo URL'lerini yönet",
+  "manage_novel_repo_urls": "Roman depo URL'lerini yönet",
+  "url_cannot_be_empty": "URL boş olamaz",
+  "url_must_end_with_dot_json_or_dot_pb": "URL .json / .pb ile bitmelidir",
+  "repo_url": "Depo URL'si",
+  "invalid_url_format": "Geçersiz URL formatı",
+  "clear_all_sources": "Tüm kaynakları temizle",
+  "clear_all_sources_msg": "Bu, uygulamadaki tüm kaynakları tamamen temizleyecektir. Devam etmek istediğinizden emin misiniz?",
+  "sources_cleared": "Kaynaklar temizlendi!",
+  "repo_added": "Kaynak deposu eklendi!",
+  "repo_already_exists": "Depo zaten mevcut!",
+  "add_repo": "Depo ekle?",
+  "add_repo_sources_to_add": "Eklenecek uzantı listeleri:",
+  "add_repo_warning": "Bu depolardaki uzantılar uygulamanın içinde çalışır. Yalnızca güvendiğiniz depoları ekleyin.",
+  "genre_search_library": "Kütüphanede tür ara",
+  "genre_search_source": "Kaynağı keşfet",
+  "source_not_added": "Kaynak yüklenmedi!",
+  "load_own_subtitles": "Kendi altyazılarınızı yükleyin...",
+  "search_subtitles": "Çevrimiçi altyazı ara...",
+  "extension_notes": "Notlar: {notes}",
+  "unsupported_repo": "Bu kaynak deposu eklenemedi. Depo adresini kontrol edin veya deponun bakımını yapan kişiyle iletişime geçin.",
+  "you_have_finished_reading": "Okumayı bitirdiniz",
+  "hwdec": "Donanım kod çözücü",
+  "enable_hardware_accel": "Donanım hızlandırma",
+  "enable_hardware_accel_info": "Hata veya çökmelerle karşılaşırsanız açın/kapatın",
+  "track_library_navigate": "Mevcut yerel girişe git",
+  "track_library_add": "Yerel kütüphaneye ekle",
+  "track_library_add_confirm": "İzlenen öğeyi yerel kütüphaneye ekle",
+  "track_library_not_logged": "Bu özelliği kullanmak için ilgili izleyicide oturum açın!",
+  "track_library_switch": "Başka bir izleyiciye geç",
+  "go_back": "Geri dön",
+  "merge_library_nav_mobile": "Mobilde kütüphane gezinmesini birleştir",
+  "enable_discord_rpc": "Discord RPC'yi etkinleştir",
+  "hide_discord_rpc_incognito": "Gizli modda Discord RPC'yi gizle",
+  "rpc_show_reading_watching_progress": "Discord'da mevcut bölümü göster (yeniden başlatma gerektirir)",
+  "rpc_show_title": "Discord'da mevcut başlığı göster",
+  "rpc_show_cover_image": "Discord'da mevcut kapak resmini göster",
+  "enable_mpv": "mpv gölgelendiricilerini / betiklerini etkinleştir",
+  "mpv_info": "mpv/scripts/ altında .js betiklerini destekler",
+  "mpv_redownload": "mpv yapılandırma dosyalarını yeniden indir",
+  "mpv_redownload_info": "Eski yapılandırma dosyalarını yenileriyle değiştirir!",
+  "mpv_download": "MPV yapılandırma dosyaları gerekli!\nŞimdi indir?",
+  "custom_buttons": "Özel düğmeler",
+  "custom_buttons_info": "Özel düğmelerle lua kodu çalıştır",
+  "custom_buttons_edit": "Özel düğmeleri düzenle",
+  "custom_buttons_add": "Özel düğme ekle",
+  "custom_buttons_added": "Özel düğme eklendi!",
+  "custom_buttons_delete": "Özel düğmeyi sil",
+  "custom_buttons_text": "Düğme metni",
+  "custom_buttons_text_req": "Düğme metni gerekli",
+  "custom_buttons_js_code": "lua kodu",
+  "custom_buttons_js_code_req": "lua kodu gerekli",
+  "custom_buttons_js_code_long": "lua kodu (uzun basışta)",
+  "custom_buttons_startup": "lua kodu (başlangıçta)",
+  "custom_buttons_add_warning": "Bu düğme, dosyalarınıza erişebilen ve programları çalıştırabilen video oynatıcıda aşağıdaki Lua kodunu çalıştırır. Yalnızca bu bağlantının nereden geldiğine güveniyorsanız ekleyin.",
+  "n_days": "{n} gün",
+  "decoder": "Kod çözücü",
+  "decoder_info": "Donanım kod çözme, piksel formatı, debanding",
+  "enable_gpu_next": "gpu-next'i etkinleştir (sadece Android)",
+  "enable_gpu_next_info": "Yeni video işleme motoru",
+  "debanding": "Debanding",
+  "use_yuv420p": "YUV420P piksel formatını kullan",
+  "use_yuv420p_info": "Bazı video codec'lerinde siyah ekranları düzeltebilir, kalite pahasına performansı da artırabilir",
+  "audio_preferred_languages": "Tercih edilen diller",
+  "audio_preferred_languages_info": "Birden fazla ses akışına sahip bir videoda varsayılan olarak seçilecek ses dil(ler)i, 2/3 harfli dil kodları (örn: tr, en, ja). Birden fazla değer virgülle ayrılabilir.",
+  "enable_audio_pitch_correction": "Ses perdesi düzeltmeyi etkinleştir",
+  "enable_audio_pitch_correction_info": "Daha yüksek hızlarda sesin tiz, daha düşük hızlarda pes olmasını önler",
+  "audio_channels": "Ses kanalları",
+  "volume_boost_cap": "Ses yükseltme sınırı",
+  "internal_player": "Dahili oynatıcı",
+  "internal_player_info": "İlerleme, kontroller, yönelim",
+  "subtitle_delay_text": "Altyazı gecikmesi",
+  "subtitle_delay": "Gecikme (ms)",
+  "subtitle_speed": "Hız",
+  "tracks": "Parçalar",
+  "playback_speed": "Oynatma hızı",
+  "shaders": "Gölgelendiriciler",
+  "video_fit": "Sığdır",
+  "calendar": "Takvim",
+  "calendar_no_data": "Henüz veri yok.",
+  "calendar_info": "Takvim, bir sonraki bölüm yüklemesini yalnızca eski yüklemelere göre tahmin edebilir. Bazı veriler %100 doğru olmayabilir!",
+  "in_n_day": "{days} gün içinde",
+  "in_n_days": "{days} gün içinde",
+  "clear_library": "Kütüphaneyi temizle",
+  "clear_library_desc": "Tüm manga, anime ve/veya roman girişlerini temizlemeyi seçin",
+  "clear_library_input": "İlgili tüm girişleri kaldırmak için 'manga', 'anime' ve/veya 'novel' yazın (virgülle ayrılmış)",
+  "watch_order": "İzleme sırası",
+  "watch_order_role_current": "Geçerli",
+  "@watch_order_role_current": {
+    "description": "Role label for the title currently being viewed in a watch order."
+  },
+  "watch_order_role_previous": "Önceki",
+  "@watch_order_role_previous": {
+    "description": "Role label for an earlier title in a watch order."
+  },
+  "watch_order_role_next": "Sonraki",
+  "@watch_order_role_next": {
+    "description": "Role label for a later title in a watch order."
+  },
+  "watch_order_source_release_order": "Serbest bırakma emri",
+  "@watch_order_source_release_order": {
+    "description": "Source label for a watch order based on release dates."
+  },
+  "watch_order_source_community_list": "{name} by {author}",
+  "@watch_order_source_community_list": {
+    "description": "Source label for a community-created Trakt list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_official_collection": "Resmi Trakt koleksiyonu: {name}",
+  "@watch_order_source_official_collection": {
+    "description": "Source label for an official Trakt collection.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_trakt_collection": "Trakt koleksiyonu: {name}",
+  "@watch_order_source_trakt_collection": {
+    "description": "Source label for a Trakt collection when it is not marked as official.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_seasons": "{title} için Mevsimler",
+  "@watch_order_source_seasons": {
+    "description": "Fallback source label when the watch order contains a show's seasons.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_select_source": "Sipariş kaynağı",
+  "@watch_order_select_source": {
+    "description": "Label for choosing among available watch-order sources."
+  },
+  "watch_order_season": "Sezon {number}",
+  "@watch_order_season": {
+    "description": "Season metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "watch_order_episode": "Bölüm {number}",
+  "@watch_order_episode": {
+    "description": "Episode metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sequels": "Devam filmleri",
+  "recommendations_similarity": "Benzerlik:",
+  "recommendation_rating_accessibility": "Derecelendirme {rating}",
+  "@recommendation_rating_accessibility": {
+    "description": "Accessible label for a recommendation rating in the provider's display format.",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "local_folder_structure": "Yerel klasör yapısı",
+  "local_folder": "Yerel klasörler",
+  "add_local_folder": "Yerel klasör ekle",
+  "rescan_local_folder": "Tüm yerel klasörleri şimdi yeniden tara",
   "default_download_destination": "Varsayılan indirme konumu",
   "ask_download_destination": "İndirme konumunu sor",
   "ask_download_destination_desc": "Her indirme başladığında yerel bir klasör seçin.",
@@ -973,19 +958,175 @@
   "custom": "Özel",
   "no_local_folder_available_for_downloads": "İndirmeler için yerel klasör bulunamadı",
   "failed_to_create_cbz": "CBZ oluşturulamadı: {error}",
+  "@failed_to_create_cbz": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_cover_image": "Kapak resmi okunamadı: {error}",
+  "@error_reading_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_metadata": "Meta veri okunamadı: {error}",
+  "@error_reading_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_saving_chapter_episode_to_library": "Kitaplığa kaydedilirken hata: {error}",
+  "@error_saving_chapter_episode_to_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_chapter_cover_image": "Bölüm kapağı okunamadı: {error}",
+  "@error_reading_chapter_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_archive_cover_image": "Arşiv kapağı okunamadı: {error}",
+  "@error_reading_archive_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_getting_local_library": "Yerel kitaplık alınamadı: {error}",
+  "@error_getting_local_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "export_metadata": "Meta verileri dışa aktar",
+  "exported": "Dışa aktarıldı",
   "failed_to_export_metadata": "Meta veri dışa aktarılamadı: {error}",
+  "@failed_to_export_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "unrecognized_chapter_numbers": "{count} bölüm otomatik numaralandırılamadı.",
+  "@unrecognized_chapter_numbers": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "cloudflare_resolution_webview_server_start_failed": "Cloudflare çözüm sunucusu başlatılamadı.",
   "tracker_token_expired": "{tracker} belirtecinin süresi doldu",
+  "@tracker_token_expired": {
+    "placeholders": {
+      "tracker": {}
+    }
+  },
   "video_list_empty": "Video listesi boş",
   "playback_speed_multiplier": "x{value}",
+  "@playback_speed_multiplier": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "could_not_launch_url": "{url} açılamadı",
+  "@could_not_launch_url": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "text_size": "Metin Boyutu:",
+  "text_align": "Metin Hizalama",
+  "line_height": "Satır Yüksekliği",
+  "show_scroll_percentage": "Kaydırma Yüzdesini Göster",
+  "remove_extra_paragraph_spacing": "Ekstra Paragraf Aralığını Kaldır",
+  "select_label_color": "{label} Rengini Seç",
+  "default_user_agent": "Varsayılan Kullanıcı Aracısı",
+  "forceLandscapeMode": "Yatay Modu Zorla",
+  "forceLandscapeModeSubtitle": "Oynatıcıyı yatay yönelim kullanmaya zorla.",
+  "dns_over_https": "DNS-over-HTTPS (DoH)",
+  "dns_provider": "DNS Sağlayıcısı",
+  "tracked": "İzlendi",
+  "auth_unlock_msg": "NodeLane Comics'yi kilitlemek için kimliğinizi doğrulayın",
+  "app_locked": "NodeLane Comics kilitli",
+  "auth_to_continue": "Devam etmek için kimliğinizi doğrulayın",
+  "authenticating": "Kimlik doğrulanıyor...",
+  "lock": "Kilitle",
+  "unlock": "Kilit Aç",
+  "security": "Güvenlik",
+  "auth_to_change_security_setting": "Güvenlik ayarlarını değiştirmek için kimliğinizi doğrulayın",
+  "app_lock": "Uygulama Kilidi",
+  "require_biometric_or_device_credential": "Uygulamayı açmak için biyometrik kimlik doğrulamak veya cihaz kimlik bilgileri gerekir",
+  "biometric_or_device_credential_not_available": "Biyometrik kimlik doğrulama bu cihazda kullanılamaz",
+  "app_lock_description": "Uygulama kilidi etkinleştirildiğinde, uygulamayı her açtığınızda veya arka plandan döndüğünüzde kimlik doğrulaması yapmanız istenir.",
+  "checking_device_authentication": "Cihaz kimlik doğrulaması kontrol ediliyor…",
+  "device_authentication_incomplete": "Kimlik doğrulama tamamlanmadı. Ayarınız değişmedi.",
+  "keep_screen_on": "Ekranı Açık Tut",
+  "webtoon_side_padding": "Webtoon Yan Dolgusu",
+  "show_page_gaps": "Sayfa Boşluklarını Göster",
+  "invert_colors": "Renkleri Ters Çevir",
+  "grayscale": "Gri Tonlama",
+  "brightness": "Parlaklık",
+  "contrast": "Kontrast",
+  "saturation": "Doyum",
+  "navigation_layout": "Navigasyon Düzeni",
+  "nav_layout_default": "Varsayılan",
+  "nav_layout_l_shaped": "L Şekil",
+  "nav_layout_kindle": "Kindle",
+  "nav_layout_edge": "Kenar",
+  "nav_layout_right_and_left": "Sağ ve Sol",
+  "nav_layout_disabled": "Devre Dışı",
+  "color_enhancements": "Renk İyileştirmeleri",
+  "total": "Toplam",
+  "mean_per_title": "Başlık başına ortalama",
+  "completion_rate": "Tamamlanma oranı",
+  "watching_time": "İzleme süresi",
+  "reading_time": "Okuma süresi",
+  "average_chapters_per_title": "{title} başına Ortalama Bölüm Sayısı",
+  "read_percentage": "Okuma yüzdesi",
+  "entries": "Girdiler",
+  "android_proxy_server_mihon": "Android Proxy Sunucusu (Mihon)",
+  "android_proxy_server_mihon_description": "Mihon eklentilerini kullanmak için gereken proxy sunucusunu indirin ve yapılandırın.",
+  "mihon_proxy_server": "Mihon proxy sunucusu",
+  "extension_server_intro_with_jre": "Mihon eklentilerini kullanmadan önce proxy sunucu paketini indirin. Paket, JRE ve eklenti sunucusu JAR dosyasını içerir.",
+  "extension_server_intro_ios": "Mihon eklentilerini kullanmadan önce proxy sunucusu JAR dosyasını indirin. iOS için sadece eklenti sunucusu JAR dosyası gereklidir.",
+  "checking_files": "Dosyalar kontrol ediliyor",
+  "files_installed": "Dosyalar yüklendi",
+  "files_missing": "Dosyalar eksik",
+  "update_files": "Dosyaları güncelle",
+  "up_to_date": "Güncel",
+  "choose_location": "Konum seç",
+  "import_existing_jar": "Mevcut JAR dosyasını içe aktar",
+  "detect_files_in_selected_folder": "Seçilen klasördeki dosyaları algıla",
+  "preparing_download": "İndirme hazırlanıyor...",
+  "app_install_location": "Uygulama yükleme konumu",
+  "install_location": "Yükleme konumu",
+  "jre_executable": "JRE yürütülebilir dosyası",
+  "extension_server_jar": "Eklenti sunucusu JAR'ı",
+  "installed_version": "Yüklü sürüm",
+  "latest_version": "Son sürüm",
+  "m_extension_server_description": "Ayrı bir Android cihaz proxy'sine ihtiyacınız olduğunda M-Extension-Server kullanın. Proxy adresini buradan ayarlayın ve APK'yı GitHub'dan indirin.",
+  "set_proxy_address": "Proxy adresini ayarla",
+  "no_newer_proxy_server_release_available": "Daha yeni bir proxy sunucusu sürümü mevcut değil.",
+  "could_not_check_proxy_server_updates": "Proxy sunucusu güncellemeleri kontrol edilemedi.",
+  "no_extension_server_bundle_available_for_this_platform": "Bu platform için sunucu paketi mevcut değil.",
+  "failed_to_download_bundle": "Paket indirme başarısız oldu ({statusCode}).",
+  "@failed_to_download_bundle": {
+    "placeholders": {
+      "statusCode": {}
+    }
+  },
+  "downloaded_bundle_missing_expected_files": "İndirilen paket beklenen dosyaları içermiyor.",
+  "extension_server_files_ready": "Eklenti sunucusu dosyaları hazır.",
+  "ios_extension_server_import_hint": "iOS'ta sunucu uygulama sandbox'ı içine yüklenir. İndirilen bir dosyayı getirmek için \"Mevcut JAR dosyasını içe aktar\" seçeneğini kullanın.",
+  "select_extension_server_folder": "Eklenti sunucusu klasörünü seçin",
+  "selected_folder_does_not_exist": "Seçilen klasör mevcut değil.",
+  "no_extension_server_files_found_in_selected_folder": "Seçilen klasörde eklenti sunucusu dosyası bulunamadı.",
+  "extension_server_files_linked": "Eklenti sunucusu dosyaları bağlandı.",
+  "select_extension_server_jar": "Eklenti sunucusu JAR dosyasını seçin",
+  "selected_file_could_not_be_accessed": "Seçilen dosyaya erişilemedi.",
+  "extension_server_jar_imported": "Eklenti sunucusu JAR'ı içe aktarıldı.",
+  "could_not_launch_apk_bridge_page": "M-Extension-Server sayfası başlatılamadı.",
+  "proxy_server_ip_hint": "Sunucu IP'si (örn. 10.0.0.5 veya https://example.com)",
+  "not_configured": "Yapılandırılmadı",
   "zero_interpreter": "Zero yorumlayıcı",
   "zero_interpreter_description": "Zero yorumlayıcı sunucusunu otomatik veya manuel kontrol edin.",
   "start_server_on_launch": "Başlangıçta sunucuyu başlat",
@@ -994,9 +1135,118 @@
   "stopped": "Durduruldu",
   "start": "Başlat",
   "stop": "Durdur",
+  "webview": "Webview",
+  "tts": "Metinden Sese",
+  "tts_speed": "Hız",
+  "tts_pitch": "Perde",
+  "tts_language": "Dil",
+  "tts_voice": "Ses",
+  "tts_stop": "Dur",
+  "tts_play": "Oynat",
+  "tts_pause": "Duraklat",
+  "tts_previous": "Önceki paragraf",
+  "tts_next": "Sonraki paragraf",
+  "tts_paragraph_progress": "Paragraf {current} / {total}",
+  "@tts_paragraph_progress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "tts_settings": "TTS Ayarları",
+  "tts_default": "Varsayılan",
+  "webtoon_disable_zoom_out": "Webtoon uzaklaştırmayı devre dışı bırak",
+  "webtoon_double_tap_zoom_enabled": "Webtoon yakınlaştırma için çift dokun",
+  "navigate_to_pan": "Kaydırmak için gezin",
+  "navigate_to_pan_subtitle": "Sayfa çevirmeden önce yakınlaştırılmış resmi hareket ettir",
+  "split_wide_pages": "Geniş sayfaları böl",
+  "dual_page_invert": "Bölünen yarım sayfaları ters çevir",
+  "dual_page_rotate_to_fit": "Sığdırmak için döndür",
+  "dual_page_rotate_to_fit_invert": "Döndürme yönünü tersine çevir",
+  "double_page_single_first_page": "İlk sayfa tekli",
+  "double_page_single_first_page_subtitle": "Çift sayfa modunda ilk sayfayı tek başına göster",
+  "double_page_auto": "Otomatik çift sayfa",
+  "double_page_auto_subtitle": "Yatay modda otomatik olarak çift sayfa moduna geç",
+  "landscape_zoom": "Otomatik yatay yakınlaştırma",
+  "zoom_start_position": "Yakınlaştırma başlangıç konumu",
+  "zoom_start_left": "Sol",
+  "zoom_start_right": "Sağ",
+  "zoom_start_center": "Orta",
+  "automatic_background": "Otomatik arka plan",
+  "tapping_inversion": "Dokunma tersine çevirme",
+  "tapping_inversion_none": "Hiçbiri",
+  "tapping_inversion_horizontal": "Yatay",
+  "tapping_inversion_vertical": "Dikey",
+  "tapping_inversion_both": "Her ikisi",
+  "flash_on_page_change": "Sayfa geçişinde flaş",
+  "flash_on_page_change_subtitle": "AMOLED iz önleme yardımcısı",
+  "flash_color": "Flaş Rengi",
+  "flash_color_black": "Siyah",
+  "flash_color_white": "Beyaz",
+  "flash_color_white_black": "Beyaz & Siyah",
+  "flash_interval_label": "Flaş Aralığı",
+  "flash_interval_value": "{n} sayfa",
+  "@flash_interval_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_interval": "Flaş Aralığı: {n} sayfa",
+  "@flash_interval": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration_label": "Flaş Süresi",
+  "flash_duration_value": "{n} ms",
+  "@flash_duration_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration": "Flaş Süresi: {n} ms",
+  "@flash_duration": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "show_navigation_overlay_on_start": "Başlangıçta gezinme panelini göster",
+  "reader_hide_threshold": "Okuyucu Gizleme Eşiği",
+  "reader_hide_threshold_highest": "En yüksek (5 px)",
+  "reader_hide_threshold_high": "Yüksek (13 px)",
+  "reader_hide_threshold_low": "Düşük (31 px)",
+  "reader_hide_threshold_lowest": "En düşük (47 px)",
+  "error_no_pages_available": "Hata: kullanılabilir sayfa yok",
+  "app_ui_scale": "Arayüz ölçeği",
+  "app_ui_scale_subtitle": "Arayüzü ekranınıza ve görüntüleme mesafenize uyacak şekilde büyütün veya küçültün.",
+  "allow_concurrent_downloads": "Eş zamanlı indirmelere izin ver",
+  "allow_concurrent_downloads_subtitle": "Farklı kaynaklardan aynı anda indirin. Tek bir kaynak yine de bir seferde bir bölümü indirir, böylece yükü aşmaz. Her yerde tek tek indirmek için kapatın.",
+  "download_delay": "İndirme gecikmesi",
+  "download_delay_subtitle": "Kapalı. Kaynaklar için daha yumuşak olmak için bölümler arasında rastgele titreme ile bir bekleme ekleyin.",
+  "save_search": "Aramayı kaydet",
+  "saved_searches": "Kaydedilen aramalar",
+  "enter_search_to_save_first": "Kaydedilecek bir arama girin",
+  "no_saved_searches": "Bu kaynak için kaydedilen arama henüz yok.\nBir arama yapın, ardından \"Aramayı kaydet\" i seçin.",
+  "source": "Kaynak",
   "something_went_wrong": "Bir şeyler ters gitti",
   "startup_failed": "NodeLane Comics başlatılamadı",
   "sources_with_no_results": "{count, plural, =1{Sonuçsuz 1 kaynak} other{Sonuçsuz {count} kaynak}}",
+  "@sources_with_no_results": {
+    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "import_mode_title": "Nasıl içe aktarılsın?",
   "import_mode_message": "Bu yedeği mevcut kitaplıkla birleştirin veya tüm kitaplığı bununla değiştirin.",
   "import_mode_keep_existing": "Birleştir",
@@ -1005,8 +1255,19 @@
   "import_mode_replace_subtitle": "Mevcut kitaplığı siler ve bu yedekle değiştirir.",
   "replace_summary_title": "Kitaplık değiştirilmeye hazır",
   "replace_summary_message": "Bu işlem mevcut {currentCount} seriyi silecek ve {backupCount} seri ile değiştirecektir.",
+  "@replace_summary_message": {
+    "placeholders": {
+      "currentCount": {},
+      "backupCount": {}
+    }
+  },
   "replace_summary_confirm": "Değiştir",
   "replace_result_message": "Kitaplık yedekten gelen {count} seri ile değiştirildi.",
+  "@replace_result_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "category_conflict_title": "Mevcut kategoriler bulundu",
   "category_conflict_message": "Yedekte zaten var olan kategoriler bulundu.",
   "category_conflict_keep": "Koru — mevcut kategoriye birleştir",
@@ -1016,26 +1277,70 @@
   "source_conflict_keep": "Orijinal adı koru",
   "import_summary_title": "İçe aktarılmaya hazır",
   "import_summary_message": "{newSeries} yeni seri, {updatedSeries} güncellenen seri ve {newChapters} yeni bölüm.",
+  "@import_summary_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "import_summary_confirm": "İçe aktar",
   "import_result_message": "{newSeries} yeni seri aktarıldı, {updatedSeries} güncellendi, {newChapters} bölüm eklendi.",
+  "@import_result_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "roll_back": "Geri al",
   "roll_back_confirm_message": "Kitaplığı bu değişiklikten hemen önceki anlık görüntüye döndürür.",
   "roll_back_done": "Önceki duruma geri dönüldü.",
   "restoring_backup": "Kitaplık geri yükleniyor…",
   "roll_back_last_change": "Son değişikliği geri al",
   "roll_back_last_change_subtitle": "{date} tarihli anlık görüntü — {description}",
+  "@roll_back_last_change_subtitle": {
+    "placeholders": {
+      "date": {},
+      "description": {}
+    }
+  },
   "roll_back_available_count": "Geri alınabilir {count} son değişiklik mevcut",
+  "@roll_back_available_count": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "delete_source_title": "Kaynağı ve mangalarını sil",
   "delete_source_subtitle": "Bir kaynak seçerek tüm mangalarını, bölümlerini, indirmelerini ve geçmişini kaldırın.",
   "delete_source_pick_title": "Silinecek kaynağı seçin",
   "delete_source_empty": "Kitaplıkta kaynak bulunamadı.",
   "delete_source_confirm_title": "{sourceName} silinsin mi?",
-  "delete_source_confirm_message": "{mangaCount} manga, {chapterCount} bölüm, {historyCount} geçmiş kaydı kalıcı olarak silinecek.",
+  "@delete_source_confirm_title": {
+    "placeholders": {
+      "sourceName": {}
+    }
+  },
+  "delete_source_confirm_message": "Bu, {mangaCount} mangayı, {chapterCount} bölümlerini, {historyCount} geçmiş girişlerini ve {updateCount} güncelleme girişlerini kalıcı olarak siler. İzleme bağlantıları tutulur. Bu, geri alma dışında geri alınamaz.",
+  "@delete_source_confirm_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "chapterCount": {},
+      "historyCount": {},
+      "updateCount": {}
+    }
+  },
   "delete_source_also_remove_extension": "Yüklü eklentiyi de kaldır",
   "delete_source_keep_history": "Okuma geçmişini koru",
   "delete_source_keep_downloads": "İndirme kayıtlarını koru",
   "delete_source_button": "Sil",
   "delete_source_result_message": "{sourceName} kaynağından {mangaCount} manga silindi.",
+  "@delete_source_result_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "sourceName": {}
+    }
+  },
   "merge_manga_title": "Yinelenen mangaları birleştir",
   "merge_manga_subtitle": "Aynı kaynak altındaki aynı başlıklı mangaları bulur ve birleştirir.",
   "merge_manga_none_found": "Yinelenen manga bulunamadı.",
@@ -1043,10 +1348,33 @@
   "merge_manga_choose_primary_title": "Diğerleri hangisinde birleştirilsin?",
   "merge_manga_choose_primary_message": "Bölümler, geçmiş ve takip seçilen girdiye aktarılacaktır.",
   "merge_manga_chapters_subtitle": "{count, plural, =1{1 bölüm} other{{count} bölüm}}",
+  "@merge_manga_chapters_subtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "merge_manga_button": "Birleştir",
   "merge_manga_result_message": "{count} yinelenen manga {mangaName} içinde birleştirildi.",
+  "@merge_manga_result_message": {
+    "placeholders": {
+      "count": {},
+      "mangaName": {}
+    }
+  },
   "merge_preview_title": "Birleştirmeyi onayla",
-  "merge_manga_preview_message": "{totalChapters} bölüm bulundu. {duplicateChapters} yinelenen atılacak, {keptChapters} eklenecek.",
+  "merge_manga_preview_message": "{totalChapters} bölümleri diğer girişlerde bulundu. {duplicateChapters} kopyalardır ve bırakılacaktır (hangi kopyanın okuma ilerlemesi varsa tutulacaktır); {keptChapters} eklenecek. {duplicateTracks} yinelenen izleme bağlantıları da kaldırılacak.",
+  "@merge_manga_preview_message": {
+    "placeholders": {
+      "totalChapters": {},
+      "duplicateChapters": {},
+      "keptChapters": {},
+      "duplicateTracks": {}
+    }
+  },
+  "memory_overlay": "Bellek kullanımını göster",
+  "memory_overlay_subtitle": "Uygulamanın kullandığı belleğin canlı gösterimi. Tahmin etmek yerine cihaz üzerinde ölçüm yapın: kitaplıkta gezinirken veya bir bölüm okurken izleyin.",
   "beta": "Beta",
   "error_reports": "Hata raporları",
   "error_reports_subtitle": "Uygulamanın yakaladığı hatalar ve bildirme yolu",
@@ -1058,6 +1386,9 @@
   "error_reports_copy": "Kopyala",
   "error_reports_copied": "Panoya kopyalandı",
   "error_reports_clear": "Temizle",
+  "error_reports_extension_failure": "Bu hata NodeLane Comics'den değil, bir uzantıdan kaynaklandı. Uzantılar bu kaynağı yüklediğiniz deponun yöneticileri tarafından yazılır ve sürdürülür, bu nedenle düzeltmenin oraya yapılması gerekir.",
+  "error_reports_already_reported": "Zaten bildirildi",
+  "error_reports_expected_failure": "Bu durum genellikle uygulamadan ziyade kaynak veya ağdan kaynaklanır: süresi dolmuş bir bağlantı, çökmüş bir sunucu veya kopan bir bağlantı.",
   "share_unavailable_copied": "Paylaşım kullanılamıyor, panoya kopyalandı.",
   "onboarding_title": "NodeLane Comics'ye Hoş Geldiniz",
   "onboarding_libraries_body": "Okumak ve izlemek istediklerinizi seçin.",
@@ -1071,9 +1402,19 @@
   "onboarding_or_local": "Veya mevcut dosyaları kullanın",
   "onboarding_local_folder": "Klasör ekle",
   "onboarding_local_existing": "{count} klasör zaten ayarlanmış",
+  "@onboarding_local_existing": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_any_type": "Manga, anime ve novel desteklenir.",
   "onboarding_local_scanning": "Klasör taranıyor",
   "onboarding_local_found": "{count} başlık bulundu",
+  "@onboarding_local_found": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_remove": "Klasörü kaldır",
   "onboarding_local_in_downloads": "Bu uygulamanın indirme klasörüdür.",
   "onboarding_local_empty": "Hiçbir şey bulunamadı. Ana klasörü seçin.",
@@ -1090,183 +1431,6 @@
   "missing_source_check_subtitle": "Eklentisi yüklü olmayan girdileri bulur.",
   "missing_source_check_none_found": "Tüm kaynaklar yüklü.",
   "missing_source_check_result_title": "{count, plural, =1{1 kaynak eksik} other{{count} kaynak eksik}}",
-  "missing_source_check_result_message": "Bu girdiler yüklü olmayan kaynaklara işaret ediyor. Taşımak için dokunun veya eklentiyi yükleyin.",
-  "@tts_paragraph_progress": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
-  "@label_value": {
-    "placeholders": {
-      "label": {},
-      "value": {}
-    }
-  },
-  "@beta_version": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "@error_with_message": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_create_cbz": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_saving_chapter_episode_to_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_chapter_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_archive_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_getting_local_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_export_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@unrecognized_chapter_numbers": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@tracker_token_expired": {
-    "placeholders": {
-      "tracker": {}
-    }
-  },
-  "@playback_speed_multiplier": {
-    "placeholders": {
-      "value": {}
-    }
-  },
-  "@could_not_launch_url": {
-    "placeholders": {
-      "url": {}
-    }
-  },
-  "@sources_with_no_results": {
-    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@replace_summary_message": {
-    "placeholders": {
-      "currentCount": {},
-      "backupCount": {}
-    }
-  },
-  "@replace_result_message": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@import_summary_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@import_result_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@roll_back_last_change_subtitle": {
-    "placeholders": {
-      "date": {},
-      "description": {}
-    }
-  },
-  "@roll_back_available_count": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@delete_source_confirm_title": {
-    "placeholders": {
-      "sourceName": {}
-    }
-  },
-  "@delete_source_confirm_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "chapterCount": {},
-      "historyCount": {},
-      "updateCount": {}
-    }
-  },
-  "@delete_source_result_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "sourceName": {}
-    }
-  },
-  "@merge_manga_chapters_subtitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@merge_manga_result_message": {
-    "placeholders": {
-      "count": {},
-      "mangaName": {}
-    }
-  },
-  "@merge_manga_preview_message": {
-    "placeholders": {
-      "totalChapters": {},
-      "duplicateChapters": {},
-      "keptChapters": {},
-      "duplicateTracks": {}
-    }
-  },
-  "@onboarding_local_existing": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@onboarding_local_found": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "@missing_source_check_result_title": {
     "placeholders": {
       "count": {
@@ -1274,31 +1438,6 @@
       }
     }
   },
-  "developer_mode": "Geliştirici modu",
-  "developer_mode_subtitle": "Uzantı geliştirici araçlarını göster (uzantı oluştur, kodu düzenle)",
-  "last_sync": "Son senkronizasyon: ",
-  "sync_login_browser": "Tarayıcı ile giriş yap",
-  "sync_progress_percent": "Senkronize ediliyor… %{percent}",
-  "@sync_progress_percent": {
-    "placeholders": {
-      "percent": {}
-    }
-  },
-  "sync_progress_indeterminate": "Senkronize ediliyor…",
-  "override_ass_subtitles": "ASS altyazılarını geçersiz kıl",
-  "override_ass_subtitles_info": "ASS/SSA altyazılarına özel stil uygula",
-  "repo_already_exists": "Depo zaten mevcut!",
-  "tracks": "Parçalar",
-  "playback_speed": "Oynatma hızı",
-  "shaders": "Gölgelendiriciler",
-  "video_fit": "Sığdır",
-  "double_page_single_first_page": "İlk sayfa tekli",
-  "double_page_single_first_page_subtitle": "Çift sayfa modunda ilk sayfayı tek başına göster",
-  "memory_overlay": "Bellek kullanımını göster",
-  "memory_overlay_subtitle": "Uygulamanın kullandığı belleğin canlı gösterimi. Tahmin etmek yerine cihaz üzerinde ölçüm yapın: kitaplıkta gezinirken veya bir bölüm okurken izleyin.",
-  "error_reports_extension_failure": "Bu hata NodeLane Comics'den değil, bir uzantıdan kaynaklandı. Uzantılar bu kaynağı yüklediğiniz deponun yöneticileri tarafından yazılır ve sürdürülür, bu nedenle düzeltmenin oraya yapılması gerekir.",
-  "error_reports_already_reported": "Zaten bildirildi",
-  "error_reports_expected_failure": "Bu durum genellikle uygulamadan ziyade kaynak veya ağdan kaynaklanır: süresi dolmuş bir bağlantı, çökmüş bir sunucu veya kopan bir bağlantı.",
   "global_search_no_sources": "Hiçbir {itemType} kaynağı yüklü değil.",
   "@global_search_no_sources": {
     "placeholders": {
@@ -1319,6 +1458,7 @@
   "global_search_only_pinned_hint": "Birini sabitleyin veya Gözat ayarlarından \"Yalnızca sabitlenmiş kaynakları dahil et\" seçeneğini kapatın.",
   "global_search_all_nsfw": "Bunun için sahip olduğunuz tüm kaynaklar NSFW olarak işaretlenmiş ve gizlenmiştir.",
   "global_search_all_nsfw_hint": "Arama yapabilmek için Gözat ayarlarından NSFW kaynaklarını açın.",
+  "missing_source_check_result_message": "Bu girdiler yüklü olmayan kaynaklara işaret ediyor. Taşımak için dokunun veya eklentiyi yükleyin.",
   "related_titles": "İlgili",
   "related_none": "Bu başlık için ilgili bir şey bulunamadı.",
   "relation_adaptation": "Uyarlama",
@@ -1337,13 +1477,6 @@
   "auto_library_update_weekly": "Haftalık",
   "auto_library_update_wifi_only": "Yalnızca Wi-Fi",
   "auto_library_update_wifi_only_subtitle": "Hücresel verideyken planlanan güncellemeyi atlayın.",
-  "double_tap_search_hint": "Tüm {type} aramak için çift dokunun",
-  "show_nav_double_tap_tooltip": "Çift dokunarak arama ipucunu göster",
-  "show_nav_double_tap_tooltip_subtitle": "Manga/Anime/Roman sekmelerinde çift dokunmanın Genel Aramayı açtığını açıklayan bir ipucu göster.",
-  "already_in_library": "\"{title}\" zaten {source} üzerinden kütüphanenizde var.",
-  "add_anyway": "Yine de Ekle",
-  "double_page_auto": "Otomatik çift sayfa",
-  "double_page_auto_subtitle": "Yatay modda otomatik olarak çift sayfa moduna geç",
   "padding": "Kenar Boşluğu",
   "page_mode": "Sayfa modu",
   "single_page": "Tek sayfa",
@@ -1361,5 +1494,1189 @@
   "chapter_swipe_toggle_bookmark": "Yer işaretini aç/kapat",
   "chapter_swipe_toggle_read": "Okundu durumunu değiştir",
   "chapter_swipe_download": "İndir",
-  "chapter_swipe_disabled": "Devre dışı"
+  "chapter_swipe_disabled": "Devre dışı",
+  "update_errors": "Güncelleme hataları",
+  "no_update_errors": "Güncelleme hatası yok",
+  "clear_all": "Hepsini temizle",
+  "dismiss": "Reddet",
+  "previous_episode": "Önceki bölüm",
+  "clear_logs": "Günlükleri temizle",
+  "bold": "Kalın",
+  "italic": "İtalik",
+  "color_yellow": "Sarı",
+  "color_cyan": "Camgöbeği",
+  "color_green": "Yeşil",
+  "color_orange": "Turuncu",
+  "continue_watching": "İzlemeye Devam Et",
+  "search_your_anime": "Animenizi arayın",
+  "category": "Kategori",
+  "hidden_categories": "Gizli kategoriler",
+  "new_category": "Yeni kategori",
+  "local": "Yerel",
+  "tv_home_rows": "Satırlar",
+  "genre_rows": "Tür satırları",
+  "share_backup_file": "NodeLane Comics yedekleme dosyasını paylaş",
+  "close": "Kapat",
+  "migrate_source": "Kaynağı taşı",
+  "cloudflare_bypass_proxy": "Cloudflare bypass proxy'si",
+  "custom_doh_url": "Özel DoH URL",
+  "custom_doh_url_helper": "https DoH (JSON) uç noktası olmalıdır",
+  "anime_only_tv_layout": "Yalnızca anime TV düzeni",
+  "anime_only_beta": "Yalnızca anime (beta)",
+  "tv_home_beta": "TV evi (beta)",
+  "tv_player_beta": "TV oynatıcısı (beta)",
+  "network_settings": "Ağ",
+  "reader_page_layout": "Sayfa düzeni",
+  "reader_continuous_options": "Sürekli okuma",
+  "reader_default_mode_hint": "Varsayılan okuma modu, okuma sırasında ayrı bir mod ayarı yapılmayan başlıklar için geçerlidir.",
+  "extension_service": "Uzatma hizmeti",
+  "extension_service_description": "Uzantı çalışma zamanını ve proxy adresini yönetin.",
+  "proxy_address": "Proxy adresi",
+  "checking_runtime_status": "Durum kontrol ediliyor…",
+  "download_delay_value": "{seconds} s + rastgele gecikme",
+  "@download_delay_value": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_count": "{count, plural, one{1 bölüm} other{{count} bölümler}}",
+  "@download_queue_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_empty_hint": "Bir başlığın bölüm listesinden indirilenleri ekleyin.",
+  "download_queue_order_hint": "Yeniden sıralamak için tutamaçları sürükleyin",
+  "download_queue_empty": "Sıraya alınmış indirme yok",
+  "download_queue_actions": "İndirme işlemleri",
+  "download_queue_cancel_chapter": "Bu bölümün indirilmesini iptal et",
+  "download_queue_cancel_series": "Bu başlık için tüm indirmeleri iptal et",
+  "download_queue_start": "İndirmeleri başlat",
+  "download_queue_retry": "İndirmeleri yeniden deneyin",
+  "download_queue_active": "İndiriliyor",
+  "download_queue_waiting": "İndirme bekleniyor",
+  "download_queue_failed": "İndirme başarısız oldu",
+  "cf_proxy_helper": "FlareSolverr / Byparr uç noktası. Devre dışı bırakmak için boş bırakın.",
+  "mobile_navigation_description": "Yeniden sıralamak için sürükleyin. Manga, anime ve romanlar Kütüphane sekmesini paylaşır. İlk görünür öğe açılışta açılır. Göz Atın ve Daha Fazlası görünür kalır; Diğer'in altında ekstra sekmeler görünür.",
+  "text_align_justify": "Gerekçelendir",
+  "novel_session_modes_hint": "Bir başlığı okurken okuma modunu ve tek veya çift sayfaları ayarlayın.",
+  "tts_languages_failed": "Konuşma motorundan diller yüklenemedi.",
+  "tts_languages_empty": "Konuşma motoru hiçbir dil döndürmedi. Kaydedilen seçiminiz korunur.",
+  "tts_language_unavailable": "Kaydedilen bu dil cihazın mevcut listesinde yok.",
+  "tts_apply_failed": "Bu ayar konuşma motoruna uygulanamadı. Tekrar deneyebilirsiniz.",
+  "player_controls": "Kontroller",
+  "audio_channel_auto": "Otomatik",
+  "audio_channel_auto_safe": "Otomatik (güvenli)",
+  "audio_channel_mono": "Mono",
+  "audio_channel_stereo": "Stereo",
+  "audio_channel_reverse_stereo": "Ters stereo",
+  "mpv_bundled_config_hint": "Uygulamaya dahil edilen yapılandırmayı, komut dosyalarını ve gölgelendiricileri geri yükleyin. Aynı adlara sahip dosyaların üzerine yazılacaktır.",
+  "mpv_restore_bundled": "Paketlenmiş konfigürasyonu geri yükleyin",
+  "mpv_restore_confirm": "Birlikte verilen MPV yapılandırması geri yüklensin mi? Aynı adlara sahip mevcut konfigürasyonun, komut dosyalarının ve gölgelendiricilerin üzerine yazılacaktır. Diğer dosyalar saklanacaktır.",
+  "player_operation_incomplete": "İşlem tamamlanamadı. Dosya erişimini kontrol edip tekrar deneyin.",
+  "custom_buttons_empty_hint": "Etiketi ve basma eylemi olan bir oynatıcı düğmesi ekleyin.",
+  "custom_button_primary": "Varsayılan düğme",
+  "show_password": "Şifreyi göster",
+  "hide_password": "Şifreyi gizle",
+  "tracking_accounts_empty": "Girişlerini yönetmek için İzleme ayarlarında bir hizmete bağlanın.",
+  "tracking_entries_empty": "Bu ortam türü için izlenen giriş yok. Bir başlığın ayrıntı sayfasından izleme ekleyin.",
+  "change_tracking_match": "Eşleşen başlığı değiştir",
+  "remove_tracking": "İzlemeyi kaldır",
+  "remove_tracking_confirm": "“{title}” için izleme bağlantısı kaldırılsın mı? Takip hizmetindeki giriş saklanacaktır.",
+  "@remove_tracking_confirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "tracking_refresh_required": "İzleme durumu doğrulanamadı. Başka bir değişiklik yapmadan önce yenileyin.",
+  "tracking_entry_unlinked": "Bu kayıt yerel bir başlığa bağlı değildir, dolayısıyla burada düzenlenemez.",
+  "backup_selection_shared": "Bu seçimlerde yapılan değişiklikler anında kaydedilir ve otomatik yedeklemelere de uygulanır.",
+  "library_snapshot_history": "Kitaplık anlık görüntüsünü geri yükleme",
+  "library_snapshot_empty": "Hiçbir güvenlik anlık görüntüsü mevcut değildir.",
+  "library_snapshot_restore_message": "Mevcut veriler bu anlık görüntüyle değiştirilecektir. O zamandan bu yana yapılan değişiklikler kaybolacak. Silinen indirmeler geri yüklenemez. Başarının ardından mevcut güvenlik anlık görüntüleri silinecektir.",
+  "library_maintenance_working": "Kitaplık güncelleniyor…",
+  "library_safety_snapshot_note": "Bu işlemden önce bir güvenlik anlık görüntüsü kaydedilecektir. İndirilen dosyaları içermez.",
+  "library_delete_summary": "Kitaplık girişleri: {mangaCount}. Bölümler: {chapterCount}. Geçmiş girişleri: {historyCount}. Güncellemeler: {updateCount}.\n\nAşağıda nelerin saklanacağını seçin.",
+  "@library_delete_summary": {
+    "placeholders": {
+      "mangaCount": {
+        "type": "int"
+      },
+      "chapterCount": {
+        "type": "int"
+      },
+      "historyCount": {
+        "type": "int"
+      },
+      "updateCount": {
+        "type": "int"
+      }
+    }
+  },
+  "library_delete_pick_message": "İçeriğini ve silme seçeneklerini gözden geçirmek için bir kaynak seçin.",
+  "mobile_categories_hint": "Yeniden sıralamak için sürükleyin. Yeniden adlandırmak veya görünürlüğünü ve güncellemelerini değiştirmek için bir kategoriyi açın.",
+  "mobile_category_visible": "Kütüphanede göster",
+  "mobile_category_hidden": "Kütüphaneden gizlenmiş",
+  "mobile_category_updates": "Kitaplık güncellemelerine dahil etme",
+  "statistics_watched": "İzlendi",
+  "calendar_month": "Ay",
+  "calendar_two_weeks": "2 hafta",
+  "calendar_week": "Hafta",
+  "calendar_show_all_dates": "Tüm tarihleri ​​göster",
+  "update_check_no_result": "Yüklenebilir güncelleme bulunamadı. Daha sonra tekrar deneyebilirsiniz.",
+  "release_notes": "Sürüm notları",
+  "no_release_notes": "Hiçbir sürüm notu sağlanmamıştır.",
+  "downloading_update": "Güncelleme indiriliyor…",
+  "preparing_installation": "Kurulum hazırlanıyor…",
+  "onboarding_mobile_libraries_body": "Ne okuyacağınızı seçin. Bunu daha sonra değiştirebilirsiniz.",
+  "onboarding_content_title": "Okumaya başla",
+  "onboarding_mobile_sources_body": "Başlamak için bir yol seçin veya içeriği daha sonra ekleyin.",
+  "onboarding_step_count": "{total} Adımı {step}",
+  "@onboarding_step_count": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_results_for": "“{query}” için sonuçlar",
+  "@global_search_results_for": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "global_search_scope": "{type} · {count, plural, =1{1 kaynak} other{{count} kaynaklar}}",
+  "@global_search_scope": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "migration_search_prompt": "Hedef başlığı arayın.",
+  "migration_original_item": "Geçerli öğe",
+  "migration_target_item": "Seçilen öğe",
+  "migration_partial_failure": "İşlem tamamlanmadı. Bazı değişiklikler kaydedilmiş olabilir. Tekrar denemeden önce bu öğeyi kitaplığınızda kontrol edin.",
+  "migration_no_categories": "Kategori yok. Bu öğeyi kategori olmadan ekleyebilirsiniz.",
+  "mass_migration_select_source": "Geçerli kaynağı seçin",
+  "mass_migration_select_all": "Tümünü seç",
+  "mass_migration_deselect_all": "Tümünün seçimini kaldır",
+  "mass_migration_needs_review": "Tamamlanmamış geçişleri gözden geçirin",
+  "bookshelf_actions": "Kitaplık eylemleri",
+  "bookshelf_ignore_filters": "Arama sırasında filtreleri göz ardı et",
+  "bookshelf_ignore_filters_hint": "Filtrelerle gizlenenler dahil, bu kategorideki tüm çalışmaları arayın.",
+  "bookshelf_stop_update": "Kitaplık güncellemesini durdur",
+  "bookshelf_selected_count": "{count} seçili işler",
+  "@bookshelf_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_remove_library": "Kitaplıktan kaldır",
+  "bookshelf_remove_library_hint": "Favorileri kaldırır. Yerel ithalatlar da kütüphanelerini ve okuma kayıtlarını kaybediyor.",
+  "bookshelf_remove_downloads": "İndirilen dosyaları sil",
+  "bookshelf_remove_downloads_hint": "İş bilgilerini korurken indirilen dosyaları kaldırır.",
+  "bookshelf_remove_local_files_hint": "Ayrıca seçilen yerel içe aktarılan dosyaları da siler ve bunların kitaplık kayıtlarını kaldırır. Bu dosyalar burada kurtarılamaz.",
+  "bookshelf_remove_incomplete": "İşlem tamamlanmadı. Bazı çalışmalar veya dosyalar işlenmiş olabilir. Devam etmeden önce bu iletişim kutusunu kapatın ve kitaplığınızı ve indirilenleri kontrol edin.",
+  "bookshelf_processing": "İşleniyor…",
+  "bookshelf_mark_read": "Okumayı işaretle",
+  "bookshelf_mark_unread": "Okunmadı olarak işaretle",
+  "bookshelf_select_all": "Tümünü seç",
+  "bookshelf_invert_selection": "Seçimi tersine çevir",
+  "bookshelf_settings": "Kitaplık ayarları",
+  "bookshelf_settings_live": "Filtreleme, sıralama ve görüntüleme değişiklikleri hemen etkili olur.",
+  "bookshelf_filter_any": "Herhangi biri",
+  "bookshelf_filter_include": "Dahil Et",
+  "bookshelf_filter_exclude": "Hariç Tut",
+  "bookshelf_all_sources": "Tüm kaynaklar",
+  "bookshelf_sources_selected": "{count} kaynak seçildi",
+  "@bookshelf_sources_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_sort_ascending": "Artan",
+  "bookshelf_sort_descending": "Azalan",
+  "bookshelf_layout": "Kitaplık düzeni",
+  "bookshelf_sources_hint": "Tüm kaynakları göstermek için hiçbirini seçin. Filtrele'ye dokunduğunuzda değişiklikler geçerli olur.",
+  "bookshelf_choose_files": "Dosyaları seç",
+  "bookshelf_import_wait": "Seçiciden bir dosya seçin ve içe aktarmanın bitmesini bekleyin.",
+  "bookshelf_import_incomplete": "İçe aktarma tamamlanmadı. Bazı dosyalar zaten kitaplığınızda olabilir. Bu iletişim kutusunu kapatın ve tekrar içe aktarmadan önce kontrol edin.",
+  "bookshelf_categories_replace": "Kaydetme, bu kategorileri seçilen her çalışmaya atar ve önceki kategorilerin yerine geçer.",
+  "bookshelf_categories_hint": "Bir veya daha fazla kategori seçin veya hiçbirini atamamak için seçimi boş bırakın.",
+  "bookshelf_categories_hidden": "Bu çalışma için mevcut gizli kategoriler korunur.",
+  "bookshelf_categories_incomplete": "Kategoriler tamamen kaydedilemedi. Bu iletişim kutusunu kapatın ve tekrar denemeden önce kitap rafını kontrol edin.",
+  "bookshelf_categories_none_visible": "Burada hiçbir kategori mevcut değildir. Bunları incelemek için kategori yönetimini açın.",
+  "bookshelf_manage_categories": "Kategorileri yönet",
+  "manga_actions": "Komik eylemler",
+  "manga_download_scope": "Bölümleri indir",
+  "manga_download_scope_hint": "Mevcut filtreler içindeki bölümleri seçin. İndirilen bölümler atlanır.",
+  "manga_download_scope_empty": "Mevcut filtrelerle eşleşen bölüm yok. Bu menüyü kapatın ve bölüm filtrelerini ayarlayın.",
+  "manga_action_incomplete": "Eylem tamamlanmadı. Tekrar denemeden önce mevcut durumu kontrol edin.",
+  "chapter_settings": "Bölüm ayarları",
+  "chapter_settings_live": "Filtreleme ve sıralama değişiklikleri anında uygulanır.",
+  "chapter_scanlators_all": "Tüm tarayıcı gruplarını göster",
+  "chapter_scanlators_hint": "Bölümlerini gizlemek için grupları seçin. Filtrele'ye dokunduğunuzda değişiklikler geçerli olur.",
+  "chapter_scanlators_hidden": "{count} tarayıcı grupları gizlendi",
+  "@chapter_scanlators_hidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_selected_count": "{count} bölümler seçildi",
+  "@chapter_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_add_bookmark": "Yer İşareti",
+  "chapter_remove_bookmark": "Yer işaretini kaldır",
+  "chapter_read_following": "Aşağıyı okuyun",
+  "chapter_delete_records": "Bölüm kayıtlarını sil",
+  "chapter_delete_local_hint": "Seçilen bölüm kayıtlarını ve okuma ilerlemesini kaldırır. Orijinal yerel arşivler tutulur; indirilen kopyalar temizlenir.",
+  "chapter_delete_last_hint": "Bunların hepsi bu çizgi romandaki bölümler. Bunları silmek aynı zamanda çizgi romanı kitaplığınızdan da kaldırır.",
+  "chapter_action_incomplete": "Eylem tamamlanmadı. Bazı değişiklikler zaten kaydedilmiş olabilir. Devam etmeden önce bölümleri ve indirilenleri kapatıp kontrol edin.",
+  "reader_display_scope": "Okuma modu ve manuel sayfa düzeni bu çizgi roman için geçerlidir. Okumaya geri dönmek için bir değişiklik seçin.",
+  "reader_display_single_only": "Yatay sürekli okuma tek sayfaları kullanır.",
+  "reader_display_manual_pages": "Sayfa düzeninin değiştirilmesi tüm çizgi romanlar için otomatik çift sayfayı kapatır.",
+  "reader_display_crop_scope": "Tüm çizgi romanlara uygulanır.",
+  "reader_chapter_locate": "Geçerli bölümü bulun",
+  "reader_chapter_search": "Bölümleri veya tarayıcıları arayın",
+  "reader_chapter_scope": "Bölüm filtrelerini ve çizgi roman ayrıntılarından sıralama düzenini kullanır. Yer imleri hemen kaydedilir.",
+  "reader_chapter_current_hidden": "Okuduğunuz bölüm mevcut filtrelerin dışındadır.",
+  "reader_chapter_current": "Şimdi okuyorum",
+  "reader_chapter_read": "Okuma",
+  "reader_chapter_bookmark_failed": "Yer iminin kaydedilmesi onaylanamadı. Listeyi kapatın ve mevcut durumunu kontrol edin.",
+  "reader_image_actions": "Resim eylemleri",
+  "reader_image_original": "Çeviri, kırpma veya okuyucu renk filtreleri olmadan tam orijinal sayfayı kullanır.",
+  "reader_image_save_ios": "Geçerli uygulama depolama konumundaki Resimler klasörüne kaydedin.",
+  "reader_image_save_android": "Cihazın Resimler/düğüm-çizgi roman klasörüne kaydedin.",
+  "reader_image_share": "Sistem paylaşım sayfasını açın.",
+  "reader_image_cover": "Onaylandıktan sonra bu çizgi romanın kapağını değiştirin.",
+  "reader_image_cover_limit": "Kapak görselleri 5 MB'tan küçük olmalıdır. Kaydetme ve paylaşma kullanılabilir durumda kalır.",
+  "reader_image_action_failed": "Eylem onaylanamadı. Bu menüyü kapatın ve tekrar denemeden önce sonucu kontrol edin.",
+  "reader_settings_book_scope": "Bu ayarlar yalnızca bu çizgi roman için geçerlidir.",
+  "reader_settings_global_scope": "Bu ayarlar tüm çizgi romanlara uygulanır ve hemen kaydedilir.",
+  "reader_filters": "Görüntü filtreleri",
+  "reader_filter_scope": "Tüm çizgi romanlara uygulanır. Orijinal görüntüleri değiştirmeden okuma ekranını değiştirir.",
+  "reader_auto_scroll_pause": "Ayarlar açıkken kaydırma duraklatılır.",
+  "manga_synopsis": "Özet",
+  "manga_author": "Yazar: {author}",
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "manga_continue_reading": "Okumaya devam et",
+  "reader_settings_title": "Okuyucu ayarları",
+  "reader_picker_book_scope": "Yalnızca bu çizgi roman için",
+  "reader_picker_global_scope": "Tüm çizgi romanlar için geçerlidir",
+  "reader_picker_apply_hint": "Kaydetmek ve önceki seviyeye dönmek için dokunun.",
+  "reader_scale_fit_screen_hint": "Tüm sayfayı ekrana sığdır",
+  "reader_scale_stretch_hint": "Okuma alanını doldurun",
+  "reader_scale_fit_width_hint": "Sayfayı genişliğe sığdır",
+  "reader_scale_fit_height_hint": "Sayfayı yüksekliğe sığdır",
+  "source_filter_active": "Uygulandı",
+  "source_filter_apply": "Filtreleri uygula",
+  "source_filter_scope": "Filtreler yalnızca bu web sitesi için geçerlidir.",
+  "source_filter_apply_hint": "Seçimlerinizi kullanmak için filtreler uygulayın.",
+  "source_filter_term": "{term, select, genres{Türler} author{Yazar} artist{Sanatçı} title{Başlık} year{Yıl} tags{Etiketler} format{Biçim} publisher{Yayımcı} relevance{Uygunluk} rating{Derecelendirme} views{Görünümler} random{Rastgele} all{Hepsi} none{Hiçbiri} action{Eylem} adventure{Macera} comedy{Komedi} drama{Dram} fantasy{Fantezi} romance{Romantik} science_fiction{Bilim kurgu} slice_of_life{Hayattan kesit} mystery{Gizem} horror{Korku} psychological{Psikolojik} historical{Tarihsel} sports{Spor} supernatural{Doğaüstü} school_life{Okul hayatı} tragedy{Trajedi} shounen{Shounen} shoujo{Shoujo} seinen{Seinen} josei{Josei} isekai{Isekai} martial_arts{Dövüş sanatları} mecha{Meka} music{Müzik} doujinshi{Doujinşi} trending{Trend Olan} new{Yeni} adult_content{Yetişkinlere yönelik içerik} only{Yalnızca} other{{term}}}",
+  "@source_filter_term": {
+    "description": "Common extension filter display labels. Plugin values are never translated.",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "bookshelf_more_display": "Daha fazla görüntüleme seçeneği",
+  "bookshelf_more_display_hint": "Rozetler, kaynaklar ve kategoriler",
+  "bookshelf_download_count": "İndirme sayısı",
+  "bookshelf_source_global_hint": "Kaynak görünürlüğü, paylaşılan görüntüleme tercihini kullanır.",
+  "bookshelf_select_entries": "İşleri seç",
+  "bookshelf_search_options": "Arama seçenekleri",
+  "bookshelf_empty_hint": "Kaynaklardan eserleri toplayın veya yerel dosyaları içe aktarın.",
+  "bookshelf_no_match_hint": "Diğer anahtar kelimeleri deneyin veya mevcut filtreleri ayarlayın.",
+  "bookshelf_clear_query": "Anahtar kelimeleri temizle",
+  "bookshelf_view_selection": "Seçilen çalışmaları görüntüle",
+  "bookshelf_import_formats": "Kitap rafınıza eklemek için yerel bir dosya seçin.",
+  "bookshelf_import_canceled_hint": "Dosya seçiciyi iptal ettikten sonra tekrar seçim yapabilirsiniz.",
+  "bookshelf_browse_sources": "Kaynaklara göz atın",
+  "bookshelf_empty_title": "Kitaplığınız boş",
+  "bookshelf_no_match_title": "Eşleşen çalışma yok",
+  "bookshelf_mark_watched": "Mark izledi",
+  "bookshelf_mark_unwatched": "İzlenmedi olarak işaretle",
+  "nodelane_account": "NodeLane hesabı",
+  "nodelane_sign_in": "NodeLane'da oturum açın",
+  "nodelane_account_intro": "Hesabınızı, aboneliğinizi ve çeviri kotanızı görüntüleyin",
+  "nodelane_login_action": "Oturum açmaya devam edin",
+  "nodelane_login_browser": "Sistem tarayıcısı aracılığıyla oturum açın ve ardından uygulamaya geri dönün",
+  "nodelane_account_id": "Hesap Kimliği",
+  "nodelane_account_init_error": "Hesap depolama alanı mevcut değil. Uygulamayı yeniden başlatın ve tekrar deneyin.",
+  "nodelane_account_refresh_error": "Hesap bilgileri yenilenemedi",
+  "nodelane_account_auth_error": "Oturumunuzun süresi doldu. Tekrar oturum açın",
+  "nodelane_account_unknown": "Abonelik bilgisi mevcut değil",
+  "nodelane_account_current": "Mevcut abonelik",
+  "nodelane_account_free": "Ücretsiz hesap",
+  "nodelane_account_no_subscription": "Aktif abonelik yok",
+  "nodelane_account_active": "Aktif",
+  "nodelane_account_expired": "Süresi dolmuş",
+  "nodelane_account_expiry": "Geçerlilik tarihi:",
+  "nodelane_account_renewal": "Yenileme",
+  "nodelane_renewal_auto": "Otomatik yenileme",
+  "nodelane_renewal_manual": "Manuel yenileme",
+  "nodelane_renewal_stopped": "Otomatik yenileme durduruldu",
+  "nodelane_renewal_gift": "Hediye üyelik",
+  "nodelane_renewal_attention": "Web sitesinde yenileme durumunuzu kontrol edin",
+  "nodelane_next_billing": "Sonraki fatura tarihi",
+  "nodelane_billing_unavailable": "Yenileme bilgisi mevcut değil",
+  "nodelane_manage_account": "Web sitesinde yönet",
+  "nodelane_view_plans": "Abonelik planlarını görüntüleyin",
+  "nodelane_translation_quota": "Çeviri kotası",
+  "nodelane_quota_free": "Ücretsiz kota",
+  "nodelane_quota_subscription": "Abonelik kotası",
+  "nodelane_quota_purchase": "Satın alınan kota",
+  "nodelane_quota_details": "Kota ayrıntılarını görüntüle",
+  "nodelane_quota_expanded": "Kota ayrıntıları",
+  "nodelane_quota_unlimited": "Sınırsız",
+  "nodelane_quota_not_subscribed": "Abone olunmadı",
+  "nodelane_quota_unknown": "Kullanılamaz",
+  "nodelane_quota_used": "Kullanılmış",
+  "nodelane_quota_reserved": "Devam ediyor",
+  "nodelane_quota_reset": "Sonraki sıfırlama",
+  "nodelane_quota_expiry": "Sonraki sona erme tarihi",
+  "nodelane_quota_no_expiry": "Son kullanma tarihi yok",
+  "nodelane_quota_reservation_note": "Devam eden sayfalar halihazırda mevcut kotadan düşülmüştür",
+  "nodelane_quota_available": "{count} sayfa kaldı",
+  "@nodelane_quota_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_quota_pages": "{count} sayfalar",
+  "@nodelane_quota_pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_sign_out": "Oturumu kapat",
+  "nodelane_sign_out_confirm": "Oturumun kapatılması bu cihazdaki resmi çeviriyi duraklatır. Kitaplığınız ve okuma ilerlemeniz tutulur.",
+  "settings_search_hint": "Arama ayarları",
+  "settings_frequent": "Sıklıkla kullanılan",
+  "settings_reading_translation": "Okuma ve çeviri",
+  "settings_app_preferences": "Uygulama tercihleri",
+  "settings_data_management": "Veri ve yönetim",
+  "settings_more_tools": "Daha fazla araç",
+  "settings_more_tools_hint": "Kategoriler, istatistikler ve takvim",
+  "settings_appearance_interface": "Görünüm ve arayüz",
+  "settings_security_privacy": "Güvenlik ve gizlilik",
+  "settings_source_preferences": "Kaynak ayarları",
+  "settings_about_help": "Hakkında ve yardım",
+  "settings_storage_backup": "Depolama ve yedekleme",
+  "settings_pending_downloads": "{count} beklemede",
+  "@settings_pending_downloads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_translation_language": "Çeviri dili",
+  "settings_translation_scope": "Okuyucu ve web sayfası çevirisinde kullanılır",
+  "settings_immediate_choice": "Değişiklikler hemen uygulanır",
+  "settings_translation_init_error": "Çeviri ayarları mevcut değil. Uygulamayı yeniden başlatın ve tekrar deneyin.",
+  "settings_local_cache": "Yerel önbellek",
+  "settings_chapter_cache": "Bölüm ve bölüm önbelleği",
+  "settings_cover_cache": "Kapak önbelleği",
+  "settings_translation_cache": "Çevrilmiş görüntü önbelleği",
+  "settings_translation_cache_hint": "Çeviri kayıtlarını saklayın ve gerektiğinde çevrilmiş görüntüleri tekrar alın",
+  "settings_cache_clear": "Temizle",
+  "settings_translation_cache_done": "Çevrilen görselin önbelleği temizlendi; tutulan çeviri kayıtları",
+  "settings_cache_confirmation": "{name} silinsin mi? Önbelleğe alınan içerik tekrar alınabilir. Kütüphane girişleri saklanacaktır.",
+  "@settings_cache_confirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_advanced_options": "Gelişmiş seçenekler",
+  "settings_manga_reader": "Manga Okuyucu",
+  "settings_novel_reader": "Roman Okuyucusu",
+  "settings_downloads": "İndirme ayarları",
+  "onboarding_welcome": "Hoş Geldiniz",
+  "onboarding_reading_content": "İçeriğin okunması",
+  "onboarding_choose_one": "En az birini seçin",
+  "onboarding_restore_hint": "Kitaplığınızı bir yedekten geri yükleyin",
+  "onboarding_browse_hint": "Desteklenen web sitelerinde başlıkları bulun",
+  "onboarding_import_folder": "Yerel bir klasörü içe aktar",
+  "onboarding_import_folder_hint": "Cihazınızda manga, roman ve anime okuyun",
+  "onboarding_third_party": "Üçüncü taraf bir depo ekleyin",
+  "onboarding_third_party_hint": "Zaten sahip olduğunuz bir depo adresini kullanın",
+  "onboarding_repository_hint": "Depo tarafından sağlanan adresi girin.",
+  "onboarding_repository_address": "Adres",
+  "onboarding_repository_address_hint": "Depo adresini girin",
+  "onboarding_add_repository": "Depo ekle",
+  "onboarding_start": "Başlayın",
+  "onboarding_open_library": "Kütüphaneyi aç",
+  "onboarding_view_imports": "İçe aktarılan içeriği görüntüle",
+  "onboarding_view_folders": "Klasörleri görüntüle",
+  "notice_backup_created": "Yedekleme oluşturuldu",
+  "notice_backup_ready": "Yedekleme dosyasını kaydedin veya paylaşın.",
+  "notice_backup_restored": "Yedekleme geri yüklendi",
+  "notice_backup_unsupported": "Bu yedekleme formatı desteklenmemektedir.",
+  "notice_verification_required": "Web sitesi doğrulaması gerekli",
+  "notice_verification_hint": "Göz atmaya devam etmek için doğrulamayı tamamlayın.",
+  "notice_verify": "Web sitesini doğrulayın",
+  "notice_action_incomplete": "Eylem tamamlanmadı. Tekrar denemeden önce sonucunu kontrol edin.",
+  "notice_library_updating": "Kitaplığın güncellenmesi",
+  "notice_library_progress": "{current} / {total} başlıkları kontrol edildi",
+  "notice_library_failed": "Bazı başlıklar güncellenemedi",
+  "notice_import_completed": "İçe aktarma tamamlandı",
+  "notice_operation_incomplete": "Eylem tamamlanmadı",
+  "subtitle_service": "Çevrimiçi altyazı hizmeti",
+  "subtitle_service_mode": "Altyazı kaynağı",
+  "subtitle_service_disabled": "Kapalı · kayıtlı kimlik bilgilerini temizle",
+  "subtitle_personal_key": "Wyzie anahtarım",
+  "subtitle_custom_service": "Altyazı hizmetim",
+  "subtitle_key": "Wyzie API Anahtar",
+  "subtitle_key_hint": "Kendi Wyzie anahtarınızı girin. Bu cihazda kalır ve uygulama yedeklemelerine dahil edilmez.",
+  "subtitle_get_key": "Kişisel bir anahtar alın",
+  "subtitle_service_address": "Altyazı arama URL",
+  "subtitle_service_token": "Hizmet erişim belirteci (isteğe bağlı)",
+  "subtitle_custom_hint": "Bir Wyzie-compatible hizmetinin, yolu da dahil olmak üzere (örneğin, /search) HTTPS aramasının URL tamamını kullanın. Yalnızca hizmetiniz gerektiriyorsa bir erişim belirteci girin.",
+  "subtitle_service_off_hint": "Çevrimiçi altyazı araması kapalı. Gömülü, kaynak tarafından sağlanan ve yerel altyazılar kullanılabilir durumda kalır.",
+  "subtitle_setup_required": "Aramadan önce bir altyazı hizmeti seçin.",
+  "subtitle_invalid_key": "Boşluksuz bir anahtar girin.",
+  "subtitle_invalid_address": "Sorgu, parça veya yerleşik kimlik bilgileri olmadan tam bir HTTPS URL kullanın.",
+  "subtitle_invalid_token": "Erişim belirteci boşluk içeremez.",
+  "subtitle_storage_failed": "Altyazı ayarları okunamadı veya kaydedilemedi. Lütfen tekrar deneyin.",
+  "subtitle_auth_failed": "Altyazı hizmeti erişimi reddetti. Anahtarınızı veya hizmet jetonunuzu kontrol edin.",
+  "subtitle_quota_exhausted": "Altyazı hizmet kotası doldu. Bu hizmetteki hesabınızı kontrol edin.",
+  "subtitle_network_failed": "Altyazı hizmetine ulaşılamadı. Lütfen tekrar deneyin.",
+  "subtitle_response_invalid": "Altyazı hizmeti desteklenmeyen bir yanıt veya dosya döndürdü.",
+  "detail_loading_chapters": "Bölümler yükleniyor…",
+  "reader_opening_chapter": "Açılış bölümü",
+  "reader_open_chapter": "Bölümü aç",
+  "reader_loading_pages": "Bölüm görüntüleri alınıyor…",
+  "reader_loading_pages_hint": "Okuma hazır olduğunda otomatik olarak başlayacaktır.",
+  "reader_loading_failed": "Bu bölüm yüklenemedi",
+  "reader_loading_retry_hint": "Bağlantınızı kontrol edin ve tekrar deneyin.",
+  "reader_no_pages": "Bu bölüm için resim bulunamadı",
+  "reader_loading_previous": "Önceki bölüm yükleniyor…",
+  "reader_previous_failed": "Önceki bölüm yüklenemedi",
+  "reader_reached_start": "İlk bölüme ulaştınız",
+  "reader_loading_next": "Sonraki bölüm yükleniyor…",
+  "reader_next_failed": "Sonraki bölüm yüklenemedi",
+  "reader_image_loading": "Resim yükleniyor…",
+  "reader_image_failure_hint": "Diğer sayfaları okumaya devam edebilirsiniz.",
+  "comic_paged": "Sayfa sayfa",
+  "comic_scroll": "Aşağı kaydır",
+  "comic_book_scope": "Yalnızca bu kitap için geçerlidir · değişiklikler hemen kaydedilir",
+  "comic_defaults_title": "Varsayılanlar ve alışkanlıklar",
+  "comic_defaults_hint": "Varsayılanlar, bir kitap için özelleştirmediğiniz alanlara uygulanır.",
+  "comic_habits_hint": "Bu alışkanlıklar her çizgi roman için geçerlidir.",
+  "comic_turn": "Sonraki sayfaya kaydırın",
+  "comic_left": "Sol",
+  "comic_right": "Sağ",
+  "comic_up": "Yukarı",
+  "comic_fit": "Sayfaya sığdırma",
+  "comic_fit_contain": "Tüm sayfa",
+  "comic_fit_width": "Uygun genişlik",
+  "comic_fit_height": "Montaj yüksekliği",
+  "comic_layout": "Sayfa düzeni",
+  "comic_auto": "Otomatik",
+  "comic_layout_hint": "Otomatik, yeterli genişlik olduğunda bir yayılma gösterir.",
+  "comic_width": "İçerik genişliği",
+  "comic_full": "Tam",
+  "comic_comfortable": "Rahat",
+  "comic_narrow": "Dar",
+  "comic_gap": "Sayfa aralığı",
+  "comic_no_gap": "Kesintisiz",
+  "comic_small_gap": "Küçük",
+  "comic_image_title": "Görüntüye ince ayar yapın",
+  "comic_image_hint": "Kırpma ve ton yalnızca bu kitabı etkiler.",
+  "comic_wide": "Geniş sayfalar",
+  "comic_intact": "Bütün olarak saklayın",
+  "comic_split": "Bölünmüş",
+  "comic_rotate": "Döndür",
+  "comic_wide_hint": "Bölme, sayfa çevirme yönünü takip eder. Tek sayfalık okuma için geçerlidir.",
+  "comic_cover": "Bölüm başına bir kapak",
+  "comic_effects_reset": "Görüntü ayarlarını sıfırla",
+  "comic_book_reset": "Kitap varsayılanlarını geri yükleme",
+  "comic_book_reset_hint": "Bu kitabın özel okuma ayarlarını temizler. Çeviri değişmedi.",
+  "comic_canvas": "Okuyucu arka planı",
+  "comic_system": "Sistem",
+  "comic_black": "Siyah",
+  "comic_gray": "Gri",
+  "comic_paper": "Kağıt",
+  "comic_tap": "Sayfaları çevirmek için dokunun",
+  "comic_tap_hint": "Taşımak için kenarlara hafifçe vurun; Kontrolleri göstermek için ortaya dokunun.",
+  "comic_scroll_start": "Otomatik kaydırmayı başlat",
+  "comic_scroll_pause": "Otomatik kaydırmayı duraklat",
+  "comic_scroll_speed": "Kaydırma hızı",
+  "comic_scroll_hint": "Bu panel kapandığında başlar. Uygulama ön plandan çıktığında duraklar.",
+  "comic_save_failed": "Kaydedilemedi. Lütfen tekrar deneyin.",
+  "comic_reading": "Okuma",
+  "comic_chapter_habits_hint": "Bölüm listesi alışkanlıkları tüm kitaplar için geçerlidir.",
+  "browser_title": "Tarayıcı",
+  "translation_image_display": "Görüntü ekranı",
+  "translation_display_hint": "Önce mevcut çevirileri göster. Çeviri olmadığında orijinali saklayın.",
+  "translation_sign_in_required": "Çeviriyi etkinleştirmek için oturum açın",
+  "translation_sign_in_hint": "Oturum açtıktan sonra otomatik olarak çevrilecek çevrilmiş görüntülere geçin.",
+  "translation_automatic": "Otomatik çeviri",
+  "translation_original_hint": "Orijinaller gösteriliyor. Otomatik olarak çevirmek için çevrilmiş resimlere geçin.",
+  "translation_window_hint": "Mevcut ve gelecek görüntüleri yalnızca çevirileri gösterirken işleyin.",
+  "translation_channel": "Çeviri kanalı",
+  "translation_no_images": "Bu sayfada henüz çevrilebilir resim bulunamadı",
+  "translation_waiting_image": "Mevcut görüntü bekleniyor",
+  "translation_progress": "Tamamlanan {complete} / {total} resimler{issues, plural, =0{} =1{ · 1 görselin ilgilenilmesi gerekiyor} other{ · {issues} resimlere dikkat edilmesi gerekiyor}}",
+  "@translation_progress": {
+    "placeholders": {
+      "complete": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "issues": {
+        "type": "int"
+      }
+    }
+  },
+  "translation_image_actions_hint": "Tekrar çevirmek de dahil olmak üzere daha fazla işlem için bir resme dokunun ve basılı tutun.",
+  "translation_title": "Manga çevirisi",
+  "translation_system_sign_in": "Sistem tarayıcınızı kullanarak oturum açın",
+  "translation_target_language": "Hedef dil",
+  "translation_clear_cache": "Çevrilen resim önbelleğini temizle",
+  "translation_cache_hint": "Çeviri kayıtlarını saklayın ve gerektiğinde sonuçları tekrar alın.",
+  "translation_saved_read_failed": "Kaydedilen çeviri yüklenemedi",
+  "translation_read_failed": "Çevrilmiş görüntü yüklenemedi",
+  "operation_retry": "Eylem tamamlanmadı. Lütfen tekrar deneyin.",
+  "translation_original": "Orijinal",
+  "translation_translated": "Çevrilmiş",
+  "translation_regenerate_image": "Bu görüntüyü tekrar çevir",
+  "translation_read_image": "Çevrilmiş görüntüyü yeniden yükle",
+  "translation_image_actions": "Daha fazla görüntü eylemi",
+  "translation_processing": "İşleme",
+  "translation_reading": "Çevrilmiş görüntü yükleniyor",
+  "translation_waiting": "Çeviri bekleniyor",
+  "translation_preparing": "Çevirinin hazırlanması",
+  "translation_uploading": "Orijinal yükleniyor",
+  "translation_running": "Çeviri",
+  "translation_uncertain": "Durumun doğrulanması gerekiyor",
+  "translation_failed": "Çeviri başarısız oldu",
+  "translation_verify": "Doğrula",
+  "translation_reread": "Yeniden yükle",
+  "browser_back": "Geri",
+  "browser_translation": "Web sayfası çevirisi",
+  "browser_new_tab_action": "Yeni sekme aç",
+  "browser_current_tab": "Akım",
+  "browser_close_tab": "Sekmeyi kapat",
+  "browser_new_tab": "Yeni sekme",
+  "browser_page": "Web sayfası",
+  "browser_unopened": "Henüz sayfa açılmadı",
+  "browser_address_hint": "Bir URL girin veya yapıştırın",
+  "browser_invalid_address": "Geçerli bir URL girin",
+  "browser_clear_address": "Temizle URL",
+  "browser_paste_address": "Yapıştır URL",
+  "browser_open_address": "Açık URL",
+  "browser_tab_count": "Sekmeler · {count}",
+  "@browser_tab_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "browser_load_failed": "Bu sayfa açılamadı",
+  "browser_load_failed_hint": "Bağlantınızı ve URL öğesini kontrol edin.",
+  "browser_edit_address": "Düzenle URL",
+  "browser_clear_cookies_confirm": "Tüm web siteleri için oturum açma oturumları temizlensin mi?",
+  "browser_clear_cookies_hint": "Tüm sekmelerdeki web siteleri yeniden oturum açmanızı gerektirebilir.",
+  "browser_clear_cookies_action": "Oturum açma oturumlarını temizle",
+  "browser_tab_limit": "En fazla 12 sekmeyi açık tutabilirsiniz. Önce birini kapat.",
+  "browser_forward": "İleri",
+  "browser_clear_all_cookies": "Tüm web sitesinde oturum açma oturumlarını temizle",
+  "browser_clear_failed": "Oturumlar temizlenemedi. Lütfen tekrar deneyin.",
+  "browser_save_failed": "Sekmeler kaydedilemedi. Lütfen tekrar deneyin.",
+  "browser_tabs_full": "12 sekme zaten açık",
+  "browser_no_tabs": "Henüz açık sekme yok",
+  "browser_close_failed": "Sekmeler kaydedilemedi. Yeniden denemek için kapat'a tekrar dokunun.",
+  "source_pinned_websites": "Sabitlenmiş web siteleri",
+  "manage": "Yönet",
+  "translation_settings_hint": "Otomatik çeviri, hedef dil ve kanal",
+  "translation_show_original": "Orijinali göstermek için dokunun",
+  "translation_show_translated": "Çeviriyi göstermek için dokunun",
+  "source_display": "Ekran",
+  "source_cover_title": "Kapak ve başlık",
+  "source_cover_only": "Yalnızca kapak",
+  "source_save_search": "Mevcut aramayı kaydet",
+  "source_saved_searches": "Kayıtlı aramalar",
+  "source_website_info": "Web sitesi bilgisi",
+  "source_saved_search_title": "{title} · Aramak için dokunun",
+  "@source_saved_search_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "action_done": "Bitti",
+  "source_search_keyword": "Anahtar kelime: {query}",
+  "@source_search_keyword": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "source_no_saved_searches": "Henüz kayıtlı arama yok",
+  "source_save_search_hint": "Bir anahtar kelimeyi arayın ve ardından bunu web sitesi eylemlerinden kaydedin.",
+  "source_saved_search_scope": "Anahtar kelimeler yalnızca bu web sitesi için kaydedildi.",
+  "source_search_here": "Bu web sitesindeki başlıkları arayın",
+  "source_filter_results": "Filtrelenmiş sonuçlar",
+  "source_search_results": "Arama sonuçları",
+  "source_return_popular": "Popülere geri dön",
+  "source_popular_titles": "Popüler başlıklar",
+  "source_no_titles": "Eşleşen başlık bulunamadı",
+  "source_no_titles_hint": "Anahtar kelimelerinizi veya filtrelerinizi değiştirin veya popüler başlıklara dönün.",
+  "source_load_more_failed": "Daha fazlası yüklenemedi. Lütfen tekrar deneyin.",
+  "source_load_pull_retry": "Bu web sitesi yüklenemedi. Yeniden denemek için aşağı çekin.",
+  "source_clear_failed": "Temizleme tamamlanamadı. Lütfen tekrar deneyin.",
+  "source_uninstall_failed": "Kaldırma işlemi tamamlanamadı. Lütfen tekrar deneyin.",
+  "source_details": "Kaynak ayrıntıları",
+  "source_repository_website": "Depo web sitesi",
+  "source_provided_settings": "Kaynak tarafından sağlanan ayarlar",
+  "source_advanced_actions": "Gelişmiş eylemler",
+  "source_edit_metadata": "Kaynak bilgisini düzenle",
+  "source_clear_cookies": "Bu web sitesine ait çerezleri temizle",
+  "source_clear_cookies_hint": "Bir sonraki ziyaretinizde yeniden oturum açmanız gerekebilir.",
+  "source_uninstall": "Kaynağı kaldır",
+  "source_settings_save_failed": "Kaydetme işlemi tamamlanmadı. Kontrol etmek için kaynak ayarlarını yeniden açın.",
+  "repository_third_party": "Üçüncü taraf veri havuzları",
+  "repository_refresh_failed": "Katalog yenilenemedi. Önbelleğe alınan içerik tutulur. Lütfen tekrar deneyin.",
+  "repository_show_sources": "Bu depodaki kaynakları göster",
+  "repository_copy_catalog": "Katalog bağlantısını kopyala",
+  "repository_remove": "Depoyu kaldır",
+  "repository_remove_hint": "Kurulu kaynakları koruyun ve kaldırılan katalog girişlerini kaldırın.",
+  "repository_empty": "Henüz hiçbir üçüncü taraf veri havuzu eklenmedi",
+  "repository_built_in": "Yerleşik resmi katalog",
+  "repository_hidden": "Gizli",
+  "repository_refreshing": "Yenileniyor…",
+  "repository_refresh": "Kataloğu yenile",
+  "repository_manage_hint": "Üçüncü taraf kaynaklarının nereden indirildiğini yönetin.",
+  "repository_invalid_address": "Geçerli bir HTTP veya HTTPS URL girin",
+  "repository_already_added": "Bu depo zaten eklenmiş",
+  "repository_unrecognized": "Desteklenen katalog bulunamadı. Bağlantıyı kontrol edip tekrar deneyin.",
+  "repository_read_failed": "Katalog okunamadı. Lütfen tekrar deneyin.",
+  "repository_save_failed": "Kaydetme işlemi tamamlanmadı. Depo listenizi kontrol edin.",
+  "repository_paste_hint": "Üçüncü taraf veri havuzu katalog bağlantısını yapıştırın",
+  "repository_address": "Deposu URL",
+  "repository_paste_link": "Bağlantıyı yapıştır",
+  "repository_recognized": "{type} · Katalog tanındı",
+  "@repository_recognized": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "repository_choose_sources_hint": "Depoyu ekledikten sonra ihtiyacınız olan kaynakları seçin.",
+  "search_scope": "Arama kapsamı",
+  "search_scope_hint": "Aranacak web sitelerini seçin",
+  "search_websites_action": "{count, plural, =1{1 web sitesinde arama yapın} other{{count} web sitelerinde arama yapın}}",
+  "@search_websites_action": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_find_website": "Bir web sitesi bulun",
+  "search_selected_websites": "{count, plural, =1{1 web sitesi seçildi} other{{count} web siteleri seçildi}}",
+  "@search_selected_websites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "action_clear": "Temizle",
+  "search_deselect_results": "Eşleşen web sitelerinin seçimini kaldırın",
+  "search_select_results": "Eşleşen web sitelerini seçin",
+  "search_no_websites_hint": "Eşleşen web sitesi yok. Başka bir ad veya dil deneyin.",
+  "search_select_website_hint": "Aramak için en az bir web sitesi seçin.",
+  "search_start_title": "Başlıkları bulmak için anahtar kelimeleri girin",
+  "search_start_hint": "Aynı anda birden fazla web sitesinde arama yapın ve eşleşen başlıkları gösterin.",
+  "search_empty_scope": "Bu kapsamda aranabilir web sitesi yok",
+  "search_empty_scope_hint": "Tüm web sitelerine geçin veya aranacak web sitelerini seçin.",
+  "search_result_count": "{count, plural, =1{1 sonuç} other{{count} sonuçlar}}",
+  "@search_result_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_titles": "Başlıkları ara",
+  "search_actions": "Arama eylemleri",
+  "search_details": "Arama ayrıntıları",
+  "search_title_hint": "Başlığa göre ara",
+  "search_searching": "Arama",
+  "search_found_results": "{count, plural, =1{1 sonuç bulundu} other{{count} sonuç bulundu}}",
+  "@search_found_results": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_no_results": "Eşleşen sonuç yok",
+  "search_failed": "Arama başarısız oldu",
+  "search_found_titles": "{count, plural, =1{1 başlık bulundu} other{{count} başlık bulundu}} · {websites, plural, =1{1 web sitesi} other{{websites} web siteleri}}",
+  "@search_found_titles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "websites": {
+        "type": "int"
+      }
+    }
+  },
+  "search_finding_titles": "Başlıkları bulma",
+  "search_complete": "Arama tamamlandı",
+  "search_in_progress": "Arama",
+  "search_finding_related": "Eşleşen başlıklar aranıyor…",
+  "search_no_results_yet": "Henüz arama sonucu yok",
+  "search_no_matching_titles": "Eşleşen başlık bulunamadı",
+  "search_results_appear_hint": "Sonuçlar bulundukça burada görünecektir.",
+  "search_failed_websites_hint": "Bazı web siteleri aramayı tamamlayamadı. Bunları arama ayrıntılarında yeniden deneyin.",
+  "search_change_keywords_hint": "Daha kısa anahtar kelimeler deneyin veya daha fazla web sitesinde arama yapın.",
+  "search_view_details": "Arama ayrıntılarını görüntüle",
+  "search_adjust_scope": "Arama kapsamını ayarlayın",
+  "search_query_websites": "{query} · {count, plural, =1{1 web sitesi} other{{count} web siteleri}}",
+  "@search_query_websites": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_completed_count": "Tamamlandı {completed} / {total}",
+  "@search_completed_count": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "search_retry_website_hint": "Başarısız olan web sitelerini tek tek yeniden deneyin",
+  "source_selected_count": "{count, plural, =1{1 öğe seçildi} other{{count} öğe seçildi}}",
+  "@source_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_languages": "Arama dilleri",
+  "source_deselect": "Seçimi kaldır",
+  "source_select": "Kaynağı seç",
+  "source_multilingual": "Çok dilli",
+  "source_language_unknown": "Dil belirtilmemiş",
+  "source_adult_content": "18+ içerik içerir",
+  "source_classification_unknown": "Sınıflandırma belirtilmemiş",
+  "source_more_classifications": "{count, plural, =1{Tüm kaynak bilgilerini görüntüle, 1 kategori daha} other{Tüm kaynak bilgilerini, {count} daha fazla kategoriyi görüntüleyin}}",
+  "@source_more_classifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_loading_website": "Web sitesi yükleniyor",
+  "source_unpin": "Sabitlemeyi kaldır",
+  "source_pin": "Pim",
+  "source_open": "Aç",
+  "source_metadata_hint": "Bilgi kaynak katalogdan gelir. Kategoriler web sitesinin kapsadığı içeriği tanımlar.",
+  "source_region": "Bölge",
+  "source_format": "Biçim",
+  "source_creation": "Yaratılış",
+  "source_unspecified": "Belirtilmedi",
+  "source_pricing": "Fiyatlandırma",
+  "source_region_jp": "Japon çizgi romanları",
+  "source_region_kr": "Kore çizgi romanları",
+  "source_region_cn": "Çin çizgi romanları",
+  "source_region_hk_tw": "Hong Kong ve Tayvan çizgi romanları",
+  "source_region_western": "Batılı çizgi romanlar",
+  "source_region_other": "Diğer bölgeler",
+  "source_format_page": "Sayfalandırılmış çizgi romanlar",
+  "source_format_vertical": "Dikey çizgi romanlar",
+  "source_format_strip": "Çizgi romanlar",
+  "source_creation_original": "Orijinal",
+  "source_creation_fan": "Fan çalışıyor",
+  "source_free_watch": "İzlemesi ücretsiz",
+  "source_free_read": "Okuması ücretsiz",
+  "source_partial_paid": "Kısmen ödenmiş",
+  "source_paid_watch": "Ücretli görüntüleme",
+  "source_paid_read": "Ücretli okuma",
+  "source_pricing_unknown": "Fiyatlandırma belirtilmemiş",
+  "source_language_filter": "Dile göre filtrele",
+  "source_language_filter_hint": "Yalnızca bu kataloğu filtreleyin. Yüklü kaynaklar etkilenmez.",
+  "source_all_languages": "Tüm diller",
+  "action_apply": "Uygula",
+  "source_load_retry": "Bu web sitesi yüklenemedi. Lütfen tekrar deneyin.",
+  "source_catalog_refresh_failed": "Katalog yenilenemedi. Mevcut içerik korunur. Yeniden denemek için aşağı çekin.",
+  "source_uninstall_count": "{count, plural, =1{1 kaynak kaldırılsın mı?} other{{count} kaynakları kaldırılsın mı?}}",
+  "@source_uninstall_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_uninstall_selected_hint": "Seçilen kaynakları kaldırın ve ayarlarını temizleyin. Kitaplık başlıklarını ve indirilenleri saklayın.",
+  "source_failed_count": "{count, plural, =1{1 kaynak için eylem başarısız oldu.} other{{count} kaynakları için eylemler başarısız oldu.}} Seçim tutuldu. Lütfen tekrar deneyin.",
+  "@source_failed_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_latest_content": "En son içerik",
+  "source_actions": "Kaynak eylemleri",
+  "source_bulk_manage": "Birden fazla kaynağı yönetin",
+  "source_update_installed": "Yüklü kaynakları güncelleyin",
+  "source_no_matching_websites": "Eşleşen web sitesi yok",
+  "source_no_websites": "Web sitesi mevcut değil",
+  "source_search_installed_hint": "Yüklü kaynaklarda başlıkları arayın",
+  "source_global_search": "Kaynaklar arasında arama yapın",
+  "source_manage_repositories": "Depoları yönet",
+  "source_view_third_party": "Üçüncü taraf kaynakları görüntüleyin",
+  "source_catalog_load_failed": "Katalog yüklenemedi. Yeniden denemek için aşağı çekin.",
+  "source_all_websites": "Tüm web siteleri",
+  "source_available": "Kuruluma hazır",
+  "source_third_party": "Üçüncü taraf",
+  "source_name_or_title": "Web sitesi adı veya başlığı",
+  "view_all": "Tümünü görüntüle",
+  "search_searching_ellipsis": "Aranıyor…",
+  "onboarding_untested_content": "{type} · Test edilmemiş",
+  "@onboarding_untested_content": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "onboarding_untested": "Test Edilmemiş",
+  "source_custom_scope": "Özel",
+  "source_custom_websites": "Seçilen web siteleri",
+  "tv_hidden_library_hint": "Her başlık gizli bir kategoride bulunur.\nBirini göstermek için “Tümü” üzerinde Tamam'ı basılı tutun.",
+  "tv_no_matching_anime": "Eşleşen anime yok",
+  "tv_no_matching_category": "“{category}”da eşleşen anime yok",
+  "@tv_no_matching_category": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_filtered_empty_hint": "Mevcut filtrelerle eşleşen anime yok.\nAramanın yanındaki düğmeden bunları değiştirin.",
+  "tv_new_episodes": "Yeni Bölümler",
+  "tv_recently_added": "Son Eklenenler",
+  "tv_empty_category_hint": "Bu kategoride henüz anime yok.\nBir başlığın ayrıntı sayfasından ona başlık ekleyin.",
+  "tv_empty_library": "Anime kitaplığınız boş",
+  "tv_empty_library_hint": "Evinizi doldurmak için Gözat'tan anime ekleyin",
+  "tv_browse_anime": "Animelere göz atın",
+  "tv_new_count": "{count} yeni",
+  "@tv_new_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tv_category_hidden": "“{category}”yi gizle · göstermek için “Tümü” üzerinde Tamam'ı basılı tutun",
+  "@tv_category_hidden": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_no_hidden_categories": "Gizli kategori yok",
+  "import_torrent_file": "içe aktarma .torrent dosyası",
+  "import_video_formats": ".mp4, .mkv, .avi ve daha fazlası",
+  "cloudflare_proxy_optional": "İsteğe Bağlı FlareSolverr / Byparr URL",
+  "tv_home_layout_hint": "Düz ızgara yerine satır tabanlı anime ana sayfası (Devam · Yeni Bölümler · kategoriler)",
+  "tv_hide_libraries_hint": "Manga ve roman kitaplıklarını gizle (TV'de varsayılan olarak açıktır)",
+  "anime_only_hint": "Uygulama genelinde manga ve romanı gizleyin. Her şeyi göstermek için kapatın.",
+  "audio_auto_safe": "Otomatik güvenli",
+  "tv_player_hint": "Açık: özel TV oynatıcısı.  Kapalı: orijinal (masaüstü) oynatıcı.",
+  "release_open_failed": "Sürüm açılamıyor",
+  "tv_replay": "Tekrar Oynatma",
+  "tv_no_episodes": "Henüz bölüm yok",
+  "tracker_continue_series": "Diziyi izlemeye devam edin",
+  "tracker_watchlist_series": "İzleme Listesi serisi",
+  "tracker_continue_movies": "Film izlemeye devam edin",
+  "tracker_watchlist_movies": "İzleme listesi filmleri",
+  "tracker_trending_series": "Trend Serisi",
+  "tracker_trending_movies": "Trend Olan Filmler",
+  "tracker_popular_series": "Popüler Seri",
+  "tracker_popular_movies": "Popüler Filmler",
+  "tracker_top_series": "En İyi Seri (Tüm Zamanlar)",
+  "tracker_top_movies": "En İyi Filmler (Tüm Zamanların)",
+  "tracker_airing_series": "Havalandırma Serisi",
+  "tracker_airing_anime": "Yayınlanan Anime",
+  "tracker_popular_anime": "Popüler Anime",
+  "tracker_upcoming_anime": "Yaklaşan Anime",
+  "tracker_popular_manga": "Popüler Manga",
+  "tracker_top_manga": "En İyi Manga",
+  "tracker_top_manhwa": "En İyi Manhwa",
+  "tracker_top_manhua": "En İyi Manhua",
+  "tracker_latest_anime": "En Son Anime",
+  "tracker_best_anime": "En Çok Puan Alan Anime",
+  "tracker_latest_manga": "En Son Manga",
+  "tracker_best_manga": "En Çok Puan Alan Manga",
+  "tracker_trending_anime": "Trend Olan Anime",
+  "tracker_upcoming_manga": "Yaklaşan Manga",
+  "tracker_trending_manga": "Trend Olan Manga",
+  "selection_progress": "{selected}/{total} seçildi",
+  "@selection_progress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "source_code_editor": "Kod Düzenleyici",
+  "source_code_execute": "Yürüt",
+  "source_console_logs": "Konsol Günlükleri",
+  "source_no_logs": "Henüz kayıt yok",
+  "source_updated_successfully": "Kaynak başarıyla güncellendi",
+  "source_obsolete": "ESKİ",
+  "player_seek_forward_seconds": "{seconds} saniye ileri arama",
+  "@player_seek_forward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_seek_backward_seconds": "{seconds} saniye geriye doğru arama",
+  "@player_seek_backward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_autoplay_on": "Otomatik oynatma sonraki bölüm: açık",
+  "player_autoplay_off": "Sonraki bölümün otomatik oynatılması: kapalı",
+  "player_no_other_quality": "Başka kalite yok",
+  "player_no_subtitles": "Altyazı yok",
+  "player_no_audio_tracks": "Ses parçası yok",
+  "player_seek_forward": "İleriye doğru arama",
+  "player_seek_backward": "Geriye doğru arama",
+  "player_seconds": "{seconds, plural, =1{1 saniye} other{{seconds} saniye}}",
+  "@player_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "subtitle_preview": "Lorem ipsum dolor sit amet",
+  "subtitle_style": "Tarzı",
+  "translation_official_channel": "NodeLane Resmi",
+  "translation_auth_required": "Önce çeviri hesabınızda oturum açın.",
+  "translation_source_changed": "Orijinal görüntü değişti. Lütfen yeniden yükleyin.",
+  "translation_source_missing": "Orijinal görüntü şu anda kullanılamıyor.",
+  "translation_resource_limit": "Bu resim cihazın işleme sınırını aşıyor. Orijinali saklanır.",
+  "translation_storage_full": "Çeviri deposu dolu. Önce çevrilmiş görselleri temizleyin.",
+  "translation_invalid_image": "Geçersiz resim formatı veya içeriği.",
+  "translation_unsupported_image": "Çeviri bu görsel için desteklenmiyor. Orijinali saklanır.",
+  "translation_invalid_result": "Çevrilen görselin doğrulanması başarısız oldu. Lütfen yeniden yükleyin.",
+  "translation_result_unavailable": "Çevrilen resim kullanılamıyor. Lütfen yeniden yükleyin.",
+  "translation_result_expired": "Çevrilen resmin süresi doldu. Lütfen tekrar tercüme edin.",
+  "translation_analysis_too_large": "Analiz edilecek çok fazla görüntü içeriği var. Görüntü boyutunu küçültüp tekrar deneyin.",
+  "translation_region_limit": "Resimde çok fazla metin bölgesi var. Bölün ve tekrar deneyin.",
+  "translation_text_limit": "Bir metin bölgesi çok uzun. Görüntüyü ayarlayıp tekrar deneyin.",
+  "translation_unavailable": "Bu çeviri artık mevcut değil.",
+  "translation_outcome_unknown": "Sonucun doğrulanması gerekiyor. Tekrar gönderilmedi.",
+  "translation_rate_limited": "İstekler sınırlıdır. Çeviri otomatik olarak devam edecektir.",
+  "translation_quota_exhausted": "Yetersiz çeviri kotası.",
+  "translation_unsupported_language": "Hizmet bu hedef dili desteklemiyor.",
+  "translation_upgrade_required": "Çeviri protokolü uyumsuz. Uygulamayı güncelleyin.",
+  "translation_remote_failed": "Bu sayfanın çevirisi başarısız oldu. Manuel olarak tekrar deneyebilirsiniz.",
+  "translation_bridge_invalid": "Web sayfası değişti. Çeviriyi tekrar etkinleştirin.",
+  "translation_connection_failed": "Bağlantı başarısız oldu. Lütfen tekrar deneyin.",
+  "translation_paused": "Çeviri duraklatıldı. İlerlemesini doğrulayabilirsiniz.",
+  "translation_preparing_ellipsis": "Çeviri hazırlanıyor…",
+  "translation_checking_original": "Orijinal görüntü kontrol ediliyor…",
+  "translation_submitting": "Gönderiliyor…",
+  "translation_uploading_ellipsis": "Orijinal yükleniyor…",
+  "translation_waiting_ellipsis": "Çeviri bekleniyor…",
+  "translation_running_ellipsis": "Çeviriliyor…",
+  "translation_verify_result": "Sonucun doğrulanması gerekiyor",
+  "translation_partial": "Bazı içerik çevrildi",
+  "translation_ready": "Çevrilmiş resim hazır",
+  "list_separator": ", ",
+  "player_play": "Oynat",
+  "player_quality": "Kalite",
+  "player_subtitles": "Altyazılar",
+  "player_audio": "Ses",
+  "player_statistics": "Meraklıları için istatistikler",
+  "player_auto": "Otomatik",
+  "source_information": "Kaynak bilgisi",
+  "source_code_page": "Page",
+  "source_code_query": "Sorgu",
+  "repository_invalid_source": "Geçersiz kaynak - kaldırın",
+  "player_fit_contain": "İçerir",
+  "player_fit_cover": "Cover",
+  "player_fit_fill": "Doldur",
+  "player_fit_height": "Yükseklik",
+  "player_fit_width": "Genişlik",
+  "player_fit_scale": "Terazisi",
+  "player_fit_none": "Hiçbiri",
+  "player_shader_clear": "Kapalı (gölgelendiricileri temizle)",
+  "player_shader_luma": "Luma Yükseltme",
+  "player_decoder_auto": "Otomatik (donanım)",
+  "player_decoder_software": "Yazılımı (donanım yok)",
+  "player_stats_toggle": "Yer paylaşımını değiştir",
+  "player_stats_general": "General",
+  "player_stats_frames": "Çerçeve zamanlamaları",
+  "player_stats_cache": "Giriş önbelleği",
+  "player_stats_filters": "Aktif filtreler",
+  "player_stats_log": "Günlüğü",
+  "source_mark_pinned": "Pim",
+  "translation_image_action": "{action} bu resim",
+  "@translation_image_action": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_waiting": "belleği: örnek bekleniyor",
+  "memory_rss": "RSS {current} zirve {peak}",
+  "@memory_rss": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_cache": "önbellek {current} / {limit} zirve {peak}",
+  "@memory_cache": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_items": "öğeler {count} / {limit} canlı {live} zirve {peak}",
+  "@memory_items": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "live": {
+        "type": "int"
+      },
+      "peak": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_full_samples": "tam {percent} / {count, plural, =1{1 sample} other{{count} örnekleri}}",
+  "@memory_full_samples": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_reset_hint": "sıfırlamak için ayarlardan kapatıp açın",
+  "action_hide": "Gizle",
+  "discord_get_app": "Get {app}",
+  "@discord_get_app": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_idle": "Boşta",
+  "discord_watching_title": "İzleniyor {title}",
+  "@discord_watching_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_reading_title": "Okuma {title}",
+  "@discord_reading_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

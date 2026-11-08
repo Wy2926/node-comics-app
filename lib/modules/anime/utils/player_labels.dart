@@ -1,3 +1,4 @@
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter/painting.dart';
 
 /// Shortens a source quality label like "1080p (Sub)" to "1080-sub"/"1080-dub".
@@ -42,12 +43,31 @@ String shortTrackLabel(String raw) {
   return candidate;
 }
 
-String fitShortLabel(BoxFit fit) => switch (fit) {
-  BoxFit.contain => 'Contain',
-  BoxFit.cover => 'Cover',
-  BoxFit.fill => 'Fill',
-  BoxFit.fitHeight => 'Height',
-  BoxFit.fitWidth => 'Width',
-  BoxFit.scaleDown => 'Scale',
-  BoxFit.none => 'None',
+String fitShortLabel(BoxFit fit, AppLocalizations l10n) => switch (fit) {
+  BoxFit.contain => l10n.player_fit_contain,
+  BoxFit.cover => l10n.player_fit_cover,
+  BoxFit.fill => l10n.player_fit_fill,
+  BoxFit.fitHeight => l10n.player_fit_height,
+  BoxFit.fitWidth => l10n.player_fit_width,
+  BoxFit.scaleDown => l10n.player_fit_scale,
+  BoxFit.none => l10n.player_fit_none,
 };
+
+/// Localize only presentation; mpv commands and saved shader names stay stable.
+String shaderDisplayLabel(AppLocalizations l10n, String name, String command) =>
+    switch (command) {
+      'clear_anime' => l10n.player_shader_clear,
+      'set_luma' => l10n.player_shader_luma,
+      _ => name,
+    };
+
+String playerStatsLabel(AppLocalizations l10n, String binding) =>
+    switch (binding) {
+      'stats/display-stats-toggle' => l10n.player_stats_toggle,
+      'stats/display-page-1' => l10n.player_stats_general,
+      'stats/display-page-2' => l10n.player_stats_frames,
+      'stats/display-page-3' => l10n.player_stats_cache,
+      'stats/display-page-4' => l10n.player_stats_filters,
+      'stats/display-page-5' => l10n.player_stats_log,
+      _ => binding,
+    };

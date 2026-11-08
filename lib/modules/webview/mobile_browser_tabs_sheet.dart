@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
@@ -41,7 +42,7 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
 
   @override
   Widget build(BuildContext context) => NodeLaneCatalogSheet(
-    title: '标签页 · ${entries.length}',
+    title: context.l10n.browser_tab_count(entries.length),
     heightFactor: .8,
     fitContent: true,
     bottom: Column(
@@ -64,8 +65,8 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
           icon: Icon(NodeLaneIcons.of(context).add),
           label: Text(
             entries.length < BrowserSessionStore.maxTabs
-                ? '新建标签页'
-                : '已打开 12 个标签页',
+                ? context.l10n.browser_new_tab_action
+                : context.l10n.browser_tabs_full,
           ),
         ),
       ],
@@ -73,7 +74,7 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
     child: entries.isEmpty
         ? NodeLaneEmptyState(
             icon: NodeLaneIcons.of(context).browserStart,
-            title: '还没有打开的标签页',
+            title: context.l10n.browser_no_tabs,
           )
         : GridView.builder(
             shrinkWrap: true,
@@ -114,7 +115,7 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
                     }
                   } catch (_) {
                     if (mounted) {
-                      setState(() => error = '标签状态保存失败，请再次点击关闭重试。');
+                      setState(() => error = context.l10n.browser_close_failed);
                     }
                   } finally {
                     if (mounted) setState(() => closing.remove(id));

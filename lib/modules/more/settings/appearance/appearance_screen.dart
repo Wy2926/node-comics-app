@@ -17,7 +17,7 @@ import 'package:mangayomi/modules/more/settings/appearance/widgets/theme_selecto
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/utils/language.dart';
+import 'package:mangayomi/l10n/languages.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/app_ui_scale_state_provider.dart';
 import 'package:mangayomi/modules/widgets/tv_escapable_slider.dart';
@@ -109,10 +109,7 @@ class AppearanceScreen extends ConsumerWidget {
                   SwitchListTile(
                     secondary: const Icon(Icons.grid_view_outlined),
                     title: Text(context.l10n.tv_home_beta),
-                    subtitle: const Text(
-                      'Rows-based anime home (Continue · New Episodes · '
-                      'categories) instead of the flat grid',
-                    ),
+                    subtitle: Text(context.l10n.tv_home_layout_hint),
                     value: ref.watch(tvHomeStyleProvider),
                     onChanged: (v) =>
                         ref.read(tvHomeStyleProvider.notifier).set(v),
@@ -220,7 +217,7 @@ class AppearanceScreen extends ConsumerWidget {
     return ListTile(
       title: Text(l10n.app_language),
       subtitle: Text(
-        completeLanguageName(l10nLocale.toLanguageTag()),
+        nodeLaneLanguageName(l10nLocale),
         style: TextStyle(fontSize: 11, color: context.secondaryColor),
       ),
       onTap: () {
@@ -241,16 +238,14 @@ class AppearanceScreen extends ConsumerWidget {
                   },
                   child: SuperListView.builder(
                     shrinkWrap: true,
-                    itemCount: AppLocalizations.supportedLocales.length,
+                    itemCount: nodeLaneSupportedLocales.length,
                     itemBuilder: (context, index) {
-                      final locale = AppLocalizations.supportedLocales[index];
+                      final locale = nodeLaneSupportedLocales[index];
                       return RadioListTile(
                         dense: true,
                         contentPadding: const EdgeInsets.all(0),
                         value: locale,
-                        title: Text(
-                          completeLanguageName(locale.toLanguageTag()),
-                        ),
+                        title: Text(nodeLaneLanguageName(locale)),
                       );
                     },
                   ),

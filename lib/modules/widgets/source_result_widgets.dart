@@ -27,6 +27,27 @@ class SourceResultSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final heading = InkWell(
+      onTap: onOpen,
+      child: Wrap(
+        spacing: NodeLaneTokens.space8,
+        runSpacing: NodeLaneTokens.space4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(title, style: t.title),
+          if (metadata.isNotEmpty) Text(metadata, style: t.caption),
+        ],
+      ),
+    );
+    final action = onOpen != null && !loading && count > 0
+        ? TextButton.icon(
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+            onPressed: onOpen,
+            label: Text(context.l10n.view_all),
+            icon: Icon(icons.forward, size: NodeLaneTokens.smallIconSize),
+            iconAlignment: IconAlignment.end,
+          )
+        : null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         NodeLaneTokens.gutter,
@@ -37,35 +58,42 @@ class SourceResultSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: onOpen,
-                  child: Wrap(
-                    spacing: NodeLaneTokens.space8,
-                    runSpacing: NodeLaneTokens.space4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(title, style: t.title),
-                      if (metadata.isNotEmpty) Text(metadata, style: t.caption),
-                    ],
-                  ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (action == null) return heading;
+              final label = TextPainter(
+                text: TextSpan(
+                  text: context.l10n.view_all,
+                  style: Theme.of(context).textTheme.labelLarge,
                 ),
-              ),
-              if (onOpen != null && !loading && count > 0)
-                TextButton(
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                  onPressed: onOpen,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('查看全部'),
-                      Icon(icons.forward, size: NodeLaneTokens.smallIconSize),
-                    ],
-                  ),
-                ),
-            ],
+                textDirection: Directionality.of(context),
+                textScaler: MediaQuery.textScalerOf(context),
+              )..layout();
+              final actionWidth =
+                  label.width +
+                  NodeLaneTokens.smallIconSize +
+                  NodeLaneTokens.space16;
+              label.dispose();
+              // A translated action must leave enough room for the source name.
+              if (actionWidth > constraints.maxWidth * .35) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    heading,
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: action,
+                    ),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: heading),
+                  action,
+                ],
+              );
+            },
           ),
           const SizedBox(height: NodeLaneTokens.space8),
           if (loading)
@@ -79,7 +107,10 @@ class SourceResultSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: NodeLaneTokens.space12),
-                Text('正在搜索…', style: t.readerSecondary),
+                Text(
+                  context.l10n.search_searching_ellipsis,
+                  style: t.readerSecondary,
+                ),
               ],
             )
           else if (status != null)

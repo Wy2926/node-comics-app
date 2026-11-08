@@ -209,12 +209,14 @@ class MobileOnboardingLibraries extends StatelessWidget {
                               color: testingColor,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              '待测试',
-                              style: t.caption.copyWith(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: testingColor,
+                            Flexible(
+                              child: Text(
+                                context.l10n.onboarding_untested,
+                                style: t.caption.copyWith(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: testingColor,
+                                ),
                               ),
                             ),
                           ],

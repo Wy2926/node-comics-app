@@ -78,7 +78,7 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
             entry(
               '浏览器 Browser',
               NodeLaneRow(
-                title: '浏览器',
+                title: context.l10n.browser_title,
                 icon: icons.browser,
                 onTap: () => context.go('/browser'),
               ),

@@ -60,11 +60,14 @@ class _PlayerAudioScreenState extends ConsumerState<PlayerAudioScreen> {
             ListTile(
               onTap: () {
                 final values = [
-                  (AudioChannel.auto, "Auto"),
-                  (AudioChannel.autoSafe, "Auto-safe"),
-                  (AudioChannel.mono, "Mono"),
-                  (AudioChannel.stereo, "Stereo"),
-                  (AudioChannel.reverseStereo, "Reverse stereo"),
+                  (AudioChannel.auto, context.l10n.player_auto),
+                  (AudioChannel.autoSafe, context.l10n.audio_auto_safe),
+                  (AudioChannel.mono, context.l10n.audio_channel_mono),
+                  (AudioChannel.stereo, context.l10n.audio_channel_stereo),
+                  (
+                    AudioChannel.reverseStereo,
+                    context.l10n.audio_channel_reverse_stereo,
+                  ),
                 ];
                 showDialog(
                   context: context,

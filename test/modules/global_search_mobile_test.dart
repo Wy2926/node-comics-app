@@ -284,8 +284,8 @@ void main() {
         await tester.pump();
         expect(field.controller!.text, isEmpty);
         expect(calls, ['Seed']);
-        expect(find.text('输入关键词搜索作品'), findsOneWidget);
-        expect(find.text('未找到相关作品'), findsNothing);
+        expect(find.text('Enter keywords to find titles'), findsOneWidget);
+        expect(find.text('No matching titles found'), findsNothing);
         await tester.enterText(find.byType(TextFormField), '  Next  ');
         await tester.pump();
         expect(calls, ['Seed']);
@@ -296,10 +296,10 @@ void main() {
         expect(field.controller!.text, 'Next');
         seed.completeError(StateError('old query failure'));
         await tester.pump();
-        expect(find.text('未找到相关作品'), findsNothing);
+        expect(find.text('No matching titles found'), findsNothing);
         next.complete(MPages(list: []));
         await tester.pumpAndSettle();
-        expect(find.text('未找到相关作品'), findsOneWidget);
+        expect(find.text('No matching titles found'), findsOneWidget);
         field.onSubmitted!(' Next ');
         await tester.pump();
         expect(calls, ['Seed', 'Next']);
@@ -332,7 +332,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(requests, 0);
-      expect(find.text('输入关键词搜索作品'), findsOneWidget);
+      expect(find.text('Enter keywords to find titles'), findsOneWidget);
       expect(find.byType(SourceSearchScreen), findsNothing);
       await tester.pumpWidget(const SizedBox());
     });

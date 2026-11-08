@@ -99,13 +99,19 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
           'bell.fill',
         ),
         '/browser' => (
-          '浏览器',
+          context.l10n.browser_title,
           icons.browser,
           icons.browserSelected,
           'square.on.square',
           'square.on.square.fill',
         ),
-        '/browse' => ('来源', icons.web, icons.web, 'globe', 'globe'),
+        '/browse' => (
+          context.l10n.sources,
+          icons.web,
+          icons.web,
+          'globe',
+          'globe',
+        ),
         '/trackerLibrary' => (
           l10n.tracking,
           icons.chapters,

@@ -127,7 +127,8 @@ class _TrackerSectionScreenState extends State<TrackerSectionScreen> {
 
   Future<void> _fetchData() async {
     final section = widget.section;
-    final key = '${section.syncId}-${section.itemType.name}-${section.name}';
+    final key =
+        '${section.syncId}-${section.itemType.name}-${section.cacheKey}';
     try {
       final cached = section.isSearch
           ? null

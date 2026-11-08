@@ -1781,7 +1781,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         icon: Icons.fit_screen_outlined,
         valueBuilder: (context) => ValueListenableBuilder<BoxFit>(
           valueListenable: _fit,
-          builder: (context, fit, _) => Text(fitShortLabel(fit)),
+          builder: (context, fit, _) => Text(fitShortLabel(fit, context.l10n)),
         ),
         contentBuilder: (context) => _fitSectionWidget(context),
       ),
@@ -1912,7 +1912,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
   Widget _fitSectionWidget(BuildContext context) {
     return FitSectionWidget(
       fit: _fit,
-      fitLabel: fitShortLabel,
+      fitLabel: (fit) => fitShortLabel(fit, context.l10n),
       onSelect: (fit) {
         _fit.value = fit;
         _key.currentState?.update(fit: fit);
@@ -2120,7 +2120,11 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         if (iconOnly) {
           return MobilePlayerCompactSeekControl(
             key: const ValueKey('mobile-player-portrait-seek-button'),
-            tooltip: value?.currentTitle ?? '+$defaultSkipIntroLength seconds',
+            tooltip:
+                value?.currentTitle ??
+                context.l10n.player_seek_forward_seconds(
+                  defaultSkipIntroLength,
+                ),
             seconds: value == null ? defaultSkipIntroLength : null,
             onPressed: onPressed,
             onLongPress: onLongPress,
@@ -2378,7 +2382,9 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
                       height: 50,
                       width: 50,
                       child: IconButton(
-                        tooltip: '-$skipDuration seconds',
+                        tooltip: context.l10n.player_seek_backward_seconds(
+                          skipDuration,
+                        ),
                         onPressed: () async => await _seekBy(-skipDuration),
                         icon: Stack(
                           children: [
@@ -2411,7 +2417,9 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
                       height: 50,
                       width: 50,
                       child: IconButton(
-                        tooltip: '+$skipDuration seconds',
+                        tooltip: context.l10n.player_seek_forward_seconds(
+                          skipDuration,
+                        ),
                         onPressed: () async => await _seekBy(skipDuration),
                         icon: Stack(
                           children: [
@@ -2512,8 +2520,8 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
           final autoPlay = ref.watch(autoPlayNextEpisodeProvider);
           return Tooltip(
             message: autoPlay
-                ? 'Autoplay next episode: on'
-                : 'Autoplay next episode: off',
+                ? context.l10n.player_autoplay_on
+                : context.l10n.player_autoplay_off,
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
               onTap: () =>

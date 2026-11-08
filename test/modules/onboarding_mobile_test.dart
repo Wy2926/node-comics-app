@@ -311,7 +311,7 @@ void main() {
         owner: true,
       );
       Future<void> toSource() async {
-        await tester.tap(find.widgetWithText(FilterChip, 'Anime · 待测试'));
+        await tester.tap(find.widgetWithText(FilterChip, 'Anime · Untested'));
         await tester.pumpAndSettle();
         await tester.tap(find.widgetWithText(FilledButton, 'Next'));
         await tester.pumpAndSettle();

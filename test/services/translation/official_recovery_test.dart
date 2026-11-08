@@ -68,6 +68,11 @@ Future<void> _until(bool Function() check) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  // These service tests exercise a real loopback HTTP fixture.
+  final previousHttpOverrides = HttpOverrides.current;
+  HttpOverrides.global = null;
+  tearDownAll(() => HttpOverrides.global = previousHttpOverrides);
   late Directory directory;
   late Isar db;
   late TranslationRepository repository;
@@ -440,7 +445,7 @@ void main() {
       );
       await Future<void>.delayed(const Duration(milliseconds: 25));
       expect(value.stateFor(target.page).actions, isEmpty);
-      expect(value.stateFor(target.page).message, contains('拆分图片'));
+      expect(value.stateFor(target.page).message, contains('Split it'));
       await expectLater(
         value.perform(target, TranslationAction.retry),
         throwsA(isA<TranslationFailure>()),

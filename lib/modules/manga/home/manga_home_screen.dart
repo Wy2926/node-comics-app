@@ -260,7 +260,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       results.notifiedError = error;
       _notice?.dismiss();
       _notice = showNodeLaneNotice(
-        nextPage ? '加载更多失败，请重试。' : '网站暂时无法加载，可下拉重试。',
+        nextPage
+            ? context.l10n.source_load_more_failed
+            : context.l10n.source_load_pull_retry,
         kind: NodeLaneNoticeKind.error,
         actionLabel: context.l10n.retry,
         onAction: () async {

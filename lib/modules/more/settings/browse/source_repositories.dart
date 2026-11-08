@@ -45,7 +45,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
             .where((part) => part.isNotEmpty)
             .lastOrNull ??
         repo.jsonUrl ??
-        'Invalid source - remove it';
+        context.l10n.repository_invalid_source;
   }
 
   bool _containsRepository(String address) {

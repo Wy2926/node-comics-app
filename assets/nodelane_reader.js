@@ -172,7 +172,7 @@
       badge.icon.textContent=item.working?'':item.issue?'!':'Aa';
       badge.text.textContent=item.label; badge.row.title=item.detail || item.label;
       badge.button.textContent=item.actionLabel;
-      badge.button.setAttribute('aria-label',item.actionLabel+'此图片');
+      badge.button.setAttribute('aria-label',item.actionSemanticLabel || item.actionLabel);
       badge.button.hidden=!item.action; badge.button.disabled=!item.action;
     }
     for (const id of badges.keys()) if (!keep.has(id)) dropBadge(id);

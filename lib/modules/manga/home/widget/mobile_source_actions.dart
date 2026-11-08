@@ -49,17 +49,23 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
           NodeLaneTokens.space20,
         ),
         children: [
-          const NodeLaneCatalogHeading('显示方式'),
+          NodeLaneCatalogHeading(context.l10n.source_display),
           NodeLaneSegments<DisplayType>(
             value: widget.display,
             labelStyle: t.readerLabel,
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: DisplayType.comfortableGrid,
-                label: Text('封面与标题'),
+                label: Text(context.l10n.source_cover_title),
               ),
-              ButtonSegment(value: DisplayType.compactGrid, label: Text('仅封面')),
-              ButtonSegment(value: DisplayType.list, label: Text('列表')),
+              ButtonSegment(
+                value: DisplayType.compactGrid,
+                label: Text(context.l10n.source_cover_only),
+              ),
+              ButtonSegment(
+                value: DisplayType.list,
+                label: Text(context.l10n.list),
+              ),
             ],
             onChanged: choose,
           ),
@@ -68,12 +74,12 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
             children: [
               if (widget.canSave)
                 NodeLaneRow(
-                  title: '保存当前搜索',
+                  title: context.l10n.source_save_search,
                   icon: icons.bookmarkOutline,
                   onTap: () => choose(SourceCatalogAction.save),
                 ),
               NodeLaneRow(
-                title: '已保存搜索',
+                title: context.l10n.source_saved_searches,
                 icon: icons.manga,
                 onTap: () => choose(SourceCatalogAction.saved),
               ),
@@ -91,7 +97,7 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
                     onTap: () => choose(SourceCatalogAction.filter),
                   ),
                 NodeLaneRow(
-                  title: '来源设置',
+                  title: context.l10n.sources_settings,
                   icon: icons.settings,
                   onTap: () => choose(SourceCatalogAction.settings),
                 ),
@@ -103,7 +109,7 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
             NodeLaneGroupSurface(
               children: [
                 NodeLaneRow(
-                  title: '网站说明',
+                  title: context.l10n.source_website_info,
                   icon: icons.info,
                   trailing: Icon(
                     showNotes ? icons.down : icons.forward,
@@ -151,8 +157,8 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
         ref.watch(savedSearchesProvider)[widget.sourceId] ??
         const <SavedSearch>[];
     return NodeLaneCatalogSheet(
-      title: '已保存搜索',
-      subtitle: '${widget.title} · 点击立即搜索',
+      title: context.l10n.source_saved_searches,
+      subtitle: context.l10n.source_saved_search_title(widget.title),
       heightFactor: entries.isEmpty ? .38 : .58,
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -162,13 +168,15 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => setState(() => managing = !managing),
-                child: Text(managing ? '完成' : '管理'),
+                child: Text(
+                  managing ? context.l10n.action_done : context.l10n.manage,
+                ),
               ),
             ),
           for (var i = 0; i < entries.length; i++)
             NodeLaneRow.card(
               title: entries[i].name,
-              subtitle: '关键词：${entries[i].query}',
+              subtitle: context.l10n.source_search_keyword(entries[i].query),
               leading: Icon(icons.bookmarkOutline),
               first: i == 0,
               last: i == entries.length - 1,
@@ -177,7 +185,7 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
                   : () => Navigator.pop(context, entries[i].query),
               trailing: managing
                   ? NodeLaneIconButton(
-                      tooltip: '移除',
+                      tooltip: context.l10n.remove,
                       icon: icons.delete,
                       style: NodeLaneIconButtonStyle.plain,
                       destructive: true,
@@ -191,15 +199,18 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
             NodeLaneGroupSurface(
               children: [
                 NodeLaneRow(
-                  title: '还没有保存的搜索',
-                  subtitle: '输入关键词搜索后，可从网站操作中保存。',
+                  title: context.l10n.source_no_saved_searches,
+                  subtitle: context.l10n.source_save_search_hint,
                   icon: icons.bookmarkOutline,
                 ),
               ],
             ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text('仅保存当前网站的关键词。', style: t.readerSecondary),
+            child: Text(
+              context.l10n.source_saved_search_scope,
+              style: t.readerSecondary,
+            ),
           ),
         ],
       ),

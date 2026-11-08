@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:io';
@@ -131,9 +132,13 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
       final controller = scope.notifier!;
       final translated = controller.showTranslation;
       return Tooltip(
-        message: translated ? '点击切换为原图' : '点击切换为译图',
+        message: translated
+            ? context.l10n.translation_show_original
+            : context.l10n.translation_show_translated,
         child: NodeLaneToolbarAction(
-          label: translated ? '译图' : '原图',
+          label: translated
+              ? context.l10n.translation_translated
+              : context.l10n.translation_original,
           active: translated,
           icon: translated
               ? NodeLaneIcons.of(context).translate
@@ -143,7 +148,7 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
       );
     }
     return IconButton(
-      tooltip: '漫画翻译',
+      tooltip: context.l10n.translation_title,
       icon: Icon(
         scope.notifier!.enabled ? Icons.translate : Icons.translate_outlined,
       ),
@@ -172,7 +177,7 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
         controller.foreground &&
         controller.runtime != null;
     final status = visible
-        ? TranslationImageStatus.forTarget(controller, target)
+        ? TranslationImageStatus.forTarget(controller, target, context.l10n)
         : const TranslationImageStatus('', visible: false);
     // Keep the image at the same element depth when translation toggles.
     return Stack(

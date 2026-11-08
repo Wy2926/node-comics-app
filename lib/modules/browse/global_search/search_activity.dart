@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -18,11 +20,11 @@ class SourceSearchActivity {
   final int count;
   final VoidCallback? retry;
 
-  String get label => switch (phase) {
-    SearchPhase.searching => '正在搜索',
-    SearchPhase.results => '找到 $count 个结果',
-    SearchPhase.empty => '没有匹配结果',
-    SearchPhase.failed => '搜索失败',
+  String label(AppLocalizations l10n) => switch (phase) {
+    SearchPhase.searching => l10n.search_searching,
+    SearchPhase.results => l10n.search_found_results(count),
+    SearchPhase.empty => l10n.search_no_results,
+    SearchPhase.failed => l10n.search_failed,
   };
 }
 
@@ -65,10 +67,10 @@ class SearchActivitySummary extends StatelessWidget {
               Expanded(
                 child: Text(
                   count > 0
-                      ? '已找到 $count 个作品 · ${matched.length} 个网站'
+                      ? context.l10n.search_found_titles(count, matched.length)
                       : searching
-                      ? '正在查找作品'
-                      : '搜索完成',
+                      ? context.l10n.search_finding_titles
+                      : context.l10n.search_complete,
                   style: t.readerSecondary,
                 ),
               ),
@@ -76,7 +78,7 @@ class SearchActivitySummary extends StatelessWidget {
                 const SizedBox(width: NodeLaneTokens.space8),
                 const _SearchSpinner(),
                 const SizedBox(width: NodeLaneTokens.space8),
-                Text('搜索中', style: t.caption),
+                Text(context.l10n.search_in_progress, style: t.caption),
               ],
             ],
           ),
@@ -84,20 +86,24 @@ class SearchActivitySummary extends StatelessWidget {
             NodeLaneEmptyState(
               icon: NodeLaneIcons.of(context).search,
               title: searching
-                  ? '正在寻找相关作品…'
+                  ? context.l10n.search_finding_related
                   : failed
-                  ? '暂未取得搜索结果'
-                  : '未找到相关作品',
+                  ? context.l10n.search_no_results_yet
+                  : context.l10n.search_no_matching_titles,
               message: searching
-                  ? '找到后会直接显示在这里。'
+                  ? context.l10n.search_results_appear_hint
                   : failed
-                  ? '有网站未能完成搜索，可在搜索详情中重试。'
-                  : '试试更短的关键词，或扩大搜索范围。',
+                  ? context.l10n.search_failed_websites_hint
+                  : context.l10n.search_change_keywords_hint,
               action: searching
                   ? null
                   : TextButton(
                       onPressed: failed ? onDetails : onScope,
-                      child: Text(failed ? '查看搜索详情' : '调整搜索范围'),
+                      child: Text(
+                        failed
+                            ? context.l10n.search_view_details
+                            : context.l10n.search_adjust_scope,
+                      ),
                     ),
             ),
         ],
@@ -134,8 +140,8 @@ class SearchActivitySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => NodeLaneCatalogSheet(
-    title: '搜索详情',
-    subtitle: '$query · ${sources.length} 个网站',
+    title: context.l10n.search_details,
+    subtitle: context.l10n.search_query_websites(query, sources.length),
     heightFactor: NodeLaneTokens.readerSheetFraction,
     child: ValueListenableBuilder(
       valueListenable: activity,
@@ -151,7 +157,7 @@ class SearchActivitySheet extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
               child: Text(
-                '已完成 $completed / ${sources.length}',
+                context.l10n.search_completed_count(completed, sources.length),
                 style: t.readerSecondary,
               ),
             );
@@ -159,7 +165,10 @@ class SearchActivitySheet extends StatelessWidget {
           if (index == sources.length + 1) {
             return Padding(
               padding: const EdgeInsets.only(top: NodeLaneTokens.space16),
-              child: Text('失败网站可单独重试', style: t.readerSecondary),
+              child: Text(
+                context.l10n.search_retry_website_hint,
+                style: t.readerSecondary,
+              ),
             );
           }
           final source = sources[index - 1];
@@ -174,12 +183,12 @@ class SearchActivitySheet extends StatelessWidget {
             minHeight: NodeLaneTokens.rowHeight,
             title: source.name ?? '',
             icon: NodeLaneIcons.of(context).web,
-            subtitle: state.label,
+            subtitle: state.label(context.l10n),
             trailing: switch (state.phase) {
               SearchPhase.failed => TextButton(
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
                 onPressed: state.retry,
-                child: const Text('重试'),
+                child: Text(context.l10n.retry),
               ),
               SearchPhase.searching => const _SearchSpinner(),
               SearchPhase.results => Icon(

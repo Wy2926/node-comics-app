@@ -81,20 +81,20 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
             .toSet();
     final result = await showSourceMultiChoice<String>(
       context,
-      title: '语言筛选',
-      subtitle: '仅筛选当前目录，不影响已安装来源',
+      title: context.l10n.source_language_filter,
+      subtitle: context.l10n.source_language_filter_hint,
       current: initial,
       options: [
         for (final language in available)
           SourceOption(
             language,
             language.toLowerCase() == 'all'
-                ? '多语言'
+                ? context.l10n.source_multilingual
                 : completeLanguageName(language.toLowerCase()),
           ),
       ],
-      allLabel: '全部语言',
-      saveLabel: '应用',
+      allLabel: context.l10n.source_all_languages,
+      saveLabel: context.l10n.action_apply,
       reset: true,
     );
     if (mounted && result != null) setState(() => languages[key] = result);
@@ -132,7 +132,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       }
       final loaded = await sourceRepository.findByIdAsync(source.id!);
       if (loaded == null || loaded.sourceCode?.isNotEmpty != true) {
-        throw StateError('加载失败');
+        throw StateError('Source unavailable after installation');
       }
       if (mounted &&
           open &&
@@ -151,7 +151,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       if (mounted &&
           type == source.itemType &&
           thirdParty == requestedThirdParty) {
-        _showFailure('网站暂时无法加载，请重试。');
+        _showFailure(context.l10n.source_load_retry);
       }
     } finally {
       if (mounted) setState(() => busy.remove(source.id));
@@ -191,7 +191,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       if (mounted &&
           type == requestedType &&
           thirdParty == requestedThirdParty) {
-        _showFailure('目录刷新失败，已保留当前内容，可下拉重试。');
+        _showFailure(context.l10n.source_catalog_refresh_failed);
       }
     } finally {
       _refreshing = false;
@@ -244,9 +244,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     if (pinned == null &&
         !await showNodeLaneConfirmation(
           context,
-          title: '卸载 ${targets.length} 个来源？',
-          message: '将卸载所选的已安装来源并清除其来源设置，保留书架作品和下载。',
-          confirmLabel: '卸载',
+          title: context.l10n.source_uninstall_count(targets.length),
+          message: context.l10n.source_uninstall_selected_hint,
+          confirmLabel: context.l10n.uninstall,
           destructive: true,
         )) {
       return;
@@ -277,8 +277,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
           failed++;
         }
       }
-      if (failed > 0) {
-        _showFailure('$failed 个来源操作失败，已保留选择，请重试。');
+      if (mounted && failed > 0) {
+        _showFailure(context.l10n.source_failed_count(failed));
       } else if (mounted) {
         _finishSelection();
       }
@@ -297,13 +297,13 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       onMore: (pinned) => _applySelection(targets, pinned: pinned),
       actions: [
         NodeLaneToolbarAction(
-          label: '设为常用',
+          label: context.l10n.source_mark_pinned,
           icon: icons.pin,
           enabled: !_bulkBusy && targets.any((s) => s.isPinned != true),
           onPressed: () => _applySelection(targets, pinned: true),
         ),
         NodeLaneToolbarAction(
-          label: '卸载',
+          label: context.l10n.uninstall,
           icon: icons.delete,
           destructive: true,
           enabled: !_bulkBusy && installed.isNotEmpty,
@@ -314,7 +314,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         nodeLaneSelectionMenuItem(
           context,
           value: false,
-          label: '取消常用',
+          label: context.l10n.source_unpin,
           icon: icons.pinSelected,
           enabled: targets.any((s) => s.isPinned == true),
         ),
@@ -336,7 +336,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
             NodeLaneGroupSurface(
               children: [
                 NodeLaneRow(
-                  title: '来源资料',
+                  title: context.l10n.source_information,
                   icon: NodeLaneIcons.of(context).info,
                   onTap: () {
                     Navigator.of(context, rootNavigator: true).pop();
@@ -344,7 +344,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                   },
                 ),
                 NodeLaneRow(
-                  title: source.isPinned == true ? '取消常用' : '固定到常用',
+                  title: source.isPinned == true
+                      ? context.l10n.source_unpin
+                      : context.l10n.source_pin,
                   icon: NodeLaneIcons.of(context).pin,
                   onTap: () {
                     Navigator.of(context, rootNavigator: true).pop();
@@ -352,7 +354,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                   },
                 ),
                 NodeLaneRow(
-                  title: '最新内容',
+                  title: context.l10n.source_latest_content,
                   icon: NodeLaneIcons.of(context).latest,
                   onTap: () {
                     Navigator.of(context, rootNavigator: true).pop();
@@ -366,7 +368,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                 ),
                 if ((source.baseUrl ?? '').isNotEmpty) ...[
                   NodeLaneRow(
-                    title: '在浏览器打开',
+                    title: context.l10n.open_in_browser,
                     icon: NodeLaneIcons.of(context).navigation,
                     onTap: () {
                       Navigator.of(context, rootNavigator: true).pop();
@@ -382,7 +384,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                 ],
                 if (source.isAdded == true) ...[
                   NodeLaneRow(
-                    title: '来源设置',
+                    title: context.l10n.sources_settings,
                     icon: NodeLaneIcons.of(context).settings,
                     onTap: () {
                       Navigator.of(context, rootNavigator: true).pop();
@@ -467,7 +469,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   Widget _menu(List<Source> catalog) {
     final icons = NodeLaneIcons.of(context);
     return NodeLaneMenuButton<String>(
-      tooltip: '来源操作',
+      tooltip: context.l10n.source_actions,
       icon: icons.more,
       onSelected: (value) {
         if (value == 'search') _searchContents();
@@ -483,11 +485,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       },
       itemBuilder: (_) => [
         for (final (value, title, icon) in [
-          ('search', '搜作品', icons.search),
-          ('filter', '语言筛选', icons.filter),
+          ('search', context.l10n.search_titles, icons.search),
+          ('filter', context.l10n.source_language_filter, icons.filter),
           if (thirdParty && catalog.isNotEmpty)
-            ('manage', '批量管理', icons.selected),
-          if (thirdParty) ('update', '更新已安装来源', icons.refresh),
+            ('manage', context.l10n.source_bulk_manage, icons.selected),
+          if (thirdParty)
+            ('update', context.l10n.source_update_installed, icons.refresh),
           if (ref.read(developerModeStateProvider))
             ('create', context.l10n.create_extension, icons.code),
           ('local', context.l10n.local_source, icons.folderOutline),
@@ -508,8 +511,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     return Center(
       child: NodeLaneEmptyState(
         icon: searching ? icons.search : icons.web,
-        title: searching ? '没有匹配的网站' : '暂无可用网站',
-        message: searching ? '在已安装来源中搜索作品' : null,
+        title: searching
+            ? context.l10n.source_no_matching_websites
+            : context.l10n.source_no_websites,
+        message: searching ? context.l10n.source_search_installed_hint : null,
         action: NodeLaneSecondaryButton(
           onPressed: searching
               ? _searchContents
@@ -522,10 +527,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                 }),
           child: Text(
             searching
-                ? '跨来源搜索'
+                ? context.l10n.source_global_search
                 : thirdParty
-                ? '管理仓库'
-                : '查看第三方',
+                ? context.l10n.source_manage_repositories
+                : context.l10n.source_view_third_party,
           ),
         ),
       ),
@@ -587,14 +592,14 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
           !thirdParty &&
           next.hasError &&
           !identical(previous?.error, next.error)) {
-        _showFailure('目录加载失败，可下拉重试。');
+        _showFailure(context.l10n.source_catalog_load_failed);
       }
     });
     ref.listen(mobileCatalogEntriesProvider(type), (previous, next) {
       if (!_refreshing &&
           next.hasError &&
           !identical(previous?.error, next.error)) {
-        _showFailure('目录加载失败，可下拉重试。');
+        _showFailure(context.l10n.source_catalog_load_failed);
       }
     });
     final repositories = ref.watch(extensionsRepoStateProvider(type));
@@ -625,16 +630,23 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
             .toList()
           ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     final groups = <(String, List<Source>)>[
-      ('常用', all.where((s) => s.isPinned == true).toList()),
-      if (!thirdParty) ('全部网站', all.where((s) => s.isPinned != true).toList()),
+      (
+        context.l10n.settings_frequent,
+        all.where((s) => s.isPinned == true).toList(),
+      ),
+      if (!thirdParty)
+        (
+          context.l10n.source_all_websites,
+          all.where((s) => s.isPinned != true).toList(),
+        ),
       if (thirdParty)
         (
-          '已安装',
+          context.l10n.installed,
           all.where((s) => s.isAdded == true && s.isPinned != true).toList(),
         ),
       if (thirdParty)
         (
-          '可安装',
+          context.l10n.source_available,
           all.where((s) => s.isAdded != true && s.isPinned != true).toList(),
         ),
     ]..removeWhere((group) => group.$2.isEmpty);
@@ -651,7 +663,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         appBar: selecting
             ? nodeLaneSelectionAppBar(
                 context,
-                title: '已选择 ${selected.length} 项',
+                title: context.l10n.source_selected_count(selected.length),
                 cancelLabel: context.l10n.cancel,
                 selectAllLabel: context.l10n.bookshelf_select_all,
                 invertLabel: context.l10n.bookshelf_invert_selection,
@@ -713,14 +725,16 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                               child: NodeLaneSegments<bool>(
                                 value: thirdParty,
                                 pill: true,
-                                segments: const [
+                                segments: [
                                   ButtonSegment(
                                     value: false,
                                     label: Text('NodeLane'),
                                   ),
                                   ButtonSegment(
                                     value: true,
-                                    label: Text('第三方'),
+                                    label: Text(
+                                      context.l10n.source_third_party,
+                                    ),
                                   ),
                                 ],
                                 onChanged: (value) {
@@ -737,7 +751,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                             const SizedBox(height: NodeLaneTokens.space16),
                             NodeLaneTextField.search(
                               controller: query,
-                              hint: '网站名或作品名',
+                              hint: context.l10n.source_name_or_title,
                               clearLabel: context.l10n.search_clear,
                               onSubmitted: (_) => _searchContents(),
                               onChanged: (_) => setState(() {}),
@@ -785,10 +799,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                                 groups[groupIndex].$1,
                                 action: groupIndex == 0 && !selecting
                                     ? thirdParty
-                                          ? '管理仓库'
+                                          ? context
+                                                .l10n
+                                                .source_manage_repositories
                                           : managing
-                                          ? '完成'
-                                          : '管理'
+                                          ? context.l10n.action_done
+                                          : context.l10n.manage
                                     : null,
                                 onAction: groupIndex == 0 && !selecting
                                     ? thirdParty

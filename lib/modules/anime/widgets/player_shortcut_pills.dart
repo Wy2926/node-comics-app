@@ -155,7 +155,7 @@ class PlayerShortcutPills extends StatelessWidget {
             valueListenable: fit,
             builder: (context, fit, _) => PlayerPillButton(
               icon: Icons.fit_screen_outlined,
-              label: fitShortLabel(fit),
+              label: fitShortLabel(fit, context.l10n),
               showLabel: !iconOnly,
               tooltip: context.l10n.scale_type_fit_screen,
               isCompact: isMobile,

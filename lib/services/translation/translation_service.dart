@@ -1,3 +1,6 @@
+import 'package:mangayomi/utils/localized_message.dart';
+import 'package:mangayomi/l10n/languages.dart';
+
 import 'dart:io';
 import 'dart:async';
 import 'dart:ui';
@@ -20,10 +23,17 @@ import 'channels/nodelane/account.dart';
 
 final translationServiceProvider = Provider<TranslationService>((ref) {
   final appLocale = settingsRepository.currentOrNull?.locale;
+  final savedLocale = appLocale?.languageCode == null
+      ? null
+      : Locale.fromSubtags(
+          languageCode: appLocale!.languageCode!,
+          countryCode: appLocale.countryCode,
+          scriptCode: appLocale.scriptCode,
+        );
   final service = TranslationService(
     preferredLocales: [
-      if (appLocale?.languageCode case final language?)
-        Locale(language, appLocale?.countryCode),
+      if (savedLocale != null && nodeLaneSupportedLocales.contains(savedLocale))
+        savedLocale,
       ...PlatformDispatcher.instance.locales,
     ],
   );
@@ -55,7 +65,8 @@ class TranslationService extends ChangeNotifier {
   TranslationRepository? _repository;
   TranslationImageWork? _images;
   Future<void>? _initializing;
-  String get channelLabel => 'NodeLane 官方';
+  String get channelLabel =>
+      localizedMessage((l10n) => l10n.translation_official_channel);
   String language;
   bool busy = false;
   String? error;
@@ -212,7 +223,9 @@ class TranslationService extends ChangeNotifier {
     try {
       await body();
     } catch (e) {
-      error = e is TranslationFailure ? e.message : '操作未完成，请重试';
+      error = e is TranslationFailure
+          ? e.message
+          : localizedMessage((l10n) => l10n.operation_retry);
     } finally {
       busy = false;
       notifyListeners();

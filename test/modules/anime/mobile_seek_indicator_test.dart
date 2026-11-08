@@ -1,3 +1,4 @@
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/anime/widgets/mobile_player_controls_layout.dart';
@@ -329,6 +330,9 @@ Widget _indicatorApp({
   );
 
   return MaterialApp(
+    locale: const Locale('en'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     builder: (context, child) => MediaQuery(
       data: MediaQuery.of(context)
           .copyWith(textScaler: textScaler, viewPadding: viewPadding),

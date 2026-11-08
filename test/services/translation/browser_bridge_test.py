@@ -54,7 +54,7 @@ const call = (operation, args) => window.__nodelaneReader.call('fixture', operat
   assert(document.querySelectorAll('[data-nodelane-overlay]').length===1,'overlay missing');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'source or reading anchor mutated');
   const theme={surface:'#1e242c',ink:'#f0f3f8',line:'#353e4a',accent:'#006eff',error:'#ff8888',inset:8,gap:8,padding:12,radius:24,tap:44,fontSize:13,reduceMotion:true};
-  const failed={...item,label:'翻译失败',detail:'连接失败，请重试',issue:true,working:false,action:'retry',actionLabel:'重试'};
+  const failed={...item,label:'翻译失败',detail:'连接失败，请重试',issue:true,working:false,action:'retry',actionLabel:'重试',actionSemanticLabel:'重试此图片'};
   await call('state',{active:true,translated:true,theme,items:[failed]});
   const badge=document.querySelector('[data-nodelane-overlay="status"]');
   assert(badge,'image status missing');
@@ -62,6 +62,9 @@ const call = (operation, args) => window.__nodelaneReader.call('fixture', operat
   assert(Math.abs(badge.getBoundingClientRect().left-img.getBoundingClientRect().left-8)<1,'badge not on image top-left');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'status changed reading position');
   const button=badge.shadowRoot.querySelector('button');
+  assert(button.getAttribute('aria-label')==='重试此图片','localized image action missing');
+  await call('state',{active:true,translated:true,theme,items:[{...failed,label:'Translation failed',actionLabel:'Retry',actionSemanticLabel:'Retry this image'}]});
+  assert(button.textContent==='Retry' && button.getAttribute('aria-label')==='Retry this image','locale switch did not update visible and accessible actions');
   button.click(); button.click(); await wait(1);
   assert(actions.length===1 && actions[0].id===item.id && actions[0].action==='retry','single image retry duplicated or misrouted');
   await call('state',{active:true,translated:false,items:[{...failed,label:'状态待确认',action:'verify',actionLabel:'核实'}]});

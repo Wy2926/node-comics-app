@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/localized_message.dart';
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -125,7 +127,9 @@ class TranslationViewController extends ChangeNotifier {
         })
         .catchError((Object failure) {
           if (_disposed || epoch != _epoch || !foreground) return;
-          error = failure is TranslationFailure ? failure.message : '已有译图读取失败';
+          error = failure is TranslationFailure
+              ? failure.message
+              : localizedMessage((l10n) => l10n.translation_saved_read_failed);
           for (final target in pending) {
             _restored.remove(target.page.identity);
           }
@@ -176,7 +180,7 @@ class TranslationViewController extends ChangeNotifier {
                 }
                 _imageErrors[key] = e is TranslationFailure
                     ? e.message
-                    : '译图读取失败';
+                    : localizedMessage((l10n) => l10n.translation_read_failed);
                 notifyListeners();
               }
             })
@@ -217,7 +221,9 @@ class TranslationViewController extends ChangeNotifier {
       // Navigation and account replacement invalidate the old action.
     } catch (e) {
       if (!_disposed && epoch == _epoch && targetFor(target.page) != null) {
-        final message = e is TranslationFailure ? e.message : '操作未完成，请重试';
+        final message = e is TranslationFailure
+            ? e.message
+            : localizedMessage((l10n) => l10n.operation_retry);
         _imageErrors[key] = message;
         error = message;
       }

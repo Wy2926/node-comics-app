@@ -756,7 +756,9 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         values: ItemType.values,
         label: (type) => type == ItemType.manga
             ? _libraryLabel(l10n, type)
-            : '${_libraryLabel(l10n, type)} · 待测试',
+            : context.l10n.onboarding_untested_content(
+                _libraryLabel(l10n, type),
+              ),
         isSelected: _libraries.contains,
         onTap: _busy ? null : _toggleLibrary,
       ),

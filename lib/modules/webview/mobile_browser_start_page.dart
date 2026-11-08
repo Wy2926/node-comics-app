@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -63,8 +64,8 @@ class MobileBrowserStartPage extends StatelessWidget {
         if (sources.isNotEmpty) ...[
           const SizedBox(height: NodeLaneTokens.space16),
           NodeLaneCatalogHeading(
-            '常用网站',
-            action: onManage == null ? null : '管理',
+            context.l10n.source_pinned_websites,
+            action: onManage == null ? null : context.l10n.manage,
             onAction: onManage,
           ),
           for (var i = 0; i < sources.length; i++)

@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -93,7 +95,9 @@ class _SeekIndicatorState extends State<MobileSeekIndicator>
             bottom: safeInsets.bottom + mobilePlayerBottomControlsBottomPadding,
           );
     final valueLabel = '${widget.forward ? '+' : '-'}${_value.inSeconds.abs()}';
-    final directionLabel = widget.forward ? 'Seek forward' : 'Seek backward';
+    final directionLabel = widget.forward
+        ? context.l10n.player_seek_forward
+        : context.l10n.player_seek_backward;
     final direction = widget.forward ? 1.0 : -1.0;
     final chevrons = SizedBox(
       width: 54,
@@ -178,7 +182,7 @@ class _SeekIndicatorState extends State<MobileSeekIndicator>
       button: true,
       liveRegion: true,
       label: directionLabel,
-      value: '${_value.inSeconds.abs()} seconds',
+      value: context.l10n.player_seconds(_value.inSeconds.abs()),
       onTap: increment,
       child: ExcludeSemantics(
         child: GestureDetector(

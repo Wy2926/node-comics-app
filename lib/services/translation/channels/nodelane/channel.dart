@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/localized_message.dart';
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -30,7 +32,8 @@ class NodeLaneChannel implements TranslationChannel {
   @override
   String get id => 'nodelane';
   @override
-  String get label => 'NodeLane 官方';
+  String get label =>
+      localizedMessage((l10n) => l10n.translation_official_channel);
   @override
   String get scope => translationKey([
     'nodelane',
@@ -258,9 +261,11 @@ class OfficialRuntime implements ChannelRuntime {
                 } else {
                   _show(
                     entry.value.page,
-                    const PageTranslationState(
+                    PageTranslationState(
                       phase: TranslationPhase.uncertain,
-                      message: '翻译已暂停，可核实进度',
+                      message: localizedMessage(
+                        (l10n) => l10n.translation_paused,
+                      ),
                       actions: {TranslationAction.verify},
                     ),
                   );
@@ -404,9 +409,11 @@ class OfficialRuntime implements ChannelRuntime {
     if (receipt == null) {
       _show(
         target.page,
-        const PageTranslationState(
+        PageTranslationState(
           phase: TranslationPhase.preparing,
-          message: '准备翻译…',
+          message: localizedMessage(
+            (l10n) => l10n.translation_preparing_ellipsis,
+          ),
         ),
       );
       final caps = await _capabilities(cancel);
@@ -503,9 +510,11 @@ class OfficialRuntime implements ChannelRuntime {
     if (!_sourceChecked.contains(target.page.identity)) {
       _show(
         target.page,
-        const PageTranslationState(
+        PageTranslationState(
           phase: TranslationPhase.preparing,
-          message: '核对原图…',
+          message: localizedMessage(
+            (l10n) => l10n.translation_checking_original,
+          ),
         ),
       );
       await _checkSource(target, current, cancel);
@@ -525,9 +534,9 @@ class OfficialRuntime implements ChannelRuntime {
         ); // durable BEFORE dispatch; cancellation is unknown
         _show(
           target.page,
-          const PageTranslationState(
+          PageTranslationState(
             phase: TranslationPhase.submitting,
-            message: '正在提交…',
+            message: localizedMessage((l10n) => l10n.translation_submitting),
           ),
         );
         final snapshot = await api.json(
@@ -591,9 +600,9 @@ class OfficialRuntime implements ChannelRuntime {
     if (page.revision != receipt.revision) {
       _show(
         page,
-        const PageTranslationState(
+        PageTranslationState(
           phase: TranslationPhase.failed,
-          message: '原图已变化，请重新载入',
+          message: localizedMessage((l10n) => l10n.translation_source_changed),
         ),
       );
       return;
@@ -619,19 +628,27 @@ class OfficialRuntime implements ChannelRuntime {
             ? TranslationResultRef(scope, receipt.id)
             : null,
         message: switch (phase) {
-          TranslationPhase.awaitingInput => '上传原图…',
-          TranslationPhase.queued => '等待翻译…',
-          TranslationPhase.running => '正在翻译…',
-          TranslationPhase.uncertain => '结果待核实',
+          TranslationPhase.awaitingInput => localizedMessage(
+            (l10n) => l10n.translation_uploading_ellipsis,
+          ),
+          TranslationPhase.queued => localizedMessage(
+            (l10n) => l10n.translation_waiting_ellipsis,
+          ),
+          TranslationPhase.running => localizedMessage(
+            (l10n) => l10n.translation_running_ellipsis,
+          ),
+          TranslationPhase.uncertain => localizedMessage(
+            (l10n) => l10n.translation_verify_result,
+          ),
           TranslationPhase.failed => TranslationFailure(
             receipt.errorCode ?? 'REMOTE_FAILED',
           ).message,
           TranslationPhase.succeeded =>
             receipt.resultExpired
-                ? '译图已过期，请重新翻译'
+                ? localizedMessage((l10n) => l10n.translation_result_expired)
                 : receipt.result?['kind'] == 'partial'
-                ? '部分内容已翻译'
-                : '译图已就绪',
+                ? localizedMessage((l10n) => l10n.translation_partial)
+                : localizedMessage((l10n) => l10n.translation_ready),
           _ => '',
         },
         actions: receipt.unknown

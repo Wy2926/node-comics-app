@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+
 import 'dart:async';
 
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -54,7 +56,7 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
 
   Future<void> _new() async {
     if (!await browserSessionStore.createBlank() && mounted) {
-      showNodeLaneNotice('最多保留 12 个标签页，请先关闭一个。');
+      showNodeLaneNotice(context.l10n.browser_tab_limit);
     }
   }
 
@@ -94,7 +96,10 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
       }
     } catch (_) {
       if (mounted) {
-        showNodeLaneNotice('标签状态保存失败，请重试。', kind: NodeLaneNoticeKind.error);
+        showNodeLaneNotice(
+          context.l10n.browser_save_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
       }
     } finally {
       showingTabs = false;

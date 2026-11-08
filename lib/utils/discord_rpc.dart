@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/localized_message.dart';
 import 'package:flutter_discord_rpc_fork/flutter_discord_rpc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -31,15 +33,17 @@ class DiscordRPC {
   int? _activeReaderSession;
 
   /// Instance of the current RPC activity
-  final RpcActivity activity = RpcActivity(
+  late final RpcActivity activity = RpcActivity(
     assets: _appAssets,
     buttons: [
-      const RPCButton(
-        label: 'Get ${NodeLaneBrand.displayName}',
+      RPCButton(
+        label: localizedMessage(
+          (l10n) => l10n.discord_get_app(NodeLaneBrand.displayName),
+        ),
         url: NodeLaneBrand.repositoryUrl,
       ),
     ],
-    details: "Idle",
+    details: localizedMessage((l10n) => l10n.discord_idle),
     state: "-----",
     timestamps: RPCTimestamps(
       start: DateTime.timestamp().millisecondsSinceEpoch,
@@ -77,7 +81,11 @@ class DiscordRPC {
   }
 
   Future<void> showIdleText() async {
-    await updateActivity(details: "Idle", state: "-----", assets: _appAssets);
+    await updateActivity(
+      details: localizedMessage((l10n) => l10n.discord_idle),
+      state: "-----",
+      assets: _appAssets,
+    );
   }
 
   /// Marks a reader as the current owner of chapter presence updates.
@@ -95,16 +103,17 @@ class DiscordRPC {
   }
 
   Future<void> showChapterDetails(WidgetRef ref, Chapter chapter) async {
-    final status = chapter.manga.value!.itemType == ItemType.anime
-        ? "Watching"
-        : "Reading";
-    final title = chapter.manga.value!.name;
+    final l10n = ref.context.l10n;
+    final title = chapter.manga.value!.name ?? '';
+    final details = chapter.manga.value!.itemType == ItemType.anime
+        ? l10n.discord_watching_title(title)
+        : l10n.discord_reading_title(title);
     final chapterTitle = chapter.name;
     final imageUrl = chapter.manga.value!.imageUrl;
     final rpcShowTitle = ref.read(rpcShowTitleStateProvider);
     final rpcShowCoverImage = ref.read(rpcShowCoverImageStateProvider);
     await updateActivity(
-      details: rpcShowTitle ? "$status $title" : "Idle",
+      details: rpcShowTitle ? details : l10n.discord_idle,
       state: rpcShowTitle && rpcShowReadingWatchingProgress
           ? chapterTitle
           : "-----",

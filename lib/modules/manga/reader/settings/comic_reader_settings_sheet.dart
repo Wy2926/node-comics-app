@@ -373,8 +373,8 @@ class ComicReaderSettingsContent extends ConsumerWidget {
             children: [
               if (onTranslation != null)
                 NodeLaneRow(
-                  title: '漫画翻译',
-                  subtitle: '自动翻译、目标语言与渠道',
+                  title: context.l10n.translation_title,
+                  subtitle: context.l10n.translation_settings_hint,
                   icon: icons.translate,
                   onTap: onTranslation,
                 ),

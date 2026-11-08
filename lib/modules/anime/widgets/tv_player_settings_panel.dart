@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/anime/utils/player_labels.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -78,12 +80,12 @@ class _TvPlayerSettingsPanelState extends ConsumerState<TvPlayerSettingsPanel> {
     ('no', 'Software (no hardware)'),
   ];
   static const _stats = [
-    ('Toggle overlay', 'stats/display-stats-toggle'),
-    ('General', 'stats/display-page-1'),
-    ('Frame timings', 'stats/display-page-2'),
-    ('Input cache', 'stats/display-page-3'),
-    ('Active filters', 'stats/display-page-4'),
-    ('Log', 'stats/display-page-5'),
+    'stats/display-stats-toggle',
+    'stats/display-page-1',
+    'stats/display-page-2',
+    'stats/display-page-3',
+    'stats/display-page-4',
+    'stats/display-page-5',
   ];
 
   // null = the category list; otherwise the open category's key.
@@ -150,7 +152,7 @@ class _TvPlayerSettingsPanelState extends ConsumerState<TvPlayerSettingsPanel> {
   }
 
   Widget _header(BuildContext context) {
-    final title = _open == null ? 'Settings' : _titleFor(_open!);
+    final title = _open == null ? context.l10n.settings : _titleFor(_open!);
     return Padding(
       padding: const EdgeInsets.fromLTRB(6, 8, 8, 4),
       child: Row(
@@ -173,25 +175,25 @@ class _TvPlayerSettingsPanelState extends ConsumerState<TvPlayerSettingsPanel> {
   }
 
   String _titleFor(String key) => switch (key) {
-    'playback' => 'Playback speed',
-    'quality' => 'Quality',
-    'subtitles' => 'Subtitles',
-    'audio' => 'Audio',
-    'shaders' => 'Shaders',
-    'decoder' => 'Decoder',
-    'stats' => 'Stats for nerds',
-    _ => 'Settings',
+    'playback' => context.l10n.playback_speed,
+    'quality' => context.l10n.player_quality,
+    'subtitles' => context.l10n.player_subtitles,
+    'audio' => context.l10n.player_audio,
+    'shaders' => context.l10n.shaders,
+    'decoder' => context.l10n.decoder,
+    'stats' => context.l10n.player_statistics,
+    _ => context.l10n.settings,
   };
 
   Widget _categoryList(BuildContext context, Color accent) {
     final entries = <(String, IconData, String)>[
-      ('playback', Icons.speed, 'Playback speed'),
-      ('quality', Icons.high_quality_outlined, 'Quality'),
-      ('subtitles', Icons.subtitles_outlined, 'Subtitles'),
-      ('audio', Icons.audiotrack_outlined, 'Audio'),
-      ('shaders', Icons.auto_awesome_outlined, 'Shaders'),
-      ('decoder', Icons.memory_outlined, 'Decoder'),
-      ('stats', Icons.insights_outlined, 'Stats for nerds'),
+      ('playback', Icons.speed, context.l10n.playback_speed),
+      ('quality', Icons.high_quality_outlined, context.l10n.player_quality),
+      ('subtitles', Icons.subtitles_outlined, context.l10n.player_subtitles),
+      ('audio', Icons.audiotrack_outlined, context.l10n.player_audio),
+      ('shaders', Icons.auto_awesome_outlined, context.l10n.shaders),
+      ('decoder', Icons.memory_outlined, context.l10n.decoder),
+      ('stats', Icons.insights_outlined, context.l10n.player_statistics),
     ];
     return ListView(
       children: [
@@ -226,11 +228,23 @@ class _TvPlayerSettingsPanelState extends ConsumerState<TvPlayerSettingsPanel> {
           ),
         );
       case 'quality':
-        return _trackList(accent, widget.qualityOptions, 'No other quality');
+        return _trackList(
+          accent,
+          widget.qualityOptions,
+          context.l10n.player_no_other_quality,
+        );
       case 'subtitles':
-        return _trackList(accent, widget.subtitleOptions, 'No subtitles');
+        return _trackList(
+          accent,
+          widget.subtitleOptions,
+          context.l10n.player_no_subtitles,
+        );
       case 'audio':
-        return _trackList(accent, widget.audioOptions, 'No audio tracks');
+        return _trackList(
+          accent,
+          widget.audioOptions,
+          context.l10n.player_no_audio_tracks,
+        );
       case 'shaders':
         return ValueListenableBuilder<String>(
           valueListenable: widget.selectedShaderListenable,
@@ -240,7 +254,7 @@ class _TvPlayerSettingsPanelState extends ConsumerState<TvPlayerSettingsPanel> {
                 _OptionRow(
                   accent: accent,
                   autofocus: i == 0,
-                  label: sh.$1,
+                  label: shaderDisplayLabel(context.l10n, sh.$1, sh.$2),
                   selected: current == sh.$1,
                   onTap: () => _native.command(['script-message', sh.$2]),
                 ),
@@ -255,7 +269,11 @@ class _TvPlayerSettingsPanelState extends ConsumerState<TvPlayerSettingsPanel> {
               _OptionRow(
                 accent: accent,
                 autofocus: i == 0,
-                label: d.$2,
+                label: switch (d.$1) {
+                  'auto' => context.l10n.player_decoder_auto,
+                  'no' => context.l10n.player_decoder_software,
+                  _ => d.$2,
+                },
                 selected: currentHwdec == d.$1,
                 onTap: () {
                   ref.read(hwdecModeStateProvider().notifier).set(d.$1);
@@ -273,8 +291,8 @@ class _TvPlayerSettingsPanelState extends ConsumerState<TvPlayerSettingsPanel> {
                 accent: accent,
                 autofocus: i == 0,
                 icon: Icons.insights_outlined,
-                label: st.$1,
-                onTap: () => _native.command(['script-binding', st.$2]),
+                label: playerStatsLabel(context.l10n, st),
+                onTap: () => _native.command(['script-binding', st]),
               ),
           ],
         );

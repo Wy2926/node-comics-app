@@ -235,7 +235,7 @@ class _SubtitleAppearanceWidgetState
                 : null,
             child: Center(
               child: Text(
-                "Lorem ipsum dolor sit amet",
+                context.l10n.subtitle_preview,
                 style: subtileTextStyle(ref).copyWith(
                   fontSize: ((subSets.fontSize ?? 45) * 0.45).clamp(14.0, 24.0),
                 ),
@@ -275,7 +275,7 @@ class _SubtitleAppearanceWidgetState
               children: [
                 Expanded(
                   child: Text(
-                    "Style",
+                    context.l10n.subtitle_style,
                     style: (textTheme.bodyMedium ?? const TextStyle()).copyWith(
                       fontSize: 13,
                       color: colorScheme.onSurfaceVariant,

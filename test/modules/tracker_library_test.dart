@@ -105,8 +105,10 @@ void main() {
     'retry, rebuild and explicit refresh preserve section cache behavior',
     (tester) async {
       var requests = 0;
+      var displayName = 'Reading';
       TrackLibrarySection section() => TrackLibrarySection(
-        name: 'Reading',
+        name: displayName,
+        cacheKey: 'Reading',
         syncId: 2,
         func: () async {
           requests++;
@@ -124,6 +126,7 @@ void main() {
       await mount(tester, section());
       await settle(tester);
       expect(requests, 2);
+      displayName = '阅读中';
       await mount(tester, section(), identity: 'reopened');
       await settle(tester);
       expect(requests, 2);

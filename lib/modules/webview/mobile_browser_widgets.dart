@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +78,7 @@ class MobileBrowserHeader extends StatelessWidget {
                         Icon(icons.back, size: NodeLaneTokens.smallIconSize),
                         const SizedBox(width: NodeLaneTokens.space4),
                         Text(
-                          '返回',
+                          context.l10n.go_back,
                           style: t.readerLabel.copyWith(color: t.accent),
                         ),
                       ],
@@ -155,7 +156,7 @@ class MobileBrowserToolbar extends StatelessWidget {
                 return Row(
                   children: [
                     IconButton(
-                      tooltip: '后退',
+                      tooltip: context.l10n.browser_back,
                       onPressed: onBack,
                       style: _barIconStyle(t.ink),
                       icon: Icon(icons.back),
@@ -180,7 +181,7 @@ class MobileBrowserToolbar extends StatelessWidget {
                                 ),
                               ),
                               IconButton(
-                                tooltip: '网页翻译',
+                                tooltip: context.l10n.browser_translation,
                                 onPressed: onControls,
                                 style: _barIconStyle(t.ink),
                                 icon: Icon(
@@ -194,7 +195,7 @@ class MobileBrowserToolbar extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: '新建标签页',
+                      tooltip: context.l10n.browser_new_tab_action,
                       onPressed: onNew,
                       style: _barIconStyle(t.ink),
                       icon: Icon(icons.add, size: NodeLaneTokens.iconSize),
@@ -277,8 +278,8 @@ class MobileBrowserTabCard extends StatelessWidget {
                     Positioned(
                       top: NodeLaneTokens.space8,
                       left: NodeLaneTokens.space8,
-                      child: const NodeLaneCoverBadge(
-                        '当前',
+                      child: NodeLaneCoverBadge(
+                        context.l10n.browser_current_tab,
                         tone: NodeLaneBadgeTone.accent,
                       ),
                     ),
@@ -286,7 +287,7 @@ class MobileBrowserTabCard extends StatelessWidget {
                     top: 2,
                     right: 2,
                     child: NodeLaneCloseButton(
-                      tooltip: '关闭标签页',
+                      tooltip: context.l10n.browser_close_tab,
                       backgroundColor: t.surface,
                       onPressed: onClose,
                     ),
@@ -300,14 +301,18 @@ class MobileBrowserTabCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    url.isEmpty ? '新标签页' : (title.isEmpty ? '网页' : title),
+                    url.isEmpty
+                        ? context.l10n.browser_new_tab
+                        : (title.isEmpty ? context.l10n.browser_page : title),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: t.readerLabel,
                   ),
                   const SizedBox(height: NodeLaneTokens.space4),
                   Text(
-                    url.isEmpty ? '尚未打开网页' : Uri.tryParse(url)?.host ?? '',
+                    url.isEmpty
+                        ? context.l10n.browser_unopened
+                        : Uri.tryParse(url)?.host ?? '',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: t.secondary,
@@ -408,7 +413,7 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
               controller: input,
               focusNode: focus,
               compact: widget.compact,
-              hint: '输入或粘贴网址',
+              hint: context.l10n.browser_address_hint,
               textAlign: widget.compact && !focus.hasFocus
                   ? TextAlign.center
                   : TextAlign.start,
@@ -425,11 +430,15 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
               onChanged: (_) {
                 if (invalid) setState(() => invalid = false);
               },
-              errorText: invalid ? '请输入有效的网址' : null,
+              errorText: invalid ? context.l10n.browser_invalid_address : null,
               trailing: NodeLaneIconButton(
                 tooltip: widget.compact
-                    ? (focus.hasFocus ? '清空网址' : '刷新')
-                    : (input.text.isEmpty ? '粘贴网址' : '打开网址'),
+                    ? (focus.hasFocus
+                          ? context.l10n.browser_clear_address
+                          : context.l10n.refresh)
+                    : (input.text.isEmpty
+                          ? context.l10n.browser_paste_address
+                          : context.l10n.browser_open_address),
                 style: NodeLaneIconButtonStyle.plain,
                 icon: widget.compact
                     ? (focus.hasFocus ? icons.clear : icons.refresh)
@@ -467,7 +476,7 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.standard,
             ),
-            child: const Text('取消'),
+            child: Text(context.l10n.cancel),
           ),
         ],
       ],
@@ -490,7 +499,7 @@ class MobileBrowserTabsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context);
     return NodeLaneIconButton(
-      tooltip: '标签页 · $count',
+      tooltip: context.l10n.browser_tab_count(count),
       onPressed: onPressed,
       style: tonal
           ? NodeLaneIconButtonStyle.glass
@@ -552,8 +561,8 @@ class MobileBrowserLoadError extends StatelessWidget {
       color: t.canvas,
       child: NodeLaneEmptyState(
         icon: NodeLaneIcons.of(context).web,
-        title: '网页暂时无法打开',
-        message: '检查网络，或确认网址是否正确。',
+        title: context.l10n.browser_load_failed,
+        message: context.l10n.browser_load_failed_hint,
         scrollable: true,
         action: Wrap(
           alignment: WrapAlignment.center,
@@ -563,9 +572,12 @@ class MobileBrowserLoadError extends StatelessWidget {
             NodeLaneSecondaryButton(
               onPressed: onRetry,
               icon: NodeLaneIcons.of(context).refresh,
-              child: const Text('重试'),
+              child: Text(context.l10n.retry),
             ),
-            TextButton(onPressed: onEditAddress, child: const Text('编辑网址')),
+            TextButton(
+              onPressed: onEditAddress,
+              child: Text(context.l10n.browser_edit_address),
+            ),
           ],
         ),
       ),
@@ -576,8 +588,8 @@ class MobileBrowserLoadError extends StatelessWidget {
 Future<bool> confirmClearBrowserLogins(BuildContext context) =>
     showNodeLaneConfirmation(
       context,
-      title: '清除所有网站登录状态？',
-      message: '所有标签页中的网站可能需要重新登录。',
-      confirmLabel: '清除登录状态',
+      title: context.l10n.browser_clear_cookies_confirm,
+      message: context.l10n.browser_clear_cookies_hint,
+      confirmLabel: context.l10n.browser_clear_cookies_action,
       destructive: true,
     );

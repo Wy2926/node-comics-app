@@ -1,3 +1,4 @@
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/widgets/memory_overlay.dart';
@@ -10,6 +11,9 @@ void main() {
   Future<void> pump(WidgetTester tester, MemoryProbe probe) =>
       tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Stack(
             children: [MemoryOverlay(probe: probe, onClose: () {})],
           ),
@@ -45,7 +49,7 @@ void main() {
     addTearDown(probe.dispose);
     probe.sample();
     await pump(tester, probe);
-    expect(find.textContaining('of 1 samples'), findsOneWidget);
+    expect(find.textContaining('of 1 sample'), findsOneWidget);
 
     probe.sample();
     await tester.pump();
@@ -109,6 +113,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Stack(children: [MemoryOverlay(probe: probe)]),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:mangayomi/l10n/generated/app_localizations_en.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/anime/utils/player_labels.dart';
@@ -20,7 +21,7 @@ void main() {
 
   test('every fit has a label', () {
     for (final fit in BoxFit.values) {
-      expect(fitShortLabel(fit), isNotEmpty);
+      expect(fitShortLabel(fit, AppLocalizationsEn()), isNotEmpty);
     }
   });
 }

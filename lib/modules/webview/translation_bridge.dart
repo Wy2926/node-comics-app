@@ -1,3 +1,5 @@
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -17,9 +19,11 @@ class WebTranslationBridge {
     this.controller,
     this.view,
     this.tabId, {
+    required AppLocalizations l10n,
     Map<String, Object> theme = const {},
     this.onImageMenu,
-  }) : _theme = theme {
+  }) : _theme = theme,
+       _l10n = l10n {
     controller.addJavaScriptHandler(
       handlerName: 'nodelaneImages',
       callback: (JavaScriptHandlerFunctionData data) => _receive(data),
@@ -31,10 +35,15 @@ class WebTranslationBridge {
   final String tabId;
   final Future<void> Function(TranslationTarget)? onImageMenu;
   Map<String, Object> _theme;
+  AppLocalizations _l10n;
 
-  void updateTheme(Map<String, Object> theme) {
-    if (jsonEncode(theme) == jsonEncode(_theme)) return;
+  void updatePresentation(Map<String, Object> theme, AppLocalizations l10n) {
+    if (jsonEncode(theme) == jsonEncode(_theme) &&
+        l10n.localeName == _l10n.localeName) {
+      return;
+    }
     _theme = theme;
+    _l10n = l10n;
     _changed();
   }
 
@@ -133,7 +142,8 @@ class WebTranslationBridge {
           .where((a) => a.name == value['action'])
           .firstOrNull;
       if (action == null ||
-          TranslationImageStatus.forTarget(view, target).action != action) {
+          TranslationImageStatus.forTarget(view, target, _l10n).action !=
+              action) {
         return false;
       }
       await view.perform(target, action);
@@ -245,7 +255,11 @@ class WebTranslationBridge {
                 'menu':
                     onImageMenu != null &&
                     translationImageMenuActions(view, target).isNotEmpty,
-                ...TranslationImageStatus.forTarget(view, target).toJson(),
+                ...TranslationImageStatus.forTarget(
+                  view,
+                  target,
+                  _l10n,
+                ).toJson(_l10n),
               },
       ],
     };

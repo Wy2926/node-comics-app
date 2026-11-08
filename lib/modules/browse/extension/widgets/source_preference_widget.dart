@@ -58,7 +58,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
       }
     } catch (_) {
       if (mounted && revision == generation) {
-        setState(() => error = '保存未完成，请重新打开来源设置核对。');
+        setState(() => error = context.l10n.source_settings_save_failed);
       }
     } finally {
       if (mounted) setState(() => saving = false);

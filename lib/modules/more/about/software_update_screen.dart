@@ -153,7 +153,8 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
 
   Future<void> _continue() async {
     if (!mounted || _busy || _checking || _update == null) return;
-    final title = context.l10n.app_name;
+    final l10n = context.l10n;
+    final title = l10n.app_name;
     final download = _download;
     ++_epoch;
     setState(() {
@@ -168,7 +169,7 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
           Uri.parse(_update!.externalUrl),
           mode: LaunchMode.externalApplication,
         );
-        if (!opened) throw StateError('Unable to open release');
+        if (!opened) throw StateError(l10n.release_open_failed);
         if (!mounted) return;
         setState(() => _openedInBrowser = true);
       } else if (download?.phase == UpdateDownloadPhase.ready) {

@@ -138,7 +138,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'Draft');
       await tester.pump();
       expect(submitted, isEmpty);
-      expect(find.text('筛选结果'), findsOneWidget);
+      expect(find.text('Filtered results'), findsOneWidget);
       expect(
         find.byType(MobileSourceMangaCard).evaluate().length,
         lessThan(12),
@@ -486,7 +486,10 @@ void main() {
           expect(find.text('Popular'), findsWidgets);
           await tester.tap(find.widgetWithText(FilledButton, 'Load More'));
           await tester.pumpAndSettle();
-          expect(find.text('加载更多失败，请重试。'), findsOneWidget);
+          expect(
+            find.text('Could not load more. Please try again.'),
+            findsOneWidget,
+          );
           expect(find.text('暂时无法加载'), findsNothing);
           expect(find.textContaining('Page two failed'), findsNothing);
           expect(find.byType(MangaHomeImageCardListTile), findsOneWidget);

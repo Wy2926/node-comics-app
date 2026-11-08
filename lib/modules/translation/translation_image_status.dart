@@ -1,3 +1,5 @@
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -43,14 +45,15 @@ class TranslationImageStatus {
   factory TranslationImageStatus.forTarget(
     TranslationViewController controller,
     TranslationTarget target,
+    AppLocalizations l10n,
   ) {
     final state = controller.state(target);
     if (controller.isPerforming(target)) {
-      return const TranslationImageStatus('正在处理', working: true);
+      return TranslationImageStatus(l10n.translation_processing, working: true);
     }
     if (controller.isReading(target) &&
         state.phase == TranslationPhase.succeeded) {
-      return const TranslationImageStatus('正在读取译图', working: true);
+      return TranslationImageStatus(l10n.translation_reading, working: true);
     }
     if (state.noText ||
         state.phase == TranslationPhase.succeeded ||
@@ -66,12 +69,17 @@ class TranslationImageStatus {
       TranslationPhase.running,
     }.contains(state.phase);
     final label = switch (state.phase) {
-      TranslationPhase.idle || TranslationPhase.queued => '等待翻译',
-      TranslationPhase.preparing => '准备翻译',
-      TranslationPhase.submitting || TranslationPhase.awaitingInput => '上传原图',
-      TranslationPhase.running => '正在翻译',
-      TranslationPhase.uncertain => '状态待确认',
-      TranslationPhase.failed => state.result == null ? '翻译失败' : '译图读取失败',
+      TranslationPhase.idle ||
+      TranslationPhase.queued => l10n.translation_waiting,
+      TranslationPhase.preparing => l10n.translation_preparing,
+      TranslationPhase.submitting ||
+      TranslationPhase.awaitingInput => l10n.translation_uploading,
+      TranslationPhase.running => l10n.translation_running,
+      TranslationPhase.uncertain => l10n.translation_uncertain,
+      TranslationPhase.failed =>
+        state.result == null
+            ? l10n.translation_failed
+            : l10n.translation_read_failed,
       TranslationPhase.succeeded => '',
     };
     final action = working
@@ -93,20 +101,21 @@ class TranslationImageStatus {
     );
   }
 
-  String get actionLabel => switch (action) {
-    TranslationAction.retry => '重试',
-    TranslationAction.verify => '核实',
-    TranslationAction.readResult => '重新读取',
+  String actionLabel(AppLocalizations l10n) => switch (action) {
+    TranslationAction.retry => l10n.retry,
+    TranslationAction.verify => l10n.translation_verify,
+    TranslationAction.readResult => l10n.translation_reread,
     _ => '',
   };
-  Map<String, Object?> toJson() => {
+  Map<String, Object?> toJson(AppLocalizations l10n) => {
     'label': label,
     'visible': visible,
     'detail': detail,
     'working': working,
     'issue': issue,
     'action': action?.name,
-    'actionLabel': actionLabel,
+    'actionLabel': actionLabel(l10n),
+    'actionSemanticLabel': l10n.translation_image_action(actionLabel(l10n)),
   };
 }
 
@@ -186,7 +195,7 @@ class TranslationImageBadge extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  child: Text(status.actionLabel),
+                  child: Text(status.actionLabel(context.l10n)),
                 ),
             ],
           ),

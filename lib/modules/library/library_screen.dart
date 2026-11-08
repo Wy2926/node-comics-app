@@ -744,7 +744,7 @@ void addTorrent(BuildContext context, {Manga? manga}) {
                                       children: [
                                         const Icon(Icons.archive_outlined),
                                         Text(
-                                          "import .torrent file",
+                                          context.l10n.import_torrent_file,
                                           style: TextStyle(
                                             color: Theme.of(context)
                                                 .textTheme

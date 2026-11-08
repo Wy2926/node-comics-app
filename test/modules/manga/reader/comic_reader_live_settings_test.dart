@@ -266,7 +266,7 @@ void main() {
       await tester.tap(find.text('Fine-tune image'));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('漫画翻译'),
+        find.text('Manga translation'),
         200,
         scrollable: panelScroll,
       );
@@ -275,7 +275,7 @@ void main() {
       final offset = position.pixels;
       final translation = ReaderTranslationHost.controllerOf(readerContext)!;
       final enabled = translation.enabled;
-      await tester.tap(find.text('漫画翻译'));
+      await tester.tap(find.text('Manga translation'));
       await tester.pumpAndSettle();
       expect(find.byType(TranslationControlsContent), findsOneWidget);
       expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));

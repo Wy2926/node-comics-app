@@ -19,7 +19,7 @@ void main() {
 
   Finder libraryChoice(String label) => find.widgetWithText(
     FilterChip,
-    label == 'Manga' ? label : '$label · 待测试',
+    label == 'Manga' ? label : '$label · Untested',
   );
 
   Future<void> pump(

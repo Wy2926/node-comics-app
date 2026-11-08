@@ -1,2 +1,5 @@
 "CFBundleDisplayName" = "NodeLane漫译";
 "CFBundleName" = "NodeLane漫译";
+"NSPhotoLibraryUsageDescription" = "NodeLane漫譯需要取用照片圖庫以儲存和還原備份。";
+"NSDocumentUsageDescription" = "NodeLane漫譯需要取用檔案以建立和還原備份。";
+"NSFaceIDUsageDescription" = "NodeLane漫譯需要使用 Face ID 驗證身分。";

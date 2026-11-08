@@ -28106,6 +28106,11 @@ const L10nLocaleSchema = Schema(
       name: r'languageCode',
       type: IsarType.string,
     ),
+    r'scriptCode': PropertySchema(
+      id: 2,
+      name: r'scriptCode',
+      type: IsarType.string,
+    ),
   },
 
   estimateSize: _l10nLocaleEstimateSize,
@@ -28132,6 +28137,12 @@ int _l10nLocaleEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.scriptCode;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -28143,6 +28154,7 @@ void _l10nLocaleSerialize(
 ) {
   writer.writeString(offsets[0], object.countryCode);
   writer.writeString(offsets[1], object.languageCode);
+  writer.writeString(offsets[2], object.scriptCode);
 }
 
 L10nLocale _l10nLocaleDeserialize(
@@ -28154,6 +28166,7 @@ L10nLocale _l10nLocaleDeserialize(
   final object = L10nLocale(
     countryCode: reader.readStringOrNull(offsets[0]),
     languageCode: reader.readStringOrNull(offsets[1]),
+    scriptCode: reader.readStringOrNull(offsets[2]),
   );
   return object;
 }
@@ -28168,6 +28181,8 @@ P _l10nLocaleDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
+      return (reader.readStringOrNull(offset)) as P;
+    case 2:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -28490,6 +28505,168 @@ extension L10nLocaleQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'languageCode', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'scriptCode'),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'scriptCode'),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition> scriptCodeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'scriptCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'scriptCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'scriptCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition> scriptCodeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'scriptCode',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'scriptCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'scriptCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'scriptCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition> scriptCodeMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'scriptCode',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'scriptCode', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<L10nLocale, L10nLocale, QAfterFilterCondition>
+  scriptCodeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'scriptCode', value: ''),
       );
     });
   }

@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/anime/utils/player_labels.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -227,7 +228,7 @@ class ShadersSectionWidget extends StatelessWidget {
         child: Column(
           children: shaderModes.map((mode) {
             return SettingsOptionRow(
-              label: mode.$1,
+              label: shaderDisplayLabel(context.l10n, mode.$1, mode.$2),
               selected: selected == mode.$1,
               onTap: () {
                 onSelect(mode.$2);
@@ -246,12 +247,12 @@ class ShadersSectionWidget extends StatelessWidget {
 /// script-binding - so unlike the others, no row is ever shown checked.
 class StatsSectionWidget extends StatelessWidget {
   static const statsModes = [
-    ("Stats Toggle", "stats/display-stats-toggle"),
-    ("Stats Page 1", "stats/display-page-1"),
-    ("Stats Page 2", "stats/display-page-2"),
-    ("Stats Page 3", "stats/display-page-3"),
-    ("Stats Page 4", "stats/display-page-4"),
-    ("Stats Page 5", "stats/display-page-5"),
+    'stats/display-stats-toggle',
+    'stats/display-page-1',
+    'stats/display-page-2',
+    'stats/display-page-3',
+    'stats/display-page-4',
+    'stats/display-page-5',
   ];
 
   final void Function(String scriptBindingArg) onSelect;
@@ -270,10 +271,10 @@ class StatsSectionWidget extends StatelessWidget {
       child: Column(
         children: statsModes.map((mode) {
           return SettingsOptionRow(
-            label: mode.$1,
+            label: playerStatsLabel(context.l10n, mode),
             selected: false,
             onTap: () {
-              onSelect(mode.$2);
+              onSelect(mode);
               onDone();
             },
           );

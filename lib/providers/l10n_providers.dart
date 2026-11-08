@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/l10n/languages.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -11,24 +12,29 @@ class L10nLocaleState extends _$L10nLocaleState {
   Locale build() {
     final saved = settingsRepository.current.locale;
     if (saved?.languageCode case final language?) {
-      return Locale(language, saved?.countryCode);
+      final locale = Locale.fromSubtags(
+        languageCode: language,
+        countryCode: saved?.countryCode,
+        scriptCode: saved?.scriptCode,
+      );
+      return nodeLaneSupportedLocales.contains(locale)
+          ? locale
+          : const Locale('en');
     }
-    final supported = AppLocalizations.supportedLocales;
-    // Match system preferences, then English. Never fall back to the first
-    // alphabetically generated locale or an unrelated country's language.
-    return basicLocaleListResolution([
-      ...WidgetsBinding.instance.platformDispatcher.locales.where(
-        (locale) => supported.any((s) => s.languageCode == locale.languageCode),
-      ),
-      const Locale('en'),
-    ], supported);
+    return nodeLaneLocaleForLocales(
+      WidgetsBinding.instance.platformDispatcher.locales,
+    );
   }
 
-  void setLocale(Locale locale) async {
+  void setLocale(Locale locale) {
+    if (!nodeLaneSupportedLocales.contains(locale)) {
+      throw ArgumentError.value(locale, 'locale', 'Unsupported app language');
+    }
     settingsRepository.update(
       (s) => s.locale = L10nLocale(
         languageCode: locale.languageCode,
         countryCode: locale.countryCode,
+        scriptCode: locale.scriptCode,
       ),
     );
     state = locale;

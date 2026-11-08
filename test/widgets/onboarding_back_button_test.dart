@@ -43,7 +43,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilterChip, 'Anime · 待测试'));
+    await tester.tap(find.widgetWithText(FilterChip, 'Anime · Untested'));
     await tester.pumpAndSettle();
   }
 

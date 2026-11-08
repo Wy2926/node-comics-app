@@ -1,3 +1,7 @@
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/l10n/generated/app_localizations_en.dart';
+import 'package:mangayomi/l10n/generated/app_localizations_zh.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -84,15 +88,40 @@ void main() {
   });
 
   test(
+    'reader and web status use the supplied locale with the same action',
+    () {
+      final en = AppLocalizationsEn(), zh = AppLocalizationsZh();
+      final english = TranslationImageStatus.forTarget(view, first, en);
+      final chinese = TranslationImageStatus.forTarget(view, first, zh);
+      expect(english.label, 'Translation failed');
+      expect(chinese.label, '翻译失败');
+      expect(english.toJson(en)['actionLabel'], 'Retry');
+      expect(chinese.toJson(zh)['actionLabel'], '重试');
+      expect(english.toJson(en)['action'], chinese.toJson(zh)['action']);
+    },
+  );
+
+  test(
     'single-image actions reject duplicates and ignore late account errors',
     () async {
       runtime.pendingAction = Completer<void>();
       final action = view.perform(first, TranslationAction.retry);
       await view.perform(first, TranslationAction.retry);
       expect(runtime.actions, [('first', TranslationAction.retry)]);
-      expect(TranslationImageStatus.forTarget(view, first).action, isNull);
       expect(
-        TranslationImageStatus.forTarget(view, second).action,
+        TranslationImageStatus.forTarget(
+          view,
+          first,
+          AppLocalizationsZh(),
+        ).action,
+        isNull,
+      );
+      expect(
+        TranslationImageStatus.forTarget(
+          view,
+          second,
+          AppLocalizationsZh(),
+        ).action,
         TranslationAction.verify,
       );
       view.attach(null);
@@ -114,7 +143,11 @@ void main() {
     runtime.updates.add(null);
     await Future<void>.delayed(Duration.zero);
     expect(
-      TranslationImageStatus.forTarget(view, first).action,
+      TranslationImageStatus.forTarget(
+        view,
+        first,
+        AppLocalizationsZh(),
+      ).action,
       TranslationAction.readResult,
     );
     expect(view.state(second).phase, TranslationPhase.uncertain);
@@ -123,17 +156,34 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(view.images.keys, [first.page.identity]);
     expect(runtime.actions, [('first', TranslationAction.readResult)]);
-    expect(TranslationImageStatus.forTarget(view, first).visible, isFalse);
+    expect(
+      TranslationImageStatus.forTarget(
+        view,
+        first,
+        AppLocalizationsZh(),
+      ).visible,
+      isFalse,
+    );
 
     view.configure(foreground: false);
     runtime.readFailure = 'RESULT_EXPIRED';
     view.configure(foreground: true);
     await Future<void>.delayed(Duration.zero);
-    expect(TranslationImageStatus.forTarget(view, first).action, isNull);
+    expect(
+      TranslationImageStatus.forTarget(
+        view,
+        first,
+        AppLocalizationsZh(),
+      ).action,
+      isNull,
+    );
     expect(translationImageMenuActions(view, first), [
       TranslationAction.regenerate,
     ]);
-    expect(view.state(first).message, '译图已过期，请重新翻译');
+    expect(
+      view.state(first).message,
+      AppLocalizationsEn().translation_result_expired,
+    );
   });
 
   testWidgets(
@@ -150,13 +200,20 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (context) => Column(
                 children: [
                   for (final target in [first, second])
                     TranslationImageBadge(
-                      status: TranslationImageStatus.forTarget(view, target),
+                      status: TranslationImageStatus.forTarget(
+                        view,
+                        target,
+                        AppLocalizationsZh(),
+                      ),
                     ),
                   TextButton(
                     onPressed: () =>

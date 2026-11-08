@@ -54,7 +54,7 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
                   context.go('/browser');
                 },
                 icon: Icons.tab_outlined,
-                title: '浏览器',
+                title: context.l10n.browser_title,
               ),
             // Downloads are hidden on TV: no offline use case, and the download
             // buttons are hidden there too, so a queue entry would just dangle.

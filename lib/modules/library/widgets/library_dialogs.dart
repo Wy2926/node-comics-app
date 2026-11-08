@@ -281,7 +281,7 @@ void showImportLocalDialog(BuildContext context, ItemType itemType) {
   final l10n = l10nLocalizations(context)!;
   final filesText = switch (itemType) {
     ItemType.manga => ".zip, .cbz",
-    ItemType.anime => ".mp4, .mkv, .avi, and more",
+    ItemType.anime => context.l10n.import_video_formats,
     ItemType.novel => ".epub",
   };
   bool isLoading = false;

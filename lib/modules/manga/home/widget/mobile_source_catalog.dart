@@ -46,7 +46,7 @@ class MobileSourceCatalog extends StatelessWidget {
         if (onBrowser != null) ...[
           NodeLaneIconButton(
             icon: icons.browser,
-            tooltip: '在浏览器打开',
+            tooltip: context.l10n.open_in_browser,
             onPressed: onBrowser,
           ),
           const SizedBox(width: NodeLaneTokens.space8),
@@ -78,7 +78,7 @@ class MobileSourceCatalog extends StatelessWidget {
                       controller: search,
                       onSubmitted: (_) => onSubmit(),
                       onClear: onClear,
-                      hint: '搜索本站作品',
+                      hint: context.l10n.source_search_here,
                       clearLabel: l10n.reset,
                     ),
                     const SizedBox(height: NodeLaneTokens.space16),
@@ -87,13 +87,15 @@ class MobileSourceCatalog extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              filtering ? '筛选结果' : '搜索结果',
+                              filtering
+                                  ? context.l10n.source_filter_results
+                                  : context.l10n.source_search_results,
                               style: t.readerLabel,
                             ),
                           ),
                           TextButton(
                             onPressed: () => onSelect(0),
-                            child: const Text('返回热门'),
+                            child: Text(context.l10n.source_return_popular),
                           ),
                         ],
                       )
@@ -101,9 +103,15 @@ class MobileSourceCatalog extends StatelessWidget {
                       NodeLaneSegments<int>(
                         value: selected,
                         labelStyle: t.readerLabel,
-                        segments: const [
-                          ButtonSegment(value: 0, label: Text('热门')),
-                          ButtonSegment(value: 1, label: Text('最新')),
+                        segments: [
+                          ButtonSegment(
+                            value: 0,
+                            label: Text(context.l10n.popular),
+                          ),
+                          ButtonSegment(
+                            value: 1,
+                            label: Text(context.l10n.latest),
+                          ),
                         ],
                         onChanged: onSelect,
                       )
@@ -114,7 +122,10 @@ class MobileSourceCatalog extends StatelessWidget {
                         ),
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text('热门作品', style: t.readerLabel),
+                          child: Text(
+                            context.l10n.source_popular_titles,
+                            style: t.readerLabel,
+                          ),
                         ),
                       ),
                   ],
@@ -345,10 +356,10 @@ class MobileSourceStatus extends StatelessWidget {
               color: t.muted,
             ),
             const SizedBox(height: NodeLaneTokens.space16),
-            Text('没有找到相关作品', style: t.title),
+            Text(context.l10n.source_no_titles, style: t.title),
             const SizedBox(height: NodeLaneTokens.space8),
             Text(
-              '调整关键词或筛选条件，也可返回热门浏览。',
+              context.l10n.source_no_titles_hint,
               style: t.readerSecondary,
               textAlign: TextAlign.center,
             ),

@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -173,7 +175,7 @@ class _HeroContent extends ConsumerWidget {
     final metaBits = <String>[
       if ((resume?.name ?? '').isNotEmpty) resume!.name!,
       if (posMs > 0) 'at ${tvFormatMs(posMs)}',
-      if (unread > 0) '$unread new',
+      if (unread > 0) context.l10n.tv_new_count(unread),
       if ((manga.source ?? '').isNotEmpty) manga.source!,
     ];
     final genreBits = (manga.genre ?? const <String>[])
@@ -397,13 +399,13 @@ class _HeroContinueButtonState extends State<_HeroContinueButton> {
               width: 2,
             ),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.play_arrow, color: Colors.white),
               SizedBox(width: 8),
               Text(
-                'Continue',
+                context.l10n.onboarding_continue,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

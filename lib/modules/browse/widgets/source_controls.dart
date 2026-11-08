@@ -18,7 +18,7 @@ Future<T?> showSourceChoice<T>(
   String? subtitle,
   required T? current,
   required List<SourceOption<T>> options,
-  String hint = '选择后立即生效。',
+  String? hint,
 }) => showNodeLaneCatalogSheet<T>(
   context,
   _SourceSelection<T>(
@@ -27,7 +27,7 @@ Future<T?> showSourceChoice<T>(
     options: options,
     initial: {?current},
     multiple: false,
-    hint: hint,
+    hint: hint ?? context.l10n.settings_immediate_choice,
   ),
 );
 
@@ -123,7 +123,10 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (widget.allLabel == null) ...[
-                  Text('已选择 ${selected.length} 项', style: t.readerSecondary),
+                  Text(
+                    context.l10n.source_selected_count(selected.length),
+                    style: t.readerSecondary,
+                  ),
                   const SizedBox(height: NodeLaneTokens.space12),
                 ],
                 NodeLaneModalActions(
@@ -155,7 +158,9 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
           if (searchable) ...[
             NodeLaneTextField.search(
               controller: search,
-              hint: widget.allLabel == null ? '搜索选项' : '搜索语言',
+              hint: widget.allLabel == null
+                  ? context.l10n.bookshelf_search_options
+                  : context.l10n.search_languages,
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),

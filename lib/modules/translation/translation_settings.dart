@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/services/translation/languages.dart';
@@ -24,24 +25,30 @@ class TranslationSettingsState extends ConsumerState<TranslationSettings> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: service,
     builder: (context, _) => Scaffold(
-      appBar: AppBar(title: const Text('漫画翻译')),
+      appBar: AppBar(title: Text(context.l10n.translation_title)),
       body: ListView(
         children: [
           ListTile(
             leading: const Icon(Icons.account_circle_outlined),
-            title: Text(service.loggedIn ? service.accountName : '登录 NodeLane'),
-            subtitle: const Text('通过系统浏览器登录'),
+            title: Text(
+              service.loggedIn
+                  ? service.accountName
+                  : context.l10n.nodelane_sign_in,
+            ),
+            subtitle: Text(context.l10n.translation_system_sign_in),
             trailing: TextButton(
               onPressed: service.busy
                   ? null
                   : service.loggedIn
                   ? service.logout
                   : service.login,
-              child: Text(service.loggedIn ? '退出' : '登录'),
+              child: Text(
+                service.loggedIn ? context.l10n.log_out : context.l10n.login,
+              ),
             ),
           ),
           ListTile(
-            title: const Text('目标语言'),
+            title: Text(context.l10n.translation_target_language),
             trailing: DropdownButton<String>(
               value: service.language,
               items: [
@@ -59,8 +66,8 @@ class TranslationSettingsState extends ConsumerState<TranslationSettings> {
             ),
           ),
           ListTile(
-            title: const Text('清理译图缓存'),
-            subtitle: const Text('保留翻译记录，需要时重新读取结果'),
+            title: Text(context.l10n.translation_clear_cache),
+            subtitle: Text(context.l10n.translation_cache_hint),
             leading: const Icon(Icons.cleaning_services_outlined),
             onTap: service.busy ? null : service.clearResults,
           ),

@@ -1,6 +1,28 @@
 {
   "@@locale": "ar",
+  "app_update_details_hint": "عرض ملاحظات الإصدار وخيارات التثبيت",
+  "app_update_download": "تنزيل التحديث",
+  "app_update_download_hint": "بعد التنزيل، اتبع المطالبات لتثبيت التحديث.",
+  "bookshelf_all": "الكل",
+  "bookshelf_search": "مكتبة البحث",
+  "app_update_allow_install": "السماح بتثبيت التطبيق في إعدادات النظام، ثم العودة والضغط على تثبيت.",
+  "app_update_waiting": "في انتظار النظام لاستئناف التحميل...",
+  "app_update_cancel_download": "إلغاء التنزيل",
+  "app_update_remove_package": "إزالة الحزمة التي تم تنزيلها",
+  "app_name": "NodeLane Comics",
+  "settings_search_empty": "لا توجد إعدادات مطابقة",
+  "search_empty_hint": "جرب كلمة رئيسية أخرى، أو امسح البحث لترى كل شيء.",
+  "search_clear": "مسح البحث",
+  "app_updates": "تحديثات التطبيق",
+  "app_update_auto": "التحقق من الإطلاق",
+  "app_update_view": "عرض التحديث",
+  "app_update_later": "لاحقا",
+  "app_update_external_hint": "يفتح رابط التحديث في متصفحك",
+  "app_update_failed": "غير قادر على التحقق من وجود تحديثات. يرجى المحاولة مرة أخرى.",
+  "app_update_opened": "تم فتح رابط التحديث",
+  "app_diagnostics": "التشخيص والسجلات",
   "library": "المكتبة",
+  "updates_search": "تحديثات البحث",
   "updates": "التحديثات",
   "history": "التاريخ",
   "browse": "تصفح",
@@ -11,14 +33,17 @@
   "ignore_filters": "تجاهل مرشح",
   "downloaded": "تم التحميل",
   "unread": "غير مقروء",
+  "unwatched": "لم يشاهد",
   "started": "بدأ",
   "bookmarked": "مُرجع",
   "sort": "ترتيب",
   "alphabetically": "أبجدياً",
   "last_read": "آخر قراءة",
+  "last_watched": "آخر مشاهدة",
   "last_update_check": "آخر فحص للتحديثات",
   "last_entry_delete_warning": "{count, plural, =1{أنت بتحذف الـ{entryType} الوحيد من هذا الـ{mediaType} من المكتبة.} other{أنت بتحذف كل الـ{count} {entryTypePlural} من هذا الـ{mediaType} من المكتبة.}}\nهذا كمان هيشيل الـ{mediaType} بالكامل من مكتبتك.\n\nملاحظة: الملفات نفسها مش هتتحذف.",
   "@last_entry_delete_warning": {
+    "description": "Warning when deleting all entries (chapters/episodes) of a manga/anime.",
     "placeholders": {
       "count": {},
       "entryType": {},
@@ -29,16 +54,21 @@
   "chapter": "فصل",
   "episode": "حلقة",
   "unread_count": "عدد غير المقروء",
+  "unwatched_count": "عدد غير المشاهد",
   "latest_chapter": "أحدث فصل",
+  "latest_episode": "الحلقة الأخيرة",
   "date_added": "تاريخ الإضافة",
   "display": "عرض",
   "display_mode": "وضع العرض",
   "compact_grid": "شبكة مضغوطة",
+  "compression_level": "مستوى الضغط",
+  "compression_info": "كلما زاد الضغط، قل حجم ملف النسخة الاحتياطية، ولكنه يستهلك المزيد من المعالج. الافتراضي: {level}",
   "comfortable_grid": "شبكة مريحة",
   "cover_only_grid": "شبكة الغلاف فقط",
   "list": "قائمة",
   "badges": "شارات",
   "downloaded_chapters": "الفصول المحملة",
+  "downloaded_episodes": "الحلقات المحملة",
   "language": "اللغة",
   "local_source": "مصدر محلي",
   "tabs": "التبويبات",
@@ -46,11 +76,13 @@
   "show_numbers_of_items": "إظهار عدد العناصر",
   "other": "آخر",
   "show_continue_reading_buttons": "إظهار أزرار الاستمرار في القراءة",
+  "show_continue_watching_buttons": "إظهار أزرار المتابعة",
   "empty_library": "مكتبة فارغة",
   "search": "بحث...",
   "no_recent_updates": "لا تحديثات حديثة",
   "remove_everything": "إزالة كل شيء",
   "remove_everything_msg": "هل أنت متأكد؟ سيتم فقدان كل التاريخ",
+  "remove_all_update_msg": "هل أنت متأكد؟ سيتم مسح التحديث بالكامل",
   "ok": "حسنًا",
   "cancel": "إلغاء",
   "remove": "إزالة",
@@ -63,542 +95,7 @@
   "latest": "الأحدث",
   "extensions": "الإضافات",
   "migrate": "ترحيل",
-  "incognito_mode": "وضع التخفي",
-  "incognito_mode_description": "يوقف سجل القراءة",
-  "download_queue": "قائمة الانتظار للتحميل",
-  "categories": "الفئات",
-  "settings": "الإعدادات",
-  "about": "حول",
-  "help": "مساعدة",
-  "no_downloads": "لا توجد تحميلات",
-  "edit_categories": "تحرير الفئات",
-  "edit_categories_description": "ليس لديك أي فئات. اضغط على زر الإضافة لإنشاء واحدة لتنظيم مكتبتك",
-  "add": "إضافة",
-  "add_category": "إضافة فئة",
-  "name": "اسم",
-  "category_name_required": "*مطلوب",
-  "add_category_error_exist": "فئة بهذا الاسم موجودة بالفعل!",
-  "delete_category": "حذف الفئة",
-  "delete_category_msg": "هل ترغب في حذف الفئة {name}؟",
-  "rename_category": "إعادة تسمية الفئة",
-  "general": "عام",
-  "general_subtitle": "لغة التطبيق",
-  "app_language": "لغة التطبيق",
-  "appearance": "المظهر",
-  "appearance_subtitle": "الثيم، تنسيق التاريخ والوقت",
-  "theme": "الثيم",
-  "dark_mode": "الوضع المظلم",
-  "on": "مفعل",
-  "off": "معطل",
-  "pure_black_dark_mode": "الوضع المظلم الأسود النقي",
-  "timestamp": "طابع الوقت",
-  "relative_timestamp": "طابع الوقت النسبي",
-  "relative_timestamp_short": "قصير (اليوم، أمس)",
-  "relative_timestamp_long": "طويل (قصير+، منذ عدة أيام)",
-  "date_format": "تنسيق التاريخ",
-  "reader": "القارئ",
-  "refresh": "تحديث",
-  "reader_subtitle": "وضع القراءة، العرض، التنقل",
-  "default_reading_mode": "وضع القراءة الافتراضي",
-  "reading_mode_vertical": "عمودي",
-  "reading_mode_horizontal": "أفقي",
-  "reading_mode_left_to_right": "من اليسار إلى اليمين",
-  "reading_mode_right_to_left": "من اليمين إلى اليسار",
-  "reading_mode_vertical_continuous": "عمودي مستمر",
-  "reading_mode_webtoon": "ويبتون",
-  "double_tap_animation_speed": "سرعة النقر المزدوج",
-  "normal": "عادي",
-  "fast": "سريع",
-  "no_animation": "بدون رسوم متحركة",
-  "animate_page_transitions": "تحريك انتقالات الصفحة",
-  "crop_borders": "قص الحواف",
-  "downloads": "التحميلات",
-  "downloads_subtitle": "إعدادات التحميل",
-  "download_location": "موقع التحميل",
-  "custom_location": "موقع مخصص",
-  "only_on_wifi": "فقط على الواي فاي",
-  "save_as_cbz_archive": "حفظ كأرشيف CBZ",
-  "browse_subtitle": "المصادر، البحث العام",
-  "only_include_pinned_sources": "تضمين المصادر المثبتة فقط",
-  "nsfw_sources": "مصادر NSFW (+18)",
-  "nsfw_sources_show": "إظهار في قوائم المصادر والإضافات",
-  "nsfw_sources_info": "هذا لا يمنع الإضافات غير الرسمية أو المصنفة بشكل غير صحيح من عرض محتوى NSFW (18+) داخل التطبيق",
-  "version": "الإصدار",
-  "check_for_update": "التحقق من التحديثات",
-  "n_days_ago": "منذ {days} أيام",
-  "today": "اليوم",
-  "yesterday": "أمس",
-  "a_week_ago": "منذ أسبوع",
-  "add_to_library": "إضافة إلى المكتبة",
-  "completed": "مكتمل",
-  "ongoing": "جاري",
-  "on_hiatus": "في فترة توقف",
-  "canceled": "ملغى",
-  "publishing_finished": "انتهاء النشر",
-  "unknown": "غير معروف",
-  "set_categories": "ضبط الفئات",
-  "edit": "تحرير",
-  "in_library": "في المكتبة",
-  "filter_scanlator_groups": "تصفية مجموعات المترجمين",
-  "reset": "إعادة تعيين",
-  "by_source": "حسب المصدر",
-  "by_chapter_number": "حسب رقم الفصل",
-  "by_upload_date": "حسب تاريخ الرفع",
-  "source_title": "عنوان المصدر",
-  "chapter_number": "رقم الفصل",
-  "share": "مشاركة",
-  "n_chapters": "{n} فصول",
-  "no_description": "لا يوجد وصف",
-  "resume": "استئناف",
-  "read": "قراءة",
-  "watch": "مشاهدة",
-  "popular": "شائع",
-  "open_in_browser": "فتح في المتصفح",
-  "clear_cookie": "مسح الكوكي",
-  "show_page_number": "عرض رقم الصفحة",
-  "from_library": "من المكتبة",
-  "downloaded_chapter": "الفصل المحمل",
-  "page": "الصفحة {page}",
-  "global_search": "البحث العام",
-  "color_blend_level": "مستوى خلط الألوان",
-  "current": "الحالي {char}",
-  "finished": "منتهي {char}",
-  "next": "التالي {char}",
-  "previous": "السابق {char}",
-  "no_more_chapter": "لا يوجد المزيد من الفصول",
-  "no_result": "لا نتائج",
-  "send": "إرسال",
-  "delete": "حذف",
-  "start_downloading": "ابدأ التحميل الآن",
-  "retry": "إعادة المحاولة",
-  "add_chapters": "إضافة فصول",
-  "delete_chapters": "حذف الفصل؟",
-  "default0": "الافتراضي",
-  "total_chapters": "مجموع الفصول",
-  "import_local_file": "استيراد ملف محلي",
-  "import_files": "ملفات",
-  "nothing_read_recently": "لم يتم قراءة شيء مؤخراً",
-  "status": "الحالة",
-  "not_started": "لم يبدأ",
-  "score": "التقييم",
-  "start_date": "تاريخ البدء",
-  "finish_date": "تاريخ الانتهاء",
-  "reading": "قراءة",
-  "on_hold": "معلق",
-  "dropped": "متوقف",
-  "plan_to_read": "خطط للقراءة",
-  "re_reading": "إعادة القراءة",
-  "chapters": "الفصول",
-  "add_tracker": "إضافة تتبع",
-  "one_tracker": "1 تتبع",
-  "n_tracker": "{n} تتبعات",
-  "tracking": "تتبع",
-  "description": "الوصف",
-  "episode_progress": "التقدم: {n}",
-  "n_episodes": "{n} حلقات",
-  "manga_sources": "مصادر المانغا",
-  "anime_sources": "مصادر الأنمي",
-  "anime_extensions": "إضافات الأنمي",
-  "manga_extensions": "إضافات المانغا",
-  "anime": "أنمي",
-  "manga": "مانغا",
-  "library_no_category_exist": "ليس لديك أي فئات بعد",
-  "watching": "مشاهدة",
-  "plan_to_watch": "خطة للمشاهدة",
-  "re_watching": "إعادة المشاهدة",
-  "episodes": "الحلقات",
-  "download": "تحميل",
-  "new_update_available": "تحديث جديد متاح",
-  "app_version": "إصدار التطبيق : v{v}",
-  "searching_for_updates": "جارٍ البحث عن التحديثات...",
-  "no_new_updates_available": "لا يوجد تحديثات جديدة متاحة",
-  "uninstall": "إلغاء التثبيت",
-  "uninstall_extension": "هل ترغب في إلغاء تثبيت امتداد {ext}؟",
-  "langauage": "اللغة",
-  "extension_detail": "تفاصيل الامتداد",
-  "scale_type": "نوع التحجيم",
-  "scale_type_fit_screen": "ملاءمة الشاشة",
-  "scale_type_stretch": "تمديد",
-  "scale_type_fit_width": "ملاءمة العرض",
-  "scale_type_fit_height": "ملاءمة الارتفاع",
-  "scale_type_original_size": "الحجم الأصلي",
-  "scale_type_smart_fit": "ملاءمة ذكية",
-  "page_preload_amount": "كمية تحميل الصفحات مسبقاً",
-  "page_preload_amount_subtitle": "عدد الصفحات التي يتم تحميلها مسبقاً أثناء القراءة. القيم الأعلى توفر تجربة قراءة أكثر سلاسة، ولكنها تتطلب استخدام أكبر للذاكرة المؤقتة والشبكة.",
-  "image_loading_error": "تعذر تحميل هذه الصورة",
-  "add_episodes": "إضافة حلقات",
-  "video_quality": "الجودة",
-  "video_subtitle": "الترجمة",
-  "check_for_extension_updates": "البحث عن تحديثات الامتداد",
-  "auto_extensions_updates": "تحديثات الامتداد التلقائية",
-  "auto_extensions_updates_subtitle": "سيتم تحديث الامتداد تلقائياً عند توفر إصدار جديد.",
-  "check_for_app_updates": "تحقق من تحديثات التطبيق عند بدء التشغيل",
-  "reading_mode": "وضع القراءة",
-  "custom_filter": "فلتر مخصص",
-  "background_color": "لون الخلفية",
-  "white": "أبيض",
-  "black": "أسود",
-  "grey": "رمادي",
-  "automaic": "تلقائي",
-  "preferred_domain": "النطاق المفضل",
-  "load_more": "تحميل المزيد",
-  "cancel_all_for_this_series": "إلغاء الكل لهذه السلسلة",
-  "login": "تسجيل الدخول",
-  "login_into": "تسجيل الدخول إلى {tracker}",
-  "email_adress": "عنوان البريد الإلكتروني",
-  "password": "كلمة المرور",
-  "log_out_from": "هل تريد تسجيل الخروج من {tracker}؟",
-  "log_out": "تسجيل الخروج",
-  "update_pending": "تحديث معلق",
-  "update_all": "تحديث الكل",
-  "backup_and_restore": "النسخ الاحتياطي والاستعادة",
-  "create_backup": "إنشاء نسخة احتياطية",
-  "create_backup_dialog_title": "ما الذي ترغب في أخذ نسخة احتياطية منه؟",
-  "create_backup_subtitle": "يمكن استخدامها لاستعادة المكتبة الحالية",
-  "restore_backup": "استعادة النسخة الاحتياطية",
-  "restore_backup_subtitle": "استعادة المكتبة من ملف النسخة الاحتياطية",
-  "automatic_backups": "النسخ الاحتياطي التلقائي",
-  "backup_frequency": "تكرار النسخ الاحتياطي",
-  "backup_location": "موقع النسخ الاحتياطي",
-  "backup_options": "خيارات النسخ الاحتياطي",
-  "backup_options_dialog_title": "ما الذي ترغب في أخذ نسخة احتياطية منه؟",
-  "backup_options_subtitle": "المعلومات التي يجب تضمينها في ملف النسخة الاحتياطية",
-  "backup_and_restore_warning_info": "يجب الاحتفاظ بنسخ من النسخ الاحتياطية في أماكن أخرى كذلك",
-  "library_entries": "مدخلات المكتبة",
-  "chapters_and_episode": "الفصول والحلقات",
-  "every_6_hours": "كل 6 ساعات",
-  "every_12_hours": "كل 12 ساعة",
-  "daily": "يومياً",
-  "every_2_days": "كل يومين",
-  "weekly": "أسبوعياً",
-  "restore_backup_warning_title": "استعادة النسخة الاحتياطية ستؤدي إلى الكتابة فوق جميع البيانات الحالية.\n\nهل تريد الاستمرار في الاستعادة؟",
-  "services": "الخدمات",
-  "tracking_warning_info": "مزامنة في اتجاه واحد لتحديث تقدم الفصول في خدمات التتبع. قم بإعداد التتبع لكل مدخل على حدة من خلال زر التتبع الخاص به.",
-  "use_page_tap_zones": "استخدام مناطق النقر في الصفحة",
-  "manage_trackers": "إدارة أدوات التتبع",
-  "restore": "استعادة",
-  "backups": "النسخ الاحتياطية",
-  "by_scanlator": "حسب المترجم",
-  "by_name": "حسب الاسم",
-  "installed": "مثبت",
-  "auto_scroll": "التمرير التلقائي",
-  "video_audio": "الصوت",
-  "player": "لاعب",
-  "markEpisodeAsSeenSetting": "في أي نقطة لوضع علامة على الحلقة كمشاهدة",
-  "default_skip_intro_length": "طول تخطي المقدمة الافتراضي",
-  "default_playback_speed_length": "طول سرعة التشغيل الافتراضية",
-  "updateProgressAfterReading": "تحديث التقدم بعد القراءة",
-  "no_sources_installed": "لم يتم تثبيت مصادر!",
-  "show_extensions": "عرض الإضافات",
-  "default_skip_forward_skip_length": "طول التخطي الافتراضي للأمام",
-  "aniskip_requires_info": "AniSkip يتطلب تتبع الأنمي باستخدام MAL أو Anilist للعمل.",
-  "enable_aniskip": "تمكين AniSkip",
-  "enable_auto_skip": "تمكين التخطي التلقائي",
-  "aniskip_button_timeout": "مهلة زر",
-  "fullscreen": "شاشة كاملة",
-  "update_library": "تحديث المكتبة",
-  "next_chapter": "الفصل التالي",
-  "next_5_chapters": "الفصول الخمسة التالية",
-  "next_10_chapters": "الفصول العشرة التالية",
-  "next_25_chapters": "الفصول الخمسة والعشرون التالية",
-  "cover_saved": "الغلاف المحفوظ",
-  "set_as_cover": "تعيين كغطاء",
-  "use_this_as_cover_art": "هل تريد استخدام هذا كفن الغلاف؟",
-  "save": "حفظ",
-  "picture_saved": "الصورة المحفوظة",
-  "cover_updated": "تم تحديث الغلاف",
-  "blend_mode_default": "الافتراضي",
-  "blend_mode_multiply": "ضرب",
-  "blend_mode_screen": "الشاشة",
-  "blend_mode_overlay": "تراكيب",
-  "blend_mode_colorDodge": "تفادي اللون",
-  "blend_mode_lighten": "تفتيح",
-  "blend_mode_colorBurn": "حرق اللون",
-  "blend_mode_darken": "تظليل",
-  "blend_mode_difference": "الفرق",
-  "blend_mode_saturation": "التشبع",
-  "blend_mode_softLight": "ضوء ناعم",
-  "blend_mode_plus": "زائد",
-  "blend_mode_exclusion": "استثناء",
-  "custom_color_filter": "مرشح اللون المخصص",
-  "color_filter_blend_mode": "وضع امتزاج مرشح اللون",
-  "enable_all": "تمكين الكل",
-  "disable_all": "تعطيل الكل",
-  "font": "الخط",
-  "color": "اللون",
-  "font_size": "حجم الخط",
-  "text": "النص",
-  "border": "الحدود",
-  "background": "الخلفية",
-  "no_subtite_warning_message": "لا تؤثر لأنه لا توجد مسارات ترجمة في هذا الفيديو",
-  "grid_size": "حجم الشبكة",
-  "n_per_row": "{n} في الصف الواحد",
-  "horizontal_continious": "مستمر أفقياً",
-  "edit_code": "تحرير الكود",
-  "use_libass": "تفعيل libass",
-  "use_libass_info": "استخدام عرض الترجمة المستندة إلى libass للواجهة الخلفية الأصلية.",
-  "libass_not_disable_message": "عطل `استخدام libass` في إعدادات المشغل لتتمكن من تخصيص الترجمة.",
-  "torrent_stream": "بث التورنت",
-  "add_torrent": "إضافة تورنت",
-  "enter_torrent_hint_text": "أدخل رابط ملف التورنت أو المغناطيس",
-  "torrent_url": "رابط التورنت",
-  "or": "أو",
-  "advanced": "متقدم",
-  "use_native_http_client": "استخدام عميل HTTP الأصلي",
-  "use_native_http_client_info": "يدعم تلقائيًا ميزات المنصة مثل الشبكات الافتراضية الخاصة (VPNs)، ويدعم ميزات HTTP أكثر مثل HTTP/3 ومعالجة إعادة التوجيه المخصصة",
-  "unwatched": "لم يشاهد",
-  "last_watched": "آخر مشاهدة",
-  "unwatched_count": "عدد غير المشاهد",
-  "latest_episode": "الحلقة الأخيرة",
-  "downloaded_episodes": "الحلقات المحملة",
-  "show_continue_watching_buttons": "إظهار أزرار المتابعة",
-  "by_episode_number": "حسب رقم الحلقة",
-  "episode_number": "رقم الحلقة",
-  "total_episodes": "إجمالي الحلقات",
-  "next_episode": "الحلقة التالية",
-  "next_5_episodes": "الحلقات الخمس التالية",
-  "next_10_episodes": "العشر حلقات التالية",
-  "next_25_episodes": "الخمسة وعشرون حلقة التالية",
-  "remove_all_update_msg": "هل أنت متأكد؟ سيتم مسح التحديث بالكامل",
-  "syncing": "مزامنة",
-  "sync_logged": "تم تسجيل الدخول بنجاح",
-  "syncing_subtitle": "أدخل عنوان خادم المزامنة وسجّل الدخول عبر المتصفح لمزامنة تقدّم القراءة بين أجهزتك.",
-  "sync_service": "المزامنة على خادم ذاتي الاستضافة",
-  "sync_server": "عنوان خادم المزامنة",
-  "sync_starting": "بدء المزامنة...",
-  "sync_finished": "تم الانتهاء من المزامنة",
-  "sync_failed": "فشل المزامنة",
-  "sync_button_sync": "مزامنة التقدم",
-  "dialog_confirm": "تأكيد",
-  "full_screen_player": "استخدام الشاشة الكاملة",
-  "full_screen_player_info": "استخدام الشاشة الكاملة تلقائيًا عند تشغيل الفيديو.",
-  "novel_sources": "مصادر الروايات",
-  "novel_extensions": "إضافات الروايات",
-  "novel": "رواية",
-  "sync_after_reading": "المزامنة بعد القراءة أو المشاهدة",
-  "sync_on_app_launch": "المزامنة عند فتح التطبيق",
-  "skip_opening": "تخطي البداية",
-  "skip_ending": "تخطي النهاية",
-  "n_hour_ago": "قبل {hour} ساعة",
-  "n_hours_ago": "قبل {hours} ساعات",
-  "n_minute_ago": "قبل {minute} دقيقة",
-  "n_minutes_ago": "قبل {minutes} دقائق",
-  "n_day_ago": "قبل {day} يوم",
-  "now": "الآن",
-  "library_last_updated": "آخر تحديث للمكتبة: {lastUpdated}",
-  "data_and_storage": "البيانات والتخزين",
-  "download_location_info": "تُستخدم لتنزيل الفصول",
-  "storage": "التخزين",
-  "clear_chapter_and_episode_cache": "مسح ذاكرة التخزين المؤقت للفصول والحلقات",
-  "cache_cleared": "تم مسح ذاكرة التخزين المؤقت",
-  "clear_chapter_or_episode_cache_on_app_launch": "مسح ذاكرة التخزين المؤقت للفصول/الحلقات عند فتح التطبيق",
-  "app_settings": "إعدادات التطبيق",
-  "sources_settings": "إعدادات المصادر",
-  "include_sensitive_settings": "تضمين الإعدادات الحساسة (مثل رموز تسجيل الدخول للمتعقب)",
-  "create": "إنشاء",
-  "migrate_confirm": "الانتقال إلى مصدر آخر",
-  "clean_database": "تنظيف قاعدة البيانات",
-  "cleaned_database": "تم تنظيف قاعدة البيانات! تمت إزالة {x} إدخالات",
-  "clean_database_desc": "سيؤدي هذا إلى إزالة جميع العناصر التي لم تتم إضافتها إلى المكتبة!",
-  "statistics": "الإحصائيات",
-  "default_subtitle_language": "لغة الترجمة الافتراضية",
-  "follow_system_theme": "اتبع سمة النظام",
-  "sync_on": "تمكين المزامنة",
-  "sync_auto": "المزامنة التلقائية",
-  "sync_auto_warning": "المزامنة التلقائية هي ميزة تجريبية حاليًا!",
-  "sync_auto_off": "إيقاف",
-  "sync_auto_5_minutes": "كل 5 دقائق",
-  "sync_auto_10_minutes": "كل 10 دقائق",
-  "sync_auto_30_minutes": "كل 30 دقيقة",
-  "sync_auto_1_hour": "كل ساعة",
-  "sync_auto_3_hours": "كل 3 ساعات",
-  "sync_auto_6_hours": "كل 6 ساعات",
-  "sync_auto_12_hours": "كل 12 ساعة",
-  "server_error": "خطأ في الخادم!",
-  "reorder_navigation": "تخصيص التنقل",
-  "reorder_navigation_description": "أعد ترتيب وتبديل كل تنقل حسب احتياجاتك.",
-  "include_subtitles": "تضمين الترجمة",
-  "downloads_are_limited_to_wifi": "التنزيلات مقتصرة على Wi-Fi فقط",
-  "manga_extensions_repo": "مستودع إضافات المانجا",
-  "anime_extensions_repo": "مستودع إضافات الأنمي",
-  "novel_extensions_repo": "مستودع إضافات الروايات",
-  "undefined": "غير محدد",
-  "empty_extensions_repo": "ليس لديك أي عناوين URL للمستودع هنا. انقر على زر الإضافة لإضافة واحد!",
-  "add_extensions_repo": "إضافة عنوان URL للمستودع",
-  "remove_extensions_repo": "إزالة عنوان URL للمستودع",
-  "manage_manga_repo_urls": "إدارة عناوين URL لمستودع المانجا",
-  "manage_anime_repo_urls": "إدارة عناوين URL لمستودع الأنمي",
-  "manage_novel_repo_urls": "إدارة عناوين URL لمستودع الروايات",
-  "url_cannot_be_empty": "لا يمكن أن يكون عنوان URL فارغًا",
-  "url_must_end_with_dot_json_or_dot_pb": "يجب أن ينتهي عنوان URL بـ .json / .pb",
-  "repo_url": "عنوان URL للمستودع",
-  "invalid_url_format": "تنسيق عنوان URL غير صالح",
-  "clear_all_sources": "مسح جميع المصادر",
-  "clear_all_sources_msg": "سيؤدي هذا إلى مسح جميع مصادر التطبيق تمامًا. هل أنت متأكد أنك تريد المتابعة؟",
-  "sources_cleared": "تم مسح المصادر!!!",
-  "repo_added": "تمت إضافة مستودع المصدر!",
-  "add_repo": "إضافة مستودع؟",
-  "genre_search_library": "بحث النوع في المكتبة",
-  "genre_search_source": "تصفح في المصدر",
-  "source_not_added": "المصدر غير مثبت!",
-  "load_own_subtitles": "تحميل الترجمة الخاصة بك...",
-  "unsupported_repo": "تعذّرت إضافة مستودع المصادر هذا. تحقّق من عنوان المستودع أو تواصل مع القائم على صيانته.",
-  "downloaded_only": "المحملة فقط",
-  "downloaded_only_description": "إظهار الإدخالات المحملة فقط في مكتبتك",
-  "concurrent_downloads": "التحميلات المتزامنة",
-  "logs_on": "تفعيل التسجيل",
-  "share_app_logs": "مشاركة سجلات التطبيق",
-  "no_app_logs": "لا يوجد ملف log.txt!",
-  "failed": "فشل!",
-  "next_week": "الأسبوع القادم",
-  "sync_button_upload": "رفع فقط",
-  "sync_button_upload_info": "ستستبدل هذه العملية البيانات البعيدة بالكامل بالبيانات المحلية!",
-  "sync_button_download": "تنزيل فقط",
-  "sync_button_download_info": "ستستبدل هذه العملية البيانات المحلية بالكامل بالبيانات البعيدة!",
-  "extension_settings": "إعدادات الإضافة",
-  "video_audio_info": "اللغات المفضلة، تصحيح طبقة الصوت، قنوات الصوت",
-  "all_chapters": "كل الفصول",
-  "all_episodes": "كل الحلقات",
-  "advanced_info": "تكوين mpv",
-  "recommendations": "التوصيات",
-  "recommendations_similar": "مشابه",
-  "recommendations_weights": "أوزان التوصية",
-  "recommendations_weights_genre": "تشابه النوع",
-  "recommendations_weights_setting": "تشابه الإعداد",
-  "recommendations_weights_synopsis": "تشابه القصة",
-  "recommendations_weights_theme": "تشابه الموضوع",
-  "custom_dns": "DNS مخصص (اتركه فارغًا لاستخدام DNS النظام)",
-  "android_proxy_server": "خادم بروكسي Android (M-Extension-Server)",
-  "get_m_extension_server": "احصل على M-Extension-Server",
-  "search_subtitles": "البحث عن ترجمات عبر الإنترنت...",
-  "extension_notes": "ملاحظات: {notes}",
-  "you_have_finished_reading": "لقد انتهيت من القراءة",
-  "hwdec": "فك تشفير الأجهزة",
-  "enable_hardware_accel": "تسريع الأجهزة",
-  "enable_hardware_accel_info": "قم بتشغيله/إيقافه إذا كنت تواجه أخطاء أو أعطال",
-  "track_library_navigate": "انتقل إلى الإدخال المحلي الموجود",
-  "track_library_add": "أضف إلى المكتبة المحلية",
-  "track_library_add_confirm": "إضافة العنصر المتتبع إلى المكتبة المحلية",
-  "track_library_not_logged": "قم بتسجيل الدخول إلى المتتبع المقابل لاستخدام هذه الميزة!",
-  "track_library_switch": "التبديل إلى متتبع آخر",
-  "go_back": "العودة",
-  "merge_library_nav_mobile": "دمج التنقل في المكتبة على الهاتف المحمول",
-  "enable_discord_rpc": "تمكين Discord RPC",
-  "hide_discord_rpc_incognito": "إخفاء Discord RPC في وضع التخفي",
-  "rpc_show_reading_watching_progress": "إظهار الفصل الحالي في Discord (يتطلب إعادة التشغيل)",
-  "rpc_show_title": "إظهار العنوان الحالي في Discord",
-  "rpc_show_cover_image": "إظهار صورة الغلاف الحالية في Discord",
-  "sync_enable_histories": "مزامنة بيانات السجل",
-  "sync_enable_updates": "مزامنة بيانات التحديث",
-  "sync_enable_settings": "مزامنة الإعدادات",
-  "enable_mpv": "تمكين تظليل / سكريبتات mpv",
-  "mpv_info": "يدعم سكريبتات .js تحت mpv/scripts/",
-  "mpv_redownload": "إعادة تنزيل ملفات تكوين mpv",
-  "mpv_redownload_info": "يستبدل ملفات التكوين القديمة بأخرى جديدة!",
-  "mpv_download": "ملفات تكوين MPV مطلوبة!\nتنزيل الآن؟",
-  "custom_buttons": "أزرار مخصصة",
-  "custom_buttons_info": "تنفيذ كود lua بأزرار مخصصة",
-  "custom_buttons_edit": "تحرير الأزرار المخصصة",
-  "custom_buttons_add": "إضافة زر مخصص",
-  "custom_buttons_added": "تمت إضافة الزر المخصص!",
-  "custom_buttons_delete": "حذف الزر المخصص",
-  "custom_buttons_text": "نص الزر",
-  "custom_buttons_text_req": "نص الزر مطلوب",
-  "custom_buttons_js_code": "كود lua",
-  "custom_buttons_js_code_req": "كود lua مطلوب",
-  "custom_buttons_js_code_long": "كود lua (عند الضغط لفترة طويلة)",
-  "custom_buttons_startup": "كود lua (عند بدء التشغيل)",
-  "n_days": "{n} أيام",
-  "decoder": "فك التشفير",
-  "decoder_info": "فك تشفير الأجهزة، تنسيق البكسل، إزالة التدرج",
-  "enable_gpu_next": "تمكين gpu-next (Android فقط)",
-  "enable_gpu_next_info": "محرك عرض فيديو جديد",
-  "debanding": "إزالة التدرج",
-  "use_yuv420p": "استخدام تنسيق بكسل YUV420P",
-  "use_yuv420p_info": "قد يصلح الشاشات السوداء على بعض برامج ترميز الفيديو، ويمكن أيضًا تحسين الأداء على حساب الجودة",
-  "audio_preferred_languages": "اللغات المفضلة",
-  "audio_preferred_languages_info": "لغة (لغات) الصوت المراد تحديدها افتراضيًا على فيديو يحتوي على تدفقات صوت متعددة، رموز لغة من 2/3 أحرف (مثل: ar، en، ja). يمكن فصل القيم المتعددة بفاصلة.",
-  "enable_audio_pitch_correction": "تمكين تصحيح طبقة الصوت",
-  "enable_audio_pitch_correction_info": "يمنع الصوت من أن يصبح حادًا بسرعات أسرع وعميقًا بسرعات أبطأ",
-  "audio_channels": "قنوات الصوت",
-  "volume_boost_cap": "حد تعزيز الصوت",
-  "internal_player": "المشغل الداخلي",
-  "internal_player_info": "التقدم، عناصر التحكم، الاتجاه",
-  "subtitle_delay_text": "تأخير الترجمة",
-  "subtitle_delay": "التأخير (ms)",
-  "subtitle_speed": "السرعة",
-  "calendar": "التقويم",
-  "calendar_no_data": "لا توجد بيانات حتى الآن.",
-  "calendar_info": "لا يمكن للتقويم التنبؤ بتحميل الفصل التالي إلا بناءً على التحميلات القديمة. قد لا تكون بعض البيانات دقيقة بنسبة 100٪!",
-  "in_n_day": "في {days} يوم",
-  "in_n_days": "في {days} أيام",
-  "clear_library": "مسح المكتبة",
-  "clear_library_desc": "اختر مسح جميع إدخالات المانجا والأنمي و/أو الرواية",
-  "clear_library_input": "اكتب 'manga' و 'anime' و/أو 'novel' (مفصولة بفاصلة) لإزالة جميع الإدخالات ذات الصلة",
-  "watch_order": "ترتيب المشاهدة",
-  "sequels": "الأجزاء التالية",
-  "recommendations_similarity": "التشابه:",
-  "local_folder_structure": "هيكل المجلد المحلي",
-  "local_folder": "المجلدات المحلية",
-  "add_local_folder": "إضافة مجلد محلي",
-  "rescan_local_folder": "إعادة فحص جميع المجلدات المحلية الآن",
-  "export_metadata": "تصدير البيانات الوصفية",
-  "exported": "تم التصدير",
-  "text_size": "حجم النص:",
-  "text_align": "محاذاة النص",
-  "line_height": "ارتفاع السطر",
-  "show_scroll_percentage": "إظهار نسبة التمرير",
-  "remove_extra_paragraph_spacing": "إزالة المسافات الإضافية بين الفقرات",
-  "select_label_color": "تحديد لون {label}",
-  "default_user_agent": "وكيل المستخدم الافتراضي",
-  "forceLandscapeMode": "فرض وضع المناظر الطبيعية",
-  "forceLandscapeModeSubtitle": "فرض المشغل لاستخدام اتجاه المناظر الطبيعية.",
-  "dns_over_https": "DNS-over-HTTPS (DoH)",
-  "dns_provider": "مزود DNS",
-  "tracked": "تتبع",
-  "auth_unlock_msg": "المصادقة لفتح قفل NodeLane Comics",
-  "app_locked": "NodeLane Comics مقفول",
-  "auth_to_continue": "المصادقة للمتابعة",
-  "authenticating": "جاري المصادقة...",
-  "lock": "قفل",
-  "unlock": "فتح القفل",
-  "security": "الأمان",
-  "auth_to_change_security_setting": "المصادقة لتغيير إعدادات الأمان",
-  "app_lock": "قفل التطبيق",
-  "require_biometric_or_device_credential": "يتطلب المصادقة البيومترية أو بيانات اعتماد الجهاز لفتح التطبيق",
-  "biometric_or_device_credential_not_available": "المصادقة البيومترية غير متاحة على هذا الجهاز",
-  "app_lock_description": "عند تفعيل قفل التطبيق، سيُطلب منك المصادقة\nفي كل مرة تفتح التطبيق أو تعود إليه من الخلفية.",
-  "keep_screen_on": "إبقاء الشاشة مضاءة",
-  "webtoon_side_padding": "حشو جانب الويب توون",
-  "show_page_gaps": "إظهار فجوات الصفحات",
-  "invert_colors": "عكس الألوان",
-  "grayscale": "تدرج رمادي",
-  "brightness": "السطوع",
-  "contrast": "التباين",
-  "saturation": "التشبع",
-  "navigation_layout": "تخطيط الملاحة",
-  "nav_layout_default": "افتراضي",
-  "nav_layout_l_shaped": "على شكل L",
-  "nav_layout_kindle": "Kindle",
-  "nav_layout_edge": "الحافة",
-  "nav_layout_right_and_left": "اليمين واليسار",
-  "nav_layout_disabled": "معطل",
-  "color_enhancements": "تحسينات اللون",
-  "split_epub_chapters": "تقسيم إلى فصول",
-  "split_epub_chapters_description": "استيراد كل فصل EPUB كإدخال منفصل",
   "mass_migration_title": "الهجرة الجماعية",
-  "mass_migration_description": "ترحيل إدخالات مكتبتك من مصدر إلى آخر.",
-  "mass_migration_selection_title": "اختيار الهجرة",
-  "mass_migration_source_selecting_description": "حدد مصدرًا واحدًا أو أكثر للترحيل إليه.",
-  "mass_migration_manga_selecting_description": "حدد العناوين لترحيلها إلى المصدر الجديد.",
-  "mass_migration_status_idle": "خامل",
-  "mass_migration_status_searching": "جاري البحث...",
-  "mass_migration_status_migrating": "جاري الترحيل...",
-  "mass_migration_status_finished": "انتهى",
-  "mass_migration_action_migrate": "ترحيل",
-  "mass_migration_action_copy": "نسخ",
-  "mass_migration_action_skip_step": "تخطى الخطوة",
-  "compression_info": "كلما زاد الضغط، قل حجم ملف النسخة الاحتياطية، ولكنه يستهلك المزيد من المعالج. الافتراضي: {level}",
   "mass_migration_preview_items": "معاينة العناصر",
   "mass_migration_destination_source": "المصدر الوجهة",
   "mass_migration_no_library_items": "لا توجد عناصر مكتبة متاحة للهجرة الجماعية.",
@@ -780,165 +277,131 @@
   "mass_migration_unknown_match": "تطابق غير معروف",
   "mass_migration_unknown_source": "مصدر غير معروف",
   "mass_migration_unknown_chapter": "فصل غير معروف",
-  "delete_download_after_reading": "حذف التحميل بعد القراءة",
-  "total": "الإجمالي",
-  "mean_per_title": "المتوسط لكل عنوان",
-  "completion_rate": "معدل الإكمال",
-  "watching_time": "وقت المشاهدة",
-  "reading_time": "وقت القراءة",
-  "average_chapters_per_title": "متوسط الفصول لكل عنوان",
-  "read_percentage": "نسبة القراءة",
-  "entries": "الإدخالات",
-  "extension_server_intro_with_jre": "قم بتحميل حزمة خادم الوكيل قبل استخدام إضافات Mihon. تتضمن الحزمة JRE ومعلف JAR الخاص بخادم الإضافات.",
-  "extension_server_intro_ios": "قم بتحميل ملف JAR الخاص بخادم الوكيل قبل استخدام إضافات Mihon. يحتاج نظام iOS فقط إلى ملف JAR الخاص بخادم الإضافات.",
-  "checking_files": "جاري فحص الملفات",
-  "files_installed": "الملفات المثبتة",
-  "files_missing": "الملفات المفقودة",
-  "update_files": "تحديث الملفات",
-  "up_to_date": "محدث",
-  "choose_location": "اختر الموقع",
-  "import_existing_jar": "استيراد ملف JAR موجود",
-  "detect_files_in_selected_folder": "كشف الملفات في المجلد المختار",
-  "preparing_download": "جاري تحضير التحميل...",
-  "app_install_location": "موقع تثبيت التطبيق",
-  "install_location": "موقع التثبيت",
-  "jre_executable": "JRE قابل للتنفيذ",
-  "extension_server_jar": "ملف JAR لخادم الإضافات",
-  "installed_version": "الإصدار المثبت",
-  "latest_version": "أحدث إصدار",
-  "m_extension_server_description": "استخدم M-Extension-Server عندما تحتاج إلى وكيل جهاز أندرويد منفصل. اضبط عنوان الوكيل هنا وقم بتحميل APK من GitHub.",
-  "set_proxy_address": "ضبط عنوان الوكيل",
-  "no_extension_server_bundle_available_for_this_platform": "لا تتوفر حزمة خادم إضافات لهذا النظام.",
-  "failed_to_download_bundle": "فشل تحميل الحزمة ({statusCode}).",
-  "@failed_to_download_bundle": {
-    "placeholders": {
-      "statusCode": {}
-    }
-  },
-  "downloaded_bundle_missing_expected_files": "الحزمة المحملة لا تحتوي على الملفات المتوقعة.",
-  "extension_server_files_ready": "ملفات خادم الإضافات جاهزة.",
-  "ios_extension_server_import_hint": "في نظام iOS يتم تثبيت الخادم داخل صندوق رمال التطبيق. استخدم \"استيراد ملف JAR موجود\" لجلب ملف محمل.",
-  "select_extension_server_folder": "اختر مجلد خادم الإضافات",
-  "selected_folder_does_not_exist": "المجلد المختار غير موجود.",
-  "no_extension_server_files_found_in_selected_folder": "لم يتم العثور على ملفات خادم الإضافات في المجلد المختار.",
-  "extension_server_files_linked": "تم ربط ملفات خادم الإضافات.",
-  "selected_file_could_not_be_accessed": "تعذر الوصول إلى الملف المختار.",
-  "extension_server_jar_imported": "تم استيراد ملف JAR لخادم الإضافات.",
-  "could_not_launch_apk_bridge_page": "تعذر تشغيل صفحة M-Extension-Server.",
-  "not_configured": "غير مهيأ",
-  "webview": "عرض الويب",
-  "mass_migration_option_keep_old": "الاحتفاظ بالإدخال القديم بعد الترحيل",
-  "mass_migration_dialog_title": "هل تريد ترحيل {count, plural, zero{0 عنوان} one{عنوان واحد} two{عنوانين} few{{count} عناوين} many{{count} عنوانًا} other{{count} عنوان}}؟",
-  "mass_migration_dialog_content": "سيؤدي هذا إلى استبدال الإدخالات الحالية بإدخالات جديدة من المصدر المحدد.",
-  "mass_migration_help_title": "كيفية استخدام الهجرة الجماعية",
-  "mass_migration_help_content": "1. حدد المصدر الأصلي.\n2. حدد العناوين التي تريد ترحيلها.\n3. حدد مصدر (مصادر) الوجهة.\n4. تحقق من التطابقات وابدأ الترحيل.",
-  "mihon_proxy_server": "خادم بروكسي Mihon",
-  "android_proxy_server_mihon_description": "قم بتنزيل وتكوين خادم البروكسي المطلوب لاستخدام امتدادات Mihon.",
-  "could_not_check_proxy_server_updates": "تعذر التحقق من تحديثات خادم البروكسي.",
-  "proxy_server_ip_hint": "عنوان IP للخادم (مثلاً 10.0.0.5 أو https://example.com)",
-  "no_newer_proxy_server_release_available": "لا يوجد إصدار أحدث من خادم البروكسي متاح.",
-  "statistics_title": "الإحصائيات",
-  "statistics_total_manga": "إجمالي المانجا",
-  "statistics_total_anime": "إجمالي الأنمي",
-  "statistics_chapters_read": "الفصول التي تمت قراءتها",
-  "statistics_episodes_watched": "الحلقات التي تمت مشاهدتها",
-  "statistics_reading_time": "وقت القراءة",
-  "statistics_watching_time": "وقت المشاهدة",
-  "statistics_mean_score": "متوسط النقاط",
-  "statistics_score_distribution": "توزيع النقاط",
-  "statistics_status_distribution": "توزيع الحالة",
-  "statistics_reading_time_unit_hour": "{count, plural, zero{0 ساعة} one{ساعة واحدة} two{ساعتين} few{{count} ساعات} many{{count} ساعة} other{{count} ساعة}}",
-  "statistics_reading_time_unit_minute": "{count, plural, zero{0 دقيقة} one{دقيقة واحدة} two{دقيقتين} few{{count} دقائق} many{{count} دقيقة} other{{count} دقيقة}}",
-  "statistics_reading_time_unit_day": "{count, plural, zero{0 يوم} one{يوم واحد} two{يومين} few{{count} أيام} many{{count} يومًا} other{{count} يوم}}",
-  "statistics_no_data": "بيانات غير كافية لعرض الإحصائيات.",
-  "compression_level": "مستوى الضغط",
-  "android_proxy_server_mihon": "خادم بروكسي أندرويد (Mihon)",
-  "select_extension_server_jar": "اختر ملف JAR لخادم الامتداد",
-  "webtoon_disable_zoom_out": "تعطيل التصغير في الويب تون",
-  "webtoon_double_tap_zoom_enabled": "النقر المزدوج للتكبير في الويب تون",
-  "navigate_to_pan": "التنقل للسحب",
-  "navigate_to_pan_subtitle": "تحريك الصورة المكبرة قبل قلب الصفحة",
-  "split_wide_pages": "تقسيم الصفحات العريضة",
-  "dual_page_invert": "عكس نصفي الصفحات المقسمة",
-  "dual_page_rotate_to_fit": "التدوير للملاءمة",
-  "dual_page_rotate_to_fit_invert": "عكس اتجاه التدوير",
-  "landscape_zoom": "تكبير تلقائي للوضع الأفقي",
-  "zoom_start_position": "موضع بدء التكبير",
-  "zoom_start_left": "اليسار",
-  "zoom_start_right": "اليمين",
-  "zoom_start_center": "الوسط",
-  "automatic_background": "خلفية تلقائية",
-  "tapping_inversion": "عكس النقر",
-  "tapping_inversion_none": "لا شيء",
-  "tapping_inversion_horizontal": "أفقي",
-  "tapping_inversion_vertical": "عمودي",
-  "tapping_inversion_both": "كلاهما",
-  "flash_on_page_change": "وميض عند تغيير الصفحة",
-  "flash_on_page_change_subtitle": "مساعد منع احتراق شاشة AMOLED",
-  "flash_color": "لون الوميض",
-  "flash_color_black": "أسود",
-  "flash_color_white": "أبيض",
-  "flash_color_white_black": "أبيض وأسود",
-  "flash_interval_label": "معدل الوميض",
-  "flash_interval_value": "كل {n} صفحات",
-  "flash_interval": "معدل الوميض: كل {n} صفحات",
-  "@flash_interval": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "flash_duration_label": "مدة الوميض",
-  "flash_duration_value": "{n} مللي ثانية",
-  "flash_duration": "مدة الوميض: {n} مللي ثانية",
-  "@flash_duration": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "show_navigation_overlay_on_start": "إظهار واجهة التنقل عند البدء",
-  "reader_hide_threshold": "حد إخفاء القارئ",
-  "reader_hide_threshold_highest": "الأعلى (5 بكسل)",
-  "reader_hide_threshold_high": "مرتفع (13 بكسل)",
-  "reader_hide_threshold_low": "منخفض (31 بكسل)",
-  "reader_hide_threshold_lowest": "الأدنى (47 بكسل)",
-  "error_no_pages_available": "خطأ: لا توجد صفحات متاحة",
-  "mark_duplicate_chapters_read": "ضع علامة على أرقام الفصول المكررة كمقروءة",
-  "tts": "تحويل النص إلى كلام",
-  "tts_speed": "السرعة",
-  "tts_pitch": "التيمبر",
-  "tts_language": "اللغة",
-  "tts_voice": "الصوت",
-  "tts_stop": "إيقاف",
-  "tts_play": "تشغيل",
-  "tts_pause": "إيقاف مؤقت",
-  "tts_previous": "الفقرة السابقة",
-  "tts_next": "الفقرة التالية",
-  "tts_paragraph_progress": "الفقرة {current} من {total}",
-  "tts_settings": "إعدادات TTS",
-  "tts_default": "افتراضي",
-  "app_ui_scale": "حجم الواجهة",
-  "app_ui_scale_subtitle": "اجعل الواجهة أكبر أو أصغر لتناسب شاشتك ومسافة المشاهدة.",
-  "allow_concurrent_downloads": "السماح بالتنزيلات المتزامنة",
-  "allow_concurrent_downloads_subtitle": "قم بالتنزيل من مصادر مختلفة في نفس الوقت. يقوم مصدر واحد فقط بتنزيل فصل واحد في المرة حتى لا يتم الإرهاق. أطفئها للتنزيل واحدة تلو الأخرى في كل مكان.",
-  "download_delay": "تأخير التنزيل",
-  "download_delay_subtitle": "إيقاف. أضف انتظارًا مع اهتزاز عشوائي بين الفصول لتكون أكثر لطفًا على المصادر.",
-  "save_search": "حفظ البحث",
-  "saved_searches": "عمليات البحث المحفوظة",
-  "enter_search_to_save_first": "أدخل بحثًا لحفظه أولاً",
-  "no_saved_searches": "لا توجد عمليات بحث محفوظة لهذا المصدر حتى الآن.\nقم بإجراء بحث، ثم اختر \"حفظ البحث\".",
-  "source": "المصدر",
+  "migrate_confirm": "الانتقال إلى مصدر آخر",
+  "clean_database": "تنظيف قاعدة البيانات",
+  "cleaned_database": "تم تنظيف قاعدة البيانات! تمت إزالة {x} إدخالات",
+  "clean_database_desc": "سيؤدي هذا إلى إزالة جميع العناصر التي لم تتم إضافتها إلى المكتبة!",
+  "incognito_mode": "وضع التخفي",
+  "incognito_mode_description": "يوقف سجل القراءة",
+  "downloaded_only": "المحملة فقط",
+  "downloaded_only_description": "إظهار الإدخالات المحملة فقط في مكتبتك",
+  "download_queue": "قائمة الانتظار للتحميل",
+  "categories": "الفئات",
+  "statistics": "الإحصائيات",
+  "settings": "الإعدادات",
+  "about": "حول",
+  "help": "مساعدة",
+  "no_downloads": "لا توجد تحميلات",
+  "edit_categories": "تحرير الفئات",
+  "edit_categories_description": "ليس لديك أي فئات. اضغط على زر الإضافة لإنشاء واحدة لتنظيم مكتبتك",
+  "add": "إضافة",
+  "add_category": "إضافة فئة",
+  "name": "اسم",
   "label_value": "{label}: {value}",
+  "@label_value": {
+    "placeholders": {
+      "label": {},
+      "value": {}
+    }
+  },
   "url": "الرابط",
+  "category_name_required": "*مطلوب",
+  "add_category_error_exist": "فئة بهذا الاسم موجودة بالفعل!",
+  "delete_category": "حذف الفئة",
+  "delete_category_msg": "هل ترغب في حذف الفئة {name}؟",
+  "rename_category": "إعادة تسمية الفئة",
+  "general": "عام",
+  "general_subtitle": "لغة التطبيق",
+  "app_language": "لغة التطبيق",
+  "default_subtitle_language": "لغة الترجمة الافتراضية",
+  "appearance": "المظهر",
+  "appearance_subtitle": "الثيم، تنسيق التاريخ والوقت",
+  "theme": "الثيم",
+  "dark_mode": "الوضع المظلم",
+  "follow_system_theme": "اتبع سمة النظام",
+  "on": "مفعل",
+  "off": "معطل",
+  "pure_black_dark_mode": "الوضع المظلم الأسود النقي",
+  "timestamp": "طابع الوقت",
+  "relative_timestamp": "طابع الوقت النسبي",
+  "relative_timestamp_short": "قصير (اليوم، أمس)",
+  "relative_timestamp_long": "طويل (قصير+، منذ عدة أيام)",
+  "date_format": "تنسيق التاريخ",
+  "reader": "القارئ",
+  "refresh": "تحديث",
+  "reader_subtitle": "وضع القراءة، العرض، التنقل",
+  "default_reading_mode": "وضع القراءة الافتراضي",
+  "reading_mode_vertical": "عمودي",
+  "reading_mode_horizontal": "أفقي",
+  "reading_mode_left_to_right": "من اليسار إلى اليمين",
+  "reading_mode_right_to_left": "من اليمين إلى اليسار",
+  "reading_mode_vertical_continuous": "عمودي مستمر",
+  "reading_mode_webtoon": "ويبتون",
+  "double_tap_animation_speed": "سرعة النقر المزدوج",
+  "normal": "عادي",
+  "fast": "سريع",
+  "no_animation": "بدون رسوم متحركة",
+  "animate_page_transitions": "تحريك انتقالات الصفحة",
+  "crop_borders": "قص الحواف",
+  "downloads": "التحميلات",
+  "downloads_subtitle": "إعدادات التحميل",
+  "download_location": "موقع التحميل",
+  "custom_location": "موقع مخصص",
+  "only_on_wifi": "فقط على الواي فاي",
+  "save_as_cbz_archive": "حفظ كأرشيف CBZ",
+  "delete_download_after_reading": "حذف التحميل بعد القراءة",
+  "concurrent_downloads": "التحميلات المتزامنة",
+  "browse_subtitle": "المصادر، البحث العام",
+  "only_include_pinned_sources": "تضمين المصادر المثبتة فقط",
+  "nsfw_sources": "مصادر NSFW (+18)",
+  "nsfw_sources_show": "إظهار في قوائم المصادر والإضافات",
+  "nsfw_sources_info": "هذا لا يمنع الإضافات غير الرسمية أو المصنفة بشكل غير صحيح من عرض محتوى NSFW (18+) داخل التطبيق",
+  "version": "الإصدار",
   "beta_version": "تجريبي ({version})",
+  "@beta_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "check_for_update": "التحقق من التحديثات",
+  "logs_on": "تفعيل التسجيل",
+  "share_app_logs": "مشاركة سجلات التطبيق",
+  "no_app_logs": "لا يوجد ملف log.txt!",
+  "failed": "فشل!",
+  "n_days_ago": "منذ {days} أيام",
+  "today": "اليوم",
+  "yesterday": "أمس",
+  "a_week_ago": "منذ أسبوع",
+  "next_week": "الأسبوع القادم",
+  "add_to_library": "إضافة إلى المكتبة",
+  "completed": "مكتمل",
+  "ongoing": "جاري",
+  "on_hiatus": "في فترة توقف",
+  "canceled": "ملغى",
+  "publishing_finished": "انتهاء النشر",
+  "unknown": "غير معروف",
   "empty_placeholder": "فارغ",
   "error": "خطأ",
   "error_with_message": "خطأ: {error}",
+  "@error_with_message": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "no_pages_available": "خطأ: لا توجد صفحات متاحة",
+  "set_categories": "ضبط الفئات",
+  "edit": "تحرير",
+  "in_library": "في المكتبة",
+  "filter_scanlator_groups": "تصفية مجموعات المترجمين",
+  "reset": "إعادة تعيين",
+  "by_source": "حسب المصدر",
+  "by_chapter_number": "حسب رقم الفصل",
+  "by_episode_number": "حسب رقم الحلقة",
+  "by_upload_date": "حسب تاريخ الرفع",
+  "source_title": "عنوان المصدر",
   "create_extension": "إنشاء إضافة",
+  "developer_mode": "وضع المطور",
+  "developer_mode_subtitle": "إظهار أدوات مطور الإضافات (إنشاء إضافة، تعديل الكود)",
   "choose_extension_language": "اختر لغة الإضافة",
   "lang": "اللغة",
   "base_url": "الرابط الأساسي",
@@ -964,16 +427,187 @@
   "error_when_creating_source": "خطأ أثناء إنشاء المصدر",
   "cookies_deleted": "تم حذف ملفات تعريف الارتباط!",
   "delete_all_cookies": "حذف جميع ملفات تعريف الارتباط",
+  "chapter_number": "رقم الفصل",
+  "episode_number": "رقم الحلقة",
+  "share": "مشاركة",
+  "n_chapters": "{n} فصول",
   "missing_chapters": "فصول مفقودة: {count}",
+  "no_description": "لا يوجد وصف",
+  "resume": "استئناف",
+  "read": "قراءة",
+  "watch": "مشاهدة",
+  "popular": "شائع",
+  "open_in_browser": "فتح في المتصفح",
+  "clear_cookie": "مسح الكوكي",
+  "show_page_number": "عرض رقم الصفحة",
+  "from_library": "من المكتبة",
+  "downloaded_chapter": "الفصل المحمل",
+  "page": "الصفحة {page}",
+  "global_search": "البحث العام",
+  "color_blend_level": "مستوى خلط الألوان",
+  "current": "الحالي {char}",
+  "finished": "منتهي {char}",
+  "next": "التالي {char}",
+  "previous": "السابق {char}",
+  "no_more_chapter": "لا يوجد المزيد من الفصول",
+  "no_result": "لا نتائج",
+  "send": "إرسال",
+  "delete": "حذف",
+  "start_downloading": "ابدأ التحميل الآن",
+  "retry": "إعادة المحاولة",
+  "add_chapters": "إضافة فصول",
+  "delete_chapters": "حذف الفصل؟",
+  "default0": "الافتراضي",
+  "total_chapters": "مجموع الفصول",
+  "total_episodes": "إجمالي الحلقات",
+  "import_local_file": "استيراد ملف محلي",
+  "import_files": "ملفات",
+  "split_epub_chapters": "تقسيم إلى فصول",
+  "split_epub_chapters_description": "استيراد كل فصل EPUB كإدخال منفصل",
+  "nothing_read_recently": "لم يتم قراءة شيء مؤخراً",
+  "status": "الحالة",
+  "not_started": "لم يبدأ",
+  "score": "التقييم",
+  "start_date": "تاريخ البدء",
+  "finish_date": "تاريخ الانتهاء",
+  "reading": "قراءة",
+  "on_hold": "معلق",
+  "dropped": "متوقف",
+  "plan_to_read": "خطط للقراءة",
+  "re_reading": "إعادة القراءة",
+  "chapters": "الفصول",
+  "add_tracker": "إضافة تتبع",
+  "one_tracker": "1 تتبع",
+  "n_tracker": "{n} تتبعات",
+  "tracking": "تتبع",
+  "syncing": "مزامنة",
+  "sync_logged": "تم تسجيل الدخول بنجاح",
+  "syncing_subtitle": "أدخل عنوان خادم المزامنة وسجّل الدخول عبر المتصفح لمزامنة تقدّم القراءة بين أجهزتك.",
+  "sync_service": "المزامنة على خادم ذاتي الاستضافة",
+  "last_sync": "آخر مزامنة في: ",
+  "sync_login_browser": "تسجيل الدخول باستخدام المتصفح",
+  "sync_server": "عنوان خادم المزامنة",
+  "sync_starting": "بدء المزامنة...",
+  "sync_finished": "تم الانتهاء من المزامنة",
+  "sync_failed": "فشل المزامنة",
   "sync_restore_in_progress": "تم تخطي المزامنة — الاستعادة قيد التقدم",
+  "sync_progress_percent": "جارٍ المزامنة… {percent}%",
+  "@sync_progress_percent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "sync_progress_indeterminate": "جارٍ المزامنة…",
+  "sync_button_sync": "مزامنة التقدم",
+  "sync_button_upload": "رفع فقط",
+  "sync_button_upload_info": "ستستبدل هذه العملية البيانات البعيدة بالكامل بالبيانات المحلية!",
+  "sync_button_download": "تنزيل فقط",
+  "sync_button_download_info": "ستستبدل هذه العملية البيانات المحلية بالكامل بالبيانات البعيدة!",
   "sync_status_not_configured": "غير متصل",
   "sync_status_checking": "جارٍ التحقق من الاتصال...",
   "sync_status_connected": "متصل",
   "sync_status_unauthorized": "انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى",
   "sync_status_unreachable": "تعذر الوصول إلى الخادم",
   "sync_section_general": "عام",
-  "sync_section_data_types": "ما تريد مزامنته",
+  "sync_on": "تمكين المزامنة",
+  "sync_auto": "المزامنة التلقائية",
+  "sync_auto_warning": "المزامنة التلقائية هي ميزة تجريبية حاليًا!",
+  "sync_auto_off": "إيقاف",
+  "sync_auto_5_minutes": "كل 5 دقائق",
+  "sync_auto_10_minutes": "كل 10 دقائق",
+  "sync_auto_30_minutes": "كل 30 دقيقة",
+  "sync_auto_1_hour": "كل ساعة",
+  "sync_auto_3_hours": "كل 3 ساعات",
+  "sync_auto_6_hours": "كل 6 ساعات",
+  "sync_auto_12_hours": "كل 12 ساعة",
+  "server_error": "خطأ في الخادم!",
+  "dialog_confirm": "تأكيد",
+  "description": "الوصف",
+  "reorder_navigation": "تخصيص التنقل",
+  "reorder_navigation_description": "أعد ترتيب وتبديل كل تنقل حسب احتياجاتك.",
+  "floating_navigation_bar": "شريط التنقل العائم",
+  "floating_navigation_bar_description": "استخدم كبسولة عائمة بدلاً من شريط التنقل القياسي المرفق.",
+  "full_screen_player": "استخدام الشاشة الكاملة",
+  "full_screen_player_info": "استخدام الشاشة الكاملة تلقائيًا عند تشغيل الفيديو.",
+  "episode_progress": "التقدم: {n}",
+  "n_episodes": "{n} حلقات",
+  "@n_episodes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "missing_episodes": "حلقات مفقودة: {count}",
+  "manga_sources": "مصادر المانغا",
+  "anime_sources": "مصادر الأنمي",
+  "novel_sources": "مصادر الروايات",
+  "anime_extensions": "إضافات الأنمي",
+  "manga_extensions": "إضافات المانغا",
+  "novel_extensions": "إضافات الروايات",
+  "extension_settings": "إعدادات الإضافة",
+  "anime": "أنمي",
+  "manga": "مانغا",
+  "novel": "رواية",
+  "library_no_category_exist": "ليس لديك أي فئات بعد",
+  "watching": "مشاهدة",
+  "plan_to_watch": "خطة للمشاهدة",
+  "re_watching": "إعادة المشاهدة",
+  "episodes": "الحلقات",
+  "download": "تحميل",
+  "new_update_available": "تحديث جديد متاح",
+  "app_version": "إصدار التطبيق : v{v}",
+  "searching_for_updates": "جارٍ البحث عن التحديثات...",
+  "no_new_updates_available": "لا يوجد تحديثات جديدة متاحة",
+  "uninstall": "إلغاء التثبيت",
+  "uninstall_extension": "هل ترغب في إلغاء تثبيت امتداد {ext}؟",
+  "double_tap_search_hint": "انقر مرتين للبحث في كل {type}",
+  "show_nav_double_tap_tooltip": "إظهار تلميح البحث بالنقر المزدوج",
+  "show_nav_double_tap_tooltip_subtitle": "إظهار تلميح على وجهات مانغا/أنمي/روايات يوضح أن النقر المزدوج يفتح البحث الشامل.",
+  "already_in_library": "\"{title}\" موجود بالفعل في مكتبتك عبر {source}.",
+  "add_anyway": "إضافة على أي حال",
+  "langauage": "اللغة",
+  "extension_detail": "تفاصيل الامتداد",
+  "scale_type": "نوع التحجيم",
+  "scale_type_fit_screen": "ملاءمة الشاشة",
+  "scale_type_stretch": "تمديد",
+  "scale_type_fit_width": "ملاءمة العرض",
+  "scale_type_fit_height": "ملاءمة الارتفاع",
+  "scale_type_original_size": "الحجم الأصلي",
+  "scale_type_smart_fit": "ملاءمة ذكية",
+  "page_preload_amount": "كمية تحميل الصفحات مسبقاً",
+  "page_preload_amount_subtitle": "عدد الصفحات التي يتم تحميلها مسبقاً أثناء القراءة. القيم الأعلى توفر تجربة قراءة أكثر سلاسة، ولكنها تتطلب استخدام أكبر للذاكرة المؤقتة والشبكة.",
+  "image_loading_error": "تعذر تحميل هذه الصورة",
+  "add_episodes": "إضافة حلقات",
+  "video_quality": "الجودة",
+  "video_subtitle": "الترجمة",
+  "check_for_extension_updates": "البحث عن تحديثات الامتداد",
+  "auto_extensions_updates": "تحديثات الامتداد التلقائية",
+  "auto_extensions_updates_subtitle": "سيتم تحديث الامتداد تلقائياً عند توفر إصدار جديد.",
+  "check_for_app_updates": "تحقق من تحديثات التطبيق عند بدء التشغيل",
+  "reading_mode": "وضع القراءة",
+  "custom_filter": "فلتر مخصص",
+  "background_color": "لون الخلفية",
+  "white": "أبيض",
+  "black": "أسود",
+  "grey": "رمادي",
+  "automaic": "تلقائي",
+  "preferred_domain": "النطاق المفضل",
+  "load_more": "تحميل المزيد",
+  "cancel_all_for_this_series": "إلغاء الكل لهذه السلسلة",
+  "login": "تسجيل الدخول",
+  "login_into": "تسجيل الدخول إلى {tracker}",
+  "email_adress": "عنوان البريد الإلكتروني",
+  "password": "كلمة المرور",
+  "log_out_from": "هل تريد تسجيل الخروج من {tracker}؟",
+  "log_out": "تسجيل الخروج",
+  "update_pending": "تحديث معلق",
+  "update_all": "تحديث الكل",
+  "backup_and_restore": "النسخ الاحتياطي والاستعادة",
+  "create_backup": "إنشاء نسخة احتياطية",
+  "create_backup_dialog_title": "ما الذي ترغب في أخذ نسخة احتياطية منه؟",
+  "create_backup_subtitle": "يمكن استخدامها لاستعادة المكتبة الحالية",
+  "restore_backup": "استعادة النسخة الاحتياطية",
   "encrypt_backups": "تشفير النسخ الاحتياطية",
   "encrypt_backups_info": "حماية النسخ بكلمة مرور باستخدام تشفير AES",
   "no_secure_storage": "لم يتم العثور على تخزين آمن",
@@ -984,6 +618,22 @@
   "confirm_password": "تأكيد كلمة المرور",
   "passwords_do_not_match": "كلمتا المرور غير متطابقتين",
   "password_required_to_restore": "يلزم إدخال كلمة المرور لاستعادة هذه النسخة.",
+  "restore_backup_subtitle": "استعادة المكتبة من ملف النسخة الاحتياطية",
+  "automatic_backups": "النسخ الاحتياطي التلقائي",
+  "backup_frequency": "تكرار النسخ الاحتياطي",
+  "backup_location": "موقع النسخ الاحتياطي",
+  "backup_options": "خيارات النسخ الاحتياطي",
+  "backup_options_dialog_title": "ما الذي ترغب في أخذ نسخة احتياطية منه؟",
+  "backup_options_subtitle": "المعلومات التي يجب تضمينها في ملف النسخة الاحتياطية",
+  "backup_and_restore_warning_info": "يجب الاحتفاظ بنسخ من النسخ الاحتياطية في أماكن أخرى كذلك",
+  "library_entries": "مدخلات المكتبة",
+  "chapters_and_episode": "الفصول والحلقات",
+  "every_6_hours": "كل 6 ساعات",
+  "every_12_hours": "كل 12 ساعة",
+  "daily": "يومياً",
+  "every_2_days": "كل يومين",
+  "weekly": "أسبوعياً",
+  "restore_backup_warning_title": "استعادة النسخة الاحتياطية ستؤدي إلى الكتابة فوق جميع البيانات الحالية.\n\nهل تريد الاستمرار في الاستعادة؟",
   "restore_sync_question_title": "مزامنة هذه الاستعادة؟",
   "restore_sync_question_message": "هذا الجهاز متصل بخادم مزامنة. هل تريد رفع البيانات المستعادة الآن؟",
   "restore_sync_question_confirm": "نعم، مزامنة",
@@ -995,6 +645,309 @@
   "restore_sync_question_keep_disabled": "الإبقاء معطلة",
   "restore_sync_uploading": "جارٍ مزامنة البيانات المستعادة مع الخادم…",
   "restore_sync_upload_success": "تمت مزامنة البيانات المستعادة مع الخادم",
+  "services": "الخدمات",
+  "tracking_warning_info": "مزامنة في اتجاه واحد لتحديث تقدم الفصول في خدمات التتبع. قم بإعداد التتبع لكل مدخل على حدة من خلال زر التتبع الخاص به.",
+  "use_page_tap_zones": "استخدام مناطق النقر في الصفحة",
+  "manage_trackers": "إدارة أدوات التتبع",
+  "restore": "استعادة",
+  "backups": "النسخ الاحتياطية",
+  "by_scanlator": "حسب المترجم",
+  "by_name": "حسب الاسم",
+  "installed": "مثبت",
+  "auto_scroll": "التمرير التلقائي",
+  "video_audio": "الصوت",
+  "video_audio_info": "اللغات المفضلة، تصحيح طبقة الصوت، قنوات الصوت",
+  "player": "لاعب",
+  "markEpisodeAsSeenSetting": "في أي نقطة لوضع علامة على الحلقة كمشاهدة",
+  "mark_duplicate_chapters_read": "ضع علامة على أرقام الفصول المكررة كمقروءة",
+  "default_skip_intro_length": "طول تخطي المقدمة الافتراضي",
+  "default_playback_speed_length": "طول سرعة التشغيل الافتراضية",
+  "updateProgressAfterReading": "تحديث التقدم بعد القراءة",
+  "no_sources_installed": "لم يتم تثبيت مصادر!",
+  "show_extensions": "عرض الإضافات",
+  "default_skip_forward_skip_length": "طول التخطي الافتراضي للأمام",
+  "aniskip_requires_info": "AniSkip يتطلب تتبع الأنمي باستخدام MAL أو Anilist للعمل.",
+  "enable_aniskip": "تمكين AniSkip",
+  "enable_auto_skip": "تمكين التخطي التلقائي",
+  "aniskip_button_timeout": "مهلة زر",
+  "skip_opening": "تخطي البداية",
+  "skip_ending": "تخطي النهاية",
+  "fullscreen": "شاشة كاملة",
+  "update_library": "تحديث المكتبة",
+  "next_chapter": "الفصل التالي",
+  "next_5_chapters": "الفصول الخمسة التالية",
+  "next_10_chapters": "الفصول العشرة التالية",
+  "next_25_chapters": "الفصول الخمسة والعشرون التالية",
+  "all_chapters": "كل الفصول",
+  "next_episode": "الحلقة التالية",
+  "next_5_episodes": "الحلقات الخمس التالية",
+  "next_10_episodes": "العشر حلقات التالية",
+  "next_25_episodes": "الخمسة وعشرون حلقة التالية",
+  "all_episodes": "كل الحلقات",
+  "cover_saved": "الغلاف المحفوظ",
+  "set_as_cover": "تعيين كغطاء",
+  "use_this_as_cover_art": "هل تريد استخدام هذا كفن الغلاف؟",
+  "save": "حفظ",
+  "picture_saved": "الصورة المحفوظة",
+  "cover_updated": "تم تحديث الغلاف",
+  "include_subtitles": "تضمين الترجمة",
+  "blend_mode_default": "الافتراضي",
+  "blend_mode_multiply": "ضرب",
+  "blend_mode_screen": "الشاشة",
+  "blend_mode_overlay": "تراكيب",
+  "blend_mode_colorDodge": "تفادي اللون",
+  "blend_mode_lighten": "تفتيح",
+  "blend_mode_colorBurn": "حرق اللون",
+  "blend_mode_darken": "تظليل",
+  "blend_mode_difference": "الفرق",
+  "blend_mode_saturation": "التشبع",
+  "blend_mode_softLight": "ضوء ناعم",
+  "blend_mode_plus": "زائد",
+  "blend_mode_exclusion": "استثناء",
+  "custom_color_filter": "مرشح اللون المخصص",
+  "color_filter_blend_mode": "وضع امتزاج مرشح اللون",
+  "enable_all": "تمكين الكل",
+  "disable_all": "تعطيل الكل",
+  "font": "الخط",
+  "color": "اللون",
+  "font_size": "حجم الخط",
+  "text": "النص",
+  "border": "الحدود",
+  "background": "الخلفية",
+  "no_subtite_warning_message": "لا تؤثر لأنه لا توجد مسارات ترجمة في هذا الفيديو",
+  "grid_size": "حجم الشبكة",
+  "n_per_row": "{n} في الصف الواحد",
+  "horizontal_continious": "مستمر أفقياً",
+  "edit_code": "تحرير الكود",
+  "use_libass": "تفعيل libass",
+  "use_libass_info": "استخدام عرض الترجمة المستندة إلى libass للواجهة الخلفية الأصلية.",
+  "libass_not_disable_message": "عطل `استخدام libass` في إعدادات المشغل لتتمكن من تخصيص الترجمة.",
+  "override_ass_subtitles": "تجاوز ترجمات ASS",
+  "override_ass_subtitles_info": "تطبيق نمط مخصص على ترجمات ASS/SSA",
+  "torrent_stream": "بث التورنت",
+  "add_torrent": "إضافة تورنت",
+  "enter_torrent_hint_text": "أدخل رابط ملف التورنت أو المغناطيس",
+  "torrent_url": "رابط التورنت",
+  "or": "أو",
+  "advanced": "متقدم",
+  "advanced_info": "تكوين mpv",
+  "use_native_http_client": "استخدام عميل HTTP الأصلي",
+  "use_native_http_client_info": "يدعم تلقائيًا ميزات المنصة مثل الشبكات الافتراضية الخاصة (VPNs)، ويدعم ميزات HTTP أكثر مثل HTTP/3 ومعالجة إعادة التوجيه المخصصة",
+  "n_hour_ago": "قبل {hour} ساعة",
+  "n_hours_ago": "قبل {hours} ساعات",
+  "n_minute_ago": "قبل {minute} دقيقة",
+  "n_minutes_ago": "قبل {minutes} دقائق",
+  "n_day_ago": "قبل {day} يوم",
+  "now": "الآن",
+  "library_last_updated": "آخر تحديث للمكتبة: {lastUpdated}",
+  "data_and_storage": "البيانات والتخزين",
+  "download_location_info": "تُستخدم لتنزيل الفصول",
+  "storage": "التخزين",
+  "clear_chapter_and_episode_cache": "مسح ذاكرة التخزين المؤقت للفصول والحلقات",
+  "cache_cleared": "تم مسح ذاكرة التخزين المؤقت",
+  "clear_chapter_or_episode_cache_on_app_launch": "مسح ذاكرة التخزين المؤقت للفصول/الحلقات عند فتح التطبيق",
+  "app_settings": "إعدادات التطبيق",
+  "sources_settings": "إعدادات المصادر",
+  "include_sensitive_settings": "تضمين الإعدادات الحساسة (مثل رموز تسجيل الدخول للمتعقب)",
+  "create": "إنشاء",
+  "downloads_are_limited_to_wifi": "التنزيلات مقتصرة على Wi-Fi فقط",
+  "recommendations": "التوصيات",
+  "recommendations_similar": "مشابه",
+  "recommendations_weights": "أوزان التوصية",
+  "recommendations_weights_genre": "تشابه النوع",
+  "recommendations_weights_setting": "تشابه الإعداد",
+  "recommendations_weights_synopsis": "تشابه القصة",
+  "recommendations_weights_theme": "تشابه الموضوع",
+  "manga_extensions_repo": "مستودع إضافات المانجا",
+  "anime_extensions_repo": "مستودع إضافات الأنمي",
+  "novel_extensions_repo": "مستودع إضافات الروايات",
+  "custom_dns": "DNS مخصص (اتركه فارغًا لاستخدام DNS النظام)",
+  "android_proxy_server": "خادم بروكسي Android (M-Extension-Server)",
+  "get_m_extension_server": "احصل على M-Extension-Server",
+  "undefined": "غير محدد",
+  "empty_extensions_repo": "ليس لديك أي عناوين URL للمستودع هنا. انقر على زر الإضافة لإضافة واحد!",
+  "add_extensions_repo": "إضافة عنوان URL للمستودع",
+  "remove_extensions_repo": "إزالة عنوان URL للمستودع",
+  "manage_manga_repo_urls": "إدارة عناوين URL لمستودع المانجا",
+  "manage_anime_repo_urls": "إدارة عناوين URL لمستودع الأنمي",
+  "manage_novel_repo_urls": "إدارة عناوين URL لمستودع الروايات",
+  "url_cannot_be_empty": "لا يمكن أن يكون عنوان URL فارغًا",
+  "url_must_end_with_dot_json_or_dot_pb": "يجب أن ينتهي عنوان URL بـ .json / .pb",
+  "repo_url": "عنوان URL للمستودع",
+  "invalid_url_format": "تنسيق عنوان URL غير صالح",
+  "clear_all_sources": "مسح جميع المصادر",
+  "clear_all_sources_msg": "سيؤدي هذا إلى مسح جميع مصادر التطبيق تمامًا. هل أنت متأكد أنك تريد المتابعة؟",
+  "sources_cleared": "تم مسح المصادر!!!",
+  "repo_added": "تمت إضافة مستودع المصدر!",
+  "repo_already_exists": "المستودع موجود بالفعل!",
+  "add_repo": "إضافة مستودع؟",
+  "add_repo_sources_to_add": "قوائم الامتدادات التي سيتم إضافتها:",
+  "add_repo_warning": "يتم تشغيل الملحقات من هذه المستودعات داخل التطبيق. قم بإضافة المستودعات التي تثق بها فقط.",
+  "genre_search_library": "بحث النوع في المكتبة",
+  "genre_search_source": "تصفح في المصدر",
+  "source_not_added": "المصدر غير مثبت!",
+  "load_own_subtitles": "تحميل الترجمة الخاصة بك...",
+  "search_subtitles": "البحث عن ترجمات عبر الإنترنت...",
+  "extension_notes": "ملاحظات: {notes}",
+  "unsupported_repo": "تعذّرت إضافة مستودع المصادر هذا. تحقّق من عنوان المستودع أو تواصل مع القائم على صيانته.",
+  "you_have_finished_reading": "لقد انتهيت من القراءة",
+  "hwdec": "فك تشفير الأجهزة",
+  "enable_hardware_accel": "تسريع الأجهزة",
+  "enable_hardware_accel_info": "قم بتشغيله/إيقافه إذا كنت تواجه أخطاء أو أعطال",
+  "track_library_navigate": "انتقل إلى الإدخال المحلي الموجود",
+  "track_library_add": "أضف إلى المكتبة المحلية",
+  "track_library_add_confirm": "إضافة العنصر المتتبع إلى المكتبة المحلية",
+  "track_library_not_logged": "قم بتسجيل الدخول إلى المتتبع المقابل لاستخدام هذه الميزة!",
+  "track_library_switch": "التبديل إلى متتبع آخر",
+  "go_back": "العودة",
+  "merge_library_nav_mobile": "دمج التنقل في المكتبة على الهاتف المحمول",
+  "enable_discord_rpc": "تمكين Discord RPC",
+  "hide_discord_rpc_incognito": "إخفاء Discord RPC في وضع التخفي",
+  "rpc_show_reading_watching_progress": "إظهار الفصل الحالي في Discord (يتطلب إعادة التشغيل)",
+  "rpc_show_title": "إظهار العنوان الحالي في Discord",
+  "rpc_show_cover_image": "إظهار صورة الغلاف الحالية في Discord",
+  "enable_mpv": "تمكين تظليل / سكريبتات mpv",
+  "mpv_info": "يدعم سكريبتات .js تحت mpv/scripts/",
+  "mpv_redownload": "إعادة تنزيل ملفات تكوين mpv",
+  "mpv_redownload_info": "يستبدل ملفات التكوين القديمة بأخرى جديدة!",
+  "mpv_download": "ملفات تكوين MPV مطلوبة!\nتنزيل الآن؟",
+  "custom_buttons": "أزرار مخصصة",
+  "custom_buttons_info": "تنفيذ كود lua بأزرار مخصصة",
+  "custom_buttons_edit": "تحرير الأزرار المخصصة",
+  "custom_buttons_add": "إضافة زر مخصص",
+  "custom_buttons_added": "تمت إضافة الزر المخصص!",
+  "custom_buttons_delete": "حذف الزر المخصص",
+  "custom_buttons_text": "نص الزر",
+  "custom_buttons_text_req": "نص الزر مطلوب",
+  "custom_buttons_js_code": "كود lua",
+  "custom_buttons_js_code_req": "كود lua مطلوب",
+  "custom_buttons_js_code_long": "كود lua (عند الضغط لفترة طويلة)",
+  "custom_buttons_startup": "كود lua (عند بدء التشغيل)",
+  "custom_buttons_add_warning": "يقوم هذا الزر بتشغيل الكود Lua الموجود أدناه في مشغل الفيديو، والذي يمكنه الوصول إلى ملفاتك وتشغيل البرامج. قم بإضافته فقط إذا كنت تثق في مصدر هذا الرابط.",
+  "n_days": "{n} أيام",
+  "decoder": "فك التشفير",
+  "decoder_info": "فك تشفير الأجهزة، تنسيق البكسل، إزالة التدرج",
+  "enable_gpu_next": "تمكين gpu-next (Android فقط)",
+  "enable_gpu_next_info": "محرك عرض فيديو جديد",
+  "debanding": "إزالة التدرج",
+  "use_yuv420p": "استخدام تنسيق بكسل YUV420P",
+  "use_yuv420p_info": "قد يصلح الشاشات السوداء على بعض برامج ترميز الفيديو، ويمكن أيضًا تحسين الأداء على حساب الجودة",
+  "audio_preferred_languages": "اللغات المفضلة",
+  "audio_preferred_languages_info": "لغة (لغات) الصوت المراد تحديدها افتراضيًا على فيديو يحتوي على تدفقات صوت متعددة، رموز لغة من 2/3 أحرف (مثل: ar، en، ja). يمكن فصل القيم المتعددة بفاصلة.",
+  "enable_audio_pitch_correction": "تمكين تصحيح طبقة الصوت",
+  "enable_audio_pitch_correction_info": "يمنع الصوت من أن يصبح حادًا بسرعات أسرع وعميقًا بسرعات أبطأ",
+  "audio_channels": "قنوات الصوت",
+  "volume_boost_cap": "حد تعزيز الصوت",
+  "internal_player": "المشغل الداخلي",
+  "internal_player_info": "التقدم، عناصر التحكم، الاتجاه",
+  "subtitle_delay_text": "تأخير الترجمة",
+  "subtitle_delay": "التأخير (ms)",
+  "subtitle_speed": "السرعة",
+  "tracks": "المسارات",
+  "playback_speed": "سرعة التشغيل",
+  "shaders": "المظللات (Shaders)",
+  "video_fit": "ملاءمة",
+  "calendar": "التقويم",
+  "calendar_no_data": "لا توجد بيانات حتى الآن.",
+  "calendar_info": "لا يمكن للتقويم التنبؤ بتحميل الفصل التالي إلا بناءً على التحميلات القديمة. قد لا تكون بعض البيانات دقيقة بنسبة 100٪!",
+  "in_n_day": "في {days} يوم",
+  "in_n_days": "في {days} أيام",
+  "clear_library": "مسح المكتبة",
+  "clear_library_desc": "اختر مسح جميع إدخالات المانجا والأنمي و/أو الرواية",
+  "clear_library_input": "اكتب 'manga' و 'anime' و/أو 'novel' (مفصولة بفاصلة) لإزالة جميع الإدخالات ذات الصلة",
+  "watch_order": "ترتيب المشاهدة",
+  "watch_order_role_current": "الحالي",
+  "@watch_order_role_current": {
+    "description": "Role label for the title currently being viewed in a watch order."
+  },
+  "watch_order_role_previous": "السابق",
+  "@watch_order_role_previous": {
+    "description": "Role label for an earlier title in a watch order."
+  },
+  "watch_order_role_next": "التالي",
+  "@watch_order_role_next": {
+    "description": "Role label for a later title in a watch order."
+  },
+  "watch_order_source_release_order": "أمر الإصدار",
+  "@watch_order_source_release_order": {
+    "description": "Source label for a watch order based on release dates."
+  },
+  "watch_order_source_community_list": "{name} بواسطة {author}",
+  "@watch_order_source_community_list": {
+    "description": "Source label for a community-created Trakt list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_official_collection": "الرسمية Trakt: {name}",
+  "@watch_order_source_official_collection": {
+    "description": "Source label for an official Trakt collection.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_trakt_collection": "Trakt: {name}",
+  "@watch_order_source_trakt_collection": {
+    "description": "Source label for a Trakt collection when it is not marked as official.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_seasons": "مواسم {title}",
+  "@watch_order_source_seasons": {
+    "description": "Fallback source label when the watch order contains a show's seasons.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_select_source": "مصدر الأمر",
+  "@watch_order_select_source": {
+    "description": "Label for choosing among available watch-order sources."
+  },
+  "watch_order_season": "الموسم {number}",
+  "@watch_order_season": {
+    "description": "Season metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "watch_order_episode": "الحلقة {number}",
+  "@watch_order_episode": {
+    "description": "Episode metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sequels": "الأجزاء التالية",
+  "recommendations_similarity": "التشابه:",
+  "recommendation_rating_accessibility": "التقييم {rating}",
+  "@recommendation_rating_accessibility": {
+    "description": "Accessible label for a recommendation rating in the provider's display format.",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "local_folder_structure": "هيكل المجلد المحلي",
+  "local_folder": "المجلدات المحلية",
+  "add_local_folder": "إضافة مجلد محلي",
+  "rescan_local_folder": "إعادة فحص جميع المجلدات المحلية الآن",
   "default_download_destination": "مجلد التنزيل الافتراضي",
   "ask_download_destination": "السؤال عن وجهة التنزيل",
   "ask_download_destination_desc": "اختيار مجلد محلي عند كل تنزيل.",
@@ -1005,19 +958,175 @@
   "custom": "مخصص",
   "no_local_folder_available_for_downloads": "لا يوجد مجلد محلي متاح للتنزيلات",
   "failed_to_create_cbz": "فشل إنشاء CBZ: {error}",
+  "@failed_to_create_cbz": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_cover_image": "خطأ في قراءة صورة الغلاف: {error}",
+  "@error_reading_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_metadata": "خطأ في قراءة البيانات الوصفية: {error}",
+  "@error_reading_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_saving_chapter_episode_to_library": "خطأ في الحفظ بالمكتبة: {error}",
+  "@error_saving_chapter_episode_to_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_chapter_cover_image": "خطأ في قراءة غلاف الفصل: {error}",
+  "@error_reading_chapter_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_archive_cover_image": "خطأ في قراءة غلاف الأرشيف: {error}",
+  "@error_reading_archive_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_getting_local_library": "خطأ في جلب المكتبة المحلية: {error}",
+  "@error_getting_local_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "export_metadata": "تصدير البيانات الوصفية",
+  "exported": "تم التصدير",
   "failed_to_export_metadata": "فشل تصدير البيانات الوصفية: {error}",
+  "@failed_to_export_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "unrecognized_chapter_numbers": "تعذر ترقيم {count} فصول تلقائياً.",
+  "@unrecognized_chapter_numbers": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "cloudflare_resolution_webview_server_start_failed": "تعذر بدء خادم حل Cloudflare.",
   "tracker_token_expired": "انتهت صلاحية رمز {tracker}",
+  "@tracker_token_expired": {
+    "placeholders": {
+      "tracker": {}
+    }
+  },
   "video_list_empty": "قائمة الفيديو فارغة",
   "playback_speed_multiplier": "x{value}",
+  "@playback_speed_multiplier": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "could_not_launch_url": "تعذر فتح {url}",
+  "@could_not_launch_url": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "text_size": "حجم النص:",
+  "text_align": "محاذاة النص",
+  "line_height": "ارتفاع السطر",
+  "show_scroll_percentage": "إظهار نسبة التمرير",
+  "remove_extra_paragraph_spacing": "إزالة المسافات الإضافية بين الفقرات",
+  "select_label_color": "تحديد لون {label}",
+  "default_user_agent": "وكيل المستخدم الافتراضي",
+  "forceLandscapeMode": "فرض وضع المناظر الطبيعية",
+  "forceLandscapeModeSubtitle": "فرض المشغل لاستخدام اتجاه المناظر الطبيعية.",
+  "dns_over_https": "DNS-over-HTTPS (DoH)",
+  "dns_provider": "مزود DNS",
+  "tracked": "تتبع",
+  "auth_unlock_msg": "المصادقة لفتح قفل NodeLane Comics",
+  "app_locked": "NodeLane Comics مقفول",
+  "auth_to_continue": "المصادقة للمتابعة",
+  "authenticating": "جاري المصادقة...",
+  "lock": "قفل",
+  "unlock": "فتح القفل",
+  "security": "الأمان",
+  "auth_to_change_security_setting": "المصادقة لتغيير إعدادات الأمان",
+  "app_lock": "قفل التطبيق",
+  "require_biometric_or_device_credential": "يتطلب المصادقة البيومترية أو بيانات اعتماد الجهاز لفتح التطبيق",
+  "biometric_or_device_credential_not_available": "المصادقة البيومترية غير متاحة على هذا الجهاز",
+  "app_lock_description": "عند تفعيل قفل التطبيق، سيُطلب منك المصادقة\nفي كل مرة تفتح التطبيق أو تعود إليه من الخلفية.",
+  "checking_device_authentication": "جارٍ التحقق من مصادقة الجهاز...",
+  "device_authentication_incomplete": "لم تكتمل المصادقة. الإعداد الخاص بك لم يتغير.",
+  "keep_screen_on": "إبقاء الشاشة مضاءة",
+  "webtoon_side_padding": "حشو جانب الويب توون",
+  "show_page_gaps": "إظهار فجوات الصفحات",
+  "invert_colors": "عكس الألوان",
+  "grayscale": "تدرج رمادي",
+  "brightness": "السطوع",
+  "contrast": "التباين",
+  "saturation": "التشبع",
+  "navigation_layout": "تخطيط الملاحة",
+  "nav_layout_default": "افتراضي",
+  "nav_layout_l_shaped": "على شكل L",
+  "nav_layout_kindle": "Kindle",
+  "nav_layout_edge": "الحافة",
+  "nav_layout_right_and_left": "اليمين واليسار",
+  "nav_layout_disabled": "معطل",
+  "color_enhancements": "تحسينات اللون",
+  "total": "الإجمالي",
+  "mean_per_title": "المتوسط لكل عنوان",
+  "completion_rate": "معدل الإكمال",
+  "watching_time": "وقت المشاهدة",
+  "reading_time": "وقت القراءة",
+  "average_chapters_per_title": "متوسط الفصول لكل {title}",
+  "read_percentage": "نسبة القراءة",
+  "entries": "الإدخالات",
+  "android_proxy_server_mihon": "خادم بروكسي أندرويد (Mihon)",
+  "android_proxy_server_mihon_description": "قم بتنزيل وتكوين خادم البروكسي المطلوب لاستخدام امتدادات Mihon.",
+  "mihon_proxy_server": "خادم بروكسي Mihon",
+  "extension_server_intro_with_jre": "قم بتحميل حزمة خادم الوكيل قبل استخدام إضافات Mihon. تتضمن الحزمة JRE ومعلف JAR الخاص بخادم الإضافات.",
+  "extension_server_intro_ios": "قم بتحميل ملف JAR الخاص بخادم الوكيل قبل استخدام إضافات Mihon. يحتاج نظام iOS فقط إلى ملف JAR الخاص بخادم الإضافات.",
+  "checking_files": "جاري فحص الملفات",
+  "files_installed": "الملفات المثبتة",
+  "files_missing": "الملفات المفقودة",
+  "update_files": "تحديث الملفات",
+  "up_to_date": "محدث",
+  "choose_location": "اختر الموقع",
+  "import_existing_jar": "استيراد ملف JAR موجود",
+  "detect_files_in_selected_folder": "كشف الملفات في المجلد المختار",
+  "preparing_download": "جاري تحضير التحميل...",
+  "app_install_location": "موقع تثبيت التطبيق",
+  "install_location": "موقع التثبيت",
+  "jre_executable": "JRE قابل للتنفيذ",
+  "extension_server_jar": "ملف JAR لخادم الإضافات",
+  "installed_version": "الإصدار المثبت",
+  "latest_version": "أحدث إصدار",
+  "m_extension_server_description": "استخدم M-Extension-Server عندما تحتاج إلى وكيل جهاز أندرويد منفصل. اضبط عنوان الوكيل هنا وقم بتحميل APK من GitHub.",
+  "set_proxy_address": "ضبط عنوان الوكيل",
+  "no_newer_proxy_server_release_available": "لا يوجد إصدار أحدث من خادم البروكسي متاح.",
+  "could_not_check_proxy_server_updates": "تعذر التحقق من تحديثات خادم البروكسي.",
+  "no_extension_server_bundle_available_for_this_platform": "لا تتوفر حزمة خادم إضافات لهذا النظام.",
+  "failed_to_download_bundle": "فشل تحميل الحزمة ({statusCode}).",
+  "@failed_to_download_bundle": {
+    "placeholders": {
+      "statusCode": {}
+    }
+  },
+  "downloaded_bundle_missing_expected_files": "الحزمة المحملة لا تحتوي على الملفات المتوقعة.",
+  "extension_server_files_ready": "ملفات خادم الإضافات جاهزة.",
+  "ios_extension_server_import_hint": "في نظام iOS يتم تثبيت الخادم داخل صندوق رمال التطبيق. استخدم \"استيراد ملف JAR موجود\" لجلب ملف محمل.",
+  "select_extension_server_folder": "اختر مجلد خادم الإضافات",
+  "selected_folder_does_not_exist": "المجلد المختار غير موجود.",
+  "no_extension_server_files_found_in_selected_folder": "لم يتم العثور على ملفات خادم الإضافات في المجلد المختار.",
+  "extension_server_files_linked": "تم ربط ملفات خادم الإضافات.",
+  "select_extension_server_jar": "اختر ملف JAR لخادم الامتداد",
+  "selected_file_could_not_be_accessed": "تعذر الوصول إلى الملف المختار.",
+  "extension_server_jar_imported": "تم استيراد ملف JAR لخادم الإضافات.",
+  "could_not_launch_apk_bridge_page": "تعذر تشغيل صفحة M-Extension-Server.",
+  "proxy_server_ip_hint": "عنوان IP للخادم (مثلاً 10.0.0.5 أو https://example.com)",
+  "not_configured": "غير مهيأ",
   "zero_interpreter": "مترجم Zero",
   "zero_interpreter_description": "التحكم في خادم مترجم Zero تلقائياً أو يدوياً.",
   "start_server_on_launch": "تشغيل الخادم عند بدء التطبيق",
@@ -1026,9 +1135,118 @@
   "stopped": "متوقف",
   "start": "بدء",
   "stop": "إيقاف",
+  "webview": "عرض الويب",
+  "tts": "تحويل النص إلى كلام",
+  "tts_speed": "السرعة",
+  "tts_pitch": "التيمبر",
+  "tts_language": "اللغة",
+  "tts_voice": "الصوت",
+  "tts_stop": "إيقاف",
+  "tts_play": "تشغيل",
+  "tts_pause": "إيقاف مؤقت",
+  "tts_previous": "الفقرة السابقة",
+  "tts_next": "الفقرة التالية",
+  "tts_paragraph_progress": "الفقرة {current} من {total}",
+  "@tts_paragraph_progress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "tts_settings": "إعدادات TTS",
+  "tts_default": "افتراضي",
+  "webtoon_disable_zoom_out": "تعطيل التصغير في الويب تون",
+  "webtoon_double_tap_zoom_enabled": "النقر المزدوج للتكبير في الويب تون",
+  "navigate_to_pan": "التنقل للسحب",
+  "navigate_to_pan_subtitle": "تحريك الصورة المكبرة قبل قلب الصفحة",
+  "split_wide_pages": "تقسيم الصفحات العريضة",
+  "dual_page_invert": "عكس نصفي الصفحات المقسمة",
+  "dual_page_rotate_to_fit": "التدوير للملاءمة",
+  "dual_page_rotate_to_fit_invert": "عكس اتجاه التدوير",
+  "double_page_single_first_page": "الصفحة الأولى مفردة",
+  "double_page_single_first_page_subtitle": "عرض الصفحة الأولى بمفردها في وضع الصفحتين",
+  "double_page_auto": "صفحة مزدوجة تلقائياً",
+  "double_page_auto_subtitle": "التبديل إلى وضع الصفحة المزدوجة تلقائياً في الوضع الأفقي",
+  "landscape_zoom": "تكبير تلقائي للوضع الأفقي",
+  "zoom_start_position": "موضع بدء التكبير",
+  "zoom_start_left": "اليسار",
+  "zoom_start_right": "اليمين",
+  "zoom_start_center": "الوسط",
+  "automatic_background": "خلفية تلقائية",
+  "tapping_inversion": "عكس النقر",
+  "tapping_inversion_none": "لا شيء",
+  "tapping_inversion_horizontal": "أفقي",
+  "tapping_inversion_vertical": "عمودي",
+  "tapping_inversion_both": "كلاهما",
+  "flash_on_page_change": "وميض عند تغيير الصفحة",
+  "flash_on_page_change_subtitle": "مساعد منع احتراق شاشة AMOLED",
+  "flash_color": "لون الوميض",
+  "flash_color_black": "أسود",
+  "flash_color_white": "أبيض",
+  "flash_color_white_black": "أبيض وأسود",
+  "flash_interval_label": "معدل الوميض",
+  "flash_interval_value": "كل {n} صفحات",
+  "@flash_interval_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_interval": "معدل الوميض: كل {n} صفحات",
+  "@flash_interval": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration_label": "مدة الوميض",
+  "flash_duration_value": "{n} مللي ثانية",
+  "@flash_duration_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration": "مدة الوميض: {n} مللي ثانية",
+  "@flash_duration": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "show_navigation_overlay_on_start": "إظهار واجهة التنقل عند البدء",
+  "reader_hide_threshold": "حد إخفاء القارئ",
+  "reader_hide_threshold_highest": "الأعلى (5 بكسل)",
+  "reader_hide_threshold_high": "مرتفع (13 بكسل)",
+  "reader_hide_threshold_low": "منخفض (31 بكسل)",
+  "reader_hide_threshold_lowest": "الأدنى (47 بكسل)",
+  "error_no_pages_available": "خطأ: لا توجد صفحات متاحة",
+  "app_ui_scale": "حجم الواجهة",
+  "app_ui_scale_subtitle": "اجعل الواجهة أكبر أو أصغر لتناسب شاشتك ومسافة المشاهدة.",
+  "allow_concurrent_downloads": "السماح بالتنزيلات المتزامنة",
+  "allow_concurrent_downloads_subtitle": "قم بالتنزيل من مصادر مختلفة في نفس الوقت. يقوم مصدر واحد فقط بتنزيل فصل واحد في المرة حتى لا يتم الإرهاق. أطفئها للتنزيل واحدة تلو الأخرى في كل مكان.",
+  "download_delay": "تأخير التنزيل",
+  "download_delay_subtitle": "إيقاف. أضف انتظارًا مع اهتزاز عشوائي بين الفصول لتكون أكثر لطفًا على المصادر.",
+  "save_search": "حفظ البحث",
+  "saved_searches": "عمليات البحث المحفوظة",
+  "enter_search_to_save_first": "أدخل بحثًا لحفظه أولاً",
+  "no_saved_searches": "لا توجد عمليات بحث محفوظة لهذا المصدر حتى الآن.\nقم بإجراء بحث، ثم اختر \"حفظ البحث\".",
+  "source": "المصدر",
   "something_went_wrong": "حدث خطأ ما",
   "startup_failed": "تعذر على NodeLane Comics إكمال بدء التشغيل",
   "sources_with_no_results": "{count, plural, =1{مصدر واحد بلا نتائج} few{{count} مصادر بلا نتائج} other{{count} مصدراً بلا نتائج}}",
+  "@sources_with_no_results": {
+    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "import_mode_title": "كيف تريد الاستيراد؟",
   "import_mode_message": "اختر دمج هذه النسخة مع المكتبة الحالية أو استبدال المكتبة بأكملها.",
   "import_mode_keep_existing": "دمج",
@@ -1037,8 +1255,19 @@
   "import_mode_replace_subtitle": "حذف المكتبة الحالية واستبدالها بهذه النسخة.",
   "replace_summary_title": "جاهز لاستبدال المكتبة",
   "replace_summary_message": "سيؤدي هذا إلى حذف {currentCount} سلسلة واستبدالها بـ {backupCount} سلسلة.",
+  "@replace_summary_message": {
+    "placeholders": {
+      "currentCount": {},
+      "backupCount": {}
+    }
+  },
   "replace_summary_confirm": "استبدال",
   "replace_result_message": "تم استبدال المكتبة بـ {count} سلسلة من النسخة الاحتياطية.",
+  "@replace_result_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "category_conflict_title": "تم العثور على تصنيفات موجودة",
   "category_conflict_message": "تحتوي النسخة على تصنيفات موجودة بالفعل في المكتبة.",
   "category_conflict_keep": "احتفاظ — دمج في التصنيف الموجود",
@@ -1048,26 +1277,70 @@
   "source_conflict_keep": "الاحتفاظ بالاسم الأصلي",
   "import_summary_title": "جاهز للاستيراد",
   "import_summary_message": "{newSeries} سلسلة جديدة، وتحديث {updatedSeries}، وإضافة {newChapters} فصول.",
+  "@import_summary_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "import_summary_confirm": "استيراد",
   "import_result_message": "تم استيراد {newSeries} جديدة، وتحديث {updatedSeries}، وإضافة {newChapters} فصول.",
+  "@import_result_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "roll_back": "تراجع",
   "roll_back_confirm_message": "استعادة المكتبة إلى اللقطة المحفوظة قبل هذا التغيير مباشرة.",
   "roll_back_done": "تم التراجع إلى اللقطة السابقة.",
   "restoring_backup": "جارٍ استعادة المكتبة…",
   "roll_back_last_change": "التراجع عن آخر تغيير",
   "roll_back_last_change_subtitle": "لقطة من {date} — {description}",
+  "@roll_back_last_change_subtitle": {
+    "placeholders": {
+      "date": {},
+      "description": {}
+    }
+  },
   "roll_back_available_count": "{count} تغييرات متاحة للتراجع",
+  "@roll_back_available_count": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "delete_source_title": "حذف مصدر ومانغاته",
   "delete_source_subtitle": "حذف جميع مانغات المصدر وفصوله وتنزيلاته وسجله من المكتبة.",
   "delete_source_pick_title": "اختر مصدراً لحذفه",
   "delete_source_empty": "لم يتم العثور على مصادر في المكتبة.",
   "delete_source_confirm_title": "حذف {sourceName}؟",
-  "delete_source_confirm_message": "سيؤدي هذا إلى حذف نهائي لـ {mangaCount} مانغا و{chapterCount} فصول و{historyCount} سجلات.",
+  "@delete_source_confirm_title": {
+    "placeholders": {
+      "sourceName": {}
+    }
+  },
+  "delete_source_confirm_message": "يؤدي هذا إلى حذف {mangaCount} مانغا، {chapterCount} الفصول، {historyCount} إدخالات التاريخ و{updateCount} إدخالات التحديث بشكل دائم. يتم الاحتفاظ بروابط التتبع. ولا يمكن التراجع عن هذا إلا بالتراجع.",
+  "@delete_source_confirm_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "chapterCount": {},
+      "historyCount": {},
+      "updateCount": {}
+    }
+  },
   "delete_source_also_remove_extension": "إزالة الإضافة المثبتة أيضاً",
   "delete_source_keep_history": "الاحتفاظ بسجل القراءة",
   "delete_source_keep_downloads": "الاحتفاظ بسجلات التنزيل",
   "delete_source_button": "حذف",
   "delete_source_result_message": "تم حذف {mangaCount} مانغا من {sourceName}.",
+  "@delete_source_result_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "sourceName": {}
+    }
+  },
   "merge_manga_title": "دمج المانغا المكررة",
   "merge_manga_subtitle": "البحث عن مانغا بنفس العنوان تحت نفس المصدر ودمجها معاً.",
   "merge_manga_none_found": "لم يتم العثور على مانغا مكررة.",
@@ -1075,10 +1348,33 @@
   "merge_manga_choose_primary_title": "إلى أي مانغا يجب دمج البقية؟",
   "merge_manga_choose_primary_message": "سيتم دمج الفصول والسجل والتتبع في المانغا المختارة دون حذف شيء.",
   "merge_manga_chapters_subtitle": "{count, plural, =1{فصل واحد} few{{count} فصول} other{{count} فصلاً}}",
+  "@merge_manga_chapters_subtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "merge_manga_button": "دمج",
   "merge_manga_result_message": "تم دمج {count} مانغا مكررة في {mangaName}.",
+  "@merge_manga_result_message": {
+    "placeholders": {
+      "count": {},
+      "mangaName": {}
+    }
+  },
   "merge_preview_title": "تأكيد الدمج",
-  "merge_manga_preview_message": "تم العثور على {totalChapters} فصول. سيتم تجاهل {duplicateChapters} مكررة وإضافة {keptChapters}.",
+  "merge_manga_preview_message": "{totalChapters} عبر الإدخالات الأخرى. {duplicateChapters} هي نسخ مكررة وسيتم إسقاطها (مع الاحتفاظ بأي نسخة بها تقدم في القراءة)؛ ستتم إضافة {keptChapters}. {duplicateTracks} سيتم أيضًا إسقاط رابط (روابط) التتبع المكررة.",
+  "@merge_manga_preview_message": {
+    "placeholders": {
+      "totalChapters": {},
+      "duplicateChapters": {},
+      "keptChapters": {},
+      "duplicateTracks": {}
+    }
+  },
+  "memory_overlay": "إظهار استخدام الذاكرة",
+  "memory_overlay_subtitle": "قراءة مباشرة لاستهلاك الذاكرة في التطبيق. للقياس على الجهاز بدلاً من التخمين: راقبها أثناء التمرير في المكتبة أو قراءة فصل.",
   "beta": "تجريبي",
   "error_reports": "تقارير الأخطاء",
   "error_reports_subtitle": "الأخطاء المسجلة وطريقة الإبلاغ عنها",
@@ -1090,6 +1386,9 @@
   "error_reports_copy": "نسخ",
   "error_reports_copied": "تم النسخ إلى الحافظة",
   "error_reports_clear": "مسح",
+  "error_reports_extension_failure": "هذا الخطأ ناتج عن إضافة وليس من تطبيق NodeLane Comics. تتم كتابة الإضافات وصيانتها بواسطة مسؤولي المستودع الذي قمت بتثبيت هذا المصدر منه، لذا يجب إصلاحه هناك. اسم المصدر وما كنت تفتحه هي تفاصيل مفيدة لتقديمها لهم.",
+  "error_reports_already_reported": "تم الإبلاغ مسبقاً",
+  "error_reports_expected_failure": "عادةً ما يعود هذا إلى المصدر أو الشبكة وليس التطبيق: رابط منتهي الصلاحية، أو خادم معطل، أو انقطاع في الاتصال. يستحق الإبلاغ فقط إذا استمر في الحدوث على مصدر يعمل في أماكن أخرى.",
   "share_unavailable_copied": "المشاركة غير متاحة، تم النسخ إلى الحافظة.",
   "onboarding_title": "مرحباً بك في NodeLane Comics",
   "onboarding_libraries_body": "اختر ما تقرأه وتشاهده.",
@@ -1103,9 +1402,19 @@
   "onboarding_or_local": "أو استخدام ملفات موجودة لديك",
   "onboarding_local_folder": "إضافة مجلد",
   "onboarding_local_existing": "{count} مجلدات معدة بالفعل",
+  "@onboarding_local_existing": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_any_type": "يدعم المانغا والأنمي والروايات.",
   "onboarding_local_scanning": "جارٍ فحص المجلد",
   "onboarding_local_found": "تم العثور على {count} عناوين",
+  "@onboarding_local_found": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_remove": "إزالة المجلد",
   "onboarding_local_in_downloads": "هذا مجلد تنزيلات التطبيق.",
   "onboarding_local_empty": "لم يتم العثور على شيء. اختر المجلد الرئيسي.",
@@ -1122,183 +1431,6 @@
   "missing_source_check_subtitle": "العثور على عناصر لم يتم تثبيت إضافاتها.",
   "missing_source_check_none_found": "جميع مصادر المكتبة مثبتة.",
   "missing_source_check_result_title": "{count, plural, =1{مصدر واحد مفقود} few{{count} مصادر مفقودة} other{{count} مصدراً مفقوداً}}",
-  "missing_source_check_result_message": "تشير هذه العناصر إلى مصادر غير مثبتة. اضغط لنقلها أو ثبت الإضافة.",
-  "@tts_paragraph_progress": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
-  "@label_value": {
-    "placeholders": {
-      "label": {},
-      "value": {}
-    }
-  },
-  "@beta_version": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "@error_with_message": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_create_cbz": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_saving_chapter_episode_to_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_chapter_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_archive_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_getting_local_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_export_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@unrecognized_chapter_numbers": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@tracker_token_expired": {
-    "placeholders": {
-      "tracker": {}
-    }
-  },
-  "@playback_speed_multiplier": {
-    "placeholders": {
-      "value": {}
-    }
-  },
-  "@could_not_launch_url": {
-    "placeholders": {
-      "url": {}
-    }
-  },
-  "@sources_with_no_results": {
-    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@replace_summary_message": {
-    "placeholders": {
-      "currentCount": {},
-      "backupCount": {}
-    }
-  },
-  "@replace_result_message": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@import_summary_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@import_result_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@roll_back_last_change_subtitle": {
-    "placeholders": {
-      "date": {},
-      "description": {}
-    }
-  },
-  "@roll_back_available_count": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@delete_source_confirm_title": {
-    "placeholders": {
-      "sourceName": {}
-    }
-  },
-  "@delete_source_confirm_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "chapterCount": {},
-      "historyCount": {},
-      "updateCount": {}
-    }
-  },
-  "@delete_source_result_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "sourceName": {}
-    }
-  },
-  "@merge_manga_chapters_subtitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@merge_manga_result_message": {
-    "placeholders": {
-      "count": {},
-      "mangaName": {}
-    }
-  },
-  "@merge_manga_preview_message": {
-    "placeholders": {
-      "totalChapters": {},
-      "duplicateChapters": {},
-      "keptChapters": {},
-      "duplicateTracks": {}
-    }
-  },
-  "@onboarding_local_existing": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@onboarding_local_found": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "@missing_source_check_result_title": {
     "placeholders": {
       "count": {
@@ -1306,31 +1438,6 @@
       }
     }
   },
-  "developer_mode": "وضع المطور",
-  "developer_mode_subtitle": "إظهار أدوات مطور الإضافات (إنشاء إضافة، تعديل الكود)",
-  "last_sync": "آخر مزامنة في: ",
-  "sync_login_browser": "تسجيل الدخول باستخدام المتصفح",
-  "sync_progress_percent": "جارٍ المزامنة… {percent}%",
-  "@sync_progress_percent": {
-    "placeholders": {
-      "percent": {}
-    }
-  },
-  "sync_progress_indeterminate": "جارٍ المزامنة…",
-  "override_ass_subtitles": "تجاوز ترجمات ASS",
-  "override_ass_subtitles_info": "تطبيق نمط مخصص على ترجمات ASS/SSA",
-  "repo_already_exists": "المستودع موجود بالفعل!",
-  "tracks": "المسارات",
-  "playback_speed": "سرعة التشغيل",
-  "shaders": "المظللات (Shaders)",
-  "video_fit": "ملاءمة",
-  "double_page_single_first_page": "الصفحة الأولى مفردة",
-  "double_page_single_first_page_subtitle": "عرض الصفحة الأولى بمفردها في وضع الصفحتين",
-  "memory_overlay": "إظهار استخدام الذاكرة",
-  "memory_overlay_subtitle": "قراءة مباشرة لاستهلاك الذاكرة في التطبيق. للقياس على الجهاز بدلاً من التخمين: راقبها أثناء التمرير في المكتبة أو قراءة فصل.",
-  "error_reports_extension_failure": "هذا الخطأ ناتج عن إضافة وليس من تطبيق NodeLane Comics. تتم كتابة الإضافات وصيانتها بواسطة مسؤولي المستودع الذي قمت بتثبيت هذا المصدر منه، لذا يجب إصلاحه هناك. اسم المصدر وما كنت تفتحه هي تفاصيل مفيدة لتقديمها لهم.",
-  "error_reports_already_reported": "تم الإبلاغ مسبقاً",
-  "error_reports_expected_failure": "عادةً ما يعود هذا إلى المصدر أو الشبكة وليس التطبيق: رابط منتهي الصلاحية، أو خادم معطل، أو انقطاع في الاتصال. يستحق الإبلاغ فقط إذا استمر في الحدوث على مصدر يعمل في أماكن أخرى.",
   "global_search_no_sources": "لا توجد مصادر {itemType} مثبتة.",
   "@global_search_no_sources": {
     "placeholders": {
@@ -1351,6 +1458,7 @@
   "global_search_only_pinned_hint": "قم بتثبيت أحدها، أو أوقف تشغيل \"تضمين المصادر المثبتة فقط\" في إعدادات التصفح.",
   "global_search_all_nsfw": "جميع مصادرك لهذا مصنفة كـ NSFW وهي مخفية.",
   "global_search_all_nsfw_hint": "قم بتفعيل مصادر NSFW في إعدادات التصفح للبحث فيها.",
+  "missing_source_check_result_message": "تشير هذه العناصر إلى مصادر غير مثبتة. اضغط لنقلها أو ثبت الإضافة.",
   "related_titles": "ذات صلة",
   "related_none": "لم يتم العثور على أي أعمال ذات صلة بهذا العنوان.",
   "relation_adaptation": "اقتباس",
@@ -1369,13 +1477,6 @@
   "auto_library_update_weekly": "أسبوعياً",
   "auto_library_update_wifi_only": "عبر Wi-Fi فقط",
   "auto_library_update_wifi_only_subtitle": "تخطي التحديث المجدول أثناء استخدام بيانات الجوال.",
-  "double_tap_search_hint": "انقر مرتين للبحث في كل {type}",
-  "show_nav_double_tap_tooltip": "إظهار تلميح البحث بالنقر المزدوج",
-  "show_nav_double_tap_tooltip_subtitle": "إظهار تلميح على وجهات مانغا/أنمي/روايات يوضح أن النقر المزدوج يفتح البحث الشامل.",
-  "already_in_library": "\"{title}\" موجود بالفعل في مكتبتك عبر {source}.",
-  "add_anyway": "إضافة على أي حال",
-  "double_page_auto": "صفحة مزدوجة تلقائياً",
-  "double_page_auto_subtitle": "التبديل إلى وضع الصفحة المزدوجة تلقائياً في الوضع الأفقي",
   "padding": "الهامش",
   "page_mode": "وضع الصفحة",
   "single_page": "صفحة مفردة",
@@ -1393,5 +1494,1189 @@
   "chapter_swipe_toggle_bookmark": "تبديل الإشارة المرجعية",
   "chapter_swipe_toggle_read": "تبديل حالة القراءة",
   "chapter_swipe_download": "تنزيل",
-  "chapter_swipe_disabled": "معطل"
+  "chapter_swipe_disabled": "معطل",
+  "update_errors": "أخطاء التحديث",
+  "no_update_errors": "لا توجد أخطاء في التحديث",
+  "clear_all": "مسح الكل",
+  "dismiss": "استبعاد",
+  "previous_episode": "الحلقة السابقة",
+  "clear_logs": "مسح السجلات",
+  "bold": "غامق",
+  "italic": "مائل",
+  "color_yellow": "أصفر",
+  "color_cyan": "سماوي",
+  "color_green": "أخضر",
+  "color_orange": "برتقالي",
+  "continue_watching": "تابع المشاهدة",
+  "search_your_anime": "ابحث في الأنمي الخاص بك",
+  "category": "الفئة",
+  "hidden_categories": "الفئات المخفية",
+  "new_category": "فئة جديدة",
+  "local": "محلي",
+  "tv_home_rows": "الصفوف",
+  "genre_rows": "صفوف النوع",
+  "share_backup_file": "مشاركة ملف النسخ الاحتياطي NodeLane Comics",
+  "close": "إغلاق",
+  "migrate_source": "ترحيل المصدر",
+  "cloudflare_bypass_proxy": "تجاوز وكيل Cloudflare",
+  "custom_doh_url": "مخصص DoH URL",
+  "custom_doh_url_helper": "يجب أن يكون نقطة نهاية https DoH (JSON).",
+  "anime_only_tv_layout": "تخطيط تلفزيون الأنيمي فقط",
+  "anime_only_beta": "الأنمي فقط (بيتا)",
+  "tv_home_beta": "تلفزيون المنزل (بيتا)",
+  "tv_player_beta": "مشغل التلفاز (بيتا)",
+  "network_settings": "الشبكة",
+  "reader_page_layout": "تخطيط الصفحة",
+  "reader_continuous_options": "القراءة المستمرة",
+  "reader_default_mode_hint": "ينطبق وضع القراءة الافتراضي على العناوين دون تعيين وضع فردي أثناء القراءة.",
+  "extension_service": "خدمة الإرشاد",
+  "extension_service_description": "إدارة وقت تشغيل الامتداد وعنوان الوكيل.",
+  "proxy_address": "عنوان الوكيل",
+  "checking_runtime_status": "التحقق من الحالة...",
+  "download_delay_value": "{seconds} s + تأخير عشوائي",
+  "@download_delay_value": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_count": "{count, plural, one{1 فصل} other{{count} الفصول}}",
+  "@download_queue_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_empty_hint": "إضافة التنزيلات من قائمة فصول العنوان.",
+  "download_queue_order_hint": "اسحب المقابض لإعادة الترتيب",
+  "download_queue_empty": "لم يتم وضع أي تنزيلات في قائمة الانتظار",
+  "download_queue_actions": "تنزيل الإجراءات",
+  "download_queue_cancel_chapter": "إلغاء تنزيل هذا الفصل",
+  "download_queue_cancel_series": "إلغاء كافة التنزيلات لهذا العنوان",
+  "download_queue_start": "بدء التنزيلات",
+  "download_queue_retry": "إعادة محاولة التنزيلات",
+  "download_queue_active": "التحميل",
+  "download_queue_waiting": "في انتظار التحميل",
+  "download_queue_failed": "فشل التحميل",
+  "cf_proxy_helper": "نقطة نهاية FlareSolverr / Byparr. اتركه فارغًا للتعطيل.",
+  "mobile_navigation_description": "اسحب لإعادة الترتيب. تشترك المانغا والأنيمي والروايات في علامة تبويب المكتبة. يتم فتح العنصر المرئي الأول عند الإطلاق. التصفح والمزيد يبقى مرئيًا؛ تظهر علامات التبويب الإضافية ضمن المزيد.",
+  "text_align_justify": "تبرير",
+  "novel_session_modes_hint": "ضبط وضع القراءة والصفحات المفردة أو المزدوجة أثناء قراءة العنوان.",
+  "tts_languages_failed": "تعذر تحميل اللغات من محرك الكلام.",
+  "tts_languages_empty": "لم يُرجع محرك الكلام أي لغة. يتم الاحتفاظ باختيارك المحفوظ.",
+  "tts_language_unavailable": "هذه اللغة المحفوظة ليست موجودة في القائمة الحالية للجهاز.",
+  "tts_apply_failed": "لا يمكن تطبيق هذا الإعداد على محرك الكلام. يمكنك إعادة المحاولة.",
+  "player_controls": "الضوابط",
+  "audio_channel_auto": "تلقائي",
+  "audio_channel_auto_safe": "تلقائي (آمن)",
+  "audio_channel_mono": "مونو",
+  "audio_channel_stereo": "ستيريو",
+  "audio_channel_reverse_stereo": "ستيريو عكسي",
+  "mpv_bundled_config_hint": "قم باستعادة التكوين والبرامج النصية والتظليل المضمن في التطبيق. سيتم الكتابة فوق الملفات التي تحمل نفس الأسماء.",
+  "mpv_restore_bundled": "استعادة التكوين المجمع",
+  "mpv_restore_confirm": "هل تريد استعادة تكوين MPV المجمع؟ سيتم الكتابة فوق التكوين الحالي والبرامج النصية والتظليل الذي يحمل نفس الأسماء. سيتم الاحتفاظ بالملفات الأخرى.",
+  "player_operation_incomplete": "لا يمكن إكمال العملية. تحقق من الوصول إلى الملف وحاول مرة أخرى.",
+  "custom_buttons_empty_hint": "أضف زر مشغل مع تسمية وإجراء ضغط.",
+  "custom_button_primary": "الزر الافتراضي",
+  "show_password": "إظهار كلمة المرور",
+  "hide_password": "إخفاء كلمة المرور",
+  "tracking_accounts_empty": "قم بتوصيل الخدمة في إعدادات التتبع لإدارة إدخالاتها.",
+  "tracking_entries_empty": "لا توجد إدخالات متعقبة لنوع الوسائط هذا. أضف تتبعًا من صفحة تفاصيل العنوان.",
+  "change_tracking_match": "تغيير العنوان المطابق",
+  "remove_tracking": "إزالة التتبع",
+  "remove_tracking_confirm": "هل تريد إزالة رابط التتبع لـ \"{title}\"؟ سيتم الاحتفاظ بالإدخال في خدمة التتبع.",
+  "@remove_tracking_confirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "tracking_refresh_required": "لا يمكن تأكيد حالة التتبع. قم بالتحديث قبل إجراء تغيير آخر.",
+  "tracking_entry_unlinked": "هذا السجل غير مرتبط بعنوان محلي، لذلك لا يمكن تحريره هنا.",
+  "backup_selection_shared": "يتم حفظ التغييرات التي يتم إجراؤها على هذه التحديدات على الفور ويتم تطبيقها أيضًا على النسخ الاحتياطية التلقائية.",
+  "library_snapshot_history": "استعادة لقطة المكتبة",
+  "library_snapshot_empty": "لا تتوفر لقطات أمان.",
+  "library_snapshot_restore_message": "سيتم استبدال البيانات الحالية بهذه اللقطة. سيتم فقدان التغييرات التي تم إجراؤها منذ ذلك الحين. لا يمكن استعادة التنزيلات المحذوفة. سيتم مسح لقطات السلامة المتوفرة بعد النجاح.",
+  "library_maintenance_working": "تحديث المكتبة...",
+  "library_safety_snapshot_note": "سيتم حفظ لقطة السلامة قبل هذه العملية. ولا يشمل الملفات التي تم تنزيلها.",
+  "library_delete_summary": "إدخالات المكتبة: {mangaCount}. الفصول: {chapterCount}. إدخالات التاريخ: {historyCount}. التحديثات: {updateCount}.\n\nاختر ما تريد الاحتفاظ به أدناه.",
+  "@library_delete_summary": {
+    "placeholders": {
+      "mangaCount": {
+        "type": "int"
+      },
+      "chapterCount": {
+        "type": "int"
+      },
+      "historyCount": {
+        "type": "int"
+      },
+      "updateCount": {
+        "type": "int"
+      }
+    }
+  },
+  "library_delete_pick_message": "اختر مصدرًا لمراجعة محتوياته وخيارات الحذف.",
+  "mobile_categories_hint": "اسحب لإعادة الترتيب. افتح فئة لإعادة تسميتها أو تغيير رؤيتها وتحديثاتها.",
+  "mobile_category_visible": "العرض في المكتبة",
+  "mobile_category_hidden": "مخفي من المكتبة",
+  "mobile_category_updates": "تضمين تحديثات المكتبة",
+  "statistics_watched": "شاهد",
+  "calendar_month": "الشهر",
+  "calendar_two_weeks": "أسبوعين",
+  "calendar_week": "الأسبوع",
+  "calendar_show_all_dates": "إظهار كافة التواريخ",
+  "update_check_no_result": "لم يتم العثور على تحديث قابل للتثبيت. يمكنك المحاولة مرة أخرى لاحقًا.",
+  "release_notes": "ملاحظات الإصدار",
+  "no_release_notes": "لم يتم توفير ملاحظات الإصدار.",
+  "downloading_update": "جارٍ تنزيل التحديث...",
+  "preparing_installation": "جارٍ تحضير التثبيت...",
+  "onboarding_mobile_libraries_body": "اختر ما تريد قراءته. يمكنك تغيير هذا لاحقا.",
+  "onboarding_content_title": "ابدأ القراءة",
+  "onboarding_mobile_sources_body": "اختر طريقة للبدء، أو أضف محتوى لاحقًا.",
+  "onboarding_step_count": "الخطوة {step} من {total}",
+  "@onboarding_step_count": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_results_for": "نتائج لـ “{query}”",
+  "@global_search_results_for": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "global_search_scope": "{type} · {count, plural, =1{مصدر واحد} other{{count} المصادر}}",
+  "@global_search_scope": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "migration_search_prompt": "ابحث عن عنوان الوجهة.",
+  "migration_original_item": "العنصر الحالي",
+  "migration_target_item": "العنصر المحدد",
+  "migration_partial_failure": "لم تنتهي العملية. ربما تم حفظ بعض التغييرات. تحقق من هذا العنصر في مكتبتك قبل المحاولة مرة أخرى.",
+  "migration_no_categories": "لا توجد فئات. يمكنك إضافة هذا العنصر بدون فئة.",
+  "mass_migration_select_source": "اختر المصدر الحالي",
+  "mass_migration_select_all": "اختر الكل",
+  "mass_migration_deselect_all": "قم بإلغاء تحديد الكل",
+  "mass_migration_needs_review": "مراجعة عمليات الترحيل غير المكتملة",
+  "bookshelf_actions": "إجراءات رف الكتب",
+  "bookshelf_ignore_filters": "تجاهل عوامل التصفية عند البحث",
+  "bookshelf_ignore_filters_hint": "ابحث في جميع الأعمال في هذه الفئة، بما في ذلك تلك المخفية بواسطة المرشحات.",
+  "bookshelf_stop_update": "إيقاف تحديث المكتبة",
+  "bookshelf_selected_count": "{count} الأعمال المختارة",
+  "@bookshelf_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_remove_library": "قم بإزالته من رف الكتب",
+  "bookshelf_remove_library_hint": "إزالة المفضلة. كما تفقد الواردات المحلية مكتبتها وسجلات القراءة الخاصة بها.",
+  "bookshelf_remove_downloads": "حذف الملفات التي تم تنزيلها",
+  "bookshelf_remove_downloads_hint": "إزالة الملفات التي تم تنزيلها مع الاحتفاظ بمعلومات العمل.",
+  "bookshelf_remove_local_files_hint": "يقوم أيضًا بحذف الملفات المستوردة المحلية المحددة وإزالة سجلات المكتبة الخاصة بها. لا يمكن استرداد هذه الملفات هنا.",
+  "bookshelf_remove_incomplete": "لم تنتهي العملية. ربما تمت معالجة بعض الأعمال أو الملفات. أغلق مربع الحوار هذا وتحقق من رف الكتب والتنزيلات قبل المتابعة.",
+  "bookshelf_processing": "المعالجة…",
+  "bookshelf_mark_read": "ضع علامة للقراءة",
+  "bookshelf_mark_unread": "وضع علامة كغير مقروءة",
+  "bookshelf_select_all": "اختر الكل",
+  "bookshelf_invert_selection": "عكس التحديد",
+  "bookshelf_settings": "إعدادات رف الكتب",
+  "bookshelf_settings_live": "تسري تغييرات التصفية والفرز والعرض على الفور.",
+  "bookshelf_filter_any": "أي",
+  "bookshelf_filter_include": "تضمين",
+  "bookshelf_filter_exclude": "استبعاد",
+  "bookshelf_all_sources": "جميع المصادر",
+  "bookshelf_sources_selected": "{count} المصادر المحددة",
+  "@bookshelf_sources_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_sort_ascending": "تصاعدي",
+  "bookshelf_sort_descending": "تنازلي",
+  "bookshelf_layout": "تخطيط رف الكتب",
+  "bookshelf_sources_hint": "حدد لا شيء لإظهار كافة المصادر. يتم تطبيق التغييرات عند النقر فوق \"تصفية\".",
+  "bookshelf_choose_files": "اختر الملفات",
+  "bookshelf_import_wait": "اختر ملفًا في المنتقي وانتظر حتى تنتهي عملية الاستيراد.",
+  "bookshelf_import_incomplete": "لم يتم الانتهاء من الاستيراد. قد تكون بعض الملفات موجودة بالفعل في رف كتبك. أغلق مربع الحوار هذا وتحقق قبل الاستيراد مرة أخرى.",
+  "bookshelf_categories_replace": "يؤدي الحفظ إلى تعيين هذه الفئات لكل عمل محدد، واستبدال فئاتها السابقة.",
+  "bookshelf_categories_hint": "اختر فئة واحدة أو أكثر، أو اترك التحديد فارغًا لعدم تعيين أي فئة.",
+  "bookshelf_categories_hidden": "يتم الاحتفاظ بالفئات المخفية الموجودة لهذا العمل.",
+  "bookshelf_categories_incomplete": "لا يمكن حفظ الفئات بالكامل. أغلق مربع الحوار هذا وتحقق من رف الكتب قبل المحاولة مرة أخرى.",
+  "bookshelf_categories_none_visible": "لا توجد فئات متاحة هنا. افتح إدارة الفئات لمراجعتها.",
+  "bookshelf_manage_categories": "إدارة الفئات",
+  "manga_actions": "أفعال كوميدية",
+  "manga_download_scope": "تحميل الفصول",
+  "manga_download_scope_hint": "اختر الفصول ضمن المرشحات الحالية. يتم تخطي الفصول التي تم تنزيلها.",
+  "manga_download_scope_empty": "لا توجد فصول تتطابق مع عوامل التصفية الحالية. أغلق هذه القائمة واضبط مرشحات الفصل.",
+  "manga_action_incomplete": "لم ينته الإجراء. تحقق من الحالة الحالية قبل المحاولة مرة أخرى.",
+  "chapter_settings": "إعدادات الفصل",
+  "chapter_settings_live": "يتم تطبيق تغييرات التصفية والفرز على الفور.",
+  "chapter_scanlators_all": "إظهار كافة مجموعات الماسح الضوئي",
+  "chapter_scanlators_hint": "حدد المجموعات لإخفاء فصولها. يتم تطبيق التغييرات عند النقر فوق \"تصفية\".",
+  "chapter_scanlators_hidden": "{count} مجموعات الماسح الضوئي مخفية",
+  "@chapter_scanlators_hidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_selected_count": "{count} الفصول مختارة",
+  "@chapter_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_add_bookmark": "إشارة مرجعية",
+  "chapter_remove_bookmark": "إلغاء الإشارة المرجعية",
+  "chapter_read_following": "اقرأ أدناه",
+  "chapter_delete_records": "حذف سجلات الفصل",
+  "chapter_delete_local_hint": "إزالة سجلات الفصل المحدد وتقدم القراءة. يتم الاحتفاظ بالأرشيفات المحلية الأصلية؛ يتم تنظيف النسخ التي تم تنزيلها.",
+  "chapter_delete_last_hint": "هذه كلها فصول في هذا الكتاب الهزلي. يؤدي حذفها أيضًا إلى إزالة القصص المصورة من رف كتبك.",
+  "chapter_action_incomplete": "لم ينته الإجراء. ربما تم حفظ بعض التغييرات بالفعل. أغلق الفصول والتنزيلات وتحقق منها قبل المتابعة.",
+  "reader_display_scope": "ينطبق وضع القراءة والتخطيط اليدوي للصفحة على هذه القصة المصورة. اختر تغييرًا للعودة إلى القراءة.",
+  "reader_display_single_only": "تستخدم القراءة المستمرة الأفقية الصفحات المفردة.",
+  "reader_display_manual_pages": "يؤدي تغيير تخطيط الصفحة إلى إيقاف تشغيل الصفحة المزدوجة التلقائية لجميع القصص المصورة.",
+  "reader_display_crop_scope": "ينطبق على جميع القصص المصورة.",
+  "reader_chapter_locate": "حدد موقع الفصل الحالي",
+  "reader_chapter_search": "البحث في الفصول أو الماسحات الضوئية",
+  "reader_chapter_scope": "يستخدم مرشحات الفصل وترتيب الفرز من التفاصيل المصورة. يتم حفظ الإشارات المرجعية على الفور.",
+  "reader_chapter_current_hidden": "الفصل الذي تقرأه يقع خارج المرشحات الحالية.",
+  "reader_chapter_current": "القراءة الآن",
+  "reader_chapter_read": "إقرأ",
+  "reader_chapter_bookmark_failed": "لا يمكن تأكيد حفظ الإشارة المرجعية. أغلق القائمة وتحقق من حالتها الحالية.",
+  "reader_image_actions": "إجراءات الصورة",
+  "reader_image_original": "يستخدم الصفحة الأصلية الكاملة، بدون مرشحات الترجمة أو الاقتصاص أو ألوان القارئ.",
+  "reader_image_save_ios": "احفظ في مجلد الصور في موقع تخزين التطبيق الحالي.",
+  "reader_image_save_android": "احفظ في مجلد الصور/nodelane-comics الخاص بالجهاز.",
+  "reader_image_share": "افتح ورقة مشاركة النظام.",
+  "reader_image_cover": "قم بتغيير غلاف هذه القصة المصورة بعد التأكيد.",
+  "reader_image_cover_limit": "يجب أن يكون حجم صور الغلاف أصغر من 5 ميجابايت. يبقى الحفظ والمشاركة متاحين.",
+  "reader_image_action_failed": "لا يمكن تأكيد الإجراء. أغلق هذه القائمة وتحقق من النتيجة قبل المحاولة مرة أخرى.",
+  "reader_settings_book_scope": "تنطبق هذه الإعدادات على هذا الفيلم الهزلي فقط.",
+  "reader_settings_global_scope": "تنطبق هذه الإعدادات على كافة القصص المصورة ويتم حفظها على الفور.",
+  "reader_filters": "مرشحات الصور",
+  "reader_filter_scope": "ينطبق على جميع القصص المصورة. يقوم بتغيير عرض القراءة دون تعديل الصور الأصلية.",
+  "reader_auto_scroll_pause": "يتوقف التمرير مؤقتًا أثناء فتح الإعدادات.",
+  "manga_synopsis": "ملخص",
+  "manga_author": "المؤلف: {author}",
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "manga_continue_reading": "أكمل القراءة",
+  "reader_settings_title": "إعدادات القارئ",
+  "reader_picker_book_scope": "فقط لهذا الفيلم الهزلي",
+  "reader_picker_global_scope": "ينطبق على جميع القصص المصورة",
+  "reader_picker_apply_hint": "اضغط للحفظ والعودة إلى المستوى السابق.",
+  "reader_scale_fit_screen_hint": "احتواء الصفحة بأكملها على الشاشة",
+  "reader_scale_stretch_hint": "املأ منطقة القراءة",
+  "reader_scale_fit_width_hint": "ملائمة الصفحة للعرض",
+  "reader_scale_fit_height_hint": "ملائمة الصفحة للارتفاع",
+  "source_filter_active": "مطبق",
+  "source_filter_apply": "تطبيق المرشحات",
+  "source_filter_scope": "تنطبق عوامل التصفية على موقع الويب هذا فقط.",
+  "source_filter_apply_hint": "قم بتطبيق المرشحات لاستخدام اختياراتك.",
+  "source_filter_term": "{term, select, genres{الأنواع} author{المؤلف} artist{فنان} title{العنوان} year{السنة} tags{العلامات} format{التنسيق} publisher{الناشر} relevance{الصلة} rating{التقييم} views{المشاهدات} random{عشوائي} all{الكل} none{لا شيء} action{الإجراء} adventure{المغامرة} comedy{كوميديا} drama{الدراما} fantasy{الخيال} romance{الرومانسية} science_fiction{الخيال العلمي} slice_of_life{شريحة من الحياة} mystery{الغموض} horror{الرعب} psychological{نفسي} historical{تاريخي} sports{الرياضة} supernatural{خارق للطبيعة} school_life{الحياة المدرسية} tragedy{المأساة} shounen{الشونين} shoujo{شوجو} seinen{سينين} josei{جوزي} isekai{إيسيكاي} martial_arts{الفنون القتالية} mecha{ميكا} music{الموسيقى} doujinshi{دوجينشي} trending{تتجه} new{جديد} adult_content{محتوى للبالغين} only{فقط} other{{term}}}",
+  "@source_filter_term": {
+    "description": "Common extension filter display labels. Plugin values are never translated.",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "bookshelf_more_display": "المزيد من خيارات العرض",
+  "bookshelf_more_display_hint": "الشارات والمصادر والفئات",
+  "bookshelf_download_count": "عدد التنزيلات",
+  "bookshelf_source_global_hint": "تستخدم رؤية المصدر تفضيلات العرض المشتركة.",
+  "bookshelf_select_entries": "حدد الأعمال",
+  "bookshelf_search_options": "خيارات البحث",
+  "bookshelf_empty_hint": "جمع الأعمال من المصادر أو استيراد الملفات المحلية.",
+  "bookshelf_no_match_hint": "جرب كلمات أساسية أخرى أو اضبط عوامل التصفية الحالية.",
+  "bookshelf_clear_query": "مسح الكلمات الأساسية",
+  "bookshelf_view_selection": "عرض الأعمال المختارة",
+  "bookshelf_import_formats": "اختر ملفًا محليًا لإضافته إلى رف الكتب الخاص بك.",
+  "bookshelf_import_canceled_hint": "يمكنك الاختيار مرة أخرى بعد إلغاء منتقي الملفات.",
+  "bookshelf_browse_sources": "تصفح المصادر",
+  "bookshelf_empty_title": "رف الكتب الخاص بك فارغ",
+  "bookshelf_no_match_title": "لا توجد أعمال مطابقة",
+  "bookshelf_mark_watched": "شاهد مارك",
+  "bookshelf_mark_unwatched": "مارك غير مراقب",
+  "nodelane_account": "NodeLane",
+  "nodelane_sign_in": "قم بتسجيل الدخول إلى NodeLane",
+  "nodelane_account_intro": "عرض حسابك واشتراكك وحصة الترجمة الخاصة بك",
+  "nodelane_login_action": "متابعة تسجيل الدخول",
+  "nodelane_login_browser": "قم بتسجيل الدخول من خلال متصفح النظام ثم قم بالعودة إلى التطبيق",
+  "nodelane_account_id": "معرف الحساب",
+  "nodelane_account_init_error": "تخزين الحساب غير متوفر. أعد تشغيل التطبيق وحاول مرة أخرى.",
+  "nodelane_account_refresh_error": "لا يمكن تحديث معلومات الحساب",
+  "nodelane_account_auth_error": "انتهت صلاحية جلستك. قم بتسجيل الدخول مرة أخرى",
+  "nodelane_account_unknown": "معلومات الاشتراك غير متوفرة",
+  "nodelane_account_current": "الاشتراك الحالي",
+  "nodelane_account_free": "حساب مجاني",
+  "nodelane_account_no_subscription": "لا يوجد اشتراك نشط",
+  "nodelane_account_active": "نشط",
+  "nodelane_account_expired": "انتهت صلاحيته",
+  "nodelane_account_expiry": "صالح حتى",
+  "nodelane_account_renewal": "التجديد",
+  "nodelane_renewal_auto": "التجديد التلقائي",
+  "nodelane_renewal_manual": "التجديد اليدوي",
+  "nodelane_renewal_stopped": "توقف التجديد التلقائي",
+  "nodelane_renewal_gift": "عضوية هدية",
+  "nodelane_renewal_attention": "تحقق من حالة التجديد الخاصة بك على الموقع",
+  "nodelane_next_billing": "تاريخ الفاتورة التالي",
+  "nodelane_billing_unavailable": "معلومات التجديد غير متوفرة",
+  "nodelane_manage_account": "الإدارة على موقع الويب",
+  "nodelane_view_plans": "عرض خطط الاشتراك",
+  "nodelane_translation_quota": "حصة الترجمة",
+  "nodelane_quota_free": "حصة مجانية",
+  "nodelane_quota_subscription": "حصة الاشتراك",
+  "nodelane_quota_purchase": "الحصة المشتراة",
+  "nodelane_quota_details": "عرض تفاصيل الحصة النسبية",
+  "nodelane_quota_expanded": "تفاصيل الحصة النسبية",
+  "nodelane_quota_unlimited": "غير محدود",
+  "nodelane_quota_not_subscribed": "غير مشترك",
+  "nodelane_quota_unknown": "غير متاح",
+  "nodelane_quota_used": "مستخدم",
+  "nodelane_quota_reserved": "قيد التقدم",
+  "nodelane_quota_reset": "إعادة التعيين التالي",
+  "nodelane_quota_expiry": "انتهاء الصلاحية التالي",
+  "nodelane_quota_no_expiry": "لا يوجد تاريخ انتهاء الصلاحية",
+  "nodelane_quota_reservation_note": "تم بالفعل خصم الصفحات قيد التقدم من الحصة المتوفرة",
+  "nodelane_quota_available": "{count} الصفحات المتبقية",
+  "@nodelane_quota_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_quota_pages": "{count} صفحات",
+  "@nodelane_quota_pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_sign_out": "تسجيل الخروج",
+  "nodelane_sign_out_confirm": "يؤدي تسجيل الخروج إلى إيقاف الترجمة الرسمية مؤقتًا على هذا الجهاز. يتم الاحتفاظ بمكتبتك وتقدم القراءة.",
+  "settings_search_hint": "إعدادات البحث",
+  "settings_frequent": "يستخدم بشكل متكرر",
+  "settings_reading_translation": "القراءة والترجمة",
+  "settings_app_preferences": "تفضيلات التطبيق",
+  "settings_data_management": "البيانات والإدارة",
+  "settings_more_tools": "المزيد من الأدوات",
+  "settings_more_tools_hint": "الفئات والإحصائيات والتقويم",
+  "settings_appearance_interface": "المظهر والواجهة",
+  "settings_security_privacy": "الأمان والخصوصية",
+  "settings_source_preferences": "إعدادات المصدر",
+  "settings_about_help": "حول والمساعدة",
+  "settings_storage_backup": "التخزين والنسخ الاحتياطي",
+  "settings_pending_downloads": "{count} معلق",
+  "@settings_pending_downloads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_translation_language": "لغة الترجمة",
+  "settings_translation_scope": "يُستخدم في ترجمة القارئ وصفحات الويب",
+  "settings_immediate_choice": "يتم تطبيق التغييرات على الفور",
+  "settings_translation_init_error": "إعدادات الترجمة غير متوفرة. أعد تشغيل التطبيق وحاول مرة أخرى.",
+  "settings_local_cache": "ذاكرة التخزين المؤقت المحلية",
+  "settings_chapter_cache": "ذاكرة التخزين المؤقت للفصل والحلقة",
+  "settings_cover_cache": "غطاء ذاكرة التخزين المؤقت",
+  "settings_translation_cache": "ذاكرة التخزين المؤقتة للصور المترجمة",
+  "settings_translation_cache_hint": "احتفظ بسجلات الترجمة واسترجاع الصور المترجمة مرة أخرى عند الحاجة",
+  "settings_cache_clear": "واضح",
+  "settings_translation_cache_done": "تم مسح ذاكرة التخزين المؤقت للصورة المترجمة؛ تم الاحتفاظ بسجلات الترجمة",
+  "settings_cache_confirmation": "مسح {name}؟ يمكن استرداد المحتوى المخزن مؤقتًا مرة أخرى. سيتم الاحتفاظ بإدخالات المكتبة.",
+  "@settings_cache_confirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_advanced_options": "الخيارات المتقدمة",
+  "settings_manga_reader": "قارئ المانغا",
+  "settings_novel_reader": "قارئ الرواية",
+  "settings_downloads": "إعدادات التنزيل",
+  "onboarding_welcome": "مرحباً بك",
+  "onboarding_reading_content": "محتوى القراءة",
+  "onboarding_choose_one": "اختر واحدًا على الأقل",
+  "onboarding_restore_hint": "استعادة مكتبتك من نسخة احتياطية",
+  "onboarding_browse_hint": "ابحث عن العناوين على مواقع الويب المدعومة",
+  "onboarding_import_folder": "قم باستيراد مجلد محلي",
+  "onboarding_import_folder_hint": "اقرأ المانغا والروايات والأنمي على جهازك",
+  "onboarding_third_party": "إضافة مستودع جهة خارجية",
+  "onboarding_third_party_hint": "استخدم عنوان المستودع الموجود لديك بالفعل",
+  "onboarding_repository_hint": "أدخل العنوان المقدم من المستودع.",
+  "onboarding_repository_address": "العنوان",
+  "onboarding_repository_address_hint": "أدخل عنوان المستودع",
+  "onboarding_add_repository": "إضافة مستودع",
+  "onboarding_start": "ابدأ",
+  "onboarding_open_library": "المكتبة المفتوحة",
+  "onboarding_view_imports": "عرض المحتوى المستورد",
+  "onboarding_view_folders": "عرض المجلدات",
+  "notice_backup_created": "تم إنشاء النسخة الاحتياطية",
+  "notice_backup_ready": "احفظ ملف النسخة الاحتياطية أو شاركه.",
+  "notice_backup_restored": "تمت استعادة النسخة الاحتياطية",
+  "notice_backup_unsupported": "تنسيق النسخ الاحتياطي هذا غير مدعوم.",
+  "notice_verification_required": "مطلوب التحقق من موقع الويب",
+  "notice_verification_hint": "أكمل عملية التحقق لمواصلة التصفح.",
+  "notice_verify": "التحقق من الموقع",
+  "notice_action_incomplete": "لم ينته الإجراء. تحقق من نتيجته قبل المحاولة مرة أخرى.",
+  "notice_library_updating": "تحديث المكتبة",
+  "notice_library_progress": "تم تحديد عناوين {current} / {total}",
+  "notice_library_failed": "لا يمكن تحديث بعض العناوين",
+  "notice_import_completed": "اكتمل الاستيراد",
+  "notice_operation_incomplete": "الإجراء غير مكتمل",
+  "subtitle_service": "خدمة الترجمة عبر الإنترنت",
+  "subtitle_service_mode": "مصدر الترجمة",
+  "subtitle_service_disabled": "متوقف عن العمل · مسح بيانات الاعتماد المحفوظة",
+  "subtitle_personal_key": "مفتاح Wyzie الخاص بي",
+  "subtitle_custom_service": "خدمة الترجمة الخاصة بي",
+  "subtitle_key": "Wyzie API مفتاح",
+  "subtitle_key_hint": "أدخل مفتاح Wyzie الخاص بك. ويبقى على هذا الجهاز ولا يتم تضمينه في النسخ الاحتياطية للتطبيقات.",
+  "subtitle_get_key": "احصل على مفتاح شخصي",
+  "subtitle_service_address": "بحث الترجمة URL",
+  "subtitle_service_token": "رمز الوصول إلى الخدمة (اختياري)",
+  "subtitle_custom_hint": "استخدم بحث HTTPS الكامل URL لخدمة Wyzie-compatible، بما في ذلك مسارها (على سبيل المثال، /search). أدخل رمز الوصول فقط إذا كانت الخدمة تتطلب واحدًا.",
+  "subtitle_service_off_hint": "تم إيقاف البحث عن الترجمة عبر الإنترنت. تظل الترجمات المضمنة والمقدمة من المصدر والمحلية متاحة.",
+  "subtitle_setup_required": "اختر خدمة الترجمة قبل البحث.",
+  "subtitle_invalid_key": "أدخل مفتاحًا بدون مسافات.",
+  "subtitle_invalid_address": "استخدم HTTPS URL كاملة بدون استعلام أو جزء أو بيانات اعتماد مضمنة.",
+  "subtitle_invalid_token": "لا يمكن أن يحتوي رمز الوصول على مسافات.",
+  "subtitle_storage_failed": "لا يمكن قراءة أو حفظ إعدادات الترجمة. يرجى المحاولة مرة أخرى.",
+  "subtitle_auth_failed": "تم رفض الوصول إلى خدمة الترجمة. تحقق من المفتاح أو رمز الخدمة الخاص بك.",
+  "subtitle_quota_exhausted": "تم استنفاد حصة خدمة الترجمة. تحقق من حسابك مع تلك الخدمة.",
+  "subtitle_network_failed": "لا يمكن الوصول إلى خدمة الترجمة. يرجى المحاولة مرة أخرى.",
+  "subtitle_response_invalid": "قامت خدمة الترجمة بإرجاع استجابة أو ملف غير مدعوم.",
+  "detail_loading_chapters": "تحميل الفصول...",
+  "reader_opening_chapter": "الفصل الافتتاحي",
+  "reader_open_chapter": "الفصل المفتوح",
+  "reader_loading_pages": "الحصول على صور الفصل...",
+  "reader_loading_pages_hint": "ستبدأ القراءة تلقائيًا عندما تصبح جاهزة.",
+  "reader_loading_failed": "لا يمكن تحميل هذا الفصل",
+  "reader_loading_retry_hint": "تحقق من الاتصال وحاول مرة أخرى.",
+  "reader_no_pages": "لم يتم العثور على صور لهذا الفصل",
+  "reader_loading_previous": "تحميل الفصل السابق...",
+  "reader_previous_failed": "تعذر تحميل الفصل السابق",
+  "reader_reached_start": "لقد وصلت إلى الفصل الأول",
+  "reader_loading_next": "جاري تحميل الفصل التالي...",
+  "reader_next_failed": "لا يمكن تحميل الفصل التالي",
+  "reader_image_loading": "تحميل الصورة...",
+  "reader_image_failure_hint": "يمكنك الاستمرار في قراءة الصفحات الأخرى.",
+  "comic_paged": "صفحة بصفحة",
+  "comic_scroll": "قم بالتمرير لأسفل",
+  "comic_book_scope": "ينطبق فقط على هذا الكتاب · يتم حفظ التغييرات على الفور",
+  "comic_defaults_title": "الافتراضات والعادات",
+  "comic_defaults_hint": "تنطبق الإعدادات الافتراضية على الحقول التي لم تقم بتخصيصها لكتاب ما.",
+  "comic_habits_hint": "تنطبق هذه العادات على كل قصة كوميدية.",
+  "comic_turn": "اسحب إلى الصفحة التالية",
+  "comic_left": "اليسار",
+  "comic_right": "صحيح",
+  "comic_up": "أعلى",
+  "comic_fit": "احتواء الصفحة",
+  "comic_fit_contain": "الصفحة بأكملها",
+  "comic_fit_width": "عرض مناسب",
+  "comic_fit_height": "الارتفاع المناسب",
+  "comic_layout": "تخطيط الصفحة",
+  "comic_auto": "تلقائي",
+  "comic_layout_hint": "يُظهر الانتشار تلقائيًا عندما يكون هناك عرض كافٍ.",
+  "comic_width": "عرض المحتوى",
+  "comic_full": "كامل",
+  "comic_comfortable": "مريح",
+  "comic_narrow": "ضيق",
+  "comic_gap": "تباعد الصفحات",
+  "comic_no_gap": "سلس",
+  "comic_small_gap": "صغير",
+  "comic_image_title": "ضبط الصورة بدقة",
+  "comic_image_hint": "يؤثر القص والنغمة على هذا الكتاب فقط.",
+  "comic_wide": "صفحات واسعة",
+  "comic_intact": "حافظ على كامل",
+  "comic_split": "سبليت",
+  "comic_rotate": "تدوير",
+  "comic_wide_hint": "يتبع التقسيم اتجاه قلب الصفحة. ينطبق على قراءة صفحة واحدة.",
+  "comic_cover": "غلاف واحد لكل فصل",
+  "comic_effects_reset": "إعادة ضبط تعديلات الصورة",
+  "comic_book_reset": "استعادة الإعدادات الافتراضية للكتاب",
+  "comic_book_reset_hint": "مسح إعدادات القراءة المخصصة لهذا الكتاب. الترجمة لم تتغير.",
+  "comic_canvas": "خلفية القارئ",
+  "comic_system": "النظام",
+  "comic_black": "أسود",
+  "comic_gray": "رمادي",
+  "comic_paper": "ورق",
+  "comic_tap": "اضغط لقلب الصفحات",
+  "comic_tap_hint": "اضغط على الحواف للتحرك؛ اضغط على المركز لإظهار عناصر التحكم.",
+  "comic_scroll_start": "بدء التمرير التلقائي",
+  "comic_scroll_pause": "إيقاف التمرير التلقائي مؤقتًا",
+  "comic_scroll_speed": "سرعة التمرير",
+  "comic_scroll_hint": "يبدأ عند إغلاق هذه اللوحة. يتوقف مؤقتًا عندما يترك التطبيق المقدمة.",
+  "comic_save_failed": "لا يمكن الحفظ. يرجى المحاولة مرة أخرى.",
+  "comic_reading": "القراءة",
+  "comic_chapter_habits_hint": "تنطبق عادات قائمة الفصول على كافة الكتب.",
+  "browser_title": "المتصفح",
+  "translation_image_display": "عرض الصورة",
+  "translation_display_hint": "إظهار الترجمات الموجودة أولاً. احتفظ بالأصل في حالة عدم توفر ترجمة.",
+  "translation_sign_in_required": "قم بتسجيل الدخول لتمكين الترجمة",
+  "translation_sign_in_hint": "بعد تسجيل الدخول، قم بالتبديل إلى الصور المترجمة لترجمتها تلقائيًا.",
+  "translation_automatic": "الترجمة الآلية",
+  "translation_original_hint": "عرض النسخ الأصلية. قم بالتبديل إلى الصور المترجمة لترجمتها تلقائيًا.",
+  "translation_window_hint": "معالجة الصور الحالية والقادمة فقط أثناء عرض الترجمات.",
+  "translation_channel": "قناة الترجمة",
+  "translation_no_images": "لم يتم العثور على صور قابلة للترجمة في هذه الصفحة حتى الآن",
+  "translation_waiting_image": "في انتظار الصورة الحالية",
+  "translation_progress": "الصور المكتملة: {complete} / {total}{issues, plural, =0{} one{ · صورة واحدة تحتاج إلى مراجعة} two{ · صورتان تحتاجان إلى مراجعة} few{ · {issues} صور تحتاج إلى مراجعة} many{ · {issues} صورة تحتاج إلى مراجعة} other{ · {issues} صورة تحتاج إلى مراجعة}}",
+  "@translation_progress": {
+    "placeholders": {
+      "complete": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "issues": {
+        "type": "int"
+      }
+    }
+  },
+  "translation_image_actions_hint": "المس الصورة مع الاستمرار لمزيد من الإجراءات، بما في ذلك ترجمتها مرة أخرى.",
+  "translation_title": "ترجمة المانجا",
+  "translation_system_sign_in": "قم بتسجيل الدخول باستخدام متصفح النظام الخاص بك",
+  "translation_target_language": "اللغة الهدف",
+  "translation_clear_cache": "مسح ذاكرة التخزين المؤقت للصورة المترجمة",
+  "translation_cache_hint": "احتفظ بسجلات الترجمة واستخرج النتائج مرة أخرى عند الحاجة.",
+  "translation_saved_read_failed": "تعذر تحميل الترجمة المحفوظة",
+  "translation_read_failed": "لا يمكن تحميل الصورة المترجمة",
+  "operation_retry": "لم ينته الإجراء. يرجى المحاولة مرة أخرى.",
+  "translation_original": "الأصل",
+  "translation_translated": "مترجم",
+  "translation_regenerate_image": "ترجم هذه الصورة مرة أخرى",
+  "translation_read_image": "إعادة تحميل الصورة المترجمة",
+  "translation_image_actions": "المزيد من إجراءات الصورة",
+  "translation_processing": "المعالجة",
+  "translation_reading": "تحميل الصورة المترجمة",
+  "translation_waiting": "في انتظار الترجمة",
+  "translation_preparing": "تحضير الترجمة",
+  "translation_uploading": "رفع الأصل",
+  "translation_running": "الترجمة",
+  "translation_uncertain": "الحالة تحتاج إلى التحقق",
+  "translation_failed": "فشلت الترجمة",
+  "translation_verify": "التحقق",
+  "translation_reread": "إعادة التحميل",
+  "browser_back": "العودة",
+  "browser_translation": "ترجمة صفحة الويب",
+  "browser_new_tab_action": "فتح علامة تبويب جديدة",
+  "browser_current_tab": "الحالي",
+  "browser_close_tab": "إغلاق علامة التبويب",
+  "browser_new_tab": "علامة تبويب جديدة",
+  "browser_page": "صفحة ويب",
+  "browser_unopened": "لم يتم فتح أي صفحة بعد",
+  "browser_address_hint": "أدخل أو الصق URL",
+  "browser_invalid_address": "أدخل URL صالحًا",
+  "browser_clear_address": "واضح URL",
+  "browser_paste_address": "لصق URL",
+  "browser_open_address": "مفتوح URL",
+  "browser_tab_count": "علامات التبويب · {count}",
+  "@browser_tab_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "browser_load_failed": "لا يمكن فتح هذه الصفحة",
+  "browser_load_failed_hint": "تحقق من اتصالك وURL.",
+  "browser_edit_address": "تحرير URL",
+  "browser_clear_cookies_confirm": "هل تريد مسح جلسات تسجيل الدخول لجميع مواقع الويب؟",
+  "browser_clear_cookies_hint": "قد تطلب منك مواقع الويب الموجودة في جميع علامات التبويب تسجيل الدخول مرة أخرى.",
+  "browser_clear_cookies_action": "مسح جلسات تسجيل الدخول",
+  "browser_tab_limit": "يمكنك الاحتفاظ بما يصل إلى 12 علامة تبويب مفتوحة. أغلق واحدًا أولاً.",
+  "browser_forward": "إلى الأمام",
+  "browser_clear_all_cookies": "مسح جميع جلسات تسجيل الدخول إلى موقع الويب",
+  "browser_clear_failed": "لا يمكن مسح الجلسات. يرجى المحاولة مرة أخرى.",
+  "browser_save_failed": "لا يمكن حفظ علامات التبويب. يرجى المحاولة مرة أخرى.",
+  "browser_tabs_full": "12 علامة تبويب مفتوحة بالفعل",
+  "browser_no_tabs": "لا توجد علامات تبويب مفتوحة بعد",
+  "browser_close_failed": "تعذر حفظ علامات التبويب. انقر فوق إغلاق مرة أخرى لإعادة المحاولة.",
+  "source_pinned_websites": "المواقع المثبتة",
+  "manage": "إدارة",
+  "translation_settings_hint": "الترجمة الآلية واللغة الهدف والقناة",
+  "translation_show_original": "اضغط لإظهار الأصل",
+  "translation_show_translated": "اضغط لإظهار الترجمة",
+  "source_display": "العرض",
+  "source_cover_title": "الغلاف والعنوان",
+  "source_cover_only": "الغلاف فقط",
+  "source_save_search": "حفظ البحث الحالي",
+  "source_saved_searches": "عمليات البحث المحفوظة",
+  "source_website_info": "معلومات الموقع",
+  "source_saved_search_title": "{title} · اضغط للبحث",
+  "@source_saved_search_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "action_done": "تم",
+  "source_search_keyword": "الكلمة الأساسية: {query}",
+  "@source_search_keyword": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "source_no_saved_searches": "لا توجد عمليات بحث محفوظة حتى الآن",
+  "source_save_search_hint": "ابحث عن كلمة أساسية، ثم احفظها من إجراءات موقع الويب.",
+  "source_saved_search_scope": "يتم حفظ الكلمات الأساسية لموقع الويب هذا فقط.",
+  "source_search_here": "ابحث عن العناوين في هذا الموقع",
+  "source_filter_results": "النتائج التي تمت تصفيتها",
+  "source_search_results": "نتائج البحث",
+  "source_return_popular": "العودة إلى الشعبية",
+  "source_popular_titles": "العناوين الشعبية",
+  "source_no_titles": "لم يتم العثور على عناوين مطابقة",
+  "source_no_titles_hint": "قم بتغيير كلماتك الأساسية أو عوامل التصفية أو العودة إلى العناوين الشائعة.",
+  "source_load_more_failed": "لا يمكن تحميل المزيد. يرجى المحاولة مرة أخرى.",
+  "source_load_pull_retry": "تعذر تحميل هذا الموقع. اسحب للأسفل لإعادة المحاولة.",
+  "source_clear_failed": "لا يمكن إنهاء عملية المسح. يرجى المحاولة مرة أخرى.",
+  "source_uninstall_failed": "تعذر إنهاء عملية إلغاء التثبيت. يرجى المحاولة مرة أخرى.",
+  "source_details": "تفاصيل المصدر",
+  "source_repository_website": "موقع المستودع",
+  "source_provided_settings": "الإعدادات المقدمة من المصدر",
+  "source_advanced_actions": "الإجراءات المتقدمة",
+  "source_edit_metadata": "تحرير معلومات المصدر",
+  "source_clear_cookies": "مسح ملفات تعريف الارتباط لهذا الموقع",
+  "source_clear_cookies_hint": "قد تحتاج إلى تسجيل الدخول مرة أخرى في زيارتك القادمة.",
+  "source_uninstall": "إلغاء تثبيت المصدر",
+  "source_settings_save_failed": "لم ينته الحفظ. أعد فتح إعدادات المصدر للتحقق.",
+  "repository_third_party": "مستودعات الطرف الثالث",
+  "repository_refresh_failed": "لا يمكن تحديث الكتالوج. يتم الاحتفاظ بالمحتوى المخزن مؤقتًا. يرجى المحاولة مرة أخرى.",
+  "repository_show_sources": "عرض المصادر من هذا المستودع",
+  "repository_copy_catalog": "انسخ رابط الكتالوج",
+  "repository_remove": "إزالة المستودع",
+  "repository_remove_hint": "احتفظ بالمصادر المثبتة وقم بإزالة إدخالات الكتالوج التي تم إلغاء تثبيتها.",
+  "repository_empty": "لم تتم إضافة أي مستودعات تابعة لجهات خارجية حتى الآن",
+  "repository_built_in": "الكتالوج الرسمي المدمج",
+  "repository_hidden": "مخفي",
+  "repository_refreshing": "منعش…",
+  "repository_refresh": "تحديث الكتالوج",
+  "repository_manage_hint": "إدارة المكان الذي يتم تنزيل مصادر الجهات الخارجية منه.",
+  "repository_invalid_address": "أدخل HTTP أو HTTPS URL صالحًا",
+  "repository_already_added": "تمت إضافة هذا المستودع بالفعل",
+  "repository_unrecognized": "لم يتم العثور على كتالوج مدعوم. تحقق من الرابط وحاول مرة أخرى.",
+  "repository_read_failed": "لا يمكن قراءة الكتالوج. يرجى المحاولة مرة أخرى.",
+  "repository_save_failed": "لم ينته الحفظ. تحقق من قائمة المستودعات الخاصة بك.",
+  "repository_paste_hint": "قم بلصق رابط كتالوج مستودع الطرف الثالث",
+  "repository_address": "URL",
+  "repository_paste_link": "الصق الرابط",
+  "repository_recognized": "{type} · تم التعرف على الكتالوج",
+  "@repository_recognized": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "repository_choose_sources_hint": "بعد إضافة المستودع، اختر المصادر التي تحتاجها.",
+  "search_scope": "نطاق البحث",
+  "search_scope_hint": "اختيار المواقع المراد البحث فيها",
+  "search_websites_action": "البحث في المواقع: {count}",
+  "@search_websites_action": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_find_website": "البحث عن موقع على الانترنت",
+  "search_selected_websites": "المواقع المحددة: {count}",
+  "@search_selected_websites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "action_clear": "واضح",
+  "search_deselect_results": "قم بإلغاء تحديد مواقع الويب المطابقة",
+  "search_select_results": "تحديد مواقع الويب المطابقة",
+  "search_no_websites_hint": "لا توجد مواقع مطابقة. جرّب اسمًا أو لغة أخرى.",
+  "search_select_website_hint": "حدد موقع ويب واحدًا على الأقل للبحث فيه.",
+  "search_start_title": "أدخل الكلمات الأساسية للعثور على العناوين",
+  "search_start_hint": "ابحث في مواقع ويب متعددة مرة واحدة وأظهر العناوين المتطابقة.",
+  "search_empty_scope": "لا توجد مواقع ويب قابلة للبحث في هذا النطاق",
+  "search_empty_scope_hint": "قم بالتبديل إلى كافة مواقع الويب أو اختر مواقع الويب للبحث فيها.",
+  "search_result_count": "النتائج: {count}",
+  "@search_result_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_titles": "عناوين البحث",
+  "search_actions": "إجراءات البحث",
+  "search_details": "تفاصيل البحث",
+  "search_title_hint": "البحث حسب العنوان",
+  "search_searching": "البحث",
+  "search_found_results": "عدد النتائج التي تم العثور عليها: {count}",
+  "@search_found_results": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_no_results": "لا توجد نتائج مطابقة",
+  "search_failed": "فشل البحث",
+  "search_found_titles": "{count, plural, =1{تم العثور على عنوان واحد} other{تم العثور على عناوين {count}}} · {websites, plural, =1{موقع واحد} other{{websites} مواقع الويب}}",
+  "@search_found_titles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "websites": {
+        "type": "int"
+      }
+    }
+  },
+  "search_finding_titles": "البحث عن العناوين",
+  "search_complete": "اكتمل البحث",
+  "search_in_progress": "البحث",
+  "search_finding_related": "البحث عن العناوين المطابقة...",
+  "search_no_results_yet": "لا توجد نتائج بحث بعد",
+  "search_no_matching_titles": "لم يتم العثور على عناوين مطابقة",
+  "search_results_appear_hint": "ستظهر النتائج هنا كما تم العثور عليها.",
+  "search_failed_websites_hint": "لم تتمكن بعض مواقع الويب من إنهاء البحث. أعد المحاولة في تفاصيل البحث.",
+  "search_change_keywords_hint": "جرّب كلمات رئيسية أقصر أو ابحث في المزيد من مواقع الويب.",
+  "search_view_details": "عرض تفاصيل البحث",
+  "search_adjust_scope": "ضبط نطاق البحث",
+  "search_query_websites": "{query} · {count, plural, =1{موقع واحد} other{{count} مواقع الويب}}",
+  "@search_query_websites": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_completed_count": "مكتمل {completed} / {total}",
+  "@search_completed_count": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "search_retry_website_hint": "أعد محاولة مواقع الويب الفاشلة بشكل فردي",
+  "source_selected_count": "{count, plural, zero{لم يتم تحديد أي عناصر} one{تم تحديد عنصر واحد} two{تم تحديد عنصرين} few{تم تحديد {count} عناصر} many{تم تحديد {count} عنصرًا} other{تم تحديد {count} عنصر}}",
+  "@source_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_languages": "لغات البحث",
+  "source_deselect": "قم بإلغاء التحديد",
+  "source_select": "حدد المصدر",
+  "source_multilingual": "متعدد اللغات",
+  "source_language_unknown": "اللغة غير محددة",
+  "source_adult_content": "يحتوي على أكثر من 18 محتوى",
+  "source_classification_unknown": "التصنيف غير محدد",
+  "source_more_classifications": "{count, plural, =1{عرض كافة معلومات المصدر، فئة واحدة إضافية} other{عرض كافة معلومات المصدر، {count} المزيد من الفئات}}",
+  "@source_more_classifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_loading_website": "تحميل الموقع",
+  "source_unpin": "إلغاء التثبيت",
+  "source_pin": "دبوس",
+  "source_open": "مفتوح",
+  "source_metadata_hint": "تأتي المعلومات من كتالوج المصدر. تصف الفئات المحتوى الذي يغطيه الموقع.",
+  "source_region": "المنطقة",
+  "source_format": "التنسيق",
+  "source_creation": "الخلق",
+  "source_unspecified": "غير محدد",
+  "source_pricing": "التسعير",
+  "source_region_jp": "القصص المصورة اليابانية",
+  "source_region_kr": "القصص المصورة الكورية",
+  "source_region_cn": "القصص المصورة الصينية",
+  "source_region_hk_tw": "كاريكاتير هونج كونج وتايوان",
+  "source_region_western": "القصص المصورة الغربية",
+  "source_region_other": "مناطق أخرى",
+  "source_format_page": "صفحات كاريكاتورية",
+  "source_format_vertical": "كاريكاتير عمودي",
+  "source_format_strip": "القصص المصورة",
+  "source_creation_original": "الأصل",
+  "source_creation_fan": "تعمل المروحة",
+  "source_free_watch": "المشاهدة مجانية",
+  "source_free_read": "حرية القراءة",
+  "source_partial_paid": "مدفوع جزئيًا",
+  "source_paid_watch": "المشاهدة مدفوعة الأجر",
+  "source_paid_read": "القراءة المدفوعة",
+  "source_pricing_unknown": "التسعير غير محدد",
+  "source_language_filter": "التصفية حسب اللغة",
+  "source_language_filter_hint": "قم بتصفية هذا الكتالوج فقط. المصادر المثبتة لا تتأثر.",
+  "source_all_languages": "جميع اللغات",
+  "action_apply": "التقديم",
+  "source_load_retry": "تعذر تحميل هذا الموقع. يرجى المحاولة مرة أخرى.",
+  "source_catalog_refresh_failed": "لا يمكن تحديث الكتالوج. يتم الاحتفاظ بالمحتوى الحالي. اسحب للأسفل لإعادة المحاولة.",
+  "source_uninstall_count": "{count, plural, =1{إلغاء تثبيت مصدر واحد؟} other{إلغاء تثبيت مصادر {count}؟}}",
+  "@source_uninstall_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_uninstall_selected_hint": "قم بإلغاء تثبيت المصادر المحددة ومسح إعداداتها. احتفظ بعناوين المكتبة وتنزيلاتها.",
+  "source_failed_count": "{count, plural, =1{فشل الإجراء لمصدر واحد.} other{فشلت الإجراءات لمصادر {count}.}} تم الاحتفاظ بالاختيار. يرجى المحاولة مرة أخرى.",
+  "@source_failed_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_latest_content": "أحدث المحتوى",
+  "source_actions": "إجراءات المصدر",
+  "source_bulk_manage": "إدارة مصادر متعددة",
+  "source_update_installed": "تحديث المصادر المثبتة",
+  "source_no_matching_websites": "لا توجد مواقع مطابقة",
+  "source_no_websites": "لا توجد مواقع متاحة",
+  "source_search_installed_hint": "البحث عن العناوين في المصادر المثبتة",
+  "source_global_search": "البحث عبر المصادر",
+  "source_manage_repositories": "إدارة المستودعات",
+  "source_view_third_party": "عرض مصادر الطرف الثالث",
+  "source_catalog_load_failed": "تعذر تحميل الكتالوج. اسحب للأسفل لإعادة المحاولة.",
+  "source_all_websites": "جميع المواقع",
+  "source_available": "متاح للتثبيت",
+  "source_third_party": "الطرف الثالث",
+  "source_name_or_title": "اسم الموقع أو عنوانه",
+  "view_all": "عرض الكل",
+  "search_searching_ellipsis": "البحث...",
+  "onboarding_untested_content": "{type} · لم يتم اختباره",
+  "@onboarding_untested_content": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "onboarding_untested": "لم يتم اختباره",
+  "source_custom_scope": "مخصص",
+  "source_custom_websites": "مواقع مختارة",
+  "tv_hidden_library_hint": "يقع كل عنوان في فئة مخفية.\nاضغط باستمرار على \"الكل\" لإظهار أحد العناصر.",
+  "tv_no_matching_anime": "لا يوجد أنمي مطابق",
+  "tv_no_matching_category": "لا يوجد أنمي مطابق في “{category}”",
+  "@tv_no_matching_category": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_filtered_empty_hint": "لا يوجد أنمي يطابق المرشحات الحالية.\nقم بتغييرها من الزر الموجود بجانب البحث.",
+  "tv_new_episodes": "حلقات جديدة",
+  "tv_recently_added": "أضيفت مؤخرا",
+  "tv_empty_category_hint": "لا يوجد أنمي في هذه الفئة حتى الآن.\nأضف عناوين إليه من صفحة تفاصيل العنوان.",
+  "tv_empty_library": "مكتبة الأنمي الخاصة بك فارغة",
+  "tv_empty_library_hint": "أضف أنيمي من التصفح لملء منزلك",
+  "tv_browse_anime": "تصفح الانمي",
+  "tv_new_count": "{count} جديد",
+  "@tv_new_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tv_category_hidden": "اختبأ \"{category}\" · استمر في الضغط على \"موافق\" على \"الكل\" لإظهاره",
+  "@tv_category_hidden": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_no_hidden_categories": "لا توجد فئات مخفية",
+  "import_torrent_file": "استيراد ملف تورنت",
+  "import_video_formats": ".mp4، .mkv، .avi، والمزيد",
+  "cloudflare_proxy_optional": "اختياري FlareSolverr / Byparr URL",
+  "tv_home_layout_hint": "صفحة الأنمي الرئيسية القائمة على الصفوف (تابع · حلقات جديدة · الفئات) بدلاً من الشبكة المسطحة",
+  "tv_hide_libraries_hint": "إخفاء مكتبات المانجا والروايات (يتم تشغيلها افتراضيًا على التلفزيون)",
+  "anime_only_hint": "إخفاء المانجا والرواية عبر التطبيق. إيقاف لإظهار كل شيء.",
+  "audio_auto_safe": "آمن تلقائي",
+  "tv_player_hint": "تشغيل: مشغل تلفزيون مخصص.  مطفأ: مشغل أصلي (سطح المكتب).",
+  "release_open_failed": "غير قادر على فتح الإصدار",
+  "tv_replay": "إعادة التشغيل",
+  "tv_no_episodes": "لا توجد حلقات بعد",
+  "tracker_continue_series": "متابعة مشاهدة المسلسل",
+  "tracker_watchlist_series": "سلسلة قائمة المراقبة",
+  "tracker_continue_movies": "متابعة مشاهدة الأفلام",
+  "tracker_watchlist_movies": "قائمة مشاهدة الأفلام",
+  "tracker_trending_series": "السلسلة الشائعة",
+  "tracker_trending_movies": "الأفلام الرائجة",
+  "tracker_popular_series": "السلسلة الشعبية",
+  "tracker_popular_movies": "الأفلام الشعبية",
+  "tracker_top_series": "أفضل سلسلة (كل العصور)",
+  "tracker_top_movies": "أفضل الأفلام (كل العصور)",
+  "tracker_airing_series": "سلسلة البث",
+  "tracker_airing_anime": "بث الأنمي",
+  "tracker_popular_anime": "الرسوم المتحركة الشعبية",
+  "tracker_upcoming_anime": "الأنمي القادم",
+  "tracker_popular_manga": "المانغا الشعبية",
+  "tracker_top_manga": "أعلى المانجا",
+  "tracker_top_manhwa": "توب مانهوا",
+  "tracker_top_manhua": "توب مانهوا",
+  "tracker_latest_anime": "أحدث الأنمي",
+  "tracker_best_anime": "أفضل الأنمي تقييمًا",
+  "tracker_latest_manga": "أحدث المانجا",
+  "tracker_best_manga": "أفضل تصنيف للمانجا",
+  "tracker_trending_anime": "الأنمي الرائج",
+  "tracker_upcoming_manga": "المانجا القادمة",
+  "tracker_trending_manga": "المانجا الرائجة",
+  "selection_progress": "{selected}/{total} محدد",
+  "@selection_progress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "source_code_editor": "محرر الكود",
+  "source_code_execute": "تنفيذ",
+  "source_console_logs": "سجلات وحدة التحكم",
+  "source_no_logs": "لا توجد سجلات حتى الآن",
+  "source_updated_successfully": "تم تحديث المصدر بنجاح",
+  "source_obsolete": "عفا عليه الزمن",
+  "player_seek_forward_seconds": "تقدم للأمام {seconds} ثانية",
+  "@player_seek_forward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_seek_backward_seconds": "البحث للخلف بمقدار {seconds} ثانية",
+  "@player_seek_backward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_autoplay_on": "التشغيل التلقائي للحلقة التالية: تشغيل",
+  "player_autoplay_off": "التشغيل التلقائي للحلقة التالية: متوقف",
+  "player_no_other_quality": "لا توجد نوعية أخرى",
+  "player_no_subtitles": "لا توجد ترجمة",
+  "player_no_audio_tracks": "لا توجد مسارات صوتية",
+  "player_seek_forward": "السعي للأمام",
+  "player_seek_backward": "البحث للخلف",
+  "player_seconds": "{seconds, plural, zero{{seconds} ثانية} one{ثانية واحدة} two{ثانيتان} few{{seconds} ثوانٍ} many{{seconds} ثانية} other{{seconds} ثانية}}",
+  "@player_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "subtitle_preview": "لوريم إيبسوم دولور يجلس أميت",
+  "subtitle_style": "النمط",
+  "translation_official_channel": "NodeLane رسمي",
+  "translation_auth_required": "قم بتسجيل الدخول إلى حساب الترجمة الخاص بك أولاً.",
+  "translation_source_changed": "تم تغيير الصورة الأصلية. يرجى إعادة تحميله.",
+  "translation_source_missing": "الصورة الأصلية غير متوفرة حاليًا.",
+  "translation_resource_limit": "هذه الصورة تتجاوز حد معالجة الجهاز. يتم الاحتفاظ بالأصل.",
+  "translation_storage_full": "مساحة تخزين الترجمة ممتلئة. مسح الصور المترجمة أولا.",
+  "translation_invalid_image": "تنسيق الصورة أو المحتوى غير صالح.",
+  "translation_unsupported_image": "الترجمة غير مدعومة لهذه الصورة. يتم الاحتفاظ بالأصل.",
+  "translation_invalid_result": "فشل التحقق من صحة الصورة المترجمة. يرجى إعادة تحميله.",
+  "translation_result_unavailable": "الصورة المترجمة غير متوفرة. يرجى إعادة تحميله.",
+  "translation_result_expired": "انتهت صلاحية الصورة المترجمة. يرجى ترجمتها مرة أخرى.",
+  "translation_analysis_too_large": "يوجد قدر كبير جدًا من محتوى الصورة الذي يتعين تحليله. قلل حجم الصورة وحاول مرة أخرى.",
+  "translation_region_limit": "تحتوي الصورة على عدد كبير جدًا من مناطق النص. قم بتقسيمها وحاول مرة أخرى.",
+  "translation_text_limit": "منطقة النص طويلة جدًا. اضبط الصورة وحاول مرة أخرى.",
+  "translation_unavailable": "هذه الترجمة لم تعد متوفرة.",
+  "translation_outcome_unknown": "النتيجة تحتاج إلى التحقق. لم يتم إعادة تقديمه.",
+  "translation_rate_limited": "الطلبات محدودة. سيتم استئناف الترجمة تلقائيًا.",
+  "translation_quota_exhausted": "حصة الترجمة غير كافية.",
+  "translation_unsupported_language": "الخدمة لا تدعم هذه اللغة الهدف.",
+  "translation_upgrade_required": "بروتوكول الترجمة غير متوافق. قم بتحديث التطبيق.",
+  "translation_remote_failed": "فشلت الترجمة لهذه الصفحة. يمكنك إعادة المحاولة يدويًا.",
+  "translation_bridge_invalid": "تم تغيير صفحة الويب. تمكين الترجمة مرة أخرى.",
+  "translation_connection_failed": "فشل الاتصال. يرجى المحاولة مرة أخرى.",
+  "translation_paused": "توقفت الترجمة مؤقتًا. يمكنك التحقق من تقدمها.",
+  "translation_preparing_ellipsis": "جارٍ تحضير الترجمة…",
+  "translation_checking_original": "جارٍ التحقق من الصورة الأصلية...",
+  "translation_submitting": "تقديم...",
+  "translation_uploading_ellipsis": "جاري رفع الأصل...",
+  "translation_waiting_ellipsis": "في انتظار الترجمة...",
+  "translation_running_ellipsis": "ترجمة…",
+  "translation_verify_result": "النتيجة تحتاج إلى التحقق",
+  "translation_partial": "تمت ترجمة بعض المحتوى",
+  "translation_ready": "الصورة المترجمة جاهزة",
+  "list_separator": ", ",
+  "player_play": "العب",
+  "player_quality": "الجودة",
+  "player_subtitles": "الترجمة",
+  "player_audio": "الصوت",
+  "player_statistics": "إحصائيات المهووسين",
+  "player_auto": "تلقائي",
+  "source_information": "معلومات المصدر",
+  "source_code_page": "الصفحة",
+  "source_code_query": "الاستعلام",
+  "repository_invalid_source": "مصدر غير صالح - قم بإزالته",
+  "player_fit_contain": "احتواء",
+  "player_fit_cover": "الغلاف",
+  "player_fit_fill": "تعبئة",
+  "player_fit_height": "الارتفاع",
+  "player_fit_width": "العرض",
+  "player_fit_scale": "مقياس",
+  "player_fit_none": "لا شيء",
+  "player_shader_clear": "إيقاف (تظليل واضح)",
+  "player_shader_luma": "ترقية لوما",
+  "player_decoder_auto": "تلقائي (الأجهزة)",
+  "player_decoder_software": "البرامج (بدون أجهزة)",
+  "player_stats_toggle": "تبديل التراكب",
+  "player_stats_general": "عام",
+  "player_stats_frames": "توقيتات الإطار",
+  "player_stats_cache": "ذاكرة التخزين المؤقت للإدخال",
+  "player_stats_filters": "المرشحات النشطة",
+  "player_stats_log": "السجل",
+  "source_mark_pinned": "دبوس",
+  "translation_image_action": "{action} هذه الصورة",
+  "@translation_image_action": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_waiting": "الذاكرة: في انتظار العينة",
+  "memory_rss": "RSS {current} الذروة {peak}",
+  "@memory_rss": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_cache": "ذاكرة التخزين المؤقت {current} / {limit} الذروة {peak}",
+  "@memory_cache": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_items": "العناصر {count} / {limit} مباشر {live} الذروة {peak}",
+  "@memory_items": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "live": {
+        "type": "int"
+      },
+      "peak": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_full_samples": "كامل {percent}% من {count, plural, =1{عينة واحدة} other{{count} العينات}}",
+  "@memory_full_samples": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_reset_hint": "قم بتبديله وتشغيله في الإعدادات لإعادة التعيين",
+  "action_hide": "إخفاء",
+  "discord_get_app": "احصل على {app}",
+  "@discord_get_app": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_idle": "خاملاً",
+  "discord_watching_title": "مشاهدة {title}",
+  "@discord_watching_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_reading_title": "القراءة {title}",
+  "@discord_reading_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

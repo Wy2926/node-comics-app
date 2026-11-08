@@ -11,79 +11,79 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get app_update_details_hint =>
-      'View release notes and installation options';
+      'Visualizza le note sulla versione e le opzioni di installazione';
 
   @override
-  String get app_update_download => 'Download update';
+  String get app_update_download => 'Scarica l\'aggiornamento';
 
   @override
   String get app_update_download_hint =>
-      'After downloading, follow the prompts to install the update.';
+      'Dopo il download, seguire le istruzioni per installare l\'aggiornamento.';
 
   @override
-  String get bookshelf_all => 'All';
+  String get bookshelf_all => 'Tutti';
 
   @override
-  String get bookshelf_search => 'Search library';
+  String get bookshelf_search => 'Cerca nella libreria';
 
   @override
   String get app_update_allow_install =>
-      'Allow app installation in system settings, then return and tap Install.';
+      'Consenti l\'installazione dell\'app nelle impostazioni di sistema, quindi torna indietro e tocca Installa.';
 
   @override
   String get app_update_waiting =>
-      'Waiting for the system to resume the download…';
+      'In attesa che il sistema riprenda il download…';
 
   @override
-  String get app_update_cancel_download => 'Cancel download';
+  String get app_update_cancel_download => 'Annullare il download';
 
   @override
-  String get app_update_remove_package => 'Remove downloaded package';
+  String get app_update_remove_package => 'Rimuovere il pacchetto scaricato';
 
   @override
   String get app_name => 'NodeLane Comics';
 
   @override
-  String get settings_search_empty => 'No matching settings';
+  String get settings_search_empty => 'Nessuna impostazione corrispondente';
 
   @override
   String get search_empty_hint =>
-      'Try another keyword, or clear the search to see everything.';
+      'Prova un\'altra parola chiave o cancella la ricerca per vedere tutto.';
 
   @override
-  String get search_clear => 'Clear search';
+  String get search_clear => 'Cancella ricerca';
 
   @override
-  String get app_updates => 'App updates';
+  String get app_updates => 'Aggiornamenti dell\'app';
 
   @override
-  String get app_update_auto => 'Check on launch';
+  String get app_update_auto => 'Controllo al lancio';
 
   @override
-  String get app_update_view => 'View update';
+  String get app_update_view => 'Visualizza aggiornamento';
 
   @override
-  String get app_update_later => 'Later';
+  String get app_update_later => 'Più tardi';
 
   @override
   String get app_update_external_hint =>
-      'Opens the update link in your browser';
+      'Apre il collegamento di aggiornamento nel browser';
 
   @override
   String get app_update_failed =>
-      'Unable to check for updates. Please try again.';
+      'Impossibile verificare la presenza di aggiornamenti. Per favore riprova.';
 
   @override
-  String get app_update_opened => 'Update link opened';
+  String get app_update_opened => 'Collegamento di aggiornamento aperto';
 
   @override
-  String get app_diagnostics => 'Diagnostics and logs';
+  String get app_diagnostics => 'Diagnostica e registri';
 
   @override
   String get library => 'Biblioteca';
 
   @override
-  String get updates_search => 'Search updates';
+  String get updates_search => 'Aggiornamenti della ricerca';
 
   @override
   String get updates => 'Aggiornamenti';
@@ -1257,11 +1257,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Riorganizza e regola ogni navigazione in base alle tue esigenze.';
 
   @override
-  String get floating_navigation_bar => 'Floating navigation bar';
+  String get floating_navigation_bar => 'Barra di navigazione mobile';
 
   @override
   String get floating_navigation_bar_description =>
-      'Use a floating capsule instead of the standard attached navigation bar.';
+      'Utilizzare una capsula mobile invece della barra di navigazione standard allegata.';
 
   @override
   String get full_screen_player => 'Usa schermo intero';
@@ -2085,11 +2085,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get add_repo => 'Aggiungere repository?';
 
   @override
-  String get add_repo_sources_to_add => 'Extension lists that will be added:';
+  String get add_repo_sources_to_add =>
+      'Elenchi di estensioni che verranno aggiunte:';
 
   @override
   String get add_repo_warning =>
-      'Extensions from these repositories run inside the app. Only add repositories you trust.';
+      'Le estensioni di questi repository vengono eseguite all\'interno dell\'app. Aggiungi solo repository di cui ti fidi.';
 
   @override
   String get genre_search_library => 'Cerca genere nella libreria';
@@ -2227,7 +2228,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get custom_buttons_add_warning =>
-      'This button runs the Lua code below in the video player, which can access your files and run programs. Only add it if you trust where this link came from.';
+      'Questo pulsante esegue il codice Lua riportato di seguito nel lettore video, che può accedere ai tuoi file ed eseguire programmi. Aggiungilo solo se sei sicuro della provenienza di questo collegamento.';
 
   @override
   String n_days(Object n) {
@@ -2339,48 +2340,48 @@ class AppLocalizationsIt extends AppLocalizations {
   String get watch_order => 'Ordine di visione';
 
   @override
-  String get watch_order_role_current => 'Current';
+  String get watch_order_role_current => 'Attuale';
 
   @override
-  String get watch_order_role_previous => 'Previous';
+  String get watch_order_role_previous => 'Precedente';
 
   @override
-  String get watch_order_role_next => 'Next';
+  String get watch_order_role_next => 'Successivo';
 
   @override
-  String get watch_order_source_release_order => 'Release order';
+  String get watch_order_source_release_order => 'Ordine di rilascio';
 
   @override
   String watch_order_source_community_list(String name, String author) {
-    return '$name by $author';
+    return '$name di $author';
   }
 
   @override
   String watch_order_source_official_collection(String name) {
-    return 'Official Trakt collection: $name';
+    return 'Collezione ufficiale Trakt: $name';
   }
 
   @override
   String watch_order_source_trakt_collection(String name) {
-    return 'Trakt collection: $name';
+    return 'Trakt collezione: $name';
   }
 
   @override
   String watch_order_source_seasons(String title) {
-    return 'Seasons for $title';
+    return 'Stagioni per $title';
   }
 
   @override
-  String get watch_order_select_source => 'Order source';
+  String get watch_order_select_source => 'Origine dell\'ordine';
 
   @override
   String watch_order_season(int number) {
-    return 'Season $number';
+    return 'Stagione $number';
   }
 
   @override
   String watch_order_episode(int number) {
-    return 'Episode $number';
+    return 'Episodio $number';
   }
 
   @override
@@ -2391,7 +2392,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String recommendation_rating_accessibility(String rating) {
-    return 'Rating $rating';
+    return 'Valutazione $rating';
   }
 
   @override
@@ -2593,11 +2594,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get checking_device_authentication =>
-      'Checking device authentication…';
+      'Verifica dell\'autenticazione del dispositivo…';
 
   @override
   String get device_authentication_incomplete =>
-      'Authentication was not completed. Your setting has not changed.';
+      'L\'autenticazione non è stata completata. La tua impostazione non è cambiata.';
 
   @override
   String get keep_screen_on => 'Mantieni lo schermo acceso';
@@ -2664,7 +2665,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String average_chapters_per_title(Object title) {
-    return 'Media capitoli per titolo';
+    return 'Media capitoli per $title';
   }
 
   @override
@@ -3214,7 +3215,7 @@ class AppLocalizationsIt extends AppLocalizations {
     Object historyCount,
     Object updateCount,
   ) {
-    return 'Elimina definitivamente $mangaCount manga, $chapterCount capitoli, $historyCount voci di cronologia.';
+    return 'Questo elimina permanentemente $mangaCount manga, $chapterCount capitoli, $historyCount voci di cronologia e $updateCount voci di aggiornamento. I collegamenti di tracciamento vengono mantenuti. Questo non può essere annullato se non eseguendo il rollback.';
   }
 
   @override
@@ -3285,7 +3286,7 @@ class AppLocalizationsIt extends AppLocalizations {
     Object keptChapters,
     Object duplicateTracks,
   ) {
-    return '$totalChapters capitoli trovati. $duplicateChapters duplicati verranno scartati, $keptChapters aggiunti.';
+    return '$totalChapters capitoli trovati nelle altre voci. $duplicateChapters sono duplicati e verranno eliminati (mantenendo la copia con avanzamento di lettura); Verrà aggiunto $keptChapters. Verranno eliminati anche i $duplicateTracks link di tracciamento duplicati.';
   }
 
   @override
@@ -3606,124 +3607,125 @@ class AppLocalizationsIt extends AppLocalizations {
   String get chapter_swipe_disabled => 'Disabilitato';
 
   @override
-  String get update_errors => 'Update errors';
+  String get update_errors => 'Errori di aggiornamento';
 
   @override
-  String get no_update_errors => 'No update errors';
+  String get no_update_errors => 'Nessun errore di aggiornamento';
 
   @override
-  String get clear_all => 'Clear all';
+  String get clear_all => 'Cancella tutto';
 
   @override
-  String get dismiss => 'Dismiss';
+  String get dismiss => 'Ignorare';
 
   @override
-  String get previous_episode => 'Previous episode';
+  String get previous_episode => 'Episodio precedente';
 
   @override
-  String get clear_logs => 'Clear logs';
+  String get clear_logs => 'Cancella i registri';
 
   @override
-  String get bold => 'Bold';
+  String get bold => 'Grassetto';
 
   @override
-  String get italic => 'Italic';
+  String get italic => 'Corsivo';
 
   @override
-  String get color_yellow => 'Yellow';
+  String get color_yellow => 'Giallo';
 
   @override
-  String get color_cyan => 'Cyan';
+  String get color_cyan => 'Ciano';
 
   @override
-  String get color_green => 'Green';
+  String get color_green => 'Verde';
 
   @override
-  String get color_orange => 'Orange';
+  String get color_orange => 'Arancione';
 
   @override
-  String get continue_watching => 'Continue Watching';
+  String get continue_watching => 'Continua a guardare';
 
   @override
-  String get search_your_anime => 'Search your anime';
+  String get search_your_anime => 'Cerca il tuo anime';
 
   @override
-  String get category => 'Category';
+  String get category => 'Categoria';
 
   @override
-  String get hidden_categories => 'Hidden categories';
+  String get hidden_categories => 'Categorie nascoste';
 
   @override
-  String get new_category => 'New category';
+  String get new_category => 'Nuova categoria';
 
   @override
-  String get local => 'Local';
+  String get local => 'Locale';
 
   @override
-  String get tv_home_rows => 'Rows';
+  String get tv_home_rows => 'Righe';
 
   @override
-  String get genre_rows => 'Genre rows';
+  String get genre_rows => 'Righe di genere';
 
   @override
-  String get share_backup_file => 'Share NodeLane Comics backup file';
+  String get share_backup_file => 'Condividi il file di backup NodeLane Comics';
 
   @override
-  String get close => 'Close';
+  String get close => 'Chiudi';
 
   @override
-  String get migrate_source => 'Migrate source';
+  String get migrate_source => 'Migra fonte';
 
   @override
-  String get cloudflare_bypass_proxy => 'Cloudflare bypass proxy';
+  String get cloudflare_bypass_proxy => 'Proxy di bypass di Cloudflare';
 
   @override
-  String get custom_doh_url => 'Custom DoH URL';
+  String get custom_doh_url => 'DoH personalizzato URL';
 
   @override
-  String get custom_doh_url_helper => 'Must be an https DoH (JSON) endpoint';
+  String get custom_doh_url_helper =>
+      'Deve essere un endpoint https DoH (JSON).';
 
   @override
-  String get anime_only_tv_layout => 'Anime-only TV layout';
+  String get anime_only_tv_layout => 'Layout TV solo anime';
 
   @override
-  String get anime_only_beta => 'Anime only (beta)';
+  String get anime_only_beta => 'Solo anime (beta)';
 
   @override
-  String get tv_home_beta => 'TV home (beta)';
+  String get tv_home_beta => 'TV domestica (beta)';
 
   @override
-  String get tv_player_beta => 'TV player (beta)';
+  String get tv_player_beta => 'Lettore TV (beta)';
 
   @override
-  String get network_settings => 'Network';
+  String get network_settings => 'Rete';
 
   @override
-  String get reader_page_layout => 'Page layout';
+  String get reader_page_layout => 'Impaginazione';
 
   @override
-  String get reader_continuous_options => 'Continuous reading';
+  String get reader_continuous_options => 'Lettura continua';
 
   @override
   String get reader_default_mode_hint =>
-      'The default reading mode applies to titles without an individual mode set while reading.';
+      'La modalità di lettura predefinita si applica ai titoli senza una modalità individuale impostata durante la lettura.';
 
   @override
-  String get extension_service => 'Extension service';
+  String get extension_service => 'Servizio di estensione';
 
   @override
   String get extension_service_description =>
-      'Manage the extension runtime and proxy address.';
+      'Gestire il runtime dell\'estensione e l\'indirizzo proxy.';
 
   @override
-  String get proxy_address => 'Proxy address';
+  String get proxy_address => 'Indirizzo proxy';
 
   @override
-  String get checking_runtime_status => 'Checking status…';
+  String get checking_runtime_status => 'Verifica dello stato…';
 
   @override
   String download_delay_value(int seconds) {
-    return '$seconds s + random delay';
+    return '$seconds s + ritardo casuale';
   }
 
   @override
@@ -3731,171 +3733,175 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count chapters',
-      one: '1 chapter',
+      other: '$count capitoli',
+      one: '1 capitolo',
     );
     return '$_temp0';
   }
 
   @override
   String get download_queue_empty_hint =>
-      'Add downloads from a title’s chapter list.';
+      'Aggiungere i download dall\'elenco dei capitoli di un titolo.';
 
   @override
-  String get download_queue_order_hint => 'Drag handles to reorder';
+  String get download_queue_order_hint =>
+      'Trascinare le maniglie per riordinare';
 
   @override
-  String get download_queue_empty => 'No downloads queued';
+  String get download_queue_empty => 'Nessun download in coda';
 
   @override
-  String get download_queue_actions => 'Download actions';
+  String get download_queue_actions => 'Azioni di download';
 
   @override
-  String get download_queue_cancel_chapter => 'Cancel this chapter’s download';
+  String get download_queue_cancel_chapter =>
+      'Annullare il download di questo capitolo';
 
   @override
   String get download_queue_cancel_series =>
-      'Cancel all downloads for this title';
+      'Annulla tutti i download per questo titolo';
 
   @override
-  String get download_queue_start => 'Start downloads';
+  String get download_queue_start => 'Avvia i download';
 
   @override
-  String get download_queue_retry => 'Retry downloads';
+  String get download_queue_retry => 'Riprovare i download';
 
   @override
-  String get download_queue_active => 'Downloading';
+  String get download_queue_active => 'Scaricamento';
 
   @override
-  String get download_queue_waiting => 'Waiting to download';
+  String get download_queue_waiting => 'In attesa di download';
 
   @override
-  String get download_queue_failed => 'Download failed';
+  String get download_queue_failed => 'Download fallito';
 
   @override
   String get cf_proxy_helper =>
-      'FlareSolverr / Byparr endpoint. Leave empty to disable.';
+      'Punto finale FlareSolverr/Byparr. Lascia vuoto per disabilitare.';
 
   @override
   String get mobile_navigation_description =>
-      'Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.';
+      'Trascina per riordinare. Manga, anime e romanzi condividono la scheda Libreria. Il primo elemento visibile si apre all\'avvio. Sfoglia e altro rimani visibile; vengono visualizzate schede aggiuntive in Altro.';
 
   @override
-  String get text_align_justify => 'Justify';
+  String get text_align_justify => 'Giustificare';
 
   @override
   String get novel_session_modes_hint =>
-      'Set reading mode and single or double pages while reading a title.';
+      'Impostare la modalità di lettura e le pagine singole o doppie durante la lettura di un titolo.';
 
   @override
   String get tts_languages_failed =>
-      'Could not load languages from the speech engine.';
+      'Impossibile caricare le lingue dal motore vocale.';
 
   @override
   String get tts_languages_empty =>
-      'The speech engine returned no languages. Your saved selection is kept.';
+      'Il motore vocale non ha restituito alcuna lingua. La selezione salvata viene mantenuta.';
 
   @override
   String get tts_language_unavailable =>
-      'This saved language is not in the device’s current list.';
+      'Questa lingua salvata non è nell\'elenco corrente del dispositivo.';
 
   @override
   String get tts_apply_failed =>
-      'Could not apply this setting to the speech engine. You can retry.';
+      'Impossibile applicare questa impostazione al motore vocale. Puoi riprovare.';
 
   @override
-  String get player_controls => 'Controls';
+  String get player_controls => 'Controlli';
 
   @override
-  String get audio_channel_auto => 'Automatic';
+  String get audio_channel_auto => 'Automatico';
 
   @override
-  String get audio_channel_auto_safe => 'Automatic (safe)';
+  String get audio_channel_auto_safe => 'Automatico (sicuro)';
 
   @override
   String get audio_channel_mono => 'Mono';
 
   @override
-  String get audio_channel_stereo => 'Stereo';
+  String get audio_channel_stereo => 'Stereotipia';
 
   @override
-  String get audio_channel_reverse_stereo => 'Reverse stereo';
+  String get audio_channel_reverse_stereo => 'Stereotipia inversa';
 
   @override
   String get mpv_bundled_config_hint =>
-      'Restore the configuration, scripts and shaders included with the app. Files with the same names will be overwritten.';
+      'Ripristinare la configurazione, gli script e gli shader inclusi nell\'app. I file con gli stessi nomi verranno sovrascritti.';
 
   @override
-  String get mpv_restore_bundled => 'Restore bundled configuration';
+  String get mpv_restore_bundled => 'Ripristina la configurazione in bundle';
 
   @override
   String get mpv_restore_confirm =>
-      'Restore the bundled MPV configuration? Existing configuration, scripts and shaders with the same names will be overwritten. Other files will be kept.';
+      'Ripristinare la configurazione MPV in bundle? La configurazione esistente, gli script e gli shader con gli stessi nomi verranno sovrascritti. Gli altri file verranno conservati.';
 
   @override
   String get player_operation_incomplete =>
-      'The operation could not be completed. Check file access and try again.';
+      'Non è stato possibile completare l\'operazione. Controlla l\'accesso al file e riprova.';
 
   @override
   String get custom_buttons_empty_hint =>
-      'Add a player button with a label and a press action.';
+      'Aggiungere un pulsante del giocatore con un\'etichetta e un\'azione di stampa.';
 
   @override
-  String get custom_button_primary => 'Default button';
+  String get custom_button_primary => 'Pulsante predefinito';
 
   @override
-  String get show_password => 'Show password';
+  String get show_password => 'Mostra la password';
 
   @override
-  String get hide_password => 'Hide password';
+  String get hide_password => 'Nascondi la password';
 
   @override
   String get tracking_accounts_empty =>
-      'Connect a service in Tracking settings to manage its entries.';
+      'Collegare un servizio nelle Impostazioni di tracciamento per gestirne le voci.';
 
   @override
   String get tracking_entries_empty =>
-      'No tracked entries for this media type. Add tracking from a title’s detail page.';
+      'Nessuna voce tracciata per questo tipo di supporto. Aggiungi il monitoraggio dalla pagina dei dettagli di un titolo.';
 
   @override
-  String get change_tracking_match => 'Change matching title';
+  String get change_tracking_match => 'Cambia il titolo corrispondente';
 
   @override
-  String get remove_tracking => 'Remove tracking';
+  String get remove_tracking => 'Rimuovere il tracciamento';
 
   @override
   String remove_tracking_confirm(String title) {
-    return 'Remove the tracking link for “$title”? The entry in the tracking service will be kept.';
+    return 'Rimuovere il collegamento di tracciamento per “$title”? La voce nel servizio di tracciamento verrà conservata.';
   }
 
   @override
   String get tracking_refresh_required =>
-      'The tracking state could not be confirmed. Refresh before making another change.';
+      'Non è stato possibile confermare lo stato di tracciamento. Aggiorna prima di apportare un\'altra modifica.';
 
   @override
   String get tracking_entry_unlinked =>
-      'This record is not linked to a local title, so it cannot be edited here.';
+      'Questo record non è collegato ad un titolo locale, quindi non può essere modificato qui.';
 
   @override
   String get backup_selection_shared =>
-      'Changes to these selections are saved immediately and also apply to automatic backups.';
+      'Le modifiche a queste selezioni vengono salvate immediatamente e si applicano anche ai backup automatici.';
 
   @override
-  String get library_snapshot_history => 'Restore a library snapshot';
+  String get library_snapshot_history =>
+      'Ripristina un\'istantanea della libreria';
 
   @override
-  String get library_snapshot_empty => 'No safety snapshots available.';
+  String get library_snapshot_empty =>
+      'Nessuna istantanea di sicurezza disponibile.';
 
   @override
   String get library_snapshot_restore_message =>
-      'Current data will be replaced by this snapshot. Changes made since then will be lost. Deleted downloads cannot be restored. Available safety snapshots will be cleared after success.';
+      'I dati attuali verranno sostituiti da questa istantanea. Le modifiche apportate da allora andranno perse. I download eliminati non possono essere ripristinati. Le istantanee di sicurezza disponibili verranno cancellate una volta completata l\'operazione.';
 
   @override
-  String get library_maintenance_working => 'Updating library…';
+  String get library_maintenance_working => 'Aggiornamento libreria…';
 
   @override
   String get library_safety_snapshot_note =>
-      'A safety snapshot will be saved before this operation. It does not include downloaded files.';
+      'Prima di questa operazione verrà salvata un\'istantanea di sicurezza. Non include i file scaricati.';
 
   @override
   String library_delete_summary(
@@ -3904,76 +3910,77 @@ class AppLocalizationsIt extends AppLocalizations {
     int historyCount,
     int updateCount,
   ) {
-    return 'Library entries: $mangaCount. Chapters: $chapterCount. History entries: $historyCount. Updates: $updateCount.\n\nChoose what to keep below.';
+    return 'Voci di libreria: $mangaCount. Capitoli: $chapterCount. Voci della cronologia: $historyCount. Aggiornamenti: $updateCount.\n\nScegli cosa tenere qui sotto.';
   }
 
   @override
   String get library_delete_pick_message =>
-      'Choose a source to review its contents and deletion options.';
+      'Scegliere una fonte per esaminarne i contenuti e le opzioni di cancellazione.';
 
   @override
   String get mobile_categories_hint =>
-      'Drag to reorder. Open a category to rename it or change its visibility and updates.';
+      'Trascina per riordinare. Apri una categoria per rinominarla o modificarne la visibilità e gli aggiornamenti.';
 
   @override
-  String get mobile_category_visible => 'Show in library';
+  String get mobile_category_visible => 'Mostra nella libreria';
 
   @override
-  String get mobile_category_hidden => 'Hidden from library';
+  String get mobile_category_hidden => 'Nascosto dalla libreria';
 
   @override
-  String get mobile_category_updates => 'Include in library updates';
+  String get mobile_category_updates =>
+      'Includere negli aggiornamenti della libreria';
 
   @override
-  String get statistics_watched => 'Watched';
+  String get statistics_watched => 'Osservato';
 
   @override
-  String get calendar_month => 'Month';
+  String get calendar_month => 'Mese';
 
   @override
-  String get calendar_two_weeks => '2 weeks';
+  String get calendar_two_weeks => '2 settimane';
 
   @override
-  String get calendar_week => 'Week';
+  String get calendar_week => 'Settimana';
 
   @override
-  String get calendar_show_all_dates => 'Show all dates';
+  String get calendar_show_all_dates => 'Mostra tutte le date';
 
   @override
   String get update_check_no_result =>
-      'No installable update found. You can try again later.';
+      'Nessun aggiornamento installabile trovato. Puoi riprovare più tardi.';
 
   @override
-  String get release_notes => 'Release notes';
+  String get release_notes => 'Note sulla versione';
 
   @override
-  String get no_release_notes => 'No release notes provided.';
+  String get no_release_notes => 'Nessuna nota di rilascio fornita.';
 
   @override
-  String get downloading_update => 'Downloading update…';
+  String get downloading_update => 'Download dell\'aggiornamento in corso…';
 
   @override
-  String get preparing_installation => 'Preparing installation…';
+  String get preparing_installation => 'Preparazione dell\'installazione…';
 
   @override
   String get onboarding_mobile_libraries_body =>
-      'Choose what to read. You can change this later.';
+      'Scegli cosa leggere. Puoi modificarlo in seguito.';
 
   @override
-  String get onboarding_content_title => 'Start reading';
+  String get onboarding_content_title => 'Inizia a leggere';
 
   @override
   String get onboarding_mobile_sources_body =>
-      'Choose a way to start, or add content later.';
+      'Scegli un modo per iniziare o aggiungi contenuti in un secondo momento.';
 
   @override
   String onboarding_step_count(int step, int total) {
-    return 'Step $step of $total';
+    return 'Passaggio $step di $total';
   }
 
   @override
   String global_search_results_for(String query) {
-    return 'Results for “$query”';
+    return 'Risultati per “$query”';
   }
 
   @override
@@ -3981,1092 +3988,2465 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sources',
-      one: '1 source',
+      other: '$count fonti',
+      one: '1 fonte',
     );
     return '$type · $_temp0';
   }
 
   @override
-  String get migration_search_prompt => 'Search for the destination title.';
+  String get migration_search_prompt => 'Cercare il titolo di destinazione.';
 
   @override
-  String get migration_original_item => 'Current item';
+  String get migration_original_item => 'Articolo corrente';
 
   @override
-  String get migration_target_item => 'Selected item';
+  String get migration_target_item => 'Voce selezionata';
 
   @override
   String get migration_partial_failure =>
-      'The operation did not finish. Some changes may have been saved. Check this item in your library before trying again.';
+      'L\'operazione non è terminata. Alcune modifiche potrebbero essere state salvate. Controlla questo elemento nella tua libreria prima di riprovare.';
 
   @override
   String get migration_no_categories =>
-      'No categories. You can add this item without a category.';
+      'Nessuna categoria. Puoi aggiungere questo articolo senza una categoria.';
 
   @override
-  String get mass_migration_select_source => 'Choose the current source';
+  String get mass_migration_select_source => 'Scegli la sorgente corrente';
 
   @override
-  String get mass_migration_select_all => 'Select all';
+  String get mass_migration_select_all => 'Seleziona tutto';
 
   @override
-  String get mass_migration_deselect_all => 'Deselect all';
+  String get mass_migration_deselect_all => 'Deseleziona tutto';
 
   @override
-  String get mass_migration_needs_review => 'Review incomplete migrations';
+  String get mass_migration_needs_review =>
+      'Revisione delle migrazioni incomplete';
 
   @override
-  String get bookshelf_actions => 'Bookshelf actions';
+  String get bookshelf_actions => 'Azioni da scaffale';
 
   @override
-  String get bookshelf_ignore_filters => 'Ignore filters when searching';
+  String get bookshelf_ignore_filters => 'Ignora i filtri durante la ricerca';
 
   @override
   String get bookshelf_ignore_filters_hint =>
-      'Search all works in this category, including those hidden by filters.';
+      'Cerca tutte le opere di questa categoria, comprese quelle nascoste dai filtri.';
 
   @override
-  String get bookshelf_stop_update => 'Stop library update';
+  String get bookshelf_stop_update =>
+      'Interrompe l\'aggiornamento della libreria';
 
   @override
   String bookshelf_selected_count(int count) {
-    return '$count works selected';
+    return '$count opere selezionate';
   }
 
   @override
-  String get bookshelf_remove_library => 'Remove from bookshelf';
+  String get bookshelf_remove_library => 'Rimuovere dallo scaffale';
 
   @override
   String get bookshelf_remove_library_hint =>
-      'Removes favorites. Local imports also lose their library and reading records.';
+      'Rimuove i preferiti. Anche le importazioni locali perdono la loro biblioteca e i loro record di lettura.';
 
   @override
-  String get bookshelf_remove_downloads => 'Delete downloaded files';
+  String get bookshelf_remove_downloads => 'Elimina i file scaricati';
 
   @override
   String get bookshelf_remove_downloads_hint =>
-      'Removes downloaded files while keeping work information.';
+      'Rimuove i file scaricati mantenendo le informazioni di lavoro.';
 
   @override
   String get bookshelf_remove_local_files_hint =>
-      'Also deletes selected local imported files and removes their library records. These files cannot be recovered here.';
+      'Elimina anche i file importati locali selezionati e rimuove i relativi record dalla libreria. Questi file non possono essere recuperati qui.';
 
   @override
   String get bookshelf_remove_incomplete =>
-      'The operation did not finish. Some works or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.';
+      'L\'operazione non è terminata. Alcuni lavori o file potrebbero essere stati elaborati. Chiudi questa finestra di dialogo e controlla la libreria e i download prima di continuare.';
 
   @override
-  String get bookshelf_processing => 'Processing…';
+  String get bookshelf_processing => 'Elaborazione…';
 
   @override
-  String get bookshelf_mark_read => 'Mark read';
+  String get bookshelf_mark_read => 'Segna letto';
 
   @override
-  String get bookshelf_mark_unread => 'Mark unread';
+  String get bookshelf_mark_unread => 'Segna come non letto';
 
   @override
-  String get bookshelf_select_all => 'Select all';
+  String get bookshelf_select_all => 'Seleziona tutto';
 
   @override
-  String get bookshelf_invert_selection => 'Invert selection';
+  String get bookshelf_invert_selection => 'Inverte la selezione';
 
   @override
-  String get bookshelf_settings => 'Bookshelf settings';
+  String get bookshelf_settings => 'Impostazioni della libreria';
 
   @override
   String get bookshelf_settings_live =>
-      'Filter, sort and display changes take effect immediately.';
+      'Le modifiche al filtro, all\'ordinamento e alla visualizzazione hanno effetto immediato.';
 
   @override
-  String get bookshelf_filter_any => 'Any';
+  String get bookshelf_filter_any => 'Qualsiasi';
 
   @override
-  String get bookshelf_filter_include => 'Include';
+  String get bookshelf_filter_include => 'Includi';
 
   @override
-  String get bookshelf_filter_exclude => 'Exclude';
+  String get bookshelf_filter_exclude => 'Escludere';
 
   @override
-  String get bookshelf_all_sources => 'All sources';
+  String get bookshelf_all_sources => 'Tutte le fonti';
 
   @override
   String bookshelf_sources_selected(int count) {
-    return '$count sources selected';
+    return 'Sorgenti $count selezionate';
   }
 
   @override
-  String get bookshelf_sort_ascending => 'Ascending';
+  String get bookshelf_sort_ascending => 'Crescente';
 
   @override
-  String get bookshelf_sort_descending => 'Descending';
+  String get bookshelf_sort_descending => 'Discendente';
 
   @override
-  String get bookshelf_layout => 'Bookshelf layout';
+  String get bookshelf_layout => 'Disposizione della libreria';
 
   @override
   String get bookshelf_sources_hint =>
-      'Select none to show all sources. Changes apply when you tap Filter.';
+      'Selezionare nessuno per mostrare tutte le sorgenti. Le modifiche vengono applicate quando tocchi Filtra.';
 
   @override
-  String get bookshelf_choose_files => 'Choose files';
+  String get bookshelf_choose_files => 'Scegli i file';
 
   @override
   String get bookshelf_import_wait =>
-      'Choose a file in the picker and wait for the import to finish.';
+      'Scegliere un file nel selettore e attendere il completamento dell\'importazione.';
 
   @override
   String get bookshelf_import_incomplete =>
-      'Import did not finish. Some files may already be in your bookshelf. Close this dialog and check before importing again.';
+      'L\'importazione non è terminata. Alcuni file potrebbero già essere nella tua libreria. Chiudi questa finestra di dialogo e controlla prima di importare nuovamente.';
 
   @override
   String get bookshelf_categories_replace =>
-      'Saving assigns these categories to every selected work, replacing their previous categories.';
+      'Il salvataggio assegna queste categorie ad ogni opera selezionata, sostituendo le loro categorie precedenti.';
 
   @override
   String get bookshelf_categories_hint =>
-      'Choose one or more categories, or leave the selection empty to assign none.';
+      'Scegliere una o più categorie oppure lasciare vuota la selezione per non assegnarne nessuna.';
 
   @override
   String get bookshelf_categories_hidden =>
-      'Existing hidden categories are kept for this work.';
+      'Per questo lavoro vengono mantenute le categorie nascoste esistenti.';
 
   @override
   String get bookshelf_categories_incomplete =>
-      'Categories could not be saved completely. Close this dialog and check the bookshelf before trying again.';
+      'Le categorie non possono essere salvate completamente. Chiudi questa finestra di dialogo e controlla lo scaffale prima di riprovare.';
 
   @override
   String get bookshelf_categories_none_visible =>
-      'No categories are available here. Open category management to review them.';
+      'Nessuna categoria è disponibile qui. Apri la gestione delle categorie per esaminarle.';
 
   @override
-  String get bookshelf_manage_categories => 'Manage categories';
+  String get bookshelf_manage_categories => 'Gestire le categorie';
 
   @override
-  String get manga_actions => 'Comic actions';
+  String get manga_actions => 'Azioni comiche';
 
   @override
-  String get manga_download_scope => 'Download chapters';
+  String get manga_download_scope => 'Scaricare capitoli';
 
   @override
   String get manga_download_scope_hint =>
-      'Choose chapters within the current filters. Downloaded chapters are skipped.';
+      'Scegliere i capitoli all\'interno dei filtri attuali. I capitoli scaricati vengono saltati.';
 
   @override
   String get manga_download_scope_empty =>
-      'No chapters match the current filters. Close this menu and adjust the chapter filters.';
+      'Nessun capitolo corrisponde ai filtri attuali. Chiudi questo menu e regola i filtri dei capitoli.';
 
   @override
   String get manga_action_incomplete =>
-      'The action did not finish. Check the current state before trying again.';
+      'L\'azione non è terminata. Controlla lo stato attuale prima di riprovare.';
 
   @override
-  String get chapter_settings => 'Chapter settings';
+  String get chapter_settings => 'Impostazioni del capitolo';
 
   @override
   String get chapter_settings_live =>
-      'Filter and sort changes apply immediately.';
+      'Le modifiche al filtro e all\'ordinamento si applicano immediatamente.';
 
   @override
-  String get chapter_scanlators_all => 'Show all scanlator groups';
+  String get chapter_scanlators_all => 'Mostra tutti i gruppi di scanner';
 
   @override
   String get chapter_scanlators_hint =>
-      'Select groups to hide their chapters. Changes apply when you tap Filter.';
+      'Selezionare i gruppi per nascondere i loro capitoli. Le modifiche vengono applicate quando tocchi Filtra.';
 
   @override
   String chapter_scanlators_hidden(int count) {
-    return '$count scanlator groups hidden';
+    return '$count gruppi scanner nascosti';
   }
 
   @override
   String chapter_selected_count(int count) {
-    return '$count chapters selected';
+    return '$count capitoli selezionati';
   }
 
   @override
-  String get chapter_add_bookmark => 'Bookmark';
+  String get chapter_add_bookmark => 'Segnalibro';
 
   @override
-  String get chapter_remove_bookmark => 'Unbookmark';
+  String get chapter_remove_bookmark => 'Annulla segnalibro';
 
   @override
-  String get chapter_read_following => 'Read below';
+  String get chapter_read_following => 'Leggi sotto';
 
   @override
-  String get chapter_delete_records => 'Delete chapter records';
+  String get chapter_delete_records =>
+      'Cancellare le registrazioni dei capitoli';
 
   @override
   String get chapter_delete_local_hint =>
-      'Removes the selected chapter records and reading progress. Original local archives are kept; downloaded copies are cleaned up.';
+      'Rimuove le registrazioni dei capitoli selezionati e l\'avanzamento della lettura. Sono conservati gli archivi locali originali; le copie scaricate vengono ripulite.';
 
   @override
   String get chapter_delete_last_hint =>
-      'These are all chapters in this comic. Deleting them also removes the comic from your bookshelf.';
+      'Questi sono tutti i capitoli di questo fumetto. Se li elimini, il fumetto verrà rimosso anche dalla libreria.';
 
   @override
   String get chapter_action_incomplete =>
-      'The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.';
+      'L\'azione non è terminata. Alcune modifiche potrebbero essere già salvate. Chiudi e controlla i capitoli e i download prima di continuare.';
 
   @override
   String get reader_display_scope =>
-      'Reading mode and manual page layout apply to this comic. Choose a change to return to reading.';
+      'A questo fumetto si applicano la modalità di lettura e l\'impaginazione manuale. Scegli una modifica per tornare alla lettura.';
 
   @override
   String get reader_display_single_only =>
-      'Horizontal continuous reading uses single pages.';
+      'La lettura continua orizzontale utilizza pagine singole.';
 
   @override
   String get reader_display_manual_pages =>
-      'Changing page layout turns off automatic double page for all comics.';
+      'La modifica del layout di pagina disattiva la doppia pagina automatica per tutti i fumetti.';
 
   @override
-  String get reader_display_crop_scope => 'Applies to all comics.';
+  String get reader_display_crop_scope => 'Si applica a tutti i fumetti.';
 
   @override
-  String get reader_chapter_locate => 'Locate current chapter';
+  String get reader_chapter_locate => 'Individua il capitolo corrente';
 
   @override
-  String get reader_chapter_search => 'Search chapters or scanlators';
+  String get reader_chapter_search => 'Cerca capitoli o scanner';
 
   @override
   String get reader_chapter_scope =>
-      'Uses the chapter filters and sort order from comic details. Bookmarks are saved immediately.';
+      'Utilizza i filtri dei capitoli e l\'ordinamento dai dettagli del fumetto. I segnalibri vengono salvati immediatamente.';
 
   @override
   String get reader_chapter_current_hidden =>
-      'The chapter you are reading is outside the current filters.';
+      'Il capitolo che stai leggendo è fuori dai filtri attuali.';
 
   @override
-  String get reader_chapter_current => 'Reading now';
+  String get reader_chapter_current => 'Leggo ora';
 
   @override
-  String get reader_chapter_read => 'Read';
+  String get reader_chapter_read => 'Leggi';
 
   @override
   String get reader_chapter_bookmark_failed =>
-      'Bookmark save could not be confirmed. Close the list and check its current state.';
+      'Non è stato possibile confermare il salvataggio del segnalibro. Chiudi l\'elenco e controlla il suo stato attuale.';
 
   @override
-  String get reader_image_actions => 'Image actions';
+  String get reader_image_actions => 'Azioni di immagine';
 
   @override
   String get reader_image_original =>
-      'Uses the full original page, without translation, cropping or reader color filters.';
+      'Utilizza l\'intera pagina originale, senza traduzione, ritaglio o filtri colorati di lettura.';
 
   @override
   String get reader_image_save_ios =>
-      'Save to the Pictures folder in the current app storage location.';
+      'Salva nella cartella Immagini nella posizione di archiviazione corrente dell\'app.';
 
   @override
   String get reader_image_save_android =>
-      'Save to the device’s Pictures/nodelane-comics folder.';
+      'Salvare nella cartella Pictures/nodelane-comics del dispositivo.';
 
   @override
-  String get reader_image_share => 'Open the system share sheet.';
+  String get reader_image_share =>
+      'Aprire il foglio di condivisione del sistema.';
 
   @override
   String get reader_image_cover =>
-      'Change this comic’s cover after confirmation.';
+      'Cambia la copertina di questo fumetto dopo la conferma.';
 
   @override
   String get reader_image_cover_limit =>
-      'Cover images must be smaller than 5 MB. Saving and sharing remain available.';
+      'Le immagini di copertina devono essere inferiori a 5 MB. Il salvataggio e la condivisione rimangono disponibili.';
 
   @override
   String get reader_image_action_failed =>
-      'The action could not be confirmed. Close this menu and check the result before trying again.';
+      'Non è stato possibile confermare l\'azione. Chiudi questo menu e controlla il risultato prima di riprovare.';
 
   @override
   String get reader_settings_book_scope =>
-      'These settings apply only to this comic.';
+      'Queste impostazioni si applicano solo a questo fumetto.';
 
   @override
   String get reader_settings_global_scope =>
-      'These settings apply to all comics and save immediately.';
+      'Queste impostazioni si applicano a tutti i fumetti e vengono salvate immediatamente.';
 
   @override
-  String get reader_filters => 'Image filters';
+  String get reader_filters => 'Filtri di immagine';
 
   @override
   String get reader_filter_scope =>
-      'Applies to all comics. Changes the reading display without modifying original images.';
+      'Si applica a tutti i fumetti. Cambia la visualizzazione della lettura senza modificare le immagini originali.';
 
   @override
   String get reader_auto_scroll_pause =>
-      'Scrolling pauses while settings are open.';
+      'Lo scorrimento si ferma mentre le impostazioni sono aperte.';
 
   @override
-  String get manga_synopsis => 'Synopsis';
+  String get manga_synopsis => 'Sinossi';
 
   @override
   String manga_author(String author) {
-    return 'Author: $author';
+    return 'Autore: $author';
   }
 
   @override
-  String get manga_continue_reading => 'Continue reading';
+  String get manga_continue_reading => 'Continua a leggere';
 
   @override
-  String get reader_settings_title => 'Reader settings';
+  String get reader_settings_title => 'Impostazioni del lettore';
 
   @override
-  String get reader_picker_book_scope => 'Only for this comic';
+  String get reader_picker_book_scope => 'Solo per questo fumetto';
 
   @override
-  String get reader_picker_global_scope => 'Applies to all comics';
+  String get reader_picker_global_scope => 'Si applica a tutti i fumetti';
 
   @override
   String get reader_picker_apply_hint =>
-      'Tap to save and return to the previous level.';
+      'Toccare per salvare e tornare al livello precedente.';
 
   @override
-  String get reader_scale_fit_screen_hint => 'Fit the whole page on screen';
+  String get reader_scale_fit_screen_hint =>
+      'Adatta l\'intera pagina allo schermo';
 
   @override
-  String get reader_scale_stretch_hint => 'Fill the reading area';
+  String get reader_scale_stretch_hint => 'Riempire l\'area di lettura';
 
   @override
-  String get reader_scale_fit_width_hint => 'Fit the page to the width';
+  String get reader_scale_fit_width_hint => 'Adattare la pagina alla larghezza';
 
   @override
-  String get reader_scale_fit_height_hint => 'Fit the page to the height';
+  String get reader_scale_fit_height_hint => 'Adattare la pagina all\'altezza';
 
   @override
-  String get source_filter_active => 'Applied';
+  String get source_filter_active => 'Applicato';
 
   @override
-  String get source_filter_apply => 'Apply filters';
+  String get source_filter_apply => 'Applicare filtri';
 
   @override
-  String get source_filter_scope => 'Filters apply to this website only.';
+  String get source_filter_scope =>
+      'I filtri si applicano solo a questo sito web.';
 
   @override
   String get source_filter_apply_hint =>
-      'Apply filters to use your selections.';
+      'Applica filtri per utilizzare le tue selezioni.';
 
   @override
   String source_filter_term(String term) {
     String _temp0 = intl.Intl.selectLogic(term, {
-      'genres': 'Genres',
-      'author': 'Author',
-      'artist': 'Artist',
-      'title': 'Title',
-      'year': 'Year',
-      'tags': 'Tags',
-      'format': 'Format',
-      'publisher': 'Publisher',
-      'relevance': 'Relevance',
-      'rating': 'Rating',
-      'views': 'Views',
-      'random': 'Random',
-      'all': 'All',
-      'none': 'None',
-      'action': 'Action',
-      'adventure': 'Adventure',
-      'comedy': 'Comedy',
-      'drama': 'Drama',
-      'fantasy': 'Fantasy',
-      'romance': 'Romance',
-      'science_fiction': 'Science fiction',
-      'slice_of_life': 'Slice of life',
-      'mystery': 'Mystery',
-      'horror': 'Horror',
-      'psychological': 'Psychological',
-      'historical': 'Historical',
-      'sports': 'Sports',
-      'supernatural': 'Supernatural',
-      'school_life': 'School life',
-      'tragedy': 'Tragedy',
-      'shounen': 'Shounen',
-      'shoujo': 'Shoujo',
+      'genres': 'Generi',
+      'author': 'Autore',
+      'artist': 'Artista',
+      'title': 'Titolo',
+      'year': 'Anno',
+      'tags': 'Tag',
+      'format': 'Formato',
+      'publisher': 'Editore',
+      'relevance': 'Rilevanza',
+      'rating': 'Valutazione',
+      'views': 'Viste',
+      'random': 'Casuale',
+      'all': 'Tutti',
+      'none': 'Nessuno',
+      'action': 'Azione',
+      'adventure': 'Avventura',
+      'comedy': 'Commedia',
+      'drama': 'Dramma',
+      'fantasy': 'Fantasia',
+      'romance': 'Romanticismo',
+      'science_fiction': 'Fantascienza',
+      'slice_of_life': 'Spaccato di vita',
+      'mystery': 'Mistero',
+      'horror': 'Orrore',
+      'psychological': 'Psicologico',
+      'historical': 'Storico',
+      'sports': 'Sport',
+      'supernatural': 'Soprannaturale',
+      'school_life': 'Vita scolastica',
+      'tragedy': 'Tragedia',
+      'shounen': 'Shonen',
+      'shoujo': 'Shojo',
       'seinen': 'Seinen',
       'josei': 'Josei',
       'isekai': 'Isekai',
-      'martial_arts': 'Martial arts',
-      'mecha': 'Mecha',
-      'music': 'Music',
+      'martial_arts': 'Arti marziali',
+      'mecha': 'Meccanismo',
+      'music': 'Musica',
       'doujinshi': 'Doujinshi',
-      'trending': 'Trending',
-      'new': 'New',
-      'adult_content': 'Adult content',
-      'only': 'Only',
+      'trending': 'Tendenza',
+      'new': 'Nuovo',
+      'adult_content': 'Contenuti per adulti',
+      'only': 'Solo',
       'other': '$term',
     });
     return '$_temp0';
   }
 
   @override
-  String get bookshelf_more_display => 'More display options';
+  String get bookshelf_more_display => 'Ulteriori opzioni di visualizzazione';
 
   @override
-  String get bookshelf_more_display_hint => 'Badges, sources and categories';
+  String get bookshelf_more_display_hint => 'Distintivi, fonti e categorie';
 
   @override
-  String get bookshelf_download_count => 'Download count';
+  String get bookshelf_download_count => 'Conteggio download';
 
   @override
   String get bookshelf_source_global_hint =>
-      'Source visibility uses the shared display preference.';
+      'La visibilità della fonte utilizza la preferenza di visualizzazione condivisa.';
 
   @override
-  String get bookshelf_select_entries => 'Select works';
+  String get bookshelf_select_entries => 'Selezionare le opere';
 
   @override
-  String get bookshelf_search_options => 'Search options';
+  String get bookshelf_search_options => 'Opzioni di ricerca';
 
   @override
   String get bookshelf_empty_hint =>
-      'Collect works from sources or import local files.';
+      'Raccogliere opere da fonti o importare file locali.';
 
   @override
   String get bookshelf_no_match_hint =>
-      'Try other keywords or adjust the current filters.';
+      'Prova altre parole chiave o modifica i filtri attuali.';
 
   @override
-  String get bookshelf_clear_query => 'Clear keywords';
+  String get bookshelf_clear_query => 'Cancellare le parole chiave';
 
   @override
-  String get bookshelf_view_selection => 'View selected works';
+  String get bookshelf_view_selection => 'Visualizza le opere selezionate';
 
   @override
   String get bookshelf_import_formats =>
-      'Choose a local file to add it to your bookshelf.';
+      'Scegli un file locale per aggiungerlo alla tua libreria.';
 
   @override
   String get bookshelf_import_canceled_hint =>
-      'You can choose again after cancelling the file picker.';
+      'È possibile scegliere nuovamente dopo aver annullato la selezione file.';
 
   @override
-  String get bookshelf_browse_sources => 'Browse sources';
+  String get bookshelf_browse_sources => 'Sfoglia le fonti';
 
   @override
-  String get bookshelf_empty_title => 'Your bookshelf is empty';
+  String get bookshelf_empty_title => 'La tua libreria è vuota';
 
   @override
-  String get bookshelf_no_match_title => 'No matching works';
+  String get bookshelf_no_match_title => 'Nessun lavoro corrispondente';
 
   @override
-  String get bookshelf_mark_watched => 'Mark watched';
+  String get bookshelf_mark_watched => 'Mark osservava';
 
   @override
-  String get bookshelf_mark_unwatched => 'Mark unwatched';
+  String get bookshelf_mark_unwatched => 'Segna inosservato';
 
   @override
-  String get nodelane_account => 'NodeLane account';
+  String get nodelane_account => 'NodeLane conto';
 
   @override
-  String get nodelane_sign_in => 'Sign in to NodeLane';
+  String get nodelane_sign_in => 'Accedi a NodeLane';
 
   @override
   String get nodelane_account_intro =>
-      'View your account, subscription and translation quota';
+      'Visualizza il tuo account, l\'abbonamento e la quota di traduzione';
 
   @override
-  String get nodelane_login_action => 'Continue to sign in';
+  String get nodelane_login_action => 'Continuare ad accedere';
 
   @override
   String get nodelane_login_browser =>
-      'Sign in through the system browser, then return to the app';
+      'Accedere tramite il browser del sistema, quindi tornare all\'app';
 
   @override
-  String get nodelane_account_id => 'Account ID';
+  String get nodelane_account_id => 'Identificativo del conto';
 
   @override
   String get nodelane_account_init_error =>
-      'Account storage is unavailable. Restart the app and try again.';
+      'L\'archiviazione dell\'account non è disponibile. Riavvia l\'app e riprova.';
 
   @override
   String get nodelane_account_refresh_error =>
-      'Could not refresh account information';
+      'Impossibile aggiornare le informazioni sull\'account';
 
   @override
   String get nodelane_account_auth_error =>
-      'Your session has expired. Sign in again';
+      'La tua sessione è scaduta. Accedi di nuovo';
 
   @override
   String get nodelane_account_unknown =>
-      'Subscription information is unavailable';
+      'Le informazioni sull\'abbonamento non sono disponibili';
 
   @override
-  String get nodelane_account_current => 'Current subscription';
+  String get nodelane_account_current => 'Abbonamento attuale';
 
   @override
-  String get nodelane_account_free => 'Free account';
+  String get nodelane_account_free => 'Conto gratuito';
 
   @override
-  String get nodelane_account_no_subscription => 'No active subscription';
+  String get nodelane_account_no_subscription => 'Nessun abbonamento attivo';
 
   @override
-  String get nodelane_account_active => 'Active';
+  String get nodelane_account_active => 'Attivo';
 
   @override
-  String get nodelane_account_expired => 'Expired';
+  String get nodelane_account_expired => 'Scaduto';
 
   @override
-  String get nodelane_account_expiry => 'Valid until';
+  String get nodelane_account_expiry => 'Valido fino al';
 
   @override
-  String get nodelane_account_renewal => 'Renewal';
+  String get nodelane_account_renewal => 'Rinnovo';
 
   @override
-  String get nodelane_renewal_auto => 'Automatic renewal';
+  String get nodelane_renewal_auto => 'Rinnovo automatico';
 
   @override
-  String get nodelane_renewal_manual => 'Manual renewal';
+  String get nodelane_renewal_manual => 'Rinnovo manuale';
 
   @override
-  String get nodelane_renewal_stopped => 'Automatic renewal stopped';
+  String get nodelane_renewal_stopped => 'Rinnovo automatico interrotto';
 
   @override
-  String get nodelane_renewal_gift => 'Gift membership';
+  String get nodelane_renewal_gift => 'Regala iscrizione';
 
   @override
   String get nodelane_renewal_attention =>
-      'Check your renewal status on the website';
+      'Controlla lo stato del tuo rinnovo sul sito web';
 
   @override
-  String get nodelane_next_billing => 'Next billing date';
+  String get nodelane_next_billing => 'Data di fatturazione successiva';
 
   @override
   String get nodelane_billing_unavailable =>
-      'Renewal information is unavailable';
+      'Le informazioni sul rinnovo non sono disponibili';
 
   @override
-  String get nodelane_manage_account => 'Manage on website';
+  String get nodelane_manage_account => 'Gestire sul sito web';
 
   @override
-  String get nodelane_view_plans => 'View subscription plans';
+  String get nodelane_view_plans => 'Visualizza i piani di abbonamento';
 
   @override
-  String get nodelane_translation_quota => 'Translation quota';
+  String get nodelane_translation_quota => 'Quota di traduzione';
 
   @override
-  String get nodelane_quota_free => 'Free quota';
+  String get nodelane_quota_free => 'Quota libera';
 
   @override
-  String get nodelane_quota_subscription => 'Subscription quota';
+  String get nodelane_quota_subscription => 'Quota di abbonamento';
 
   @override
-  String get nodelane_quota_purchase => 'Purchased quota';
+  String get nodelane_quota_purchase => 'Quota acquistata';
 
   @override
-  String get nodelane_quota_details => 'View quota details';
+  String get nodelane_quota_details => 'Visualizza i dettagli delle quote';
 
   @override
-  String get nodelane_quota_expanded => 'Quota details';
+  String get nodelane_quota_expanded => 'Dettagli quota';
 
   @override
-  String get nodelane_quota_unlimited => 'Unlimited';
+  String get nodelane_quota_unlimited => 'Illimitato';
 
   @override
-  String get nodelane_quota_not_subscribed => 'Not subscribed';
+  String get nodelane_quota_not_subscribed => 'Non iscritto';
 
   @override
-  String get nodelane_quota_unknown => 'Unavailable';
+  String get nodelane_quota_unknown => 'Non disponibile';
 
   @override
-  String get nodelane_quota_used => 'Used';
+  String get nodelane_quota_used => 'Usato';
 
   @override
-  String get nodelane_quota_reserved => 'In progress';
+  String get nodelane_quota_reserved => 'In corso';
 
   @override
-  String get nodelane_quota_reset => 'Next reset';
+  String get nodelane_quota_reset => 'Prossimo ripristino';
 
   @override
-  String get nodelane_quota_expiry => 'Next expiry';
+  String get nodelane_quota_expiry => 'Prossima scadenza';
 
   @override
-  String get nodelane_quota_no_expiry => 'No expiry date';
+  String get nodelane_quota_no_expiry => 'Nessuna data di scadenza';
 
   @override
   String get nodelane_quota_reservation_note =>
-      'Pages in progress are already deducted from the available quota';
+      'Le pagine in lavorazione sono già detratte dalla quota disponibile';
 
   @override
   String nodelane_quota_available(int count) {
-    return '$count pages remaining';
+    return '$count pagine rimanenti';
   }
 
   @override
   String nodelane_quota_pages(int count) {
-    return '$count pages';
+    return '$count pagine';
   }
 
   @override
-  String get nodelane_sign_out => 'Sign out';
+  String get nodelane_sign_out => 'Esci';
 
   @override
   String get nodelane_sign_out_confirm =>
-      'Signing out pauses official translation on this device. Your library and reading progress are kept.';
+      'La disconnessione sospende la traduzione ufficiale su questo dispositivo. La tua libreria e i progressi nella lettura vengono mantenuti.';
 
   @override
-  String get settings_search_hint => 'Search settings';
+  String get settings_search_hint => 'Impostazioni di ricerca';
 
   @override
-  String get settings_frequent => 'Frequently used';
+  String get settings_frequent => 'Utilizzato frequentemente';
 
   @override
-  String get settings_reading_translation => 'Reading and translation';
+  String get settings_reading_translation => 'Lettura e traduzione';
 
   @override
-  String get settings_app_preferences => 'App preferences';
+  String get settings_app_preferences => 'Preferenze dell\'app';
 
   @override
-  String get settings_data_management => 'Data and management';
+  String get settings_data_management => 'Dati e gestione';
 
   @override
-  String get settings_more_tools => 'More tools';
+  String get settings_more_tools => 'Altri strumenti';
 
   @override
-  String get settings_more_tools_hint => 'Categories, statistics and calendar';
+  String get settings_more_tools_hint => 'Categorie, statistiche e calendario';
 
   @override
-  String get settings_appearance_interface => 'Appearance and interface';
+  String get settings_appearance_interface => 'Aspetto e interfaccia';
 
   @override
-  String get settings_security_privacy => 'Security and privacy';
+  String get settings_security_privacy => 'Sicurezza e privacy';
 
   @override
-  String get settings_source_preferences => 'Source settings';
+  String get settings_source_preferences => 'Impostazioni della sorgente';
 
   @override
-  String get settings_about_help => 'About and help';
+  String get settings_about_help => 'Informazioni e aiuto';
 
   @override
-  String get settings_storage_backup => 'Storage and backup';
+  String get settings_storage_backup => 'Archiviazione e backup';
 
   @override
   String settings_pending_downloads(int count) {
-    return '$count pending';
+    return '$count in sospeso';
   }
 
   @override
-  String get settings_translation_language => 'Translation language';
+  String get settings_translation_language => 'Linguaggio di traduzione';
 
   @override
   String get settings_translation_scope =>
-      'Used in the reader and web page translation';
+      'Utilizzato nel lettore e nella traduzione di pagine web';
 
   @override
-  String get settings_immediate_choice => 'Changes apply immediately';
+  String get settings_immediate_choice =>
+      'Le modifiche si applicano immediatamente';
 
   @override
   String get settings_translation_init_error =>
-      'Translation settings are unavailable. Restart the app and try again.';
+      'Le impostazioni di traduzione non sono disponibili. Riavvia l\'app e riprova.';
 
   @override
-  String get settings_local_cache => 'Local cache';
+  String get settings_local_cache => 'Cache locale';
 
   @override
-  String get settings_chapter_cache => 'Chapter and episode cache';
+  String get settings_chapter_cache => 'Cache di capitoli ed episodi';
 
   @override
-  String get settings_cover_cache => 'Cover cache';
+  String get settings_cover_cache => 'Cache di copertura';
 
   @override
-  String get settings_translation_cache => 'Translated image cache';
+  String get settings_translation_cache => 'Cache di immagini tradotte';
 
   @override
   String get settings_translation_cache_hint =>
-      'Keep translation records and retrieve translated images again when needed';
+      'Conservare i registri delle traduzioni e recuperare nuovamente le immagini tradotte quando necessario';
 
   @override
-  String get settings_cache_clear => 'Clear';
+  String get settings_cache_clear => 'Cancella';
 
   @override
   String get settings_translation_cache_done =>
-      'Translated image cache cleared; translation records kept';
+      'La cache delle immagini tradotte è stata cancellata; registri di traduzione conservati';
 
   @override
   String settings_cache_confirmation(String name) {
-    return 'Clear $name? Cached content can be retrieved again. Library entries will be kept.';
+    return 'Cancella $name? Il contenuto memorizzato nella cache può essere nuovamente recuperato. Le voci della biblioteca verranno conservate.';
   }
 
   @override
-  String get settings_advanced_options => 'Advanced options';
+  String get settings_advanced_options => 'Opzioni avanzate';
 
   @override
-  String get settings_manga_reader => 'Manga Reader';
+  String get settings_manga_reader => 'Lettore di manga';
 
   @override
-  String get settings_novel_reader => 'Novel Reader';
+  String get settings_novel_reader => 'Lettore di romanzi';
 
   @override
-  String get settings_downloads => 'Download settings';
+  String get settings_downloads => 'Scarica le impostazioni';
 
   @override
-  String get onboarding_welcome => 'Welcome to';
+  String get onboarding_welcome => 'Benvenuto a';
 
   @override
-  String get onboarding_reading_content => 'Reading content';
+  String get onboarding_reading_content => 'Lettura del contenuto';
 
   @override
-  String get onboarding_choose_one => 'Choose at least one';
+  String get onboarding_choose_one => 'Scegline almeno uno';
 
   @override
-  String get onboarding_restore_hint => 'Restore your library from a backup';
+  String get onboarding_restore_hint =>
+      'Ripristina la tua libreria da un backup';
 
   @override
-  String get onboarding_browse_hint => 'Find titles on supported websites';
+  String get onboarding_browse_hint => 'Trovare titoli sui siti Web supportati';
 
   @override
-  String get onboarding_import_folder => 'Import a local folder';
+  String get onboarding_import_folder => 'Importare una cartella locale';
 
   @override
   String get onboarding_import_folder_hint =>
-      'Read manga, novels and anime on your device';
+      'Leggi manga, romanzi e anime sul tuo dispositivo';
 
   @override
-  String get onboarding_third_party => 'Add a third-party repository';
+  String get onboarding_third_party =>
+      'Aggiungere un repository di terze parti';
 
   @override
   String get onboarding_third_party_hint =>
-      'Use a repository address you already have';
+      'Utilizza un indirizzo di repository che già possiedi';
 
   @override
   String get onboarding_repository_hint =>
-      'Enter the address provided by the repository.';
+      'Inserire l\'indirizzo fornito dal repository.';
 
   @override
-  String get onboarding_repository_address => 'Address';
+  String get onboarding_repository_address => 'Indirizzo';
 
   @override
-  String get onboarding_repository_address_hint => 'Enter repository address';
+  String get onboarding_repository_address_hint =>
+      'Immettere l\'indirizzo del repository';
 
   @override
-  String get onboarding_add_repository => 'Add repository';
+  String get onboarding_add_repository => 'Aggiungi archivio';
 
   @override
-  String get onboarding_start => 'Get started';
+  String get onboarding_start => 'Inizia';
 
   @override
-  String get onboarding_open_library => 'Open library';
+  String get onboarding_open_library => 'Apri la libreria';
 
   @override
-  String get onboarding_view_imports => 'View imported content';
+  String get onboarding_view_imports => 'Visualizzare il contenuto importato';
 
   @override
-  String get onboarding_view_folders => 'View folders';
+  String get onboarding_view_folders => 'Visualizza le cartelle';
 
   @override
-  String get notice_backup_created => 'Backup created';
+  String get notice_backup_created => 'Backup creato';
 
   @override
-  String get notice_backup_ready => 'Save or share the backup file.';
+  String get notice_backup_ready => 'Salvare o condividere il file di backup.';
 
   @override
-  String get notice_backup_restored => 'Backup restored';
+  String get notice_backup_restored => 'Backup ripristinato';
 
   @override
   String get notice_backup_unsupported =>
-      'This backup format is not supported.';
+      'Questo formato di backup non è supportato.';
 
   @override
-  String get notice_verification_required => 'Website verification required';
+  String get notice_verification_required =>
+      'È richiesta la verifica del sito web';
 
   @override
   String get notice_verification_hint =>
-      'Complete verification to continue browsing.';
+      'Completa la verifica per continuare la navigazione.';
 
   @override
-  String get notice_verify => 'Verify website';
+  String get notice_verify => 'Verificare il sito web';
 
   @override
   String get notice_action_incomplete =>
-      'The action did not finish. Check its result before trying again.';
+      'L\'azione non è terminata. Controlla il risultato prima di riprovare.';
 
   @override
-  String get notice_library_updating => 'Updating library';
+  String get notice_library_updating => 'Aggiornamento della libreria';
 
   @override
   String notice_library_progress(Object current, Object total) {
-    return 'Checked $current / $total titles';
+    return 'Titoli $current / $total controllati';
   }
 
   @override
-  String get notice_library_failed => 'Some titles could not be updated';
+  String get notice_library_failed =>
+      'Alcuni titoli non possono essere aggiornati';
 
   @override
-  String get notice_import_completed => 'Import completed';
+  String get notice_import_completed => 'Importazione completata';
 
   @override
-  String get notice_operation_incomplete => 'Action incomplete';
+  String get notice_operation_incomplete => 'Azione incompleta';
 
   @override
-  String get subtitle_service => 'Online subtitle service';
+  String get subtitle_service => 'Servizio di sottotitoli in linea';
 
   @override
-  String get subtitle_service_mode => 'Subtitle source';
+  String get subtitle_service_mode => 'Sorgente dei sottotitoli';
 
   @override
-  String get subtitle_service_disabled => 'Off · clear saved credentials';
+  String get subtitle_service_disabled =>
+      'Spento · cancella le credenziali salvate';
 
   @override
-  String get subtitle_personal_key => 'My Wyzie key';
+  String get subtitle_personal_key => 'La mia chiave Wyzie';
 
   @override
-  String get subtitle_custom_service => 'My subtitle service';
+  String get subtitle_custom_service => 'Il mio servizio di sottotitoli';
 
   @override
-  String get subtitle_key => 'Wyzie API Key';
+  String get subtitle_key => 'Wyzie API Chiave';
 
   @override
   String get subtitle_key_hint =>
-      'Enter your own Wyzie key. It stays on this device and is not included in app backups.';
+      'Inserisci la tua chiave Wyzie. Rimane su questo dispositivo e non è incluso nei backup delle app.';
 
   @override
-  String get subtitle_get_key => 'Get a personal key';
+  String get subtitle_get_key => 'Procurarsi una chiave personale';
 
   @override
-  String get subtitle_service_address => 'Subtitle search URL';
+  String get subtitle_service_address => 'Ricerca sottotitoli URL';
 
   @override
-  String get subtitle_service_token => 'Service access token (optional)';
+  String get subtitle_service_token =>
+      'Token di accesso al servizio (facoltativo)';
 
   @override
   String get subtitle_custom_hint =>
-      'Use the full HTTPS search URL of a Wyzie-compatible service, including its path (for example, /search). Enter an access token only if your service requires one.';
+      'Utilizza la ricerca HTTPS completa URL di un servizio Wyzie-compatible, incluso il relativo percorso (ad esempio, /search). Inserisci un token di accesso solo se il tuo servizio ne richiede uno.';
 
   @override
   String get subtitle_service_off_hint =>
-      'Online subtitle search is off. Embedded, source-provided and local subtitles remain available.';
+      'La ricerca dei sottotitoli online è disattivata. I sottotitoli incorporati, forniti dalla fonte e locali rimangono disponibili.';
 
   @override
   String get subtitle_setup_required =>
-      'Choose a subtitle service before searching.';
+      'Scegliere un servizio di sottotitoli prima della ricerca.';
 
   @override
-  String get subtitle_invalid_key => 'Enter a key without spaces.';
+  String get subtitle_invalid_key => 'Inserire una chiave senza spazi.';
 
   @override
   String get subtitle_invalid_address =>
-      'Use a complete HTTPS URL without a query, fragment or embedded credentials.';
+      'Utilizza un HTTPS URL completo senza query, frammenti o credenziali incorporate.';
 
   @override
   String get subtitle_invalid_token =>
-      'The access token cannot contain spaces.';
+      'Il token di accesso non può contenere spazi.';
 
   @override
   String get subtitle_storage_failed =>
-      'Could not read or save subtitle settings. Please try again.';
+      'Impossibile leggere o salvare le impostazioni dei sottotitoli. Per favore riprova.';
 
   @override
   String get subtitle_auth_failed =>
-      'The subtitle service refused access. Check your key or service token.';
+      'Il servizio di sottotitoli ha rifiutato l\'accesso. Controlla la tua chiave o token di servizio.';
 
   @override
   String get subtitle_quota_exhausted =>
-      'The subtitle service quota is exhausted. Check your account with that service.';
+      'La quota del servizio sottotitoli è esaurita. Controlla il tuo account con quel servizio.';
 
   @override
   String get subtitle_network_failed =>
-      'Could not reach the subtitle service. Please try again.';
+      'Impossibile raggiungere il servizio di sottotitoli. Per favore riprova.';
 
   @override
   String get subtitle_response_invalid =>
-      'The subtitle service returned an unsupported response or file.';
+      'Il servizio di sottotitoli ha restituito una risposta o un file non supportato.';
 
   @override
-  String get detail_loading_chapters => 'Loading chapters…';
+  String get detail_loading_chapters => 'Caricamento capitoli…';
 
   @override
-  String get reader_opening_chapter => 'Opening chapter';
+  String get reader_opening_chapter => 'Capitolo di apertura';
 
   @override
-  String get reader_open_chapter => 'Open chapter';
+  String get reader_open_chapter => 'Capitolo aperto';
 
   @override
-  String get reader_loading_pages => 'Getting chapter images…';
+  String get reader_loading_pages => 'Ottenere le immagini dei capitoli…';
 
   @override
   String get reader_loading_pages_hint =>
-      'Reading will start automatically when ready.';
+      'La lettura inizierà automaticamente quando sarà pronta.';
 
   @override
-  String get reader_loading_failed => 'Could not load this chapter';
+  String get reader_loading_failed => 'Impossibile caricare questo capitolo';
 
   @override
-  String get reader_loading_retry_hint =>
-      'Check your connection and try again.';
+  String get reader_loading_retry_hint => 'Controlla la connessione e riprova.';
 
   @override
-  String get reader_no_pages => 'No images found for this chapter';
+  String get reader_no_pages => 'Nessuna immagine trovata per questo capitolo';
 
   @override
-  String get reader_loading_previous => 'Loading previous chapter…';
+  String get reader_loading_previous => 'Caricamento del capitolo precedente…';
 
   @override
-  String get reader_previous_failed => 'Could not load the previous chapter';
+  String get reader_previous_failed =>
+      'Impossibile caricare il capitolo precedente';
 
   @override
-  String get reader_reached_start => 'You have reached the first chapter';
+  String get reader_reached_start => 'Siete arrivati al primo capitolo';
 
   @override
-  String get reader_loading_next => 'Loading next chapter…';
+  String get reader_loading_next => 'Caricamento del capitolo successivo…';
 
   @override
-  String get reader_next_failed => 'Could not load the next chapter';
+  String get reader_next_failed =>
+      'Impossibile caricare il capitolo successivo';
 
   @override
-  String get reader_image_loading => 'Loading image…';
+  String get reader_image_loading => 'Caricamento immagine…';
 
   @override
-  String get reader_image_failure_hint => 'You can keep reading other pages.';
+  String get reader_image_failure_hint =>
+      'Puoi continuare a leggere altre pagine.';
 
   @override
-  String get comic_paged => 'Page by page';
+  String get comic_paged => 'Pagina per pagina';
 
   @override
-  String get comic_scroll => 'Scroll down';
+  String get comic_scroll => 'Scorrere verso il basso';
 
   @override
   String get comic_book_scope =>
-      'Applies only to this book · changes save immediately';
+      'Si applica solo a questo libro · le modifiche vengono salvate immediatamente';
 
   @override
-  String get comic_defaults_title => 'Defaults & habits';
+  String get comic_defaults_title => 'Default e abitudini';
 
   @override
   String get comic_defaults_hint =>
-      'Defaults apply to fields you have not customized for a book.';
+      'Le impostazioni predefinite si applicano ai campi non personalizzati per un libro.';
 
   @override
-  String get comic_habits_hint => 'These habits apply to every comic.';
+  String get comic_habits_hint => 'Queste abitudini valgono per ogni fumetto.';
 
   @override
-  String get comic_turn => 'Swipe to the next page';
+  String get comic_turn => 'Scorri alla pagina successiva';
 
   @override
-  String get comic_left => 'Left';
+  String get comic_left => 'Sinistra';
 
   @override
-  String get comic_right => 'Right';
+  String get comic_right => 'Giusto';
 
   @override
-  String get comic_up => 'Up';
+  String get comic_up => 'Su';
 
   @override
-  String get comic_fit => 'Page fit';
+  String get comic_fit => 'Adattamento della pagina';
 
   @override
-  String get comic_fit_contain => 'Whole page';
+  String get comic_fit_contain => 'Pagina intera';
 
   @override
-  String get comic_fit_width => 'Fit width';
+  String get comic_fit_width => 'Adatta larghezza';
 
   @override
-  String get comic_fit_height => 'Fit height';
+  String get comic_fit_height => 'Adatta l\'altezza';
 
   @override
-  String get comic_layout => 'Page layout';
+  String get comic_layout => 'Impaginazione';
 
   @override
-  String get comic_auto => 'Auto';
+  String get comic_auto => 'Automatico';
 
   @override
   String get comic_layout_hint =>
-      'Auto shows a spread when there is enough width.';
+      'Auto mostra uno spread quando c\'è abbastanza larghezza.';
 
   @override
-  String get comic_width => 'Content width';
+  String get comic_width => 'Larghezza del contenuto';
 
   @override
-  String get comic_full => 'Full';
+  String get comic_full => 'Pieno';
 
   @override
-  String get comic_comfortable => 'Comfortable';
+  String get comic_comfortable => 'Comodo';
 
   @override
-  String get comic_narrow => 'Narrow';
+  String get comic_narrow => 'Stretto';
 
   @override
-  String get comic_gap => 'Page spacing';
+  String get comic_gap => 'Spaziatura delle pagine';
 
   @override
-  String get comic_no_gap => 'Seamless';
+  String get comic_no_gap => 'Senza soluzione di continuità';
 
   @override
-  String get comic_small_gap => 'Small';
+  String get comic_small_gap => 'Piccolo';
 
   @override
-  String get comic_image_title => 'Fine-tune image';
+  String get comic_image_title => 'Sintonizzare l\'immagine';
 
   @override
-  String get comic_image_hint => 'Crop and tone affect only this book.';
+  String get comic_image_hint =>
+      'Il ritaglio e il tono influiscono solo su questo libro.';
 
   @override
-  String get comic_wide => 'Wide pages';
+  String get comic_wide => 'Pagine larghe';
 
   @override
-  String get comic_intact => 'Keep whole';
+  String get comic_intact => 'Conservare intero';
 
   @override
-  String get comic_split => 'Split';
+  String get comic_split => 'Divisione';
 
   @override
-  String get comic_rotate => 'Rotate';
+  String get comic_rotate => 'Ruota';
 
   @override
   String get comic_wide_hint =>
-      'Splitting follows the page-turn direction. Applies to single-page reading.';
+      'La suddivisione segue il senso di rotazione della pagina. Si applica alla lettura di una sola pagina.';
 
   @override
-  String get comic_cover => 'One cover per chapter';
+  String get comic_cover => 'Una copertina per capitolo';
 
   @override
-  String get comic_effects_reset => 'Reset image adjustments';
+  String get comic_effects_reset => 'Ripristina le regolazioni dell\'immagine';
 
   @override
-  String get comic_book_reset => 'Restore book defaults';
+  String get comic_book_reset =>
+      'Ripristina le impostazioni predefinite del libro';
 
   @override
   String get comic_book_reset_hint =>
-      'Clears this book’s custom reading settings. Translation is unchanged.';
+      'Cancella le impostazioni di lettura personalizzate di questo libro. La traduzione è invariata.';
 
   @override
-  String get comic_canvas => 'Reader background';
+  String get comic_canvas => 'Background del lettore';
 
   @override
-  String get comic_system => 'System';
+  String get comic_system => 'Sistema';
 
   @override
-  String get comic_black => 'Black';
+  String get comic_black => 'Nero';
 
   @override
-  String get comic_gray => 'Gray';
+  String get comic_gray => 'Grigio';
 
   @override
-  String get comic_paper => 'Paper';
+  String get comic_paper => 'Carta';
 
   @override
-  String get comic_tap => 'Tap to turn pages';
+  String get comic_tap => 'Toccare per girare le pagine';
 
   @override
   String get comic_tap_hint =>
-      'Tap the edges to move; tap the center to show controls.';
+      'Toccare i bordi per spostarsi; tocca il centro per mostrare i controlli.';
 
   @override
-  String get comic_scroll_start => 'Start auto scroll';
+  String get comic_scroll_start => 'Avvia lo scorrimento automatico';
 
   @override
-  String get comic_scroll_pause => 'Pause auto scroll';
+  String get comic_scroll_pause => 'Sospende lo scorrimento automatico';
 
   @override
-  String get comic_scroll_speed => 'Scroll speed';
+  String get comic_scroll_speed => 'Velocità di scorrimento';
 
   @override
   String get comic_scroll_hint =>
-      'Starts when this panel closes. Pauses when the app leaves the foreground.';
+      'Si avvia quando questo pannello si chiude. Va in pausa quando l\'app lascia il primo piano.';
 
   @override
-  String get comic_save_failed => 'Could not save. Please try again.';
+  String get comic_save_failed => 'Impossibile salvare. Per favore riprova.';
 
   @override
-  String get comic_reading => 'Reading';
+  String get comic_reading => 'Lettura';
 
   @override
   String get comic_chapter_habits_hint =>
-      'Chapter list habits apply to all books.';
+      'Le abitudini relative all\'elenco dei capitoli si applicano a tutti i libri.';
+
+  @override
+  String get browser_title => 'Navigatore';
+
+  @override
+  String get translation_image_display => 'Visualizzazione delle immagini';
+
+  @override
+  String get translation_display_hint =>
+      'Mostra prima le traduzioni esistenti. Conserva l\'originale quando non è disponibile alcuna traduzione.';
+
+  @override
+  String get translation_sign_in_required =>
+      'Accedi per abilitare la traduzione';
+
+  @override
+  String get translation_sign_in_hint =>
+      'Dopo aver effettuato l\'accesso, passa alle immagini tradotte per tradurre automaticamente.';
+
+  @override
+  String get translation_automatic => 'Traduzione automatica';
+
+  @override
+  String get translation_original_hint =>
+      'Mostrare gli originali. Passa alle immagini tradotte per tradurre automaticamente.';
+
+  @override
+  String get translation_window_hint =>
+      'Elaborare le immagini attuali e future solo durante la visualizzazione delle traduzioni.';
+
+  @override
+  String get translation_channel => 'Canale di traduzione';
+
+  @override
+  String get translation_no_images =>
+      'Ancora nessuna immagine traducibile trovata in questa pagina';
+
+  @override
+  String get translation_waiting_image => 'In attesa dell\'immagine corrente';
+
+  @override
+  String translation_progress(int complete, int total, int issues) {
+    String _temp0 = intl.Intl.pluralLogic(
+      issues,
+      locale: localeName,
+      other: ' · Le immagini $issues richiedono attenzione',
+      one: ' · 1 immagine richiede attenzione',
+      zero: '',
+    );
+    return 'Completato $complete / $total immagini$_temp0';
+  }
+
+  @override
+  String get translation_image_actions_hint =>
+      'Toccare e tenere premuta un\'immagine per ulteriori azioni, inclusa la sua nuova traduzione.';
+
+  @override
+  String get translation_title => 'Traduzione Manga';
+
+  @override
+  String get translation_system_sign_in =>
+      'Accedere utilizzando il browser di sistema';
+
+  @override
+  String get translation_target_language => 'Lingua di destinazione';
+
+  @override
+  String get translation_clear_cache =>
+      'Cancella la cache delle immagini tradotte';
+
+  @override
+  String get translation_cache_hint =>
+      'Conservare i registri delle traduzioni e recuperare nuovamente i risultati quando necessario.';
+
+  @override
+  String get translation_saved_read_failed =>
+      'Impossibile caricare la traduzione salvata';
+
+  @override
+  String get translation_read_failed =>
+      'Impossibile caricare l\'immagine tradotta';
+
+  @override
+  String get operation_retry =>
+      'L\'azione non è terminata. Per favore riprova.';
+
+  @override
+  String get translation_original => 'Originale';
+
+  @override
+  String get translation_translated => 'Tradotto';
+
+  @override
+  String get translation_regenerate_image =>
+      'Traduci nuovamente questa immagine';
+
+  @override
+  String get translation_read_image => 'Ricarica l\'immagine tradotta';
+
+  @override
+  String get translation_image_actions => 'Altre azioni relative alle immagini';
+
+  @override
+  String get translation_processing => 'Elaborazione';
+
+  @override
+  String get translation_reading => 'Caricamento dell\'immagine tradotta';
+
+  @override
+  String get translation_waiting => 'In attesa di traduzione';
+
+  @override
+  String get translation_preparing => 'Preparazione della traduzione';
+
+  @override
+  String get translation_uploading => 'Caricamento dell\'originale';
+
+  @override
+  String get translation_running => 'Traduzione';
+
+  @override
+  String get translation_uncertain => 'Lo stato necessita di verifica';
+
+  @override
+  String get translation_failed => 'Traduzione fallita';
+
+  @override
+  String get translation_verify => 'Verifica';
+
+  @override
+  String get translation_reread => 'Ricaricare';
+
+  @override
+  String get browser_back => 'Indietro';
+
+  @override
+  String get browser_translation => 'Traduzione di pagine Web';
+
+  @override
+  String get browser_new_tab_action => 'Apri una nuova scheda';
+
+  @override
+  String get browser_current_tab => 'Corrente';
+
+  @override
+  String get browser_close_tab => 'Chiudi scheda';
+
+  @override
+  String get browser_new_tab => 'Nuova scheda';
+
+  @override
+  String get browser_page => 'Pagina Web';
+
+  @override
+  String get browser_unopened => 'Nessuna pagina ancora aperta';
+
+  @override
+  String get browser_address_hint => 'Inserisci o incolla un URL';
+
+  @override
+  String get browser_invalid_address => 'Inserisci un URL valido';
+
+  @override
+  String get browser_clear_address => 'Cancella URL';
+
+  @override
+  String get browser_paste_address => 'Incolla URL';
+
+  @override
+  String get browser_open_address => 'Aperto URL';
+
+  @override
+  String browser_tab_count(int count) {
+    return 'Schede · $count';
+  }
+
+  @override
+  String get browser_load_failed => 'Impossibile aprire questa pagina';
+
+  @override
+  String get browser_load_failed_hint => 'Controlla la connessione e URL.';
+
+  @override
+  String get browser_edit_address => 'Modifica URL';
+
+  @override
+  String get browser_clear_cookies_confirm =>
+      'Cancellare le sessioni di accesso per tutti i siti web?';
+
+  @override
+  String get browser_clear_cookies_hint =>
+      'I siti web in tutte le schede potrebbero richiedere di effettuare nuovamente l\'accesso.';
+
+  @override
+  String get browser_clear_cookies_action => 'Cancella sessioni di accesso';
+
+  @override
+  String get browser_tab_limit =>
+      'Si possono tenere aperte fino a 12 schede. Prima chiudine uno.';
+
+  @override
+  String get browser_forward => 'Avanti';
+
+  @override
+  String get browser_clear_all_cookies =>
+      'Cancella tutte le sessioni di accesso al sito web';
+
+  @override
+  String get browser_clear_failed =>
+      'Impossibile cancellare le sessioni. Per favore riprova.';
+
+  @override
+  String get browser_save_failed =>
+      'Impossibile salvare le schede. Per favore riprova.';
+
+  @override
+  String get browser_tabs_full => '12 schede sono già aperte';
+
+  @override
+  String get browser_no_tabs => 'Ancora nessuna scheda aperta';
+
+  @override
+  String get browser_close_failed =>
+      'Impossibile salvare le schede. Tocca di nuovo chiudi per riprovare.';
+
+  @override
+  String get source_pinned_websites => 'Siti web appuntati';
+
+  @override
+  String get manage => 'Gestire';
+
+  @override
+  String get translation_settings_hint =>
+      'Traduzione automatica, lingua di destinazione e canale';
+
+  @override
+  String get translation_show_original => 'Toccare per mostrare l\'originale';
+
+  @override
+  String get translation_show_translated =>
+      'Toccare per mostrare la traduzione';
+
+  @override
+  String get source_display => 'Display';
+
+  @override
+  String get source_cover_title => 'Copertina e titolo';
+
+  @override
+  String get source_cover_only => 'Solo copertura';
+
+  @override
+  String get source_save_search => 'Salva la ricerca corrente';
+
+  @override
+  String get source_saved_searches => 'Ricerche salvate';
+
+  @override
+  String get source_website_info => 'Informazioni sul sito web';
+
+  @override
+  String source_saved_search_title(String title) {
+    return '$title · Tocca per cercare';
+  }
+
+  @override
+  String get action_done => 'Fatto';
+
+  @override
+  String source_search_keyword(String query) {
+    return 'Keyword: $query';
+  }
+
+  @override
+  String get source_no_saved_searches => 'Nessuna ricerca ancora salvata';
+
+  @override
+  String get source_save_search_hint =>
+      'Cerca una parola chiave, quindi salvala dalle azioni del sito web.';
+
+  @override
+  String get source_saved_search_scope =>
+      'Le parole chiave vengono salvate solo per questo sito web.';
+
+  @override
+  String get source_search_here => 'Cercare titoli su questo sito';
+
+  @override
+  String get source_filter_results => 'Risultati filtrati';
+
+  @override
+  String get source_search_results => 'Risultati della ricerca';
+
+  @override
+  String get source_return_popular => 'Torna a popolare';
+
+  @override
+  String get source_popular_titles => 'Titoli popolari';
+
+  @override
+  String get source_no_titles => 'Nessun titolo corrispondente trovato';
+
+  @override
+  String get source_no_titles_hint =>
+      'Modifica le parole chiave o i filtri o torna ai titoli popolari.';
+
+  @override
+  String get source_load_more_failed =>
+      'Impossibile caricare di più. Per favore riprova.';
+
+  @override
+  String get source_load_pull_retry =>
+      'Impossibile caricare questo sito Web. Tirare verso il basso per riprovare.';
+
+  @override
+  String get source_clear_failed =>
+      'Impossibile completare la cancellazione. Per favore riprova.';
+
+  @override
+  String get source_uninstall_failed =>
+      'Impossibile completare la disinstallazione. Per favore riprova.';
+
+  @override
+  String get source_details => 'Dettagli sulla fonte';
+
+  @override
+  String get source_repository_website => 'Sito web dell\'archivio';
+
+  @override
+  String get source_provided_settings => 'Impostazioni fornite dalla sorgente';
+
+  @override
+  String get source_advanced_actions => 'Azioni avanzate';
+
+  @override
+  String get source_edit_metadata => 'Modificare le informazioni sulla fonte';
+
+  @override
+  String get source_clear_cookies => 'Cancella i cookie per questo sito web';
+
+  @override
+  String get source_clear_cookies_hint =>
+      'Potrebbe essere necessario effettuare nuovamente l\'accesso alla prossima visita.';
+
+  @override
+  String get source_uninstall => 'Disinstalla sorgente';
+
+  @override
+  String get source_settings_save_failed =>
+      'Il salvataggio non è terminato. Riapri le impostazioni dell\'origine per verificare.';
+
+  @override
+  String get repository_third_party => 'Repository di terze parti';
+
+  @override
+  String get repository_refresh_failed =>
+      'Impossibile aggiornare il catalogo. Cached content is kept. Per favore riprova.';
+
+  @override
+  String get repository_show_sources => 'Mostra le fonti da questo repository';
+
+  @override
+  String get repository_copy_catalog => 'Copia collegamento al catalogo';
+
+  @override
+  String get repository_remove => 'Rimuovere il repository';
+
+  @override
+  String get repository_remove_hint =>
+      'Mantenere le fonti installate e rimuovere le voci di catalogo disinstallate.';
+
+  @override
+  String get repository_empty =>
+      'Nessun repository di terze parti ancora aggiunto';
+
+  @override
+  String get repository_built_in => 'Catalogo ufficiale integrato';
+
+  @override
+  String get repository_hidden => 'Hidden';
+
+  @override
+  String get repository_refreshing => 'Refreshing…';
+
+  @override
+  String get repository_refresh => 'Aggiorna catalogo';
+
+  @override
+  String get repository_manage_hint =>
+      'Gestire da dove vengono scaricate le fonti di terze parti.';
+
+  @override
+  String get repository_invalid_address =>
+      'Inserisci un valore HTTP o HTTPS URL valido';
+
+  @override
+  String get repository_already_added =>
+      'Questo repository è già stato aggiunto';
+
+  @override
+  String get repository_unrecognized =>
+      'Nessun catalogo supportato trovato. Controlla il collegamento e riprova.';
+
+  @override
+  String get repository_read_failed =>
+      'Impossibile leggere il catalogo. Per favore riprova.';
+
+  @override
+  String get repository_save_failed =>
+      'Il salvataggio non è terminato. Controlla l\'elenco dei tuoi repository.';
+
+  @override
+  String get repository_paste_hint =>
+      'Incollare un collegamento al catalogo di repository di terze parti';
+
+  @override
+  String get repository_address => 'URL';
+
+  @override
+  String get repository_paste_link => 'Incolla collegamento';
+
+  @override
+  String repository_recognized(String type) {
+    return '$type · Catalogo riconosciuto';
+  }
+
+  @override
+  String get repository_choose_sources_hint =>
+      'Dopo aver aggiunto il repository, scegli le fonti che ti servono.';
+
+  @override
+  String get search_scope => 'Ambito di ricerca';
+
+  @override
+  String get search_scope_hint => 'Scegliere i siti web da ricercare';
+
+  @override
+  String search_websites_action(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cerca siti web $count',
+      one: 'Cerca 1 sito web',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_find_website => 'Trovare un sito web';
+
+  @override
+  String search_selected_websites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count siti web selezionati',
+      one: '1 sito web selezionato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get action_clear => 'Cancella';
+
+  @override
+  String get search_deselect_results =>
+      'Deselezionare i siti web corrispondenti';
+
+  @override
+  String get search_select_results => 'Selezionare i siti web corrispondenti';
+
+  @override
+  String get search_no_websites_hint =>
+      'Nessun sito web corrispondente. Prova un altro nome o lingua.';
+
+  @override
+  String get search_select_website_hint =>
+      'Selezionare almeno un sito web da cercare.';
+
+  @override
+  String get search_start_title =>
+      'Immettere le parole chiave per trovare i titoli';
+
+  @override
+  String get search_start_hint =>
+      'Cerca più siti web contemporaneamente e mostra i titoli corrispondenti.';
+
+  @override
+  String get search_empty_scope =>
+      'Nessun sito web ricercabile in questo ambito';
+
+  @override
+  String get search_empty_scope_hint =>
+      'Passare a tutti i siti Web o scegliere i siti Web in cui effettuare la ricerca.';
+
+  @override
+  String search_result_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count risultati',
+      one: '1 risultato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_titles => 'Cerca titoli';
+
+  @override
+  String get search_actions => 'Azioni di ricerca';
+
+  @override
+  String get search_details => 'Ricerca dettagli';
+
+  @override
+  String get search_title_hint => 'Ricerca per titolo';
+
+  @override
+  String get search_searching => 'Ricerca';
+
+  @override
+  String search_found_results(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Trovato $count risultati',
+      one: 'Trovato 1 risultato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_no_results => 'Nessun risultato corrispondente';
+
+  @override
+  String get search_failed => 'Ricerca fallita';
+
+  @override
+  String search_found_titles(int count, int websites) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count titoli trovati',
+      one: '1 titolo trovato',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      websites,
+      locale: localeName,
+      other: '$websites siti web',
+      one: '1 sito web',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get search_finding_titles => 'Ricerca di titoli';
+
+  @override
+  String get search_complete => 'Ricerca completata';
+
+  @override
+  String get search_in_progress => 'Ricerca';
+
+  @override
+  String get search_finding_related => 'Ricerca di titoli corrispondenti…';
+
+  @override
+  String get search_no_results_yet => 'Ancora nessun risultato della ricerca';
+
+  @override
+  String get search_no_matching_titles =>
+      'Nessun titolo corrispondente trovato';
+
+  @override
+  String get search_results_appear_hint =>
+      'I risultati appariranno qui così come vengono trovati.';
+
+  @override
+  String get search_failed_websites_hint =>
+      'Alcuni siti web non sono riusciti a completare la ricerca. Riprovali nei dettagli della ricerca.';
+
+  @override
+  String get search_change_keywords_hint =>
+      'Prova parole chiave più brevi o cerca più siti web.';
+
+  @override
+  String get search_view_details => 'Visualizza i dettagli della ricerca';
+
+  @override
+  String get search_adjust_scope => 'Regola l\'ambito della ricerca';
+
+  @override
+  String search_query_websites(String query, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count siti web',
+      one: '1 sito web',
+    );
+    return '$query · $_temp0';
+  }
+
+  @override
+  String search_completed_count(int completed, int total) {
+    return 'Completato $completed / $total';
+  }
+
+  @override
+  String get search_retry_website_hint =>
+      'Riprovare singolarmente i siti Web non riusciti';
+
+  @override
+  String source_selected_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementi selezionati',
+      one: '1 elemento selezionato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_languages => 'Cerca lingue';
+
+  @override
+  String get source_deselect => 'Deseleziona';
+
+  @override
+  String get source_select => 'Seleziona la sorgente';
+
+  @override
+  String get source_multilingual => 'Multilingue';
+
+  @override
+  String get source_language_unknown => 'Lingua non specificata';
+
+  @override
+  String get source_adult_content => 'Contiene oltre 18 contenuti';
+
+  @override
+  String get source_classification_unknown => 'Classificazione non specificata';
+
+  @override
+  String source_more_classifications(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Visualizza tutte le informazioni sulla fonte, $count altre categorie',
+      one: 'Visualizza tutte le informazioni sulla fonte, 1 categoria in più',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get source_loading_website => 'Caricamento del sito web';
+
+  @override
+  String get source_unpin => 'Sblocca';
+
+  @override
+  String get source_pin => 'Perno';
+
+  @override
+  String get source_open => 'Apri';
+
+  @override
+  String get source_metadata_hint =>
+      'Le informazioni provengono dal catalogo di origine. Le categorie descrivono il contenuto coperto dal sito web.';
+
+  @override
+  String get source_region => 'Regione';
+
+  @override
+  String get source_format => 'Formato';
+
+  @override
+  String get source_creation => 'Creazione';
+
+  @override
+  String get source_unspecified => 'Non specificato';
+
+  @override
+  String get source_pricing => 'Prezzi';
+
+  @override
+  String get source_region_jp => 'Fumetti giapponesi';
+
+  @override
+  String get source_region_kr => 'Fumetti coreani';
+
+  @override
+  String get source_region_cn => 'Fumetti cinesi';
+
+  @override
+  String get source_region_hk_tw => 'Fumetti di Hong Kong e Taiwan';
+
+  @override
+  String get source_region_western => 'Fumetti occidentali';
+
+  @override
+  String get source_region_other => 'Altre regioni';
+
+  @override
+  String get source_format_page => 'Fumetti impaginati';
+
+  @override
+  String get source_format_vertical => 'Fumetti verticali';
+
+  @override
+  String get source_format_strip => 'Fumetti';
+
+  @override
+  String get source_creation_original => 'Originale';
+
+  @override
+  String get source_creation_fan => 'La ventola funziona';
+
+  @override
+  String get source_free_watch => 'Visione gratuita';
+
+  @override
+  String get source_free_read => 'Gratuito di lettura';
+
+  @override
+  String get source_partial_paid => 'Parzialmente pagato';
+
+  @override
+  String get source_paid_watch => 'Visione a pagamento';
+
+  @override
+  String get source_paid_read => 'Lettura a pagamento';
+
+  @override
+  String get source_pricing_unknown => 'Prezzo non specificato';
+
+  @override
+  String get source_language_filter => 'Filtra per lingua';
+
+  @override
+  String get source_language_filter_hint =>
+      'Filtra solo questo catalogo. Le origini installate non sono interessate.';
+
+  @override
+  String get source_all_languages => 'Tutte le lingue';
+
+  @override
+  String get action_apply => 'Applicare';
+
+  @override
+  String get source_load_retry =>
+      'Impossibile caricare questo sito Web. Per favore riprova.';
+
+  @override
+  String get source_catalog_refresh_failed =>
+      'Impossibile aggiornare il catalogo. Il contenuto attuale viene mantenuto. Tirare verso il basso per riprovare.';
+
+  @override
+  String source_uninstall_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Disinstallare i sorgenti $count?',
+      one: 'Disinstallare 1 sorgente?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get source_uninstall_selected_hint =>
+      'Disinstallare le fonti selezionate e cancellare le loro impostazioni. Conserva i titoli e i download della libreria.';
+
+  @override
+  String source_failed_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Azioni non riuscite per le origini $count.',
+      one: 'Azione non riuscita per 1 sorgente.',
+    );
+    return '$_temp0 Selezione mantenuta. Per favore riprova.';
+  }
+
+  @override
+  String get source_latest_content => 'Ultimi contenuti';
+
+  @override
+  String get source_actions => 'Azioni di origine';
+
+  @override
+  String get source_bulk_manage => 'Gestire più fonti';
+
+  @override
+  String get source_update_installed => 'Aggiorna le sorgenti installate';
+
+  @override
+  String get source_no_matching_websites => 'Nessun sito web corrispondente';
+
+  @override
+  String get source_no_websites => 'Nessun sito web disponibile';
+
+  @override
+  String get source_search_installed_hint =>
+      'Ricerca titoli nelle fonti installate';
+
+  @override
+  String get source_global_search => 'Ricerca tra le fonti';
+
+  @override
+  String get source_manage_repositories => 'Gestire i repository';
+
+  @override
+  String get source_view_third_party => 'Visualizza fonti di terze parti';
+
+  @override
+  String get source_catalog_load_failed =>
+      'Impossibile caricare il catalogo. Tirare verso il basso per riprovare.';
+
+  @override
+  String get source_all_websites => 'Tutti i siti web';
+
+  @override
+  String get source_available => 'Disponibile per l\'installazione';
+
+  @override
+  String get source_third_party => 'Terze parti';
+
+  @override
+  String get source_name_or_title => 'Nome o titolo del sito web';
+
+  @override
+  String get view_all => 'Visualizza tutto';
+
+  @override
+  String get search_searching_ellipsis => 'Ricerca…';
+
+  @override
+  String onboarding_untested_content(String type) {
+    return '$type · Non testato';
+  }
+
+  @override
+  String get onboarding_untested => 'Non testato';
+
+  @override
+  String get source_custom_scope => 'Personalizzato';
+
+  @override
+  String get source_custom_websites => 'Siti web selezionati';
+
+  @override
+  String get tv_hidden_library_hint =>
+      'Ogni titolo si trova in una categoria nascosta.\nTieni premuto OK su \"Tutti\" per mostrarne uno.';
+
+  @override
+  String get tv_no_matching_anime => 'Nessun anime corrispondente';
+
+  @override
+  String tv_no_matching_category(String category) {
+    return 'Nessun anime corrispondente in “$category”';
+  }
+
+  @override
+  String get tv_filtered_empty_hint =>
+      'Nessun anime corrisponde ai filtri attuali.\nCambiali dal pulsante accanto alla ricerca.';
+
+  @override
+  String get tv_new_episodes => 'Nuovi Episodi';
+
+  @override
+  String get tv_recently_added => 'Aggiunto di recente';
+
+  @override
+  String get tv_empty_category_hint =>
+      'Ancora nessun anime in questa categoria.\nAggiungi titoli dalla pagina dei dettagli di un titolo.';
+
+  @override
+  String get tv_empty_library => 'La tua libreria di anime è vuota';
+
+  @override
+  String get tv_empty_library_hint =>
+      'Aggiungi anime da Sfoglia per riempire la tua casa';
+
+  @override
+  String get tv_browse_anime => 'Sfoglia gli anime';
+
+  @override
+  String tv_new_count(int count) {
+    return '$count nuovo';
+  }
+
+  @override
+  String tv_category_hidden(String category) {
+    return 'Nascosto “$category” · tieni premuto OK su “Tutto” per mostrarlo';
+  }
+
+  @override
+  String get tv_no_hidden_categories => 'Nessuna categoria nascosta';
+
+  @override
+  String get import_torrent_file => 'importare il file .torrent';
+
+  @override
+  String get import_video_formats => '.mp4, .mkv, .avi e altro';
+
+  @override
+  String get cloudflare_proxy_optional => 'FlareSolverr/Byparr opzionale URL';
+
+  @override
+  String get tv_home_layout_hint =>
+      'Home anime basato su righe (Continua · Nuovi episodi · categorie) invece della griglia piatta';
+
+  @override
+  String get tv_hide_libraries_hint =>
+      'Nascondi le librerie di manga e romanzi (attivata per impostazione predefinita sulla TV)';
+
+  @override
+  String get anime_only_hint =>
+      'Nascondi manga e romanzi nell\'app. Disattiva per mostrare tutto.';
+
+  @override
+  String get audio_auto_safe => 'Auto-sicurezza';
+
+  @override
+  String get tv_player_hint =>
+      'Acceso: lettore TV dedicato.  Spento: lettore originale (desktop).';
+
+  @override
+  String get release_open_failed => 'Impossibile aprire lo sblocco';
+
+  @override
+  String get tv_replay => 'Riproduzione';
+
+  @override
+  String get tv_no_episodes => 'Ancora nessun episodio';
+
+  @override
+  String get tracker_continue_series => 'Continua a guardare la serie';
+
+  @override
+  String get tracker_watchlist_series => 'Serie di watchlist';
+
+  @override
+  String get tracker_continue_movies => 'Continua a guardare i film';
+
+  @override
+  String get tracker_watchlist_movies => 'Film della lista di controllo';
+
+  @override
+  String get tracker_trending_series => 'Serie di tendenza';
+
+  @override
+  String get tracker_trending_movies => 'Film di tendenza';
+
+  @override
+  String get tracker_popular_series => 'Serie popolari';
+
+  @override
+  String get tracker_popular_movies => 'Film popolari';
+
+  @override
+  String get tracker_top_series => 'Serie principali (di tutti i tempi)';
+
+  @override
+  String get tracker_top_movies => 'Migliori film (di tutti i tempi)';
+
+  @override
+  String get tracker_airing_series => 'Serie di aerazione';
+
+  @override
+  String get tracker_airing_anime => 'Anime in onda';
+
+  @override
+  String get tracker_popular_anime => 'Anime popolari';
+
+  @override
+  String get tracker_upcoming_anime => 'Anime in arrivo';
+
+  @override
+  String get tracker_popular_manga => 'Manga popolari';
+
+  @override
+  String get tracker_top_manga => 'Miglior Manga';
+
+  @override
+  String get tracker_top_manhwa => 'Top Manhwa';
+
+  @override
+  String get tracker_top_manhua => 'Manhua superiore';
+
+  @override
+  String get tracker_latest_anime => 'Ultimi anime';
+
+  @override
+  String get tracker_best_anime => 'Anime più votato';
+
+  @override
+  String get tracker_latest_manga => 'Ultimo Manga';
+
+  @override
+  String get tracker_best_manga => 'Manga più votato';
+
+  @override
+  String get tracker_trending_anime => 'Anime di tendenza';
+
+  @override
+  String get tracker_upcoming_manga => 'Manga in arrivo';
+
+  @override
+  String get tracker_trending_manga => 'Manga di tendenza';
+
+  @override
+  String selection_progress(int selected, int total) {
+    return '$selected/$total selezionato';
+  }
+
+  @override
+  String get source_code_editor => 'Editor del codice';
+
+  @override
+  String get source_code_execute => 'Esegui';
+
+  @override
+  String get source_console_logs => 'Registri della console';
+
+  @override
+  String get source_no_logs => 'Ancora nessun registro';
+
+  @override
+  String get source_updated_successfully => 'Sorgente aggiornata con successo';
+
+  @override
+  String get source_obsolete => 'OBSOLETO';
+
+  @override
+  String player_seek_forward_seconds(int seconds) {
+    return 'Ricerca in avanti di $seconds secondi';
+  }
+
+  @override
+  String player_seek_backward_seconds(int seconds) {
+    return 'Ricerca indietro di $seconds secondi';
+  }
+
+  @override
+  String get player_autoplay_on =>
+      'Riproduzione automatica episodio successivo: on';
+
+  @override
+  String get player_autoplay_off =>
+      'Riproduzione automatica episodio successivo: disattivata';
+
+  @override
+  String get player_no_other_quality => 'Nessun\'altra qualità';
+
+  @override
+  String get player_no_subtitles => 'Nessun sottotitolo';
+
+  @override
+  String get player_no_audio_tracks => 'Nessuna traccia audio';
+
+  @override
+  String get player_seek_forward => 'Cercare avanti';
+
+  @override
+  String get player_seek_backward => 'Ricerca all\'indietro';
+
+  @override
+  String player_seconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds secondi',
+      one: '1 secondo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get subtitle_preview => 'Lorem ipsum dolor sit amet';
+
+  @override
+  String get subtitle_style => 'Stile';
+
+  @override
+  String get translation_official_channel => 'NodeLane Ufficiale';
+
+  @override
+  String get translation_auth_required =>
+      'Accedi prima al tuo account di traduzione.';
+
+  @override
+  String get translation_source_changed =>
+      'L\'immagine originale è cambiata. Per favore ricaricalo.';
+
+  @override
+  String get translation_source_missing =>
+      'L\'immagine originale non è attualmente disponibile.';
+
+  @override
+  String get translation_resource_limit =>
+      'Questa immagine supera il limite di elaborazione del dispositivo. L\'originale viene mantenuto.';
+
+  @override
+  String get translation_storage_full =>
+      'La memoria di traduzione è piena. Cancella prima le immagini tradotte.';
+
+  @override
+  String get translation_invalid_image =>
+      'Formato immagine o contenuto non valido.';
+
+  @override
+  String get translation_unsupported_image =>
+      'La traduzione non è supportata per questa immagine. L\'originale viene mantenuto.';
+
+  @override
+  String get translation_invalid_result =>
+      'La convalida dell\'immagine tradotta non è riuscita. Per favore ricaricalo.';
+
+  @override
+  String get translation_result_unavailable =>
+      'L\'immagine tradotta non è disponibile. Per favore ricaricalo.';
+
+  @override
+  String get translation_result_expired =>
+      'L\'immagine tradotta è scaduta. Per favore traducilo di nuovo.';
+
+  @override
+  String get translation_analysis_too_large =>
+      'C\'è troppo contenuto dell\'immagine da analizzare. Ridurre le dimensioni dell\'immagine e riprovare.';
+
+  @override
+  String get translation_region_limit =>
+      'L\'immagine ha troppe regioni di testo. Dividilo e riprova.';
+
+  @override
+  String get translation_text_limit =>
+      'Una regione di testo è troppo lunga. Regola l\'immagine e riprova.';
+
+  @override
+  String get translation_unavailable =>
+      'Questa traduzione non è più disponibile.';
+
+  @override
+  String get translation_outcome_unknown =>
+      'Il risultato necessita di verifica. Non è stato inviato nuovamente.';
+
+  @override
+  String get translation_rate_limited =>
+      'Le richieste sono limitate. La traduzione riprenderà automaticamente.';
+
+  @override
+  String get translation_quota_exhausted =>
+      'Quota di traduzione insufficiente.';
+
+  @override
+  String get translation_unsupported_language =>
+      'Il servizio non supporta questa lingua di destinazione.';
+
+  @override
+  String get translation_upgrade_required =>
+      'Il protocollo di traduzione è incompatibile. Aggiorna l\'app.';
+
+  @override
+  String get translation_remote_failed =>
+      'Traduzione non riuscita per questa pagina. Puoi riprovare manualmente.';
+
+  @override
+  String get translation_bridge_invalid =>
+      'La ​​pagina web è cambiata. Abilita nuovamente la traduzione.';
+
+  @override
+  String get translation_connection_failed =>
+      'Connessione fallita. Per favore riprova.';
+
+  @override
+  String get translation_paused =>
+      'Traduzione in pausa. Puoi verificarne l\'avanzamento.';
+
+  @override
+  String get translation_preparing_ellipsis =>
+      'Preparazione della traduzione...';
+
+  @override
+  String get translation_checking_original =>
+      'Controllo dell\'immagine originale…';
+
+  @override
+  String get translation_submitting => 'Invio…';
+
+  @override
+  String get translation_uploading_ellipsis => 'Caricamento originale…';
+
+  @override
+  String get translation_waiting_ellipsis => 'In attesa di traduzione…';
+
+  @override
+  String get translation_running_ellipsis => 'Traduzione…';
+
+  @override
+  String get translation_verify_result => 'Il risultato necessita di verifica';
+
+  @override
+  String get translation_partial => 'Alcuni contenuti sono stati tradotti';
+
+  @override
+  String get translation_ready => 'Immagine tradotta pronta';
+
+  @override
+  String get list_separator => ', ';
+
+  @override
+  String get player_play => 'Giocare';
+
+  @override
+  String get player_quality => 'Qualità';
+
+  @override
+  String get player_subtitles => 'Sottotitoli';
+
+  @override
+  String get player_audio => 'Audio';
+
+  @override
+  String get player_statistics => 'Statistiche per nerd';
+
+  @override
+  String get player_auto => 'Automatico';
+
+  @override
+  String get source_information => 'Informazioni sulla fonte';
+
+  @override
+  String get source_code_page => 'Pagina';
+
+  @override
+  String get source_code_query => 'Interrogazione';
+
+  @override
+  String get repository_invalid_source => 'Fonte non valida: rimuoverla';
+
+  @override
+  String get player_fit_contain => 'Contenere';
+
+  @override
+  String get player_fit_cover => 'Copertura';
+
+  @override
+  String get player_fit_fill => 'Riempi';
+
+  @override
+  String get player_fit_height => 'Altezza';
+
+  @override
+  String get player_fit_width => 'Larghezza';
+
+  @override
+  String get player_fit_scale => 'Scala';
+
+  @override
+  String get player_fit_none => 'Nessuno';
+
+  @override
+  String get player_shader_clear => 'Disattivato (cancella shader)';
+
+  @override
+  String get player_shader_luma => 'Aumento della luminanza';
+
+  @override
+  String get player_decoder_auto => 'Automatico (hardware)';
+
+  @override
+  String get player_decoder_software => 'Software (nessun hardware)';
+
+  @override
+  String get player_stats_toggle => 'Attiva/disattiva la sovrapposizione';
+
+  @override
+  String get player_stats_general => 'Generale';
+
+  @override
+  String get player_stats_frames => 'Tempistiche dei frame';
+
+  @override
+  String get player_stats_cache => 'Cache di input';
+
+  @override
+  String get player_stats_filters => 'Filtri attivi';
+
+  @override
+  String get player_stats_log => 'Registro';
+
+  @override
+  String get source_mark_pinned => 'Perno';
+
+  @override
+  String translation_image_action(String action) {
+    return '$action questa immagine';
+  }
+
+  @override
+  String get memory_waiting => 'memoria: attesa di un campione';
+
+  @override
+  String memory_rss(String current, String peak) {
+    return 'RSS $current picco $peak';
+  }
+
+  @override
+  String memory_cache(String current, String limit, String peak) {
+    return 'cache $current / $limit picco $peak';
+  }
+
+  @override
+  String memory_items(int count, int limit, int live, int peak) {
+    return 'elementi $count / $limit in tempo reale $live picco $peak';
+  }
+
+  @override
+  String memory_full_samples(String percent, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count campioni',
+      one: '1 campione',
+    );
+    return 'pieno $percent% di $_temp0';
+  }
+
+  @override
+  String get memory_reset_hint =>
+      'attivarlo e disattivarlo nelle impostazioni per ripristinare';
+
+  @override
+  String get action_hide => 'Nascondi';
+
+  @override
+  String discord_get_app(String app) {
+    return 'Ottieni $app';
+  }
+
+  @override
+  String get discord_idle => 'Inattivo';
+
+  @override
+  String discord_watching_title(String title) {
+    return 'Guardando $title';
+  }
+
+  @override
+  String discord_reading_title(String title) {
+    return 'Lettura $title';
+  }
 }

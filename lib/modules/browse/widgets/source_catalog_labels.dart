@@ -1,36 +1,45 @@
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source_catalog_metadata.dart';
 
 extension SourceCatalogLabels on SourceCatalogMetadata {
-  List<String> get regionLabels => _labels(regions, const {
-    'jp': '日漫',
-    'kr': '韩漫',
-    'cn': '国漫',
-    'hk_tw': '港台漫画',
-    'western': '欧美漫画',
-    'other': '其他地区',
+  List<String> regionLabels(AppLocalizations l10n) => _labels(regions, {
+    'jp': l10n.source_region_jp,
+    'kr': l10n.source_region_kr,
+    'cn': l10n.source_region_cn,
+    'hk_tw': l10n.source_region_hk_tw,
+    'western': l10n.source_region_western,
+    'other': l10n.source_region_other,
   });
-  List<String> get formatLabels =>
-      _labels(formats, const {'page': '页漫', 'vertical': '条漫', 'strip': '短篇条格'});
-  List<String> get creationLabels => _labels(creations, const {
-    'original': '原创',
-    'fan': '同人',
-    'adaptation': '改编',
+  List<String> formatLabels(AppLocalizations l10n) => _labels(formats, {
+    'page': l10n.source_format_page,
+    'vertical': l10n.source_format_vertical,
+    'strip': l10n.source_format_strip,
   });
-  List<String> get classificationLabels => [
-    ...regionLabels,
-    ...formatLabels,
-    ...creationLabels,
+  List<String> creationLabels(AppLocalizations l10n) => _labels(creations, {
+    'original': l10n.source_creation_original,
+    'fan': l10n.source_creation_fan,
+    'adaptation': l10n.relation_adaptation,
+  });
+  List<String> classificationLabels(AppLocalizations l10n) => [
+    ...regionLabels(l10n),
+    ...formatLabels(l10n),
+    ...creationLabels(l10n),
   ];
 }
 
 List<String> _labels(List<String> keys, Map<String, String> labels) =>
     keys.map((key) => labels[key]).whereType<String>().toSet().toList();
 
-String sourcePricingLabel(SourcePricing pricing, ItemType type) =>
-    switch (pricing) {
-      SourcePricing.free => type == ItemType.anime ? '免费观看' : '免费阅读',
-      SourcePricing.partial => '部分收费',
-      SourcePricing.paid => type == ItemType.anime ? '付费观看' : '付费阅读',
-      SourcePricing.unknown => '收费未标注',
-    };
+String sourcePricingLabel(
+  SourcePricing pricing,
+  ItemType type,
+  AppLocalizations l10n,
+) => switch (pricing) {
+  SourcePricing.free =>
+    type == ItemType.anime ? l10n.source_free_watch : l10n.source_free_read,
+  SourcePricing.partial => l10n.source_partial_paid,
+  SourcePricing.paid =>
+    type == ItemType.anime ? l10n.source_paid_watch : l10n.source_paid_read,
+  SourcePricing.unknown => l10n.source_pricing_unknown,
+};

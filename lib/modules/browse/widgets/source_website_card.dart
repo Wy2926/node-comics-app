@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -39,7 +41,7 @@ class SourceWebsiteCard extends StatelessWidget {
     final free = metadata.pricing == SourcePricing.free;
     final unknown = metadata.pricing == SourcePricing.unknown;
     final adult = source.isNsfw == true;
-    final labels = metadata.classificationLabels;
+    final labels = metadata.classificationLabels(context.l10n);
     final scaler = MediaQuery.textScalerOf(context);
     final lineHeight = MediaQuery.maybeLineHeightScaleFactorOverrideOf(context);
     double textHeight(TextStyle style) =>
@@ -101,7 +103,11 @@ class SourceWebsiteCard extends StatelessWidget {
             const SizedBox(width: NodeLaneTokens.space8),
             Flexible(
               child: Text(
-                sourcePricingLabel(metadata.pricing, source.itemType),
+                sourcePricingLabel(
+                  metadata.pricing,
+                  source.itemType,
+                  context.l10n,
+                ),
                 maxLines: 1,
                 style: t.sourceFooter.copyWith(color: priceInk),
               ),
@@ -112,7 +118,9 @@ class SourceWebsiteCard extends StatelessWidget {
             ? _SourceAction(action: action, onPressed: onAction)
             : NodeLaneIconButton(
                 icon: selected! ? icons.selected : icons.unselected,
-                tooltip: selected! ? '取消选择' : '选择来源',
+                tooltip: selected!
+                    ? context.l10n.source_deselect
+                    : context.l10n.source_select,
                 active: selected!,
                 onPressed: onOpen,
                 style: NodeLaneIconButtonStyle.plain,
@@ -176,9 +184,11 @@ class SourceWebsiteCard extends StatelessWidget {
                                       ),
                                       Text(
                                         language == 'all'
-                                            ? '多语言'
+                                            ? context.l10n.source_multilingual
                                             : language.isEmpty
-                                            ? '语言未标注'
+                                            ? context
+                                                  .l10n
+                                                  .source_language_unknown
                                             : completeLanguageName(language),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -207,7 +217,7 @@ class SourceWebsiteCard extends StatelessWidget {
                         top: 0,
                         end: 0,
                         child: Semantics(
-                          label: '含 18+ 内容',
+                          label: context.l10n.source_adult_content,
                           child: ExcludeSemantics(
                             child: ClipPath(
                               clipper: _AdultCornerClipper(
@@ -358,7 +368,7 @@ class _SourceClassifications extends StatelessWidget {
             Expanded(
               child: Text(
                 labels.isEmpty
-                    ? '分类未标注'
+                    ? context.l10n.source_classification_unknown
                     : labels.take(visibleCount).join(' / '),
                 maxLines: 1,
                 softWrap: false,
@@ -380,7 +390,7 @@ class _SourceClassifications extends StatelessWidget {
                     ),
                   ),
                   child: Semantics(
-                    label: '查看全部来源资料，另有 $remaining 个分类',
+                    label: context.l10n.source_more_classifications(remaining),
                     child: ExcludeSemantics(
                       child: Text(
                         '+$remaining',
@@ -411,7 +421,7 @@ class _SourceAction extends StatelessWidget {
     if (action == SourceCardAction.loading) {
       return NodeLaneIconButton(
         icon: icons.download,
-        tooltip: '正在加载网站',
+        tooltip: context.l10n.source_loading_website,
         busy: true,
         onPressed: null,
         style: NodeLaneIconButtonStyle.plain,
@@ -420,17 +430,19 @@ class _SourceAction extends StatelessWidget {
     if (action == SourceCardAction.pin || action == SourceCardAction.unpin) {
       return NodeLaneIconButton(
         icon: action == SourceCardAction.unpin ? icons.pinSelected : icons.pin,
-        tooltip: action == SourceCardAction.unpin ? '取消常用' : '固定到常用',
+        tooltip: action == SourceCardAction.unpin
+            ? context.l10n.source_unpin
+            : context.l10n.source_pin,
         active: action == SourceCardAction.unpin,
         onPressed: onPressed,
         style: NodeLaneIconButtonStyle.plain,
       );
     }
     final label = switch (action) {
-      SourceCardAction.open => '进入',
-      SourceCardAction.install => '安装',
-      SourceCardAction.update => '更新',
-      SourceCardAction.retry => '重试',
+      SourceCardAction.open => context.l10n.source_open,
+      SourceCardAction.install => context.l10n.install,
+      SourceCardAction.update => context.l10n.update,
+      SourceCardAction.retry => context.l10n.retry,
       _ => '',
     };
     return TextButton(
@@ -509,7 +521,7 @@ Future<void> showSourceWebsiteInfo(BuildContext context, Source source) {
     context,
     NodeLaneCatalogSheet(
       title: source.name ?? '',
-      subtitle: '资料由来源目录提供，分类描述网站覆盖范围。',
+      subtitle: context.l10n.source_metadata_hint,
       fitContent: true,
       heightFactor: .85,
       child: ListView(
@@ -519,17 +531,32 @@ Future<void> showSourceWebsiteInfo(BuildContext context, Source source) {
           NodeLaneGroupSurface(
             children: [
               for (final entry in [
-                ('地区', metadata.regionLabels),
-                ('形式', metadata.formatLabels),
-                ('创作', metadata.creationLabels),
+                (
+                  context.l10n.source_region,
+                  metadata.regionLabels(context.l10n),
+                ),
+                (
+                  context.l10n.source_format,
+                  metadata.formatLabels(context.l10n),
+                ),
+                (
+                  context.l10n.source_creation,
+                  metadata.creationLabels(context.l10n),
+                ),
               ])
                 NodeLaneRow(
                   title: entry.$1,
-                  subtitle: entry.$2.isEmpty ? '未标注' : entry.$2.join('、'),
+                  subtitle: entry.$2.isEmpty
+                      ? context.l10n.source_unspecified
+                      : entry.$2.join(context.l10n.list_separator),
                 ),
               NodeLaneRow(
-                title: '收费',
-                subtitle: sourcePricingLabel(metadata.pricing, source.itemType),
+                title: context.l10n.source_pricing,
+                subtitle: sourcePricingLabel(
+                  metadata.pricing,
+                  source.itemType,
+                  context.l10n,
+                ),
               ),
             ],
           ),

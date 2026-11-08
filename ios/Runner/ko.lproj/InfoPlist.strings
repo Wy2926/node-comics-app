@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "NodeLane Comics";
+"CFBundleName" = "NodeLane Comics";
+"NSPhotoLibraryUsageDescription" = "NodeLane Comics는 백업을 저장하고 복원하려면 사진 라이브러리에 액세스해야 합니다.";
+"NSDocumentUsageDescription" = "NodeLane Comics는 백업을 생성하고 복원하려면 파일에 액세스해야 합니다.";
+"NSFaceIDUsageDescription" = "NodeLane Comics는 Face ID를 사용하여 인증해야 합니다.";

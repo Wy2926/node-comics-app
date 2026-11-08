@@ -427,7 +427,12 @@ class _NodeLaneLabelValue extends StatelessWidget {
       Expanded(child: Text(title, style: titleStyle)),
       if (valueLeading != null) ...[
         const SizedBox(width: NodeLaneTokens.space12),
-        valueLeading!,
+        Flexible(
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: valueLeading!,
+          ),
+        ),
       ],
       if (value != null) ...[
         const SizedBox(width: NodeLaneTokens.space12),

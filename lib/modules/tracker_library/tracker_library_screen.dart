@@ -226,56 +226,65 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
     return [
       // Prioritize Series (anime) sections
       TrackLibrarySection(
-        name: "Continue watching series",
+        name: context.l10n.tracker_continue_series,
+        cacheKey: 'Continue watching series',
         syncId: syncId,
         func: _fetchUserData(syncId, ItemType.anime),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Watchlist series",
+        name: context.l10n.tracker_watchlist_series,
+        cacheKey: 'Watchlist series',
         syncId: syncId,
         func: _fetchWatchlistData(syncId, ItemType.anime),
         itemType: ItemType.anime,
       ),
       // Movies sections
       TrackLibrarySection(
-        name: "Continue watching movies",
+        name: context.l10n.tracker_continue_movies,
+        cacheKey: 'Continue watching movies',
         syncId: syncId,
         func: _fetchUserData(syncId, ItemType.manga),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Watchlist movies",
+        name: context.l10n.tracker_watchlist_movies,
+        cacheKey: 'Watchlist movies',
         syncId: syncId,
         func: _fetchWatchlistData(syncId, ItemType.manga),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Trending Series",
+        name: context.l10n.tracker_trending_series,
+        cacheKey: 'Trending Series',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.anime),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Trending Movies",
+        name: context.l10n.tracker_trending_movies,
+        cacheKey: 'Trending Movies',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.manga),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Popular Series",
+        name: context.l10n.tracker_popular_series,
+        cacheKey: 'Popular Series',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.anime, rankingType: "popular"),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Popular Movies",
+        name: context.l10n.tracker_popular_movies,
+        cacheKey: 'Popular Movies',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.manga, rankingType: "popular"),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Top Series (All Time)",
+        name: context.l10n.tracker_top_series,
+        cacheKey: 'Top Series (All Time)',
         syncId: syncId,
         func: _fetchGeneralData(
           syncId,
@@ -285,7 +294,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Top Movies (All Time)",
+        name: context.l10n.tracker_top_movies,
+        cacheKey: 'Top Movies (All Time)',
         syncId: syncId,
         func: _fetchGeneralData(
           syncId,
@@ -300,37 +310,43 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
   List<TrackLibrarySection> _sectionsSimkl(int syncId, ItemType itemType) {
     return [
       TrackLibrarySection(
-        name: "Continue watching movies",
+        name: context.l10n.tracker_continue_movies,
+        cacheKey: 'Continue watching movies',
         syncId: syncId,
         func: _fetchUserData(syncId, ItemType.manga),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Continue watching series",
+        name: context.l10n.tracker_continue_series,
+        cacheKey: 'Continue watching series',
         syncId: syncId,
         func: _fetchUserData(syncId, ItemType.anime),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Trending Movies",
+        name: context.l10n.tracker_trending_movies,
+        cacheKey: 'Trending Movies',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.manga),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Trending Series",
+        name: context.l10n.tracker_trending_series,
+        cacheKey: 'Trending Series',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.anime),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Airing Series",
+        name: context.l10n.tracker_airing_series,
+        cacheKey: 'Airing Series',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.anime, rankingType: "airing"),
         itemType: ItemType.anime,
       ),
       TrackLibrarySection(
-        name: "Top Series (All Time)",
+        name: context.l10n.tracker_top_series,
+        cacheKey: 'Top Series (All Time)',
         syncId: syncId,
         func: _fetchGeneralData(syncId, ItemType.anime, rankingType: "best"),
         itemType: ItemType.anime,
@@ -342,19 +358,22 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
     return itemType == ItemType.anime
         ? [
             TrackLibrarySection(
-              name: "Continue watching",
+              name: context.l10n.continue_watching,
+              cacheKey: 'Continue watching',
               syncId: syncId,
               func: _fetchUserData(syncId, ItemType.anime),
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Airing Anime",
+              name: context.l10n.tracker_airing_anime,
+              cacheKey: 'Airing Anime',
               syncId: syncId,
               func: _fetchGeneralData(syncId, ItemType.anime),
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Popular Anime",
+              name: context.l10n.tracker_popular_anime,
+              cacheKey: 'Popular Anime',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -364,7 +383,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Upcoming Anime",
+              name: context.l10n.tracker_upcoming_anime,
+              cacheKey: 'Upcoming Anime',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -376,12 +396,14 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
           ]
         : [
             TrackLibrarySection(
-              name: "Continue reading",
+              name: context.l10n.manga_continue_reading,
+              cacheKey: 'Continue reading',
               syncId: syncId,
               func: _fetchUserData(syncId, ItemType.manga),
             ),
             TrackLibrarySection(
-              name: "Popular Manga",
+              name: context.l10n.tracker_popular_manga,
+              cacheKey: 'Popular Manga',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -390,7 +412,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               ),
             ),
             TrackLibrarySection(
-              name: "Top Manga",
+              name: context.l10n.tracker_top_manga,
+              cacheKey: 'Top Manga',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -399,7 +422,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               ),
             ),
             TrackLibrarySection(
-              name: "Top Manhwa",
+              name: context.l10n.tracker_top_manhwa,
+              cacheKey: 'Top Manhwa',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -408,7 +432,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               ),
             ),
             TrackLibrarySection(
-              name: "Top Manhua",
+              name: context.l10n.tracker_top_manhua,
+              cacheKey: 'Top Manhua',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -423,19 +448,22 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
     return itemType == ItemType.anime
         ? [
             TrackLibrarySection(
-              name: "Continue watching",
+              name: context.l10n.continue_watching,
+              cacheKey: 'Continue watching',
               syncId: syncId,
               func: _fetchUserData(syncId, ItemType.anime),
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Popular Anime",
+              name: context.l10n.tracker_popular_anime,
+              cacheKey: 'Popular Anime',
               syncId: syncId,
               func: _fetchGeneralData(syncId, ItemType.anime),
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Latest Anime",
+              name: context.l10n.tracker_latest_anime,
+              cacheKey: 'Latest Anime',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -445,7 +473,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Best Rated Anime",
+              name: context.l10n.tracker_best_anime,
+              cacheKey: 'Best Rated Anime',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -457,17 +486,20 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
           ]
         : [
             TrackLibrarySection(
-              name: "Continue reading",
+              name: context.l10n.manga_continue_reading,
+              cacheKey: 'Continue reading',
               syncId: syncId,
               func: _fetchUserData(syncId, ItemType.manga),
             ),
             TrackLibrarySection(
-              name: "Popular Manga",
+              name: context.l10n.tracker_popular_manga,
+              cacheKey: 'Popular Manga',
               syncId: syncId,
               func: _fetchGeneralData(syncId, ItemType.manga),
             ),
             TrackLibrarySection(
-              name: "Latest Manga",
+              name: context.l10n.tracker_latest_manga,
+              cacheKey: 'Latest Manga',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -476,7 +508,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               ),
             ),
             TrackLibrarySection(
-              name: "Best Rated Manga",
+              name: context.l10n.tracker_best_manga,
+              cacheKey: 'Best Rated Manga',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -491,26 +524,30 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
     return itemType == ItemType.anime
         ? [
             TrackLibrarySection(
-              name: "Continue watching",
+              name: context.l10n.continue_watching,
+              cacheKey: 'Continue watching',
               syncId: syncId,
               func: _fetchUserData(syncId, ItemType.anime),
               itemType: ItemType.anime,
             ),
             // Backlog: Plan to watch
             TrackLibrarySection(
-              name: "Plan to watch",
+              name: context.l10n.plan_to_watch,
+              cacheKey: 'Plan to watch',
               syncId: syncId,
               func: _fetchPlanningData(syncId, ItemType.anime),
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Upcoming Anime",
+              name: context.l10n.tracker_upcoming_anime,
+              cacheKey: 'Upcoming Anime',
               syncId: syncId,
               func: _fetchGeneralData(syncId, ItemType.anime),
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Popular Anime",
+              name: context.l10n.tracker_popular_anime,
+              cacheKey: 'Popular Anime',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -520,7 +557,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Trending Anime",
+              name: context.l10n.tracker_trending_anime,
+              cacheKey: 'Trending Anime',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -530,7 +568,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               itemType: ItemType.anime,
             ),
             TrackLibrarySection(
-              name: "Latest Anime",
+              name: context.l10n.tracker_latest_anime,
+              cacheKey: 'Latest Anime',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -542,23 +581,27 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
           ]
         : [
             TrackLibrarySection(
-              name: "Continue reading",
+              name: context.l10n.manga_continue_reading,
+              cacheKey: 'Continue reading',
               syncId: syncId,
               func: _fetchUserData(syncId, ItemType.manga),
             ),
             // Backlog: Plan to read
             TrackLibrarySection(
-              name: "Plan to read",
+              name: context.l10n.plan_to_read,
+              cacheKey: 'Plan to read',
               syncId: syncId,
               func: _fetchPlanningData(syncId, ItemType.manga),
             ),
             TrackLibrarySection(
-              name: "Upcoming Manga",
+              name: context.l10n.tracker_upcoming_manga,
+              cacheKey: 'Upcoming Manga',
               syncId: syncId,
               func: _fetchGeneralData(syncId, ItemType.manga),
             ),
             TrackLibrarySection(
-              name: "Popular Manga",
+              name: context.l10n.tracker_popular_manga,
+              cacheKey: 'Popular Manga',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -567,7 +610,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               ),
             ),
             TrackLibrarySection(
-              name: "Trending Manga",
+              name: context.l10n.tracker_trending_manga,
+              cacheKey: 'Trending Manga',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,
@@ -576,7 +620,8 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               ),
             ),
             TrackLibrarySection(
-              name: "Latest Manga",
+              name: context.l10n.tracker_latest_manga,
+              cacheKey: 'Latest Manga',
               syncId: syncId,
               func: _fetchGeneralData(
                 syncId,

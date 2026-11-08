@@ -276,7 +276,10 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
     );
     return NodeLaneSurface(
       child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: source?.name ?? 'Code Editor'),
+        appBar: nodeLaneAppBar(
+          context,
+          title: source?.name ?? context.l10n.source_code_editor,
+        ),
         body: Padding(
           padding: NodeLaneTokens.pagePadding,
           child: Column(
@@ -335,15 +338,22 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
         ),
         if (_serviceIndex <= 2)
           _input(
-            'Page',
+            'page',
+            context.l10n.source_code_page,
             '1',
             (value) => _page = int.tryParse(value) ?? 1,
             keyboard: TextInputType.number,
           ),
         if (_serviceIndex == 2)
-          _input('Query', 'one piece', (value) => _query = value),
+          _input(
+            'query',
+            context.l10n.source_code_query,
+            'one piece',
+            (value) => _query = value,
+          ),
         if (_serviceIndex >= 3 && _serviceIndex <= 6)
           _input(
+            'url',
             'URL',
             'https://',
             (value) => _url = value,
@@ -351,6 +361,7 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
           ),
         if (_serviceIndex == 7)
           _input(
+            'html',
             'HTML',
             '<p>Text</p>',
             (value) => _html = value,
@@ -365,7 +376,7 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
               FilledButton.icon(
                 onPressed: _isLoading || source == null ? null : _execute,
                 icon: Icon(icons.anime),
-                label: const Text('Execute'),
+                label: Text(context.l10n.source_code_execute),
               ),
               NodeLaneSecondaryButton(
                 icon: icons.reset,
@@ -439,6 +450,7 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
   }
 
   Widget _input(
+    String id,
     String label,
     String hint,
     ValueChanged<String> onChanged, {
@@ -447,17 +459,17 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
   }) => Padding(
     padding: const EdgeInsets.only(top: NodeLaneTokens.space16),
     child: NodeLaneTextField(
-      key: ValueKey(label),
+      key: ValueKey(id),
       label: label,
       hint: hint,
       enabled: !_isLoading,
       keyboardType: keyboard,
       autocorrect: false,
       enableSuggestions: false,
-      initialValue: switch (label) {
-        'Page' => '$_page',
-        'Query' => _query,
-        'URL' => _url,
+      initialValue: switch (id) {
+        'page' => '$_page',
+        'query' => _query,
+        'url' => _url,
         _ => _html,
       },
       minLines: multiline ? 3 : 1,
@@ -477,7 +489,12 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
               children: [
                 Icon(icons.code, size: NodeLaneTokens.iconSize),
                 const SizedBox(width: NodeLaneTokens.space12),
-                Expanded(child: Text('Console Logs', style: t.readerLabel)),
+                Expanded(
+                  child: Text(
+                    context.l10n.source_console_logs,
+                    style: t.readerLabel,
+                  ),
+                ),
                 NodeLaneIconButton(
                   icon: icons.delete,
                   tooltip: context.l10n.clear_logs,
@@ -491,7 +508,12 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
             child: ValueListenableBuilder(
               valueListenable: _logsNotifier,
               builder: (context, logs, child) => logs.isEmpty
-                  ? Center(child: Text('No logs yet', style: t.readerSecondary))
+                  ? Center(
+                      child: Text(
+                        context.l10n.source_no_logs,
+                        style: t.readerSecondary,
+                      ),
+                    )
                   : SuperListView.separated(
                       controller: _scrollController,
                       padding: NodeLaneTokens.groupPadding,

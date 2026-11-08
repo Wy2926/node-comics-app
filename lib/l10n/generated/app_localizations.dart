@@ -6,20 +6,20 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_ar.dart';
-import 'app_localizations_as.dart';
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 import 'app_localizations_fr.dart';
-import 'app_localizations_hi.dart';
 import 'app_localizations_id.dart';
 import 'app_localizations_it.dart';
 import 'app_localizations_ja.dart';
 import 'app_localizations_ko.dart';
+import 'app_localizations_pl.dart';
 import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
-import 'app_localizations_th.dart';
 import 'app_localizations_tr.dart';
+import 'app_localizations_uk.dart';
+import 'app_localizations_vi.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -109,23 +109,22 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
-    Locale('as'),
     Locale('de'),
     Locale('en'),
     Locale('es'),
-    Locale('es', '419'),
     Locale('fr'),
-    Locale('hi'),
     Locale('id'),
     Locale('it'),
     Locale('ja'),
     Locale('ko'),
+    Locale('pl'),
     Locale('pt'),
-    Locale('pt', 'BR'),
     Locale('ru'),
-    Locale('th'),
     Locale('tr'),
+    Locale('uk'),
+    Locale('vi'),
     Locale('zh'),
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
   /// No description provided for @app_update_details_hint.
@@ -8891,6 +8890,2220 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chapter list habits apply to all books.'**
   String get comic_chapter_habits_hint;
+
+  /// No description provided for @browser_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser'**
+  String get browser_title;
+
+  /// No description provided for @translation_image_display.
+  ///
+  /// In en, this message translates to:
+  /// **'Image display'**
+  String get translation_image_display;
+
+  /// No description provided for @translation_display_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show existing translations first. Keep the original when no translation is available.'**
+  String get translation_display_hint;
+
+  /// No description provided for @translation_sign_in_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to enable translation'**
+  String get translation_sign_in_required;
+
+  /// No description provided for @translation_sign_in_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'After signing in, switch to translated images to translate automatically.'**
+  String get translation_sign_in_hint;
+
+  /// No description provided for @translation_automatic.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic translation'**
+  String get translation_automatic;
+
+  /// No description provided for @translation_original_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing originals. Switch to translated images to translate automatically.'**
+  String get translation_original_hint;
+
+  /// No description provided for @translation_window_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Process current and upcoming images only while showing translations.'**
+  String get translation_window_hint;
+
+  /// No description provided for @translation_channel.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation channel'**
+  String get translation_channel;
+
+  /// No description provided for @translation_no_images.
+  ///
+  /// In en, this message translates to:
+  /// **'No translatable images found on this page yet'**
+  String get translation_no_images;
+
+  /// No description provided for @translation_waiting_image.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the current image'**
+  String get translation_waiting_image;
+
+  /// No description provided for @translation_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed {complete} / {total} images{issues, plural, =0{} =1{ · 1 image needs attention} other{ · {issues} images need attention}}'**
+  String translation_progress(int complete, int total, int issues);
+
+  /// No description provided for @translation_image_actions_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch and hold an image for more actions, including translating it again.'**
+  String get translation_image_actions_hint;
+
+  /// No description provided for @translation_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga translation'**
+  String get translation_title;
+
+  /// No description provided for @translation_system_sign_in.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in using your system browser'**
+  String get translation_system_sign_in;
+
+  /// No description provided for @translation_target_language.
+  ///
+  /// In en, this message translates to:
+  /// **'Target language'**
+  String get translation_target_language;
+
+  /// No description provided for @translation_clear_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear translated image cache'**
+  String get translation_clear_cache;
+
+  /// No description provided for @translation_cache_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep translation records and retrieve results again when needed.'**
+  String get translation_cache_hint;
+
+  /// No description provided for @translation_saved_read_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the saved translation'**
+  String get translation_saved_read_failed;
+
+  /// No description provided for @translation_read_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the translated image'**
+  String get translation_read_failed;
+
+  /// No description provided for @operation_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'The action did not finish. Please try again.'**
+  String get operation_retry;
+
+  /// No description provided for @translation_original.
+  ///
+  /// In en, this message translates to:
+  /// **'Original'**
+  String get translation_original;
+
+  /// No description provided for @translation_translated.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated'**
+  String get translation_translated;
+
+  /// No description provided for @translation_regenerate_image.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate this image again'**
+  String get translation_regenerate_image;
+
+  /// No description provided for @translation_read_image.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload translated image'**
+  String get translation_read_image;
+
+  /// No description provided for @translation_image_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'More image actions'**
+  String get translation_image_actions;
+
+  /// No description provided for @translation_processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get translation_processing;
+
+  /// No description provided for @translation_reading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading translated image'**
+  String get translation_reading;
+
+  /// No description provided for @translation_waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for translation'**
+  String get translation_waiting;
+
+  /// No description provided for @translation_preparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing translation'**
+  String get translation_preparing;
+
+  /// No description provided for @translation_uploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading original'**
+  String get translation_uploading;
+
+  /// No description provided for @translation_running.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating'**
+  String get translation_running;
+
+  /// No description provided for @translation_uncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Status needs verification'**
+  String get translation_uncertain;
+
+  /// No description provided for @translation_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation failed'**
+  String get translation_failed;
+
+  /// No description provided for @translation_verify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get translation_verify;
+
+  /// No description provided for @translation_reread.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get translation_reread;
+
+  /// No description provided for @browser_back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get browser_back;
+
+  /// No description provided for @browser_translation.
+  ///
+  /// In en, this message translates to:
+  /// **'Web page translation'**
+  String get browser_translation;
+
+  /// No description provided for @browser_new_tab_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Open new tab'**
+  String get browser_new_tab_action;
+
+  /// No description provided for @browser_current_tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get browser_current_tab;
+
+  /// No description provided for @browser_close_tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Close tab'**
+  String get browser_close_tab;
+
+  /// No description provided for @browser_new_tab.
+  ///
+  /// In en, this message translates to:
+  /// **'New tab'**
+  String get browser_new_tab;
+
+  /// No description provided for @browser_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Web page'**
+  String get browser_page;
+
+  /// No description provided for @browser_unopened.
+  ///
+  /// In en, this message translates to:
+  /// **'No page opened yet'**
+  String get browser_unopened;
+
+  /// No description provided for @browser_address_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter or paste a URL'**
+  String get browser_address_hint;
+
+  /// No description provided for @browser_invalid_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid URL'**
+  String get browser_invalid_address;
+
+  /// No description provided for @browser_clear_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear URL'**
+  String get browser_clear_address;
+
+  /// No description provided for @browser_paste_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste URL'**
+  String get browser_paste_address;
+
+  /// No description provided for @browser_open_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Open URL'**
+  String get browser_open_address;
+
+  /// No description provided for @browser_tab_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Tabs · {count}'**
+  String browser_tab_count(int count);
+
+  /// No description provided for @browser_load_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open this page'**
+  String get browser_load_failed;
+
+  /// No description provided for @browser_load_failed_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and the URL.'**
+  String get browser_load_failed_hint;
+
+  /// No description provided for @browser_edit_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit URL'**
+  String get browser_edit_address;
+
+  /// No description provided for @browser_clear_cookies_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear sign-in sessions for all websites?'**
+  String get browser_clear_cookies_confirm;
+
+  /// No description provided for @browser_clear_cookies_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Websites in all tabs may require you to sign in again.'**
+  String get browser_clear_cookies_hint;
+
+  /// No description provided for @browser_clear_cookies_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear sign-in sessions'**
+  String get browser_clear_cookies_action;
+
+  /// No description provided for @browser_tab_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'You can keep up to 12 tabs open. Close one first.'**
+  String get browser_tab_limit;
+
+  /// No description provided for @browser_forward.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward'**
+  String get browser_forward;
+
+  /// No description provided for @browser_clear_all_cookies.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all website sign-in sessions'**
+  String get browser_clear_all_cookies;
+
+  /// No description provided for @browser_clear_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear sessions. Please try again.'**
+  String get browser_clear_failed;
+
+  /// No description provided for @browser_save_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save tabs. Please try again.'**
+  String get browser_save_failed;
+
+  /// No description provided for @browser_tabs_full.
+  ///
+  /// In en, this message translates to:
+  /// **'12 tabs are already open'**
+  String get browser_tabs_full;
+
+  /// No description provided for @browser_no_tabs.
+  ///
+  /// In en, this message translates to:
+  /// **'No open tabs yet'**
+  String get browser_no_tabs;
+
+  /// No description provided for @browser_close_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save tabs. Tap close again to retry.'**
+  String get browser_close_failed;
+
+  /// No description provided for @source_pinned_websites.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned websites'**
+  String get source_pinned_websites;
+
+  /// No description provided for @manage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get manage;
+
+  /// No description provided for @translation_settings_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic translation, target language and channel'**
+  String get translation_settings_hint;
+
+  /// No description provided for @translation_show_original.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to show the original'**
+  String get translation_show_original;
+
+  /// No description provided for @translation_show_translated.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to show the translation'**
+  String get translation_show_translated;
+
+  /// No description provided for @source_display.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get source_display;
+
+  /// No description provided for @source_cover_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover and title'**
+  String get source_cover_title;
+
+  /// No description provided for @source_cover_only.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover only'**
+  String get source_cover_only;
+
+  /// No description provided for @source_save_search.
+  ///
+  /// In en, this message translates to:
+  /// **'Save current search'**
+  String get source_save_search;
+
+  /// No description provided for @source_saved_searches.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved searches'**
+  String get source_saved_searches;
+
+  /// No description provided for @source_website_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Website information'**
+  String get source_website_info;
+
+  /// No description provided for @source_saved_search_title.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} · Tap to search'**
+  String source_saved_search_title(String title);
+
+  /// No description provided for @action_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get action_done;
+
+  /// No description provided for @source_search_keyword.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyword: {query}'**
+  String source_search_keyword(String query);
+
+  /// No description provided for @source_no_saved_searches.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved searches yet'**
+  String get source_no_saved_searches;
+
+  /// No description provided for @source_save_search_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a keyword, then save it from the website actions.'**
+  String get source_save_search_hint;
+
+  /// No description provided for @source_saved_search_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Keywords are saved for this website only.'**
+  String get source_saved_search_scope;
+
+  /// No description provided for @source_search_here.
+  ///
+  /// In en, this message translates to:
+  /// **'Search titles on this website'**
+  String get source_search_here;
+
+  /// No description provided for @source_filter_results.
+  ///
+  /// In en, this message translates to:
+  /// **'Filtered results'**
+  String get source_filter_results;
+
+  /// No description provided for @source_search_results.
+  ///
+  /// In en, this message translates to:
+  /// **'Search results'**
+  String get source_search_results;
+
+  /// No description provided for @source_return_popular.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to popular'**
+  String get source_return_popular;
+
+  /// No description provided for @source_popular_titles.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular titles'**
+  String get source_popular_titles;
+
+  /// No description provided for @source_no_titles.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching titles found'**
+  String get source_no_titles;
+
+  /// No description provided for @source_no_titles_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your keywords or filters, or return to popular titles.'**
+  String get source_no_titles_hint;
+
+  /// No description provided for @source_load_more_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load more. Please try again.'**
+  String get source_load_more_failed;
+
+  /// No description provided for @source_load_pull_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this website. Pull down to retry.'**
+  String get source_load_pull_retry;
+
+  /// No description provided for @source_clear_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not finish clearing. Please try again.'**
+  String get source_clear_failed;
+
+  /// No description provided for @source_uninstall_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not finish uninstalling. Please try again.'**
+  String get source_uninstall_failed;
+
+  /// No description provided for @source_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Source details'**
+  String get source_details;
+
+  /// No description provided for @source_repository_website.
+  ///
+  /// In en, this message translates to:
+  /// **'Repository website'**
+  String get source_repository_website;
+
+  /// No description provided for @source_provided_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings provided by the source'**
+  String get source_provided_settings;
+
+  /// No description provided for @source_advanced_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced actions'**
+  String get source_advanced_actions;
+
+  /// No description provided for @source_edit_metadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit source information'**
+  String get source_edit_metadata;
+
+  /// No description provided for @source_clear_cookies.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cookies for this website'**
+  String get source_clear_cookies;
+
+  /// No description provided for @source_clear_cookies_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'You may need to sign in again on your next visit.'**
+  String get source_clear_cookies_hint;
+
+  /// No description provided for @source_uninstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall source'**
+  String get source_uninstall;
+
+  /// No description provided for @source_settings_save_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving did not finish. Reopen source settings to check.'**
+  String get source_settings_save_failed;
+
+  /// No description provided for @repository_third_party.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-party repositories'**
+  String get repository_third_party;
+
+  /// No description provided for @repository_refresh_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh the catalog. Cached content is kept. Please try again.'**
+  String get repository_refresh_failed;
+
+  /// No description provided for @repository_show_sources.
+  ///
+  /// In en, this message translates to:
+  /// **'Show sources from this repository'**
+  String get repository_show_sources;
+
+  /// No description provided for @repository_copy_catalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy catalog link'**
+  String get repository_copy_catalog;
+
+  /// No description provided for @repository_remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove repository'**
+  String get repository_remove;
+
+  /// No description provided for @repository_remove_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep installed sources and remove uninstalled catalog entries.'**
+  String get repository_remove_hint;
+
+  /// No description provided for @repository_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No third-party repositories added yet'**
+  String get repository_empty;
+
+  /// No description provided for @repository_built_in.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in official catalog'**
+  String get repository_built_in;
+
+  /// No description provided for @repository_hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get repository_hidden;
+
+  /// No description provided for @repository_refreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing…'**
+  String get repository_refreshing;
+
+  /// No description provided for @repository_refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh catalog'**
+  String get repository_refresh;
+
+  /// No description provided for @repository_manage_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage where third-party sources are downloaded from.'**
+  String get repository_manage_hint;
+
+  /// No description provided for @repository_invalid_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid HTTP or HTTPS URL'**
+  String get repository_invalid_address;
+
+  /// No description provided for @repository_already_added.
+  ///
+  /// In en, this message translates to:
+  /// **'This repository has already been added'**
+  String get repository_already_added;
+
+  /// No description provided for @repository_unrecognized.
+  ///
+  /// In en, this message translates to:
+  /// **'No supported catalog found. Check the link and try again.'**
+  String get repository_unrecognized;
+
+  /// No description provided for @repository_read_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the catalog. Please try again.'**
+  String get repository_read_failed;
+
+  /// No description provided for @repository_save_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving did not finish. Check your repository list.'**
+  String get repository_save_failed;
+
+  /// No description provided for @repository_paste_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a third-party repository catalog link'**
+  String get repository_paste_hint;
+
+  /// No description provided for @repository_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Repository URL'**
+  String get repository_address;
+
+  /// No description provided for @repository_paste_link.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste link'**
+  String get repository_paste_link;
+
+  /// No description provided for @repository_recognized.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} · Catalog recognized'**
+  String repository_recognized(String type);
+
+  /// No description provided for @repository_choose_sources_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'After adding the repository, choose the sources you need.'**
+  String get repository_choose_sources_hint;
+
+  /// No description provided for @search_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Search scope'**
+  String get search_scope;
+
+  /// No description provided for @search_scope_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the websites to search'**
+  String get search_scope_hint;
+
+  /// No description provided for @search_websites_action.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Search 1 website} other{Search {count} websites}}'**
+  String search_websites_action(int count);
+
+  /// No description provided for @search_find_website.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a website'**
+  String get search_find_website;
+
+  /// No description provided for @search_selected_websites.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 website selected} other{{count} websites selected}}'**
+  String search_selected_websites(int count);
+
+  /// No description provided for @action_clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get action_clear;
+
+  /// No description provided for @search_deselect_results.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect matching websites'**
+  String get search_deselect_results;
+
+  /// No description provided for @search_select_results.
+  ///
+  /// In en, this message translates to:
+  /// **'Select matching websites'**
+  String get search_select_results;
+
+  /// No description provided for @search_no_websites_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching websites. Try another name or language.'**
+  String get search_no_websites_hint;
+
+  /// No description provided for @search_select_website_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one website to search.'**
+  String get search_select_website_hint;
+
+  /// No description provided for @search_start_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter keywords to find titles'**
+  String get search_start_title;
+
+  /// No description provided for @search_start_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search multiple websites at once and show matching titles.'**
+  String get search_start_hint;
+
+  /// No description provided for @search_empty_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'No searchable websites in this scope'**
+  String get search_empty_scope;
+
+  /// No description provided for @search_empty_scope_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to all websites or choose websites to search.'**
+  String get search_empty_scope_hint;
+
+  /// No description provided for @search_result_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 result} other{{count} results}}'**
+  String search_result_count(int count);
+
+  /// No description provided for @search_titles.
+  ///
+  /// In en, this message translates to:
+  /// **'Search titles'**
+  String get search_titles;
+
+  /// No description provided for @search_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Search actions'**
+  String get search_actions;
+
+  /// No description provided for @search_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Search details'**
+  String get search_details;
+
+  /// No description provided for @search_title_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by title'**
+  String get search_title_hint;
+
+  /// No description provided for @search_searching.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching'**
+  String get search_searching;
+
+  /// No description provided for @search_found_results.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Found 1 result} other{Found {count} results}}'**
+  String search_found_results(int count);
+
+  /// No description provided for @search_no_results.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching results'**
+  String get search_no_results;
+
+  /// No description provided for @search_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed'**
+  String get search_failed;
+
+  /// No description provided for @search_found_titles.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 title found} other{{count} titles found}} · {websites, plural, =1{1 website} other{{websites} websites}}'**
+  String search_found_titles(int count, int websites);
+
+  /// No description provided for @search_finding_titles.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding titles'**
+  String get search_finding_titles;
+
+  /// No description provided for @search_complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Search complete'**
+  String get search_complete;
+
+  /// No description provided for @search_in_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching'**
+  String get search_in_progress;
+
+  /// No description provided for @search_finding_related.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for matching titles…'**
+  String get search_finding_related;
+
+  /// No description provided for @search_no_results_yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No search results yet'**
+  String get search_no_results_yet;
+
+  /// No description provided for @search_no_matching_titles.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching titles found'**
+  String get search_no_matching_titles;
+
+  /// No description provided for @search_results_appear_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Results will appear here as they are found.'**
+  String get search_results_appear_hint;
+
+  /// No description provided for @search_failed_websites_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Some websites could not finish searching. Retry them in search details.'**
+  String get search_failed_websites_hint;
+
+  /// No description provided for @search_change_keywords_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try shorter keywords or search more websites.'**
+  String get search_change_keywords_hint;
+
+  /// No description provided for @search_view_details.
+  ///
+  /// In en, this message translates to:
+  /// **'View search details'**
+  String get search_view_details;
+
+  /// No description provided for @search_adjust_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust search scope'**
+  String get search_adjust_scope;
+
+  /// No description provided for @search_query_websites.
+  ///
+  /// In en, this message translates to:
+  /// **'{query} · {count, plural, =1{1 website} other{{count} websites}}'**
+  String search_query_websites(String query, int count);
+
+  /// No description provided for @search_completed_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed {completed} / {total}'**
+  String search_completed_count(int completed, int total);
+
+  /// No description provided for @search_retry_website_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry failed websites individually'**
+  String get search_retry_website_hint;
+
+  /// No description provided for @source_selected_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item selected} other{{count} items selected}}'**
+  String source_selected_count(int count);
+
+  /// No description provided for @search_languages.
+  ///
+  /// In en, this message translates to:
+  /// **'Search languages'**
+  String get search_languages;
+
+  /// No description provided for @source_deselect.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect'**
+  String get source_deselect;
+
+  /// No description provided for @source_select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select source'**
+  String get source_select;
+
+  /// No description provided for @source_multilingual.
+  ///
+  /// In en, this message translates to:
+  /// **'Multilingual'**
+  String get source_multilingual;
+
+  /// No description provided for @source_language_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Language not specified'**
+  String get source_language_unknown;
+
+  /// No description provided for @source_adult_content.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains 18+ content'**
+  String get source_adult_content;
+
+  /// No description provided for @source_classification_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Classification not specified'**
+  String get source_classification_unknown;
+
+  /// No description provided for @source_more_classifications.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{View all source information, 1 more category} other{View all source information, {count} more categories}}'**
+  String source_more_classifications(int count);
+
+  /// No description provided for @source_loading_website.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading website'**
+  String get source_loading_website;
+
+  /// No description provided for @source_unpin.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get source_unpin;
+
+  /// No description provided for @source_pin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get source_pin;
+
+  /// No description provided for @source_open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get source_open;
+
+  /// No description provided for @source_metadata_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Information comes from the source catalog. Categories describe the content covered by the website.'**
+  String get source_metadata_hint;
+
+  /// No description provided for @source_region.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get source_region;
+
+  /// No description provided for @source_format.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get source_format;
+
+  /// No description provided for @source_creation.
+  ///
+  /// In en, this message translates to:
+  /// **'Creation'**
+  String get source_creation;
+
+  /// No description provided for @source_unspecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get source_unspecified;
+
+  /// No description provided for @source_pricing.
+  ///
+  /// In en, this message translates to:
+  /// **'Pricing'**
+  String get source_pricing;
+
+  /// No description provided for @source_region_jp.
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese comics'**
+  String get source_region_jp;
+
+  /// No description provided for @source_region_kr.
+  ///
+  /// In en, this message translates to:
+  /// **'Korean comics'**
+  String get source_region_kr;
+
+  /// No description provided for @source_region_cn.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese comics'**
+  String get source_region_cn;
+
+  /// No description provided for @source_region_hk_tw.
+  ///
+  /// In en, this message translates to:
+  /// **'Hong Kong and Taiwan comics'**
+  String get source_region_hk_tw;
+
+  /// No description provided for @source_region_western.
+  ///
+  /// In en, this message translates to:
+  /// **'Western comics'**
+  String get source_region_western;
+
+  /// No description provided for @source_region_other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other regions'**
+  String get source_region_other;
+
+  /// No description provided for @source_format_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Paged comics'**
+  String get source_format_page;
+
+  /// No description provided for @source_format_vertical.
+  ///
+  /// In en, this message translates to:
+  /// **'Vertical comics'**
+  String get source_format_vertical;
+
+  /// No description provided for @source_format_strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Comic strips'**
+  String get source_format_strip;
+
+  /// No description provided for @source_creation_original.
+  ///
+  /// In en, this message translates to:
+  /// **'Original'**
+  String get source_creation_original;
+
+  /// No description provided for @source_creation_fan.
+  ///
+  /// In en, this message translates to:
+  /// **'Fan works'**
+  String get source_creation_fan;
+
+  /// No description provided for @source_free_watch.
+  ///
+  /// In en, this message translates to:
+  /// **'Free to watch'**
+  String get source_free_watch;
+
+  /// No description provided for @source_free_read.
+  ///
+  /// In en, this message translates to:
+  /// **'Free to read'**
+  String get source_free_read;
+
+  /// No description provided for @source_partial_paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Partially paid'**
+  String get source_partial_paid;
+
+  /// No description provided for @source_paid_watch.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid viewing'**
+  String get source_paid_watch;
+
+  /// No description provided for @source_paid_read.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid reading'**
+  String get source_paid_read;
+
+  /// No description provided for @source_pricing_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Pricing not specified'**
+  String get source_pricing_unknown;
+
+  /// No description provided for @source_language_filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by language'**
+  String get source_language_filter;
+
+  /// No description provided for @source_language_filter_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter this catalog only. Installed sources are unaffected.'**
+  String get source_language_filter_hint;
+
+  /// No description provided for @source_all_languages.
+  ///
+  /// In en, this message translates to:
+  /// **'All languages'**
+  String get source_all_languages;
+
+  /// No description provided for @action_apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get action_apply;
+
+  /// No description provided for @source_load_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this website. Please try again.'**
+  String get source_load_retry;
+
+  /// No description provided for @source_catalog_refresh_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh the catalog. Current content is kept. Pull down to retry.'**
+  String get source_catalog_refresh_failed;
+
+  /// No description provided for @source_uninstall_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Uninstall 1 source?} other{Uninstall {count} sources?}}'**
+  String source_uninstall_count(int count);
+
+  /// No description provided for @source_uninstall_selected_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall the selected sources and clear their settings. Keep library titles and downloads.'**
+  String get source_uninstall_selected_hint;
+
+  /// No description provided for @source_failed_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Action failed for 1 source.} other{Actions failed for {count} sources.}} Selection kept. Please try again.'**
+  String source_failed_count(int count);
+
+  /// No description provided for @source_latest_content.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest content'**
+  String get source_latest_content;
+
+  /// No description provided for @source_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Source actions'**
+  String get source_actions;
+
+  /// No description provided for @source_bulk_manage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage multiple sources'**
+  String get source_bulk_manage;
+
+  /// No description provided for @source_update_installed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update installed sources'**
+  String get source_update_installed;
+
+  /// No description provided for @source_no_matching_websites.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching websites'**
+  String get source_no_matching_websites;
+
+  /// No description provided for @source_no_websites.
+  ///
+  /// In en, this message translates to:
+  /// **'No websites available'**
+  String get source_no_websites;
+
+  /// No description provided for @source_search_installed_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search titles in installed sources'**
+  String get source_search_installed_hint;
+
+  /// No description provided for @source_global_search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search across sources'**
+  String get source_global_search;
+
+  /// No description provided for @source_manage_repositories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage repositories'**
+  String get source_manage_repositories;
+
+  /// No description provided for @source_view_third_party.
+  ///
+  /// In en, this message translates to:
+  /// **'View third-party sources'**
+  String get source_view_third_party;
+
+  /// No description provided for @source_catalog_load_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the catalog. Pull down to retry.'**
+  String get source_catalog_load_failed;
+
+  /// No description provided for @source_all_websites.
+  ///
+  /// In en, this message translates to:
+  /// **'All websites'**
+  String get source_all_websites;
+
+  /// No description provided for @source_available.
+  ///
+  /// In en, this message translates to:
+  /// **'Available to install'**
+  String get source_available;
+
+  /// No description provided for @source_third_party.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-party'**
+  String get source_third_party;
+
+  /// No description provided for @source_name_or_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Website name or title'**
+  String get source_name_or_title;
+
+  /// No description provided for @view_all.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get view_all;
+
+  /// No description provided for @search_searching_ellipsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching…'**
+  String get search_searching_ellipsis;
+
+  /// No description provided for @onboarding_untested_content.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} · Untested'**
+  String onboarding_untested_content(String type);
+
+  /// No description provided for @onboarding_untested.
+  ///
+  /// In en, this message translates to:
+  /// **'Untested'**
+  String get onboarding_untested;
+
+  /// No description provided for @source_custom_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get source_custom_scope;
+
+  /// No description provided for @source_custom_websites.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected websites'**
+  String get source_custom_websites;
+
+  /// No description provided for @tv_hidden_library_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Every title sits in a hidden category.\nHold OK on “All” to unhide one.'**
+  String get tv_hidden_library_hint;
+
+  /// No description provided for @tv_no_matching_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching anime'**
+  String get tv_no_matching_anime;
+
+  /// No description provided for @tv_no_matching_category.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching anime in “{category}”'**
+  String tv_no_matching_category(String category);
+
+  /// No description provided for @tv_filtered_empty_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'No anime matches the current filters.\nChange them from the button beside search.'**
+  String get tv_filtered_empty_hint;
+
+  /// No description provided for @tv_new_episodes.
+  ///
+  /// In en, this message translates to:
+  /// **'New Episodes'**
+  String get tv_new_episodes;
+
+  /// No description provided for @tv_recently_added.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently Added'**
+  String get tv_recently_added;
+
+  /// No description provided for @tv_empty_category_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'No anime in this category yet.\nAdd titles to it from a title’s detail page.'**
+  String get tv_empty_category_hint;
+
+  /// No description provided for @tv_empty_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Your anime library is empty'**
+  String get tv_empty_library;
+
+  /// No description provided for @tv_empty_library_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add anime from Browse to fill your home'**
+  String get tv_empty_library_hint;
+
+  /// No description provided for @tv_browse_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse anime'**
+  String get tv_browse_anime;
+
+  /// No description provided for @tv_new_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new'**
+  String tv_new_count(int count);
+
+  /// No description provided for @tv_category_hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hid “{category}” · hold OK on “All” to unhide'**
+  String tv_category_hidden(String category);
+
+  /// No description provided for @tv_no_hidden_categories.
+  ///
+  /// In en, this message translates to:
+  /// **'No hidden categories'**
+  String get tv_no_hidden_categories;
+
+  /// No description provided for @import_torrent_file.
+  ///
+  /// In en, this message translates to:
+  /// **'import .torrent file'**
+  String get import_torrent_file;
+
+  /// No description provided for @import_video_formats.
+  ///
+  /// In en, this message translates to:
+  /// **'.mp4, .mkv, .avi, and more'**
+  String get import_video_formats;
+
+  /// No description provided for @cloudflare_proxy_optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional FlareSolverr / Byparr URL'**
+  String get cloudflare_proxy_optional;
+
+  /// No description provided for @tv_home_layout_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows-based anime home (Continue · New Episodes · categories) instead of the flat grid'**
+  String get tv_home_layout_hint;
+
+  /// No description provided for @tv_hide_libraries_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide the manga & novel libraries (on by default on TV)'**
+  String get tv_hide_libraries_hint;
+
+  /// No description provided for @anime_only_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide manga & novel across the app. Turn off to show everything.'**
+  String get anime_only_hint;
+
+  /// No description provided for @audio_auto_safe.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-safe'**
+  String get audio_auto_safe;
+
+  /// No description provided for @tv_player_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'On: dedicated TV player.  Off: original (desktop) player.'**
+  String get tv_player_hint;
+
+  /// No description provided for @release_open_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open release'**
+  String get release_open_failed;
+
+  /// No description provided for @tv_replay.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay'**
+  String get tv_replay;
+
+  /// No description provided for @tv_no_episodes.
+  ///
+  /// In en, this message translates to:
+  /// **'No episodes yet'**
+  String get tv_no_episodes;
+
+  /// No description provided for @tracker_continue_series.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue watching series'**
+  String get tracker_continue_series;
+
+  /// No description provided for @tracker_watchlist_series.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlist series'**
+  String get tracker_watchlist_series;
+
+  /// No description provided for @tracker_continue_movies.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue watching movies'**
+  String get tracker_continue_movies;
+
+  /// No description provided for @tracker_watchlist_movies.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlist movies'**
+  String get tracker_watchlist_movies;
+
+  /// No description provided for @tracker_trending_series.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending Series'**
+  String get tracker_trending_series;
+
+  /// No description provided for @tracker_trending_movies.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending Movies'**
+  String get tracker_trending_movies;
+
+  /// No description provided for @tracker_popular_series.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Series'**
+  String get tracker_popular_series;
+
+  /// No description provided for @tracker_popular_movies.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Movies'**
+  String get tracker_popular_movies;
+
+  /// No description provided for @tracker_top_series.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Series (All Time)'**
+  String get tracker_top_series;
+
+  /// No description provided for @tracker_top_movies.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Movies (All Time)'**
+  String get tracker_top_movies;
+
+  /// No description provided for @tracker_airing_series.
+  ///
+  /// In en, this message translates to:
+  /// **'Airing Series'**
+  String get tracker_airing_series;
+
+  /// No description provided for @tracker_airing_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'Airing Anime'**
+  String get tracker_airing_anime;
+
+  /// No description provided for @tracker_popular_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Anime'**
+  String get tracker_popular_anime;
+
+  /// No description provided for @tracker_upcoming_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Anime'**
+  String get tracker_upcoming_anime;
+
+  /// No description provided for @tracker_popular_manga.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Manga'**
+  String get tracker_popular_manga;
+
+  /// No description provided for @tracker_top_manga.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Manga'**
+  String get tracker_top_manga;
+
+  /// No description provided for @tracker_top_manhwa.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Manhwa'**
+  String get tracker_top_manhwa;
+
+  /// No description provided for @tracker_top_manhua.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Manhua'**
+  String get tracker_top_manhua;
+
+  /// No description provided for @tracker_latest_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Anime'**
+  String get tracker_latest_anime;
+
+  /// No description provided for @tracker_best_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Rated Anime'**
+  String get tracker_best_anime;
+
+  /// No description provided for @tracker_latest_manga.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Manga'**
+  String get tracker_latest_manga;
+
+  /// No description provided for @tracker_best_manga.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Rated Manga'**
+  String get tracker_best_manga;
+
+  /// No description provided for @tracker_trending_anime.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending Anime'**
+  String get tracker_trending_anime;
+
+  /// No description provided for @tracker_upcoming_manga.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Manga'**
+  String get tracker_upcoming_manga;
+
+  /// No description provided for @tracker_trending_manga.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending Manga'**
+  String get tracker_trending_manga;
+
+  /// No description provided for @selection_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'{selected}/{total} selected'**
+  String selection_progress(int selected, int total);
+
+  /// No description provided for @source_code_editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Code Editor'**
+  String get source_code_editor;
+
+  /// No description provided for @source_code_execute.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute'**
+  String get source_code_execute;
+
+  /// No description provided for @source_console_logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Console Logs'**
+  String get source_console_logs;
+
+  /// No description provided for @source_no_logs.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs yet'**
+  String get source_no_logs;
+
+  /// No description provided for @source_updated_successfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Source updated successfully'**
+  String get source_updated_successfully;
+
+  /// No description provided for @source_obsolete.
+  ///
+  /// In en, this message translates to:
+  /// **'OBSOLETE'**
+  String get source_obsolete;
+
+  /// No description provided for @player_seek_forward_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek forward {seconds} seconds'**
+  String player_seek_forward_seconds(int seconds);
+
+  /// No description provided for @player_seek_backward_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek backward {seconds} seconds'**
+  String player_seek_backward_seconds(int seconds);
+
+  /// No description provided for @player_autoplay_on.
+  ///
+  /// In en, this message translates to:
+  /// **'Autoplay next episode: on'**
+  String get player_autoplay_on;
+
+  /// No description provided for @player_autoplay_off.
+  ///
+  /// In en, this message translates to:
+  /// **'Autoplay next episode: off'**
+  String get player_autoplay_off;
+
+  /// No description provided for @player_no_other_quality.
+  ///
+  /// In en, this message translates to:
+  /// **'No other quality'**
+  String get player_no_other_quality;
+
+  /// No description provided for @player_no_subtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'No subtitles'**
+  String get player_no_subtitles;
+
+  /// No description provided for @player_no_audio_tracks.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio tracks'**
+  String get player_no_audio_tracks;
+
+  /// No description provided for @player_seek_forward.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek forward'**
+  String get player_seek_forward;
+
+  /// No description provided for @player_seek_backward.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek backward'**
+  String get player_seek_backward;
+
+  /// No description provided for @player_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds, plural, =1{1 second} other{{seconds} seconds}}'**
+  String player_seconds(int seconds);
+
+  /// No description provided for @subtitle_preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Lorem ipsum dolor sit amet'**
+  String get subtitle_preview;
+
+  /// No description provided for @subtitle_style.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get subtitle_style;
+
+  /// No description provided for @translation_official_channel.
+  ///
+  /// In en, this message translates to:
+  /// **'NodeLane Official'**
+  String get translation_official_channel;
+
+  /// No description provided for @translation_auth_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your translation account first.'**
+  String get translation_auth_required;
+
+  /// No description provided for @translation_source_changed.
+  ///
+  /// In en, this message translates to:
+  /// **'The original image changed. Please reload it.'**
+  String get translation_source_changed;
+
+  /// No description provided for @translation_source_missing.
+  ///
+  /// In en, this message translates to:
+  /// **'The original image is currently unavailable.'**
+  String get translation_source_missing;
+
+  /// No description provided for @translation_resource_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'This image exceeds the device processing limit. The original is kept.'**
+  String get translation_resource_limit;
+
+  /// No description provided for @translation_storage_full.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation storage is full. Clear translated images first.'**
+  String get translation_storage_full;
+
+  /// No description provided for @translation_invalid_image.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid image format or content.'**
+  String get translation_invalid_image;
+
+  /// No description provided for @translation_unsupported_image.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation is not supported for this image. The original is kept.'**
+  String get translation_unsupported_image;
+
+  /// No description provided for @translation_invalid_result.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated image validation failed. Please reload it.'**
+  String get translation_invalid_result;
+
+  /// No description provided for @translation_result_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The translated image is unavailable. Please reload it.'**
+  String get translation_result_unavailable;
+
+  /// No description provided for @translation_result_expired.
+  ///
+  /// In en, this message translates to:
+  /// **'The translated image expired. Please translate it again.'**
+  String get translation_result_expired;
+
+  /// No description provided for @translation_analysis_too_large.
+  ///
+  /// In en, this message translates to:
+  /// **'There is too much image content to analyze. Reduce the image size and try again.'**
+  String get translation_analysis_too_large;
+
+  /// No description provided for @translation_region_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'The image has too many text regions. Split it and try again.'**
+  String get translation_region_limit;
+
+  /// No description provided for @translation_text_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'A text region is too long. Adjust the image and try again.'**
+  String get translation_text_limit;
+
+  /// No description provided for @translation_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This translation is no longer available.'**
+  String get translation_unavailable;
+
+  /// No description provided for @translation_outcome_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'The result needs verification. It has not been resubmitted.'**
+  String get translation_outcome_unknown;
+
+  /// No description provided for @translation_rate_limited.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests are limited. Translation will resume automatically.'**
+  String get translation_rate_limited;
+
+  /// No description provided for @translation_quota_exhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient translation quota.'**
+  String get translation_quota_exhausted;
+
+  /// No description provided for @translation_unsupported_language.
+  ///
+  /// In en, this message translates to:
+  /// **'The service does not support this target language.'**
+  String get translation_unsupported_language;
+
+  /// No description provided for @translation_upgrade_required.
+  ///
+  /// In en, this message translates to:
+  /// **'The translation protocol is incompatible. Update the app.'**
+  String get translation_upgrade_required;
+
+  /// No description provided for @translation_remote_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation failed for this page. You can retry manually.'**
+  String get translation_remote_failed;
+
+  /// No description provided for @translation_bridge_invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The web page changed. Enable translation again.'**
+  String get translation_bridge_invalid;
+
+  /// No description provided for @translation_connection_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed. Please try again.'**
+  String get translation_connection_failed;
+
+  /// No description provided for @translation_paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation paused. You can verify its progress.'**
+  String get translation_paused;
+
+  /// No description provided for @translation_preparing_ellipsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing translation…'**
+  String get translation_preparing_ellipsis;
+
+  /// No description provided for @translation_checking_original.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking original image…'**
+  String get translation_checking_original;
+
+  /// No description provided for @translation_submitting.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting…'**
+  String get translation_submitting;
+
+  /// No description provided for @translation_uploading_ellipsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading original…'**
+  String get translation_uploading_ellipsis;
+
+  /// No description provided for @translation_waiting_ellipsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for translation…'**
+  String get translation_waiting_ellipsis;
+
+  /// No description provided for @translation_running_ellipsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating…'**
+  String get translation_running_ellipsis;
+
+  /// No description provided for @translation_verify_result.
+  ///
+  /// In en, this message translates to:
+  /// **'Result needs verification'**
+  String get translation_verify_result;
+
+  /// No description provided for @translation_partial.
+  ///
+  /// In en, this message translates to:
+  /// **'Some content has been translated'**
+  String get translation_partial;
+
+  /// No description provided for @translation_ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Translated image ready'**
+  String get translation_ready;
+
+  /// No description provided for @list_separator.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get list_separator;
+
+  /// No description provided for @player_play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get player_play;
+
+  /// No description provided for @player_quality.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality'**
+  String get player_quality;
+
+  /// No description provided for @player_subtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitles'**
+  String get player_subtitles;
+
+  /// No description provided for @player_audio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get player_audio;
+
+  /// No description provided for @player_statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats for nerds'**
+  String get player_statistics;
+
+  /// No description provided for @player_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get player_auto;
+
+  /// No description provided for @source_information.
+  ///
+  /// In en, this message translates to:
+  /// **'Source information'**
+  String get source_information;
+
+  /// No description provided for @source_code_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Page'**
+  String get source_code_page;
+
+  /// No description provided for @source_code_query.
+  ///
+  /// In en, this message translates to:
+  /// **'Query'**
+  String get source_code_query;
+
+  /// No description provided for @repository_invalid_source.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid source - remove it'**
+  String get repository_invalid_source;
+
+  /// No description provided for @player_fit_contain.
+  ///
+  /// In en, this message translates to:
+  /// **'Contain'**
+  String get player_fit_contain;
+
+  /// No description provided for @player_fit_cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get player_fit_cover;
+
+  /// No description provided for @player_fit_fill.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill'**
+  String get player_fit_fill;
+
+  /// No description provided for @player_fit_height.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get player_fit_height;
+
+  /// No description provided for @player_fit_width.
+  ///
+  /// In en, this message translates to:
+  /// **'Width'**
+  String get player_fit_width;
+
+  /// No description provided for @player_fit_scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get player_fit_scale;
+
+  /// No description provided for @player_fit_none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get player_fit_none;
+
+  /// No description provided for @player_shader_clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Off (clear shaders)'**
+  String get player_shader_clear;
+
+  /// No description provided for @player_shader_luma.
+  ///
+  /// In en, this message translates to:
+  /// **'Luma Upscaling'**
+  String get player_shader_luma;
+
+  /// No description provided for @player_decoder_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto (hardware)'**
+  String get player_decoder_auto;
+
+  /// No description provided for @player_decoder_software.
+  ///
+  /// In en, this message translates to:
+  /// **'Software (no hardware)'**
+  String get player_decoder_software;
+
+  /// No description provided for @player_stats_toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle overlay'**
+  String get player_stats_toggle;
+
+  /// No description provided for @player_stats_general.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get player_stats_general;
+
+  /// No description provided for @player_stats_frames.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame timings'**
+  String get player_stats_frames;
+
+  /// No description provided for @player_stats_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Input cache'**
+  String get player_stats_cache;
+
+  /// No description provided for @player_stats_filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Active filters'**
+  String get player_stats_filters;
+
+  /// No description provided for @player_stats_log.
+  ///
+  /// In en, this message translates to:
+  /// **'Log'**
+  String get player_stats_log;
+
+  /// No description provided for @source_mark_pinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get source_mark_pinned;
+
+  /// No description provided for @translation_image_action.
+  ///
+  /// In en, this message translates to:
+  /// **'{action} this image'**
+  String translation_image_action(String action);
+
+  /// No description provided for @memory_waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'memory: waiting for a sample'**
+  String get memory_waiting;
+
+  /// No description provided for @memory_rss.
+  ///
+  /// In en, this message translates to:
+  /// **'RSS   {current}   peak {peak}'**
+  String memory_rss(String current, String peak);
+
+  /// No description provided for @memory_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'cache {current} / {limit}   peak {peak}'**
+  String memory_cache(String current, String limit, String peak);
+
+  /// No description provided for @memory_items.
+  ///
+  /// In en, this message translates to:
+  /// **'items {count} / {limit}   live {live}   peak {peak}'**
+  String memory_items(int count, int limit, int live, int peak);
+
+  /// No description provided for @memory_full_samples.
+  ///
+  /// In en, this message translates to:
+  /// **'full  {percent}% of {count, plural, =1{1 sample} other{{count} samples}}'**
+  String memory_full_samples(String percent, int count);
+
+  /// No description provided for @memory_reset_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'toggle it off and on in settings to reset'**
+  String get memory_reset_hint;
+
+  /// No description provided for @action_hide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get action_hide;
+
+  /// No description provided for @discord_get_app.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {app}'**
+  String discord_get_app(String app);
+
+  /// No description provided for @discord_idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get discord_idle;
+
+  /// No description provided for @discord_watching_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Watching {title}'**
+  String discord_watching_title(String title);
+
+  /// No description provided for @discord_reading_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading {title}'**
+  String discord_reading_title(String title);
 }
 
 class _AppLocalizationsDelegate
@@ -8905,20 +11118,20 @@ class _AppLocalizationsDelegate
   @override
   bool isSupported(Locale locale) => <String>[
     'ar',
-    'as',
     'de',
     'en',
     'es',
     'fr',
-    'hi',
     'id',
     'it',
     'ja',
     'ko',
+    'pl',
     'pt',
     'ru',
-    'th',
     'tr',
+    'uk',
+    'vi',
     'zh',
   ].contains(locale.languageCode);
 
@@ -8927,21 +11140,13 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-  // Lookup logic when language+country codes are specified.
+  // Lookup logic when language+script codes are specified.
   switch (locale.languageCode) {
-    case 'es':
+    case 'zh':
       {
-        switch (locale.countryCode) {
-          case '419':
-            return AppLocalizationsEs419();
-        }
-        break;
-      }
-    case 'pt':
-      {
-        switch (locale.countryCode) {
-          case 'BR':
-            return AppLocalizationsPtBr();
+        switch (locale.scriptCode) {
+          case 'Hant':
+            return AppLocalizationsZhHant();
         }
         break;
       }
@@ -8951,8 +11156,6 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'ar':
       return AppLocalizationsAr();
-    case 'as':
-      return AppLocalizationsAs();
     case 'de':
       return AppLocalizationsDe();
     case 'en':
@@ -8961,8 +11164,6 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEs();
     case 'fr':
       return AppLocalizationsFr();
-    case 'hi':
-      return AppLocalizationsHi();
     case 'id':
       return AppLocalizationsId();
     case 'it':
@@ -8971,14 +11172,18 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsJa();
     case 'ko':
       return AppLocalizationsKo();
+    case 'pl':
+      return AppLocalizationsPl();
     case 'pt':
       return AppLocalizationsPt();
     case 'ru':
       return AppLocalizationsRu();
-    case 'th':
-      return AppLocalizationsTh();
     case 'tr':
       return AppLocalizationsTr();
+    case 'uk':
+      return AppLocalizationsUk();
+    case 'vi':
+      return AppLocalizationsVi();
     case 'zh':
       return AppLocalizationsZh();
   }

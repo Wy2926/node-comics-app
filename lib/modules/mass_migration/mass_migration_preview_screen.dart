@@ -182,7 +182,7 @@ class _MassMigrationPreviewScreenState
               [
                 if ((sourceGroup.lang ?? '').isNotEmpty)
                   completeLanguageName(sourceGroup.lang!),
-                '${_selected.length}/$total selected',
+                context.l10n.selection_progress(_selected.length, total),
               ].join(' • '),
             ),
           ),

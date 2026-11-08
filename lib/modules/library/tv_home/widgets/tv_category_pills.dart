@@ -51,7 +51,7 @@ class _CategoryPillsState extends State<TvCategoryPills> {
     categoryRepository.setHidden(category, true);
     if (widget.selected == category.id) widget.onSelect(null);
     _focusAll();
-    showNodeLaneNotice('Hid “${category.name}” · hold OK on “All” to unhide');
+    showNodeLaneNotice(context.l10n.tv_category_hidden(category.name ?? ''));
   }
 
   @override
@@ -70,7 +70,7 @@ class _CategoryPillsState extends State<TvCategoryPills> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TvPill(
-                    label: 'All',
+                    label: context.l10n.bookshelf_all,
                     focusNode: _allNode,
                     selected: widget.selected == null,
                     autofocus: true,
@@ -120,7 +120,7 @@ class _CategoryPillsState extends State<TvCategoryPills> {
 /// focused. Hiding leaves focus there, so the toast can name the way back.
 void _showHiddenCategoriesDialog(BuildContext context, List<Category> hidden) {
   if (hidden.isEmpty) {
-    showNodeLaneNotice('No hidden categories');
+    showNodeLaneNotice(context.l10n.tv_no_hidden_categories);
     return;
   }
   showDialog(
@@ -188,7 +188,7 @@ void _showAddCategoryDialog(BuildContext context, List<Category> existing) {
                     categoryRepository.create(category);
                     Navigator.pop(context);
                   },
-            child: const Text('Add'),
+            child: Text(context.l10n.add),
           ),
         ],
       ),

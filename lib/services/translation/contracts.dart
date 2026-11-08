@@ -1,3 +1,5 @@
+import 'package:mangayomi/utils/localized_message.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -165,30 +167,32 @@ class TranslationFailure implements Exception {
   const TranslationFailure(this.code, {this.retryAfter});
   final String code;
   final Duration? retryAfter;
-  String get message => switch (code) {
-    'AUTH_REQUIRED' => '请先登录翻译账号',
-    'SOURCE_CHANGED' => '原图已变化，请重新载入',
-    'SOURCE_MISSING' => '原图暂不可用',
-    'RESOURCE_LIMIT' => '当前图片超出本机处理预算，已保留原图',
-    'STORAGE_FULL' => '翻译存储空间不足，请先清理译图',
-    'INVALID_IMAGE' => '图片格式或内容无效',
-    'UNSUPPORTED_IMAGE' => '暂不支持此图片的翻译，已保留原图',
-    'INVALID_RESULT' => '译图校验失败，请重新读取',
-    'RESULT_UNAVAILABLE' => '译图暂不可用，请重新读取',
-    'RESULT_EXPIRED' => '译图已过期，请重新翻译',
-    'CLASSIC_ANALYSIS_TOO_LARGE' => '图片分析内容过多，请缩小图片后再翻译',
-    'CLASSIC_REGION_LIMIT_EXCEEDED' => '图片文字区域过多，请拆分图片后再翻译',
-    'CLASSIC_TEXT_LIMIT_EXCEEDED' => '图片单段文字过长，请调整图片后再翻译',
-    'TRANSLATION_UNAVAILABLE' => '此翻译已不可用',
-    'OUTCOME_UNKNOWN' => '结果待核实，未重新提交',
-    'RATE_LIMITED' => '请求受限，稍后自动恢复',
-    'QUOTA_EXHAUSTED' => '当前翻译额度不足',
-    'UNSUPPORTED_LANGUAGE' => '服务暂不支持此目标语言',
-    'CLIENT_UPGRADE_REQUIRED' => '翻译协议不兼容，请更新应用',
-    'REMOTE_FAILED' => '本页翻译失败，可手动重试',
-    'BRIDGE_INVALID' => '网页已变化，请重新开启翻译',
-    _ => '连接失败，请重试',
-  };
+  String get message => localizedMessage(
+    (l10n) => switch (code) {
+      'AUTH_REQUIRED' => l10n.translation_auth_required,
+      'SOURCE_CHANGED' => l10n.translation_source_changed,
+      'SOURCE_MISSING' => l10n.translation_source_missing,
+      'RESOURCE_LIMIT' => l10n.translation_resource_limit,
+      'STORAGE_FULL' => l10n.translation_storage_full,
+      'INVALID_IMAGE' => l10n.translation_invalid_image,
+      'UNSUPPORTED_IMAGE' => l10n.translation_unsupported_image,
+      'INVALID_RESULT' => l10n.translation_invalid_result,
+      'RESULT_UNAVAILABLE' => l10n.translation_result_unavailable,
+      'RESULT_EXPIRED' => l10n.translation_result_expired,
+      'CLASSIC_ANALYSIS_TOO_LARGE' => l10n.translation_analysis_too_large,
+      'CLASSIC_REGION_LIMIT_EXCEEDED' => l10n.translation_region_limit,
+      'CLASSIC_TEXT_LIMIT_EXCEEDED' => l10n.translation_text_limit,
+      'TRANSLATION_UNAVAILABLE' => l10n.translation_unavailable,
+      'OUTCOME_UNKNOWN' => l10n.translation_outcome_unknown,
+      'RATE_LIMITED' => l10n.translation_rate_limited,
+      'QUOTA_EXHAUSTED' => l10n.translation_quota_exhausted,
+      'UNSUPPORTED_LANGUAGE' => l10n.translation_unsupported_language,
+      'CLIENT_UPGRADE_REQUIRED' => l10n.translation_upgrade_required,
+      'REMOTE_FAILED' => l10n.translation_remote_failed,
+      'BRIDGE_INVALID' => l10n.translation_bridge_invalid,
+      _ => l10n.translation_connection_failed,
+    },
+  );
   @override
   String toString() => 'TranslationFailure($code)';
 }

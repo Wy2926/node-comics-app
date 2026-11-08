@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 import 'dart:async';
@@ -366,7 +367,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   void _tabLimit() {
-    showNodeLaneNotice('最多保留 12 个标签页，请先关闭一个。');
+    showNodeLaneNotice(context.l10n.browser_tab_limit);
     _showTabs();
   }
 
@@ -412,7 +413,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     await showTranslationControls(
       context,
       tab.translation,
-      title: '网页翻译',
+      title: context.l10n.browser_translation,
       subtitle: [
         tab.title,
         Uri.tryParse(tab.url)?.host ?? '',
@@ -423,7 +424,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   Widget _menu(BrowserTab? tab) => PopupMenuButton<String>(
-    tooltip: '更多',
+    tooltip: context.l10n.more,
     icon: Icon(
       NodeLaneIcons.of(context).more,
       size: NodeLaneTokens.iconSize,
@@ -437,12 +438,12 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       PopupMenuItem(
         value: 'forward',
         enabled: tab != null && tab.historyIndex + 1 < tab.history.length,
-        child: const Text('前进'),
+        child: Text(context.l10n.browser_forward),
       ),
       PopupMenuItem(
         value: 'cookies',
         enabled: !_clearingLogins,
-        child: const Text('清除所有网站登录状态'),
+        child: Text(context.l10n.browser_clear_all_cookies),
       ),
     ],
   );
@@ -461,7 +462,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       if (mounted) await current?.controller?.reload();
     } catch (_) {
       if (mounted) {
-        showNodeLaneNotice('清除失败，请重试。', kind: NodeLaneNoticeKind.error);
+        showNodeLaneNotice(
+          context.l10n.browser_clear_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
       }
     } finally {
       if (mounted) setState(() => _clearingLogins = false);
@@ -611,7 +615,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    bridge?.updateTheme(translationImageTheme(context));
+    bridge?.updatePresentation(translationImageTheme(context), context.l10n);
   }
 
   Future<void> _visibility() async {
@@ -686,6 +690,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
             controller,
             widget.tab.translation,
             widget.tab.id,
+            l10n: context.l10n,
             theme: translationImageTheme(context),
             onImageMenu: (target) async {
               if (!mounted || !widget.active || _imageMenuOpen) return;

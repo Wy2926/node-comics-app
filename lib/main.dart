@@ -1,3 +1,4 @@
+import 'package:mangayomi/l10n/languages.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
@@ -351,7 +352,7 @@ class _MyAppState extends ConsumerState<MyApp>
       debugShowCheckedModeBanner: false,
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+      supportedLocales: nodeLaneSupportedLocales,
       builder: (context, child) {
         Widget content = child ?? const SizedBox.shrink();
         // First-run setup uses the same UI scale, shortcuts and toast host as

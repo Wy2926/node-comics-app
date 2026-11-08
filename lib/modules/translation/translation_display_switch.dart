@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -20,12 +21,12 @@ class TranslationDisplaySwitch extends StatelessWidget {
     segments: [
       ButtonSegment(
         value: false,
-        label: const Text('原图'),
+        label: Text(context.l10n.translation_original),
         enabled: onChanged != null,
       ),
       ButtonSegment(
         value: true,
-        label: const Text('译图'),
+        label: Text(context.l10n.translation_translated),
         enabled: onChanged != null,
       ),
     ],

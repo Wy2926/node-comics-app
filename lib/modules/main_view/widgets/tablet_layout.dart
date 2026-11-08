@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
@@ -283,7 +284,7 @@ class _TvRailHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
             ),
             child: Text(
-              'BETA',
+              context.l10n.beta,
               style: TextStyle(
                 color: accent,
                 fontSize: 8,

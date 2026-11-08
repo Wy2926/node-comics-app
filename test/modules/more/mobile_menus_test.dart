@@ -274,12 +274,12 @@ void main() {
       container.read(hideItemsStateProvider.notifier).set(['/browser']);
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('浏览器'),
+        find.text('Browser'),
         -300,
         scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
-      expect(find.text('浏览器'), findsOneWidget);
+      expect(find.text('Browser'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('About and help'),
         300,

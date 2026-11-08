@@ -1,6 +1,28 @@
 {
   "@@locale": "es",
+  "app_update_details_hint": "Ver notas de la versión y opciones de instalación",
+  "app_update_download": "Descargar actualización",
+  "app_update_download_hint": "Después de la descarga, siga las instrucciones para instalar la actualización.",
+  "bookshelf_all": "Todos",
+  "bookshelf_search": "Buscar biblioteca",
+  "app_update_allow_install": "Permita la instalación de la aplicación en la configuración del sistema, luego regrese y toque Instalar.",
+  "app_update_waiting": "Esperando que el sistema reanude la descarga…",
+  "app_update_cancel_download": "Cancelar descarga",
+  "app_update_remove_package": "Eliminar paquete descargado",
+  "app_name": "NodeLane Comics",
+  "settings_search_empty": "No hay configuraciones coincidentes",
+  "search_empty_hint": "Pruebe con otra palabra clave o borre la búsqueda para verlo todo.",
+  "search_clear": "Borrar búsqueda",
+  "app_updates": "Actualizaciones de aplicaciones",
+  "app_update_auto": "Comprobar en el lanzamiento",
+  "app_update_view": "Ver actualización",
+  "app_update_later": "Más tarde",
+  "app_update_external_hint": "Abre el enlace de actualización en su navegador",
+  "app_update_failed": "No se pueden buscar actualizaciones. Por favor inténtalo de nuevo.",
+  "app_update_opened": "Enlace de actualización abierto",
+  "app_diagnostics": "Diagnósticos y registros",
   "library": "Biblioteca",
+  "updates_search": "Buscar actualizaciones",
   "updates": "Actualizaciones",
   "history": "Historia",
   "browse": "Explorar",
@@ -11,14 +33,17 @@
   "ignore_filters": "Ignorar filtros",
   "downloaded": "Descargado",
   "unread": "Sin leer",
+  "unwatched": "No visto",
   "started": "Comenzado",
   "bookmarked": "Marcado",
   "sort": "Ordenar",
   "alphabetically": "Alfabéticamente",
   "last_read": "Última lectura",
+  "last_watched": "Visto por última vez",
   "last_update_check": "Última verificación de actualización",
   "last_entry_delete_warning": "{count, plural, =1{Estás borrando el único {entryType} de este {mediaType} de tu biblioteca.} other{Estás borrando los {count} {entryTypePlural} de este {mediaType} de tu biblioteca.}}\nEsto también quitará todo el {mediaType} de tu biblioteca.\n\nNota: Los archivos en sí no se borrarán.",
   "@last_entry_delete_warning": {
+    "description": "Warning when deleting all entries (chapters/episodes) of a manga/anime.",
     "placeholders": {
       "count": {},
       "entryType": {},
@@ -29,16 +54,21 @@
   "chapter": "capítulo",
   "episode": "episodio",
   "unread_count": "Cuenta de no leídos",
+  "unwatched_count": "Número no visto",
   "latest_chapter": "Último capítulo",
+  "latest_episode": "Último episodio",
   "date_added": "Fecha añadida",
   "display": "Mostrar",
   "display_mode": "Modo de visualización",
   "compact_grid": "Cuadrícula compacta",
+  "compression_level": "Nivel de compresión",
+  "compression_info": "Cuanta más compresión, menos espacio ocupa el respaldo, pero más CPU consume. Predeterminado: {level}",
   "comfortable_grid": "Cuadrícula cómoda",
   "cover_only_grid": "Cuadrícula solo de portadas",
   "list": "Lista",
   "badges": "Insignias",
   "downloaded_chapters": "Capítulos descargados",
+  "downloaded_episodes": "Episodios descargados",
   "language": "Idioma",
   "local_source": "Fuente local",
   "tabs": "Pestañas",
@@ -46,11 +76,13 @@
   "show_numbers_of_items": "Mostrar números de ítems",
   "other": "Otro",
   "show_continue_reading_buttons": "Mostrar botones de continuar leyendo",
+  "show_continue_watching_buttons": "Mostrar botones de continuar viendo",
   "empty_library": "Biblioteca vacía",
   "search": "Buscar...",
   "no_recent_updates": "No hay actualizaciones recientes",
   "remove_everything": "Eliminar todo",
   "remove_everything_msg": "¿Estás seguro? Se perderá todo el historial",
+  "remove_all_update_msg": "¿Estás seguro? Toda la actualización será eliminada",
   "ok": "OK",
   "cancel": "Cancelar",
   "remove": "Eliminar",
@@ -63,528 +95,6 @@
   "latest": "Último",
   "extensions": "Extensiones",
   "migrate": "Migrar",
-  "incognito_mode": "Modo incógnito",
-  "incognito_mode_description": "Pausa el historial de lectura",
-  "download_queue": "Cola de descarga",
-  "categories": "Categorías",
-  "settings": "Configuraciones",
-  "about": "Acerca de",
-  "help": "Ayuda",
-  "no_downloads": "Sin descargas",
-  "edit_categories": "Editar categorías",
-  "edit_categories_description": "No tienes categorías. Toca el botón más para crear una para organizar tu biblioteca",
-  "add": "Agregar",
-  "add_category": "Agregar categoría",
-  "name": "Nombre",
-  "category_name_required": "*Requerido",
-  "add_category_error_exist": "¡Ya existe una categoría con este nombre!",
-  "delete_category": "Eliminar categoría",
-  "delete_category_msg": "¿Deseas eliminar la categoría {name}?",
-  "rename_category": "Renombrar categoría",
-  "general": "General",
-  "general_subtitle": "Idioma de la app",
-  "app_language": "Idioma de la app",
-  "appearance": "Apariencia",
-  "appearance_subtitle": "Tema, formato de fecha y hora",
-  "theme": "Tema",
-  "dark_mode": "Modo oscuro",
-  "on": "Encendido",
-  "off": "Apagado",
-  "pure_black_dark_mode": "Modo oscuro negro puro",
-  "timestamp": "Sello de tiempo",
-  "relative_timestamp": "Sello de tiempo relativo",
-  "relative_timestamp_short": "Corto (Hoy, Ayer)",
-  "relative_timestamp_long": "Largo (Corto+, hace n días)",
-  "date_format": "Formato de fecha",
-  "reader": "Lector",
-  "refresh": "Actualizar",
-  "reader_subtitle": "Modo de lectura, visualización, navegación",
-  "default_reading_mode": "Modo de lectura predeterminado",
-  "reading_mode_vertical": "Vertical",
-  "reading_mode_horizontal": "Horizontal",
-  "reading_mode_left_to_right": "De izquierda a derecha",
-  "reading_mode_right_to_left": "De derecha a izquierda",
-  "reading_mode_vertical_continuous": "Vertical continuo",
-  "reading_mode_webtoon": "Webtoon",
-  "double_tap_animation_speed": "Velocidad de animación de doble toque",
-  "normal": "Normal",
-  "fast": "Rápido",
-  "no_animation": "Sin animación",
-  "animate_page_transitions": "Animar transiciones de página",
-  "crop_borders": "Recortar bordes",
-  "downloads": "Descargas",
-  "downloads_subtitle": "Configuraciones de descargas",
-  "download_location": "Ubicación de descarga",
-  "custom_location": "Ubicación personalizada",
-  "only_on_wifi": "Solo en wifi",
-  "save_as_cbz_archive": "Guardar como archivo CBZ",
-  "browse_subtitle": "Fuentes, búsqueda global",
-  "only_include_pinned_sources": "Incluir solo fuentes fijadas",
-  "nsfw_sources": "Fuentes NSFW (+18)",
-  "nsfw_sources_show": "Mostrar en listas de fuentes y extensiones",
-  "nsfw_sources_info": "Esto no evita que extensiones no oficiales o potencialmente mal etiquetadas muestren contenido NSFW (18+) dentro de la app",
-  "version": "Versión",
-  "check_for_update": "Buscar actualizaciones",
-  "n_days_ago": "hace {days} días",
-  "today": "Hoy",
-  "yesterday": "Ayer",
-  "a_week_ago": "Hace una semana",
-  "add_to_library": "Agregar a la biblioteca",
-  "completed": "Completado",
-  "ongoing": "En curso",
-  "on_hiatus": "En pausa",
-  "canceled": "Cancelado",
-  "publishing_finished": "Publicación finalizada",
-  "unknown": "Desconocido",
-  "set_categories": "Establecer categorías",
-  "edit": "Editar",
-  "in_library": "En la biblioteca",
-  "filter_scanlator_groups": "Filtrar grupos de scanlation",
-  "reset": "Reiniciar",
-  "by_source": "Por fuente",
-  "by_chapter_number": "Por número de capítulo",
-  "by_upload_date": "Por fecha de subida",
-  "source_title": "Título de fuente",
-  "chapter_number": "Número de capítulo",
-  "share": "Compartir",
-  "n_chapters": "{n} capítulos",
-  "no_description": "Sin descripción",
-  "resume": "Reanudar",
-  "read": "Leer",
-  "watch": "Ver",
-  "popular": "Popular",
-  "open_in_browser": "Abrir en navegador",
-  "clear_cookie": "Limpiar cookie",
-  "show_page_number": "Mostrar número de página",
-  "from_library": "Desde la biblioteca",
-  "downloaded_chapter": "Capítulo descargado",
-  "page": "Página {page}",
-  "global_search": "Búsqueda global",
-  "color_blend_level": "Nivel de mezcla de color",
-  "current": "Actual {char}",
-  "finished": "Terminado {char}",
-  "next": "Siguiente {char}",
-  "previous": "Anterior {char}",
-  "no_more_chapter": "No hay más capítulos",
-  "no_result": "Sin resultados",
-  "send": "Enviar",
-  "delete": "Eliminar",
-  "start_downloading": "Comenzar a descargar ahora",
-  "retry": "Reintentar",
-  "add_chapters": "Agregar capítulos",
-  "delete_chapters": "¿Eliminar capítulo?",
-  "default0": "Predeterminado",
-  "total_chapters": "Capítulos totales",
-  "import_local_file": "Importar archivo local",
-  "import_files": "Archivos",
-  "nothing_read_recently": "Nada leído recientemente",
-  "status": "Estado",
-  "not_started": "No iniciado",
-  "score": "Puntuación",
-  "start_date": "Fecha de inicio",
-  "finish_date": "Fecha de finalización",
-  "reading": "Leyendo",
-  "on_hold": "En espera",
-  "dropped": "Abandonado",
-  "plan_to_read": "Planear leer",
-  "re_reading": "Releyendo",
-  "chapters": "Capítulos",
-  "add_tracker": "Añadir seguimiento",
-  "one_tracker": "1 seguimiento",
-  "n_tracker": "{n} seguimientos",
-  "tracking": "Seguimiento",
-  "description": "Descripción",
-  "episode_progress": "Progreso: {n}",
-  "n_episodes": "{n} episodios",
-  "manga_sources": "Fuentes de manga",
-  "anime_sources": "Fuentes de anime",
-  "anime_extensions": "Extensiones de anime",
-  "manga_extensions": "Extensiones de manga",
-  "anime": "Anime",
-  "manga": "Manga",
-  "library_no_category_exist": "Aún no tienes ninguna categoría",
-  "watching": "Viendo",
-  "plan_to_watch": "Planear ver",
-  "re_watching": "Reviendo",
-  "episodes": "Episodios",
-  "download": "Descargar",
-  "new_update_available": "Nueva actualización disponible",
-  "app_version": "Versión de la App : v{v}",
-  "searching_for_updates": "Buscando actualizaciones...",
-  "no_new_updates_available": "No hay nuevas actualizaciones disponibles",
-  "uninstall": "Desinstalar",
-  "uninstall_extension": "¿Desinstalar extensión {ext}?",
-  "langauage": "Idioma",
-  "extension_detail": "Detalle de extensión",
-  "scale_type": "Tipo de escala",
-  "scale_type_fit_screen": "Ajustar a pantalla",
-  "scale_type_stretch": "Estirar",
-  "scale_type_fit_width": "Ajustar al ancho",
-  "scale_type_fit_height": "Ajustar al alto",
-  "scale_type_original_size": "Tamaño original",
-  "scale_type_smart_fit": "Ajuste inteligente",
-  "page_preload_amount": "Cantidad de páginas a precargar",
-  "page_preload_amount_subtitle": "La cantidad de páginas a precargar al leer. Valores más altos resultarán en una experiencia de lectura más fluida, a costa de un mayor uso de caché y red.",
-  "image_loading_error": "Esta imagen no pudo cargarse",
-  "add_episodes": "Agregar episodios",
-  "video_quality": "Calidad",
-  "video_subtitle": "Subtítulo",
-  "check_for_extension_updates": "Buscar actualizaciones de extensión",
-  "auto_extensions_updates": "Actualizaciones automáticas de extensión",
-  "auto_extensions_updates_subtitle": "Actualizará automáticamente la extensión cuando haya una nueva versión disponible.",
-  "check_for_app_updates": "Buscar actualizaciones de la aplicación al iniciar",
-  "reading_mode": "Modo de lectura",
-  "custom_filter": "Filtro personalizado",
-  "background_color": "Color de fondo",
-  "white": "Blanco",
-  "black": "Negro",
-  "grey": "Gris",
-  "automaic": "Automático",
-  "preferred_domain": "Dominio preferido",
-  "load_more": "Cargar más",
-  "cancel_all_for_this_series": "Cancelar todo para esta serie",
-  "login": "Iniciar sesión",
-  "login_into": "Iniciar sesión en {tracker}",
-  "email_adress": "Dirección de correo electrónico",
-  "password": "Contraseña",
-  "log_out_from": "¿Cerrar sesión de {tracker}?",
-  "log_out": "Cerrar sesión",
-  "update_pending": "Actualización pendiente",
-  "update_all": "Actualizar todo",
-  "backup_and_restore": "Respaldo y restauración",
-  "create_backup": "Crear respaldo",
-  "create_backup_dialog_title": "¿Qué quieres respaldar?",
-  "create_backup_subtitle": "Puede ser usado para restaurar la biblioteca actual",
-  "restore_backup": "Restaurar respaldo",
-  "restore_backup_subtitle": "Restaurar biblioteca desde archivo de respaldo",
-  "automatic_backups": "Respaldo automático",
-  "backup_frequency": "Frecuencia de respaldo",
-  "backup_location": "Ubicación de respaldo",
-  "backup_options": "Opciones de respaldo",
-  "backup_options_dialog_title": "¿Qué quieres respaldar?",
-  "backup_options_subtitle": "Qué información incluir en el archivo de respaldo",
-  "backup_and_restore_warning_info": "Deberías mantener copias de los respaldos en otros lugares también",
-  "library_entries": "Entradas de biblioteca",
-  "chapters_and_episode": "Capítulos y episodios",
-  "every_6_hours": "Cada 6 horas",
-  "every_12_hours": "Cada 12 horas",
-  "daily": "Diario",
-  "every_2_days": "Cada 2 días",
-  "weekly": "Semanal",
-  "restore_backup_warning_title": "Restaurar una copia de seguridad sobrescribirá todos los datos existentes.\n\n¿Continuar con la restauración?",
-  "services": "Servicios",
-  "tracking_warning_info": "Sincronización unidireccional para actualizar el progreso de los capítulos en servicios de seguimiento. Configura el seguimiento para entradas individuales desde su botón de seguimiento.",
-  "use_page_tap_zones": "Usar zonas de toque de página",
-  "manage_trackers": "Gestionar rastreadores",
-  "restore": "Restaurar",
-  "backups": "Copias de seguridad",
-  "by_scanlator": "Por scanlator",
-  "by_name": "Por nombre",
-  "installed": "Instalado",
-  "auto_scroll": "Desplazamiento automático",
-  "video_audio": "Audio",
-  "player": "Jugador",
-  "markEpisodeAsSeenSetting": "En qué punto marcar el episodio como visto",
-  "default_skip_intro_length": "Duración predeterminada para saltar la introducción",
-  "default_playback_speed_length": "Duración predeterminada de la velocidad de reproducción",
-  "updateProgressAfterReading": "Actualizar el progreso después de leer",
-  "no_sources_installed": "¡No hay fuentes instaladas!",
-  "show_extensions": "Mostrar extensiones",
-  "default_skip_forward_skip_length": "Longitud de salto hacia adelante predeterminada",
-  "aniskip_requires_info": "AniSkip requiere que el anime esté registrado en MAL o Anilist para funcionar.",
-  "enable_aniskip": "Habilitar AniSkip",
-  "enable_auto_skip": "Habilitar salto automático",
-  "aniskip_button_timeout": "Tiempo de espera del botón",
-  "fullscreen": "Pantalla completa",
-  "update_library": "Actualizar biblioteca",
-  "next_chapter": "Próximo capítulo",
-  "next_5_chapters": "Próximos 5 capítulos",
-  "next_10_chapters": "Próximos 10 capítulos",
-  "next_25_chapters": "Próximos 25 capítulos",
-  "cover_saved": "Portada guardada",
-  "set_as_cover": "Establecer como portada",
-  "use_this_as_cover_art": "¿Usar esto como portada?",
-  "save": "Guardar",
-  "picture_saved": "Imagen guardada",
-  "cover_updated": "Portada actualizada",
-  "blend_mode_default": "Por defecto",
-  "blend_mode_multiply": "Multiplicar",
-  "blend_mode_screen": "Pantalla",
-  "blend_mode_overlay": "Incrustar",
-  "blend_mode_colorDodge": "Esquema de color",
-  "blend_mode_lighten": "Aclarar",
-  "blend_mode_colorBurn": "Quemadura de color",
-  "blend_mode_darken": "Oscurecer",
-  "blend_mode_difference": "Diferencia",
-  "blend_mode_saturation": "Saturación",
-  "blend_mode_softLight": "Luz suave",
-  "blend_mode_plus": "Más",
-  "blend_mode_exclusion": "Exclusión",
-  "custom_color_filter": "Filtro de color personalizado",
-  "color_filter_blend_mode": "Modo de mezcla de filtro de color",
-  "enable_all": "Activar todo",
-  "disable_all": "Desactivar todo",
-  "font": "Fuente",
-  "color": "Color",
-  "font_size": "Tamaño de fuente",
-  "text": "Texto",
-  "border": "Borde",
-  "background": "Fondo",
-  "no_subtite_warning_message": "No tiene efecto porque no hay pistas de subtítulos en este vídeo",
-  "grid_size": "Tamaño de la cuadrícula",
-  "n_per_row": "{n} por fila",
-  "horizontal_continious": "Horizontal continuo",
-  "edit_code": "Editar código",
-  "use_libass": "Habilitar libass",
-  "use_libass_info": "Utilice la renderización de subtítulos basada en libass para el backend nativo.",
-  "libass_not_disable_message": "Deshabilite `use libass` en la configuración del reproductor para poder personalizar los subtítulos.",
-  "torrent_stream": "Transmisión de torrent",
-  "add_torrent": "Agregar torrent",
-  "enter_torrent_hint_text": "Ingrese la URL del imán o del archivo torrent",
-  "torrent_url": "URL del torrent",
-  "or": "O",
-  "advanced": "Avanzado",
-  "use_native_http_client": "Utilizar cliente HTTP nativo",
-  "use_native_http_client_info": "admite automáticamente las características de la plataforma como VPNs, admite más características HTTP como HTTP/3 y manejo de redirección personalizada",
-  "unwatched": "No visto",
-  "last_watched": "Visto por última vez",
-  "unwatched_count": "Número no visto",
-  "latest_episode": "Último episodio",
-  "downloaded_episodes": "Episodios descargados",
-  "show_continue_watching_buttons": "Mostrar botones de continuar viendo",
-  "by_episode_number": "Por número de episodio",
-  "episode_number": "Número de episodio",
-  "total_episodes": "Total de episodios",
-  "next_episode": "Siguiente episodio",
-  "next_5_episodes": "Siguientes 5 episodios",
-  "next_10_episodes": "Siguientes 10 episodios",
-  "next_25_episodes": "Siguientes 25 episodios",
-  "remove_all_update_msg": "¿Estás seguro? Toda la actualización será eliminada",
-  "syncing": "Sincronizar",
-  "sync_logged": "Inicio de sesión exitoso",
-  "syncing_subtitle": "Introduce la dirección de tu servidor de sincronización e inicia sesión en el navegador para sincronizar tu progreso de lectura entre dispositivos.",
-  "sync_service": "Sincronización autoalojada",
-  "sync_server": "Dirección del servidor de sincronización",
-  "sync_starting": "Empezando la sincronización...",
-  "sync_finished": "Sincronización finalizada",
-  "sync_failed": "Error de sincronización",
-  "sync_button_sync": "Sincronizar progreso",
-  "dialog_confirm": "Confirmar",
-  "full_screen_player": "Usar pantalla completa",
-  "full_screen_player_info": "Usar automáticamente la pantalla completa al reproducir un video.",
-  "novel_sources": "Fuentes de novelas",
-  "novel_extensions": "Extensiones de novelas",
-  "novel": "Novela",
-  "skip_opening": "Omitir apertura",
-  "skip_ending": "Omitir cierre",
-  "n_hour_ago": "hace {hour} hora",
-  "n_hours_ago": "hace {hours} horas",
-  "n_minute_ago": "hace {minute} minuto",
-  "n_minutes_ago": "hace {minutes} minutos",
-  "n_day_ago": "hace {day} día",
-  "now": "ahora",
-  "library_last_updated": "Última actualización de la biblioteca: {lastUpdated}",
-  "data_and_storage": "Datos y almacenamiento",
-  "download_location_info": "Usado para descargas de capítulos",
-  "storage": "Almacenamiento",
-  "clear_chapter_and_episode_cache": "Borrar caché de capítulos y episodios",
-  "cache_cleared": "Caché borrada",
-  "clear_chapter_or_episode_cache_on_app_launch": "Borrar caché de capítulos/episodios al iniciar la aplicación",
-  "app_settings": "Configuración de la aplicación",
-  "sources_settings": "Configuración de fuentes",
-  "include_sensitive_settings": "Incluir configuraciones sensibles (por ejemplo, tokens de inicio de sesión de rastreadores)",
-  "create": "Crear",
-  "migrate_confirm": "Migrar a otra fuente",
-  "clean_database": "Limpiar base de datos",
-  "cleaned_database": "¡Base de datos limpiada! {x} entradas eliminadas",
-  "clean_database_desc": "¡Esto eliminará todos los elementos que no se hayan agregado a la biblioteca!",
-  "statistics": "Estadísticas",
-  "default_subtitle_language": "Idioma predeterminado de subtítulos",
-  "follow_system_theme": "Seguir el tema del sistema",
-  "sync_on": "Habilitar sincronización",
-  "sync_auto": "Sincronización automática",
-  "sync_auto_warning": "¡La sincronización automática es una función experimental actualmente!",
-  "sync_auto_off": "Desactivado",
-  "sync_auto_5_minutes": "Cada 5 minutos",
-  "sync_auto_10_minutes": "Cada 10 minutos",
-  "sync_auto_30_minutes": "Cada 30 minutos",
-  "sync_auto_1_hour": "Cada 1 hora",
-  "sync_auto_3_hours": "Cada 3 horas",
-  "sync_auto_6_hours": "Cada 6 horas",
-  "sync_auto_12_hours": "Cada 12 horas",
-  "server_error": "¡Error del servidor!",
-  "reorder_navigation": "Personalizar navegación",
-  "reorder_navigation_description": "Reordena y ajusta cada navegación según tus necesidades.",
-  "include_subtitles": "Incluir subtítulos",
-  "downloads_are_limited_to_wifi": "Las descargas están limitadas solo a Wi-Fi",
-  "manga_extensions_repo": "Repositorio de extensiones de manga",
-  "anime_extensions_repo": "Repositorio de extensiones de anime",
-  "novel_extensions_repo": "Repositorio de extensiones de novelas",
-  "undefined": "Indefinido",
-  "empty_extensions_repo": "No tienes ninguna URL de repositorio aquí. ¡Haz clic en el botón más para agregar una!",
-  "add_extensions_repo": "Agregar URL del repositorio",
-  "remove_extensions_repo": "Eliminar URL del repositorio",
-  "manage_manga_repo_urls": "Gestionar URLs del repositorio de manga",
-  "manage_anime_repo_urls": "Gestionar URLs del repositorio de anime",
-  "manage_novel_repo_urls": "Gestionar URLs del repositorio de novelas",
-  "url_cannot_be_empty": "La URL no puede estar vacía",
-  "url_must_end_with_dot_json_or_dot_pb": "La URL debe terminar con .json / .pb",
-  "repo_url": "URL del repositorio",
-  "invalid_url_format": "Formato de URL no válido",
-  "clear_all_sources": "Borrar todas las fuentes",
-  "clear_all_sources_msg": "Esto borrará completamente todas las fuentes de la aplicación. ¿Estás seguro de que deseas continuar?",
-  "sources_cleared": "¡Fuentes borradas!",
-  "repo_added": "¡Repositorio de fuentes agregado!",
-  "add_repo": "¿Agregar repositorio?",
-  "genre_search_library": "Buscar género en la biblioteca",
-  "genre_search_source": "Explorar en la fuente",
-  "source_not_added": "¡La fuente no está instalada!",
-  "load_own_subtitles": "Cargar tus propios subtítulos...",
-  "unsupported_repo": "No se ha podido añadir este repositorio de fuentes. Comprueba su dirección o contacta con su responsable.",
-  "downloaded_only": "Solo descargados",
-  "downloaded_only_description": "Mostrar solo entradas descargadas en tu biblioteca",
-  "concurrent_downloads": "Descargas simultáneas",
-  "logs_on": "Activar registro",
-  "share_app_logs": "Compartir registros de la aplicación",
-  "no_app_logs": "¡No hay archivo log.txt disponible!",
-  "failed": "¡Fallido!",
-  "next_week": "La próxima semana",
-  "sync_button_upload": "Solo subir",
-  "sync_button_upload_info": "¡Esta operación reemplazará completamente los datos remotos con los datos locales!",
-  "sync_button_download": "Solo descargar",
-  "sync_button_download_info": "¡Esta operación reemplazará completamente los datos locales con los datos remotos!",
-  "extension_settings": "Configuración de extensión",
-  "video_audio_info": "Idiomas preferidos, corrección de tono, canales de audio",
-  "all_chapters": "Todos los capítulos",
-  "all_episodes": "Todos los episodios",
-  "advanced_info": "Configuración mpv",
-  "recommendations": "Recomendaciones",
-  "recommendations_similar": "similar",
-  "recommendations_weights": "Pesos de recomendación",
-  "recommendations_weights_genre": "Similaridad de género",
-  "recommendations_weights_setting": "Similaridad de escenario",
-  "recommendations_weights_synopsis": "Similaridad de historia",
-  "recommendations_weights_theme": "Similaridad de tema",
-  "custom_dns": "DNS personalizado (dejar en blanco para usar DNS del sistema)",
-  "android_proxy_server": "Servidor proxy de Android (M-Extension-Server)",
-  "get_m_extension_server": "Obtener M-Extension-Server",
-  "search_subtitles": "Buscar subtítulos en línea...",
-  "extension_notes": "Notas: {notes}",
-  "you_have_finished_reading": "Has terminado de leer",
-  "hwdec": "Decodificador de hardware",
-  "enable_hardware_accel": "Aceleración de hardware",
-  "enable_hardware_accel_info": "Actívalo/desactívalo si experimentas errores o bloqueos",
-  "track_library_navigate": "Ir a la entrada local existente",
-  "track_library_add": "Agregar a la biblioteca local",
-  "track_library_add_confirm": "Agregar elemento rastreado a la biblioteca local",
-  "track_library_not_logged": "¡Inicia sesión en el rastreador correspondiente para usar esta función!",
-  "track_library_switch": "Cambiar a otro rastreador",
-  "go_back": "Volver",
-  "merge_library_nav_mobile": "Fusionar navegación de biblioteca en móvil",
-  "enable_discord_rpc": "Activar Discord RPC",
-  "hide_discord_rpc_incognito": "Ocultar Discord RPC en modo Incógnito",
-  "rpc_show_reading_watching_progress": "Mostrar capítulo actual en Discord (requiere reinicio)",
-  "rpc_show_title": "Mostrar título actual en Discord",
-  "rpc_show_cover_image": "Mostrar imagen de portada actual en Discord",
-  "sync_enable_histories": "Sincronizar datos de historial",
-  "sync_enable_updates": "Sincronizar datos de actualización",
-  "sync_enable_settings": "Sincronizar configuración",
-  "enable_mpv": "Activar shaders / scripts de mpv",
-  "mpv_info": "Soporta scripts .js en mpv/scripts/",
-  "mpv_redownload": "Redescargar archivos de configuración mpv",
-  "mpv_redownload_info": "¡Reemplaza archivos de configuración antiguos con nuevos!",
-  "mpv_download": "¡Se requieren archivos de configuración MPV!\n¿Descargar ahora?",
-  "custom_buttons": "Botones personalizados",
-  "custom_buttons_info": "Ejecutar código lua con botones personalizados",
-  "custom_buttons_edit": "Editar botones personalizados",
-  "custom_buttons_add": "Agregar botón personalizado",
-  "custom_buttons_added": "¡Botón personalizado agregado!",
-  "custom_buttons_delete": "Eliminar botón personalizado",
-  "custom_buttons_text": "Texto del botón",
-  "custom_buttons_text_req": "Texto del botón requerido",
-  "custom_buttons_js_code": "Código lua",
-  "custom_buttons_js_code_req": "Código lua requerido",
-  "custom_buttons_js_code_long": "Código lua (en pulsación larga)",
-  "custom_buttons_startup": "Código lua (al inicio)",
-  "n_days": "{n} días",
-  "decoder": "Decodificador",
-  "decoder_info": "Decodificación de hardware, formato de píxeles, debanding",
-  "enable_gpu_next": "Activar gpu-next (solo Android)",
-  "enable_gpu_next_info": "Un nuevo motor de renderizado de video",
-  "debanding": "Debanding",
-  "use_yuv420p": "Usar formato de píxeles YUV420P",
-  "use_yuv420p_info": "Puede solucionar pantallas negras en algunos códecs de video, también puede mejorar el rendimiento a costa de la calidad",
-  "audio_preferred_languages": "Idiomas preferidos",
-  "audio_preferred_languages_info": "Idioma(s) de audio para seleccionar por defecto en un video con múltiples flujos de audio, códigos de idioma de 2/3 letras (ej: es, en, de). Múltiples valores pueden estar delimitados por coma.",
-  "enable_audio_pitch_correction": "Activar corrección de tono de audio",
-  "enable_audio_pitch_correction_info": "Evita que el audio se vuelva agudo a velocidades más rápidas y grave a velocidades más lentas",
-  "audio_channels": "Canales de audio",
-  "volume_boost_cap": "Límite de amplificación de volumen",
-  "internal_player": "Reproductor interno",
-  "internal_player_info": "Progreso, controles, orientación",
-  "subtitle_delay_text": "Retraso de subtítulos",
-  "subtitle_delay": "Retraso (ms)",
-  "subtitle_speed": "Velocidad",
-  "calendar": "Calendario",
-  "calendar_no_data": "No hay datos aún.",
-  "calendar_info": "El calendario solo puede predecir la próxima carga de capítulo basándose en las cargas anteriores. ¡Algunos datos pueden no ser 100% precisos!",
-  "in_n_day": "en {days} día",
-  "in_n_days": "en {days} días",
-  "clear_library": "Limpiar biblioteca",
-  "clear_library_desc": "Elige borrar todas las entradas de manga, anime y/o novela",
-  "clear_library_input": "Escribe 'manga', 'anime' y/o 'novel' (separados por coma) para eliminar todas las entradas relacionadas",
-  "watch_order": "Orden de visualización",
-  "sequels": "Secuelas",
-  "recommendations_similarity": "Similaridad:",
-  "local_folder_structure": "Estructura de una carpeta local",
-  "local_folder": "Carpetas locales",
-  "add_local_folder": "Agregar carpeta local",
-  "rescan_local_folder": "Reescanear todas las carpetas locales ahora",
-  "export_metadata": "Exportar metadatos",
-  "exported": "Exportado",
-  "text_size": "Tamaño del texto:",
-  "text_align": "Alineación del texto",
-  "line_height": "Altura de línea",
-  "show_scroll_percentage": "Mostrar porcentaje de desplazamiento",
-  "remove_extra_paragraph_spacing": "Eliminar espaciado extra de párrafos",
-  "select_label_color": "Seleccionar color de {label}",
-  "default_user_agent": "Agente de usuario predeterminado",
-  "forceLandscapeMode": "Forzar modo horizontal",
-  "forceLandscapeModeSubtitle": "Fuerza el reproductor a usar la orientación horizontal.",
-  "dns_over_https": "DNS-over-HTTPS (DoH)",
-  "dns_provider": "Proveedor DNS",
-  "tracked": "Rastreado",
-  "auth_unlock_msg": "Autentifícate para desbloquear NodeLane Comics",
-  "app_locked": "NodeLane Comics está bloqueado",
-  "auth_to_continue": "Autentifícate para continuar",
-  "authenticating": "Autenticando...",
-  "lock": "Bloquear",
-  "unlock": "Desbloquear",
-  "security": "Seguridad",
-  "auth_to_change_security_setting": "Autentifícate para cambiar la configuración de seguridad",
-  "app_lock": "Bloqueo de aplicación",
-  "require_biometric_or_device_credential": "Se requiere autenticación biométrica o credenciales del dispositivo para abrir la aplicación",
-  "biometric_or_device_credential_not_available": "La autenticación biométrica no está disponible en este dispositivo",
-  "app_lock_description": "Cuando el bloqueo de aplicación está habilitado, se te pedirá que te autentiques\ncada vez que abras la aplicación o regreses desde el fondo.",
-  "keep_screen_on": "Mantener pantalla encendida",
-  "webtoon_side_padding": "Relleno lateral de Webtoon",
-  "show_page_gaps": "Mostrar espacios entre páginas",
-  "invert_colors": "Invertir colores",
-  "grayscale": "Escala de grises",
-  "brightness": "Brillo",
-  "contrast": "Contraste",
-  "saturation": "Saturación",
-  "navigation_layout": "Diseño de navegación",
-  "nav_layout_default": "Predeterminado",
-  "nav_layout_l_shaped": "Forma de L",
-  "nav_layout_kindle": "Kindle",
-  "nav_layout_edge": "Borde",
-  "nav_layout_right_and_left": "Derecha e izquierda",
-  "nav_layout_disabled": "Deshabilitado",
-  "color_enhancements": "Mejoras de color",
-  "split_epub_chapters": "Dividir en capítulos",
-  "split_epub_chapters_description": "Importar cada capítulo EPUB como una entrada separada",
-  "compression_info": "Cuanta más compresión, menos espacio ocupa el respaldo, pero más CPU consume. Predeterminado: {level}",
   "mass_migration_title": "Migración masiva",
   "mass_migration_preview_items": "Vista previa de elementos",
   "mass_migration_destination_source": "Fuente de destino",
@@ -767,176 +277,131 @@
   "mass_migration_unknown_match": "Coincidencia desconocida",
   "mass_migration_unknown_source": "Fuente desconocida",
   "mass_migration_unknown_chapter": "Capítulo desconocido",
-  "delete_download_after_reading": "Eliminar descarga tras leer",
-  "total": "Total",
-  "mean_per_title": "Promedio por título",
-  "completion_rate": "Tasa de finalización",
-  "watching_time": "Tiempo dedicado (Anime)",
-  "reading_time": "Tiempo dedicado (Manga)",
-  "average_chapters_per_title": "Promedio de capítulos por título",
-  "read_percentage": "Porcentaje de lectura",
-  "entries": "Entradas",
-  "extension_server_intro_with_jre": "Descarga el paquete del servidor proxy antes de usar extensiones Mihon. El paquete incluye JRE y el archivo JAR del servidor.",
-  "extension_server_intro_ios": "Descarga el archivo JAR del servidor proxy antes de usar extensiones Mihon. iOS solo necesita el archivo JAR del servidor.",
-  "checking_files": "Comprobando archivos",
-  "files_installed": "Archivos instalados",
-  "files_missing": "Archivos faltantes",
-  "update_files": "Actualizar archivos",
-  "up_to_date": "Actualizado",
-  "choose_location": "Elegir ubicación",
-  "import_existing_jar": "Importar JAR existente",
-  "detect_files_in_selected_folder": "Detectar archivos en la carpeta seleccionada",
-  "preparing_download": "Preparando descarga...",
-  "app_install_location": "Ubicación de instalación de la app",
-  "install_location": "Ubicación de instalación",
-  "jre_executable": "Ejecutable JRE",
-  "extension_server_jar": "JAR de servidor de extensiones",
-  "installed_version": "Versión instalada",
-  "latest_version": "Última versión",
-  "m_extension_server_description": "Usa M-Extension-Server cuando necesites un proxy de dispositivo Android separado. Configura la dirección del proxy aquí y descarga el APK de GitHub.",
-  "set_proxy_address": "Establecer dirección proxy",
-  "no_extension_server_bundle_available_for_this_platform": "No hay paquete de servidor de extensiones disponible para esta plataforma.",
-  "failed_to_download_bundle": "Error al descargar el paquete ({statusCode}).",
-  "@failed_to_download_bundle": {
-    "placeholders": {
-      "statusCode": {}
-    }
-  },
-  "downloaded_bundle_missing_expected_files": "El paquete descargado no contiene los archivos esperados.",
-  "extension_server_files_ready": "Archivos del servidor de extensiones listos.",
-  "ios_extension_server_import_hint": "En iOS el servidor se instala dentro del sandbox de la app. Usa \"Importar JAR existente\" para traer un archivo descargado.",
-  "select_extension_server_folder": "Seleccionar carpeta del servidor de extensiones",
-  "selected_folder_does_not_exist": "La carpeta seleccionada no existe.",
-  "no_extension_server_files_found_in_selected_folder": "No se encontraron archivos en la carpeta seleccionada.",
-  "extension_server_files_linked": "Archivos del servidor vinculados.",
-  "selected_file_could_not_be_accessed": "No se pudo acceder al archivo seleccionado.",
-  "extension_server_jar_imported": "Archivo JAR importado con éxito.",
-  "could_not_launch_apk_bridge_page": "No se pudo abrir la página de M-Extension-Server.",
-  "not_configured": "No configurado",
-  "webview": "Webview",
-  "mass_migration_description": "Migrar entradas de su biblioteca de una fuente a otra.",
-  "mass_migration_selection_title": "Selección de migración",
-  "mass_migration_source_selecting_description": "Seleccione una o más fuentes a las que migrar.",
-  "mass_migration_manga_selecting_description": "Seleccione los títulos para migrar a la nueva fuente.",
-  "mass_migration_status_idle": "Inactivo",
-  "mass_migration_status_searching": "Buscando...",
-  "mass_migration_status_migrating": "Migrando...",
-  "mass_migration_status_finished": "Finalizado",
-  "mass_migration_action_migrate": "Migrar",
-  "mass_migration_action_copy": "Copiar",
-  "mass_migration_action_skip_step": "Saltar paso",
-  "mass_migration_option_keep_old": "Mantener la antigua entrada después de la migración",
-  "mass_migration_dialog_title": "¿Migrar {count, plural, one{1 título} other{{count} títulos}}?",
-  "mass_migration_dialog_content": "Esto reemplazará las entradas actuales con las nuevas de la fuente seleccionada.",
-  "mass_migration_help_title": "Cómo usar la migración masiva",
-  "mass_migration_help_content": "1. Seleccione la fuente de origen.\n2. Seleccione los títulos que desea migrar.\n3. Seleccione las fuentes de destino.\n4. Verifique las coincidencias e inicie la migración.",
-  "mihon_proxy_server": "Servidor proxy Mihon",
-  "android_proxy_server_mihon_description": "Descargue y configure el servidor proxy necesario para usar las extensiones de Mihon.",
-  "could_not_check_proxy_server_updates": "No se pudo comprobar si hay actualizaciones del servidor proxy.",
-  "proxy_server_ip_hint": "IP del servidor (ej: 10.0.0.5 o https://example.com)",
-  "no_newer_proxy_server_release_available": "No hay una versión más reciente del servidor proxy disponible.",
-  "statistics_title": "Estadísticas",
-  "statistics_total_manga": "Total Manga",
-  "statistics_total_anime": "Total Anime",
-  "statistics_chapters_read": "Capítulos leídos",
-  "statistics_episodes_watched": "Episodios vistos",
-  "statistics_reading_time": "Tiempo de lectura",
-  "statistics_watching_time": "Tiempo de visualización",
-  "statistics_mean_score": "Puntuación media",
-  "statistics_score_distribution": "Distribución de puntuación",
-  "statistics_status_distribution": "Distribución de estados",
-  "statistics_reading_time_unit_hour": "{count, plural, one{1 hora} other{{count} horas}}",
-  "statistics_reading_time_unit_minute": "{count, plural, one{1 minuto} other{{count} minutos}}",
-  "statistics_reading_time_unit_day": "{count, plural, one{1 día} other{{count} días}}",
-  "statistics_no_data": "No hay suficientes datos para mostrar estadísticas.",
-  "compression_level": "Nivel de compresión",
-  "android_proxy_server_mihon": "Servidor Proxy Android (Mihon)",
-  "select_extension_server_jar": "Seleccionar JAR del servidor de extensiones",
-  "webtoon_disable_zoom_out": "Desactivar zoom out de Webtoon",
-  "webtoon_double_tap_zoom_enabled": "Doble toque para zoom en Webtoon",
-  "navigate_to_pan": "Navegar hacia el desplazamiento",
-  "navigate_to_pan_subtitle": "Mover la imagen ampliada antes de cambiar de página",
-  "split_wide_pages": "Dividir páginas dobles",
-  "dual_page_invert": "Invertir mitad de páginas cortadas",
-  "dual_page_rotate_to_fit": "Rotar para ajustar",
-  "dual_page_rotate_to_fit_invert": "Invertir dirección de rotación",
-  "landscape_zoom": "Zoom automático en horizontal",
-  "zoom_start_position": "Posición inicial del zoom",
-  "zoom_start_left": "Izquierda",
-  "zoom_start_right": "Derecha",
-  "zoom_start_center": "Centro",
-  "automatic_background": "Fondo automático",
-  "tapping_inversion": "Inversión de toque",
-  "tapping_inversion_none": "Ninguno",
-  "tapping_inversion_horizontal": "Horizontal",
-  "tapping_inversion_vertical": "Vertical",
-  "tapping_inversion_both": "Ambos",
-  "flash_on_page_change": "Destello al cambiar de página",
-  "flash_on_page_change_subtitle": "Asistente anti-retención AMOLED",
-  "flash_color": "Color del destello",
-  "flash_color_black": "Negro",
-  "flash_color_white": "Blanco",
-  "flash_color_white_black": "Blanco y Negro",
-  "flash_interval_label": "Intervalo de destello",
-  "flash_interval_value": "{n} páginas",
-  "flash_interval": "Intervalo de destello: {n} páginas",
-  "@flash_interval": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "flash_duration_label": "Duración del destello",
-  "flash_duration_value": "{n} ms",
-  "flash_duration": "Duración del destello: {n} ms",
-  "@flash_duration": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "show_navigation_overlay_on_start": "Mostrar superposición de navegación al inicio",
-  "reader_hide_threshold": "Límite para ocultar barra del lector",
-  "reader_hide_threshold_highest": "El más alto (5 px)",
-  "reader_hide_threshold_high": "Alto (13 px)",
-  "reader_hide_threshold_low": "Bajo (31 px)",
-  "reader_hide_threshold_lowest": "El más bajo (47 px)",
-  "error_no_pages_available": "Error: no hay páginas disponibles",
-  "mark_duplicate_chapters_read": "Marcar números de capítulos duplicados como leídos",
-  "tts": "Texto a voz",
-  "tts_speed": "Velocidad",
-  "tts_pitch": "Tono",
-  "tts_language": "Idioma",
-  "tts_voice": "Voz",
-  "tts_stop": "Detener",
-  "tts_play": "Reproducir",
-  "tts_pause": "Pausa",
-  "tts_previous": "Párrafo anterior",
-  "tts_next": "Siguiente párrafo",
-  "tts_paragraph_progress": "Párrafo {current} de {total}",
-  "tts_settings": "Configuración de TTS",
-  "tts_default": "Predeterminado",
-  "app_ui_scale": "Escala de interfaz",
-  "app_ui_scale_subtitle": "Haga que la interfaz sea más grande o más pequeña para adaptarse a su pantalla y distancia de visualización.",
-  "allow_concurrent_downloads": "Permitir descargas concurrentes",
-  "allow_concurrent_downloads_subtitle": "Descargar de diferentes fuentes al mismo tiempo. Una sola fuente aún descarga un capítulo a la vez para que no se sobrecargue. Apague para descargar uno a la vez en todas partes.",
-  "download_delay": "Retraso de descarga",
-  "download_delay_subtitle": "Desactivado. Agregue una espera con variación aleatoria entre capítulos para ser más suave con las fuentes.",
-  "save_search": "Guardar búsqueda",
-  "saved_searches": "Búsquedas guardadas",
-  "enter_search_to_save_first": "Ingrese una búsqueda para guardar primero",
-  "no_saved_searches": "Aún no hay búsquedas guardadas para esta fuente.\nEjecute una búsqueda y luego elija \"Guardar búsqueda\".",
-  "source": "Fuente",
+  "migrate_confirm": "Migrar a otra fuente",
+  "clean_database": "Limpiar base de datos",
+  "cleaned_database": "¡Base de datos limpiada! {x} entradas eliminadas",
+  "clean_database_desc": "¡Esto eliminará todos los elementos que no se hayan agregado a la biblioteca!",
+  "incognito_mode": "Modo incógnito",
+  "incognito_mode_description": "Pausa el historial de lectura",
+  "downloaded_only": "Solo descargados",
+  "downloaded_only_description": "Mostrar solo entradas descargadas en tu biblioteca",
+  "download_queue": "Cola de descarga",
+  "categories": "Categorías",
+  "statistics": "Estadísticas",
+  "settings": "Configuraciones",
+  "about": "Acerca de",
+  "help": "Ayuda",
+  "no_downloads": "Sin descargas",
+  "edit_categories": "Editar categorías",
+  "edit_categories_description": "No tienes categorías. Toca el botón más para crear una para organizar tu biblioteca",
+  "add": "Agregar",
+  "add_category": "Agregar categoría",
+  "name": "Nombre",
   "label_value": "{label}: {value}",
+  "@label_value": {
+    "placeholders": {
+      "label": {},
+      "value": {}
+    }
+  },
   "url": "URL",
+  "category_name_required": "*Requerido",
+  "add_category_error_exist": "¡Ya existe una categoría con este nombre!",
+  "delete_category": "Eliminar categoría",
+  "delete_category_msg": "¿Deseas eliminar la categoría {name}?",
+  "rename_category": "Renombrar categoría",
+  "general": "General",
+  "general_subtitle": "Idioma de la app",
+  "app_language": "Idioma de la app",
+  "default_subtitle_language": "Idioma predeterminado de subtítulos",
+  "appearance": "Apariencia",
+  "appearance_subtitle": "Tema, formato de fecha y hora",
+  "theme": "Tema",
+  "dark_mode": "Modo oscuro",
+  "follow_system_theme": "Seguir el tema del sistema",
+  "on": "Encendido",
+  "off": "Apagado",
+  "pure_black_dark_mode": "Modo oscuro negro puro",
+  "timestamp": "Sello de tiempo",
+  "relative_timestamp": "Sello de tiempo relativo",
+  "relative_timestamp_short": "Corto (Hoy, Ayer)",
+  "relative_timestamp_long": "Largo (Corto+, hace n días)",
+  "date_format": "Formato de fecha",
+  "reader": "Lector",
+  "refresh": "Actualizar",
+  "reader_subtitle": "Modo de lectura, visualización, navegación",
+  "default_reading_mode": "Modo de lectura predeterminado",
+  "reading_mode_vertical": "Vertical",
+  "reading_mode_horizontal": "Horizontal",
+  "reading_mode_left_to_right": "De izquierda a derecha",
+  "reading_mode_right_to_left": "De derecha a izquierda",
+  "reading_mode_vertical_continuous": "Vertical continuo",
+  "reading_mode_webtoon": "Webtoon",
+  "double_tap_animation_speed": "Velocidad de animación de doble toque",
+  "normal": "Normal",
+  "fast": "Rápido",
+  "no_animation": "Sin animación",
+  "animate_page_transitions": "Animar transiciones de página",
+  "crop_borders": "Recortar bordes",
+  "downloads": "Descargas",
+  "downloads_subtitle": "Configuraciones de descargas",
+  "download_location": "Ubicación de descarga",
+  "custom_location": "Ubicación personalizada",
+  "only_on_wifi": "Solo en wifi",
+  "save_as_cbz_archive": "Guardar como archivo CBZ",
+  "delete_download_after_reading": "Eliminar descarga tras leer",
+  "concurrent_downloads": "Descargas simultáneas",
+  "browse_subtitle": "Fuentes, búsqueda global",
+  "only_include_pinned_sources": "Incluir solo fuentes fijadas",
+  "nsfw_sources": "Fuentes NSFW (+18)",
+  "nsfw_sources_show": "Mostrar en listas de fuentes y extensiones",
+  "nsfw_sources_info": "Esto no evita que extensiones no oficiales o potencialmente mal etiquetadas muestren contenido NSFW (18+) dentro de la app",
+  "version": "Versión",
   "beta_version": "Beta ({version})",
+  "@beta_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "check_for_update": "Buscar actualizaciones",
+  "logs_on": "Activar registro",
+  "share_app_logs": "Compartir registros de la aplicación",
+  "no_app_logs": "¡No hay archivo log.txt disponible!",
+  "failed": "¡Fallido!",
+  "n_days_ago": "hace {days} días",
+  "today": "Hoy",
+  "yesterday": "Ayer",
+  "a_week_ago": "Hace una semana",
+  "next_week": "La próxima semana",
+  "add_to_library": "Agregar a la biblioteca",
+  "completed": "Completado",
+  "ongoing": "En curso",
+  "on_hiatus": "En pausa",
+  "canceled": "Cancelado",
+  "publishing_finished": "Publicación finalizada",
+  "unknown": "Desconocido",
   "empty_placeholder": "VACÍO",
   "error": "Error",
   "error_with_message": "Error: {error}",
+  "@error_with_message": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "no_pages_available": "Error: no hay páginas disponibles",
+  "set_categories": "Establecer categorías",
+  "edit": "Editar",
+  "in_library": "En la biblioteca",
+  "filter_scanlator_groups": "Filtrar grupos de scanlation",
+  "reset": "Reiniciar",
+  "by_source": "Por fuente",
+  "by_chapter_number": "Por número de capítulo",
+  "by_episode_number": "Por número de episodio",
+  "by_upload_date": "Por fecha de subida",
+  "source_title": "Título de fuente",
   "create_extension": "Crear extensión",
+  "developer_mode": "Modo desarrollador",
+  "developer_mode_subtitle": "Mostrar herramientas de desarrollador de extensiones (crear extensión, editar código)",
   "choose_extension_language": "Elegir idioma de la extensión",
   "lang": "Idioma",
   "base_url": "URL base",
@@ -962,16 +427,187 @@
   "error_when_creating_source": "Error al crear la fuente",
   "cookies_deleted": "¡Cookies eliminadas!",
   "delete_all_cookies": "Eliminar todas las cookies",
+  "chapter_number": "Número de capítulo",
+  "episode_number": "Número de episodio",
+  "share": "Compartir",
+  "n_chapters": "{n} capítulos",
   "missing_chapters": "Faltan {count} capítulos",
+  "no_description": "Sin descripción",
+  "resume": "Reanudar",
+  "read": "Leer",
+  "watch": "Ver",
+  "popular": "Popular",
+  "open_in_browser": "Abrir en navegador",
+  "clear_cookie": "Limpiar cookie",
+  "show_page_number": "Mostrar número de página",
+  "from_library": "Desde la biblioteca",
+  "downloaded_chapter": "Capítulo descargado",
+  "page": "Página {page}",
+  "global_search": "Búsqueda global",
+  "color_blend_level": "Nivel de mezcla de color",
+  "current": "Actual {char}",
+  "finished": "Terminado {char}",
+  "next": "Siguiente {char}",
+  "previous": "Anterior {char}",
+  "no_more_chapter": "No hay más capítulos",
+  "no_result": "Sin resultados",
+  "send": "Enviar",
+  "delete": "Eliminar",
+  "start_downloading": "Comenzar a descargar ahora",
+  "retry": "Reintentar",
+  "add_chapters": "Agregar capítulos",
+  "delete_chapters": "¿Eliminar capítulo?",
+  "default0": "Predeterminado",
+  "total_chapters": "Capítulos totales",
+  "total_episodes": "Total de episodios",
+  "import_local_file": "Importar archivo local",
+  "import_files": "Archivos",
+  "split_epub_chapters": "Dividir en capítulos",
+  "split_epub_chapters_description": "Importar cada capítulo EPUB como una entrada separada",
+  "nothing_read_recently": "Nada leído recientemente",
+  "status": "Estado",
+  "not_started": "No iniciado",
+  "score": "Puntuación",
+  "start_date": "Fecha de inicio",
+  "finish_date": "Fecha de finalización",
+  "reading": "Leyendo",
+  "on_hold": "En espera",
+  "dropped": "Abandonado",
+  "plan_to_read": "Planear leer",
+  "re_reading": "Releyendo",
+  "chapters": "Capítulos",
+  "add_tracker": "Añadir seguimiento",
+  "one_tracker": "1 seguimiento",
+  "n_tracker": "{n} seguimientos",
+  "tracking": "Seguimiento",
+  "syncing": "Sincronizar",
+  "sync_logged": "Inicio de sesión exitoso",
+  "syncing_subtitle": "Introduce la dirección de tu servidor de sincronización e inicia sesión en el navegador para sincronizar tu progreso de lectura entre dispositivos.",
+  "sync_service": "Sincronización autoalojada",
+  "last_sync": "Última sincronización: ",
+  "sync_login_browser": "Iniciar sesión con el navegador",
+  "sync_server": "Dirección del servidor de sincronización",
+  "sync_starting": "Empezando la sincronización...",
+  "sync_finished": "Sincronización finalizada",
+  "sync_failed": "Error de sincronización",
   "sync_restore_in_progress": "Sincronización omitida: restauración en curso",
+  "sync_progress_percent": "Sincronizando… {percent}%",
+  "@sync_progress_percent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "sync_progress_indeterminate": "Sincronizando…",
+  "sync_button_sync": "Sincronizar progreso",
+  "sync_button_upload": "Solo subir",
+  "sync_button_upload_info": "¡Esta operación reemplazará completamente los datos remotos con los datos locales!",
+  "sync_button_download": "Solo descargar",
+  "sync_button_download_info": "¡Esta operación reemplazará completamente los datos locales con los datos remotos!",
   "sync_status_not_configured": "No conectado",
   "sync_status_checking": "Comprobando conexión...",
   "sync_status_connected": "Conectado",
   "sync_status_unauthorized": "Sesión expirada, por favor inicie sesión de nuevo",
   "sync_status_unreachable": "No se puede conectar al servidor",
   "sync_section_general": "General",
-  "sync_section_data_types": "Qué sincronizar",
+  "sync_on": "Habilitar sincronización",
+  "sync_auto": "Sincronización automática",
+  "sync_auto_warning": "¡La sincronización automática es una función experimental actualmente!",
+  "sync_auto_off": "Desactivado",
+  "sync_auto_5_minutes": "Cada 5 minutos",
+  "sync_auto_10_minutes": "Cada 10 minutos",
+  "sync_auto_30_minutes": "Cada 30 minutos",
+  "sync_auto_1_hour": "Cada 1 hora",
+  "sync_auto_3_hours": "Cada 3 horas",
+  "sync_auto_6_hours": "Cada 6 horas",
+  "sync_auto_12_hours": "Cada 12 horas",
+  "server_error": "¡Error del servidor!",
+  "dialog_confirm": "Confirmar",
+  "description": "Descripción",
+  "reorder_navigation": "Personalizar navegación",
+  "reorder_navigation_description": "Reordena y ajusta cada navegación según tus necesidades.",
+  "floating_navigation_bar": "Barra de navegación flotante",
+  "floating_navigation_bar_description": "Utilice una cápsula flotante en lugar de la barra de navegación adjunta estándar.",
+  "full_screen_player": "Usar pantalla completa",
+  "full_screen_player_info": "Usar automáticamente la pantalla completa al reproducir un video.",
+  "episode_progress": "Progreso: {n}",
+  "n_episodes": "{n} episodios",
+  "@n_episodes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "missing_episodes": "Faltan {count} episodios",
+  "manga_sources": "Fuentes de manga",
+  "anime_sources": "Fuentes de anime",
+  "novel_sources": "Fuentes de novelas",
+  "anime_extensions": "Extensiones de anime",
+  "manga_extensions": "Extensiones de manga",
+  "novel_extensions": "Extensiones de novelas",
+  "extension_settings": "Configuración de extensión",
+  "anime": "Anime",
+  "manga": "Manga",
+  "novel": "Novela",
+  "library_no_category_exist": "Aún no tienes ninguna categoría",
+  "watching": "Viendo",
+  "plan_to_watch": "Planear ver",
+  "re_watching": "Reviendo",
+  "episodes": "Episodios",
+  "download": "Descargar",
+  "new_update_available": "Nueva actualización disponible",
+  "app_version": "Versión de la App : v{v}",
+  "searching_for_updates": "Buscando actualizaciones...",
+  "no_new_updates_available": "No hay nuevas actualizaciones disponibles",
+  "uninstall": "Desinstalar",
+  "uninstall_extension": "¿Desinstalar extensión {ext}?",
+  "double_tap_search_hint": "Toca dos veces para buscar todo en {type}",
+  "show_nav_double_tap_tooltip": "Mostrar sugerencia de búsqueda por doble toque",
+  "show_nav_double_tap_tooltip_subtitle": "Muestra un cuadro de información en los destinos de Manga/Anime/Novela explicando que tocar dos veces abre la búsqueda global.",
+  "already_in_library": "\"{title}\" ya está en tu biblioteca a través de {source}.",
+  "add_anyway": "Añadir de todos modos",
+  "langauage": "Idioma",
+  "extension_detail": "Detalle de extensión",
+  "scale_type": "Tipo de escala",
+  "scale_type_fit_screen": "Ajustar a pantalla",
+  "scale_type_stretch": "Estirar",
+  "scale_type_fit_width": "Ajustar al ancho",
+  "scale_type_fit_height": "Ajustar al alto",
+  "scale_type_original_size": "Tamaño original",
+  "scale_type_smart_fit": "Ajuste inteligente",
+  "page_preload_amount": "Cantidad de páginas a precargar",
+  "page_preload_amount_subtitle": "La cantidad de páginas a precargar al leer. Valores más altos resultarán en una experiencia de lectura más fluida, a costa de un mayor uso de caché y red.",
+  "image_loading_error": "Esta imagen no pudo cargarse",
+  "add_episodes": "Agregar episodios",
+  "video_quality": "Calidad",
+  "video_subtitle": "Subtítulo",
+  "check_for_extension_updates": "Buscar actualizaciones de extensión",
+  "auto_extensions_updates": "Actualizaciones automáticas de extensión",
+  "auto_extensions_updates_subtitle": "Actualizará automáticamente la extensión cuando haya una nueva versión disponible.",
+  "check_for_app_updates": "Buscar actualizaciones de la aplicación al iniciar",
+  "reading_mode": "Modo de lectura",
+  "custom_filter": "Filtro personalizado",
+  "background_color": "Color de fondo",
+  "white": "Blanco",
+  "black": "Negro",
+  "grey": "Gris",
+  "automaic": "Automático",
+  "preferred_domain": "Dominio preferido",
+  "load_more": "Cargar más",
+  "cancel_all_for_this_series": "Cancelar todo para esta serie",
+  "login": "Iniciar sesión",
+  "login_into": "Iniciar sesión en {tracker}",
+  "email_adress": "Dirección de correo electrónico",
+  "password": "Contraseña",
+  "log_out_from": "¿Cerrar sesión de {tracker}?",
+  "log_out": "Cerrar sesión",
+  "update_pending": "Actualización pendiente",
+  "update_all": "Actualizar todo",
+  "backup_and_restore": "Respaldo y restauración",
+  "create_backup": "Crear respaldo",
+  "create_backup_dialog_title": "¿Qué quieres respaldar?",
+  "create_backup_subtitle": "Puede ser usado para restaurar la biblioteca actual",
+  "restore_backup": "Restaurar respaldo",
   "encrypt_backups": "Cifrar copias de seguridad",
   "encrypt_backups_info": "Proteger copias de seguridad con contraseña mediante cifrado AES",
   "no_secure_storage": "No se encontró almacenamiento seguro",
@@ -982,6 +618,22 @@
   "confirm_password": "Confirmar contraseña",
   "passwords_do_not_match": "Las contraseñas no coinciden",
   "password_required_to_restore": "Se requiere una contraseña para restaurar esta copia de seguridad.",
+  "restore_backup_subtitle": "Restaurar biblioteca desde archivo de respaldo",
+  "automatic_backups": "Respaldo automático",
+  "backup_frequency": "Frecuencia de respaldo",
+  "backup_location": "Ubicación de respaldo",
+  "backup_options": "Opciones de respaldo",
+  "backup_options_dialog_title": "¿Qué quieres respaldar?",
+  "backup_options_subtitle": "Qué información incluir en el archivo de respaldo",
+  "backup_and_restore_warning_info": "Deberías mantener copias de los respaldos en otros lugares también",
+  "library_entries": "Entradas de biblioteca",
+  "chapters_and_episode": "Capítulos y episodios",
+  "every_6_hours": "Cada 6 horas",
+  "every_12_hours": "Cada 12 horas",
+  "daily": "Diario",
+  "every_2_days": "Cada 2 días",
+  "weekly": "Semanal",
+  "restore_backup_warning_title": "Restaurar una copia de seguridad sobrescribirá todos los datos existentes.\n\n¿Continuar con la restauración?",
   "restore_sync_question_title": "¿Sincronizar esta restauración?",
   "restore_sync_question_message": "Este dispositivo está conectado a un servidor de sincronización. ¿Subir estos datos restaurados ahora? Si no, la sincronización se desactivará para evitar que los datos antiguos del servidor sobrescriban lo restaurado.",
   "restore_sync_question_confirm": "Sí, sincronizar",
@@ -993,6 +645,309 @@
   "restore_sync_question_keep_disabled": "Mantener desactivada",
   "restore_sync_uploading": "Sincronizando datos restaurados con el servidor…",
   "restore_sync_upload_success": "Datos restaurados sincronizados con el servidor",
+  "services": "Servicios",
+  "tracking_warning_info": "Sincronización unidireccional para actualizar el progreso de los capítulos en servicios de seguimiento. Configura el seguimiento para entradas individuales desde su botón de seguimiento.",
+  "use_page_tap_zones": "Usar zonas de toque de página",
+  "manage_trackers": "Gestionar rastreadores",
+  "restore": "Restaurar",
+  "backups": "Copias de seguridad",
+  "by_scanlator": "Por scanlator",
+  "by_name": "Por nombre",
+  "installed": "Instalado",
+  "auto_scroll": "Desplazamiento automático",
+  "video_audio": "Audio",
+  "video_audio_info": "Idiomas preferidos, corrección de tono, canales de audio",
+  "player": "Jugador",
+  "markEpisodeAsSeenSetting": "En qué punto marcar el episodio como visto",
+  "mark_duplicate_chapters_read": "Marcar números de capítulos duplicados como leídos",
+  "default_skip_intro_length": "Duración predeterminada para saltar la introducción",
+  "default_playback_speed_length": "Duración predeterminada de la velocidad de reproducción",
+  "updateProgressAfterReading": "Actualizar el progreso después de leer",
+  "no_sources_installed": "¡No hay fuentes instaladas!",
+  "show_extensions": "Mostrar extensiones",
+  "default_skip_forward_skip_length": "Longitud de salto hacia adelante predeterminada",
+  "aniskip_requires_info": "AniSkip requiere que el anime esté registrado en MAL o Anilist para funcionar.",
+  "enable_aniskip": "Habilitar AniSkip",
+  "enable_auto_skip": "Habilitar salto automático",
+  "aniskip_button_timeout": "Tiempo de espera del botón",
+  "skip_opening": "Omitir apertura",
+  "skip_ending": "Omitir cierre",
+  "fullscreen": "Pantalla completa",
+  "update_library": "Actualizar biblioteca",
+  "next_chapter": "Próximo capítulo",
+  "next_5_chapters": "Próximos 5 capítulos",
+  "next_10_chapters": "Próximos 10 capítulos",
+  "next_25_chapters": "Próximos 25 capítulos",
+  "all_chapters": "Todos los capítulos",
+  "next_episode": "Siguiente episodio",
+  "next_5_episodes": "Siguientes 5 episodios",
+  "next_10_episodes": "Siguientes 10 episodios",
+  "next_25_episodes": "Siguientes 25 episodios",
+  "all_episodes": "Todos los episodios",
+  "cover_saved": "Portada guardada",
+  "set_as_cover": "Establecer como portada",
+  "use_this_as_cover_art": "¿Usar esto como portada?",
+  "save": "Guardar",
+  "picture_saved": "Imagen guardada",
+  "cover_updated": "Portada actualizada",
+  "include_subtitles": "Incluir subtítulos",
+  "blend_mode_default": "Por defecto",
+  "blend_mode_multiply": "Multiplicar",
+  "blend_mode_screen": "Pantalla",
+  "blend_mode_overlay": "Incrustar",
+  "blend_mode_colorDodge": "Esquema de color",
+  "blend_mode_lighten": "Aclarar",
+  "blend_mode_colorBurn": "Quemadura de color",
+  "blend_mode_darken": "Oscurecer",
+  "blend_mode_difference": "Diferencia",
+  "blend_mode_saturation": "Saturación",
+  "blend_mode_softLight": "Luz suave",
+  "blend_mode_plus": "Más",
+  "blend_mode_exclusion": "Exclusión",
+  "custom_color_filter": "Filtro de color personalizado",
+  "color_filter_blend_mode": "Modo de mezcla de filtro de color",
+  "enable_all": "Activar todo",
+  "disable_all": "Desactivar todo",
+  "font": "Fuente",
+  "color": "Color",
+  "font_size": "Tamaño de fuente",
+  "text": "Texto",
+  "border": "Borde",
+  "background": "Fondo",
+  "no_subtite_warning_message": "No tiene efecto porque no hay pistas de subtítulos en este vídeo",
+  "grid_size": "Tamaño de la cuadrícula",
+  "n_per_row": "{n} por fila",
+  "horizontal_continious": "Horizontal continuo",
+  "edit_code": "Editar código",
+  "use_libass": "Habilitar libass",
+  "use_libass_info": "Utilice la renderización de subtítulos basada en libass para el backend nativo.",
+  "libass_not_disable_message": "Deshabilite `use libass` en la configuración del reproductor para poder personalizar los subtítulos.",
+  "override_ass_subtitles": "Anular subtítulos ASS",
+  "override_ass_subtitles_info": "Aplicar estilo personalizado a los subtítulos ASS/SSA",
+  "torrent_stream": "Transmisión de torrent",
+  "add_torrent": "Agregar torrent",
+  "enter_torrent_hint_text": "Ingrese la URL del imán o del archivo torrent",
+  "torrent_url": "URL del torrent",
+  "or": "O",
+  "advanced": "Avanzado",
+  "advanced_info": "Configuración mpv",
+  "use_native_http_client": "Utilizar cliente HTTP nativo",
+  "use_native_http_client_info": "admite automáticamente las características de la plataforma como VPNs, admite más características HTTP como HTTP/3 y manejo de redirección personalizada",
+  "n_hour_ago": "hace {hour} hora",
+  "n_hours_ago": "hace {hours} horas",
+  "n_minute_ago": "hace {minute} minuto",
+  "n_minutes_ago": "hace {minutes} minutos",
+  "n_day_ago": "hace {day} día",
+  "now": "ahora",
+  "library_last_updated": "Última actualización de la biblioteca: {lastUpdated}",
+  "data_and_storage": "Datos y almacenamiento",
+  "download_location_info": "Usado para descargas de capítulos",
+  "storage": "Almacenamiento",
+  "clear_chapter_and_episode_cache": "Borrar caché de capítulos y episodios",
+  "cache_cleared": "Caché borrada",
+  "clear_chapter_or_episode_cache_on_app_launch": "Borrar caché de capítulos/episodios al iniciar la aplicación",
+  "app_settings": "Configuración de la aplicación",
+  "sources_settings": "Configuración de fuentes",
+  "include_sensitive_settings": "Incluir configuraciones sensibles (por ejemplo, tokens de inicio de sesión de rastreadores)",
+  "create": "Crear",
+  "downloads_are_limited_to_wifi": "Las descargas están limitadas solo a Wi-Fi",
+  "recommendations": "Recomendaciones",
+  "recommendations_similar": "similar",
+  "recommendations_weights": "Pesos de recomendación",
+  "recommendations_weights_genre": "Similaridad de género",
+  "recommendations_weights_setting": "Similaridad de escenario",
+  "recommendations_weights_synopsis": "Similaridad de historia",
+  "recommendations_weights_theme": "Similaridad de tema",
+  "manga_extensions_repo": "Repositorio de extensiones de manga",
+  "anime_extensions_repo": "Repositorio de extensiones de anime",
+  "novel_extensions_repo": "Repositorio de extensiones de novelas",
+  "custom_dns": "DNS personalizado (dejar en blanco para usar DNS del sistema)",
+  "android_proxy_server": "Servidor proxy de Android (M-Extension-Server)",
+  "get_m_extension_server": "Obtener M-Extension-Server",
+  "undefined": "Indefinido",
+  "empty_extensions_repo": "No tienes ninguna URL de repositorio aquí. ¡Haz clic en el botón más para agregar una!",
+  "add_extensions_repo": "Agregar URL del repositorio",
+  "remove_extensions_repo": "Eliminar URL del repositorio",
+  "manage_manga_repo_urls": "Gestionar URLs del repositorio de manga",
+  "manage_anime_repo_urls": "Gestionar URLs del repositorio de anime",
+  "manage_novel_repo_urls": "Gestionar URLs del repositorio de novelas",
+  "url_cannot_be_empty": "La URL no puede estar vacía",
+  "url_must_end_with_dot_json_or_dot_pb": "La URL debe terminar con .json / .pb",
+  "repo_url": "URL del repositorio",
+  "invalid_url_format": "Formato de URL no válido",
+  "clear_all_sources": "Borrar todas las fuentes",
+  "clear_all_sources_msg": "Esto borrará completamente todas las fuentes de la aplicación. ¿Estás seguro de que deseas continuar?",
+  "sources_cleared": "¡Fuentes borradas!",
+  "repo_added": "¡Repositorio de fuentes agregado!",
+  "repo_already_exists": "¡El repositorio ya existe!",
+  "add_repo": "¿Agregar repositorio?",
+  "add_repo_sources_to_add": "Listas de extensiones que se agregarán:",
+  "add_repo_warning": "Las extensiones de estos repositorios se ejecutan dentro de la aplicación. Agregue solo repositorios en los que confíe.",
+  "genre_search_library": "Buscar género en la biblioteca",
+  "genre_search_source": "Explorar en la fuente",
+  "source_not_added": "¡La fuente no está instalada!",
+  "load_own_subtitles": "Cargar tus propios subtítulos...",
+  "search_subtitles": "Buscar subtítulos en línea...",
+  "extension_notes": "Notas: {notes}",
+  "unsupported_repo": "No se ha podido añadir este repositorio de fuentes. Comprueba su dirección o contacta con su responsable.",
+  "you_have_finished_reading": "Has terminado de leer",
+  "hwdec": "Decodificador de hardware",
+  "enable_hardware_accel": "Aceleración de hardware",
+  "enable_hardware_accel_info": "Actívalo/desactívalo si experimentas errores o bloqueos",
+  "track_library_navigate": "Ir a la entrada local existente",
+  "track_library_add": "Agregar a la biblioteca local",
+  "track_library_add_confirm": "Agregar elemento rastreado a la biblioteca local",
+  "track_library_not_logged": "¡Inicia sesión en el rastreador correspondiente para usar esta función!",
+  "track_library_switch": "Cambiar a otro rastreador",
+  "go_back": "Volver",
+  "merge_library_nav_mobile": "Fusionar navegación de biblioteca en móvil",
+  "enable_discord_rpc": "Activar Discord RPC",
+  "hide_discord_rpc_incognito": "Ocultar Discord RPC en modo Incógnito",
+  "rpc_show_reading_watching_progress": "Mostrar capítulo actual en Discord (requiere reinicio)",
+  "rpc_show_title": "Mostrar título actual en Discord",
+  "rpc_show_cover_image": "Mostrar imagen de portada actual en Discord",
+  "enable_mpv": "Activar shaders / scripts de mpv",
+  "mpv_info": "Soporta scripts .js en mpv/scripts/",
+  "mpv_redownload": "Redescargar archivos de configuración mpv",
+  "mpv_redownload_info": "¡Reemplaza archivos de configuración antiguos con nuevos!",
+  "mpv_download": "¡Se requieren archivos de configuración MPV!\n¿Descargar ahora?",
+  "custom_buttons": "Botones personalizados",
+  "custom_buttons_info": "Ejecutar código lua con botones personalizados",
+  "custom_buttons_edit": "Editar botones personalizados",
+  "custom_buttons_add": "Agregar botón personalizado",
+  "custom_buttons_added": "¡Botón personalizado agregado!",
+  "custom_buttons_delete": "Eliminar botón personalizado",
+  "custom_buttons_text": "Texto del botón",
+  "custom_buttons_text_req": "Texto del botón requerido",
+  "custom_buttons_js_code": "Código lua",
+  "custom_buttons_js_code_req": "Código lua requerido",
+  "custom_buttons_js_code_long": "Código lua (en pulsación larga)",
+  "custom_buttons_startup": "Código lua (al inicio)",
+  "custom_buttons_add_warning": "Este botón ejecuta el código Lua a continuación en el reproductor de video, que puede acceder a sus archivos y ejecutar programas. Agréguelo solo si confía en el origen de este enlace.",
+  "n_days": "{n} días",
+  "decoder": "Decodificador",
+  "decoder_info": "Decodificación de hardware, formato de píxeles, debanding",
+  "enable_gpu_next": "Activar gpu-next (solo Android)",
+  "enable_gpu_next_info": "Un nuevo motor de renderizado de video",
+  "debanding": "Debanding",
+  "use_yuv420p": "Usar formato de píxeles YUV420P",
+  "use_yuv420p_info": "Puede solucionar pantallas negras en algunos códecs de video, también puede mejorar el rendimiento a costa de la calidad",
+  "audio_preferred_languages": "Idiomas preferidos",
+  "audio_preferred_languages_info": "Idioma(s) de audio para seleccionar por defecto en un video con múltiples flujos de audio, códigos de idioma de 2/3 letras (ej: es, en, de). Múltiples valores pueden estar delimitados por coma.",
+  "enable_audio_pitch_correction": "Activar corrección de tono de audio",
+  "enable_audio_pitch_correction_info": "Evita que el audio se vuelva agudo a velocidades más rápidas y grave a velocidades más lentas",
+  "audio_channels": "Canales de audio",
+  "volume_boost_cap": "Límite de amplificación de volumen",
+  "internal_player": "Reproductor interno",
+  "internal_player_info": "Progreso, controles, orientación",
+  "subtitle_delay_text": "Retraso de subtítulos",
+  "subtitle_delay": "Retraso (ms)",
+  "subtitle_speed": "Velocidad",
+  "tracks": "Pistas",
+  "playback_speed": "Velocidad de reproducción",
+  "shaders": "Shaders",
+  "video_fit": "Ajuste",
+  "calendar": "Calendario",
+  "calendar_no_data": "No hay datos aún.",
+  "calendar_info": "El calendario solo puede predecir la próxima carga de capítulo basándose en las cargas anteriores. ¡Algunos datos pueden no ser 100% precisos!",
+  "in_n_day": "en {days} día",
+  "in_n_days": "en {days} días",
+  "clear_library": "Limpiar biblioteca",
+  "clear_library_desc": "Elige borrar todas las entradas de manga, anime y/o novela",
+  "clear_library_input": "Escribe 'manga', 'anime' y/o 'novel' (separados por coma) para eliminar todas las entradas relacionadas",
+  "watch_order": "Orden de visualización",
+  "watch_order_role_current": "Actual",
+  "@watch_order_role_current": {
+    "description": "Role label for the title currently being viewed in a watch order."
+  },
+  "watch_order_role_previous": "Anterior",
+  "@watch_order_role_previous": {
+    "description": "Role label for an earlier title in a watch order."
+  },
+  "watch_order_role_next": "Siguiente",
+  "@watch_order_role_next": {
+    "description": "Role label for a later title in a watch order."
+  },
+  "watch_order_source_release_order": "Orden de liberación",
+  "@watch_order_source_release_order": {
+    "description": "Source label for a watch order based on release dates."
+  },
+  "watch_order_source_community_list": "{name} por {author}",
+  "@watch_order_source_community_list": {
+    "description": "Source label for a community-created Trakt list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_official_collection": "Colección oficial Trakt: {name}",
+  "@watch_order_source_official_collection": {
+    "description": "Source label for an official Trakt collection.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_trakt_collection": "Trakt colección: {name}",
+  "@watch_order_source_trakt_collection": {
+    "description": "Source label for a Trakt collection when it is not marked as official.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_source_seasons": "Estaciones para {title}",
+  "@watch_order_source_seasons": {
+    "description": "Fallback source label when the watch order contains a show's seasons.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "watch_order_select_source": "Fuente de la orden",
+  "@watch_order_select_source": {
+    "description": "Label for choosing among available watch-order sources."
+  },
+  "watch_order_season": "Temporada {number}",
+  "@watch_order_season": {
+    "description": "Season metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "watch_order_episode": "Episodio {number}",
+  "@watch_order_episode": {
+    "description": "Episode metadata shown in a watch order.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sequels": "Secuelas",
+  "recommendations_similarity": "Similaridad:",
+  "recommendation_rating_accessibility": "Clasificación {rating}",
+  "@recommendation_rating_accessibility": {
+    "description": "Accessible label for a recommendation rating in the provider's display format.",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "local_folder_structure": "Estructura de una carpeta local",
+  "local_folder": "Carpetas locales",
+  "add_local_folder": "Agregar carpeta local",
+  "rescan_local_folder": "Reescanear todas las carpetas locales ahora",
   "default_download_destination": "Destino de descarga predeterminado",
   "ask_download_destination": "Preguntar destino de descarga",
   "ask_download_destination_desc": "Elegir una carpeta local cada vez que comience una descarga.",
@@ -1003,19 +958,175 @@
   "custom": "Personalizado",
   "no_local_folder_available_for_downloads": "No hay carpetas locales disponibles para descargas",
   "failed_to_create_cbz": "Error al crear CBZ: {error}",
+  "@failed_to_create_cbz": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_cover_image": "Error al leer imagen de portada: {error}",
+  "@error_reading_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_metadata": "Error al leer metadatos: {error}",
+  "@error_reading_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_saving_chapter_episode_to_library": "Error al guardar capítulo/episodio en la biblioteca: {error}",
+  "@error_saving_chapter_episode_to_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_chapter_cover_image": "Error al leer portada del capítulo: {error}",
+  "@error_reading_chapter_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_reading_archive_cover_image": "Error al leer portada del archivo: {error}",
+  "@error_reading_archive_cover_image": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "error_getting_local_library": "Error al obtener biblioteca local: {error}",
+  "@error_getting_local_library": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "export_metadata": "Exportar metadatos",
+  "exported": "Exportado",
   "failed_to_export_metadata": "Error al exportar metadatos: {error}",
+  "@failed_to_export_metadata": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "unrecognized_chapter_numbers": "{count} capítulo(s) no se pudieron numerar automáticamente y pueden estar desordenados o faltar en el lector.",
+  "@unrecognized_chapter_numbers": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "cloudflare_resolution_webview_server_start_failed": "No se pudo iniciar el servidor Webview de resolución de Cloudflare.",
   "tracker_token_expired": "Token de {tracker} expirado",
+  "@tracker_token_expired": {
+    "placeholders": {
+      "tracker": {}
+    }
+  },
   "video_list_empty": "La lista de vídeos está vacía",
   "playback_speed_multiplier": "x{value}",
+  "@playback_speed_multiplier": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "could_not_launch_url": "No se pudo abrir {url}",
+  "@could_not_launch_url": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "text_size": "Tamaño del texto:",
+  "text_align": "Alineación del texto",
+  "line_height": "Altura de línea",
+  "show_scroll_percentage": "Mostrar porcentaje de desplazamiento",
+  "remove_extra_paragraph_spacing": "Eliminar espaciado extra de párrafos",
+  "select_label_color": "Seleccionar color de {label}",
+  "default_user_agent": "Agente de usuario predeterminado",
+  "forceLandscapeMode": "Forzar modo horizontal",
+  "forceLandscapeModeSubtitle": "Fuerza el reproductor a usar la orientación horizontal.",
+  "dns_over_https": "DNS-over-HTTPS (DoH)",
+  "dns_provider": "Proveedor DNS",
+  "tracked": "Rastreado",
+  "auth_unlock_msg": "Autentifícate para desbloquear NodeLane Comics",
+  "app_locked": "NodeLane Comics está bloqueado",
+  "auth_to_continue": "Autentifícate para continuar",
+  "authenticating": "Autenticando...",
+  "lock": "Bloquear",
+  "unlock": "Desbloquear",
+  "security": "Seguridad",
+  "auth_to_change_security_setting": "Autentifícate para cambiar la configuración de seguridad",
+  "app_lock": "Bloqueo de aplicación",
+  "require_biometric_or_device_credential": "Se requiere autenticación biométrica o credenciales del dispositivo para abrir la aplicación",
+  "biometric_or_device_credential_not_available": "La autenticación biométrica no está disponible en este dispositivo",
+  "app_lock_description": "Cuando el bloqueo de aplicación está habilitado, se te pedirá que te autentiques\ncada vez que abras la aplicación o regreses desde el fondo.",
+  "checking_device_authentication": "Comprobando la autenticación del dispositivo...",
+  "device_authentication_incomplete": "La autenticación no se completó. Su configuración no ha cambiado.",
+  "keep_screen_on": "Mantener pantalla encendida",
+  "webtoon_side_padding": "Relleno lateral de Webtoon",
+  "show_page_gaps": "Mostrar espacios entre páginas",
+  "invert_colors": "Invertir colores",
+  "grayscale": "Escala de grises",
+  "brightness": "Brillo",
+  "contrast": "Contraste",
+  "saturation": "Saturación",
+  "navigation_layout": "Diseño de navegación",
+  "nav_layout_default": "Predeterminado",
+  "nav_layout_l_shaped": "Forma de L",
+  "nav_layout_kindle": "Kindle",
+  "nav_layout_edge": "Borde",
+  "nav_layout_right_and_left": "Derecha e izquierda",
+  "nav_layout_disabled": "Deshabilitado",
+  "color_enhancements": "Mejoras de color",
+  "total": "Total",
+  "mean_per_title": "Promedio por título",
+  "completion_rate": "Tasa de finalización",
+  "watching_time": "Tiempo dedicado (Anime)",
+  "reading_time": "Tiempo dedicado (Manga)",
+  "average_chapters_per_title": "Promedio de capítulos por {title}",
+  "read_percentage": "Porcentaje de lectura",
+  "entries": "Entradas",
+  "android_proxy_server_mihon": "Servidor Proxy Android (Mihon)",
+  "android_proxy_server_mihon_description": "Descargue y configure el servidor proxy necesario para usar las extensiones de Mihon.",
+  "mihon_proxy_server": "Servidor proxy Mihon",
+  "extension_server_intro_with_jre": "Descarga el paquete del servidor proxy antes de usar extensiones Mihon. El paquete incluye JRE y el archivo JAR del servidor.",
+  "extension_server_intro_ios": "Descarga el archivo JAR del servidor proxy antes de usar extensiones Mihon. iOS solo necesita el archivo JAR del servidor.",
+  "checking_files": "Comprobando archivos",
+  "files_installed": "Archivos instalados",
+  "files_missing": "Archivos faltantes",
+  "update_files": "Actualizar archivos",
+  "up_to_date": "Actualizado",
+  "choose_location": "Elegir ubicación",
+  "import_existing_jar": "Importar JAR existente",
+  "detect_files_in_selected_folder": "Detectar archivos en la carpeta seleccionada",
+  "preparing_download": "Preparando descarga...",
+  "app_install_location": "Ubicación de instalación de la app",
+  "install_location": "Ubicación de instalación",
+  "jre_executable": "Ejecutable JRE",
+  "extension_server_jar": "JAR de servidor de extensiones",
+  "installed_version": "Versión instalada",
+  "latest_version": "Última versión",
+  "m_extension_server_description": "Usa M-Extension-Server cuando necesites un proxy de dispositivo Android separado. Configura la dirección del proxy aquí y descarga el APK de GitHub.",
+  "set_proxy_address": "Establecer dirección proxy",
+  "no_newer_proxy_server_release_available": "No hay una versión más reciente del servidor proxy disponible.",
+  "could_not_check_proxy_server_updates": "No se pudo comprobar si hay actualizaciones del servidor proxy.",
+  "no_extension_server_bundle_available_for_this_platform": "No hay paquete de servidor de extensiones disponible para esta plataforma.",
+  "failed_to_download_bundle": "Error al descargar el paquete ({statusCode}).",
+  "@failed_to_download_bundle": {
+    "placeholders": {
+      "statusCode": {}
+    }
+  },
+  "downloaded_bundle_missing_expected_files": "El paquete descargado no contiene los archivos esperados.",
+  "extension_server_files_ready": "Archivos del servidor de extensiones listos.",
+  "ios_extension_server_import_hint": "En iOS el servidor se instala dentro del sandbox de la app. Usa \"Importar JAR existente\" para traer un archivo descargado.",
+  "select_extension_server_folder": "Seleccionar carpeta del servidor de extensiones",
+  "selected_folder_does_not_exist": "La carpeta seleccionada no existe.",
+  "no_extension_server_files_found_in_selected_folder": "No se encontraron archivos en la carpeta seleccionada.",
+  "extension_server_files_linked": "Archivos del servidor vinculados.",
+  "select_extension_server_jar": "Seleccionar JAR del servidor de extensiones",
+  "selected_file_could_not_be_accessed": "No se pudo acceder al archivo seleccionado.",
+  "extension_server_jar_imported": "Archivo JAR importado con éxito.",
+  "could_not_launch_apk_bridge_page": "No se pudo abrir la página de M-Extension-Server.",
+  "proxy_server_ip_hint": "IP del servidor (ej: 10.0.0.5 o https://example.com)",
+  "not_configured": "No configurado",
   "zero_interpreter": "Intérprete Zero",
   "zero_interpreter_description": "Controlar el servidor del intérprete Zero de forma automática o manual.",
   "start_server_on_launch": "Iniciar servidor al arrancar",
@@ -1024,9 +1135,118 @@
   "stopped": "Detenido",
   "start": "Iniciar",
   "stop": "Detener",
+  "webview": "Webview",
+  "tts": "Texto a voz",
+  "tts_speed": "Velocidad",
+  "tts_pitch": "Tono",
+  "tts_language": "Idioma",
+  "tts_voice": "Voz",
+  "tts_stop": "Detener",
+  "tts_play": "Reproducir",
+  "tts_pause": "Pausa",
+  "tts_previous": "Párrafo anterior",
+  "tts_next": "Siguiente párrafo",
+  "tts_paragraph_progress": "Párrafo {current} de {total}",
+  "@tts_paragraph_progress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "tts_settings": "Configuración de TTS",
+  "tts_default": "Predeterminado",
+  "webtoon_disable_zoom_out": "Desactivar zoom out de Webtoon",
+  "webtoon_double_tap_zoom_enabled": "Doble toque para zoom en Webtoon",
+  "navigate_to_pan": "Navegar hacia el desplazamiento",
+  "navigate_to_pan_subtitle": "Mover la imagen ampliada antes de cambiar de página",
+  "split_wide_pages": "Dividir páginas dobles",
+  "dual_page_invert": "Invertir mitad de páginas cortadas",
+  "dual_page_rotate_to_fit": "Rotar para ajustar",
+  "dual_page_rotate_to_fit_invert": "Invertir dirección de rotación",
+  "double_page_single_first_page": "Primera página individual",
+  "double_page_single_first_page_subtitle": "Mostrar la primera página sola en el modo de doble página",
+  "double_page_auto": "Doble página automática",
+  "double_page_auto_subtitle": "Cambiar automáticamente al modo de doble página en horizontal",
+  "landscape_zoom": "Zoom automático en horizontal",
+  "zoom_start_position": "Posición inicial del zoom",
+  "zoom_start_left": "Izquierda",
+  "zoom_start_right": "Derecha",
+  "zoom_start_center": "Centro",
+  "automatic_background": "Fondo automático",
+  "tapping_inversion": "Inversión de toque",
+  "tapping_inversion_none": "Ninguno",
+  "tapping_inversion_horizontal": "Horizontal",
+  "tapping_inversion_vertical": "Vertical",
+  "tapping_inversion_both": "Ambos",
+  "flash_on_page_change": "Destello al cambiar de página",
+  "flash_on_page_change_subtitle": "Asistente anti-retención AMOLED",
+  "flash_color": "Color del destello",
+  "flash_color_black": "Negro",
+  "flash_color_white": "Blanco",
+  "flash_color_white_black": "Blanco y Negro",
+  "flash_interval_label": "Intervalo de destello",
+  "flash_interval_value": "{n} páginas",
+  "@flash_interval_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_interval": "Intervalo de destello: {n} páginas",
+  "@flash_interval": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration_label": "Duración del destello",
+  "flash_duration_value": "{n} ms",
+  "@flash_duration_value": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "flash_duration": "Duración del destello: {n} ms",
+  "@flash_duration": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "show_navigation_overlay_on_start": "Mostrar superposición de navegación al inicio",
+  "reader_hide_threshold": "Límite para ocultar barra del lector",
+  "reader_hide_threshold_highest": "El más alto (5 px)",
+  "reader_hide_threshold_high": "Alto (13 px)",
+  "reader_hide_threshold_low": "Bajo (31 px)",
+  "reader_hide_threshold_lowest": "El más bajo (47 px)",
+  "error_no_pages_available": "Error: no hay páginas disponibles",
+  "app_ui_scale": "Escala de interfaz",
+  "app_ui_scale_subtitle": "Haga que la interfaz sea más grande o más pequeña para adaptarse a su pantalla y distancia de visualización.",
+  "allow_concurrent_downloads": "Permitir descargas concurrentes",
+  "allow_concurrent_downloads_subtitle": "Descargar de diferentes fuentes al mismo tiempo. Una sola fuente aún descarga un capítulo a la vez para que no se sobrecargue. Apague para descargar uno a la vez en todas partes.",
+  "download_delay": "Retraso de descarga",
+  "download_delay_subtitle": "Desactivado. Agregue una espera con variación aleatoria entre capítulos para ser más suave con las fuentes.",
+  "save_search": "Guardar búsqueda",
+  "saved_searches": "Búsquedas guardadas",
+  "enter_search_to_save_first": "Ingrese una búsqueda para guardar primero",
+  "no_saved_searches": "Aún no hay búsquedas guardadas para esta fuente.\nEjecute una búsqueda y luego elija \"Guardar búsqueda\".",
+  "source": "Fuente",
   "something_went_wrong": "Algo salió mal",
   "startup_failed": "NodeLane Comics no pudo completar el inicio",
   "sources_with_no_results": "{count, plural, =1{1 fuente sin resultados} other{{count} fuentes sin resultados}}",
+  "@sources_with_no_results": {
+    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "import_mode_title": "¿Cómo importar esto?",
   "import_mode_message": "Elige si deseas fusionar esta copia de seguridad en tu biblioteca actual o reemplazar toda tu biblioteca con ella.",
   "import_mode_keep_existing": "Combinar",
@@ -1035,8 +1255,19 @@
   "import_mode_replace_subtitle": "Elimina toda tu biblioteca actual y la reemplaza con esta copia de seguridad.",
   "replace_summary_title": "Listo para reemplazar tu biblioteca",
   "replace_summary_message": "Esto eliminará toda tu biblioteca actual ({currentCount} series) y la reemplazará con {backupCount} series de esta copia. Solo se puede deshacer restaurando un estado anterior.",
+  "@replace_summary_message": {
+    "placeholders": {
+      "currentCount": {},
+      "backupCount": {}
+    }
+  },
   "replace_summary_confirm": "Reemplazar",
   "replace_result_message": "Se reemplazó tu biblioteca con {count} series de esta copia de seguridad.",
+  "@replace_result_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "category_conflict_title": "Categorías existentes encontradas",
   "category_conflict_message": "La copia contiene categorías que ya existen en tu biblioteca. Mantener para incluir las series en la categoría existente, o eliminar para dejarlas sin categoría.",
   "category_conflict_keep": "Mantener — fusionar en categoría existente",
@@ -1046,26 +1277,70 @@
   "source_conflict_keep": "Mantener nombre original (sin fuente activa)",
   "import_summary_title": "Listo para importar",
   "import_summary_message": "{newSeries} nuevas series, {updatedSeries} series existentes actualizadas y {newChapters} nuevos capítulos añadidos. Nada de tu biblioteca actual será eliminado.",
+  "@import_summary_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "import_summary_confirm": "Importar",
   "import_result_message": "Importadas {newSeries} nuevas series, actualizadas {updatedSeries} existentes, añadidos {newChapters} nuevos capítulos.",
+  "@import_result_message": {
+    "placeholders": {
+      "newSeries": {},
+      "updatedSeries": {},
+      "newChapters": {}
+    }
+  },
   "roll_back": "Revertir cambios",
   "roll_back_confirm_message": "Esto restaura tu biblioteca a la instantánea de seguridad tomada justo antes de este cambio, deshaciendo todo lo realizado.",
   "roll_back_done": "Revertido a la instantánea previa al cambio.",
   "restoring_backup": "Restaurando tu biblioteca…",
   "roll_back_last_change": "Revertir último cambio",
   "roll_back_last_change_subtitle": "Instantánea del {date} — {description}",
+  "@roll_back_last_change_subtitle": {
+    "placeholders": {
+      "date": {},
+      "description": {}
+    }
+  },
   "roll_back_available_count": "{count} cambios recientes disponibles para revertir",
+  "@roll_back_available_count": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "delete_source_title": "Eliminar fuente y sus mangas",
   "delete_source_subtitle": "Elige una fuente y elimina todos sus mangas de tu biblioteca, junto con sus capítulos, descargas, historial y seguimiento.",
   "delete_source_pick_title": "Elige una fuente para eliminar",
   "delete_source_empty": "No se encontraron fuentes en tu biblioteca.",
   "delete_source_confirm_title": "¿Eliminar {sourceName}?",
+  "@delete_source_confirm_title": {
+    "placeholders": {
+      "sourceName": {}
+    }
+  },
   "delete_source_confirm_message": "Esto eliminará permanentemente {mangaCount} mangas, {chapterCount} capítulos, {historyCount} entradas de historial y {updateCount} de actualizaciones. Se conservan los enlaces de seguimiento. No se puede deshacer salvo revirtiendo.",
+  "@delete_source_confirm_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "chapterCount": {},
+      "historyCount": {},
+      "updateCount": {}
+    }
+  },
   "delete_source_also_remove_extension": "Eliminar también la extensión instalada",
   "delete_source_keep_history": "Conservar historial de lectura",
   "delete_source_keep_downloads": "Conservar registros de descargas",
   "delete_source_button": "Eliminar",
   "delete_source_result_message": "Se eliminaron {mangaCount} mangas de {sourceName}.",
+  "@delete_source_result_message": {
+    "placeholders": {
+      "mangaCount": {},
+      "sourceName": {}
+    }
+  },
   "merge_manga_title": "Combinar mangas duplicados",
   "merge_manga_subtitle": "Busca mangas con títulos idénticos bajo la misma fuente y los combina en uno solo, sin borrar nada que quieras conservar.",
   "merge_manga_none_found": "No se encontraron mangas duplicados.",
@@ -1073,10 +1348,33 @@
   "merge_manga_choose_primary_title": "¿En cuál deben combinarse los demás?",
   "merge_manga_choose_primary_message": "Los capítulos, historial y seguimiento de las otras entradas se combinarán en la que elijas — nada se elimina.",
   "merge_manga_chapters_subtitle": "{count, plural, =1{1 capítulo} other{{count} capítulos}}",
+  "@merge_manga_chapters_subtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "merge_manga_button": "Combinar",
   "merge_manga_result_message": "Se combinaron {count} mangas duplicados en {mangaName}.",
+  "@merge_manga_result_message": {
+    "placeholders": {
+      "count": {},
+      "mangaName": {}
+    }
+  },
   "merge_preview_title": "Confirmar combinación",
   "merge_manga_preview_message": "{totalChapters} capítulos encontrados en las otras entradas. {duplicateChapters} son duplicados y se descartarán (manteniendo la copia con progreso); {keptChapters} se añadirán. {duplicateTracks} enlace(s) de seguimiento duplicados también se descartarán.",
+  "@merge_manga_preview_message": {
+    "placeholders": {
+      "totalChapters": {},
+      "duplicateChapters": {},
+      "keptChapters": {},
+      "duplicateTracks": {}
+    }
+  },
+  "memory_overlay": "Mostrar uso de memoria",
+  "memory_overlay_subtitle": "Lectura en vivo del consumo de memoria de la app. Para medir en el dispositivo en lugar de adivinar: obsérvelo al desplazarse por la biblioteca o leer un capítulo.",
   "beta": "Beta",
   "error_reports": "Informes de errores",
   "error_reports_subtitle": "Errores detectados por la app y forma de notificarlos",
@@ -1088,6 +1386,9 @@
   "error_reports_copy": "Copiar",
   "error_reports_copied": "Copiado al portapapeles",
   "error_reports_clear": "Limpiar",
+  "error_reports_extension_failure": "Esto proviene de una extensión, no de NodeLane Comics. Las extensiones son desarrolladas y mantenidas por quienes administran el repositorio desde el que instaló esta fuente, por lo que la solución debe realizarse allí. El nombre de la fuente y lo que estaba abriendo son detalles útiles para proporcionarles.",
+  "error_reports_already_reported": "Ya reportado",
+  "error_reports_expected_failure": "Esto suele deberse a la fuente o a la red más que a la app: un enlace expirado, un servidor caído o una desconexión. Solo vale la pena reportarlo si sigue sucediendo en una fuente que funciona en otros lugares.",
   "share_unavailable_copied": "La función de compartir no está disponible en esta plataforma, por lo que se copió al portapapeles.",
   "onboarding_title": "Bienvenido a NodeLane Comics",
   "onboarding_libraries_body": "Elige lo que lees y ves. Lo que no elijas quedará fuera de la barra de navegación; podrás cambiarlo más tarde en Apariencia.",
@@ -1101,9 +1402,19 @@
   "onboarding_or_local": "O utiliza archivos que ya tienes",
   "onboarding_local_folder": "Añadir una carpeta",
   "onboarding_local_existing": "{count} carpetas ya configuradas",
+  "@onboarding_local_existing": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_any_type": "Manga, anime y novelas son compatibles. Cada título irá a la biblioteca correcta según su contenido.",
   "onboarding_local_scanning": "Escaneando la carpeta",
   "onboarding_local_found": "{count} títulos encontrados",
+  "@onboarding_local_found": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "onboarding_local_remove": "Eliminar esa carpeta",
   "onboarding_local_in_downloads": "Esa es la carpeta de descargas de la app. Añadirla crea una segunda copia local de una biblioteca que la app ya gestiona.",
   "onboarding_local_empty": "No se encontró nada. Elige la carpeta que contiene tus carpetas de manga, no un manga individual.",
@@ -1120,183 +1431,6 @@
   "missing_source_check_subtitle": "Encuentra entradas cuya extensión no está instalada: restaurar una copia puede dejar entradas apuntando a una fuente no instalada en este dispositivo.",
   "missing_source_check_none_found": "La fuente de cada entrada de la biblioteca está instalada.",
   "missing_source_check_result_title": "{count, plural, =1{Falta 1 fuente} other{Faltan {count} fuentes}}",
-  "missing_source_check_result_message": "Estas entradas apuntan a una fuente no instalada en este dispositivo. Toca una para migrarla a una fuente instalada, instala la extensión correspondiente o usa \"Eliminar fuente y sus mangas\".",
-  "@tts_paragraph_progress": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
-  "@label_value": {
-    "placeholders": {
-      "label": {},
-      "value": {}
-    }
-  },
-  "@beta_version": {
-    "placeholders": {
-      "version": {}
-    }
-  },
-  "@error_with_message": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_create_cbz": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_saving_chapter_episode_to_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_chapter_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_reading_archive_cover_image": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@error_getting_local_library": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@failed_to_export_metadata": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "@unrecognized_chapter_numbers": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@tracker_token_expired": {
-    "placeholders": {
-      "tracker": {}
-    }
-  },
-  "@playback_speed_multiplier": {
-    "placeholders": {
-      "value": {}
-    }
-  },
-  "@could_not_launch_url": {
-    "placeholders": {
-      "url": {}
-    }
-  },
-  "@sources_with_no_results": {
-    "description": "Header of the collapsed group in global search holding every source that failed or found nothing.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@replace_summary_message": {
-    "placeholders": {
-      "currentCount": {},
-      "backupCount": {}
-    }
-  },
-  "@replace_result_message": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@import_summary_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@import_result_message": {
-    "placeholders": {
-      "newSeries": {},
-      "updatedSeries": {},
-      "newChapters": {}
-    }
-  },
-  "@roll_back_last_change_subtitle": {
-    "placeholders": {
-      "date": {},
-      "description": {}
-    }
-  },
-  "@roll_back_available_count": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@delete_source_confirm_title": {
-    "placeholders": {
-      "sourceName": {}
-    }
-  },
-  "@delete_source_confirm_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "chapterCount": {},
-      "historyCount": {},
-      "updateCount": {}
-    }
-  },
-  "@delete_source_result_message": {
-    "placeholders": {
-      "mangaCount": {},
-      "sourceName": {}
-    }
-  },
-  "@merge_manga_chapters_subtitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@merge_manga_result_message": {
-    "placeholders": {
-      "count": {},
-      "mangaName": {}
-    }
-  },
-  "@merge_manga_preview_message": {
-    "placeholders": {
-      "totalChapters": {},
-      "duplicateChapters": {},
-      "keptChapters": {},
-      "duplicateTracks": {}
-    }
-  },
-  "@onboarding_local_existing": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "@onboarding_local_found": {
-    "placeholders": {
-      "count": {}
-    }
-  },
   "@missing_source_check_result_title": {
     "placeholders": {
       "count": {
@@ -1304,31 +1438,6 @@
       }
     }
   },
-  "developer_mode": "Modo desarrollador",
-  "developer_mode_subtitle": "Mostrar herramientas de desarrollador de extensiones (crear extensión, editar código)",
-  "last_sync": "Última sincronización: ",
-  "sync_login_browser": "Iniciar sesión con el navegador",
-  "sync_progress_percent": "Sincronizando… {percent}%",
-  "@sync_progress_percent": {
-    "placeholders": {
-      "percent": {}
-    }
-  },
-  "sync_progress_indeterminate": "Sincronizando…",
-  "override_ass_subtitles": "Anular subtítulos ASS",
-  "override_ass_subtitles_info": "Aplicar estilo personalizado a los subtítulos ASS/SSA",
-  "repo_already_exists": "¡El repositorio ya existe!",
-  "tracks": "Pistas",
-  "playback_speed": "Velocidad de reproducción",
-  "shaders": "Shaders",
-  "video_fit": "Ajuste",
-  "double_page_single_first_page": "Primera página individual",
-  "double_page_single_first_page_subtitle": "Mostrar la primera página sola en el modo de doble página",
-  "memory_overlay": "Mostrar uso de memoria",
-  "memory_overlay_subtitle": "Lectura en vivo del consumo de memoria de la app. Para medir en el dispositivo en lugar de adivinar: obsérvelo al desplazarse por la biblioteca o leer un capítulo.",
-  "error_reports_extension_failure": "Esto proviene de una extensión, no de NodeLane Comics. Las extensiones son desarrolladas y mantenidas por quienes administran el repositorio desde el que instaló esta fuente, por lo que la solución debe realizarse allí. El nombre de la fuente y lo que estaba abriendo son detalles útiles para proporcionarles.",
-  "error_reports_already_reported": "Ya reportado",
-  "error_reports_expected_failure": "Esto suele deberse a la fuente o a la red más que a la app: un enlace expirado, un servidor caído o una desconexión. Solo vale la pena reportarlo si sigue sucediendo en una fuente que funciona en otros lugares.",
   "global_search_no_sources": "No hay fuentes de {itemType} instaladas.",
   "@global_search_no_sources": {
     "placeholders": {
@@ -1349,6 +1458,7 @@
   "global_search_only_pinned_hint": "Fije una fuente o desactive \"Solo incluir fuentes fijadas\" en los ajustes de Explorar.",
   "global_search_all_nsfw": "Todas sus fuentes para esto están marcadas como NSFW y están ocultas.",
   "global_search_all_nsfw_hint": "Active las fuentes NSFW en los ajustes de Explorar para buscarlas.",
+  "missing_source_check_result_message": "Estas entradas apuntan a una fuente no instalada en este dispositivo. Toca una para migrarla a una fuente instalada, instala la extensión correspondiente o usa \"Eliminar fuente y sus mangas\".",
   "related_titles": "Relacionados",
   "related_none": "No se encontraron títulos relacionados para esta obra.",
   "relation_adaptation": "Adaptación",
@@ -1367,13 +1477,6 @@
   "auto_library_update_weekly": "Semanalmente",
   "auto_library_update_wifi_only": "Solo con Wi-Fi",
   "auto_library_update_wifi_only_subtitle": "Omitir la actualización programada cuando use datos móviles.",
-  "double_tap_search_hint": "Toca dos veces para buscar todo en {type}",
-  "show_nav_double_tap_tooltip": "Mostrar sugerencia de búsqueda por doble toque",
-  "show_nav_double_tap_tooltip_subtitle": "Muestra un cuadro de información en los destinos de Manga/Anime/Novela explicando que tocar dos veces abre la búsqueda global.",
-  "already_in_library": "\"{title}\" ya está en tu biblioteca a través de {source}.",
-  "add_anyway": "Añadir de todos modos",
-  "double_page_auto": "Doble página automática",
-  "double_page_auto_subtitle": "Cambiar automáticamente al modo de doble página en horizontal",
   "padding": "Espaciado",
   "page_mode": "Modo de página",
   "single_page": "Página única",
@@ -1391,5 +1494,1189 @@
   "chapter_swipe_toggle_bookmark": "Alternar marcador",
   "chapter_swipe_toggle_read": "Marcar leído/no leído",
   "chapter_swipe_download": "Descargar",
-  "chapter_swipe_disabled": "Desactivado"
+  "chapter_swipe_disabled": "Desactivado",
+  "update_errors": "Errores de actualización",
+  "no_update_errors": "No hay errores de actualización",
+  "clear_all": "Borrar todo",
+  "dismiss": "Descartar",
+  "previous_episode": "Episodio anterior",
+  "clear_logs": "Borrar registros",
+  "bold": "Negrita",
+  "italic": "Cursiva",
+  "color_yellow": "Amarillo",
+  "color_cyan": "Cian",
+  "color_green": "Verde",
+  "color_orange": "Naranja",
+  "continue_watching": "Continuar mirando",
+  "search_your_anime": "Busca tu anime",
+  "category": "Categoría",
+  "hidden_categories": "Categorías ocultas",
+  "new_category": "Nueva categoría",
+  "local": "Locales",
+  "tv_home_rows": "Filas",
+  "genre_rows": "Filas de género",
+  "share_backup_file": "Compartir archivo de copia de seguridad NodeLane Comics",
+  "close": "Cerrar",
+  "migrate_source": "Migrar fuente",
+  "cloudflare_bypass_proxy": "Proxy de derivación de Cloudflare",
+  "custom_doh_url": "DoH personalizado URL",
+  "custom_doh_url_helper": "Debe ser un punto final https DoH (JSON)",
+  "anime_only_tv_layout": "Diseño de TV solo de anime",
+  "anime_only_beta": "Solo anime (beta)",
+  "tv_home_beta": "TV en casa (beta)",
+  "tv_player_beta": "Reproductor de TV (beta)",
+  "network_settings": "Red",
+  "reader_page_layout": "Diseño de página",
+  "reader_continuous_options": "Lectura continua",
+  "reader_default_mode_hint": "El modo de lectura predeterminado se aplica a títulos sin un modo individual establecido durante la lectura.",
+  "extension_service": "Servicio de extensión",
+  "extension_service_description": "Gestionar el tiempo de ejecución de la extensión y la dirección de proxy.",
+  "proxy_address": "Dirección de proxy",
+  "checking_runtime_status": "Comprobando el estado…",
+  "download_delay_value": "{seconds} s + retraso aleatorio",
+  "@download_delay_value": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_count": "{count, plural, one{1 capítulo} other{{count} capítulos}}",
+  "@download_queue_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "download_queue_empty_hint": "Agregar descargas de la lista de capítulos de un título.",
+  "download_queue_order_hint": "Arrastre los controladores para reordenar",
+  "download_queue_empty": "No hay descargas en cola",
+  "download_queue_actions": "Acciones de descarga",
+  "download_queue_cancel_chapter": "Cancelar la descarga de este capítulo",
+  "download_queue_cancel_series": "Cancelar todas las descargas de este título",
+  "download_queue_start": "Iniciar descargas",
+  "download_queue_retry": "Reintentar descargas",
+  "download_queue_active": "Descargando",
+  "download_queue_waiting": "Esperando descargar",
+  "download_queue_failed": "Descarga fallida",
+  "cf_proxy_helper": "Punto final FlareSolverr/Byparr. Déjelo vacío para desactivarlo.",
+  "mobile_navigation_description": "Arrastre para reordenar. Manga, anime y novelas comparten la pestaña Biblioteca. El primer elemento visible se abre en el momento del lanzamiento. Explorar y más permanecen visibles; Aparecen pestañas adicionales en Más.",
+  "text_align_justify": "Justificar",
+  "novel_session_modes_hint": "Configure el modo de lectura y páginas simples o dobles mientras lee un título.",
+  "tts_languages_failed": "No se pudieron cargar idiomas desde el motor de voz.",
+  "tts_languages_empty": "El motor de voz no devolvió ningún idioma. Su selección guardada se conserva.",
+  "tts_language_unavailable": "Este idioma guardado no está en la lista actual del dispositivo.",
+  "tts_apply_failed": "No se pudo aplicar esta configuración al motor de voz. Puedes volver a intentarlo.",
+  "player_controls": "Controles",
+  "audio_channel_auto": "Automático",
+  "audio_channel_auto_safe": "Automático (seguro)",
+  "audio_channel_mono": "Monocromo",
+  "audio_channel_stereo": "Estéreo",
+  "audio_channel_reverse_stereo": "Estéreo inverso",
+  "mpv_bundled_config_hint": "Restaurar la configuración, scripts y sombreadores incluidos con la aplicación. Se sobrescribirán los archivos con el mismo nombre.",
+  "mpv_restore_bundled": "Restaurar la configuración incluida",
+  "mpv_restore_confirm": "¿Restaurar la configuración MPV incluida? Se sobrescribirán la configuración, los scripts y los sombreadores existentes con los mismos nombres. Se conservarán otros archivos.",
+  "player_operation_incomplete": "La operación no pudo completarse. Verifique el acceso al archivo e inténtelo nuevamente.",
+  "custom_buttons_empty_hint": "Añadir un botón de reproductor con una etiqueta y una acción de prensa.",
+  "custom_button_primary": "Botón predeterminado",
+  "show_password": "Mostrar contraseña",
+  "hide_password": "Ocultar contraseña",
+  "tracking_accounts_empty": "Conecte un servicio en la configuración de seguimiento para gestionar sus entradas.",
+  "tracking_entries_empty": "No hay entradas rastreadas para este tipo de medio. Agregue seguimiento desde la página de detalles de un título.",
+  "change_tracking_match": "Cambiar título coincidente",
+  "remove_tracking": "Eliminar seguimiento",
+  "remove_tracking_confirm": "¿Eliminar el enlace de seguimiento para “{title}”? Se mantendrá la entrada en el servicio de seguimiento.",
+  "@remove_tracking_confirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "tracking_refresh_required": "No se pudo confirmar el estado de seguimiento. Actualice antes de realizar otro cambio.",
+  "tracking_entry_unlinked": "Este registro no está vinculado a un título local, por lo que no se puede editar aquí.",
+  "backup_selection_shared": "Los cambios realizados en estas selecciones se guardan inmediatamente y también se aplican a las copias de seguridad automáticas.",
+  "library_snapshot_history": "Restaurar una instantánea de la biblioteca",
+  "library_snapshot_empty": "No hay instantáneas de seguridad disponibles.",
+  "library_snapshot_restore_message": "Los datos actuales serán reemplazados por esta instantánea. Los cambios realizados desde entonces se perderán. Las descargas eliminadas no se pueden restaurar. Las instantáneas de seguridad disponibles se borrarán después del éxito.",
+  "library_maintenance_working": "Actualizando biblioteca…",
+  "library_safety_snapshot_note": "Se guardará una instantánea de seguridad antes de esta operación. No incluye archivos descargados.",
+  "library_delete_summary": "Entradas de biblioteca: {mangaCount}. Capítulos: {chapterCount}. Entradas del historial: {historyCount}. Actualizaciones: {updateCount}.\n\nElija qué conservar a continuación.",
+  "@library_delete_summary": {
+    "placeholders": {
+      "mangaCount": {
+        "type": "int"
+      },
+      "chapterCount": {
+        "type": "int"
+      },
+      "historyCount": {
+        "type": "int"
+      },
+      "updateCount": {
+        "type": "int"
+      }
+    }
+  },
+  "library_delete_pick_message": "Elija una fuente para revisar su contenido y opciones de eliminación.",
+  "mobile_categories_hint": "Arrastre para reordenar. Abra una categoría para cambiarle el nombre o cambiar su visibilidad y actualizaciones.",
+  "mobile_category_visible": "Mostrar en la biblioteca",
+  "mobile_category_hidden": "Oculto de la biblioteca",
+  "mobile_category_updates": "Incluir en las actualizaciones de la biblioteca",
+  "statistics_watched": "Observado",
+  "calendar_month": "Mes",
+  "calendar_two_weeks": "2 semanas",
+  "calendar_week": "Semana",
+  "calendar_show_all_dates": "Mostrar todas las fechas",
+  "update_check_no_result": "No se encontró ninguna actualización instalable. Puedes volver a intentarlo más tarde.",
+  "release_notes": "Notas de versión",
+  "no_release_notes": "No se proporcionan notas de la versión.",
+  "downloading_update": "Descargando actualización…",
+  "preparing_installation": "Preparando la instalación…",
+  "onboarding_mobile_libraries_body": "Elija qué leer. Puedes cambiar esto más tarde.",
+  "onboarding_content_title": "Comenzar a leer",
+  "onboarding_mobile_sources_body": "Elija una forma de comenzar o agregue contenido más tarde.",
+  "onboarding_step_count": "Paso {step} de {total}",
+  "@onboarding_step_count": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "global_search_results_for": "Resultados para “{query}”",
+  "@global_search_results_for": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "global_search_scope": "{type} · {count, plural, =1{1 fuente} other{{count} fuentes}}",
+  "@global_search_scope": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "migration_search_prompt": "Busque el título de destino.",
+  "migration_original_item": "Artículo actual",
+  "migration_target_item": "Elemento seleccionado",
+  "migration_partial_failure": "La operación no terminó. Es posible que se hayan guardado algunos cambios. Consulta este artículo en tu biblioteca antes de volver a intentarlo.",
+  "migration_no_categories": "Sin categorías. Puede agregar este artículo sin una categoría.",
+  "mass_migration_select_source": "Elija la fuente actual",
+  "mass_migration_select_all": "Seleccionar todo",
+  "mass_migration_deselect_all": "Deseleccionar todo",
+  "mass_migration_needs_review": "Revisar migraciones incompletas",
+  "bookshelf_actions": "Acciones de estantería",
+  "bookshelf_ignore_filters": "Ignorar filtros al buscar",
+  "bookshelf_ignore_filters_hint": "Buscar todas las obras de esta categoría, incluidas aquellas ocultas por filtros.",
+  "bookshelf_stop_update": "Detener la actualización de la biblioteca",
+  "bookshelf_selected_count": "{count} obras seleccionadas",
+  "@bookshelf_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_remove_library": "Quitar de la estantería",
+  "bookshelf_remove_library_hint": "Elimina favoritos. Las importaciones locales también pierden su biblioteca y sus registros de lectura.",
+  "bookshelf_remove_downloads": "Eliminar archivos descargados",
+  "bookshelf_remove_downloads_hint": "Elimina archivos descargados manteniendo la información del trabajo.",
+  "bookshelf_remove_local_files_hint": "También elimina archivos importados locales seleccionados y elimina sus registros de biblioteca. Estos archivos no se pueden recuperar aquí.",
+  "bookshelf_remove_incomplete": "La operación no terminó. Es posible que algunas obras o archivos hayan sido procesados. Cierre este cuadro de diálogo y revise su estantería y descargas antes de continuar.",
+  "bookshelf_processing": "Procesamiento…",
+  "bookshelf_mark_read": "Marcar leído",
+  "bookshelf_mark_unread": "Marcar como no leído",
+  "bookshelf_select_all": "Seleccionar todo",
+  "bookshelf_invert_selection": "Invertir selección",
+  "bookshelf_settings": "Configuración de estantería",
+  "bookshelf_settings_live": "Los cambios de filtrado, clasificación y visualización entran en vigor inmediatamente.",
+  "bookshelf_filter_any": "Cualquiera",
+  "bookshelf_filter_include": "Incluir",
+  "bookshelf_filter_exclude": "Excluir",
+  "bookshelf_all_sources": "Todas las fuentes",
+  "bookshelf_sources_selected": "{count} fuentes seleccionadas",
+  "@bookshelf_sources_selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookshelf_sort_ascending": "Ascendente",
+  "bookshelf_sort_descending": "Descendente",
+  "bookshelf_layout": "Diseño de estantería",
+  "bookshelf_sources_hint": "Seleccione ninguna para mostrar todas las fuentes. Los cambios se aplican cuando tocas Filtrar.",
+  "bookshelf_choose_files": "Elegir archivos",
+  "bookshelf_import_wait": "Elija un archivo en el selector y espere a que finalice la importación.",
+  "bookshelf_import_incomplete": "La importación no finalizó. Es posible que algunos archivos ya estén en su estantería. Cierre este cuadro de diálogo y compruébelo antes de volver a importar.",
+  "bookshelf_categories_replace": "Al guardar se asignan estas categorías a cada obra seleccionada, reemplazando sus categorías anteriores.",
+  "bookshelf_categories_hint": "Elija una o más categorías, o deje la selección vacía para no asignar ninguna.",
+  "bookshelf_categories_hidden": "Para este trabajo se mantienen las categorías ocultas existentes.",
+  "bookshelf_categories_incomplete": "Las categorías no se pudieron guardar por completo. Cierre este cuadro de diálogo y revise la estantería antes de volver a intentarlo.",
+  "bookshelf_categories_none_visible": "No hay categorías disponibles aquí. Abra la gestión de categorías para revisarlas.",
+  "bookshelf_manage_categories": "Gestionar categorías",
+  "manga_actions": "Acciones cómicas",
+  "manga_download_scope": "Descargar capítulos",
+  "manga_download_scope_hint": "Elegir capítulos dentro de los filtros actuales. Se omiten los capítulos descargados.",
+  "manga_download_scope_empty": "Ningún capítulo coincide con los filtros actuales. Cierra este menú y ajusta los filtros de capítulos.",
+  "manga_action_incomplete": "La acción no terminó. Verifique el estado actual antes de volver a intentarlo.",
+  "chapter_settings": "Configuración del capítulo",
+  "chapter_settings_live": "Los cambios de filtrado y clasificación se aplican inmediatamente.",
+  "chapter_scanlators_all": "Mostrar todos los grupos de scanlator",
+  "chapter_scanlators_hint": "Seleccionar grupos para ocultar sus capítulos. Los cambios se aplican cuando tocas Filtrar.",
+  "chapter_scanlators_hidden": "{count} grupos de scanlator ocultos",
+  "@chapter_scanlators_hidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_selected_count": "{count} capítulos seleccionados",
+  "@chapter_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chapter_add_bookmark": "Marcador",
+  "chapter_remove_bookmark": "Quitar marcador",
+  "chapter_read_following": "Lea a continuación",
+  "chapter_delete_records": "Eliminar registros de capítulos",
+  "chapter_delete_local_hint": "Elimina los registros del capítulo seleccionado y el progreso de lectura. Se conservan archivos locales originales; Las copias descargadas se limpian.",
+  "chapter_delete_last_hint": "Estos son todos los capítulos de este cómic. Eliminarlos también elimina el cómic de tu estantería.",
+  "chapter_action_incomplete": "La acción no terminó. Es posible que algunos cambios ya estén guardados. Cierra y revisa los capítulos y descargas antes de continuar.",
+  "reader_display_scope": "El modo de lectura y el diseño de página manual se aplican a este cómic. Elija un cambio para volver a la lectura.",
+  "reader_display_single_only": "La lectura continua horizontal utiliza páginas individuales.",
+  "reader_display_manual_pages": "Al cambiar el diseño de página se desactiva la doble página automática para todos los cómics.",
+  "reader_display_crop_scope": "Se aplica a todos los cómics.",
+  "reader_chapter_locate": "Localizar el capítulo actual",
+  "reader_chapter_search": "Buscar capítulos o escaneadores",
+  "reader_chapter_scope": "Utiliza los filtros de capítulo y el orden de clasificación a partir de detalles de cómic. Los marcadores se guardan inmediatamente.",
+  "reader_chapter_current_hidden": "El capítulo que estás leyendo está fuera de los filtros actuales.",
+  "reader_chapter_current": "Leyendo ahora",
+  "reader_chapter_read": "Leer",
+  "reader_chapter_bookmark_failed": "No se pudo confirmar el guardado del marcador. Cierra la lista y comprueba su estado actual.",
+  "reader_image_actions": "Acciones de imagen",
+  "reader_image_original": "Utiliza la página original completa, sin traducción, recorte ni filtros de color del lector.",
+  "reader_image_save_ios": "Guárdelo en la carpeta Imágenes en la ubicación de almacenamiento de la aplicación actual.",
+  "reader_image_save_android": "Guárdelo en la carpeta Imágenes/nodelane-comics del dispositivo.",
+  "reader_image_share": "Abra la hoja compartida del sistema.",
+  "reader_image_cover": "Cambiar la portada de este cómic después de la confirmación.",
+  "reader_image_cover_limit": "Las imágenes de portada deben tener un tamaño inferior a 5 MB. Guardar y compartir siguen estando disponibles.",
+  "reader_image_action_failed": "La acción no pudo ser confirmada. Cierra este menú y comprueba el resultado antes de volver a intentarlo.",
+  "reader_settings_book_scope": "Estas configuraciones se aplican únicamente a este cómic.",
+  "reader_settings_global_scope": "Estas configuraciones se aplican a todos los cómics y se guardan inmediatamente.",
+  "reader_filters": "Filtros de imagen",
+  "reader_filter_scope": "Se aplica a todos los cómics. Cambia la visualización de lectura sin modificar las imágenes originales.",
+  "reader_auto_scroll_pause": "El desplazamiento se detiene mientras la configuración está abierta.",
+  "manga_synopsis": "Sinopsis",
+  "manga_author": "Autor: {author}",
+  "@manga_author": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "manga_continue_reading": "Continuar leyendo",
+  "reader_settings_title": "Configuraciones del lector",
+  "reader_picker_book_scope": "Sólo para este cómic",
+  "reader_picker_global_scope": "Se aplica a todos los cómics.",
+  "reader_picker_apply_hint": "Toque para guardar y volver al nivel anterior.",
+  "reader_scale_fit_screen_hint": "Ajustar toda la página en pantalla",
+  "reader_scale_stretch_hint": "Llenar el área de lectura",
+  "reader_scale_fit_width_hint": "Ajustar la página al ancho",
+  "reader_scale_fit_height_hint": "Ajustar la página a la altura.",
+  "source_filter_active": "Aplicado",
+  "source_filter_apply": "Aplicar filtros",
+  "source_filter_scope": "Los filtros se aplican únicamente a este sitio web.",
+  "source_filter_apply_hint": "Aplique filtros para utilizar sus selecciones.",
+  "source_filter_term": "{term, select, genres{Géneros} author{Autor} artist{Artista} title{Título} year{Año} tags{Etiquetas} format{Formato} publisher{Editor} relevance{Relevancia} rating{Clasificación} views{Vistas} random{Aleatorio} all{Todos} none{Ninguno} action{Acción} adventure{Aventura} comedy{Comedia} drama{Drama} fantasy{Fantasía} romance{Romance} science_fiction{Ciencia ficción} slice_of_life{Recuentos de la vida} mystery{Misterio} horror{Terror} psychological{Psicológico} historical{Histórico} sports{Deportes} supernatural{Sobrenatural} school_life{Vida escolar} tragedy{Tragedia} shounen{Shounen} shoujo{Shoujo} seinen{Seinen} josei{Josei} isekai{Isekai} martial_arts{Artes marciales} mecha{Mecha} music{Música} doujinshi{Doujinshi} trending{Tendencia} new{Nuevo} adult_content{Contenido para adultos} only{Sólo} other{{term}}}",
+  "@source_filter_term": {
+    "description": "Common extension filter display labels. Plugin values are never translated.",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "bookshelf_more_display": "Más opciones de visualización",
+  "bookshelf_more_display_hint": "Insignias, fuentes y categorías",
+  "bookshelf_download_count": "Recuento de descargas",
+  "bookshelf_source_global_hint": "La visibilidad de la fuente utiliza la preferencia de visualización compartida.",
+  "bookshelf_select_entries": "Seleccionar obras",
+  "bookshelf_search_options": "Opciones de búsqueda",
+  "bookshelf_empty_hint": "Recopile obras de fuentes o importe archivos locales.",
+  "bookshelf_no_match_hint": "Pruebe otras palabras clave o ajuste los filtros actuales.",
+  "bookshelf_clear_query": "Borrar palabras clave",
+  "bookshelf_view_selection": "Ver obras seleccionadas",
+  "bookshelf_import_formats": "Elija un archivo local para agregarlo a su estantería.",
+  "bookshelf_import_canceled_hint": "Puede elegir nuevamente después de cancelar el selector de archivos.",
+  "bookshelf_browse_sources": "Explorar fuentes",
+  "bookshelf_empty_title": "Tu estantería está vacía",
+  "bookshelf_no_match_title": "No hay trabajos coincidentes",
+  "bookshelf_mark_watched": "Marcos miró",
+  "bookshelf_mark_unwatched": "Marcar sin observar",
+  "nodelane_account": "NodeLane",
+  "nodelane_sign_in": "Iniciar sesión en NodeLane",
+  "nodelane_account_intro": "Ver su cuenta, suscripción y cuota de traducción",
+  "nodelane_login_action": "Continuar iniciando sesión",
+  "nodelane_login_browser": "Inicie sesión a través del navegador del sistema y luego regrese a la aplicación",
+  "nodelane_account_id": "ID de cuenta",
+  "nodelane_account_init_error": "El almacenamiento de la cuenta no está disponible. Reinicie la aplicación y vuelva a intentarlo.",
+  "nodelane_account_refresh_error": "No se pudo actualizar la información de la cuenta",
+  "nodelane_account_auth_error": "Su sesión ha expirado. Iniciar sesión nuevamente",
+  "nodelane_account_unknown": "La información de suscripción no está disponible",
+  "nodelane_account_current": "Suscripción actual",
+  "nodelane_account_free": "Cuenta gratuita",
+  "nodelane_account_no_subscription": "Ninguna suscripción activa",
+  "nodelane_account_active": "Activo",
+  "nodelane_account_expired": "Caducado",
+  "nodelane_account_expiry": "Válido hasta",
+  "nodelane_account_renewal": "Renovación",
+  "nodelane_renewal_auto": "Renovación automática",
+  "nodelane_renewal_manual": "Renovación manual",
+  "nodelane_renewal_stopped": "Renovación automática detenida",
+  "nodelane_renewal_gift": "Membresía de regalo",
+  "nodelane_renewal_attention": "Verifique el estado de su renovación en el sitio web",
+  "nodelane_next_billing": "Próxima fecha de facturación",
+  "nodelane_billing_unavailable": "La información de renovación no está disponible",
+  "nodelane_manage_account": "Administrar en el sitio web",
+  "nodelane_view_plans": "Ver planes de suscripción",
+  "nodelane_translation_quota": "Cuota de traducción",
+  "nodelane_quota_free": "Cuota libre",
+  "nodelane_quota_subscription": "Cuota de suscripción",
+  "nodelane_quota_purchase": "Cuota comprada",
+  "nodelane_quota_details": "Ver detalles de cuota",
+  "nodelane_quota_expanded": "Detalles de la cuota",
+  "nodelane_quota_unlimited": "Ilimitado",
+  "nodelane_quota_not_subscribed": "No suscrito",
+  "nodelane_quota_unknown": "No disponible",
+  "nodelane_quota_used": "Usado",
+  "nodelane_quota_reserved": "En curso",
+  "nodelane_quota_reset": "Siguiente reinicio",
+  "nodelane_quota_expiry": "Próximo vencimiento",
+  "nodelane_quota_no_expiry": "Sin fecha de caducidad",
+  "nodelane_quota_reservation_note": "Las páginas en curso ya se deducen de la cuota disponible",
+  "nodelane_quota_available": "{count} páginas restantes",
+  "@nodelane_quota_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_quota_pages": "{count} páginas",
+  "@nodelane_quota_pages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nodelane_sign_out": "Cerrar sesión",
+  "nodelane_sign_out_confirm": "Al cerrar sesión se detiene la traducción oficial en este dispositivo. Se conservan su biblioteca y su progreso de lectura.",
+  "settings_search_hint": "Configuración de búsqueda",
+  "settings_frequent": "Usado frecuentemente",
+  "settings_reading_translation": "Lectura y traducción",
+  "settings_app_preferences": "Preferencias de la aplicación",
+  "settings_data_management": "Datos y gestión",
+  "settings_more_tools": "Más herramientas",
+  "settings_more_tools_hint": "Categorías, estadísticas y calendario",
+  "settings_appearance_interface": "Apariencia e interfaz",
+  "settings_security_privacy": "Seguridad y privacidad",
+  "settings_source_preferences": "Configuraciones de fuente",
+  "settings_about_help": "Acerca de y ayuda",
+  "settings_storage_backup": "Almacenamiento y copia de seguridad",
+  "settings_pending_downloads": "{count} pendiente",
+  "@settings_pending_downloads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_translation_language": "Idioma de traducción",
+  "settings_translation_scope": "Utilizado en el lector y en la traducción de páginas web.",
+  "settings_immediate_choice": "Los cambios se aplican inmediatamente",
+  "settings_translation_init_error": "Las configuraciones de traducción no están disponibles. Reinicie la aplicación y vuelva a intentarlo.",
+  "settings_local_cache": "Caché local",
+  "settings_chapter_cache": "Caché de capítulos y episodios",
+  "settings_cover_cache": "Caché de portada",
+  "settings_translation_cache": "Caché de imágenes traducidas",
+  "settings_translation_cache_hint": "Mantenga registros de traducción y recupere imágenes traducidas nuevamente cuando sea necesario",
+  "settings_cache_clear": "Borrar",
+  "settings_translation_cache_done": "Se borró la caché de imágenes traducidas; registros de traducción mantenidos",
+  "settings_cache_confirmation": "¿Borrar {name}? El contenido almacenado en caché se puede recuperar nuevamente. Se conservarán las entradas de la biblioteca.",
+  "@settings_cache_confirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_advanced_options": "Opciones avanzadas",
+  "settings_manga_reader": "Lector de manga",
+  "settings_novel_reader": "Lector de novelas",
+  "settings_downloads": "Descargar configuraciones",
+  "onboarding_welcome": "Bienvenido a",
+  "onboarding_reading_content": "Lectura de contenido",
+  "onboarding_choose_one": "Elija al menos uno",
+  "onboarding_restore_hint": "Restaura tu biblioteca desde una copia de seguridad",
+  "onboarding_browse_hint": "Buscar títulos en sitios web compatibles",
+  "onboarding_import_folder": "Importar una carpeta local",
+  "onboarding_import_folder_hint": "Lee manga, novelas y anime en tu dispositivo",
+  "onboarding_third_party": "Agregar un repositorio de terceros",
+  "onboarding_third_party_hint": "Utilice una dirección de repositorio que ya tenga",
+  "onboarding_repository_hint": "Introduzca la dirección proporcionada por el repositorio.",
+  "onboarding_repository_address": "Dirección",
+  "onboarding_repository_address_hint": "Ingrese la dirección del repositorio",
+  "onboarding_add_repository": "Agregar repositorio",
+  "onboarding_start": "Comience",
+  "onboarding_open_library": "Biblioteca abierta",
+  "onboarding_view_imports": "Ver contenido importado",
+  "onboarding_view_folders": "Ver carpetas",
+  "notice_backup_created": "Copia de seguridad creada",
+  "notice_backup_ready": "Guarde o comparta el archivo de copia de seguridad.",
+  "notice_backup_restored": "Copia de seguridad restaurada",
+  "notice_backup_unsupported": "Este formato de copia de seguridad no es compatible.",
+  "notice_verification_required": "Se requiere verificación del sitio web",
+  "notice_verification_hint": "Completar la verificación para continuar navegando.",
+  "notice_verify": "Verificar sitio web",
+  "notice_action_incomplete": "La acción no terminó. Comprueba su resultado antes de volver a intentarlo.",
+  "notice_library_updating": "Actualización de biblioteca",
+  "notice_library_progress": "Títulos {current} / {total} marcados",
+  "notice_library_failed": "Algunos títulos no se pudieron actualizar",
+  "notice_import_completed": "Importación completada",
+  "notice_operation_incomplete": "Acción incompleta",
+  "subtitle_service": "Servicio de subtítulos en línea",
+  "subtitle_service_mode": "Fuente de subtítulos",
+  "subtitle_service_disabled": "Desactivado · borrar credenciales guardadas",
+  "subtitle_personal_key": "Mi clave Wyzie",
+  "subtitle_custom_service": "Mi servicio de subtítulos",
+  "subtitle_key": "Wyzie API Clave",
+  "subtitle_key_hint": "Ingrese su propia clave Wyzie. Permanece en este dispositivo y no se incluye en las copias de seguridad de la aplicación.",
+  "subtitle_get_key": "Obtener una clave personal",
+  "subtitle_service_address": "Búsqueda de subtítulos URL",
+  "subtitle_service_token": "Token de acceso al servicio (opcional)",
+  "subtitle_custom_hint": "Utilice la búsqueda HTTPS completa URL de un servicio Wyzie-compatible, incluida su ruta (por ejemplo, /search). Ingrese un token de acceso solo si su servicio lo requiere.",
+  "subtitle_service_off_hint": "La búsqueda de subtítulos en línea está desactivada. Los subtítulos incrustados, proporcionados por la fuente y locales siguen estando disponibles.",
+  "subtitle_setup_required": "Elija un servicio de subtítulos antes de realizar la búsqueda.",
+  "subtitle_invalid_key": "Introduzca una clave sin espacios.",
+  "subtitle_invalid_address": "Utilice un HTTPS URL completo sin consulta, fragmento o credenciales integradas.",
+  "subtitle_invalid_token": "El token de acceso no puede contener espacios.",
+  "subtitle_storage_failed": "No se pudo leer ni guardar la configuración de subtítulos. Por favor inténtalo de nuevo.",
+  "subtitle_auth_failed": "El servicio de subtítulos rechazó el acceso. Verifique su clave o token de servicio.",
+  "subtitle_quota_exhausted": "La cuota del servicio de subtítulos está agotada. Consulta tu cuenta con ese servicio.",
+  "subtitle_network_failed": "No se pudo acceder al servicio de subtítulos. Por favor inténtalo de nuevo.",
+  "subtitle_response_invalid": "El servicio de subtítulos devolvió una respuesta o un archivo no compatible.",
+  "detail_loading_chapters": "Cargando capítulos…",
+  "reader_opening_chapter": "Capítulo inicial",
+  "reader_open_chapter": "Abrir capítulo",
+  "reader_loading_pages": "Obteniendo imágenes de capítulos...",
+  "reader_loading_pages_hint": "La lectura comenzará automáticamente cuando esté lista.",
+  "reader_loading_failed": "No se pudo cargar este capítulo",
+  "reader_loading_retry_hint": "Verifique su conexión e inténtelo nuevamente.",
+  "reader_no_pages": "No se encontraron imágenes para este capítulo.",
+  "reader_loading_previous": "Cargando capítulo anterior…",
+  "reader_previous_failed": "No se pudo cargar el capítulo anterior",
+  "reader_reached_start": "Has llegado al primer capítulo.",
+  "reader_loading_next": "Cargando el siguiente capítulo…",
+  "reader_next_failed": "No se pudo cargar el siguiente capítulo",
+  "reader_image_loading": "Cargando imagen…",
+  "reader_image_failure_hint": "Puedes seguir leyendo otras páginas.",
+  "comic_paged": "Página por página",
+  "comic_scroll": "Desplácese hacia abajo",
+  "comic_book_scope": "Se aplica sólo a este libro · los cambios se guardan inmediatamente",
+  "comic_defaults_title": "Valores predeterminados y hábitos",
+  "comic_defaults_hint": "Los valores predeterminados se aplican a los campos que no ha personalizado para un libro.",
+  "comic_habits_hint": "Estos hábitos se aplican a todos los cómics.",
+  "comic_turn": "Pase a la página siguiente",
+  "comic_left": "Izquierda",
+  "comic_right": "Derecha",
+  "comic_up": "Arriba",
+  "comic_fit": "Ajuste de página",
+  "comic_fit_contain": "Página completa",
+  "comic_fit_width": "Ancho de ajuste",
+  "comic_fit_height": "Altura de ajuste",
+  "comic_layout": "Diseño de página",
+  "comic_auto": "Automático",
+  "comic_layout_hint": "Auto muestra una extensión cuando hay suficiente ancho.",
+  "comic_width": "Ancho del contenido",
+  "comic_full": "Completo",
+  "comic_comfortable": "Cómodo",
+  "comic_narrow": "Estrecho",
+  "comic_gap": "Espaciado de página",
+  "comic_no_gap": "Sin costuras",
+  "comic_small_gap": "Pequeño",
+  "comic_image_title": "Imagen de ajuste fino",
+  "comic_image_hint": "El recorte y el tono afectan sólo a este libro.",
+  "comic_wide": "Páginas anchas",
+  "comic_intact": "Mantener entero",
+  "comic_split": "Dividir",
+  "comic_rotate": "Girar",
+  "comic_wide_hint": "La división sigue la dirección de paso de página. Se aplica a la lectura de una sola página.",
+  "comic_cover": "Una portada por capítulo",
+  "comic_effects_reset": "Restablecer ajustes de imagen",
+  "comic_book_reset": "Restaurar los valores predeterminados del libro",
+  "comic_book_reset_hint": "Borra la configuración de lectura personalizada de este libro. La traducción no ha cambiado.",
+  "comic_canvas": "Antecedentes del lector",
+  "comic_system": "Sistema",
+  "comic_black": "Negro",
+  "comic_gray": "Gris",
+  "comic_paper": "Papel",
+  "comic_tap": "Toque para pasar páginas",
+  "comic_tap_hint": "Toque los bordes para moverse; toque el centro para mostrar los controles.",
+  "comic_scroll_start": "Iniciar desplazamiento automático",
+  "comic_scroll_pause": "Pausar el desplazamiento automático",
+  "comic_scroll_speed": "Velocidad de desplazamiento",
+  "comic_scroll_hint": "Comienza cuando se cierra este panel. Se detiene cuando la aplicación sale del primer plano.",
+  "comic_save_failed": "No se pudo guardar. Por favor inténtalo de nuevo.",
+  "comic_reading": "Lectura",
+  "comic_chapter_habits_hint": "Los hábitos de lista de capítulos se aplican a todos los libros.",
+  "browser_title": "Navegador",
+  "translation_image_display": "Visualización de imágenes",
+  "translation_display_hint": "Mostrar primero las traducciones existentes. Conserve el original cuando no haya traducción disponible.",
+  "translation_sign_in_required": "Inicie sesión para habilitar la traducción",
+  "translation_sign_in_hint": "Después de iniciar sesión, cambie a imágenes traducidas para traducir automáticamente.",
+  "translation_automatic": "Traducción automática",
+  "translation_original_hint": "Mostrando originales. Cambie a imágenes traducidas para traducir automáticamente.",
+  "translation_window_hint": "Procesar imágenes actuales y futuras sólo mientras se muestran las traducciones.",
+  "translation_channel": "Canal de traducción",
+  "translation_no_images": "Aún no se han encontrado imágenes traducibles en esta página",
+  "translation_waiting_image": "Esperando la imagen actual",
+  "translation_progress": "Imágenes {complete} / {total} completadas{issues, plural, =0{} =1{ · 1 imagen necesita atención} other{ · {issues} imágenes necesitan atención}}",
+  "@translation_progress": {
+    "placeholders": {
+      "complete": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "issues": {
+        "type": "int"
+      }
+    }
+  },
+  "translation_image_actions_hint": "Toque y mantenga presionada una imagen para realizar más acciones, incluida traducirla nuevamente.",
+  "translation_title": "Traducción manga",
+  "translation_system_sign_in": "Inicie sesión utilizando el navegador de su sistema",
+  "translation_target_language": "Idioma de destino",
+  "translation_clear_cache": "Borrar caché de imágenes traducidas",
+  "translation_cache_hint": "Mantenga registros de traducción y recupere resultados nuevamente cuando sea necesario.",
+  "translation_saved_read_failed": "No se pudo cargar la traducción guardada",
+  "translation_read_failed": "No se pudo cargar la imagen traducida",
+  "operation_retry": "La acción no terminó. Por favor inténtalo de nuevo.",
+  "translation_original": "Originales",
+  "translation_translated": "Traducido",
+  "translation_regenerate_image": "Traducir esta imagen nuevamente",
+  "translation_read_image": "Recargar imagen traducida",
+  "translation_image_actions": "Más acciones de imagen",
+  "translation_processing": "Procesamiento",
+  "translation_reading": "Cargando imagen traducida",
+  "translation_waiting": "Esperando traducción",
+  "translation_preparing": "Preparación de la traducción",
+  "translation_uploading": "Cargando original",
+  "translation_running": "Traducir",
+  "translation_uncertain": "El estado necesita verificación",
+  "translation_failed": "La traducción falló",
+  "translation_verify": "Verificar",
+  "translation_reread": "Recargar",
+  "browser_back": "Volver",
+  "browser_translation": "Traducción de páginas web",
+  "browser_new_tab_action": "Abrir nueva pestaña",
+  "browser_current_tab": "Actual",
+  "browser_close_tab": "Cerrar pestaña",
+  "browser_new_tab": "Nueva pestaña",
+  "browser_page": "Página web",
+  "browser_unopened": "Aún no se ha abierto ninguna página",
+  "browser_address_hint": "Ingrese o pegue un URL",
+  "browser_invalid_address": "Ingrese un URL válido",
+  "browser_clear_address": "Borrar URL",
+  "browser_paste_address": "Pegar URL",
+  "browser_open_address": "Abierto URL",
+  "browser_tab_count": "Pestañas · {count}",
+  "@browser_tab_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "browser_load_failed": "No se pudo abrir esta página",
+  "browser_load_failed_hint": "Verifique su conexión y el URL.",
+  "browser_edit_address": "Editar URL",
+  "browser_clear_cookies_confirm": "¿Borrar sesiones de inicio de sesión para todos los sitios web?",
+  "browser_clear_cookies_hint": "Es posible que los sitios web en todas las pestañas requieran que inicie sesión nuevamente.",
+  "browser_clear_cookies_action": "Borrar sesiones de inicio de sesión",
+  "browser_tab_limit": "Puede mantener abiertas hasta 12 pestañas. Cierra uno primero.",
+  "browser_forward": "Adelante",
+  "browser_clear_all_cookies": "Borrar todas las sesiones de inicio de sesión del sitio web",
+  "browser_clear_failed": "No se pudieron borrar las sesiones. Por favor inténtalo de nuevo.",
+  "browser_save_failed": "No se pudieron guardar pestañas. Por favor inténtalo de nuevo.",
+  "browser_tabs_full": "12 pestañas ya están abiertas",
+  "browser_no_tabs": "Aún no hay pestañas abiertas",
+  "browser_close_failed": "No se pudieron guardar pestañas. Toca cerrar nuevamente para volver a intentarlo.",
+  "source_pinned_websites": "Sitios web fijados",
+  "manage": "Gestionar",
+  "translation_settings_hint": "Traducción automática, idioma de destino y canal.",
+  "translation_show_original": "Toque para mostrar el original",
+  "translation_show_translated": "Toque para mostrar la traducción.",
+  "source_display": "Pantalla",
+  "source_cover_title": "Portada y título",
+  "source_cover_only": "Sólo cubierta",
+  "source_save_search": "Guardar la búsqueda actual",
+  "source_saved_searches": "Búsquedas guardadas",
+  "source_website_info": "Información del sitio web",
+  "source_saved_search_title": "{title} · Toque para buscar",
+  "@source_saved_search_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "action_done": "Hecho",
+  "source_search_keyword": "Palabra clave: {query}",
+  "@source_search_keyword": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "source_no_saved_searches": "Aún no hay búsquedas guardadas",
+  "source_save_search_hint": "Busque una palabra clave y luego guárdela desde las acciones del sitio web.",
+  "source_saved_search_scope": "Las palabras clave se guardan solo para este sitio web.",
+  "source_search_here": "Buscar títulos en este sitio web",
+  "source_filter_results": "Resultados filtrados",
+  "source_search_results": "Resultados de la búsqueda",
+  "source_return_popular": "Volver a lo popular",
+  "source_popular_titles": "Títulos populares",
+  "source_no_titles": "No se encontraron títulos coincidentes",
+  "source_no_titles_hint": "Cambie sus palabras clave o filtros, o regrese a títulos populares.",
+  "source_load_more_failed": "No se pudo cargar más. Por favor inténtalo de nuevo.",
+  "source_load_pull_retry": "No se pudo cargar este sitio web. Tire hacia abajo para volver a intentarlo.",
+  "source_clear_failed": "No se pudo terminar de borrar. Por favor inténtalo de nuevo.",
+  "source_uninstall_failed": "No se pudo finalizar la desinstalación. Por favor inténtalo de nuevo.",
+  "source_details": "Detalles de la fuente",
+  "source_repository_website": "Sitio web del repositorio",
+  "source_provided_settings": "Configuraciones proporcionadas por la fuente",
+  "source_advanced_actions": "Acciones avanzadas",
+  "source_edit_metadata": "Editar información de fuente",
+  "source_clear_cookies": "Borrar cookies para este sitio web",
+  "source_clear_cookies_hint": "Es posible que necesite iniciar sesión nuevamente en su próxima visita.",
+  "source_uninstall": "Desinstalar fuente",
+  "source_settings_save_failed": "El guardado no finalizó. Vuelva a abrir la configuración de código fuente para verificar.",
+  "repository_third_party": "Repositorios de terceros",
+  "repository_refresh_failed": "No se pudo actualizar el catálogo. El contenido almacenado en caché se mantiene. Por favor inténtalo de nuevo.",
+  "repository_show_sources": "Mostrar fuentes de este repositorio",
+  "repository_copy_catalog": "Copiar enlace del catálogo",
+  "repository_remove": "Eliminar repositorio",
+  "repository_remove_hint": "Mantenga las fuentes instaladas y elimine las entradas del catálogo desinstaladas.",
+  "repository_empty": "Aún no se han agregado repositorios de terceros",
+  "repository_built_in": "Catálogo oficial incorporado",
+  "repository_hidden": "Oculto",
+  "repository_refreshing": "Refrescante…",
+  "repository_refresh": "Actualizar catálogo",
+  "repository_manage_hint": "Administrar desde dónde se descargan las fuentes de terceros.",
+  "repository_invalid_address": "Ingrese un HTTP o HTTPS URL válido",
+  "repository_already_added": "Este repositorio ya ha sido agregado",
+  "repository_unrecognized": "No se encontró ningún catálogo compatible. Comprueba el enlace y vuelve a intentarlo.",
+  "repository_read_failed": "No se pudo leer el catálogo. Por favor inténtalo de nuevo.",
+  "repository_save_failed": "El guardado no finalizó. Consulte su lista de repositorios.",
+  "repository_paste_hint": "Pegue un enlace de catálogo de repositorio de terceros",
+  "repository_address": "URL",
+  "repository_paste_link": "Pegar enlace",
+  "repository_recognized": "{type} · Catálogo reconocido",
+  "@repository_recognized": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "repository_choose_sources_hint": "Después de agregar el repositorio, elija las fuentes que necesita.",
+  "search_scope": "Alcance de la búsqueda",
+  "search_scope_hint": "Elija los sitios web para buscar",
+  "search_websites_action": "{count, plural, =1{Buscar 1 sitio web} other{Buscar sitios web {count}}}",
+  "@search_websites_action": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_find_website": "Encontrar un sitio web",
+  "search_selected_websites": "{count, plural, =1{1 sitio web seleccionado} other{{count} sitios web seleccionados}}",
+  "@search_selected_websites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "action_clear": "Borrar",
+  "search_deselect_results": "Deseleccionar sitios web coincidentes",
+  "search_select_results": "Seleccionar sitios web coincidentes",
+  "search_no_websites_hint": "No hay sitios web coincidentes. Pruebe con otro nombre o idioma.",
+  "search_select_website_hint": "Seleccione al menos un sitio web para buscar.",
+  "search_start_title": "Ingrese palabras clave para buscar títulos",
+  "search_start_hint": "Busque en varios sitios web a la vez y muestre títulos coincidentes.",
+  "search_empty_scope": "No hay sitios web con capacidad de búsqueda en este ámbito",
+  "search_empty_scope_hint": "Cambie a todos los sitios web o elija sitios web para buscar.",
+  "search_result_count": "{count, plural, =1{1 resultado} other{Resultados {count}}}",
+  "@search_result_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_titles": "Buscar títulos",
+  "search_actions": "Acciones de búsqueda",
+  "search_details": "Detalles de búsqueda",
+  "search_title_hint": "Buscar por título",
+  "search_searching": "Buscando",
+  "search_found_results": "{count, plural, =1{Se encontró 1 resultado} other{Resultados encontrados {count}}}",
+  "@search_found_results": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_no_results": "No hay resultados coincidentes",
+  "search_failed": "La búsqueda falló",
+  "search_found_titles": "{count, plural, =1{1 título encontrado} other{{count} títulos encontrados}} · {websites, plural, =1{1 sitio web} other{{websites} sitios web}}",
+  "@search_found_titles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "websites": {
+        "type": "int"
+      }
+    }
+  },
+  "search_finding_titles": "Encontrar títulos",
+  "search_complete": "Búsqueda completa",
+  "search_in_progress": "Buscando",
+  "search_finding_related": "Buscando títulos coincidentes...",
+  "search_no_results_yet": "Aún no hay resultados de búsqueda",
+  "search_no_matching_titles": "No se encontraron títulos coincidentes",
+  "search_results_appear_hint": "Los resultados aparecerán aquí a medida que se encuentren.",
+  "search_failed_websites_hint": "Algunos sitios web no pudieron finalizar la búsqueda. Vuelva a intentarlo en los detalles de búsqueda.",
+  "search_change_keywords_hint": "Pruebe con palabras clave más cortas o busque en más sitios web.",
+  "search_view_details": "Ver detalles de búsqueda",
+  "search_adjust_scope": "Ajustar el alcance de la búsqueda",
+  "search_query_websites": "{query} · {count, plural, =1{1 sitio web} other{{count} sitios web}}",
+  "@search_query_websites": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_completed_count": "Completado {completed} / {total}",
+  "@search_completed_count": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "search_retry_website_hint": "Reintentar sitios web fallidos individualmente",
+  "source_selected_count": "{count, plural, =1{1 elemento seleccionado} other{{count} elementos seleccionados}}",
+  "@source_selected_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search_languages": "Idiomas de búsqueda",
+  "source_deselect": "Deseleccionar",
+  "source_select": "Seleccionar fuente",
+  "source_multilingual": "Multilingüe",
+  "source_language_unknown": "Idioma no especificado",
+  "source_adult_content": "Contiene contenido para mayores de 18 años",
+  "source_classification_unknown": "Clasificación no especificada",
+  "source_more_classifications": "{count, plural, =1{Ver toda la información fuente, 1 categoría más} other{Ver toda la información fuente, {count} más categorías}}",
+  "@source_more_classifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_loading_website": "Cargando sitio web",
+  "source_unpin": "Desanclar",
+  "source_pin": "Pasador",
+  "source_open": "Abrir",
+  "source_metadata_hint": "La información proviene del catálogo fuente. Las categorías describen el contenido cubierto por el sitio web.",
+  "source_region": "Región",
+  "source_format": "Formato",
+  "source_creation": "Creación",
+  "source_unspecified": "No especificado",
+  "source_pricing": "Precios",
+  "source_region_jp": "cómics japoneses",
+  "source_region_kr": "cómics coreanos",
+  "source_region_cn": "cómics chinos",
+  "source_region_hk_tw": "Cómics de Hong Kong y Taiwán",
+  "source_region_western": "Cómics occidentales",
+  "source_region_other": "Otras regiones",
+  "source_format_page": "Cómics paginados",
+  "source_format_vertical": "Cómics verticales",
+  "source_format_strip": "Tiras cómicas",
+  "source_creation_original": "Originales",
+  "source_creation_fan": "El ventilador funciona",
+  "source_free_watch": "Gratis para mirar",
+  "source_free_read": "Libre para leer",
+  "source_partial_paid": "Parcialmente pagado",
+  "source_paid_watch": "Visualización paga",
+  "source_paid_read": "Lectura pagada",
+  "source_pricing_unknown": "Precio no especificado",
+  "source_language_filter": "Filtrar por idioma",
+  "source_language_filter_hint": "Filtrar este catálogo únicamente. Las fuentes instaladas no se ven afectadas.",
+  "source_all_languages": "Todos los idiomas",
+  "action_apply": "Aplicar",
+  "source_load_retry": "No se pudo cargar este sitio web. Por favor inténtalo de nuevo.",
+  "source_catalog_refresh_failed": "No se pudo actualizar el catálogo. Se mantiene el contenido actual. Tire hacia abajo para volver a intentarlo.",
+  "source_uninstall_count": "{count, plural, =1{¿Desinstalar 1 fuente?} other{¿Desinstalar fuentes {count}?}}",
+  "@source_uninstall_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_uninstall_selected_hint": "Desinstale las fuentes seleccionadas y borre sus configuraciones. Mantenga los títulos y descargas de la biblioteca.",
+  "source_failed_count": "{count, plural, =1{La acción falló para 1 fuente.} other{Las acciones fallaron para {count} fuentes.}} Selección mantenida. Por favor inténtalo de nuevo.",
+  "@source_failed_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "source_latest_content": "Contenido más reciente",
+  "source_actions": "Acciones fuente",
+  "source_bulk_manage": "Gestionar múltiples fuentes",
+  "source_update_installed": "Actualizar fuentes instaladas",
+  "source_no_matching_websites": "No hay sitios web coincidentes",
+  "source_no_websites": "No hay sitios web disponibles",
+  "source_search_installed_hint": "Buscar títulos en fuentes instaladas",
+  "source_global_search": "Búsqueda entre fuentes",
+  "source_manage_repositories": "Administrar repositorios",
+  "source_view_third_party": "Ver fuentes de terceros",
+  "source_catalog_load_failed": "No se pudo cargar el catálogo. Tire hacia abajo para volver a intentarlo.",
+  "source_all_websites": "Todos los sitios web",
+  "source_available": "Disponible para instalar",
+  "source_third_party": "Tercero",
+  "source_name_or_title": "Nombre o título del sitio web",
+  "view_all": "Ver todo",
+  "search_searching_ellipsis": "Buscando…",
+  "onboarding_untested_content": "{type} · No probado",
+  "@onboarding_untested_content": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "onboarding_untested": "No probado",
+  "source_custom_scope": "Personalizado",
+  "source_custom_websites": "Sitios web seleccionados",
+  "tv_hidden_library_hint": "Cada título se encuentra en una categoría oculta.\nMantenga presionado OK en \"Todos\" para mostrar uno.",
+  "tv_no_matching_anime": "No hay anime que coincida",
+  "tv_no_matching_category": "No hay anime coincidente en “{category}”",
+  "@tv_no_matching_category": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_filtered_empty_hint": "Ningún anime coincide con los filtros actuales.\nCámbielos desde el botón al lado de buscar.",
+  "tv_new_episodes": "Nuevos episodios",
+  "tv_recently_added": "Agregado recientemente",
+  "tv_empty_category_hint": "Aún no hay anime en esta categoría.\nAgregue títulos desde la página de detalles de un título.",
+  "tv_empty_library": "Tu biblioteca de anime está vacía",
+  "tv_empty_library_hint": "Agrega anime desde Explorar para llenar tu hogar",
+  "tv_browse_anime": "Explorar anime",
+  "tv_new_count": "{count} nuevo",
+  "@tv_new_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tv_category_hidden": "Oculté “{category}” · mantén presionado OK en “Todos” para mostrar",
+  "@tv_category_hidden": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "tv_no_hidden_categories": "Sin categorías ocultas",
+  "import_torrent_file": "importar archivo .torrent",
+  "import_video_formats": ".mp4, .mkv, .avi y más",
+  "cloudflare_proxy_optional": "FlareSolverr / Byparr opcional URL",
+  "tv_home_layout_hint": "Inicio de anime basado en filas (Continuar · Nuevos episodios · categorías) en lugar de la cuadrícula plana",
+  "tv_hide_libraries_hint": "Ocultar las bibliotecas de manga y novelas (activadas de forma predeterminada en la TV)",
+  "anime_only_hint": "Ocultar manga y novela en toda la aplicación. Desactiva para mostrar todo.",
+  "audio_auto_safe": "Auto-seguro",
+  "tv_player_hint": "Encendido: reproductor de TV dedicado.  Apagado: reproductor original (escritorio).",
+  "release_open_failed": "No se puede abrir la versión",
+  "tv_replay": "Repetición",
+  "tv_no_episodes": "Aún no hay episodios",
+  "tracker_continue_series": "Continuar viendo series",
+  "tracker_watchlist_series": "Serie de lista de vigilancia",
+  "tracker_continue_movies": "Continuar viendo películas",
+  "tracker_watchlist_movies": "Lista de seguimiento de películas",
+  "tracker_trending_series": "Serie de tendencias",
+  "tracker_trending_movies": "Películas de tendencia",
+  "tracker_popular_series": "Serie Popular",
+  "tracker_popular_movies": "Películas populares",
+  "tracker_top_series": "Serie superior (de todos los tiempos)",
+  "tracker_top_movies": "Mejores películas (de todos los tiempos)",
+  "tracker_airing_series": "Serie de transmisión",
+  "tracker_airing_anime": "Transmitiendo anime",
+  "tracker_popular_anime": "Animes populares",
+  "tracker_upcoming_anime": "Próximo anime",
+  "tracker_popular_manga": "Manga Popular",
+  "tracker_top_manga": "Manga superior",
+  "tracker_top_manhwa": "Manhwa superior",
+  "tracker_top_manhua": "Manhua Superior",
+  "tracker_latest_anime": "Último anime",
+  "tracker_best_anime": "Anime mejor valorado",
+  "tracker_latest_manga": "Manga más reciente",
+  "tracker_best_manga": "Manga mejor valorado",
+  "tracker_trending_anime": "Anime de tendencia",
+  "tracker_upcoming_manga": "Próximo manga",
+  "tracker_trending_manga": "Manga de tendencia",
+  "selection_progress": "{selected}/{total} seleccionado",
+  "@selection_progress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "source_code_editor": "Editor de código",
+  "source_code_execute": "Ejecutar",
+  "source_console_logs": "Registros de la consola",
+  "source_no_logs": "Aún no hay registros",
+  "source_updated_successfully": "Fuente actualizada exitosamente",
+  "source_obsolete": "OBSOLETO",
+  "player_seek_forward_seconds": "Búsqueda hacia adelante {seconds} segundos",
+  "@player_seek_forward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_seek_backward_seconds": "Buscar hacia atrás {seconds} segundos",
+  "@player_seek_backward_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "player_autoplay_on": "Reproducción automática del siguiente episodio: activado",
+  "player_autoplay_off": "Reproducción automática del siguiente episodio: desactivada",
+  "player_no_other_quality": "Ninguna otra cualidad",
+  "player_no_subtitles": "Sin subtítulos",
+  "player_no_audio_tracks": "Sin pistas de audio",
+  "player_seek_forward": "Buscar hacia adelante",
+  "player_seek_backward": "Buscar hacia atrás",
+  "player_seconds": "{seconds, plural, =1{1 segundo} other{{seconds} segundos}}",
+  "@player_seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "subtitle_preview": "Lorem ipsum dolor sit amet",
+  "subtitle_style": "Estilo",
+  "translation_official_channel": "NodeLane Oficial",
+  "translation_auth_required": "Primero inicie sesión en su cuenta de traducción.",
+  "translation_source_changed": "La imagen original cambió. Por favor recargalo.",
+  "translation_source_missing": "La imagen original no está disponible actualmente.",
+  "translation_resource_limit": "Esta imagen excede el límite de procesamiento del dispositivo. Se conserva el original.",
+  "translation_storage_full": "El almacenamiento de traducción está lleno. Primero borre las imágenes traducidas.",
+  "translation_invalid_image": "Formato o contenido de imagen no válido.",
+  "translation_unsupported_image": "La traducción no es compatible con esta imagen. Se conserva el original.",
+  "translation_invalid_result": "La validación de la imagen traducida falló. Por favor recargalo.",
+  "translation_result_unavailable": "La imagen traducida no está disponible. Por favor recargalo.",
+  "translation_result_expired": "La imagen traducida expiró. Por favor tradúcelo de nuevo.",
+  "translation_analysis_too_large": "Hay demasiado contenido de imagen para analizar. Reduzca el tamaño de la imagen y vuelva a intentarlo.",
+  "translation_region_limit": "La imagen tiene demasiadas regiones de texto. Divídelo y vuelve a intentarlo.",
+  "translation_text_limit": "Una región de texto es demasiado larga. Ajusta la imagen y vuelve a intentarlo.",
+  "translation_unavailable": "Esta traducción ya no está disponible.",
+  "translation_outcome_unknown": "El resultado necesita verificación. No ha sido reenviado.",
+  "translation_rate_limited": "Las solicitudes son limitadas. La traducción se reanudará automáticamente.",
+  "translation_quota_exhausted": "Cuota de traducción insuficiente.",
+  "translation_unsupported_language": "El servicio no admite este idioma de destino.",
+  "translation_upgrade_required": "El protocolo de traducción es incompatible. Actualiza la aplicación.",
+  "translation_remote_failed": "La traducción de esta página falló. Puedes volver a intentarlo manualmente.",
+  "translation_bridge_invalid": "La ​​página web cambió. Habilite la traducción nuevamente.",
+  "translation_connection_failed": "La conexión falló. Por favor inténtalo de nuevo.",
+  "translation_paused": "Traducción en pausa. Puedes verificar su progreso.",
+  "translation_preparing_ellipsis": "Preparando la traducción…",
+  "translation_checking_original": "Comprobando la imagen original...",
+  "translation_submitting": "Presentando…",
+  "translation_uploading_ellipsis": "Subiendo original…",
+  "translation_waiting_ellipsis": "Esperando traducción…",
+  "translation_running_ellipsis": "Traduciendo…",
+  "translation_verify_result": "El resultado necesita verificación",
+  "translation_partial": "Algunos contenidos han sido traducidos.",
+  "translation_ready": "Imagen traducida lista",
+  "list_separator": ", ",
+  "player_play": "Jugar",
+  "player_quality": "Calidad",
+  "player_subtitles": "Subtítulos",
+  "player_audio": "Sonido",
+  "player_statistics": "Estadísticas para nerds",
+  "player_auto": "Automático",
+  "source_information": "Información fuente",
+  "source_code_page": "Página",
+  "source_code_query": "Consulta",
+  "repository_invalid_source": "Fuente no válida - eliminarla",
+  "player_fit_contain": "Contener",
+  "player_fit_cover": "Cubierta",
+  "player_fit_fill": "Llenar",
+  "player_fit_height": "Altura",
+  "player_fit_width": "Ancho",
+  "player_fit_scale": "Escala",
+  "player_fit_none": "Ninguno",
+  "player_shader_clear": "Desactivado (borrar sombreadores)",
+  "player_shader_luma": "Ampliación de Luma",
+  "player_decoder_auto": "Automático (hardware)",
+  "player_decoder_software": "Software (sin hardware)",
+  "player_stats_toggle": "Alternar superposición",
+  "player_stats_general": "Generalidades",
+  "player_stats_frames": "Sincronizaciones de fotogramas",
+  "player_stats_cache": "Caché de entrada",
+  "player_stats_filters": "Filtros activos",
+  "player_stats_log": "Registro",
+  "source_mark_pinned": "Pasador",
+  "translation_image_action": "{action} esta imagen",
+  "@translation_image_action": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_waiting": "memoria: esperando una muestra",
+  "memory_rss": "RSS {current} pico {peak}",
+  "@memory_rss": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_cache": "caché {current} / {limit} pico {peak}",
+  "@memory_cache": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      }
+    }
+  },
+  "memory_items": "elementos {count} / {limit} vivo {live} pico {peak}",
+  "@memory_items": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "live": {
+        "type": "int"
+      },
+      "peak": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_full_samples": "{percent}% completo de {count, plural, =1{1 muestra} other{{count} muestras}}",
+  "@memory_full_samples": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memory_reset_hint": "actívelo y desactívelo en la configuración para restablecerlo",
+  "action_hide": "Ocultar",
+  "discord_get_app": "Obtener {app}",
+  "@discord_get_app": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_idle": "Inactivo",
+  "discord_watching_title": "Viendo {title}",
+  "@discord_watching_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "discord_reading_title": "Lectura {title}",
+  "@discord_reading_title": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

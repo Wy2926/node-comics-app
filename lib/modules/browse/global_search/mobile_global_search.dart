@@ -27,21 +27,21 @@ class MobileGlobalSearchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MobileBrowsePage(
-    title: '搜作品',
+    title: context.l10n.search_titles,
     actions: [
       NodeLaneMenuButton<String>(
         icon: NodeLaneIcons.of(context).more,
-        tooltip: '搜索操作',
+        tooltip: context.l10n.search_actions,
         itemBuilder: (_) => [
           PopupMenuItem(
             value: 'scope',
             enabled: onScope != null,
-            child: const Text('搜索范围'),
+            child: Text(context.l10n.search_scope),
           ),
           PopupMenuItem(
             value: 'details',
             enabled: onDetails != null,
-            child: const Text('搜索详情'),
+            child: Text(context.l10n.search_details),
           ),
         ],
         onSelected: (action) =>
@@ -65,7 +65,7 @@ class MobileGlobalSearchPage extends StatelessWidget {
                 children: [
                   NodeLaneTextField.search(
                     controller: controller,
-                    hint: '搜索作品名称',
+                    hint: context.l10n.search_title_hint,
                     clearLabel: context.l10n.reset,
                     onSubmitted: (_) => onSubmit(),
                     onClear: onClear,
@@ -104,7 +104,7 @@ class MobileGlobalSearchPage extends StatelessWidget {
                         TextButton(
                           style: TextButton.styleFrom(padding: EdgeInsets.zero),
                           onPressed: onDetails,
-                          child: const Text('搜索详情'),
+                          child: Text(context.l10n.search_details),
                         ),
                     ],
                   ),

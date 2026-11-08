@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -44,8 +45,8 @@ class TranslationImageActions extends StatelessWidget {
           for (final action in actions)
             NodeLaneRow(
               title: action == TranslationAction.regenerate
-                  ? '重新翻译此图'
-                  : '重新读取译图',
+                  ? context.l10n.translation_regenerate_image
+                  : context.l10n.translation_read_image,
               icon: action == TranslationAction.regenerate
                   ? icons.translate
                   : icons.refresh,
@@ -68,7 +69,7 @@ Future<void> showTranslationImageMenu(
 ) => showNodeLaneCatalogSheet<void>(
   context,
   NodeLaneCatalogSheet(
-    title: '图片更多操作',
+    title: context.l10n.translation_image_actions,
     fitContent: true,
     child: SingleChildScrollView(
       padding: NodeLaneTokens.modalContentPadding,

@@ -544,7 +544,7 @@ iOS 模拟器已验证真实关键词搜索、无结果网站仅在详情显示�
 
 ## 更多与设置入口
 
-首次启动且尚未手动选择显示语言时，按系统语言偏好匹配现有翻译，优先精确地区、再匹配同一语言，均不支持时使用英语。复用 Flutter 的语言匹配，不写入强制默认语言；之后启动仍读取系统偏好，已保存的手动选择保持优先，不改动现有设置。
+界面语言名称和顺序与漫画翻译官网的 17 种语言一致。首次启动且尚未手动选择时按系统语言偏好匹配，中文区分简繁，葡萄牙语使用巴西版本，无匹配项使用英语；自动选择不写入设置。之后启动优先使用当前名单内的手动选择，保留脚本信息，不转换或迁移旧语言值。资源和验证方式见[国际化](INTERNATIONALIZATION.md)。
 
 已按第二版视觉稿实现：[更多与账号](design/ios-settings-account-overview-concept.png)、[账号详情与快捷设置](design/ios-settings-account-details-concept.png)。两张图覆盖更多首屏／设置分组、未登录／订阅／免费账号、额度明细、语言弹层、存储与备份八种页面或状态。图片由内置 image_gen 生成，账号数据为设计示例；[完整提示词及修订](design/ios-settings-account-concepts.prompts.txt)保留生成输入。
 
@@ -577,7 +577,7 @@ iOS 模拟器已验证真实关键词搜索、无结果网站仅在详情显示�
 - Linux 的窗口、可执行文件和 RPM／Debian 包名为 `nodelane-comics`；GTK 应用与程序标识、桌面文件基名和 `StartupWMClass` 统一为 `com.nodelane.comics`，按 [GTK 的桌面集成约定](https://docs.gtk.org/gtk4/migrating-3to4.html)关联 X11／Wayland 窗口。各格式复用 `linux/com.nodelane.comics.desktop` 和六种尺寸的 NodeLane 图标，桌面启动传入 `%u`。RPM／Debian 将程序与运行库安装到 `/opt/nodelane-comics`，通过包内的 `/usr/bin/nodelane-comics` 符号链接启动；不覆盖或迁移旧上游安装。
 - Linux 发行沿用 Flutter／Rust 与现有 CI 入口：AppImage 使用 `linuxdeploy`，RPM 使用 `rpmbuild`，Debian 使用 `dpkg-deb` 和 `linux/packaging/deb/control`，不再维护 Fastforge 的重复生成与拆包覆盖流程。Debian 维护者为 `NodeLane <q921381971@gmail.com>`，版本直接取 `pubspec.yaml` 的 `0.1.0+1`，安装大小从实际目录计算；RPM 的版本为 `0.1.0`、Release 为构建号 `1`。发行包附带上游基线、应用代码许可、品牌素材来源与许可全文，RPM 许可字段区分 Apache-2.0 代码与 GPL-3.0-only 品牌素材。YAML、脚本语法和打包目录模拟检查覆盖身份、图标、独立路径、重复打包及失败退出；原生打包工具在模拟中替代，Linux 编译、实际包生成、安装／升级、桌面展示和真实回调均未验收。
 - Arch Linux 使用 `packaging/arch/PKGBUILD.in` 生成 `nodelane-comics-bin` 配方，维护者为 `NodeLane <q921381971@gmail.com>`；`pkgver`／`pkgrel` 分别取应用版本与构建号，当前为 `0.1.0-1`。Linux 发行 job 根据实际 ZIP 和共用桌面／图标文件计算 SHA-256，输出 `nodelane-comics-<tag>-archlinux.tar.gz`，不复用上游旧版本或校验值。它是配方及资源包，解压后在 Arch Linux 的 `nodelane-comics-bin` 目录运行 `makepkg -si`，按固定 NodeLane 发布地址下载同版 Linux ZIP。程序安装于 `/opt/nodelane-comics`，保留 URL 协议入口，许可与素材来源安装于 `/usr/share/licenses/nodelane-comics-bin`。配方生成和安装目录仅做本地模拟检查；真实 Linux ZIP、`makepkg`、安装与运行尚未验收，未向 AUR 发布。
-- `NodeLaneBrand` 集中维护产品英文名、应用请求标识、项目仓库、发布查询及标识路径。源码、安装包、反馈和 iOS 订阅共用 `Wy2926/node-comics-app`，不接入独立发行仓库；应用 GitHub、错误反馈和 Releases API 均指向该仓库。手机、桌面和 TV 关于页仅提供 NodeLane 项目入口，不包含 Mangayomi 社区链接。仓库添加失败提示检查地址或联系该仓库维护者，覆盖现有 18 种语言。上游源码来源、许可证与素材溯源记录继续保留。
+- `NodeLaneBrand` 集中维护产品英文名、应用请求标识、项目仓库、发布查询及标识路径。源码、安装包、反馈和 iOS 订阅共用 `Wy2926/node-comics-app`，不接入独立发行仓库；应用 GitHub、错误反馈和 Releases API 均指向该仓库。手机、桌面和 TV 关于页仅提供 NodeLane 项目入口，不包含 Mangayomi 社区链接。仓库添加失败提示检查地址或联系该仓库维护者，覆盖当前 17 种语言。上游源码来源、许可证与素材溯源记录继续保留。
 - LNReader 缺失来源路径时提示 NodeLane 无法打开并联系来源维护者，按当前来源错误分类，不保留旧提示语匹配分支。Dood 视频请求、Trakt 发现与 DoH 的应用自报 UA 统一为 `nodelane-comics`；浏览器 UA、来源自定义 UA 和匹配 Cookie 的 UA 沿用现有规则。Discord 设置入口与启动初始化暂时注释，上游应用 ID 和活动状态中的上游社区按钮已移除；活动业务代码与偏好保留，待自有应用 ID 和 `app-icon` 素材配置后恢复。上述网络与活动逻辑经过本地静态及模拟检查，真实服务及桌面 Discord 显示尚待验收。
 - 应用版本与构建号以 `pubspec.yaml` 的 `0.1.0+1` 为唯一来源；iOS／macOS／Windows 通过 Flutter 生成配置传入，关于页读取已安装包信息。发行标签必须为 `v<应用版本>` 且构建号为正整数，后续发行递增版本与构建号。上游基线和第三方版本记录保留；NodeLane 不覆盖旧上游应用或迁移其数据。
 - CI 调试产物名为 `nodelane-comics-<platform>-debug`，发行文件为 `nodelane-comics-<tag>-<platform>.<ext>`；Android／TV APK 在平台后附 ABI。各发行包平铺上传，发布收集沿用相同命名，找不到文件时失败。

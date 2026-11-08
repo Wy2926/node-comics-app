@@ -13,15 +13,16 @@ import 'package:mangayomi/modules/more/settings/appearance/providers/flex_scheme
 import 'package:mangayomi/modules/more/settings/appearance/providers/pure_black_dark_mode_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_mode_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/language.dart';
+import 'package:mangayomi/l10n/languages.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 
 void main() {
   Future<ProviderContainer> showAppearance(
     WidgetTester tester, {
     String? target,
+    Size size = const Size(360, 740),
   }) async {
-    tester.view.physicalSize = const Size(360, 740);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -46,7 +47,7 @@ void main() {
         container: container,
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
+          supportedLocales: nodeLaneSupportedLocales,
           locale: const Locale('en'),
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(
@@ -119,13 +120,14 @@ void main() {
       final language = link('App language');
       expect(language.hitTestable(), findsOneWidget);
       final languageRow = tester.widget<NodeLaneRow>(language);
-      expect(languageRow.value, completeLanguageName('en'));
+      expect(languageRow.value, 'English');
       expect(languageRow.subtitle, isNull);
       await tester.tap(language);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '中文');
       await tester.pumpAndSettle();
-      expect(find.text(completeLanguageName('zh')), findsOneWidget);
+      expect(find.text('简体中文'), findsOneWidget);
+      expect(find.text('繁體中文'), findsOneWidget);
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(locale.writes, isEmpty);
@@ -133,9 +135,43 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '中文');
       await tester.pumpAndSettle();
-      await choose(tester, completeLanguageName('zh'));
-      expect(locale.writes, [const Locale('zh')]);
-      expect(container.read(l10nLocaleStateProvider), const Locale('zh'));
+      await choose(tester, '简体中文');
+      expect(locale.writes, [
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+      ]);
+      expect(
+        container.read(l10nLocaleStateProvider),
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'language picker shows website names and order and selects each locale',
+    (tester) async {
+      final container = await showAppearance(
+        tester,
+        size: const Size(480, 5000),
+      );
+      final notifier =
+          container.read(l10nLocaleStateProvider.notifier) as _Locale;
+      for (final locale in nodeLaneSupportedLocales) {
+        await open(tester, 'App language');
+        expect(
+          tester
+              .widgetList<NodeLaneRow>(find.byType(NodeLaneRow))
+              .map((row) => row.title),
+          nodeLaneLanguageNames.values,
+        );
+        await choose(tester, nodeLaneLanguageName(locale));
+        expect(container.read(l10nLocaleStateProvider), locale);
+        expect(
+          tester.widget<NodeLaneRow>(link('App language')).value,
+          nodeLaneLanguageName(locale),
+        );
+      }
+      expect(notifier.writes, nodeLaneSupportedLocales);
       expect(tester.takeException(), isNull);
     },
   );

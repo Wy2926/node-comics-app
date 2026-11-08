@@ -152,8 +152,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
         : query.isEmpty
         ? NodeLaneEmptyState(
             icon: NodeLaneIcons.of(context).search,
-            title: '输入关键词搜索作品',
-            message: '一次搜索多个网站，只展示找到的作品。',
+            title: context.l10n.search_start_title,
+            message: context.l10n.search_start_hint,
           )
         : Column(
             children: [
@@ -181,7 +181,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
       controller: _textEditingController,
       onSubmit: () => _submit(_textEditingController.text),
       onClear: () => _submit(''),
-      scope: '${_scope.mode.label} · ${sourceList.length}',
+      scope: '${_scope.mode.label(context.l10n)} · ${sourceList.length}',
       onScope: _editScope,
       onDetails: query.isNotEmpty && sourceList.isNotEmpty
           ? _showActivity
@@ -197,9 +197,12 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     if (_installedSources.any(_isVisible)) {
       return NodeLaneEmptyState(
         icon: NodeLaneIcons.of(context).web,
-        title: '当前范围没有可搜索的网站',
-        message: '切换到全部网站，或重新选择参与搜索的网站。',
-        action: FilledButton(onPressed: _editScope, child: const Text('搜索范围')),
+        title: context.l10n.search_empty_scope,
+        message: context.l10n.search_empty_scope_hint,
+        action: FilledButton(
+          onPressed: _editScope,
+          child: Text(context.l10n.search_scope),
+        ),
       );
     }
     final noneInstalled = _installedSources.isEmpty;
@@ -376,7 +379,7 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
     if (!isTv) {
       return SourceResultSection(
         title: widget.source.name ?? '',
-        metadata: '${pages.list.length} 个结果',
+        metadata: context.l10n.search_result_count(pages.list.length),
         onOpen: () => _openSearchSource(context, widget.source, widget.query),
         count: pages.list.length,
         itemBuilder: (context, index) => _resultCard(pages.list[index], index),

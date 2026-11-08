@@ -458,16 +458,19 @@ void main() {
           await tester.pump();
           expect(calls, isEmpty);
           expect(find.text('添加第三方仓库'), findsNothing);
-          expect(find.text('搜作品'), findsNothing);
-          expect(find.text('在已安装来源中搜索作品'), findsOneWidget);
+          expect(find.text('Search titles'), findsNothing);
+          expect(
+            find.text('Search titles in installed sources'),
+            findsOneWidget,
+          );
           if (entry == 'keyboard') {
             await tester.testTextInput.receiveAction(TextInputAction.search);
           } else if (entry == 'menu') {
-            await tester.tap(find.byTooltip('来源操作'));
+            await tester.tap(find.byTooltip('Source actions'));
             await tester.pumpAndSettle();
-            await tester.tap(find.text('搜作品'));
+            await tester.tap(find.text('Search titles'));
           } else {
-            await tester.tap(find.text('跨来源搜索'));
+            await tester.tap(find.text('Search across sources'));
           }
           await tester.pumpAndSettle();
           expect(calls, ['海岸来信:1']);
@@ -481,7 +484,7 @@ void main() {
           await tester.enterText(find.byType(TextFormField), '尚未提交');
           await tester.pump();
           if (destination == 'details') {
-            await tester.tap(find.text('搜索详情'));
+            await tester.tap(find.text('Search details'));
             await tester.pumpAndSettle();
             await tester.tap(
               find.descendant(
@@ -493,7 +496,9 @@ void main() {
             await tester.tap(
               find.descendant(
                 of: find.byType(SourceSearchScreen),
-                matching: find.text(destination == 'header' ? 'local' : '查看全部'),
+                matching: find.text(
+                  destination == 'header' ? 'local' : 'View all',
+                ),
               ),
             );
           }

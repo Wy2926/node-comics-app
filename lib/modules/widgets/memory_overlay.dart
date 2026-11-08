@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/memory_probe.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -54,7 +55,7 @@ class MemoryOverlay extends StatelessWidget {
     );
 
     if (latest == null) {
-      return const Text('memory: waiting for a sample', style: style);
+      return Text(context.l10n.memory_waiting, style: style);
     }
 
     // Amber once the cache is spending its time full, which is the reading
@@ -71,29 +72,39 @@ class MemoryOverlay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'RSS   ${formatBytes(latest.rssBytes)}'
-          '   peak ${formatBytes(stats.peakRssBytes)}',
+          context.l10n.memory_rss(
+            formatBytes(latest.rssBytes),
+            formatBytes(stats.peakRssBytes),
+          ),
           style: style,
         ),
         Text(
-          'cache ${formatBytes(latest.imageCacheBytes)}'
-          ' / ${formatBytes(latest.imageCacheMaxBytes)}'
-          '   peak ${formatBytes(stats.peakCacheBytes)}',
+          context.l10n.memory_cache(
+            formatBytes(latest.imageCacheBytes),
+            formatBytes(latest.imageCacheMaxBytes),
+            formatBytes(stats.peakCacheBytes),
+          ),
           style: style,
         ),
         Text(
-          'items ${latest.imageCacheCount} / ${latest.imageCacheMaxCount}'
-          '   live ${latest.liveImages}   peak ${stats.peakCacheCount}',
+          context.l10n.memory_items(
+            latest.imageCacheCount,
+            latest.imageCacheMaxCount,
+            latest.liveImages,
+            stats.peakCacheCount,
+          ),
           style: style,
         ),
         Text(
-          'full  ${(pressure * 100).toStringAsFixed(0)}% of '
-          '${stats.samples} samples',
+          context.l10n.memory_full_samples(
+            (pressure * 100).toStringAsFixed(0),
+            stats.samples,
+          ),
           style: style.copyWith(color: pressureColour),
         ),
         if (isTv)
           Text(
-            'toggle it off and on in settings to reset',
+            context.l10n.memory_reset_hint,
             style: style.copyWith(color: Colors.white54, fontSize: 11),
           ),
         if (interactive)
@@ -102,11 +113,14 @@ class MemoryOverlay extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: probe.reset,
-                child: const Text('Reset', style: TextStyle(fontSize: 12)),
+                child: Text(context.l10n.reset, style: TextStyle(fontSize: 12)),
               ),
               TextButton(
                 onPressed: onClose,
-                child: const Text('Hide', style: TextStyle(fontSize: 12)),
+                child: Text(
+                  context.l10n.action_hide,
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
             ],
           ),

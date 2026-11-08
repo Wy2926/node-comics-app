@@ -10,80 +10,73 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get app_update_details_hint =>
-      'View release notes and installation options';
+  String get app_update_details_hint => '릴리스 정보 및 설치 옵션 보기';
 
   @override
-  String get app_update_download => 'Download update';
+  String get app_update_download => '업데이트 다운로드';
 
   @override
-  String get app_update_download_hint =>
-      'After downloading, follow the prompts to install the update.';
+  String get app_update_download_hint => '다운로드 후 지시에 따라 업데이트를 설치하십시오.';
 
   @override
-  String get bookshelf_all => 'All';
+  String get bookshelf_all => '모두';
 
   @override
-  String get bookshelf_search => 'Search library';
+  String get bookshelf_search => '도서관 검색';
 
   @override
-  String get app_update_allow_install =>
-      'Allow app installation in system settings, then return and tap Install.';
+  String get app_update_allow_install => '시스템 설정에서 앱 설치를 허용한 다음 돌아가서 설치를 탭합니다.';
 
   @override
-  String get app_update_waiting =>
-      'Waiting for the system to resume the download…';
+  String get app_update_waiting => '시스템이 다운로드를 재개하기를 기다리는 중…';
 
   @override
-  String get app_update_cancel_download => 'Cancel download';
+  String get app_update_cancel_download => '다운로드 취소';
 
   @override
-  String get app_update_remove_package => 'Remove downloaded package';
+  String get app_update_remove_package => '다운로드한 패키지 제거';
 
   @override
   String get app_name => 'NodeLane Comics';
 
   @override
-  String get settings_search_empty => 'No matching settings';
+  String get settings_search_empty => '일치하는 설정이 없습니다.';
 
   @override
-  String get search_empty_hint =>
-      'Try another keyword, or clear the search to see everything.';
+  String get search_empty_hint => '다른 키워드를 시도하거나 검색을 지워 모든 내용을 확인하세요.';
 
   @override
-  String get search_clear => 'Clear search';
+  String get search_clear => '검색 지우기';
 
   @override
-  String get app_updates => 'App updates';
+  String get app_updates => '앱 업데이트';
 
   @override
-  String get app_update_auto => 'Check on launch';
+  String get app_update_auto => '출시 확인';
 
   @override
-  String get app_update_view => 'View update';
+  String get app_update_view => '업데이트 보기';
 
   @override
-  String get app_update_later => 'Later';
+  String get app_update_later => '나중에';
 
   @override
-  String get app_update_external_hint =>
-      'Opens the update link in your browser';
+  String get app_update_external_hint => '브라우저에서 업데이트 링크를 엽니다.';
 
   @override
-  String get app_update_failed =>
-      'Unable to check for updates. Please try again.';
+  String get app_update_failed => '업데이트를 확인할 수 없습니다. 다시 시도해 주세요.';
 
   @override
-  String get app_update_opened => 'Update link opened';
+  String get app_update_opened => '업데이트 링크가 열렸습니다.';
 
   @override
-  String get app_diagnostics => 'Diagnostics and logs';
+  String get app_diagnostics => '진단 및 로그';
 
   @override
   String get library => '보관함';
 
   @override
-  String get updates_search => 'Search updates';
+  String get updates_search => '업데이트 검색';
 
   @override
   String get updates => '업데이트';
@@ -1230,11 +1223,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '필요에 따라 내비게이션 순서를 변경하고 켜거나 끌 수 있습니다.';
 
   @override
-  String get floating_navigation_bar => 'Floating navigation bar';
+  String get floating_navigation_bar => '플로팅 네비게이션 바';
 
   @override
   String get floating_navigation_bar_description =>
-      'Use a floating capsule instead of the standard attached navigation bar.';
+      '표준 부착 내비게이션 바 대신 플로팅 캡슐을 사용하세요.';
 
   @override
   String get full_screen_player => '전체 화면 사용';
@@ -2023,11 +2016,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get add_repo => '저장소를 추가하시겠습니까?';
 
   @override
-  String get add_repo_sources_to_add => 'Extension lists that will be added:';
+  String get add_repo_sources_to_add => '추가될 확장 목록:';
 
   @override
   String get add_repo_warning =>
-      'Extensions from these repositories run inside the app. Only add repositories you trust.';
+      '이러한 저장소의 확장은 앱 내에서 실행됩니다. 신뢰할 수 있는 저장소만 추가하세요.';
 
   @override
   String get genre_search_library => '보관함에서 장르 검색';
@@ -2155,7 +2148,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get custom_buttons_add_warning =>
-      'This button runs the Lua code below in the video player, which can access your files and run programs. Only add it if you trust where this link came from.';
+      '이 버튼은 비디오 플레이어에서 아래의 Lua 코드를 실행하여 파일에 액세스하고 프로그램을 실행할 수 있습니다. 이 링크의 출처를 신뢰할 수 있는 경우에만 추가하세요.';
 
   @override
   String n_days(Object n) {
@@ -2265,48 +2258,48 @@ class AppLocalizationsKo extends AppLocalizations {
   String get watch_order => '시청 순서';
 
   @override
-  String get watch_order_role_current => 'Current';
+  String get watch_order_role_current => '현재';
 
   @override
-  String get watch_order_role_previous => 'Previous';
+  String get watch_order_role_previous => '이전의';
 
   @override
-  String get watch_order_role_next => 'Next';
+  String get watch_order_role_next => '다음';
 
   @override
-  String get watch_order_source_release_order => 'Release order';
+  String get watch_order_source_release_order => '출시 순서';
 
   @override
   String watch_order_source_community_list(String name, String author) {
-    return '$name by $author';
+    return '$name - $author';
   }
 
   @override
   String watch_order_source_official_collection(String name) {
-    return 'Official Trakt collection: $name';
+    return '공식 Trakt 컬렉션: $name';
   }
 
   @override
   String watch_order_source_trakt_collection(String name) {
-    return 'Trakt collection: $name';
+    return 'Trakt 컬렉션: $name';
   }
 
   @override
   String watch_order_source_seasons(String title) {
-    return 'Seasons for $title';
+    return '$title의 계절';
   }
 
   @override
-  String get watch_order_select_source => 'Order source';
+  String get watch_order_select_source => '주문 소스';
 
   @override
   String watch_order_season(int number) {
-    return 'Season $number';
+    return '시즌 $number';
   }
 
   @override
   String watch_order_episode(int number) {
-    return 'Episode $number';
+    return '에피소드 $number';
   }
 
   @override
@@ -2317,7 +2310,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String recommendation_rating_accessibility(String rating) {
-    return 'Rating $rating';
+    return '등급 $rating';
   }
 
   @override
@@ -2512,12 +2505,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '앱 잠금이 활성화되면 앱을 열거나 백그라운드에서 다시 돌아올 때마다 인증을 요구합니다.';
 
   @override
-  String get checking_device_authentication =>
-      'Checking device authentication…';
+  String get checking_device_authentication => '기기 인증 확인 중…';
 
   @override
   String get device_authentication_incomplete =>
-      'Authentication was not completed. Your setting has not changed.';
+      '인증이 완료되지 않았습니다. 설정이 변경되지 않았습니다.';
 
   @override
   String get keep_screen_on => '화면 켜짐 유지';
@@ -3500,124 +3492,123 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chapter_swipe_disabled => '사용 안 함';
 
   @override
-  String get update_errors => 'Update errors';
+  String get update_errors => '업데이트 오류';
 
   @override
-  String get no_update_errors => 'No update errors';
+  String get no_update_errors => '업데이트 오류 없음';
 
   @override
-  String get clear_all => 'Clear all';
+  String get clear_all => '모두 지우기';
 
   @override
-  String get dismiss => 'Dismiss';
+  String get dismiss => '닫기';
 
   @override
-  String get previous_episode => 'Previous episode';
+  String get previous_episode => '이전 에피소드';
 
   @override
-  String get clear_logs => 'Clear logs';
+  String get clear_logs => '로그 지우기';
 
   @override
-  String get bold => 'Bold';
+  String get bold => '굵게';
 
   @override
-  String get italic => 'Italic';
+  String get italic => '이탤릭체';
 
   @override
-  String get color_yellow => 'Yellow';
+  String get color_yellow => '노란색';
 
   @override
-  String get color_cyan => 'Cyan';
+  String get color_cyan => '청록색';
 
   @override
-  String get color_green => 'Green';
+  String get color_green => '녹색';
 
   @override
-  String get color_orange => 'Orange';
+  String get color_orange => '주황색';
 
   @override
-  String get continue_watching => 'Continue Watching';
+  String get continue_watching => '계속 시청하기';
 
   @override
-  String get search_your_anime => 'Search your anime';
+  String get search_your_anime => '애니메이션 검색';
 
   @override
-  String get category => 'Category';
+  String get category => '범주';
 
   @override
-  String get hidden_categories => 'Hidden categories';
+  String get hidden_categories => '숨겨진 카테고리';
 
   @override
-  String get new_category => 'New category';
+  String get new_category => '새로운 카테고리';
 
   @override
-  String get local => 'Local';
+  String get local => '현지의';
 
   @override
-  String get tv_home_rows => 'Rows';
+  String get tv_home_rows => '행';
 
   @override
-  String get genre_rows => 'Genre rows';
+  String get genre_rows => '장르 행';
 
   @override
-  String get share_backup_file => 'Share NodeLane Comics backup file';
+  String get share_backup_file => 'NodeLane Comics 백업 파일 공유';
 
   @override
-  String get close => 'Close';
+  String get close => '닫다';
 
   @override
-  String get migrate_source => 'Migrate source';
+  String get migrate_source => '소스 마이그레이션';
 
   @override
-  String get cloudflare_bypass_proxy => 'Cloudflare bypass proxy';
+  String get cloudflare_bypass_proxy => 'Cloudflare 우회 프록시';
 
   @override
-  String get custom_doh_url => 'Custom DoH URL';
+  String get custom_doh_url => '맞춤형 DoH URL';
 
   @override
-  String get custom_doh_url_helper => 'Must be an https DoH (JSON) endpoint';
+  String get custom_doh_url_helper => 'https DoH(JSON) 엔드포인트여야 합니다.';
 
   @override
-  String get anime_only_tv_layout => 'Anime-only TV layout';
+  String get anime_only_tv_layout => '애니메이션 전용 TV 레이아웃';
 
   @override
-  String get anime_only_beta => 'Anime only (beta)';
+  String get anime_only_beta => '애니메이션 전용(베타)';
 
   @override
-  String get tv_home_beta => 'TV home (beta)';
+  String get tv_home_beta => 'TV 홈(베타)';
 
   @override
-  String get tv_player_beta => 'TV player (beta)';
+  String get tv_player_beta => 'TV 플레이어(베타)';
 
   @override
-  String get network_settings => 'Network';
+  String get network_settings => '회로망';
 
   @override
-  String get reader_page_layout => 'Page layout';
+  String get reader_page_layout => '페이지 레이아웃';
 
   @override
-  String get reader_continuous_options => 'Continuous reading';
+  String get reader_continuous_options => '지속적인 독서';
 
   @override
   String get reader_default_mode_hint =>
-      'The default reading mode applies to titles without an individual mode set while reading.';
+      '기본 읽기 모드는 읽는 동안 개별 모드가 설정되지 않은 타이틀에 적용됩니다.';
 
   @override
-  String get extension_service => 'Extension service';
+  String get extension_service => '확장 서비스';
 
   @override
-  String get extension_service_description =>
-      'Manage the extension runtime and proxy address.';
+  String get extension_service_description => '확장 런타임 및 프록시 주소를 관리합니다.';
 
   @override
-  String get proxy_address => 'Proxy address';
+  String get proxy_address => '프록시 주소';
 
   @override
-  String get checking_runtime_status => 'Checking status…';
+  String get checking_runtime_status => '상태 확인 중…';
 
   @override
   String download_delay_value(int seconds) {
-    return '$seconds s + random delay';
+    return '$seconds s + 무작위 지연';
   }
 
   @override
@@ -3625,171 +3616,162 @@ class AppLocalizationsKo extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count chapters',
-      one: '1 chapter',
+      other: '$count 장',
+      one: '1장',
     );
     return '$_temp0';
   }
 
   @override
-  String get download_queue_empty_hint =>
-      'Add downloads from a title’s chapter list.';
+  String get download_queue_empty_hint => '타이틀의 챕터 목록에서 다운로드를 추가합니다.';
 
   @override
-  String get download_queue_order_hint => 'Drag handles to reorder';
+  String get download_queue_order_hint => '핸들을 드래그하여 재정렬';
 
   @override
-  String get download_queue_empty => 'No downloads queued';
+  String get download_queue_empty => '대기 중인 다운로드가 없습니다.';
 
   @override
-  String get download_queue_actions => 'Download actions';
+  String get download_queue_actions => '작업 다운로드';
 
   @override
-  String get download_queue_cancel_chapter => 'Cancel this chapter’s download';
+  String get download_queue_cancel_chapter => '이 장의 다운로드 취소';
 
   @override
-  String get download_queue_cancel_series =>
-      'Cancel all downloads for this title';
+  String get download_queue_cancel_series => '이 타이틀에 대한 모든 다운로드 취소';
 
   @override
-  String get download_queue_start => 'Start downloads';
+  String get download_queue_start => '다운로드 시작';
 
   @override
-  String get download_queue_retry => 'Retry downloads';
+  String get download_queue_retry => '다운로드 재시도';
 
   @override
-  String get download_queue_active => 'Downloading';
+  String get download_queue_active => '다운로드 중';
 
   @override
-  String get download_queue_waiting => 'Waiting to download';
+  String get download_queue_waiting => '다운로드 대기 중';
 
   @override
-  String get download_queue_failed => 'Download failed';
+  String get download_queue_failed => '다운로드 실패';
 
   @override
-  String get cf_proxy_helper =>
-      'FlareSolverr / Byparr endpoint. Leave empty to disable.';
+  String get cf_proxy_helper => 'FlareSolverr / Byparr 엔드포인트. 비활성화하려면 비워 두세요.';
 
   @override
   String get mobile_navigation_description =>
-      'Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.';
+      '재정렬하려면 드래그하세요. 만화, 애니메이션, 소설은 라이브러리 탭을 공유합니다. 첫 번째로 표시되는 항목은 실행 시 열립니다. 찾아보기 및 기타 항목이 계속 표시됩니다. 추가 탭은 더보기 아래에 나타납니다.';
 
   @override
-  String get text_align_justify => 'Justify';
+  String get text_align_justify => '신이 옳다고 하다';
 
   @override
   String get novel_session_modes_hint =>
-      'Set reading mode and single or double pages while reading a title.';
+      '제목을 읽는 동안 읽기 모드와 단일 또는 이중 페이지를 설정하십시오.';
 
   @override
-  String get tts_languages_failed =>
-      'Could not load languages from the speech engine.';
+  String get tts_languages_failed => '음성 엔진에서 언어를 로드할 수 없습니다.';
 
   @override
-  String get tts_languages_empty =>
-      'The speech engine returned no languages. Your saved selection is kept.';
+  String get tts_languages_empty => '음성 엔진이 언어를 반환하지 않았습니다. 저장된 선택사항은 유지됩니다.';
 
   @override
-  String get tts_language_unavailable =>
-      'This saved language is not in the device’s current list.';
+  String get tts_language_unavailable => '이 저장된 언어는 장치의 현재 목록에 없습니다.';
 
   @override
-  String get tts_apply_failed =>
-      'Could not apply this setting to the speech engine. You can retry.';
+  String get tts_apply_failed => '이 설정을 음성 엔진에 적용할 수 없습니다. 다시 시도할 수 있습니다.';
 
   @override
-  String get player_controls => 'Controls';
+  String get player_controls => '통제 수단';
 
   @override
-  String get audio_channel_auto => 'Automatic';
+  String get audio_channel_auto => '오토매틱';
 
   @override
-  String get audio_channel_auto_safe => 'Automatic (safe)';
+  String get audio_channel_auto_safe => '자동(안전)';
 
   @override
-  String get audio_channel_mono => 'Mono';
+  String get audio_channel_mono => '단핵증';
 
   @override
-  String get audio_channel_stereo => 'Stereo';
+  String get audio_channel_stereo => '스테레오 재생';
 
   @override
-  String get audio_channel_reverse_stereo => 'Reverse stereo';
+  String get audio_channel_reverse_stereo => '역방향 스테레오';
 
   @override
   String get mpv_bundled_config_hint =>
-      'Restore the configuration, scripts and shaders included with the app. Files with the same names will be overwritten.';
+      '앱에 포함된 구성, 스크립트, 셰이더를 복원합니다. 동일한 이름의 파일을 덮어씁니다.';
 
   @override
-  String get mpv_restore_bundled => 'Restore bundled configuration';
+  String get mpv_restore_bundled => '번들 구성 복원';
 
   @override
   String get mpv_restore_confirm =>
-      'Restore the bundled MPV configuration? Existing configuration, scripts and shaders with the same names will be overwritten. Other files will be kept.';
+      '번들된 MPV 구성을 복원하시겠습니까? 동일한 이름을 가진 기존 구성, 스크립트 및 셰이더를 덮어쓰게 됩니다. 다른 파일은 보관됩니다.';
 
   @override
   String get player_operation_incomplete =>
-      'The operation could not be completed. Check file access and try again.';
+      '작업을 완료할 수 없습니다. 파일 액세스를 확인하고 다시 시도하세요.';
 
   @override
-  String get custom_buttons_empty_hint =>
-      'Add a player button with a label and a press action.';
+  String get custom_buttons_empty_hint => '라벨과 누르기 동작이 포함된 플레이어 버튼을 추가합니다.';
 
   @override
-  String get custom_button_primary => 'Default button';
+  String get custom_button_primary => '기본 버튼';
 
   @override
-  String get show_password => 'Show password';
+  String get show_password => '비밀번호 표시';
 
   @override
-  String get hide_password => 'Hide password';
+  String get hide_password => '비밀번호 숨기기';
 
   @override
-  String get tracking_accounts_empty =>
-      'Connect a service in Tracking settings to manage its entries.';
+  String get tracking_accounts_empty => '항목을 관리하려면 추적 설정에서 서비스를 연결하세요.';
 
   @override
   String get tracking_entries_empty =>
-      'No tracked entries for this media type. Add tracking from a title’s detail page.';
+      '이 미디어 유형에 대해 추적된 항목이 없습니다. 타이틀의 세부 정보 페이지에서 추적을 추가합니다.';
 
   @override
-  String get change_tracking_match => 'Change matching title';
+  String get change_tracking_match => '일치하는 제목 변경';
 
   @override
-  String get remove_tracking => 'Remove tracking';
+  String get remove_tracking => '추적 제거';
 
   @override
   String remove_tracking_confirm(String title) {
-    return 'Remove the tracking link for “$title”? The entry in the tracking service will be kept.';
+    return '\"$title\"에 대한 추적 링크를 제거하시겠습니까? 추적 서비스의 항목은 유지됩니다.';
   }
 
   @override
   String get tracking_refresh_required =>
-      'The tracking state could not be confirmed. Refresh before making another change.';
+      '추적상태를 확인할 수 없습니다. 다른 변경을 하기 전에 새로고침하세요.';
 
   @override
   String get tracking_entry_unlinked =>
-      'This record is not linked to a local title, so it cannot be edited here.';
+      '이 기록은 지역 제목과 연결되어 있지 않으므로 여기서 편집할 수 없습니다.';
 
   @override
   String get backup_selection_shared =>
-      'Changes to these selections are saved immediately and also apply to automatic backups.';
+      '이러한 선택 사항에 대한 변경 사항은 즉시 저장되며 자동 백업에도 적용됩니다.';
 
   @override
-  String get library_snapshot_history => 'Restore a library snapshot';
+  String get library_snapshot_history => '라이브러리 스냅샷 복원';
 
   @override
-  String get library_snapshot_empty => 'No safety snapshots available.';
+  String get library_snapshot_empty => '사용 가능한 안전 스냅샷이 없습니다.';
 
   @override
   String get library_snapshot_restore_message =>
-      'Current data will be replaced by this snapshot. Changes made since then will be lost. Deleted downloads cannot be restored. Available safety snapshots will be cleared after success.';
+      '현재 데이터는 이 스냅샷으로 대체됩니다. 그 이후 변경사항은 삭제됩니다. 삭제된 다운로드는 복원할 수 없습니다. 사용 가능한 안전 스냅샷은 성공 후 삭제됩니다.';
 
   @override
-  String get library_maintenance_working => 'Updating library…';
+  String get library_maintenance_working => '라이브러리 업데이트 중…';
 
   @override
   String get library_safety_snapshot_note =>
-      'A safety snapshot will be saved before this operation. It does not include downloaded files.';
+      '이 작업 전에 안전 스냅샷이 저장됩니다. 다운로드한 파일은 포함되지 않습니다.';
 
   @override
   String library_delete_summary(
@@ -3798,76 +3780,74 @@ class AppLocalizationsKo extends AppLocalizations {
     int historyCount,
     int updateCount,
   ) {
-    return 'Library entries: $mangaCount. Chapters: $chapterCount. History entries: $historyCount. Updates: $updateCount.\n\nChoose what to keep below.';
+    return '라이브러리 항목: $mangaCount. 장: $chapterCount. 기록 항목: $historyCount. 업데이트: $updateCount.\n\n아래에서 유지할 내용을 선택하세요.';
   }
 
   @override
-  String get library_delete_pick_message =>
-      'Choose a source to review its contents and deletion options.';
+  String get library_delete_pick_message => '콘텐츠와 삭제 옵션을 검토하려면 소스를 선택하세요.';
 
   @override
   String get mobile_categories_hint =>
-      'Drag to reorder. Open a category to rename it or change its visibility and updates.';
+      '재정렬하려면 드래그하세요. 카테고리를 열어 이름을 바꾸거나 공개 여부 및 업데이트를 변경하세요.';
 
   @override
-  String get mobile_category_visible => 'Show in library';
+  String get mobile_category_visible => '라이브러리에 표시';
 
   @override
-  String get mobile_category_hidden => 'Hidden from library';
+  String get mobile_category_hidden => '라이브러리에서 숨겨짐';
 
   @override
-  String get mobile_category_updates => 'Include in library updates';
+  String get mobile_category_updates => '라이브러리 업데이트에 포함';
 
   @override
-  String get statistics_watched => 'Watched';
+  String get statistics_watched => '시청함';
 
   @override
-  String get calendar_month => 'Month';
+  String get calendar_month => '월';
 
   @override
-  String get calendar_two_weeks => '2 weeks';
+  String get calendar_two_weeks => '2주';
 
   @override
-  String get calendar_week => 'Week';
+  String get calendar_week => '주';
 
   @override
-  String get calendar_show_all_dates => 'Show all dates';
+  String get calendar_show_all_dates => '모든 날짜 표시';
 
   @override
   String get update_check_no_result =>
-      'No installable update found. You can try again later.';
+      '설치 가능한 업데이트를 찾을 수 없습니다. 나중에 다시 시도할 수 있습니다.';
 
   @override
-  String get release_notes => 'Release notes';
+  String get release_notes => '릴리스 노트';
 
   @override
-  String get no_release_notes => 'No release notes provided.';
+  String get no_release_notes => '릴리스 노트가 제공되지 않았습니다.';
 
   @override
-  String get downloading_update => 'Downloading update…';
+  String get downloading_update => '업데이트 다운로드 중…';
 
   @override
-  String get preparing_installation => 'Preparing installation…';
+  String get preparing_installation => '설치 준비 중…';
 
   @override
   String get onboarding_mobile_libraries_body =>
-      'Choose what to read. You can change this later.';
+      '읽을 내용을 선택하세요. 나중에 변경할 수 있습니다.';
 
   @override
-  String get onboarding_content_title => 'Start reading';
+  String get onboarding_content_title => '읽기 시작';
 
   @override
-  String get onboarding_mobile_sources_body =>
-      'Choose a way to start, or add content later.';
+  String get onboarding_mobile_sources_body => '시작 방법을 선택하거나 나중에 콘텐츠를 추가하세요.';
 
   @override
   String onboarding_step_count(int step, int total) {
-    return 'Step $step of $total';
+    return '$total의 $step 단계';
   }
 
   @override
   String global_search_results_for(String query) {
-    return 'Results for “$query”';
+    return '“$query”에 대한 결과';
   }
 
   @override
@@ -3875,1092 +3855,2317 @@ class AppLocalizationsKo extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sources',
-      one: '1 source',
+      other: '$count 소스',
+      one: '소스 1개',
     );
     return '$type · $_temp0';
   }
 
   @override
-  String get migration_search_prompt => 'Search for the destination title.';
+  String get migration_search_prompt => '목적지 제목을 검색하세요.';
 
   @override
-  String get migration_original_item => 'Current item';
+  String get migration_original_item => '현재 품목';
 
   @override
-  String get migration_target_item => 'Selected item';
+  String get migration_target_item => '선택한 항목';
 
   @override
   String get migration_partial_failure =>
-      'The operation did not finish. Some changes may have been saved. Check this item in your library before trying again.';
+      '작업이 완료되지 않았습니다. 일부 변경사항이 저장되었을 수 있습니다. 다시 시도하기 전에 라이브러리에서 이 항목을 확인하세요.';
 
   @override
-  String get migration_no_categories =>
-      'No categories. You can add this item without a category.';
+  String get migration_no_categories => '카테고리가 없습니다. 카테고리 없이 이 항목을 추가할 수 있습니다.';
 
   @override
-  String get mass_migration_select_source => 'Choose the current source';
+  String get mass_migration_select_source => '현재 소스를 선택하세요';
 
   @override
-  String get mass_migration_select_all => 'Select all';
+  String get mass_migration_select_all => '모두 선택';
 
   @override
-  String get mass_migration_deselect_all => 'Deselect all';
+  String get mass_migration_deselect_all => '모두 선택 취소';
 
   @override
-  String get mass_migration_needs_review => 'Review incomplete migrations';
+  String get mass_migration_needs_review => '불완전한 마이그레이션 검토';
 
   @override
-  String get bookshelf_actions => 'Bookshelf actions';
+  String get bookshelf_actions => '책장 작업';
 
   @override
-  String get bookshelf_ignore_filters => 'Ignore filters when searching';
+  String get bookshelf_ignore_filters => '검색 시 필터 무시';
 
   @override
   String get bookshelf_ignore_filters_hint =>
-      'Search all works in this category, including those hidden by filters.';
+      '필터로 숨겨진 작품을 포함하여 이 카테고리의 모든 작품을 검색하세요.';
 
   @override
-  String get bookshelf_stop_update => 'Stop library update';
+  String get bookshelf_stop_update => '라이브러리 업데이트 중지';
 
   @override
   String bookshelf_selected_count(int count) {
-    return '$count works selected';
+    return '$count 작품이 선택되었습니다';
   }
 
   @override
-  String get bookshelf_remove_library => 'Remove from bookshelf';
+  String get bookshelf_remove_library => '책장에서 제거';
 
   @override
   String get bookshelf_remove_library_hint =>
-      'Removes favorites. Local imports also lose their library and reading records.';
+      '즐겨찾기를 제거합니다. 로컬 수입품도 라이브러리와 독서 기록을 잃습니다.';
 
   @override
-  String get bookshelf_remove_downloads => 'Delete downloaded files';
+  String get bookshelf_remove_downloads => '다운로드한 파일 삭제';
 
   @override
-  String get bookshelf_remove_downloads_hint =>
-      'Removes downloaded files while keeping work information.';
+  String get bookshelf_remove_downloads_hint => '작업 정보를 유지하면서 다운로드한 파일을 제거합니다.';
 
   @override
   String get bookshelf_remove_local_files_hint =>
-      'Also deletes selected local imported files and removes their library records. These files cannot be recovered here.';
+      '또한 선택한 로컬 가져온 파일을 삭제하고 해당 라이브러리 레코드를 제거합니다. 이러한 파일은 여기에서 복구할 수 없습니다.';
 
   @override
   String get bookshelf_remove_incomplete =>
-      'The operation did not finish. Some works or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.';
+      '작업이 완료되지 않았습니다. 일부 작품이나 파일이 처리되었을 수 있습니다. 계속하기 전에 이 대화 상자를 닫고 책장과 다운로드를 확인하세요.';
 
   @override
-  String get bookshelf_processing => 'Processing…';
+  String get bookshelf_processing => '처리 중…';
 
   @override
-  String get bookshelf_mark_read => 'Mark read';
+  String get bookshelf_mark_read => '마크 읽기';
 
   @override
-  String get bookshelf_mark_unread => 'Mark unread';
+  String get bookshelf_mark_unread => '읽지 않은 것으로 표시';
 
   @override
-  String get bookshelf_select_all => 'Select all';
+  String get bookshelf_select_all => '모두 선택';
 
   @override
-  String get bookshelf_invert_selection => 'Invert selection';
+  String get bookshelf_invert_selection => '반전 선택';
 
   @override
-  String get bookshelf_settings => 'Bookshelf settings';
+  String get bookshelf_settings => '책장 설정';
 
   @override
-  String get bookshelf_settings_live =>
-      'Filter, sort and display changes take effect immediately.';
+  String get bookshelf_settings_live => '필터, 정렬 및 표시 변경 사항은 즉시 적용됩니다.';
 
   @override
-  String get bookshelf_filter_any => 'Any';
+  String get bookshelf_filter_any => '모두';
 
   @override
-  String get bookshelf_filter_include => 'Include';
+  String get bookshelf_filter_include => '포함';
 
   @override
-  String get bookshelf_filter_exclude => 'Exclude';
+  String get bookshelf_filter_exclude => '제외';
 
   @override
-  String get bookshelf_all_sources => 'All sources';
+  String get bookshelf_all_sources => '모든 소스';
 
   @override
   String bookshelf_sources_selected(int count) {
-    return '$count sources selected';
+    return '$count 소스가 선택됨';
   }
 
   @override
-  String get bookshelf_sort_ascending => 'Ascending';
+  String get bookshelf_sort_ascending => '오름차순';
 
   @override
-  String get bookshelf_sort_descending => 'Descending';
+  String get bookshelf_sort_descending => '내림차순';
 
   @override
-  String get bookshelf_layout => 'Bookshelf layout';
+  String get bookshelf_layout => '책장 레이아웃';
 
   @override
   String get bookshelf_sources_hint =>
-      'Select none to show all sources. Changes apply when you tap Filter.';
+      '모든 소스를 표시하려면 없음을 선택하세요. 필터를 탭하면 변경 사항이 적용됩니다.';
 
   @override
-  String get bookshelf_choose_files => 'Choose files';
+  String get bookshelf_choose_files => '파일 선택';
 
   @override
-  String get bookshelf_import_wait =>
-      'Choose a file in the picker and wait for the import to finish.';
+  String get bookshelf_import_wait => '선택기에서 파일을 선택하고 가져오기가 완료될 때까지 기다립니다.';
 
   @override
   String get bookshelf_import_incomplete =>
-      'Import did not finish. Some files may already be in your bookshelf. Close this dialog and check before importing again.';
+      '가져오기가 완료되지 않았습니다. 일부 파일이 이미 책장에 있을 수 있습니다. 이 대화 상자를 닫고 다시 가져오기 전에 확인하세요.';
 
   @override
   String get bookshelf_categories_replace =>
-      'Saving assigns these categories to every selected work, replacing their previous categories.';
+      '저장은 선택한 모든 작업에 이러한 카테고리를 할당하여 이전 카테고리를 대체합니다.';
 
   @override
   String get bookshelf_categories_hint =>
-      'Choose one or more categories, or leave the selection empty to assign none.';
+      '하나 이상의 카테고리를 선택하거나, 아무것도 지정하지 않으려면 선택 항목을 비워 두세요.';
 
   @override
-  String get bookshelf_categories_hidden =>
-      'Existing hidden categories are kept for this work.';
+  String get bookshelf_categories_hidden => '이 작업을 위해 기존의 숨겨진 카테고리가 유지됩니다.';
 
   @override
   String get bookshelf_categories_incomplete =>
-      'Categories could not be saved completely. Close this dialog and check the bookshelf before trying again.';
+      '카테고리를 완전히 저장할 수 없습니다. 다시 시도하기 전에 이 대화상자를 닫고 책장을 확인하세요.';
 
   @override
   String get bookshelf_categories_none_visible =>
-      'No categories are available here. Open category management to review them.';
+      '여기에는 카테고리가 없습니다. 카테고리 관리를 열어 검토하세요.';
 
   @override
-  String get bookshelf_manage_categories => 'Manage categories';
+  String get bookshelf_manage_categories => '카테고리 관리';
 
   @override
-  String get manga_actions => 'Comic actions';
+  String get manga_actions => '코믹 액션';
 
   @override
-  String get manga_download_scope => 'Download chapters';
+  String get manga_download_scope => '다운로드 챕터';
 
   @override
   String get manga_download_scope_hint =>
-      'Choose chapters within the current filters. Downloaded chapters are skipped.';
+      '현재 필터 내에서 장을 선택하세요. 다운로드한 챕터는 건너뜁니다.';
 
   @override
   String get manga_download_scope_empty =>
-      'No chapters match the current filters. Close this menu and adjust the chapter filters.';
+      '현재 필터와 일치하는 챕터가 없습니다. 이 메뉴를 닫고 챕터 필터를 조정하세요.';
 
   @override
   String get manga_action_incomplete =>
-      'The action did not finish. Check the current state before trying again.';
+      '작업이 완료되지 않았습니다. 다시 시도하기 전에 현재 상태를 확인하세요.';
 
   @override
-  String get chapter_settings => 'Chapter settings';
+  String get chapter_settings => '장 설정';
 
   @override
-  String get chapter_settings_live =>
-      'Filter and sort changes apply immediately.';
+  String get chapter_settings_live => '필터 및 정렬 변경 사항은 즉시 적용됩니다.';
 
   @override
-  String get chapter_scanlators_all => 'Show all scanlator groups';
+  String get chapter_scanlators_all => '모든 스캔레이터 그룹 표시';
 
   @override
   String get chapter_scanlators_hint =>
-      'Select groups to hide their chapters. Changes apply when you tap Filter.';
+      '해당 장을 숨기려면 그룹을 선택하세요. 필터를 탭하면 변경 사항이 적용됩니다.';
 
   @override
   String chapter_scanlators_hidden(int count) {
-    return '$count scanlator groups hidden';
+    return '$count 스캔레이터 그룹 숨김';
   }
 
   @override
   String chapter_selected_count(int count) {
-    return '$count chapters selected';
+    return '$count 장이 선택되었습니다.';
   }
 
   @override
-  String get chapter_add_bookmark => 'Bookmark';
+  String get chapter_add_bookmark => '북마크';
 
   @override
-  String get chapter_remove_bookmark => 'Unbookmark';
+  String get chapter_remove_bookmark => '북마크 해제';
 
   @override
-  String get chapter_read_following => 'Read below';
+  String get chapter_read_following => '아래 읽기';
 
   @override
-  String get chapter_delete_records => 'Delete chapter records';
+  String get chapter_delete_records => '챕터 기록 삭제';
 
   @override
   String get chapter_delete_local_hint =>
-      'Removes the selected chapter records and reading progress. Original local archives are kept; downloaded copies are cleaned up.';
+      '선택한 장 기록과 읽기 진행 상황을 제거합니다. 원본 로컬 아카이브가 보관됩니다. 다운로드한 복사본이 정리됩니다.';
 
   @override
   String get chapter_delete_last_hint =>
-      'These are all chapters in this comic. Deleting them also removes the comic from your bookshelf.';
+      '이 만화의 모든 장입니다. 삭제하면 책장에서도 해당 만화가 제거됩니다.';
 
   @override
   String get chapter_action_incomplete =>
-      'The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.';
+      '작업이 완료되지 않았습니다. 일부 변경사항이 이미 저장되었을 수 있습니다. 계속하기 전에 장과 다운로드를 닫고 확인하세요.';
 
   @override
   String get reader_display_scope =>
-      'Reading mode and manual page layout apply to this comic. Choose a change to return to reading.';
+      '이 만화에는 읽기 모드와 매뉴얼 페이지 레이아웃이 적용됩니다. 읽기로 돌아가려면 변경사항을 선택하세요.';
 
   @override
-  String get reader_display_single_only =>
-      'Horizontal continuous reading uses single pages.';
+  String get reader_display_single_only => '수평 연속 읽기는 단일 페이지를 사용합니다.';
 
   @override
   String get reader_display_manual_pages =>
-      'Changing page layout turns off automatic double page for all comics.';
+      '페이지 레이아웃을 변경하면 모든 만화에 대해 자동 이중 페이지가 꺼집니다.';
 
   @override
-  String get reader_display_crop_scope => 'Applies to all comics.';
+  String get reader_display_crop_scope => '모든 만화에 적용됩니다.';
 
   @override
-  String get reader_chapter_locate => 'Locate current chapter';
+  String get reader_chapter_locate => '현재 장 찾기';
 
   @override
-  String get reader_chapter_search => 'Search chapters or scanlators';
+  String get reader_chapter_search => '챕터 또는 스캔레이터 검색';
 
   @override
   String get reader_chapter_scope =>
-      'Uses the chapter filters and sort order from comic details. Bookmarks are saved immediately.';
+      '만화 세부 정보의 장 필터 및 정렬 순서를 사용합니다. 북마크는 즉시 저장됩니다.';
 
   @override
-  String get reader_chapter_current_hidden =>
-      'The chapter you are reading is outside the current filters.';
+  String get reader_chapter_current_hidden => '읽고 있는 장이 현재 필터를 벗어났습니다.';
 
   @override
-  String get reader_chapter_current => 'Reading now';
+  String get reader_chapter_current => '지금 읽고 있는 중';
 
   @override
-  String get reader_chapter_read => 'Read';
+  String get reader_chapter_read => '읽기';
 
   @override
   String get reader_chapter_bookmark_failed =>
-      'Bookmark save could not be confirmed. Close the list and check its current state.';
+      '북마크 저장을 확인할 수 없습니다. 목록을 닫고 현재 상태를 확인하세요.';
 
   @override
-  String get reader_image_actions => 'Image actions';
+  String get reader_image_actions => '이미지 작업';
 
   @override
   String get reader_image_original =>
-      'Uses the full original page, without translation, cropping or reader color filters.';
+      '번역, 자르기 또는 판독기 색상 필터 없이 전체 원본 페이지를 사용합니다.';
 
   @override
-  String get reader_image_save_ios =>
-      'Save to the Pictures folder in the current app storage location.';
+  String get reader_image_save_ios => '현재 앱 저장 위치의 사진 폴더에 저장합니다.';
 
   @override
   String get reader_image_save_android =>
-      'Save to the device’s Pictures/nodelane-comics folder.';
+      '장치의 Pictures/nodelane-comics 폴더에 저장합니다.';
 
   @override
-  String get reader_image_share => 'Open the system share sheet.';
+  String get reader_image_share => '시스템 공유 시트를 엽니다.';
 
   @override
-  String get reader_image_cover =>
-      'Change this comic’s cover after confirmation.';
+  String get reader_image_cover => '확인 후 이 만화의 표지를 변경하세요.';
 
   @override
   String get reader_image_cover_limit =>
-      'Cover images must be smaller than 5 MB. Saving and sharing remain available.';
+      '표지 이미지는 5MB보다 작아야 합니다. 저장 및 공유는 계속 가능합니다.';
 
   @override
   String get reader_image_action_failed =>
-      'The action could not be confirmed. Close this menu and check the result before trying again.';
+      '작업을 확인할 수 없습니다. 이 메뉴를 닫고 결과를 확인한 후 다시 시도하세요.';
 
   @override
-  String get reader_settings_book_scope =>
-      'These settings apply only to this comic.';
+  String get reader_settings_book_scope => '이 설정은 이 만화에만 적용됩니다.';
 
   @override
-  String get reader_settings_global_scope =>
-      'These settings apply to all comics and save immediately.';
+  String get reader_settings_global_scope => '이 설정은 모든 만화에 적용되며 즉시 저장됩니다.';
 
   @override
-  String get reader_filters => 'Image filters';
+  String get reader_filters => '이미지 필터';
 
   @override
   String get reader_filter_scope =>
-      'Applies to all comics. Changes the reading display without modifying original images.';
+      '모든 만화에 적용됩니다. 원본 이미지를 수정하지 않고 판독 표시를 변경합니다.';
 
   @override
-  String get reader_auto_scroll_pause =>
-      'Scrolling pauses while settings are open.';
+  String get reader_auto_scroll_pause => '설정이 열려 있는 동안 스크롤이 일시 중지됩니다.';
 
   @override
-  String get manga_synopsis => 'Synopsis';
+  String get manga_synopsis => '시놉시스';
 
   @override
   String manga_author(String author) {
-    return 'Author: $author';
+    return '작성자: $author';
   }
 
   @override
-  String get manga_continue_reading => 'Continue reading';
+  String get manga_continue_reading => '계속 읽기';
 
   @override
-  String get reader_settings_title => 'Reader settings';
+  String get reader_settings_title => '리더 설정';
 
   @override
-  String get reader_picker_book_scope => 'Only for this comic';
+  String get reader_picker_book_scope => '이 만화에만 해당';
 
   @override
-  String get reader_picker_global_scope => 'Applies to all comics';
+  String get reader_picker_global_scope => '모든 만화에 적용됩니다.';
 
   @override
-  String get reader_picker_apply_hint =>
-      'Tap to save and return to the previous level.';
+  String get reader_picker_apply_hint => '탭하면 저장하고 이전 레벨로 돌아갑니다.';
 
   @override
-  String get reader_scale_fit_screen_hint => 'Fit the whole page on screen';
+  String get reader_scale_fit_screen_hint => '전체 페이지를 화면에 맞추기';
 
   @override
-  String get reader_scale_stretch_hint => 'Fill the reading area';
+  String get reader_scale_stretch_hint => '읽기 영역 채우기';
 
   @override
-  String get reader_scale_fit_width_hint => 'Fit the page to the width';
+  String get reader_scale_fit_width_hint => '페이지를 너비에 맞춥니다';
 
   @override
-  String get reader_scale_fit_height_hint => 'Fit the page to the height';
+  String get reader_scale_fit_height_hint => '페이지 높이에 맞추기';
 
   @override
-  String get source_filter_active => 'Applied';
+  String get source_filter_active => '적용';
 
   @override
-  String get source_filter_apply => 'Apply filters';
+  String get source_filter_apply => '필터 적용';
 
   @override
-  String get source_filter_scope => 'Filters apply to this website only.';
+  String get source_filter_scope => '필터는 이 웹사이트에만 적용됩니다.';
 
   @override
-  String get source_filter_apply_hint =>
-      'Apply filters to use your selections.';
+  String get source_filter_apply_hint => '선택 항목을 사용하려면 필터를 적용하세요.';
 
   @override
   String source_filter_term(String term) {
     String _temp0 = intl.Intl.selectLogic(term, {
-      'genres': 'Genres',
-      'author': 'Author',
-      'artist': 'Artist',
-      'title': 'Title',
-      'year': 'Year',
-      'tags': 'Tags',
-      'format': 'Format',
-      'publisher': 'Publisher',
-      'relevance': 'Relevance',
-      'rating': 'Rating',
-      'views': 'Views',
-      'random': 'Random',
-      'all': 'All',
-      'none': 'None',
-      'action': 'Action',
-      'adventure': 'Adventure',
-      'comedy': 'Comedy',
-      'drama': 'Drama',
-      'fantasy': 'Fantasy',
-      'romance': 'Romance',
-      'science_fiction': 'Science fiction',
-      'slice_of_life': 'Slice of life',
-      'mystery': 'Mystery',
-      'horror': 'Horror',
-      'psychological': 'Psychological',
-      'historical': 'Historical',
-      'sports': 'Sports',
-      'supernatural': 'Supernatural',
-      'school_life': 'School life',
-      'tragedy': 'Tragedy',
-      'shounen': 'Shounen',
-      'shoujo': 'Shoujo',
-      'seinen': 'Seinen',
-      'josei': 'Josei',
-      'isekai': 'Isekai',
-      'martial_arts': 'Martial arts',
-      'mecha': 'Mecha',
-      'music': 'Music',
-      'doujinshi': 'Doujinshi',
-      'trending': 'Trending',
-      'new': 'New',
-      'adult_content': 'Adult content',
-      'only': 'Only',
+      'genres': '장르',
+      'author': '작가',
+      'artist': '아티스트',
+      'title': '제목',
+      'year': '연도',
+      'tags': '태그',
+      'format': '형식',
+      'publisher': '출판사',
+      'relevance': '관련성',
+      'rating': '평가',
+      'views': '조회수',
+      'random': '랜덤',
+      'all': '모두',
+      'none': '없음',
+      'action': '액션',
+      'adventure': '어드벤처',
+      'comedy': '코미디',
+      'drama': '드라마',
+      'fantasy': '판타지',
+      'romance': '로맨스',
+      'science_fiction': '공상 과학 소설',
+      'slice_of_life': '삶의 조각',
+      'mystery': '미스터리',
+      'horror': '공포',
+      'psychological': '심리적',
+      'historical': '역사적',
+      'sports': '스포츠',
+      'supernatural': '초자연적',
+      'school_life': '학교생활',
+      'tragedy': '비극',
+      'shounen': '쇼넨',
+      'shoujo': '소조',
+      'seinen': '세이넨',
+      'josei': '조세이',
+      'isekai': '이세카이',
+      'martial_arts': '무술',
+      'mecha': '메카',
+      'music': '음악',
+      'doujinshi': '동인지',
+      'trending': '동향',
+      'new': '새로운',
+      'adult_content': '성인용 콘텐츠',
+      'only': '전용',
       'other': '$term',
     });
     return '$_temp0';
   }
 
   @override
-  String get bookshelf_more_display => 'More display options';
+  String get bookshelf_more_display => '더 많은 디스플레이 옵션';
 
   @override
-  String get bookshelf_more_display_hint => 'Badges, sources and categories';
+  String get bookshelf_more_display_hint => '배지, 소스 및 카테고리';
 
   @override
-  String get bookshelf_download_count => 'Download count';
+  String get bookshelf_download_count => '다운로드 횟수';
 
   @override
-  String get bookshelf_source_global_hint =>
-      'Source visibility uses the shared display preference.';
+  String get bookshelf_source_global_hint => '소스 가시성은 공유 디스플레이 기본 설정을 사용합니다.';
 
   @override
-  String get bookshelf_select_entries => 'Select works';
+  String get bookshelf_select_entries => '작품 선택';
 
   @override
-  String get bookshelf_search_options => 'Search options';
+  String get bookshelf_search_options => '검색 옵션';
 
   @override
-  String get bookshelf_empty_hint =>
-      'Collect works from sources or import local files.';
+  String get bookshelf_empty_hint => '소스에서 작품을 수집하거나 로컬 파일을 가져옵니다.';
 
   @override
-  String get bookshelf_no_match_hint =>
-      'Try other keywords or adjust the current filters.';
+  String get bookshelf_no_match_hint => '다른 키워드를 사용해 보거나 현재 필터를 조정하세요.';
 
   @override
-  String get bookshelf_clear_query => 'Clear keywords';
+  String get bookshelf_clear_query => '키워드 지우기';
 
   @override
-  String get bookshelf_view_selection => 'View selected works';
+  String get bookshelf_view_selection => '선택한 작품 보기';
 
   @override
-  String get bookshelf_import_formats =>
-      'Choose a local file to add it to your bookshelf.';
+  String get bookshelf_import_formats => '책장에 추가할 로컬 파일을 선택하세요.';
 
   @override
-  String get bookshelf_import_canceled_hint =>
-      'You can choose again after cancelling the file picker.';
+  String get bookshelf_import_canceled_hint => '파일 선택을 취소한 후 다시 선택할 수 있습니다.';
 
   @override
-  String get bookshelf_browse_sources => 'Browse sources';
+  String get bookshelf_browse_sources => '소스 찾아보기';
 
   @override
-  String get bookshelf_empty_title => 'Your bookshelf is empty';
+  String get bookshelf_empty_title => '책장이 비어 있습니다';
 
   @override
-  String get bookshelf_no_match_title => 'No matching works';
+  String get bookshelf_no_match_title => '일치하는 작업이 없습니다.';
 
   @override
-  String get bookshelf_mark_watched => 'Mark watched';
+  String get bookshelf_mark_watched => '마크가 시청함';
 
   @override
-  String get bookshelf_mark_unwatched => 'Mark unwatched';
+  String get bookshelf_mark_unwatched => '보지 않은 것으로 표시';
 
   @override
-  String get nodelane_account => 'NodeLane account';
+  String get nodelane_account => 'NodeLane 계정';
 
   @override
-  String get nodelane_sign_in => 'Sign in to NodeLane';
+  String get nodelane_sign_in => 'NodeLane에 로그인';
 
   @override
-  String get nodelane_account_intro =>
-      'View your account, subscription and translation quota';
+  String get nodelane_account_intro => '계정, 구독 및 번역 할당량 보기';
 
   @override
-  String get nodelane_login_action => 'Continue to sign in';
+  String get nodelane_login_action => '계속 로그인하세요';
 
   @override
-  String get nodelane_login_browser =>
-      'Sign in through the system browser, then return to the app';
+  String get nodelane_login_browser => '시스템 브라우저를 통해 로그인한 후 앱으로 돌아갑니다.';
 
   @override
-  String get nodelane_account_id => 'Account ID';
+  String get nodelane_account_id => '계정 ID';
 
   @override
   String get nodelane_account_init_error =>
-      'Account storage is unavailable. Restart the app and try again.';
+      '계정 저장을 사용할 수 없습니다. 앱을 다시 시작한 후 다시 시도해 보세요.';
 
   @override
-  String get nodelane_account_refresh_error =>
-      'Could not refresh account information';
+  String get nodelane_account_refresh_error => '계정 정보를 새로 고칠 수 없습니다.';
 
   @override
-  String get nodelane_account_auth_error =>
-      'Your session has expired. Sign in again';
+  String get nodelane_account_auth_error => '세션이 만료되었습니다. 다시 로그인';
 
   @override
-  String get nodelane_account_unknown =>
-      'Subscription information is unavailable';
+  String get nodelane_account_unknown => '구독 정보를 확인할 수 없습니다';
 
   @override
-  String get nodelane_account_current => 'Current subscription';
+  String get nodelane_account_current => '현재 구독 중';
 
   @override
-  String get nodelane_account_free => 'Free account';
+  String get nodelane_account_free => '무료 계정';
 
   @override
-  String get nodelane_account_no_subscription => 'No active subscription';
+  String get nodelane_account_no_subscription => '활성 구독이 없습니다.';
 
   @override
-  String get nodelane_account_active => 'Active';
+  String get nodelane_account_active => '액티브';
 
   @override
-  String get nodelane_account_expired => 'Expired';
+  String get nodelane_account_expired => '만료됨';
 
   @override
-  String get nodelane_account_expiry => 'Valid until';
+  String get nodelane_account_expiry => '유효기간:';
 
   @override
-  String get nodelane_account_renewal => 'Renewal';
+  String get nodelane_account_renewal => '갱신';
 
   @override
-  String get nodelane_renewal_auto => 'Automatic renewal';
+  String get nodelane_renewal_auto => '자동 갱신';
 
   @override
-  String get nodelane_renewal_manual => 'Manual renewal';
+  String get nodelane_renewal_manual => '수동 갱신';
 
   @override
-  String get nodelane_renewal_stopped => 'Automatic renewal stopped';
+  String get nodelane_renewal_stopped => '자동 갱신이 중지되었습니다.';
 
   @override
-  String get nodelane_renewal_gift => 'Gift membership';
+  String get nodelane_renewal_gift => '멤버십 선물하기';
 
   @override
-  String get nodelane_renewal_attention =>
-      'Check your renewal status on the website';
+  String get nodelane_renewal_attention => '웹사이트에서 갱신 상태를 확인하세요';
 
   @override
-  String get nodelane_next_billing => 'Next billing date';
+  String get nodelane_next_billing => '다음 청구일';
 
   @override
-  String get nodelane_billing_unavailable =>
-      'Renewal information is unavailable';
+  String get nodelane_billing_unavailable => '갱신 정보를 이용할 수 없습니다';
 
   @override
-  String get nodelane_manage_account => 'Manage on website';
+  String get nodelane_manage_account => '웹사이트에서 관리';
 
   @override
-  String get nodelane_view_plans => 'View subscription plans';
+  String get nodelane_view_plans => '구독 요금제 보기';
 
   @override
-  String get nodelane_translation_quota => 'Translation quota';
+  String get nodelane_translation_quota => '번역 할당량';
 
   @override
-  String get nodelane_quota_free => 'Free quota';
+  String get nodelane_quota_free => '무료 할당량';
 
   @override
-  String get nodelane_quota_subscription => 'Subscription quota';
+  String get nodelane_quota_subscription => '구독 할당량';
 
   @override
-  String get nodelane_quota_purchase => 'Purchased quota';
+  String get nodelane_quota_purchase => '구매한 할당량';
 
   @override
-  String get nodelane_quota_details => 'View quota details';
+  String get nodelane_quota_details => '할당량 세부정보 보기';
 
   @override
-  String get nodelane_quota_expanded => 'Quota details';
+  String get nodelane_quota_expanded => '할당량 세부정보';
 
   @override
-  String get nodelane_quota_unlimited => 'Unlimited';
+  String get nodelane_quota_unlimited => '무제한';
 
   @override
-  String get nodelane_quota_not_subscribed => 'Not subscribed';
+  String get nodelane_quota_not_subscribed => '구독하지 않음';
 
   @override
-  String get nodelane_quota_unknown => 'Unavailable';
+  String get nodelane_quota_unknown => '사용할 수 없음';
 
   @override
-  String get nodelane_quota_used => 'Used';
+  String get nodelane_quota_used => '중고';
 
   @override
-  String get nodelane_quota_reserved => 'In progress';
+  String get nodelane_quota_reserved => '진행 중';
 
   @override
-  String get nodelane_quota_reset => 'Next reset';
+  String get nodelane_quota_reset => '다음 재설정';
 
   @override
-  String get nodelane_quota_expiry => 'Next expiry';
+  String get nodelane_quota_expiry => '다음 만료';
 
   @override
-  String get nodelane_quota_no_expiry => 'No expiry date';
+  String get nodelane_quota_no_expiry => '만료일 없음';
 
   @override
   String get nodelane_quota_reservation_note =>
-      'Pages in progress are already deducted from the available quota';
+      '진행 중인 페이지는 사용 가능한 할당량에서 이미 차감되었습니다.';
 
   @override
   String nodelane_quota_available(int count) {
-    return '$count pages remaining';
+    return '$count 페이지 남음';
   }
 
   @override
   String nodelane_quota_pages(int count) {
-    return '$count pages';
+    return '$count 페이지';
   }
 
   @override
-  String get nodelane_sign_out => 'Sign out';
+  String get nodelane_sign_out => '로그아웃';
 
   @override
   String get nodelane_sign_out_confirm =>
-      'Signing out pauses official translation on this device. Your library and reading progress are kept.';
+      '로그아웃하면 이 장치의 공식 번역이 일시 중지됩니다. 라이브러리와 독서 진행 상황이 유지됩니다.';
 
   @override
-  String get settings_search_hint => 'Search settings';
+  String get settings_search_hint => '검색 설정';
 
   @override
-  String get settings_frequent => 'Frequently used';
+  String get settings_frequent => '자주 사용되는';
 
   @override
-  String get settings_reading_translation => 'Reading and translation';
+  String get settings_reading_translation => '읽기 및 번역';
 
   @override
-  String get settings_app_preferences => 'App preferences';
+  String get settings_app_preferences => '앱 환경설정';
 
   @override
-  String get settings_data_management => 'Data and management';
+  String get settings_data_management => '데이터 및 관리';
 
   @override
-  String get settings_more_tools => 'More tools';
+  String get settings_more_tools => '더 많은 도구';
 
   @override
-  String get settings_more_tools_hint => 'Categories, statistics and calendar';
+  String get settings_more_tools_hint => '카테고리, 통계 및 달력';
 
   @override
-  String get settings_appearance_interface => 'Appearance and interface';
+  String get settings_appearance_interface => '외관 및 인터페이스';
 
   @override
-  String get settings_security_privacy => 'Security and privacy';
+  String get settings_security_privacy => '보안 및 개인 정보 보호';
 
   @override
-  String get settings_source_preferences => 'Source settings';
+  String get settings_source_preferences => '소스 설정';
 
   @override
-  String get settings_about_help => 'About and help';
+  String get settings_about_help => '정보 및 도움말';
 
   @override
-  String get settings_storage_backup => 'Storage and backup';
+  String get settings_storage_backup => '저장 및 백업';
 
   @override
   String settings_pending_downloads(int count) {
-    return '$count pending';
+    return '$count 보류 중';
   }
 
   @override
-  String get settings_translation_language => 'Translation language';
+  String get settings_translation_language => '번역 언어';
 
   @override
-  String get settings_translation_scope =>
-      'Used in the reader and web page translation';
+  String get settings_translation_scope => '리더 및 웹페이지 번역에 사용';
 
   @override
-  String get settings_immediate_choice => 'Changes apply immediately';
+  String get settings_immediate_choice => '변경 사항이 즉시 적용됩니다.';
 
   @override
   String get settings_translation_init_error =>
-      'Translation settings are unavailable. Restart the app and try again.';
+      '번역 설정을 사용할 수 없습니다. 앱을 다시 시작한 후 다시 시도해 보세요.';
 
   @override
-  String get settings_local_cache => 'Local cache';
+  String get settings_local_cache => '로컬 캐시';
 
   @override
-  String get settings_chapter_cache => 'Chapter and episode cache';
+  String get settings_chapter_cache => '챕터 및 에피소드 캐시';
 
   @override
-  String get settings_cover_cache => 'Cover cache';
+  String get settings_cover_cache => '커버 캐시';
 
   @override
-  String get settings_translation_cache => 'Translated image cache';
+  String get settings_translation_cache => '번역된 이미지 캐시';
 
   @override
   String get settings_translation_cache_hint =>
-      'Keep translation records and retrieve translated images again when needed';
+      '번역 기록을 보관하고 필요할 때 번역된 이미지를 다시 검색하세요.';
 
   @override
-  String get settings_cache_clear => 'Clear';
+  String get settings_cache_clear => '클리어';
 
   @override
-  String get settings_translation_cache_done =>
-      'Translated image cache cleared; translation records kept';
+  String get settings_translation_cache_done => '번역된 이미지 캐시가 지워졌습니다. 번역 기록 보관';
 
   @override
   String settings_cache_confirmation(String name) {
-    return 'Clear $name? Cached content can be retrieved again. Library entries will be kept.';
+    return '$name을(를) 지우나요? 캐시된 콘텐츠를 다시 검색할 수 있습니다. 라이브러리 항목은 유지됩니다.';
   }
 
   @override
-  String get settings_advanced_options => 'Advanced options';
+  String get settings_advanced_options => '고급 옵션';
 
   @override
-  String get settings_manga_reader => 'Manga Reader';
+  String get settings_manga_reader => '만화 리더';
 
   @override
-  String get settings_novel_reader => 'Novel Reader';
+  String get settings_novel_reader => '소설 리더';
 
   @override
-  String get settings_downloads => 'Download settings';
+  String get settings_downloads => '다운로드 설정';
 
   @override
-  String get onboarding_welcome => 'Welcome to';
+  String get onboarding_welcome => '에 오신 것을 환영합니다';
 
   @override
-  String get onboarding_reading_content => 'Reading content';
+  String get onboarding_reading_content => '콘텐츠 읽기';
 
   @override
-  String get onboarding_choose_one => 'Choose at least one';
+  String get onboarding_choose_one => '하나 이상 선택';
 
   @override
-  String get onboarding_restore_hint => 'Restore your library from a backup';
+  String get onboarding_restore_hint => '백업에서 라이브러리 복원';
 
   @override
-  String get onboarding_browse_hint => 'Find titles on supported websites';
+  String get onboarding_browse_hint => '지원되는 웹사이트에서 타이틀 찾기';
 
   @override
-  String get onboarding_import_folder => 'Import a local folder';
+  String get onboarding_import_folder => '로컬 폴더 가져오기';
 
   @override
-  String get onboarding_import_folder_hint =>
-      'Read manga, novels and anime on your device';
+  String get onboarding_import_folder_hint => '기기에서 만화, 소설, 애니메이션을 읽어보세요.';
 
   @override
-  String get onboarding_third_party => 'Add a third-party repository';
+  String get onboarding_third_party => '타사 저장소 추가';
 
   @override
-  String get onboarding_third_party_hint =>
-      'Use a repository address you already have';
+  String get onboarding_third_party_hint => '이미 가지고 있는 저장소 주소를 사용하세요';
 
   @override
-  String get onboarding_repository_hint =>
-      'Enter the address provided by the repository.';
+  String get onboarding_repository_hint => '저장소에서 제공한 주소를 입력하세요.';
 
   @override
-  String get onboarding_repository_address => 'Address';
+  String get onboarding_repository_address => '주소';
 
   @override
-  String get onboarding_repository_address_hint => 'Enter repository address';
+  String get onboarding_repository_address_hint => '저장소 주소를 입력하세요';
 
   @override
-  String get onboarding_add_repository => 'Add repository';
+  String get onboarding_add_repository => '저장소 추가';
 
   @override
-  String get onboarding_start => 'Get started';
+  String get onboarding_start => '시작하기';
 
   @override
-  String get onboarding_open_library => 'Open library';
+  String get onboarding_open_library => '오픈 라이브러리';
 
   @override
-  String get onboarding_view_imports => 'View imported content';
+  String get onboarding_view_imports => '가져온 콘텐츠 보기';
 
   @override
-  String get onboarding_view_folders => 'View folders';
+  String get onboarding_view_folders => '폴더 보기';
 
   @override
-  String get notice_backup_created => 'Backup created';
+  String get notice_backup_created => '백업이 생성되었습니다.';
 
   @override
-  String get notice_backup_ready => 'Save or share the backup file.';
+  String get notice_backup_ready => '백업 파일을 저장하거나 공유합니다.';
 
   @override
-  String get notice_backup_restored => 'Backup restored';
+  String get notice_backup_restored => '백업이 복원되었습니다.';
 
   @override
-  String get notice_backup_unsupported =>
-      'This backup format is not supported.';
+  String get notice_backup_unsupported => '이 백업 형식은 지원되지 않습니다.';
 
   @override
-  String get notice_verification_required => 'Website verification required';
+  String get notice_verification_required => '웹사이트 확인 필요';
 
   @override
-  String get notice_verification_hint =>
-      'Complete verification to continue browsing.';
+  String get notice_verification_hint => '탐색을 계속하려면 확인을 완료하세요.';
 
   @override
-  String get notice_verify => 'Verify website';
+  String get notice_verify => '웹사이트 확인';
 
   @override
   String get notice_action_incomplete =>
-      'The action did not finish. Check its result before trying again.';
+      '작업이 완료되지 않았습니다. 다시 시도하기 전에 결과를 확인하세요.';
 
   @override
-  String get notice_library_updating => 'Updating library';
+  String get notice_library_updating => '라이브러리 업데이트 중';
 
   @override
   String notice_library_progress(Object current, Object total) {
-    return 'Checked $current / $total titles';
+    return '$current / $total 제목을 확인했습니다.';
   }
 
   @override
-  String get notice_library_failed => 'Some titles could not be updated';
+  String get notice_library_failed => '일부 타이틀을 업데이트할 수 없습니다.';
 
   @override
-  String get notice_import_completed => 'Import completed';
+  String get notice_import_completed => '가져오기 완료';
 
   @override
-  String get notice_operation_incomplete => 'Action incomplete';
+  String get notice_operation_incomplete => '작업이 완료되지 않았습니다.';
 
   @override
-  String get subtitle_service => 'Online subtitle service';
+  String get subtitle_service => '온라인 자막 서비스';
 
   @override
-  String get subtitle_service_mode => 'Subtitle source';
+  String get subtitle_service_mode => '자막 소스';
 
   @override
-  String get subtitle_service_disabled => 'Off · clear saved credentials';
+  String get subtitle_service_disabled => '끄기 · 저장된 자격 증명 지우기';
 
   @override
-  String get subtitle_personal_key => 'My Wyzie key';
+  String get subtitle_personal_key => '내 Wyzie 키';
 
   @override
-  String get subtitle_custom_service => 'My subtitle service';
+  String get subtitle_custom_service => '나의 자막 서비스';
 
   @override
-  String get subtitle_key => 'Wyzie API Key';
+  String get subtitle_key => 'Wyzie API 키';
 
   @override
   String get subtitle_key_hint =>
-      'Enter your own Wyzie key. It stays on this device and is not included in app backups.';
+      '자신의 Wyzie 키를 입력하세요. 이 기기에 유지되며 앱 백업에는 포함되지 않습니다.';
 
   @override
-  String get subtitle_get_key => 'Get a personal key';
+  String get subtitle_get_key => '개인 키 받기';
 
   @override
-  String get subtitle_service_address => 'Subtitle search URL';
+  String get subtitle_service_address => '자막 검색 URL';
 
   @override
-  String get subtitle_service_token => 'Service access token (optional)';
+  String get subtitle_service_token => '서비스 액세스 토큰(선택 사항)';
 
   @override
   String get subtitle_custom_hint =>
-      'Use the full HTTPS search URL of a Wyzie-compatible service, including its path (for example, /search). Enter an access token only if your service requires one.';
+      '경로(예: /search)를 포함하여 Wyzie-compatible 서비스의 전체 HTTPS 검색 URL을 사용합니다. 서비스에 액세스 토큰이 필요한 경우에만 액세스 토큰을 입력하세요.';
 
   @override
   String get subtitle_service_off_hint =>
-      'Online subtitle search is off. Embedded, source-provided and local subtitles remain available.';
+      '온라인 자막 검색이 꺼져 있습니다. 포함된 소스 제공 및 로컬 자막은 계속 사용할 수 있습니다.';
 
   @override
-  String get subtitle_setup_required =>
-      'Choose a subtitle service before searching.';
+  String get subtitle_setup_required => '검색하기 전에 자막 서비스를 선택하세요.';
 
   @override
-  String get subtitle_invalid_key => 'Enter a key without spaces.';
+  String get subtitle_invalid_key => '공백 없이 키를 입력하세요.';
 
   @override
   String get subtitle_invalid_address =>
-      'Use a complete HTTPS URL without a query, fragment or embedded credentials.';
+      '쿼리, 조각 또는 내장된 자격 증명 없이 완전한 HTTPS URL을 사용합니다.';
 
   @override
-  String get subtitle_invalid_token =>
-      'The access token cannot contain spaces.';
+  String get subtitle_invalid_token => '액세스 토큰에는 공백이 포함될 수 없습니다.';
 
   @override
-  String get subtitle_storage_failed =>
-      'Could not read or save subtitle settings. Please try again.';
+  String get subtitle_storage_failed => '자막 설정을 읽거나 저장할 수 없습니다. 다시 시도해 주세요.';
 
   @override
-  String get subtitle_auth_failed =>
-      'The subtitle service refused access. Check your key or service token.';
+  String get subtitle_auth_failed => '자막 서비스 접근을 거부했습니다. 키 또는 서비스 토큰을 확인하세요.';
 
   @override
   String get subtitle_quota_exhausted =>
-      'The subtitle service quota is exhausted. Check your account with that service.';
+      '자막 서비스 할당량이 소진되었습니다. 해당 서비스로 계정을 확인하세요.';
 
   @override
-  String get subtitle_network_failed =>
-      'Could not reach the subtitle service. Please try again.';
+  String get subtitle_network_failed => '자막 서비스에 연결할 수 없습니다. 다시 시도해 주세요.';
 
   @override
-  String get subtitle_response_invalid =>
-      'The subtitle service returned an unsupported response or file.';
+  String get subtitle_response_invalid => '자막 서비스에서 지원되지 않는 응답 또는 파일을 반환했습니다.';
 
   @override
-  String get detail_loading_chapters => 'Loading chapters…';
+  String get detail_loading_chapters => '챕터 로드 중…';
 
   @override
-  String get reader_opening_chapter => 'Opening chapter';
+  String get reader_opening_chapter => '오프닝 장';
 
   @override
-  String get reader_open_chapter => 'Open chapter';
+  String get reader_open_chapter => '장 열기';
 
   @override
-  String get reader_loading_pages => 'Getting chapter images…';
+  String get reader_loading_pages => '장 이미지를 가져오는 중…';
 
   @override
-  String get reader_loading_pages_hint =>
-      'Reading will start automatically when ready.';
+  String get reader_loading_pages_hint => '읽기가 준비되면 자동으로 시작됩니다.';
 
   @override
-  String get reader_loading_failed => 'Could not load this chapter';
+  String get reader_loading_failed => '이 장을 로드할 수 없습니다.';
 
   @override
-  String get reader_loading_retry_hint =>
-      'Check your connection and try again.';
+  String get reader_loading_retry_hint => '연결을 확인하고 다시 시도하십시오.';
 
   @override
-  String get reader_no_pages => 'No images found for this chapter';
+  String get reader_no_pages => '이 장에 대한 이미지를 찾을 수 없습니다.';
 
   @override
-  String get reader_loading_previous => 'Loading previous chapter…';
+  String get reader_loading_previous => '이전 장을 로드하는 중…';
 
   @override
-  String get reader_previous_failed => 'Could not load the previous chapter';
+  String get reader_previous_failed => '이전 장을 로드할 수 없습니다.';
 
   @override
-  String get reader_reached_start => 'You have reached the first chapter';
+  String get reader_reached_start => '첫 번째 장에 도달했습니다';
 
   @override
-  String get reader_loading_next => 'Loading next chapter…';
+  String get reader_loading_next => '다음 장을 로드하는 중…';
 
   @override
-  String get reader_next_failed => 'Could not load the next chapter';
+  String get reader_next_failed => '다음 장을 로드할 수 없습니다.';
 
   @override
-  String get reader_image_loading => 'Loading image…';
+  String get reader_image_loading => '이미지 로드 중…';
 
   @override
-  String get reader_image_failure_hint => 'You can keep reading other pages.';
+  String get reader_image_failure_hint => '다른 페이지를 계속 읽을 수 있습니다.';
 
   @override
-  String get comic_paged => 'Page by page';
+  String get comic_paged => '페이지 단위로';
 
   @override
-  String get comic_scroll => 'Scroll down';
+  String get comic_scroll => '아래로 스크롤';
 
   @override
-  String get comic_book_scope =>
-      'Applies only to this book · changes save immediately';
+  String get comic_book_scope => '이 책에만 적용됩니다. 변경사항은 즉시 저장됩니다.';
 
   @override
-  String get comic_defaults_title => 'Defaults & habits';
+  String get comic_defaults_title => '기본값 및 습관';
 
   @override
-  String get comic_defaults_hint =>
-      'Defaults apply to fields you have not customized for a book.';
+  String get comic_defaults_hint => '기본값은 책에 대해 사용자 정의하지 않은 필드에 적용됩니다.';
 
   @override
-  String get comic_habits_hint => 'These habits apply to every comic.';
+  String get comic_habits_hint => '이러한 습관은 모든 만화에 적용됩니다.';
 
   @override
-  String get comic_turn => 'Swipe to the next page';
+  String get comic_turn => '다음 페이지로 스와이프하세요';
 
   @override
-  String get comic_left => 'Left';
+  String get comic_left => '왼쪽';
 
   @override
-  String get comic_right => 'Right';
+  String get comic_right => '오른쪽';
 
   @override
-  String get comic_up => 'Up';
+  String get comic_up => '위로';
 
   @override
-  String get comic_fit => 'Page fit';
+  String get comic_fit => '페이지 맞춤';
 
   @override
-  String get comic_fit_contain => 'Whole page';
+  String get comic_fit_contain => '전체 페이지';
 
   @override
-  String get comic_fit_width => 'Fit width';
+  String get comic_fit_width => '맞춤 폭';
 
   @override
-  String get comic_fit_height => 'Fit height';
+  String get comic_fit_height => '맞춤 높이';
 
   @override
-  String get comic_layout => 'Page layout';
+  String get comic_layout => '페이지 레이아웃';
 
   @override
-  String get comic_auto => 'Auto';
+  String get comic_auto => '자동';
 
   @override
-  String get comic_layout_hint =>
-      'Auto shows a spread when there is enough width.';
+  String get comic_layout_hint => '너비가 충분하면 자동으로 스프레드가 표시됩니다.';
 
   @override
-  String get comic_width => 'Content width';
+  String get comic_width => '컨텐츠 폭';
 
   @override
-  String get comic_full => 'Full';
+  String get comic_full => '전체';
 
   @override
-  String get comic_comfortable => 'Comfortable';
+  String get comic_comfortable => '편안함';
 
   @override
-  String get comic_narrow => 'Narrow';
+  String get comic_narrow => '좁은';
 
   @override
-  String get comic_gap => 'Page spacing';
+  String get comic_gap => '페이지 간격';
 
   @override
-  String get comic_no_gap => 'Seamless';
+  String get comic_no_gap => '원활한';
 
   @override
-  String get comic_small_gap => 'Small';
+  String get comic_small_gap => '소형';
 
   @override
-  String get comic_image_title => 'Fine-tune image';
+  String get comic_image_title => '이미지 미세 조정';
 
   @override
-  String get comic_image_hint => 'Crop and tone affect only this book.';
+  String get comic_image_hint => '자르기 및 톤은 이 책에만 영향을 미칩니다.';
 
   @override
-  String get comic_wide => 'Wide pages';
+  String get comic_wide => '와이드 페이지';
 
   @override
-  String get comic_intact => 'Keep whole';
+  String get comic_intact => '전체 유지';
 
   @override
-  String get comic_split => 'Split';
+  String get comic_split => '분할';
 
   @override
-  String get comic_rotate => 'Rotate';
+  String get comic_rotate => '회전';
 
   @override
-  String get comic_wide_hint =>
-      'Splitting follows the page-turn direction. Applies to single-page reading.';
+  String get comic_wide_hint => '분할은 페이지 넘기기 방향을 따릅니다. 단일 페이지 읽기에 적용됩니다.';
 
   @override
-  String get comic_cover => 'One cover per chapter';
+  String get comic_cover => '장당 표지 1개';
 
   @override
-  String get comic_effects_reset => 'Reset image adjustments';
+  String get comic_effects_reset => '이미지 조정 재설정';
 
   @override
-  String get comic_book_reset => 'Restore book defaults';
+  String get comic_book_reset => '책 기본값 복원';
 
   @override
-  String get comic_book_reset_hint =>
-      'Clears this book’s custom reading settings. Translation is unchanged.';
+  String get comic_book_reset_hint => '이 책의 사용자 정의 읽기 설정을 지웁니다. 번역은 변경되지 않습니다.';
 
   @override
-  String get comic_canvas => 'Reader background';
+  String get comic_canvas => '리더 배경';
 
   @override
-  String get comic_system => 'System';
+  String get comic_system => '시스템';
 
   @override
-  String get comic_black => 'Black';
+  String get comic_black => '블랙';
 
   @override
-  String get comic_gray => 'Gray';
+  String get comic_gray => '그레이';
 
   @override
-  String get comic_paper => 'Paper';
+  String get comic_paper => '종이';
 
   @override
-  String get comic_tap => 'Tap to turn pages';
+  String get comic_tap => '페이지를 넘기려면 탭하세요.';
 
   @override
-  String get comic_tap_hint =>
-      'Tap the edges to move; tap the center to show controls.';
+  String get comic_tap_hint => '가장자리를 탭하여 이동하세요. 컨트롤을 표시하려면 중앙을 탭하세요.';
 
   @override
-  String get comic_scroll_start => 'Start auto scroll';
+  String get comic_scroll_start => '자동 스크롤 시작';
 
   @override
-  String get comic_scroll_pause => 'Pause auto scroll';
+  String get comic_scroll_pause => '자동 스크롤 일시 중지';
 
   @override
-  String get comic_scroll_speed => 'Scroll speed';
+  String get comic_scroll_speed => '스크롤 속도';
 
   @override
-  String get comic_scroll_hint =>
-      'Starts when this panel closes. Pauses when the app leaves the foreground.';
+  String get comic_scroll_hint => '이 패널이 닫힐 때 시작됩니다. 앱이 포그라운드를 벗어나면 일시중지됩니다.';
 
   @override
-  String get comic_save_failed => 'Could not save. Please try again.';
+  String get comic_save_failed => '저장할 수 없습니다. 다시 시도해 주세요.';
 
   @override
-  String get comic_reading => 'Reading';
+  String get comic_reading => '읽기';
 
   @override
-  String get comic_chapter_habits_hint =>
-      'Chapter list habits apply to all books.';
+  String get comic_chapter_habits_hint => '장 목록 습관은 모든 책에 적용됩니다.';
+
+  @override
+  String get browser_title => '브라우저';
+
+  @override
+  String get translation_image_display => '이미지 디스플레이';
+
+  @override
+  String get translation_display_hint =>
+      '기존 번역을 먼저 표시합니다. 번역이 불가능한 경우 원본을 보관하세요.';
+
+  @override
+  String get translation_sign_in_required => '번역을 활성화하려면 로그인하세요.';
+
+  @override
+  String get translation_sign_in_hint => '로그인 후 번역된 이미지로 전환하면 자동으로 번역됩니다.';
+
+  @override
+  String get translation_automatic => '자동 번역';
+
+  @override
+  String get translation_original_hint => '원본을 표시합니다. 자동 번역하려면 번역된 이미지로 전환하세요.';
+
+  @override
+  String get translation_window_hint => '번역을 표시하는 동안에만 현재 및 향후 이미지를 처리합니다.';
+
+  @override
+  String get translation_channel => '번역 채널';
+
+  @override
+  String get translation_no_images => '이 페이지에는 아직 번역 가능한 이미지가 없습니다.';
+
+  @override
+  String get translation_waiting_image => '현재 이미지를 기다리는 중';
+
+  @override
+  String translation_progress(int complete, int total, int issues) {
+    String _temp0 = intl.Intl.pluralLogic(
+      issues,
+      locale: localeName,
+      other: ' · $issues 이미지에 주의가 필요합니다',
+      one: ' · 이미지 1개에 주의가 필요함',
+      zero: '',
+    );
+    return '완료됨 $complete / $total 이미지$_temp0';
+  }
+
+  @override
+  String get translation_image_actions_hint =>
+      '이미지를 길게 터치하면 다시 번역하는 등 더 많은 작업을 수행할 수 있습니다.';
+
+  @override
+  String get translation_title => '만화 번역';
+
+  @override
+  String get translation_system_sign_in => '시스템 브라우저를 사용하여 로그인';
+
+  @override
+  String get translation_target_language => '대상 언어';
+
+  @override
+  String get translation_clear_cache => '번역된 이미지 캐시 지우기';
+
+  @override
+  String get translation_cache_hint => '번역 기록을 보관하고 필요할 때 결과를 다시 검색하세요.';
+
+  @override
+  String get translation_saved_read_failed => '저장된 번역을 로드할 수 없습니다.';
+
+  @override
+  String get translation_read_failed => '번역된 이미지를 로드할 수 없습니다.';
+
+  @override
+  String get operation_retry => '작업이 완료되지 않았습니다. 다시 시도해 주세요.';
+
+  @override
+  String get translation_original => '원본';
+
+  @override
+  String get translation_translated => '번역됨';
+
+  @override
+  String get translation_regenerate_image => '이 이미지를 다시 번역하세요';
+
+  @override
+  String get translation_read_image => '번역된 이미지 다시 로드';
+
+  @override
+  String get translation_image_actions => '더 많은 이미지 작업';
+
+  @override
+  String get translation_processing => '처리';
+
+  @override
+  String get translation_reading => '번역된 이미지 로딩 중';
+
+  @override
+  String get translation_waiting => '번역 대기 중';
+
+  @override
+  String get translation_preparing => '번역 준비 중';
+
+  @override
+  String get translation_uploading => '원본 업로드 중';
+
+  @override
+  String get translation_running => '번역 중';
+
+  @override
+  String get translation_uncertain => '상태 확인 필요';
+
+  @override
+  String get translation_failed => '번역 실패';
+
+  @override
+  String get translation_verify => '확인';
+
+  @override
+  String get translation_reread => '재장전';
+
+  @override
+  String get browser_back => '돌아가기';
+
+  @override
+  String get browser_translation => '웹페이지 번역';
+
+  @override
+  String get browser_new_tab_action => '새 탭 열기';
+
+  @override
+  String get browser_current_tab => '현재의';
+
+  @override
+  String get browser_close_tab => '탭 닫기';
+
+  @override
+  String get browser_new_tab => '새 탭';
+
+  @override
+  String get browser_page => '웹페이지';
+
+  @override
+  String get browser_unopened => '아직 페이지가 열리지 않았습니다';
+
+  @override
+  String get browser_address_hint => 'URL을(를) 입력하거나 붙여넣으세요.';
+
+  @override
+  String get browser_invalid_address => '유효한 URL을(를) 입력하세요';
+
+  @override
+  String get browser_clear_address => '클리어 URL';
+
+  @override
+  String get browser_paste_address => '붙여넣기 URL';
+
+  @override
+  String get browser_open_address => '열기 URL';
+
+  @override
+  String browser_tab_count(int count) {
+    return '탭 · $count';
+  }
+
+  @override
+  String get browser_load_failed => '이 페이지를 열 수 없습니다';
+
+  @override
+  String get browser_load_failed_hint => '연결과 URL을 확인하세요.';
+
+  @override
+  String get browser_edit_address => '편집 URL';
+
+  @override
+  String get browser_clear_cookies_confirm => '모든 웹사이트의 로그인 세션을 삭제하시겠습니까?';
+
+  @override
+  String get browser_clear_cookies_hint => '모든 탭의 웹사이트에서는 다시 로그인해야 할 수도 있습니다.';
+
+  @override
+  String get browser_clear_cookies_action => '로그인 세션 지우기';
+
+  @override
+  String get browser_tab_limit => '최대 12개의 탭을 열어 둘 수 있습니다. 먼저 하나를 닫으세요.';
+
+  @override
+  String get browser_forward => '앞으로';
+
+  @override
+  String get browser_clear_all_cookies => '모든 웹사이트 로그인 세션 지우기';
+
+  @override
+  String get browser_clear_failed => '세션을 지울 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get browser_save_failed => '탭을 저장할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get browser_tabs_full => '12개의 탭이 이미 열려 있습니다.';
+
+  @override
+  String get browser_no_tabs => '아직 열린 탭이 없습니다';
+
+  @override
+  String get browser_close_failed => '탭을 저장할 수 없습니다. 다시 시도하려면 닫기를 탭하세요.';
+
+  @override
+  String get source_pinned_websites => '고정된 웹사이트';
+
+  @override
+  String get manage => '관리';
+
+  @override
+  String get translation_settings_hint => '자동 번역, 대상 언어 및 채널';
+
+  @override
+  String get translation_show_original => '원본을 보려면 탭하세요.';
+
+  @override
+  String get translation_show_translated => '번역을 보려면 탭하세요.';
+
+  @override
+  String get source_display => '디스플레이';
+
+  @override
+  String get source_cover_title => '표지 및 제목';
+
+  @override
+  String get source_cover_only => '커버만';
+
+  @override
+  String get source_save_search => '현재 검색 저장';
+
+  @override
+  String get source_saved_searches => '저장된 검색어';
+
+  @override
+  String get source_website_info => '웹사이트 정보';
+
+  @override
+  String source_saved_search_title(String title) {
+    return '$title · 검색하려면 탭하세요.';
+  }
+
+  @override
+  String get action_done => '완료';
+
+  @override
+  String source_search_keyword(String query) {
+    return '키워드: $query';
+  }
+
+  @override
+  String get source_no_saved_searches => '아직 저장된 검색이 없습니다.';
+
+  @override
+  String get source_save_search_hint => '키워드를 검색한 다음 웹사이트 작업에서 저장합니다.';
+
+  @override
+  String get source_saved_search_scope => '키워드는 이 웹사이트에만 저장됩니다.';
+
+  @override
+  String get source_search_here => '이 웹사이트에서 제목 검색';
+
+  @override
+  String get source_filter_results => '필터링된 결과';
+
+  @override
+  String get source_search_results => '검색결과';
+
+  @override
+  String get source_return_popular => '인기로 돌아 가기';
+
+  @override
+  String get source_popular_titles => '인기 타이틀';
+
+  @override
+  String get source_no_titles => '일치하는 제목을 찾을 수 없습니다.';
+
+  @override
+  String get source_no_titles_hint => '키워드나 필터를 변경하거나 인기 있는 제목으로 돌아가세요.';
+
+  @override
+  String get source_load_more_failed => '더 이상 로드할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get source_load_pull_retry => '이 웹사이트를 로드할 수 없습니다. 아래로 당겨 다시 시도하세요.';
+
+  @override
+  String get source_clear_failed => '지우기를 완료할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get source_uninstall_failed => '제거를 완료할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get source_details => '소스 세부정보';
+
+  @override
+  String get source_repository_website => '저장소 웹사이트';
+
+  @override
+  String get source_provided_settings => '소스에서 제공하는 설정';
+
+  @override
+  String get source_advanced_actions => '고급 동작';
+
+  @override
+  String get source_edit_metadata => '소스 정보 편집';
+
+  @override
+  String get source_clear_cookies => '이 웹사이트의 쿠키 지우기';
+
+  @override
+  String get source_clear_cookies_hint => '다음 방문 시 다시 로그인해야 할 수도 있습니다.';
+
+  @override
+  String get source_uninstall => '제거 소스';
+
+  @override
+  String get source_settings_save_failed =>
+      '저장이 완료되지 않았습니다. 소스 설정을 다시 열어 확인하세요.';
+
+  @override
+  String get repository_third_party => '타사 저장소';
+
+  @override
+  String get repository_refresh_failed =>
+      '카탈로그를 새로 고칠 수 없습니다. 캐시된 콘텐츠는 유지됩니다. 다시 시도해 주세요.';
+
+  @override
+  String get repository_show_sources => '이 저장소의 소스 표시';
+
+  @override
+  String get repository_copy_catalog => '카탈로그 링크 복사';
+
+  @override
+  String get repository_remove => '저장소 제거';
+
+  @override
+  String get repository_remove_hint => '설치된 소스를 유지하고 제거된 카탈로그 항목을 제거합니다.';
+
+  @override
+  String get repository_empty => '아직 추가된 타사 저장소가 없습니다.';
+
+  @override
+  String get repository_built_in => '내장 공식 카탈로그';
+
+  @override
+  String get repository_hidden => '숨겨진';
+
+  @override
+  String get repository_refreshing => '상쾌…';
+
+  @override
+  String get repository_refresh => '카탈로그 새로 고침';
+
+  @override
+  String get repository_manage_hint => '타사 소스가 다운로드되는 위치를 관리합니다.';
+
+  @override
+  String get repository_invalid_address => '유효한 HTTP 또는 HTTPS URL을 입력하세요.';
+
+  @override
+  String get repository_already_added => '이 저장소는 이미 추가되었습니다.';
+
+  @override
+  String get repository_unrecognized => '지원되는 카탈로그가 없습니다. 링크를 확인하고 다시 시도하세요.';
+
+  @override
+  String get repository_read_failed => '카탈로그를 읽을 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get repository_save_failed => '저장이 완료되지 않았습니다. 저장소 목록을 확인하세요.';
+
+  @override
+  String get repository_paste_hint => '타사 저장소 카탈로그 링크 붙여넣기';
+
+  @override
+  String get repository_address => '저장소 URL';
+
+  @override
+  String get repository_paste_link => '링크 붙여넣기';
+
+  @override
+  String repository_recognized(String type) {
+    return '$type · 카탈로그 인식';
+  }
+
+  @override
+  String get repository_choose_sources_hint => '저장소를 추가한 후 필요한 소스를 선택하세요.';
+
+  @override
+  String get search_scope => '검색 범위';
+
+  @override
+  String get search_scope_hint => '검색할 웹사이트를 선택하세요';
+
+  @override
+  String search_websites_action(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 웹사이트 검색',
+      one: '1 웹사이트 검색',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_find_website => '웹사이트 찾기';
+
+  @override
+  String search_selected_websites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 웹사이트가 선택됨',
+      one: '웹사이트 1개 선택됨',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get action_clear => '클리어';
+
+  @override
+  String get search_deselect_results => '일치하는 웹사이트 선택 취소';
+
+  @override
+  String get search_select_results => '일치하는 웹사이트 선택';
+
+  @override
+  String get search_no_websites_hint => '일치하는 웹사이트가 없습니다. 다른 이름이나 언어를 사용해 보세요.';
+
+  @override
+  String get search_select_website_hint => '검색할 웹사이트를 하나 이상 선택하세요.';
+
+  @override
+  String get search_start_title => '제목을 찾으려면 키워드를 입력하세요';
+
+  @override
+  String get search_start_hint => '여러 웹사이트를 한 번에 검색하고 일치하는 제목을 표시합니다.';
+
+  @override
+  String get search_empty_scope => '이 범위에는 검색 가능한 웹사이트가 없습니다.';
+
+  @override
+  String get search_empty_scope_hint => '모든 웹사이트로 전환하거나 검색할 웹사이트를 선택하세요.';
+
+  @override
+  String search_result_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 결과',
+      one: '결과 1개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_titles => '제목 검색';
+
+  @override
+  String get search_actions => '검색 작업';
+
+  @override
+  String get search_details => '상세 검색';
+
+  @override
+  String get search_title_hint => '제목으로 검색';
+
+  @override
+  String get search_searching => '검색 중';
+
+  @override
+  String search_found_results(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 결과를 찾았습니다.',
+      one: '검색 결과 1개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_no_results => '일치하는 결과가 없습니다';
+
+  @override
+  String get search_failed => '검색 실패';
+
+  @override
+  String search_found_titles(int count, int websites) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 제목을 찾았습니다.',
+      one: '제목 1개 찾음',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      websites,
+      locale: localeName,
+      other: '$websites 웹사이트',
+      one: '1 웹사이트',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get search_finding_titles => '제목 찾기';
+
+  @override
+  String get search_complete => '검색 완료';
+
+  @override
+  String get search_in_progress => '검색 중';
+
+  @override
+  String get search_finding_related => '일치하는 제목을 찾는 중…';
+
+  @override
+  String get search_no_results_yet => '아직 검색결과가 없습니다';
+
+  @override
+  String get search_no_matching_titles => '일치하는 제목을 찾을 수 없습니다.';
+
+  @override
+  String get search_results_appear_hint => '결과는 발견된 대로 여기에 표시됩니다.';
+
+  @override
+  String get search_failed_websites_hint =>
+      '일부 웹사이트 검색을 완료할 수 없습니다. 검색 세부정보에서 다시 시도해 보세요.';
+
+  @override
+  String get search_change_keywords_hint =>
+      '더 짧은 키워드를 사용하거나 더 많은 웹사이트를 검색해 보세요.';
+
+  @override
+  String get search_view_details => '검색 세부정보 보기';
+
+  @override
+  String get search_adjust_scope => '검색 범위 조정';
+
+  @override
+  String search_query_websites(String query, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 웹사이트',
+      one: '1 웹사이트',
+    );
+    return '$query · $_temp0';
+  }
+
+  @override
+  String search_completed_count(int completed, int total) {
+    return '완료됨 $completed / $total';
+  }
+
+  @override
+  String get search_retry_website_hint => '실패한 웹사이트를 개별적으로 다시 시도';
+
+  @override
+  String source_selected_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 항목 선택됨',
+      one: '1개 선택됨',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_languages => '검색 언어';
+
+  @override
+  String get source_deselect => '선택 취소';
+
+  @override
+  String get source_select => '소스 선택';
+
+  @override
+  String get source_multilingual => '다국어';
+
+  @override
+  String get source_language_unknown => '언어가 지정되지 않았습니다.';
+
+  @override
+  String get source_adult_content => '18개 이상의 콘텐츠 포함';
+
+  @override
+  String get source_classification_unknown => '분류가 지정되지 않았습니다.';
+
+  @override
+  String source_more_classifications(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '모든 소스 정보 보기, $count개 더 많은 카테고리',
+      one: '모든 소스 정보 보기, 카테고리 1개 더보기',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get source_loading_website => '웹사이트 로딩 중';
+
+  @override
+  String get source_unpin => '고정 해제';
+
+  @override
+  String get source_pin => '핀';
+
+  @override
+  String get source_open => '오픈';
+
+  @override
+  String get source_metadata_hint =>
+      '정보는 소스 카탈로그에서 제공됩니다. 카테고리는 웹사이트에서 다루는 콘텐츠를 설명합니다.';
+
+  @override
+  String get source_region => '지역';
+
+  @override
+  String get source_format => '형식';
+
+  @override
+  String get source_creation => '생성';
+
+  @override
+  String get source_unspecified => '지정되지 않음';
+
+  @override
+  String get source_pricing => '가격';
+
+  @override
+  String get source_region_jp => '일본 만화';
+
+  @override
+  String get source_region_kr => '한국 만화';
+
+  @override
+  String get source_region_cn => '중국 만화';
+
+  @override
+  String get source_region_hk_tw => '홍콩 및 대만 만화';
+
+  @override
+  String get source_region_western => '서부 만화';
+
+  @override
+  String get source_region_other => '기타 지역';
+
+  @override
+  String get source_format_page => '페이징 만화';
+
+  @override
+  String get source_format_vertical => '세로형 만화';
+
+  @override
+  String get source_format_strip => '연재 만화';
+
+  @override
+  String get source_creation_original => '원본';
+
+  @override
+  String get source_creation_fan => '팬 작동';
+
+  @override
+  String get source_free_watch => '무료 시청';
+
+  @override
+  String get source_free_read => '무료 읽기';
+
+  @override
+  String get source_partial_paid => '부분 지급';
+
+  @override
+  String get source_paid_watch => '유료 시청';
+
+  @override
+  String get source_paid_read => '유료 독서';
+
+  @override
+  String get source_pricing_unknown => '가격이 지정되지 않았습니다.';
+
+  @override
+  String get source_language_filter => '언어별로 필터링';
+
+  @override
+  String get source_language_filter_hint =>
+      '이 카탈로그만 필터링하세요. 설치된 소스는 영향을 받지 않습니다.';
+
+  @override
+  String get source_all_languages => '모든 언어';
+
+  @override
+  String get action_apply => '적용';
+
+  @override
+  String get source_load_retry => '이 웹사이트를 로드할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get source_catalog_refresh_failed =>
+      '카탈로그를 새로 고칠 수 없습니다. 현재 콘텐츠가 유지됩니다. 아래로 당겨 다시 시도하세요.';
+
+  @override
+  String source_uninstall_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 소스를 제거하시겠습니까?',
+      one: '소스 1개를 제거하시겠습니까?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get source_uninstall_selected_hint =>
+      '선택한 소스를 제거하고 해당 설정을 지웁니다. 라이브러리 제목과 다운로드를 유지하세요.';
+
+  @override
+  String source_failed_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 소스에 대한 작업이 실패했습니다.',
+      one: '1개 소스에 대한 작업이 실패했습니다.',
+    );
+    return '$_temp0 선택이 유지되었습니다. 다시 시도해 주세요.';
+  }
+
+  @override
+  String get source_latest_content => '최신 콘텐츠';
+
+  @override
+  String get source_actions => '소스 작업';
+
+  @override
+  String get source_bulk_manage => '여러 소스 관리';
+
+  @override
+  String get source_update_installed => '설치된 소스 업데이트';
+
+  @override
+  String get source_no_matching_websites => '일치하는 웹사이트가 없습니다.';
+
+  @override
+  String get source_no_websites => '사용 가능한 웹사이트가 없습니다';
+
+  @override
+  String get source_search_installed_hint => '설치된 소스에서 제목 검색';
+
+  @override
+  String get source_global_search => '소스 간 검색';
+
+  @override
+  String get source_manage_repositories => '리포지토리 관리';
+
+  @override
+  String get source_view_third_party => '타사 소스 보기';
+
+  @override
+  String get source_catalog_load_failed => '카탈로그를 로드할 수 없습니다. 아래로 당겨 다시 시도하세요.';
+
+  @override
+  String get source_all_websites => '모든 웹사이트';
+
+  @override
+  String get source_available => '설치 가능';
+
+  @override
+  String get source_third_party => '타사';
+
+  @override
+  String get source_name_or_title => '웹사이트 이름 또는 제목';
+
+  @override
+  String get view_all => '모두 보기';
+
+  @override
+  String get search_searching_ellipsis => '검색 중…';
+
+  @override
+  String onboarding_untested_content(String type) {
+    return '$type · 테스트되지 않음';
+  }
+
+  @override
+  String get onboarding_untested => '테스트되지 않음';
+
+  @override
+  String get source_custom_scope => '커스텀';
+
+  @override
+  String get source_custom_websites => '선정된 웹사이트';
+
+  @override
+  String get tv_hidden_library_hint =>
+      '모든 타이틀은 숨겨진 카테고리에 있습니다.\n하나를 숨기기 해제하려면 \"모두\"를 길게 누르세요.';
+
+  @override
+  String get tv_no_matching_anime => '일치하는 애니메이션이 없습니다.';
+
+  @override
+  String tv_no_matching_category(String category) {
+    return '“$category”에 일치하는 애니메이션이 없습니다.';
+  }
+
+  @override
+  String get tv_filtered_empty_hint =>
+      '현재 필터와 일치하는 애니메이션이 없습니다.\n검색 옆 버튼으로 변경하세요.';
+
+  @override
+  String get tv_new_episodes => '새 에피소드';
+
+  @override
+  String get tv_recently_added => '최근 추가됨';
+
+  @override
+  String get tv_empty_category_hint =>
+      '이 카테고리에는 아직 애니메이션이 없습니다.\n제목의 세부 정보 페이지에서 제목을 추가합니다.';
+
+  @override
+  String get tv_empty_library => '애니메이션 라이브러리가 비어 있습니다';
+
+  @override
+  String get tv_empty_library_hint => '찾아보기에서 애니메이션을 추가하여 집을 채우세요';
+
+  @override
+  String get tv_browse_anime => '애니메이션 찾아보기';
+
+  @override
+  String tv_new_count(int count) {
+    return '$count 신규';
+  }
+
+  @override
+  String tv_category_hidden(String category) {
+    return '\"$category\" 숨김 · 숨기기를 해제하려면 \"모두\"를 길게 누르세요.';
+  }
+
+  @override
+  String get tv_no_hidden_categories => '숨겨진 카테고리가 없습니다.';
+
+  @override
+  String get import_torrent_file => '가져오기 .torrent 파일';
+
+  @override
+  String get import_video_formats => '.mp4, .mkv, .avi 등';
+
+  @override
+  String get cloudflare_proxy_optional => '옵션 FlareSolverr / Byparr URL';
+
+  @override
+  String get tv_home_layout_hint =>
+      '평면 그리드 대신 행 기반 애니메이션 홈(계속 · 새 에피소드 · 카테고리)';
+
+  @override
+  String get tv_hide_libraries_hint => '만화 및 소설 라이브러리 숨기기(TV에서는 기본적으로 켜져 있음)';
+
+  @override
+  String get anime_only_hint => '앱 전체에서 만화와 소설을 숨깁니다. 모든 것을 표시하려면 끄세요.';
+
+  @override
+  String get audio_auto_safe => '자동 안전';
+
+  @override
+  String get tv_player_hint => '켜짐: 전용 TV 플레이어.  꺼짐: 원본(데스크탑) 플레이어.';
+
+  @override
+  String get release_open_failed => '릴리스를 열 수 없습니다.';
+
+  @override
+  String get tv_replay => '재생';
+
+  @override
+  String get tv_no_episodes => '아직 에피소드가 없습니다';
+
+  @override
+  String get tracker_continue_series => '시리즈 계속 시청하기';
+
+  @override
+  String get tracker_watchlist_series => '관심 목록 시리즈';
+
+  @override
+  String get tracker_continue_movies => '영화 계속 감상';
+
+  @override
+  String get tracker_watchlist_movies => '관심 목록 영화';
+
+  @override
+  String get tracker_trending_series => '트렌드 시리즈';
+
+  @override
+  String get tracker_trending_movies => '인기 영화';
+
+  @override
+  String get tracker_popular_series => '인기 시리즈';
+
+  @override
+  String get tracker_popular_movies => '인기 영화';
+
+  @override
+  String get tracker_top_series => '상위 시리즈(전체)';
+
+  @override
+  String get tracker_top_movies => '인기 영화(전체)';
+
+  @override
+  String get tracker_airing_series => '방송 시리즈';
+
+  @override
+  String get tracker_airing_anime => '방영 애니메이션';
+
+  @override
+  String get tracker_popular_anime => '인기 애니메이션';
+
+  @override
+  String get tracker_upcoming_anime => '다가오는 애니메이션';
+
+  @override
+  String get tracker_popular_manga => '인기 만화';
+
+  @override
+  String get tracker_top_manga => '인기 만화';
+
+  @override
+  String get tracker_top_manhwa => '맨 위로 만화';
+
+  @override
+  String get tracker_top_manhua => '탑 Manhua';
+
+  @override
+  String get tracker_latest_anime => '최신 애니메이션';
+
+  @override
+  String get tracker_best_anime => '최고 평점 애니메이션';
+
+  @override
+  String get tracker_latest_manga => '최신 만화';
+
+  @override
+  String get tracker_best_manga => '최고 평점 만화';
+
+  @override
+  String get tracker_trending_anime => '인기 애니메이션';
+
+  @override
+  String get tracker_upcoming_manga => '다가오는 만화';
+
+  @override
+  String get tracker_trending_manga => '인기 만화';
+
+  @override
+  String selection_progress(int selected, int total) {
+    return '$selected/$total 선택됨';
+  }
+
+  @override
+  String get source_code_editor => '코드 편집기';
+
+  @override
+  String get source_code_execute => '실행';
+
+  @override
+  String get source_console_logs => '콘솔 로그';
+
+  @override
+  String get source_no_logs => '아직 로그가 없습니다';
+
+  @override
+  String get source_updated_successfully => '소스가 성공적으로 업데이트되었습니다.';
+
+  @override
+  String get source_obsolete => '더 이상 사용되지 않음';
+
+  @override
+  String player_seek_forward_seconds(int seconds) {
+    return '$seconds초 앞으로 탐색';
+  }
+
+  @override
+  String player_seek_backward_seconds(int seconds) {
+    return '뒤로 탐색 $seconds초';
+  }
+
+  @override
+  String get player_autoplay_on => '다음 에피소드 자동 재생: 켜짐';
+
+  @override
+  String get player_autoplay_off => '다음 에피소드 자동 재생: 꺼짐';
+
+  @override
+  String get player_no_other_quality => '다른 품질 없음';
+
+  @override
+  String get player_no_subtitles => '자막 없음';
+
+  @override
+  String get player_no_audio_tracks => '오디오 트랙 없음';
+
+  @override
+  String get player_seek_forward => '앞으로 탐색';
+
+  @override
+  String get player_seek_backward => '뒤로 탐색';
+
+  @override
+  String player_seconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds초',
+      one: '1초',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get subtitle_preview => 'Lorem ipsum dolor sit amet';
+
+  @override
+  String get subtitle_style => '스타일';
+
+  @override
+  String get translation_official_channel => 'NodeLane 공식';
+
+  @override
+  String get translation_auth_required => '먼저 번역 계정에 로그인하세요.';
+
+  @override
+  String get translation_source_changed => '원본 이미지가 변경되었습니다. 새로고침해 주세요.';
+
+  @override
+  String get translation_source_missing => '원본 이미지는 현재 사용할 수 없습니다.';
+
+  @override
+  String get translation_resource_limit => '이 이미지는 장치 처리 제한을 초과합니다. 원본은 보관됩니다.';
+
+  @override
+  String get translation_storage_full => '번역 저장공간이 가득 찼습니다. 번역된 이미지를 먼저 삭제하세요.';
+
+  @override
+  String get translation_invalid_image => '이미지 형식 또는 콘텐츠가 잘못되었습니다.';
+
+  @override
+  String get translation_unsupported_image =>
+      '이 이미지는 번역이 지원되지 않습니다. 원본은 보관됩니다.';
+
+  @override
+  String get translation_invalid_result => '번역된 이미지 유효성 검사에 실패했습니다. 새로고침해 주세요.';
+
+  @override
+  String get translation_result_unavailable =>
+      '번역된 이미지를 사용할 수 없습니다. 새로고침해 주세요.';
+
+  @override
+  String get translation_result_expired => '번역된 이미지가 만료되었습니다. 다시 번역해주세요.';
+
+  @override
+  String get translation_analysis_too_large =>
+      '분석할 이미지 콘텐츠가 너무 많습니다. 이미지 크기를 줄이고 다시 시도해 보세요.';
+
+  @override
+  String get translation_region_limit =>
+      '이미지에 텍스트 영역이 너무 많습니다. 분할하고 다시 시도해 보세요.';
+
+  @override
+  String get translation_text_limit => '텍스트 영역이 너무 깁니다. 이미지를 조정하고 다시 시도해 보세요.';
+
+  @override
+  String get translation_unavailable => '이 번역은 더 이상 사용할 수 없습니다.';
+
+  @override
+  String get translation_outcome_unknown => '결과 확인이 필요합니다. 다시 제출되지 않았습니다.';
+
+  @override
+  String get translation_rate_limited => '요청이 제한되어 있습니다. 번역이 자동으로 재개됩니다.';
+
+  @override
+  String get translation_quota_exhausted => '번역 할당량이 부족합니다.';
+
+  @override
+  String get translation_unsupported_language => '서비스는 이 대상 언어를 지원하지 않습니다.';
+
+  @override
+  String get translation_upgrade_required => '번역 프로토콜이 호환되지 않습니다. 앱을 업데이트하세요.';
+
+  @override
+  String get translation_remote_failed =>
+      '이 페이지의 번역에 실패했습니다. 수동으로 다시 시도할 수 있습니다.';
+
+  @override
+  String get translation_bridge_invalid => '웹페이지가 변경되었습니다. 번역을 다시 활성화하세요.';
+
+  @override
+  String get translation_connection_failed => '연결에 실패했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get translation_paused => '번역이 일시 중지되었습니다. 진행상황을 확인할 수 있습니다.';
+
+  @override
+  String get translation_preparing_ellipsis => '번역 준비 중…';
+
+  @override
+  String get translation_checking_original => '원본 이미지 확인 중…';
+
+  @override
+  String get translation_submitting => '제출 중…';
+
+  @override
+  String get translation_uploading_ellipsis => '원본 업로드 중…';
+
+  @override
+  String get translation_waiting_ellipsis => '번역을 기다리는 중…';
+
+  @override
+  String get translation_running_ellipsis => '번역하는 중…';
+
+  @override
+  String get translation_verify_result => '결과 확인 필요';
+
+  @override
+  String get translation_partial => '일부 내용이 번역되었습니다';
+
+  @override
+  String get translation_ready => '번역된 이미지 준비 완료';
+
+  @override
+  String get list_separator => ', ';
+
+  @override
+  String get player_play => '플레이';
+
+  @override
+  String get player_quality => '품질';
+
+  @override
+  String get player_subtitles => '자막';
+
+  @override
+  String get player_audio => '오디오';
+
+  @override
+  String get player_statistics => '괴짜를 위한 통계';
+
+  @override
+  String get player_auto => '자동';
+
+  @override
+  String get source_information => '소스 정보';
+
+  @override
+  String get source_code_page => '페이지';
+
+  @override
+  String get source_code_query => '쿼리';
+
+  @override
+  String get repository_invalid_source => '잘못된 소스 - 제거';
+
+  @override
+  String get player_fit_contain => '포함';
+
+  @override
+  String get player_fit_cover => '커버';
+
+  @override
+  String get player_fit_fill => '채우기';
+
+  @override
+  String get player_fit_height => '높이';
+
+  @override
+  String get player_fit_width => '폭';
+
+  @override
+  String get player_fit_scale => '스케일';
+
+  @override
+  String get player_fit_none => '없음';
+
+  @override
+  String get player_shader_clear => '끄기(셰이더 지우기)';
+
+  @override
+  String get player_shader_luma => '루마 업스케일링';
+
+  @override
+  String get player_decoder_auto => '자동(하드웨어)';
+
+  @override
+  String get player_decoder_software => '소프트웨어(하드웨어 없음)';
+
+  @override
+  String get player_stats_toggle => '오버레이 전환';
+
+  @override
+  String get player_stats_general => '일반';
+
+  @override
+  String get player_stats_frames => '프레임 타이밍';
+
+  @override
+  String get player_stats_cache => '입력 캐시';
+
+  @override
+  String get player_stats_filters => '능동 필터';
+
+  @override
+  String get player_stats_log => '로그';
+
+  @override
+  String get source_mark_pinned => '핀';
+
+  @override
+  String translation_image_action(String action) {
+    return '$action 이 이미지';
+  }
+
+  @override
+  String get memory_waiting => '메모리: 샘플을 기다리는 중';
+
+  @override
+  String memory_rss(String current, String peak) {
+    return 'RSS $current 피크 $peak';
+  }
+
+  @override
+  String memory_cache(String current, String limit, String peak) {
+    return '캐시 $current / $limit 피크 $peak';
+  }
+
+  @override
+  String memory_items(int count, int limit, int live, int peak) {
+    return '항목 $count / $limit 라이브 $live 피크 $peak';
+  }
+
+  @override
+  String memory_full_samples(String percent, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 샘플',
+      one: '샘플 1개',
+    );
+    return '전체 $_temp0 중 $percent%';
+  }
+
+  @override
+  String get memory_reset_hint => '설정에서 껐다가 켜서 재설정하세요.';
+
+  @override
+  String get action_hide => '숨기기';
+
+  @override
+  String discord_get_app(String app) {
+    return '$app 받기';
+  }
+
+  @override
+  String get discord_idle => '유휴 상태';
+
+  @override
+  String discord_watching_title(String title) {
+    return '$title 시청 중';
+  }
+
+  @override
+  String discord_reading_title(String title) {
+    return '읽는 중 $title';
+  }
 }

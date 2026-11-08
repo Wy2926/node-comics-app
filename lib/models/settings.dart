@@ -1411,16 +1411,19 @@ class FilterScanlator {
 class L10nLocale {
   String? languageCode;
   String? countryCode;
-  L10nLocale({this.languageCode, this.countryCode});
+  String? scriptCode;
+  L10nLocale({this.languageCode, this.countryCode, this.scriptCode});
 
   L10nLocale.fromJson(Map<String, dynamic> json) {
     countryCode = json['countryCode'];
     languageCode = json['languageCode'];
+    scriptCode = json['scriptCode'];
   }
 
   Map<String, dynamic> toJson() => {
     'countryCode': countryCode,
     'languageCode': languageCode,
+    'scriptCode': scriptCode,
   };
 }
 

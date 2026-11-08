@@ -1,4 +1,5 @@
 import 'package:mangayomi/services/app_update_manifest.dart';
+
 import 'dart:async';
 
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -617,7 +618,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         icon: const Icon(Icons.tab_outlined),
         label: Padding(
           padding: const EdgeInsets.only(top: 5),
-          child: const Text('浏览器'),
+          child: Text(context.l10n.browser_title),
         ),
       );
     }
@@ -741,7 +742,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       destinations[dest.indexOf("/browser")] = NavigationDestination(
         selectedIcon: const Icon(Icons.tab),
         icon: const Icon(Icons.tab_outlined),
-        label: '浏览器',
+        label: context.l10n.browser_title,
       );
     }
     if (dest.contains("/browse")) {

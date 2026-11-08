@@ -60,9 +60,7 @@ class BrowseSScreen extends ConsumerWidget {
             if (isTv)
               SwitchListTile(
                 title: Text(context.l10n.anime_only_beta),
-                subtitle: const Text(
-                  'Hide manga & novel across the app. Turn off to show everything.',
-                ),
+                subtitle: Text(context.l10n.anime_only_hint),
                 value: animeOnly,
                 onChanged: (v) =>
                     ref.read(animeOnlyTvModeProvider.notifier).set(v),

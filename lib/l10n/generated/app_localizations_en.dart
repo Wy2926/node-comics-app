@@ -5033,4 +5033,1334 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get comic_chapter_habits_hint =>
       'Chapter list habits apply to all books.';
+
+  @override
+  String get browser_title => 'Browser';
+
+  @override
+  String get translation_image_display => 'Image display';
+
+  @override
+  String get translation_display_hint =>
+      'Show existing translations first. Keep the original when no translation is available.';
+
+  @override
+  String get translation_sign_in_required => 'Sign in to enable translation';
+
+  @override
+  String get translation_sign_in_hint =>
+      'After signing in, switch to translated images to translate automatically.';
+
+  @override
+  String get translation_automatic => 'Automatic translation';
+
+  @override
+  String get translation_original_hint =>
+      'Showing originals. Switch to translated images to translate automatically.';
+
+  @override
+  String get translation_window_hint =>
+      'Process current and upcoming images only while showing translations.';
+
+  @override
+  String get translation_channel => 'Translation channel';
+
+  @override
+  String get translation_no_images =>
+      'No translatable images found on this page yet';
+
+  @override
+  String get translation_waiting_image => 'Waiting for the current image';
+
+  @override
+  String translation_progress(int complete, int total, int issues) {
+    String _temp0 = intl.Intl.pluralLogic(
+      issues,
+      locale: localeName,
+      other: ' · $issues images need attention',
+      one: ' · 1 image needs attention',
+      zero: '',
+    );
+    return 'Completed $complete / $total images$_temp0';
+  }
+
+  @override
+  String get translation_image_actions_hint =>
+      'Touch and hold an image for more actions, including translating it again.';
+
+  @override
+  String get translation_title => 'Manga translation';
+
+  @override
+  String get translation_system_sign_in => 'Sign in using your system browser';
+
+  @override
+  String get translation_target_language => 'Target language';
+
+  @override
+  String get translation_clear_cache => 'Clear translated image cache';
+
+  @override
+  String get translation_cache_hint =>
+      'Keep translation records and retrieve results again when needed.';
+
+  @override
+  String get translation_saved_read_failed =>
+      'Could not load the saved translation';
+
+  @override
+  String get translation_read_failed => 'Could not load the translated image';
+
+  @override
+  String get operation_retry => 'The action did not finish. Please try again.';
+
+  @override
+  String get translation_original => 'Original';
+
+  @override
+  String get translation_translated => 'Translated';
+
+  @override
+  String get translation_regenerate_image => 'Translate this image again';
+
+  @override
+  String get translation_read_image => 'Reload translated image';
+
+  @override
+  String get translation_image_actions => 'More image actions';
+
+  @override
+  String get translation_processing => 'Processing';
+
+  @override
+  String get translation_reading => 'Loading translated image';
+
+  @override
+  String get translation_waiting => 'Waiting for translation';
+
+  @override
+  String get translation_preparing => 'Preparing translation';
+
+  @override
+  String get translation_uploading => 'Uploading original';
+
+  @override
+  String get translation_running => 'Translating';
+
+  @override
+  String get translation_uncertain => 'Status needs verification';
+
+  @override
+  String get translation_failed => 'Translation failed';
+
+  @override
+  String get translation_verify => 'Verify';
+
+  @override
+  String get translation_reread => 'Reload';
+
+  @override
+  String get browser_back => 'Back';
+
+  @override
+  String get browser_translation => 'Web page translation';
+
+  @override
+  String get browser_new_tab_action => 'Open new tab';
+
+  @override
+  String get browser_current_tab => 'Current';
+
+  @override
+  String get browser_close_tab => 'Close tab';
+
+  @override
+  String get browser_new_tab => 'New tab';
+
+  @override
+  String get browser_page => 'Web page';
+
+  @override
+  String get browser_unopened => 'No page opened yet';
+
+  @override
+  String get browser_address_hint => 'Enter or paste a URL';
+
+  @override
+  String get browser_invalid_address => 'Enter a valid URL';
+
+  @override
+  String get browser_clear_address => 'Clear URL';
+
+  @override
+  String get browser_paste_address => 'Paste URL';
+
+  @override
+  String get browser_open_address => 'Open URL';
+
+  @override
+  String browser_tab_count(int count) {
+    return 'Tabs · $count';
+  }
+
+  @override
+  String get browser_load_failed => 'Could not open this page';
+
+  @override
+  String get browser_load_failed_hint => 'Check your connection and the URL.';
+
+  @override
+  String get browser_edit_address => 'Edit URL';
+
+  @override
+  String get browser_clear_cookies_confirm =>
+      'Clear sign-in sessions for all websites?';
+
+  @override
+  String get browser_clear_cookies_hint =>
+      'Websites in all tabs may require you to sign in again.';
+
+  @override
+  String get browser_clear_cookies_action => 'Clear sign-in sessions';
+
+  @override
+  String get browser_tab_limit =>
+      'You can keep up to 12 tabs open. Close one first.';
+
+  @override
+  String get browser_forward => 'Forward';
+
+  @override
+  String get browser_clear_all_cookies => 'Clear all website sign-in sessions';
+
+  @override
+  String get browser_clear_failed =>
+      'Could not clear sessions. Please try again.';
+
+  @override
+  String get browser_save_failed => 'Could not save tabs. Please try again.';
+
+  @override
+  String get browser_tabs_full => '12 tabs are already open';
+
+  @override
+  String get browser_no_tabs => 'No open tabs yet';
+
+  @override
+  String get browser_close_failed =>
+      'Could not save tabs. Tap close again to retry.';
+
+  @override
+  String get source_pinned_websites => 'Pinned websites';
+
+  @override
+  String get manage => 'Manage';
+
+  @override
+  String get translation_settings_hint =>
+      'Automatic translation, target language and channel';
+
+  @override
+  String get translation_show_original => 'Tap to show the original';
+
+  @override
+  String get translation_show_translated => 'Tap to show the translation';
+
+  @override
+  String get source_display => 'Display';
+
+  @override
+  String get source_cover_title => 'Cover and title';
+
+  @override
+  String get source_cover_only => 'Cover only';
+
+  @override
+  String get source_save_search => 'Save current search';
+
+  @override
+  String get source_saved_searches => 'Saved searches';
+
+  @override
+  String get source_website_info => 'Website information';
+
+  @override
+  String source_saved_search_title(String title) {
+    return '$title · Tap to search';
+  }
+
+  @override
+  String get action_done => 'Done';
+
+  @override
+  String source_search_keyword(String query) {
+    return 'Keyword: $query';
+  }
+
+  @override
+  String get source_no_saved_searches => 'No saved searches yet';
+
+  @override
+  String get source_save_search_hint =>
+      'Search for a keyword, then save it from the website actions.';
+
+  @override
+  String get source_saved_search_scope =>
+      'Keywords are saved for this website only.';
+
+  @override
+  String get source_search_here => 'Search titles on this website';
+
+  @override
+  String get source_filter_results => 'Filtered results';
+
+  @override
+  String get source_search_results => 'Search results';
+
+  @override
+  String get source_return_popular => 'Back to popular';
+
+  @override
+  String get source_popular_titles => 'Popular titles';
+
+  @override
+  String get source_no_titles => 'No matching titles found';
+
+  @override
+  String get source_no_titles_hint =>
+      'Change your keywords or filters, or return to popular titles.';
+
+  @override
+  String get source_load_more_failed =>
+      'Could not load more. Please try again.';
+
+  @override
+  String get source_load_pull_retry =>
+      'Could not load this website. Pull down to retry.';
+
+  @override
+  String get source_clear_failed =>
+      'Could not finish clearing. Please try again.';
+
+  @override
+  String get source_uninstall_failed =>
+      'Could not finish uninstalling. Please try again.';
+
+  @override
+  String get source_details => 'Source details';
+
+  @override
+  String get source_repository_website => 'Repository website';
+
+  @override
+  String get source_provided_settings => 'Settings provided by the source';
+
+  @override
+  String get source_advanced_actions => 'Advanced actions';
+
+  @override
+  String get source_edit_metadata => 'Edit source information';
+
+  @override
+  String get source_clear_cookies => 'Clear cookies for this website';
+
+  @override
+  String get source_clear_cookies_hint =>
+      'You may need to sign in again on your next visit.';
+
+  @override
+  String get source_uninstall => 'Uninstall source';
+
+  @override
+  String get source_settings_save_failed =>
+      'Saving did not finish. Reopen source settings to check.';
+
+  @override
+  String get repository_third_party => 'Third-party repositories';
+
+  @override
+  String get repository_refresh_failed =>
+      'Could not refresh the catalog. Cached content is kept. Please try again.';
+
+  @override
+  String get repository_show_sources => 'Show sources from this repository';
+
+  @override
+  String get repository_copy_catalog => 'Copy catalog link';
+
+  @override
+  String get repository_remove => 'Remove repository';
+
+  @override
+  String get repository_remove_hint =>
+      'Keep installed sources and remove uninstalled catalog entries.';
+
+  @override
+  String get repository_empty => 'No third-party repositories added yet';
+
+  @override
+  String get repository_built_in => 'Built-in official catalog';
+
+  @override
+  String get repository_hidden => 'Hidden';
+
+  @override
+  String get repository_refreshing => 'Refreshing…';
+
+  @override
+  String get repository_refresh => 'Refresh catalog';
+
+  @override
+  String get repository_manage_hint =>
+      'Manage where third-party sources are downloaded from.';
+
+  @override
+  String get repository_invalid_address => 'Enter a valid HTTP or HTTPS URL';
+
+  @override
+  String get repository_already_added =>
+      'This repository has already been added';
+
+  @override
+  String get repository_unrecognized =>
+      'No supported catalog found. Check the link and try again.';
+
+  @override
+  String get repository_read_failed =>
+      'Could not read the catalog. Please try again.';
+
+  @override
+  String get repository_save_failed =>
+      'Saving did not finish. Check your repository list.';
+
+  @override
+  String get repository_paste_hint =>
+      'Paste a third-party repository catalog link';
+
+  @override
+  String get repository_address => 'Repository URL';
+
+  @override
+  String get repository_paste_link => 'Paste link';
+
+  @override
+  String repository_recognized(String type) {
+    return '$type · Catalog recognized';
+  }
+
+  @override
+  String get repository_choose_sources_hint =>
+      'After adding the repository, choose the sources you need.';
+
+  @override
+  String get search_scope => 'Search scope';
+
+  @override
+  String get search_scope_hint => 'Choose the websites to search';
+
+  @override
+  String search_websites_action(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Search $count websites',
+      one: 'Search 1 website',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_find_website => 'Find a website';
+
+  @override
+  String search_selected_websites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count websites selected',
+      one: '1 website selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get action_clear => 'Clear';
+
+  @override
+  String get search_deselect_results => 'Deselect matching websites';
+
+  @override
+  String get search_select_results => 'Select matching websites';
+
+  @override
+  String get search_no_websites_hint =>
+      'No matching websites. Try another name or language.';
+
+  @override
+  String get search_select_website_hint =>
+      'Select at least one website to search.';
+
+  @override
+  String get search_start_title => 'Enter keywords to find titles';
+
+  @override
+  String get search_start_hint =>
+      'Search multiple websites at once and show matching titles.';
+
+  @override
+  String get search_empty_scope => 'No searchable websites in this scope';
+
+  @override
+  String get search_empty_scope_hint =>
+      'Switch to all websites or choose websites to search.';
+
+  @override
+  String search_result_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_titles => 'Search titles';
+
+  @override
+  String get search_actions => 'Search actions';
+
+  @override
+  String get search_details => 'Search details';
+
+  @override
+  String get search_title_hint => 'Search by title';
+
+  @override
+  String get search_searching => 'Searching';
+
+  @override
+  String search_found_results(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Found $count results',
+      one: 'Found 1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_no_results => 'No matching results';
+
+  @override
+  String get search_failed => 'Search failed';
+
+  @override
+  String search_found_titles(int count, int websites) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count titles found',
+      one: '1 title found',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      websites,
+      locale: localeName,
+      other: '$websites websites',
+      one: '1 website',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get search_finding_titles => 'Finding titles';
+
+  @override
+  String get search_complete => 'Search complete';
+
+  @override
+  String get search_in_progress => 'Searching';
+
+  @override
+  String get search_finding_related => 'Looking for matching titles…';
+
+  @override
+  String get search_no_results_yet => 'No search results yet';
+
+  @override
+  String get search_no_matching_titles => 'No matching titles found';
+
+  @override
+  String get search_results_appear_hint =>
+      'Results will appear here as they are found.';
+
+  @override
+  String get search_failed_websites_hint =>
+      'Some websites could not finish searching. Retry them in search details.';
+
+  @override
+  String get search_change_keywords_hint =>
+      'Try shorter keywords or search more websites.';
+
+  @override
+  String get search_view_details => 'View search details';
+
+  @override
+  String get search_adjust_scope => 'Adjust search scope';
+
+  @override
+  String search_query_websites(String query, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count websites',
+      one: '1 website',
+    );
+    return '$query · $_temp0';
+  }
+
+  @override
+  String search_completed_count(int completed, int total) {
+    return 'Completed $completed / $total';
+  }
+
+  @override
+  String get search_retry_website_hint => 'Retry failed websites individually';
+
+  @override
+  String source_selected_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items selected',
+      one: '1 item selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get search_languages => 'Search languages';
+
+  @override
+  String get source_deselect => 'Deselect';
+
+  @override
+  String get source_select => 'Select source';
+
+  @override
+  String get source_multilingual => 'Multilingual';
+
+  @override
+  String get source_language_unknown => 'Language not specified';
+
+  @override
+  String get source_adult_content => 'Contains 18+ content';
+
+  @override
+  String get source_classification_unknown => 'Classification not specified';
+
+  @override
+  String source_more_classifications(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'View all source information, $count more categories',
+      one: 'View all source information, 1 more category',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get source_loading_website => 'Loading website';
+
+  @override
+  String get source_unpin => 'Unpin';
+
+  @override
+  String get source_pin => 'Pin';
+
+  @override
+  String get source_open => 'Open';
+
+  @override
+  String get source_metadata_hint =>
+      'Information comes from the source catalog. Categories describe the content covered by the website.';
+
+  @override
+  String get source_region => 'Region';
+
+  @override
+  String get source_format => 'Format';
+
+  @override
+  String get source_creation => 'Creation';
+
+  @override
+  String get source_unspecified => 'Not specified';
+
+  @override
+  String get source_pricing => 'Pricing';
+
+  @override
+  String get source_region_jp => 'Japanese comics';
+
+  @override
+  String get source_region_kr => 'Korean comics';
+
+  @override
+  String get source_region_cn => 'Chinese comics';
+
+  @override
+  String get source_region_hk_tw => 'Hong Kong and Taiwan comics';
+
+  @override
+  String get source_region_western => 'Western comics';
+
+  @override
+  String get source_region_other => 'Other regions';
+
+  @override
+  String get source_format_page => 'Paged comics';
+
+  @override
+  String get source_format_vertical => 'Vertical comics';
+
+  @override
+  String get source_format_strip => 'Comic strips';
+
+  @override
+  String get source_creation_original => 'Original';
+
+  @override
+  String get source_creation_fan => 'Fan works';
+
+  @override
+  String get source_free_watch => 'Free to watch';
+
+  @override
+  String get source_free_read => 'Free to read';
+
+  @override
+  String get source_partial_paid => 'Partially paid';
+
+  @override
+  String get source_paid_watch => 'Paid viewing';
+
+  @override
+  String get source_paid_read => 'Paid reading';
+
+  @override
+  String get source_pricing_unknown => 'Pricing not specified';
+
+  @override
+  String get source_language_filter => 'Filter by language';
+
+  @override
+  String get source_language_filter_hint =>
+      'Filter this catalog only. Installed sources are unaffected.';
+
+  @override
+  String get source_all_languages => 'All languages';
+
+  @override
+  String get action_apply => 'Apply';
+
+  @override
+  String get source_load_retry =>
+      'Could not load this website. Please try again.';
+
+  @override
+  String get source_catalog_refresh_failed =>
+      'Could not refresh the catalog. Current content is kept. Pull down to retry.';
+
+  @override
+  String source_uninstall_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Uninstall $count sources?',
+      one: 'Uninstall 1 source?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get source_uninstall_selected_hint =>
+      'Uninstall the selected sources and clear their settings. Keep library titles and downloads.';
+
+  @override
+  String source_failed_count(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Actions failed for $count sources.',
+      one: 'Action failed for 1 source.',
+    );
+    return '$_temp0 Selection kept. Please try again.';
+  }
+
+  @override
+  String get source_latest_content => 'Latest content';
+
+  @override
+  String get source_actions => 'Source actions';
+
+  @override
+  String get source_bulk_manage => 'Manage multiple sources';
+
+  @override
+  String get source_update_installed => 'Update installed sources';
+
+  @override
+  String get source_no_matching_websites => 'No matching websites';
+
+  @override
+  String get source_no_websites => 'No websites available';
+
+  @override
+  String get source_search_installed_hint =>
+      'Search titles in installed sources';
+
+  @override
+  String get source_global_search => 'Search across sources';
+
+  @override
+  String get source_manage_repositories => 'Manage repositories';
+
+  @override
+  String get source_view_third_party => 'View third-party sources';
+
+  @override
+  String get source_catalog_load_failed =>
+      'Could not load the catalog. Pull down to retry.';
+
+  @override
+  String get source_all_websites => 'All websites';
+
+  @override
+  String get source_available => 'Available to install';
+
+  @override
+  String get source_third_party => 'Third-party';
+
+  @override
+  String get source_name_or_title => 'Website name or title';
+
+  @override
+  String get view_all => 'View all';
+
+  @override
+  String get search_searching_ellipsis => 'Searching…';
+
+  @override
+  String onboarding_untested_content(String type) {
+    return '$type · Untested';
+  }
+
+  @override
+  String get onboarding_untested => 'Untested';
+
+  @override
+  String get source_custom_scope => 'Custom';
+
+  @override
+  String get source_custom_websites => 'Selected websites';
+
+  @override
+  String get tv_hidden_library_hint =>
+      'Every title sits in a hidden category.\nHold OK on “All” to unhide one.';
+
+  @override
+  String get tv_no_matching_anime => 'No matching anime';
+
+  @override
+  String tv_no_matching_category(String category) {
+    return 'No matching anime in “$category”';
+  }
+
+  @override
+  String get tv_filtered_empty_hint =>
+      'No anime matches the current filters.\nChange them from the button beside search.';
+
+  @override
+  String get tv_new_episodes => 'New Episodes';
+
+  @override
+  String get tv_recently_added => 'Recently Added';
+
+  @override
+  String get tv_empty_category_hint =>
+      'No anime in this category yet.\nAdd titles to it from a title’s detail page.';
+
+  @override
+  String get tv_empty_library => 'Your anime library is empty';
+
+  @override
+  String get tv_empty_library_hint => 'Add anime from Browse to fill your home';
+
+  @override
+  String get tv_browse_anime => 'Browse anime';
+
+  @override
+  String tv_new_count(int count) {
+    return '$count new';
+  }
+
+  @override
+  String tv_category_hidden(String category) {
+    return 'Hid “$category” · hold OK on “All” to unhide';
+  }
+
+  @override
+  String get tv_no_hidden_categories => 'No hidden categories';
+
+  @override
+  String get import_torrent_file => 'import .torrent file';
+
+  @override
+  String get import_video_formats => '.mp4, .mkv, .avi, and more';
+
+  @override
+  String get cloudflare_proxy_optional => 'Optional FlareSolverr / Byparr URL';
+
+  @override
+  String get tv_home_layout_hint =>
+      'Rows-based anime home (Continue · New Episodes · categories) instead of the flat grid';
+
+  @override
+  String get tv_hide_libraries_hint =>
+      'Hide the manga & novel libraries (on by default on TV)';
+
+  @override
+  String get anime_only_hint =>
+      'Hide manga & novel across the app. Turn off to show everything.';
+
+  @override
+  String get audio_auto_safe => 'Auto-safe';
+
+  @override
+  String get tv_player_hint =>
+      'On: dedicated TV player.  Off: original (desktop) player.';
+
+  @override
+  String get release_open_failed => 'Unable to open release';
+
+  @override
+  String get tv_replay => 'Replay';
+
+  @override
+  String get tv_no_episodes => 'No episodes yet';
+
+  @override
+  String get tracker_continue_series => 'Continue watching series';
+
+  @override
+  String get tracker_watchlist_series => 'Watchlist series';
+
+  @override
+  String get tracker_continue_movies => 'Continue watching movies';
+
+  @override
+  String get tracker_watchlist_movies => 'Watchlist movies';
+
+  @override
+  String get tracker_trending_series => 'Trending Series';
+
+  @override
+  String get tracker_trending_movies => 'Trending Movies';
+
+  @override
+  String get tracker_popular_series => 'Popular Series';
+
+  @override
+  String get tracker_popular_movies => 'Popular Movies';
+
+  @override
+  String get tracker_top_series => 'Top Series (All Time)';
+
+  @override
+  String get tracker_top_movies => 'Top Movies (All Time)';
+
+  @override
+  String get tracker_airing_series => 'Airing Series';
+
+  @override
+  String get tracker_airing_anime => 'Airing Anime';
+
+  @override
+  String get tracker_popular_anime => 'Popular Anime';
+
+  @override
+  String get tracker_upcoming_anime => 'Upcoming Anime';
+
+  @override
+  String get tracker_popular_manga => 'Popular Manga';
+
+  @override
+  String get tracker_top_manga => 'Top Manga';
+
+  @override
+  String get tracker_top_manhwa => 'Top Manhwa';
+
+  @override
+  String get tracker_top_manhua => 'Top Manhua';
+
+  @override
+  String get tracker_latest_anime => 'Latest Anime';
+
+  @override
+  String get tracker_best_anime => 'Best Rated Anime';
+
+  @override
+  String get tracker_latest_manga => 'Latest Manga';
+
+  @override
+  String get tracker_best_manga => 'Best Rated Manga';
+
+  @override
+  String get tracker_trending_anime => 'Trending Anime';
+
+  @override
+  String get tracker_upcoming_manga => 'Upcoming Manga';
+
+  @override
+  String get tracker_trending_manga => 'Trending Manga';
+
+  @override
+  String selection_progress(int selected, int total) {
+    return '$selected/$total selected';
+  }
+
+  @override
+  String get source_code_editor => 'Code Editor';
+
+  @override
+  String get source_code_execute => 'Execute';
+
+  @override
+  String get source_console_logs => 'Console Logs';
+
+  @override
+  String get source_no_logs => 'No logs yet';
+
+  @override
+  String get source_updated_successfully => 'Source updated successfully';
+
+  @override
+  String get source_obsolete => 'OBSOLETE';
+
+  @override
+  String player_seek_forward_seconds(int seconds) {
+    return 'Seek forward $seconds seconds';
+  }
+
+  @override
+  String player_seek_backward_seconds(int seconds) {
+    return 'Seek backward $seconds seconds';
+  }
+
+  @override
+  String get player_autoplay_on => 'Autoplay next episode: on';
+
+  @override
+  String get player_autoplay_off => 'Autoplay next episode: off';
+
+  @override
+  String get player_no_other_quality => 'No other quality';
+
+  @override
+  String get player_no_subtitles => 'No subtitles';
+
+  @override
+  String get player_no_audio_tracks => 'No audio tracks';
+
+  @override
+  String get player_seek_forward => 'Seek forward';
+
+  @override
+  String get player_seek_backward => 'Seek backward';
+
+  @override
+  String player_seconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds seconds',
+      one: '1 second',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get subtitle_preview => 'Lorem ipsum dolor sit amet';
+
+  @override
+  String get subtitle_style => 'Style';
+
+  @override
+  String get translation_official_channel => 'NodeLane Official';
+
+  @override
+  String get translation_auth_required =>
+      'Sign in to your translation account first.';
+
+  @override
+  String get translation_source_changed =>
+      'The original image changed. Please reload it.';
+
+  @override
+  String get translation_source_missing =>
+      'The original image is currently unavailable.';
+
+  @override
+  String get translation_resource_limit =>
+      'This image exceeds the device processing limit. The original is kept.';
+
+  @override
+  String get translation_storage_full =>
+      'Translation storage is full. Clear translated images first.';
+
+  @override
+  String get translation_invalid_image => 'Invalid image format or content.';
+
+  @override
+  String get translation_unsupported_image =>
+      'Translation is not supported for this image. The original is kept.';
+
+  @override
+  String get translation_invalid_result =>
+      'Translated image validation failed. Please reload it.';
+
+  @override
+  String get translation_result_unavailable =>
+      'The translated image is unavailable. Please reload it.';
+
+  @override
+  String get translation_result_expired =>
+      'The translated image expired. Please translate it again.';
+
+  @override
+  String get translation_analysis_too_large =>
+      'There is too much image content to analyze. Reduce the image size and try again.';
+
+  @override
+  String get translation_region_limit =>
+      'The image has too many text regions. Split it and try again.';
+
+  @override
+  String get translation_text_limit =>
+      'A text region is too long. Adjust the image and try again.';
+
+  @override
+  String get translation_unavailable =>
+      'This translation is no longer available.';
+
+  @override
+  String get translation_outcome_unknown =>
+      'The result needs verification. It has not been resubmitted.';
+
+  @override
+  String get translation_rate_limited =>
+      'Requests are limited. Translation will resume automatically.';
+
+  @override
+  String get translation_quota_exhausted => 'Insufficient translation quota.';
+
+  @override
+  String get translation_unsupported_language =>
+      'The service does not support this target language.';
+
+  @override
+  String get translation_upgrade_required =>
+      'The translation protocol is incompatible. Update the app.';
+
+  @override
+  String get translation_remote_failed =>
+      'Translation failed for this page. You can retry manually.';
+
+  @override
+  String get translation_bridge_invalid =>
+      'The web page changed. Enable translation again.';
+
+  @override
+  String get translation_connection_failed =>
+      'Connection failed. Please try again.';
+
+  @override
+  String get translation_paused =>
+      'Translation paused. You can verify its progress.';
+
+  @override
+  String get translation_preparing_ellipsis => 'Preparing translation…';
+
+  @override
+  String get translation_checking_original => 'Checking original image…';
+
+  @override
+  String get translation_submitting => 'Submitting…';
+
+  @override
+  String get translation_uploading_ellipsis => 'Uploading original…';
+
+  @override
+  String get translation_waiting_ellipsis => 'Waiting for translation…';
+
+  @override
+  String get translation_running_ellipsis => 'Translating…';
+
+  @override
+  String get translation_verify_result => 'Result needs verification';
+
+  @override
+  String get translation_partial => 'Some content has been translated';
+
+  @override
+  String get translation_ready => 'Translated image ready';
+
+  @override
+  String get list_separator => ', ';
+
+  @override
+  String get player_play => 'Play';
+
+  @override
+  String get player_quality => 'Quality';
+
+  @override
+  String get player_subtitles => 'Subtitles';
+
+  @override
+  String get player_audio => 'Audio';
+
+  @override
+  String get player_statistics => 'Stats for nerds';
+
+  @override
+  String get player_auto => 'Auto';
+
+  @override
+  String get source_information => 'Source information';
+
+  @override
+  String get source_code_page => 'Page';
+
+  @override
+  String get source_code_query => 'Query';
+
+  @override
+  String get repository_invalid_source => 'Invalid source - remove it';
+
+  @override
+  String get player_fit_contain => 'Contain';
+
+  @override
+  String get player_fit_cover => 'Cover';
+
+  @override
+  String get player_fit_fill => 'Fill';
+
+  @override
+  String get player_fit_height => 'Height';
+
+  @override
+  String get player_fit_width => 'Width';
+
+  @override
+  String get player_fit_scale => 'Scale';
+
+  @override
+  String get player_fit_none => 'None';
+
+  @override
+  String get player_shader_clear => 'Off (clear shaders)';
+
+  @override
+  String get player_shader_luma => 'Luma Upscaling';
+
+  @override
+  String get player_decoder_auto => 'Auto (hardware)';
+
+  @override
+  String get player_decoder_software => 'Software (no hardware)';
+
+  @override
+  String get player_stats_toggle => 'Toggle overlay';
+
+  @override
+  String get player_stats_general => 'General';
+
+  @override
+  String get player_stats_frames => 'Frame timings';
+
+  @override
+  String get player_stats_cache => 'Input cache';
+
+  @override
+  String get player_stats_filters => 'Active filters';
+
+  @override
+  String get player_stats_log => 'Log';
+
+  @override
+  String get source_mark_pinned => 'Pin';
+
+  @override
+  String translation_image_action(String action) {
+    return '$action this image';
+  }
+
+  @override
+  String get memory_waiting => 'memory: waiting for a sample';
+
+  @override
+  String memory_rss(String current, String peak) {
+    return 'RSS   $current   peak $peak';
+  }
+
+  @override
+  String memory_cache(String current, String limit, String peak) {
+    return 'cache $current / $limit   peak $peak';
+  }
+
+  @override
+  String memory_items(int count, int limit, int live, int peak) {
+    return 'items $count / $limit   live $live   peak $peak';
+  }
+
+  @override
+  String memory_full_samples(String percent, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count samples',
+      one: '1 sample',
+    );
+    return 'full  $percent% of $_temp0';
+  }
+
+  @override
+  String get memory_reset_hint => 'toggle it off and on in settings to reset';
+
+  @override
+  String get action_hide => 'Hide';
+
+  @override
+  String discord_get_app(String app) {
+    return 'Get $app';
+  }
+
+  @override
+  String get discord_idle => 'Idle';
+
+  @override
+  String discord_watching_title(String title) {
+    return 'Watching $title';
+  }
+
+  @override
+  String discord_reading_title(String title) {
+    return 'Reading $title';
+  }
 }

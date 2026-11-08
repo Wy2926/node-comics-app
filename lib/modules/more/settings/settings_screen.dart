@@ -24,7 +24,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             if (isMobile)
               ListTileWidget(
-                title: '漫画翻译',
+                title: context.l10n.translation_title,
                 icon: Icons.translate,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(

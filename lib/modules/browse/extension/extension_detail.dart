@@ -91,7 +91,10 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
       }
     } catch (_) {
       if (mounted) {
-        showNodeLaneNotice('清理未完成，请重试。', kind: NodeLaneNoticeKind.error);
+        showNodeLaneNotice(
+          context.l10n.source_clear_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -115,7 +118,10 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
-        showNodeLaneNotice('卸载未完成，请重试。', kind: NodeLaneNoticeKind.error);
+        showNodeLaneNotice(
+          context.l10n.source_uninstall_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -126,7 +132,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     final icons = NodeLaneIcons.of(context);
     final developerMode = ref.watch(developerModeStateProvider);
     return MobileBrowsePage(
-      title: '来源详情',
+      title: context.l10n.source_details,
       leading: NodeLaneIconButton(
         tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         onPressed: () => Navigator.pop(context, source),
@@ -149,13 +155,13 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
           if (source.repo?.website?.isNotEmpty == true) ...[
             const SizedBox(height: NodeLaneTokens.space24),
             NodeLaneRow.card(
-              title: '仓库网站',
+              title: context.l10n.source_repository_website,
               icon: icons.external,
               onTap: () => _launchInBrowser(Uri.parse(source.repo!.website!)),
             ),
           ],
           if (sourcePreference?.isNotEmpty == true) ...[
-            const NodeLaneCatalogHeading('来源提供的设置'),
+            NodeLaneCatalogHeading(context.l10n.source_provided_settings),
             SourcePreferenceWidget(
               sourcePreference: sourcePreference!,
               source: source,
@@ -163,7 +169,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
           ],
           const SizedBox(height: NodeLaneTokens.space24),
           NodeLaneDisclosure(
-            title: '高级操作',
+            title: context.l10n.source_advanced_actions,
             icon: icons.extensions,
             child: Column(
               children: [
@@ -175,18 +181,18 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                   ),
                 if (developerMode && source.isLocal == true)
                   NodeLaneRow(
-                    title: '编辑来源信息',
+                    title: context.l10n.source_edit_metadata,
                     icon: icons.edit,
                     onTap: _editMetadata,
                   ),
                 NodeLaneRow(
-                  title: '清除此网站 Cookie',
-                  subtitle: '下次访问可能需要重新登录',
+                  title: context.l10n.source_clear_cookies,
+                  subtitle: context.l10n.source_clear_cookies_hint,
                   icon: icons.cookies,
                   onTap: _busy ? null : _clearCookies,
                 ),
                 NodeLaneRow(
-                  title: '卸载来源',
+                  title: context.l10n.source_uninstall,
                   icon: icons.delete,
                   destructive: true,
                   onTap: _busy ? null : _confirmUninstall,
@@ -386,7 +392,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
-                            "Edit metadata",
+                            context.l10n.source_edit_metadata,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

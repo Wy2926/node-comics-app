@@ -19,9 +19,13 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/webview/browser_url.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-String repositoryName(Repo repo) => repo.name?.isNotEmpty == true
+String repositoryName(BuildContext context, Repo repo) =>
+    repo.jsonUrl == nodeLaneCatalogUrl
+    ? context.l10n.translation_official_channel
+    : repo.name?.isNotEmpty == true
     ? repo.name!
-    : Uri.tryParse(repo.jsonUrl ?? '')?.host ?? '第三方仓库';
+    : Uri.tryParse(repo.jsonUrl ?? '')?.host ??
+          context.l10n.repository_third_party;
 
 String repositoryKey(String value) {
   final uri = Uri.tryParse(value.trim());
@@ -80,7 +84,7 @@ class _MobileRepositoryManagerState
       await refreshed;
     } catch (_) {
       if (mounted) {
-        setState(() => refreshError = '目录刷新失败，已保留缓存，可重试。');
+        setState(() => refreshError = context.l10n.repository_refresh_failed);
       }
     } finally {
       if (mounted) setState(() => refreshing = false);
@@ -102,7 +106,7 @@ class _MobileRepositoryManagerState
             repo;
         final icons = NodeLaneIcons.of(sheetContext);
         return NodeLaneCatalogSheet(
-          title: repositoryName(current),
+          title: repositoryName(context, current),
           subtitle: current.jsonUrl,
           heightFactor: .58,
           child: ListView(
@@ -111,7 +115,7 @@ class _MobileRepositoryManagerState
               if (!builtIn)
                 NodeLaneGroupSurface(
                   child: NodeLaneSwitchRow(
-                    title: '显示此仓库的来源',
+                    title: context.l10n.repository_show_sources,
                     value: current.hidden != true,
                     onChanged: (value) => sheetRef
                         .read(
@@ -122,7 +126,7 @@ class _MobileRepositoryManagerState
                 ),
               const SizedBox(height: 12),
               NodeLaneRow.card(
-                title: '复制目录链接',
+                title: context.l10n.repository_copy_catalog,
                 leading: Icon(icons.webLink),
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: current.jsonUrl ?? ''));
@@ -132,7 +136,7 @@ class _MobileRepositoryManagerState
               if (isBrowserUrl(current.website)) ...[
                 const SizedBox(height: 12),
                 NodeLaneRow.card(
-                  title: '仓库网站',
+                  title: context.l10n.source_repository_website,
                   leading: Icon(icons.web),
                   onTap: () => launchUrl(
                     Uri.parse(current.website!),
@@ -143,23 +147,23 @@ class _MobileRepositoryManagerState
               const SizedBox(height: 12),
               if (!builtIn)
                 NodeLaneRow.card(
-                  title: '移除仓库',
+                  title: context.l10n.repository_remove,
                   leading: Icon(icons.delete),
                   onTap: () async {
                     final yes = await showDialog<bool>(
                       context: sheetContext,
                       builder: (dialogContext) => NodeLaneAlertDialog(
-                        title: const Text('移除仓库'),
-                        content: const Text('保留已安装的来源，移除尚未安装的目录条目。'),
+                        title: Text(context.l10n.repository_remove),
+                        content: Text(context.l10n.repository_remove_hint),
                         actions: [
                           NodeLaneDialogAction(
-                            label: '取消',
+                            label: context.l10n.cancel,
                             secondary: true,
                             onPressed: () =>
                                 Navigator.pop(dialogContext, false),
                           ),
                           NodeLaneDialogAction(
-                            label: '移除',
+                            label: context.l10n.remove,
                             destructive: true,
                             onPressed: () => Navigator.pop(dialogContext, true),
                           ),
@@ -214,15 +218,18 @@ class _MobileRepositoryManagerState
         if (repos.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text('还没有添加第三方仓库', style: t.readerSecondary),
+            child: Text(
+              context.l10n.repository_empty,
+              style: t.readerSecondary,
+            ),
           ),
         for (var i = 0; i < repos.length; i++)
           NodeLaneRow.card(
-            title: repositoryName(repos[i]),
+            title: repositoryName(context, repos[i]),
             subtitle: [
-              if (builtIn && i == 0) '内置官方目录',
+              if (builtIn && i == 0) context.l10n.repository_built_in,
               Uri.tryParse(repos[i].jsonUrl ?? '')?.host ?? '',
-              if (repos[i].hidden == true) '已隐藏',
+              if (repos[i].hidden == true) context.l10n.repository_hidden,
             ].join(' · '),
             first: i == 0,
             last: i == repos.length - 1,
@@ -231,13 +238,15 @@ class _MobileRepositoryManagerState
           ),
         const SizedBox(height: 20),
         NodeLaneRow.card(
-          title: '添加仓库',
+          title: context.l10n.onboarding_add,
           leading: Icon(icons.add),
           onTap: () => showMobileAddRepository(context, widget.itemType),
         ),
         const SizedBox(height: 20),
         NodeLaneRow.card(
-          title: refreshing ? '正在刷新…' : '刷新目录',
+          title: refreshing
+              ? context.l10n.repository_refreshing
+              : context.l10n.repository_refresh,
           leading: refreshing
               ? const Padding(
                   padding: EdgeInsets.all(10),
@@ -256,13 +265,16 @@ class _MobileRepositoryManagerState
     return widget.asPage
         ? NodeLaneSurface(
             child: Scaffold(
-              appBar: nodeLaneAppBar(context, title: '第三方仓库'),
+              appBar: nodeLaneAppBar(
+                context,
+                title: context.l10n.repository_third_party,
+              ),
               body: list,
             ),
           )
         : NodeLaneCatalogSheet(
-            title: '第三方仓库',
-            subtitle: '管理第三方来源的获取地址',
+            title: context.l10n.repository_third_party,
+            subtitle: context.l10n.repository_manage_hint,
             heightFactor: .58,
             child: list,
           );
@@ -297,11 +309,11 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
     });
     if (value.trim().isEmpty) return;
     if (!isBrowserUrl(value.trim())) {
-      setState(() => error = '请输入有效的 http 或 https 网址');
+      setState(() => error = context.l10n.repository_invalid_address);
       return;
     }
     if (_exists(value)) {
-      setState(() => error = '此仓库已添加');
+      setState(() => error = context.l10n.repository_already_added);
       return;
     }
     _debounce = Timer(
@@ -319,9 +331,9 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
       setState(() {
         checking = false;
         if (repo == null || !isBrowserUrl(repo.jsonUrl)) {
-          error = '未识别到可用目录，请检查链接后重试。';
+          error = context.l10n.repository_unrecognized;
         } else if (_exists(repo.jsonUrl!)) {
-          error = '此仓库已添加';
+          error = context.l10n.repository_already_added;
         } else {
           preview = repo;
         }
@@ -330,7 +342,7 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
       if (mounted && revision == _revision) {
         setState(() {
           checking = false;
-          error = '目录读取失败，请重试。';
+          error = context.l10n.repository_read_failed;
         });
       }
     }
@@ -340,7 +352,7 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
     final repo = preview;
     if (saving || repo == null) return;
     if (_exists(repo.jsonUrl ?? '') || _exists(input.text)) {
-      setState(() => error = '此仓库已添加');
+      setState(() => error = context.l10n.repository_already_added);
       return;
     }
     setState(() => saving = true);
@@ -353,7 +365,7 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
       if (mounted) {
         setState(() {
           saving = false;
-          error = '保存未完成，请核对仓库列表。';
+          error = context.l10n.repository_save_failed;
         });
       }
     }
@@ -372,15 +384,15 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
     return PopScope(
       canPop: !saving,
       child: NodeLaneCatalogSheet(
-        title: '添加仓库',
-        subtitle: '粘贴第三方仓库的目录链接',
+        title: context.l10n.onboarding_add,
+        subtitle: context.l10n.repository_paste_hint,
         heightFactor: .9,
         fitContent: true,
         canClose: !saving,
         bottom: NodeLaneModalActions(
           actions: [
             NodeLaneDialogAction(
-              label: '添加仓库',
+              label: context.l10n.onboarding_add,
               busy: saving,
               onPressed: preview == null || saving ? null : _save,
             ),
@@ -393,7 +405,7 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
           children: [
             NodeLaneTextField(
               controller: input,
-              label: '仓库地址',
+              label: context.l10n.repository_address,
               hint: 'https://…',
               enabled: !saving,
               keyboardType: TextInputType.url,
@@ -416,15 +428,17 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
                       _changed(input.text);
                     },
               icon: Icon(icons.clipboard),
-              label: const Text('粘贴链接'),
+              label: Text(context.l10n.repository_paste_link),
             ),
             const SizedBox(height: 16),
             if (checking)
               const Center(child: CircularProgressIndicator(strokeWidth: 2)),
             if (preview != null)
               NodeLaneRow.card(
-                title: repositoryName(preview!),
-                subtitle: '${widget.itemType.localized(context.l10n)} · 目录已识别',
+                title: repositoryName(context, preview!),
+                subtitle: context.l10n.repository_recognized(
+                  widget.itemType.localized(context.l10n),
+                ),
                 leading: Icon(icons.repository),
                 trailing: Icon(icons.check, color: t.accent),
               ),
@@ -440,12 +454,12 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
                   onPressed: checking
                       ? null
                       : () => _check(input.text.trim(), ++_revision),
-                  child: const Text('重试'),
+                  child: Text(context.l10n.retry),
                 ),
             ],
             const SizedBox(height: 12),
             Text(
-              '添加后可选择需要的来源。',
+              context.l10n.repository_choose_sources_hint,
               textAlign: TextAlign.center,
               style: t.readerSecondary,
             ),

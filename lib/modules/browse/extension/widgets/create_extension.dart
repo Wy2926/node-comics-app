@@ -91,7 +91,9 @@ class _CreateExtensionState extends State<CreateExtension> {
       onTap: _isEditMode ? null : () => choose(title, options, current, update),
     );
     return MobileBrowsePage(
-      title: _isEditMode ? '编辑来源信息' : l10n.create_extension,
+      title: _isEditMode
+          ? context.l10n.source_edit_metadata
+          : l10n.create_extension,
       bottomAction: FilledButton(onPressed: _save, child: Text(l10n.save)),
       body: ListView(
         padding: NodeLaneTokens.pagePadding,
@@ -210,7 +212,7 @@ class _CreateExtensionState extends State<CreateExtension> {
           sourceRepository.save(source);
           Navigator.pop(context, source);
           showNodeLaneNotice(
-            "Source updated successfully",
+            context.l10n.source_updated_successfully,
             kind: NodeLaneNoticeKind.success,
           );
           return;

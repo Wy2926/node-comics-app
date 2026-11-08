@@ -1,3 +1,4 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
@@ -17,7 +18,7 @@ import 'translation_view_controller.dart';
 Future<void> showTranslationControls(
   BuildContext context,
   TranslationViewController controller, {
-  String title = '漫画翻译',
+  String? title,
   String? subtitle,
   bool browser = false,
 }) => showNodeLaneCatalogSheet<void>(
@@ -37,13 +38,13 @@ class TranslationControlsContent extends ConsumerWidget {
     super.key,
     required this.controller,
     this.mobile = false,
-    this.title = '漫画翻译',
+    this.title,
     this.subtitle,
     this.browser = false,
   });
   final TranslationViewController controller;
   final bool mobile, browser;
-  final String title;
+  final String? title;
   final String? subtitle;
 
   @override
@@ -51,7 +52,7 @@ class TranslationControlsContent extends ConsumerWidget {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final channelLabel = ref.watch(translationServiceProvider).channelLabel;
     return NodeLaneCatalogSheet(
-      title: title,
+      title: title ?? context.l10n.translation_title,
       subtitle: subtitle,
       fitContent: true,
       heightFactor: .8,
@@ -80,7 +81,10 @@ class TranslationControlsContent extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('图片显示', style: t.readerLabel),
+                        Text(
+                          context.l10n.translation_image_display,
+                          style: t.readerLabel,
+                        ),
                         const SizedBox(height: NodeLaneTokens.space12),
                         TranslationDisplaySwitch(
                           translated: controller.showTranslation,
@@ -88,7 +92,10 @@ class TranslationControlsContent extends ConsumerWidget {
                               controller.configure(showTranslation: value),
                         ),
                         const SizedBox(height: NodeLaneTokens.space12),
-                        Text('译图优先显示已有结果，暂无译图时保留原图。', style: t.readerSecondary),
+                        Text(
+                          context.l10n.translation_display_hint,
+                          style: t.readerSecondary,
+                        ),
                       ],
                     ),
                   ),
@@ -98,18 +105,18 @@ class TranslationControlsContent extends ConsumerWidget {
                   children: [
                     if (controller.runtime == null)
                       NodeLaneRow(
-                        title: '登录后开启翻译',
-                        subtitle: '登录后切换译图，即可自动翻译',
+                        title: context.l10n.translation_sign_in_required,
+                        subtitle: context.l10n.translation_sign_in_hint,
                         icon: icons.account,
                         onTap: () => _openAccount(context),
                       )
                     else
                       NodeLaneSwitchRow(
-                        title: '自动翻译',
+                        title: context.l10n.translation_automatic,
                         subtitle:
                             controller.enabled && !controller.showTranslation
-                            ? '当前显示原图，切到译图后自动翻译'
-                            : '仅在显示译图时处理当前及后续图片',
+                            ? context.l10n.translation_original_hint
+                            : context.l10n.translation_window_hint,
                         value: controller.enabled,
                         onChanged: (value) =>
                             controller.configure(enabled: value),
@@ -121,7 +128,7 @@ class TranslationControlsContent extends ConsumerWidget {
                   children: [
                     const TranslationLanguageRow(),
                     NodeLaneRow(
-                      title: '翻译渠道',
+                      title: context.l10n.translation_channel,
                       value: channelLabel,
                       icon: icons.account,
                     ),
@@ -131,13 +138,22 @@ class TranslationControlsContent extends ConsumerWidget {
                 if (controller.runtime != null && controller.enabled) ...[
                   Text(
                     states.isEmpty
-                        ? (browser ? '当前页面暂未发现可翻译图片' : '等待当前图片')
-                        : '已完成 $complete / ${states.length} 张${issues > 0 ? ' · $issues 张需要处理' : ''}',
+                        ? (browser
+                              ? context.l10n.translation_no_images
+                              : context.l10n.translation_waiting_image)
+                        : context.l10n.translation_progress(
+                            complete,
+                            states.length,
+                            issues,
+                          ),
                     style: t.readerSecondary,
                   ),
                   const SizedBox(height: NodeLaneTokens.space8),
                 ],
-                Text('长按图片打开更多操作，可重新翻译单张图片。', style: t.readerSecondary),
+                Text(
+                  context.l10n.translation_image_actions_hint,
+                  style: t.readerSecondary,
+                ),
                 if (controller.error != null) ...[
                   const SizedBox(height: NodeLaneTokens.space12),
                   Text(

@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/date.dart';
-import 'package:mangayomi/utils/language.dart';
+import 'package:mangayomi/l10n/languages.dart';
 
 import 'providers/app_font_family.dart';
 import 'providers/app_ui_scale_state_provider.dart';
@@ -102,17 +101,17 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.app_language,
-                    value: completeLanguageName(locale.toLanguageTag()),
+                    value: nodeLaneLanguageName(locale),
                     icon: NodeLaneIcons.of(context).web,
                     onTap: () => select(
                       title: l10n.app_language,
                       current: locale,
                       searchable: true,
                       options: [
-                        for (final value in AppLocalizations.supportedLocales)
+                        for (final value in nodeLaneSupportedLocales)
                           MobileSettingOption(
                             value,
-                            completeLanguageName(value.toLanguageTag()),
+                            nodeLaneLanguageName(value),
                           ),
                       ],
                       apply: ref

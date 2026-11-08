@@ -1,3 +1,5 @@
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
@@ -7,12 +9,20 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/language.dart';
 
 enum SourceSearchScopeMode {
-  all('全部网站', '全部'),
-  pinned('常用网站', '常用'),
-  custom('自选网站', '自选');
+  all,
+  pinned,
+  custom;
 
-  const SourceSearchScopeMode(this.label, this.shortLabel);
-  final String label, shortLabel;
+  String label(AppLocalizations l10n) => switch (this) {
+    all => l10n.source_all_websites,
+    pinned => l10n.source_pinned_websites,
+    custom => l10n.source_custom_websites,
+  };
+  String shortLabel(AppLocalizations l10n) => switch (this) {
+    all => l10n.bookshelf_all,
+    pinned => l10n.settings_frequent,
+    custom => l10n.source_custom_scope,
+  };
 }
 
 class SourceSearchScope {
@@ -89,8 +99,8 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
     final allMatchesSelected =
         matches.isNotEmpty && matches.every(draft.includes);
     return NodeLaneCatalogSheet(
-      title: '搜索范围',
-      subtitle: '选择本次要搜索的网站',
+      title: context.l10n.search_scope,
+      subtitle: context.l10n.search_scope_hint,
       fitContent: true,
       heightFactor: NodeLaneTokens.readerDisplayFraction,
       bottom: FilledButton(
@@ -104,7 +114,10 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
                   SourceSearchScope(mode: mode, ids: {...selected}),
                 );
               },
-        child: Text('搜索这 $count 个网站', textAlign: TextAlign.center),
+        child: Text(
+          context.l10n.search_websites_action(count),
+          textAlign: TextAlign.center,
+        ),
       ),
       child: CustomScrollView(
         shrinkWrap: true,
@@ -128,7 +141,7 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
                       for (final option in SourceSearchScopeMode.values)
                         ButtonSegment(
                           value: option,
-                          label: Text(option.shortLabel),
+                          label: Text(option.shortLabel(context.l10n)),
                         ),
                     ],
                     onChanged: (value) => setState(() => mode = value),
@@ -136,7 +149,7 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
                   const SizedBox(height: NodeLaneTokens.space16),
                   NodeLaneTextField.search(
                     controller: search,
-                    hint: '查找网站',
+                    hint: context.l10n.search_find_website,
                     onChanged: (_) => setState(() {}),
                     onClear: () => setState(search.clear),
                   ),
@@ -144,7 +157,10 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text('已选 $count 个网站', style: t.readerSecondary),
+                        child: Text(
+                          context.l10n.search_selected_websites(count),
+                          style: t.readerSecondary,
+                        ),
                       ),
                       TextButton(
                         style: TextButton.styleFrom(padding: EdgeInsets.zero),
@@ -169,8 +185,12 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
                               }),
                         child: Text(
                           allMatchesSelected
-                              ? (keyword.isEmpty ? '清空' : '取消当前结果')
-                              : (keyword.isEmpty ? '全选' : '选中当前结果'),
+                              ? (keyword.isEmpty
+                                    ? context.l10n.action_clear
+                                    : context.l10n.search_deselect_results)
+                              : (keyword.isEmpty
+                                    ? context.l10n.bookshelf_select_all
+                                    : context.l10n.search_select_results),
                         ),
                       ),
                     ],
@@ -196,7 +216,7 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
                   subtitle: [
                     if ((source.lang ?? '').isNotEmpty)
                       completeLanguageName(source.lang!),
-                    if (source.isPinned == true) '常用',
+                    if (source.isPinned == true) context.l10n.settings_frequent,
                   ].join(' · '),
                   checkable: true,
                   highlightSelected: false,
@@ -211,7 +231,9 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
               padding: const EdgeInsets.all(NodeLaneTokens.gutter),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  matches.isEmpty ? '没有匹配的网站，试试其他名称或语言。' : '至少选择一个网站后即可搜索。',
+                  matches.isEmpty
+                      ? context.l10n.search_no_websites_hint
+                      : context.l10n.search_select_website_hint,
                   style: t.readerSecondary,
                 ),
               ),
