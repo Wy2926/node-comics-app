@@ -1,39 +1,39 @@
-# NodeLane Comics App
+<div align="center">
 
-「NodeLane漫译」（其他语言为 NodeLane Comics）是基于 [Mangayomi](https://github.com/kodjodevf/mangayomi) 开发的手机漫画应用，首版面向 iOS 和 Android，项目仓库为 [Wy2926/node-comics-app](https://github.com/Wy2926/node-comics-app)。
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-horizontal-zh-dark.webp">
+  <img src="docs/images/logo-horizontal-zh-light.webp" width="460" alt="NodeLane 漫译 · NodeLane Comics">
+</picture>
 
-产品目标是将漫画阅读、网站适配与 NodeLane 翻译结合起来，并提供内置多标签浏览器，在原网页中翻译漫画图片。
+**简体中文** | [English](README_EN.md)
 
-NodeLane 应用版本为 **0.1.0**（构建号 **1**），[上游基线](UPSTREAM.md)为 Mangayomi **v0.9.9**。应用提供书架、阅读器、来源、多标签浏览器和翻译账号入口。官方插件包含 Comix、S2READ 与瓜子漫画，目录地址为 `https://comics-extensions.nodelane.net/stable/index.json`。
+**在手机上读漫画，随读随译。**
 
-## 本地运行与检查
+[![Android 下载](https://img.shields.io/badge/Android-下载最新版-1769B3?style=for-the-badge)](https://github.com/Wy2926/node-comics-app/releases/latest)
+[![问题反馈](https://img.shields.io/badge/反馈-GitHub_Issues-6855A3?style=for-the-badge)](https://github.com/Wy2926/node-comics-app/issues)
+[![TG 交流群](https://img.shields.io/badge/Telegram-加入交流群-229ED9?style=for-the-badge)](https://t.me/+pPyxB0Sxocw0MDc1)
 
-需要满足 `pubspec.yaml` 的 Flutter / Dart SDK，以及 Rust 工具链。Android 需对应 Android SDK / Java 环境；iOS 需 macOS / Xcode。原生桥生成与平台准备见上游说明和 CI。
+</div>
 
-```sh
-flutter doctor
-flutter pub get
-flutter run
-```
+NodeLane 漫译是一款面向 iOS 和 Android 的漫画阅读与翻译应用，把书架、漫画来源和网页阅读放在一起，随时接着上次的进度看。
 
-沿用现有验证入口：
+目前提供 **Android 安装包**，支持 Android 7.0 及以上，普通手机优先选择 `arm64-v8a`。iOS 版尚未公开发行。
 
-```sh
-flutter analyze --no-fatal-infos --no-fatal-warnings
-flutter test
-flutter build apk --debug
-flutter build ios --debug --no-codesign
-```
+## 使用体验
 
-macOS 本地 DMG 与发行流水线使用同一打包入口，产物位于 `build/macos/dmg/`：
+- **查找与收藏**：浏览漫画来源、跨站搜索，把想看的作品加入书架。
+- **自在阅读**：连续滚动、单页或双页阅读，记住阅读进度。
+- **随读随译**：登录 NodeLane 账号后翻译漫画图片，随时切回原图。
+- **多标签浏览**：在内置浏览器打开网站，阅读并翻译网页中的漫画。
 
-```sh
-flutter build macos --release
-python3 -B tool/package_macos_dmg.py
-```
+## 界面预览
 
-源码与安装包共用本仓库。发行入口为 Actions → **Build & Release**：填写已有的 `v<应用版本>` 标签并选择平台，默认 `macos`；推送标签本身不触发全平台发布。发布成功后会自动生成更新清单 Actions 产物，需要手动上传到 `https://comics-updates.nodelane.net/stable/index.json`；安装包默认使用 GitHub 地址，也支持自建服务器和 CDN。生成和上传方式见[应用更新说明](docs/APP_UPDATES.md)。
+| 书架 | 漫画来源 | 阅读器 |
+| :--: | :--: | :--: |
+| <img src="docs/images/ios-library.png" width="240" alt="iOS 漫画书架"> | <img src="docs/images/ios-sources.png" width="240" alt="iOS 漫画来源"> | <img src="docs/images/ios-reader.png" width="240" alt="iOS 漫画阅读器"> |
 
-## 许可证
+截图来自 iOS 模拟器中的实际运行界面。漫画内容与封面版权归各自权利人所有。
 
-上游代码采用 [Apache License 2.0](LICENSE)，原始版权和第三方许可声明继续保留。应用内图形标识的来源与许可见[品牌素材说明](docs/design/nodelane-brand-assets.md)。
+## 开源许可
+
+基于 [Mangayomi](https://github.com/kodjodevf/mangayomi)，保留上游 [Apache-2.0 许可](LICENSE)与[来源声明](UPSTREAM.md)。NodeLane 品牌素材沿用 `GPL-3.0-only`，详见[素材来源与许可](docs/design/nodelane-brand-assets.md)。

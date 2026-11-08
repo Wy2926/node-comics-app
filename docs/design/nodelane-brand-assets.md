@@ -11,6 +11,19 @@
 
 软件更新参考图见[软件更新设计](software-update.png)，通过本机 imagegen CLI 及 OpenAI 官方 API，使用 `gpt-image-2.6-sunburst` 生成，[完整提示词](software-update.prompts.txt)保留输入。没有输入第三方图片，参考图不随应用打包；运行界面的页纹、页片标记与小角标为 Flutter 几何绘制，不新增字体、图标或第三方素材依赖。既有品牌标识仍沿用上述 GPL-3.0-only 许可，版本与更新说明来自实际查询。
 
+## README 素材
+
+中英文 README 的明暗横向 Logo 原样复制自 [`node-comics`](https://github.com/Wy2926/node-comics) 提交 `29ccc9360456aa693fefdb12f9e503144e0ca618` 的 `apps/extension/src/assets/brand/`，保存在本仓库 `docs/images/`，不依赖同级目录。四份 WebP 沿用来源仓库的 `GPL-3.0-only` 许可，许可全文见上述 GPL 文件。
+
+| 文件 | SHA-256 |
+| --- | --- |
+| `logo-horizontal-zh-light.webp` | `3bab8e6227e9a68de9d2cc2f34a1cb0d60ad1de15e937294e87d602ece0add7a` |
+| `logo-horizontal-zh-dark.webp` | `13f4247055ce0ffe62e8e71d3839b7a945b8decc97b08ea1493b51877aa165a4` |
+| `logo-horizontal-en-light.webp` | `abac28ef1514504dfcfee05374a85d230987809ce906cd08d864f19d79801023` |
+| `logo-horizontal-en-dark.webp` | `8839d406415ea21d39a6cf90f34b257a11cd73a978c46df7bda45afe6ffb4143` |
+
+`ios-library.png`、`ios-sources.png` 和 `ios-reader.png` 为应用在 iOS 模拟器中实际运行的截图，未重绘界面；其中漫画内容与封面版权归各自权利人所有。
+
 ## 平台图标
 
 平台图标输入为 `assets/brand/nodelane-comics-icon.png`，来自同一素材提交的 `output/imagegen/nodelane-logo-v1/logo-mark-1024.png`，为 1024 × 1024 RGBA PNG，SHA-256 为 `3f220d04f766443abb7be26db011926cf56544c20a737a183e4721e1f8edea2e`。该文件沿用上述来源与许可记录，只用于平台资源导出，不列入 Flutter 运行时资源；应用内仍使用按显示尺寸解码的 512 像素素材。
