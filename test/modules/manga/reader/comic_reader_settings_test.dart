@@ -69,7 +69,6 @@ void main() {
                           context,
                           ComicReaderSettingsSheet(
                             bookId: 1,
-                            bookTitle: '海风中的来信',
                             autoScroll: running,
                           ),
                         ),
@@ -86,7 +85,7 @@ void main() {
   }
 
   testWidgets(
-    'shared choice navigation preserves book scope and cancellation; image options expand inline',
+    'sheet choices and defaults preserve the parent panel, cancellation and book scope',
     (tester) async {
       final container = await mount(tester);
       final controller = container.read(
@@ -94,10 +93,24 @@ void main() {
       ) as MemoryPreferences;
       expect(controller.writes, 0);
       expect(find.text('Left'), findsOneWidget);
+      final panel = tester.element(find.byType(ComicReaderSettingsSheet));
+      final panelHeight = tester
+          .getSize(find.byType(NodeLaneCatalogSheet))
+          .height;
       await tester.tap(find.widgetWithText(NodeLaneRow, 'Reading mode'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Back'));
+      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
+      expect(find.byType(AppBar), findsNothing);
+      expect(
+        tester.getSize(find.byType(NodeLaneCatalogSheet).last).height,
+        lessThan(panelHeight),
+      );
+      await tester.tap(find.byTooltip('Close').last);
       await tester.pumpAndSettle();
+      expect(
+        tester.element(find.byType(ComicReaderSettingsSheet)),
+        same(panel),
+      );
       expect(controller.writes, 0);
       await tester.tap(find.widgetWithText(NodeLaneRow, 'Reading mode'));
       await tester.pumpAndSettle();
@@ -119,13 +132,25 @@ void main() {
       expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
       expect(find.text('Wide pages'), findsNothing);
       await tester.scrollUntilVisible(find.text('Defaults & habits'), 200);
+      final position = tester
+          .state<ScrollableState>(
+            find
+                .descendant(
+                  of: find.byType(ComicReaderSettingsSheet),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          )
+          .position;
+      final offset = position.pixels;
       await tester.tap(find.text('Defaults & habits'));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
       await tester.tap(
         find.widgetWithText(NodeLaneRow, 'Swipe to the next page'),
       );
       await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(3));
       await tester.tap(find.text('Right'));
       await tester.pumpAndSettle();
       expect(
@@ -136,12 +161,21 @@ void main() {
         container.read(comicReaderPreferencesProvider).resolve(1).mode,
         ComicReadingMode.scroll,
       );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(
+        tester.element(find.byType(ComicReaderSettingsSheet)),
+        same(panel),
+      );
+      expect(position.pixels, offset);
+      expect(find.text('Invert colors'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'global settings reuse novel-style controls and stay reachable with large Chinese text',
+    'large Chinese settings use pages globally and compact sheets while reading',
     (tester) async {
       await mount(tester, scale: 2.5, locale: const Locale('zh'), global: true);
       final context = tester.element(find.byType(ComicReaderSettingsContent));
@@ -157,10 +191,24 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
       await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsNothing);
+      expect(find.byType(AppBar), findsOneWidget);
       await tester.tap(find.text(l.comic_scroll));
       await tester.pumpAndSettle();
       expect(find.text(l.comic_turn), findsNothing);
       expect(find.text(l.comic_layout), findsNothing);
+      expect(tester.takeException(), isNull);
+
+      await mount(tester, scale: 2.5, locale: const Locale('zh'));
+      await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
+      expect(find.text(l.comic_scroll).hitTestable(), findsOneWidget);
+      await tester.tap(find.text(l.comic_scroll));
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.text(l.comic_width), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

@@ -17,71 +17,59 @@ import 'comic_reader_scope.dart';
 Future<void> showComicReaderSettings({
   required BuildContext context,
   required int bookId,
-  required String bookTitle,
   required ValueNotifier<bool> autoScroll,
 }) async {
   final translation = ReaderTranslationHost.controllerOf(context);
-  var openTranslation = false;
   autoScroll.value = false;
   await showNodeLaneCatalogSheet<void>(
     context,
     ComicReaderSettingsSheet(
       onTranslation: translation == null
           ? null
-          : () {
-              openTranslation = true;
-              Navigator.of(context, rootNavigator: true).pop();
-            },
+          : () => showTranslationControls(context, translation),
       bookId: bookId,
-      bookTitle: bookTitle,
       autoScroll: autoScroll,
     ),
   );
-  if (openTranslation && translation != null && context.mounted) {
-    await showTranslationControls(context, translation);
-  }
 }
 
-class ComicReaderSettingsSheet extends StatefulWidget {
+class ComicReaderSettingsSheet extends StatelessWidget {
   const ComicReaderSettingsSheet({
     super.key,
     required this.bookId,
-    required this.bookTitle,
     this.onTranslation,
     required this.autoScroll,
   });
   final int bookId;
-  final String bookTitle;
   final VoidCallback? onTranslation;
   final ValueNotifier<bool> autoScroll;
-  @override
-  State<ComicReaderSettingsSheet> createState() =>
-      _ComicReaderSettingsSheetState();
-}
 
-class _ComicReaderSettingsSheetState extends State<ComicReaderSettingsSheet> {
-  bool _defaults = false;
   @override
   Widget build(BuildContext context) => NodeLaneCatalogSheet(
-    title: _defaults
-        ? context.l10n.comic_defaults_title
-        : context.l10n.comic_reading,
-    subtitle: _defaults ? null : context.l10n.comic_book_scope,
+    title: context.l10n.comic_reading,
+    subtitle: context.l10n.comic_book_scope,
     heightFactor: NodeLaneTokens.readerSheetFraction,
-    onBack: _defaults ? () => setState(() => _defaults = false) : null,
     child: SingleChildScrollView(
-      key: ValueKey(_defaults),
       padding: NodeLaneTokens.pagePadding,
       child: ValueListenableBuilder<bool>(
-        valueListenable: widget.autoScroll,
+        valueListenable: autoScroll,
         builder: (context, scrolling, _) => ComicReaderSettingsContent(
-          bookId: _defaults ? null : widget.bookId,
-          bookTitle: widget.bookTitle,
-          onTranslation: widget.onTranslation,
-          onDefaults: () => setState(() => _defaults = true),
+          bookId: bookId,
+          onTranslation: onTranslation,
+          onDefaults: () => showNodeLaneCatalogSheet<void>(
+            context,
+            NodeLaneCatalogSheet(
+              title: context.l10n.comic_defaults_title,
+              heightFactor: NodeLaneTokens.readerSheetFraction,
+              child: const SingleChildScrollView(
+                padding: NodeLaneTokens.pagePadding,
+                child: ComicReaderSettingsContent(),
+              ),
+            ),
+          ),
           scrolling: scrolling,
           onAutoScroll: (value) {
-            widget.autoScroll.value = value;
+            autoScroll.value = value;
             Navigator.pop(context);
           },
         ),
@@ -96,14 +84,12 @@ class ComicReaderSettingsContent extends ConsumerWidget {
   const ComicReaderSettingsContent({
     super.key,
     this.bookId,
-    this.bookTitle = '',
     this.onDefaults,
     this.onTranslation,
     this.scrolling = false,
     this.onAutoScroll,
   });
   final int? bookId;
-  final String bookTitle;
   final VoidCallback? onDefaults, onTranslation;
   final bool scrolling;
   final ValueChanged<bool>? onAutoScroll;
@@ -165,15 +151,11 @@ class ComicReaderSettingsContent extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
-          child: Text(
-            bookId == null ? l.comic_defaults_hint : bookTitle,
-            style: bookId == null ? t.readerSecondary : t.readerLabel,
-            maxLines: bookId == null ? null : 2,
-            overflow: bookId == null ? null : TextOverflow.ellipsis,
+        if (bookId == null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
+            child: Text(l.comic_defaults_hint, style: t.readerSecondary),
           ),
-        ),
         MobileSettingsGroup(
           title: bookId == null ? l.default_reading_mode : l.reading_mode,
           children: [

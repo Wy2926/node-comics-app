@@ -1018,7 +1018,6 @@ class _MangaChapterPageGalleryState
                               showComicReaderSettings(
                                 context: context,
                                 bookId: _bookId,
-                                bookTitle: _readerController.getMangaName(),
                                 autoScroll: _autoScroll,
                               ),
                           currentPageListenable: _currentPageDisplayIndex,

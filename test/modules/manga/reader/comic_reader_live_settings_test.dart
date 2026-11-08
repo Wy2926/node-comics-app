@@ -15,6 +15,9 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/manga/reader/image_view_webtoon.dart';
 import 'package:mangayomi/modules/manga/reader/reader_view.dart';
+import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
+import 'package:mangayomi/modules/translation/translation_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences_provider.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_scope.dart';
@@ -195,7 +198,7 @@ void main() {
   }
 
   testWidgets(
-    'real scroll stops immediately and remains stopped after settings close',
+    'real scroll stays paused while nested translation preserves the reading panel',
     (tester) async {
       await mount(tester);
       final scroll = content(tester).scrollController;
@@ -207,13 +210,65 @@ void main() {
       Future<void> open() => showComicReaderSettings(
         context: readerContext,
         bookId: 1,
-        bookTitle: 'Fixture',
         autoScroll: running,
       );
       var closed = open();
       final pausedAt = scroll.offset;
       expect(running.value, isFalse);
       await frames(tester, 25);
+      expect(scroll.offset, pausedAt);
+      final panel = tester.element(find.byType(ComicReaderSettingsSheet));
+      expect(
+        find.descendant(
+          of: find.byType(ComicReaderSettingsSheet),
+          matching: find.text('Fixture'),
+        ),
+        findsNothing,
+      );
+      final panelScroll = find
+          .descendant(
+            of: find.byType(ComicReaderSettingsSheet),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      await tester.scrollUntilVisible(
+        find.text('Fine-tune image'),
+        100,
+        scrollable: panelScroll,
+      );
+      await tester.tap(find.text('Fine-tune image'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('漫画翻译'),
+        200,
+        scrollable: panelScroll,
+      );
+      await tester.pumpAndSettle();
+      final position = tester.state<ScrollableState>(panelScroll).position;
+      final offset = position.pixels;
+      final translation = ReaderTranslationHost.controllerOf(readerContext)!;
+      final enabled = translation.enabled;
+      await tester.tap(find.text('漫画翻译'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TranslationControlsContent), findsOneWidget);
+      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
+      await tester.tap(find.text('Translation language'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(3));
+      await tester.tap(find.byTooltip('Close').last);
+      await tester.pumpAndSettle();
+      expect(find.byType(TranslationControlsContent), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(TranslationControlsContent), findsNothing);
+      expect(
+        tester.element(find.byType(ComicReaderSettingsSheet)),
+        same(panel),
+      );
+      expect(position.pixels, offset);
+      expect(find.text('Invert colors'), findsOneWidget);
+      expect(translation.enabled, enabled);
+      expect(running.value, isFalse);
       expect(scroll.offset, pausedAt);
       await tester.tap(find.byTooltip('Close'));
       await frames(tester, 25);
