@@ -128,6 +128,24 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @app_update_details_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'View release notes and installation options'**
+  String get app_update_details_hint;
+
+  /// No description provided for @app_update_download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download update'**
+  String get app_update_download;
+
+  /// No description provided for @app_update_download_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'After downloading, follow the prompts to install the update.'**
+  String get app_update_download_hint;
+
   /// No description provided for @bookshelf_all.
   ///
   /// In en, this message translates to:

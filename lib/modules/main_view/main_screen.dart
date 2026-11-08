@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
+import 'package:mangayomi/modules/more/about/app_update_dialog.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/floating_navigation_bar_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
@@ -214,6 +214,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     });
   }
 
+  bool _updatePromptOpen = false;
+
+  Future<void> _announceUpdate(UpdateInfo update) async {
+    if (_updatePromptOpen) return;
+    _updatePromptOpen = true;
+    try {
+      await showAppUpdateAnnouncement(context, update);
+    } finally {
+      _updatePromptOpen = false;
+    }
+  }
+
   void _initializeProviders() {
     // The extension-repo fetches (one per item type) and the GitHub update
     // check hit the network; delay them so they don't compete with the first
@@ -239,10 +251,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ) {
         next.whenData((updateInfo) {
           if (updateInfo != null && mounted) {
-            showDialog(
-              context: context,
-              builder: (_) => DownloadFileScreen(updateAvailable: updateInfo),
-            );
+            unawaited(_announceUpdate(updateInfo));
           }
         });
       });

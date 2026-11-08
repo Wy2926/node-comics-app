@@ -105,6 +105,10 @@ void main() {
     );
     expect(find.byType(TextField), findsOneWidget);
     await tester.tap(find.byType(TextField));
+    await tester.enterText(find.byType(TextField), 'welcome');
+    await tester.pumpAndSettle();
+    expect(find.text('No matching settings'), findsOneWidget);
+    expect(find.text('Show the welcome screen'), findsNothing);
     await tester.enterText(find.byType(TextField), 'reader');
     await tester.pumpAndSettle();
     expect(

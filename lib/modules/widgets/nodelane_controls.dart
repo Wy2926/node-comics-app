@@ -1,6 +1,7 @@
 import 'dart:ui' show SemanticsRole;
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_progress.dart';
 import 'package:flutter/cupertino.dart' show CupertinoPicker, CupertinoSwitch;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
@@ -1158,8 +1159,8 @@ AppBar nodeLaneAppBar(
   ],
   bottom: busy
       ? const PreferredSize(
-          preferredSize: Size.fromHeight(2),
-          child: LinearProgressIndicator(minHeight: 2),
+          preferredSize: Size.fromHeight(NodeLaneTokens.progressTrackHeight),
+          child: NodeLaneProgress(),
         )
       : null,
 );
@@ -1342,7 +1343,7 @@ class NodeLaneSelectionBar<T> extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (busy && ModalRoute.of(context)?.isCurrent == true)
-                const LinearProgressIndicator(minHeight: 2),
+                const NodeLaneProgress(),
               Row(
                 children: [
                   for (final action in actions) Expanded(child: action),

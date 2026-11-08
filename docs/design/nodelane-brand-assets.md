@@ -9,7 +9,7 @@
 - 许可记录：来源仓库声明 `GPL-3.0-only`，素材目录没有单独声明其他许可，因此保留该来源许可信息，不把素材改标为本项目上游的 Apache-2.0。用户指定复用 NodeLane 品牌图形；本次没有复制参考仓库的运行时代码、导出脚本或字体。
 - [GPL 许可全文](../../assets/brand/LICENSE-GPL-3.0-only)来自来源仓库提交 `811e267b6ef82e0d583ab594ad40110fb785e0a8` 的 `LICENSE`，SHA-256 为 `3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`。应用代码的上游 Apache-2.0 许可继续由仓库根目录 `LICENSE` 保存。
 
-关于页和更新流程设计稿见 [统一设计](ios-about-update-v2.png)，由内置 `image_gen` 生成，[完整提示词](ios-about-update-v2.prompts.txt)保留参考角色及约束。图中的版本和更新内容为示例，运行页面只使用真实版本与检查结果。
+软件更新参考图见[软件更新设计](software-update.png)，通过本机 imagegen CLI 及 OpenAI 官方 API，使用 `gpt-image-2.6-sunburst` 生成，[完整提示词](software-update.prompts.txt)保留输入。没有输入第三方图片，参考图不随应用打包；运行界面的页纹、页片标记与小角标为 Flutter 几何绘制，不新增字体、图标或第三方素材依赖。既有品牌标识仍沿用上述 GPL-3.0-only 许可，版本与更新说明来自实际查询。
 
 ## 平台图标
 

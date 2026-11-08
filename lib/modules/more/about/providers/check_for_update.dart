@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
 import 'package:http/http.dart' as http;
 import 'package:mangayomi/utils/nodelane_brand.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
@@ -102,8 +103,10 @@ bool _hasPlatformAssets(
   return true;
 }
 
-/// Performs an update check unconditionally, ignoring the auto-update setting.
-Future<UpdateInfo?> performManualUpdateCheck() => _getUpdateIfAvailable();
+/// Manual checks ignore the launch preference; the page owns their result.
+final manualAppUpdateCheckProvider = Provider<Future<UpdateInfo?> Function()>(
+  (ref) => _getUpdateIfAvailable,
+);
 
 @visibleForTesting
 Future<UpdateInfo?> fetchLatestAppRelease({

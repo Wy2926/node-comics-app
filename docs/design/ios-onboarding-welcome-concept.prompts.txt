@@ -1,7 +1,7 @@
 Mode: built-in image_gen (ui-mockup)
 Status: design proposal only; not yet implemented.
 Output: docs/design/ios-onboarding-welcome-concept.png
-Reference 1 (board style and composition): docs/design/ios-about-update-v2.png
+Reference 1 (generation input): retired style board; no retained file dependency.
 Reference 2 (existing artwork): assets/brand/app-mark.png
 The four phones describe two steps and two alternate states of step 2.
 

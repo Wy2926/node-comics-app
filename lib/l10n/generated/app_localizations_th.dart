@@ -10,6 +10,17 @@ class AppLocalizationsTh extends AppLocalizations {
   AppLocalizationsTh([String locale = 'th']) : super(locale);
 
   @override
+  String get app_update_details_hint =>
+      'View release notes and installation options';
+
+  @override
+  String get app_update_download => 'Download update';
+
+  @override
+  String get app_update_download_hint =>
+      'After downloading, follow the prompts to install the update.';
+
+  @override
   String get bookshelf_all => 'All';
 
   @override

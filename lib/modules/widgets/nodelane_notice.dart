@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_progress.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
@@ -97,15 +98,7 @@ class NodeLaneNotice extends StatelessWidget {
                     ],
                     if (busy && progress != null) ...[
                       const SizedBox(height: NodeLaneTokens.space16),
-                      LinearProgressIndicator(
-                        value: progress!.clamp(0, 1),
-                        minHeight: NodeLaneTokens.progressTrackHeight,
-                        borderRadius: BorderRadius.circular(
-                          NodeLaneTokens.progressTrackHeight,
-                        ),
-                        color: t.accent,
-                        backgroundColor: t.line,
-                      ),
+                      NodeLaneProgress(value: progress),
                     ],
                     if (onAction != null) ...[
                       const SizedBox(height: NodeLaneTokens.space8),

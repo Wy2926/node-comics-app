@@ -6,16 +6,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/more/about/mobile_about_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
-import 'package:mangayomi/modules/more/about/providers/download_file_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/get_package_info.dart';
 import 'package:mangayomi/modules/more/about/providers/logs_state.dart';
-import 'package:mangayomi/modules/onboarding/providers/onboarding_state_provider.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
-import 'package:mangayomi/services/app_update_downloads.dart';
 import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/nodelane_brand.dart';
@@ -33,22 +30,8 @@ class AboutScreen extends ConsumerWidget {
     final l10n = l10nLocalizations(context);
     final checkForUpdates = ref.watch(checkForAppUpdatesProvider);
     final enableLogs = ref.watch(logsStateProvider);
-    final downloads = ref.watch(appUpdateDownloadsProvider);
-    Future<UpdateInfo?> restoreUpdate() async {
-      try {
-        final download = await downloads?.current();
-        return download == null
-            ? null
-            : (download.version, download.notes, '', <dynamic>[download.url]);
-      } catch (_) {
-        return null;
-      }
-    }
-
     if (isMobile && !isTv) {
       return MobileAboutScreen(
-        onOnboarding: () =>
-            ref.read(onboardingCompletedStateProvider.notifier).showAgain(),
         packageInfo: ref.watch(getPackageInfoProvider),
         onRetryPackageInfo: () => ref.invalidate(getPackageInfoProvider),
         checkForUpdates: checkForUpdates,
@@ -66,14 +49,7 @@ class AboutScreen extends ConsumerWidget {
         onReports: () async {
           await context.push('/errorReports');
         },
-        onCheck: performManualUpdateCheck,
-        onRestoreUpdate: downloads == null ? null : restoreUpdate,
-        updateBuilder: (update, onDismiss) => DownloadFileScreen(
-          key: ValueKey(update.$1),
-          updateAvailable: update,
-          embedded: true,
-          onDismiss: onDismiss,
-        ),
+        onUpdates: () => context.push('/appUpdate'),
         onShareLogs: () => _shareLogs(context),
         onGitHub: () =>
             _launchInBrowser(Uri.parse(NodeLaneBrand.repositoryUrl)),
@@ -111,32 +87,7 @@ class AboutScreen extends ConsumerWidget {
                         },
                       ),
                       ListTile(
-                        onTap: () async {
-                          showNodeLaneNotice(l10n.searching_for_updates);
-                          try {
-                            final updateInfo =
-                                await restoreUpdate() ??
-                                await performManualUpdateCheck();
-                            if (updateInfo != null) {
-                              showNodeLaneNotice(l10n.new_update_available);
-                              if (context.mounted) {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => DownloadFileScreen(
-                                    updateAvailable: updateInfo,
-                                  ),
-                                );
-                              }
-                            } else {
-                              showNodeLaneNotice(l10n.update_check_no_result);
-                            }
-                          } catch (_) {
-                            showNodeLaneNotice(
-                              l10n.app_update_failed,
-                              kind: NodeLaneNoticeKind.error,
-                            );
-                          }
-                        },
+                        onTap: () => context.push('/appUpdate'),
                         title: Text(l10n.check_for_update),
                       ),
                       ListTile(

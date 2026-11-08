@@ -10,6 +10,15 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get app_update_details_hint => '查看更新说明与安装方式';
+
+  @override
+  String get app_update_download => '下载更新';
+
+  @override
+  String get app_update_download_hint => '下载完成后，按提示安装更新。';
+
+  @override
   String get bookshelf_all => '全部';
 
   @override
@@ -40,7 +49,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get search_clear => '清除搜索';
 
   @override
-  String get app_updates => '应用更新';
+  String get app_updates => '软件更新';
 
   @override
   String get app_update_auto => '启动时检查更新';
@@ -1282,7 +1291,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get download => '下载';
 
   @override
-  String get new_update_available => '有新更新可用';
+  String get new_update_available => '发现新版本';
 
   @override
   String app_version(Object v) {

@@ -1,4 +1,7 @@
 {
+  "app_update_details_hint": "View release notes and installation options",
+  "app_update_download": "Download update",
+  "app_update_download_hint": "After downloading, follow the prompts to install the update.",
   "bookshelf_all": "All",
   "bookshelf_search": "Search library",
   "app_update_allow_install": "Allow app installation in system settings, then return and tap Install.",

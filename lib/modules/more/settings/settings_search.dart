@@ -372,7 +372,6 @@ List<SettingsSearchEntry> settingsSearchEntries(
   rows(l.settings_about_help, '/about', i.info, [
     l.check_for_update,
     l.app_update_auto,
-    l.onboarding_replay,
     l.app_diagnostics,
   ]);
   rows(
