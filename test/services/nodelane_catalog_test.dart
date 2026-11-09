@@ -394,12 +394,23 @@ class DefaultExtension extends MProvider { getHeaders() { while (true) {} } }
           ..versionLast = '1.0.0',
       );
       var pricing = 'free', version = '1.0.0';
+      const mihonId = '5724751873601868259';
+      await sourceRepository.save(
+        Source(
+          id: 5,
+          repo: repo,
+          isAdded: true,
+          sourceCode: 'original-apk',
+          version: version,
+          versionLast: version,
+        )..sourceCodeLanguage = SourceCodeLanguage.mihon,
+      );
       var downloads = 0;
       server.listen((request) async {
         if (request.uri.path == '/index.json') {
           request.response.write(
             jsonEncode([
-              for (final id in [1, 4])
+              for (final id in [1, 4, 5])
                 {
                   'id': id,
                   'name': 'Fixture $id',
@@ -407,7 +418,9 @@ class DefaultExtension extends MProvider { getHeaders() { while (true) {} } }
                   'baseUrl': 'https://example.test',
                   'sourceCodeUrl': 'plugin.js',
                   'itemType': 0,
-                  'sourceCodeLanguage': 1,
+                  'sourceCodeLanguage': id == 5 ? 2 : 1,
+                  if (id == 5)
+                    'additionalParams': jsonEncode({'mihonSourceId': mihonId}),
                   'isNsfw': false,
                   'catalogMetadata': {
                     'schema': 1,
@@ -445,6 +458,10 @@ class DefaultExtension extends MProvider { getHeaders() { while (true) {} } }
       expect(source.isPinned, isTrue);
       expect(source.isActive, isFalse);
       expect(source.lastUsed, isTrue);
+      final mihon = sourceRepository.getById(5)!;
+      expect(jsonDecode(mihon.additionalParams!)['mihonSourceId'], mihonId);
+      expect(mihon.sourceCode, 'original-apk');
+      expect(mihon.id, 5);
       version = '0.9.0';
       pricing = 'free';
       await refresh();

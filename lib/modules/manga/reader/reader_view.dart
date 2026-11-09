@@ -29,6 +29,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
+import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/anime/widgets/desktop.dart';
 import 'package:mangayomi/modules/manga/reader/mixins/reader_gestures.dart';
 import 'package:mangayomi/modules/manga/reader/services/page_navigation_service.dart';
@@ -62,6 +64,26 @@ import 'package:mangayomi/modules/manga/reader/mixins/reader_auto_scroll.dart';
 
 typedef DoubleClickAnimationListener = void Function();
 
+Future<void> _openChapterWebView(
+  BuildContext context,
+  WidgetRef ref,
+  Chapter chapter,
+) async {
+  try {
+    final data = await buildWebViewData(
+      chapter,
+      ref.read(androidProxyServerStateProvider),
+    );
+    if (context.mounted && data != null) {
+      await context.push('/mangawebview', extra: data);
+    }
+  } catch (error) {
+    if (context.mounted) {
+      showNodeLaneNotice(error.toString(), kind: NodeLaneNoticeKind.error);
+    }
+  }
+}
+
 class MangaReaderView extends ConsumerWidget {
   final int chapterId;
   const MangaReaderView({super.key, required this.chapterId});
@@ -91,6 +113,9 @@ class MangaReaderView extends ConsumerWidget {
           chapterTitle: chapter?.name,
           failureMessage: failure,
           onRetry: failure == null ? null : retry,
+          onOpenWebView: chapter != null && !(manga?.isLocalArchive ?? false)
+              ? () => _openChapterWebView(context, ref, chapter)
+              : null,
           onBack: () {
             restoreSystemUI();
             Navigator.of(context).pop();
@@ -887,12 +912,7 @@ class _MangaChapterPageGalleryState
                           onWebViewPressed:
                               (chapter.manga.value!.isLocalArchive ?? false) ==
                                   false
-                              ? () {
-                                  final data = buildWebViewData(chapter);
-                                  if (data != null) {
-                                    context.push("/mangawebview", extra: data);
-                                  }
-                                }
+                              ? () => _openChapterWebView(context, ref, chapter)
                               : null,
                           onRefreshPressed:
                               (chapter.manga.value!.isLocalArchive ?? false) ==

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/proto/mihon_extension_store.pb.dart';
@@ -473,6 +474,9 @@ class ExtensionStoreService {
               ..iconUrl = '$repoBaseUrl/icon/${e['pkg']}.png'
               ..notes = null;
             src.id = 'mihon-${source['id']}'.hashCode;
+            src.additionalParams = jsonEncode({
+              'mihonSourceId': source['id']?.toString(),
+            });
             sources.add(src);
           }
           continue;
@@ -643,6 +647,9 @@ class ExtensionStoreService {
           ..notes = null;
 
         source.id = 'mihon-${src.id}'.hashCode;
+        source.additionalParams = jsonEncode({
+          'mihonSourceId': src.id.toString(),
+        });
         sources.add(source);
       }
     }
@@ -731,6 +738,9 @@ class ExtensionStoreService {
             ..notes = null;
 
           source.id = 'mihon-$srcId'.hashCode;
+          source.additionalParams = jsonEncode({
+            'mihonSourceId': srcId?.toString(),
+          });
           sources.add(source);
         }
       }
@@ -756,6 +766,9 @@ class ExtensionStoreService {
       sources: sourcesList.map((s) {
         final srcMap = s as Map<String, dynamic>;
         return ExtensionStoreSource(
+          id: srcMap['id'] == null
+              ? null
+              : fixnum.Int64.parseInt(srcMap['id'].toString()),
           name: srcMap['name'] as String?,
           language:
               (srcMap['language'] as String?) ?? (srcMap['lang'] as String?),

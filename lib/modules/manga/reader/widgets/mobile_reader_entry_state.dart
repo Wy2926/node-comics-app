@@ -14,12 +14,14 @@ class MobileReaderEntryState extends StatefulWidget {
     this.chapterTitle,
     this.failureMessage,
     this.onRetry,
+    this.onOpenWebView,
     required this.onBack,
   });
 
   final ImageProvider? cover;
   final String? bookTitle, chapterTitle, failureMessage;
   final Future<void> Function()? onRetry;
+  final VoidCallback? onOpenWebView;
   final VoidCallback onBack;
 
   @override
@@ -57,6 +59,14 @@ class _MobileReaderEntryStateState extends State<MobileReaderEntryState> {
                 ? l10n.reader_open_chapter
                 : l10n.reader_opening_chapter,
             onBack: widget.onBack,
+            actions: [
+              if (failed && widget.onOpenWebView != null)
+                IconButton(
+                  tooltip: l10n.open_in_browser,
+                  onPressed: widget.onOpenWebView,
+                  icon: const Icon(Icons.public),
+                ),
+            ],
           ),
           body: SafeArea(
             child: LayoutBuilder(

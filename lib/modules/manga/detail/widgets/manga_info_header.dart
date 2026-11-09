@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/eval/mihon/service.dart';
+import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
@@ -609,28 +612,39 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     onPressed: _openWebview,
   );
 
-  void _openWebview() {
+  Future<void> _openWebview() async {
     final manga = widget.manga;
 
-    final source = getSource(
-      widget.manga.lang!,
-      widget.manga.source!,
-      widget.manga.sourceId,
-    );
+    final source = getSource(manga.lang!, manga.source!, manga.sourceId);
     if (source == null) return;
-    String url = "";
-    final baseUrl = source.baseUrl;
-    final link = widget.manga.link!.getUrlWithoutDomain;
-    if (baseUrl == null) return;
-    if (baseUrl.endsWith("/") && link.startsWith("/")) {
-      url = baseUrl + link.substring(1);
-    } else if (!baseUrl.endsWith("/") && !link.startsWith("/")) {
-      url = "$baseUrl/$link";
+    final String url;
+    if (source.sourceCodeLanguage == SourceCodeLanguage.mihon) {
+      try {
+        url = await MihonExtensionService(
+          source,
+          ref.read(androidProxyServerStateProvider),
+        ).getWebUrl(manga.link!);
+      } catch (error) {
+        if (mounted) {
+          showNodeLaneNotice(error.toString(), kind: NodeLaneNoticeKind.error);
+        }
+        return;
+      }
+      if (!mounted) return;
     } else {
-      url = "$baseUrl$link";
+      final baseUrl = source.baseUrl;
+      final link = manga.link!.getUrlWithoutDomain;
+      if (baseUrl == null) return;
+      if (baseUrl.endsWith("/") && link.startsWith("/")) {
+        url = baseUrl + link.substring(1);
+      } else if (!baseUrl.endsWith("/") && !link.startsWith("/")) {
+        url = "$baseUrl/$link";
+      } else {
+        url = "$baseUrl$link";
+      }
     }
 
-    Map<String, dynamic> data = {
+    final data = {
       'url': url,
       'sourceId': source.id.toString(),
       'title': manga.name!,

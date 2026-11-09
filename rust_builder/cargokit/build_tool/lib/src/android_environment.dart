@@ -54,10 +54,28 @@ class AndroidEnvironment {
   /// Target being built.
   final Target target;
 
+  String get _ndkPath => path.join(sdkPath, 'ndk', ndkVersion);
+
+  String get _toolchainPath {
+    final host = Platform.isMacOS
+        ? 'darwin-x86_64'
+        : (Platform.isLinux ? 'linux-x86_64' : 'windows-x86_64');
+    return path.join(_ndkPath, 'toolchains', 'llvm', 'prebuilt', host, 'bin');
+  }
+
   bool ndkIsInstalled() {
-    final ndkPath = path.join(sdkPath, 'ndk', ndkVersion);
-    final ndkPackageXml = File(path.join(ndkPath, 'package.xml'));
-    return ndkPackageXml.existsSync();
+    final ndkPackageXml = File(path.join(_ndkPath, 'package.xml'));
+    if (ndkPackageXml.existsSync()) return true;
+    // Official standalone NDK archives have source.properties, but no SDK
+    // Manager package.xml. Reuse a matching, complete toolchain installation.
+    final properties = File(path.join(_ndkPath, 'source.properties'));
+    if (!properties.existsSync()) return false;
+    final revision = RegExp(r'^Pkg\.Revision\s*=\s*(\S+)', multiLine: true)
+        .firstMatch(properties.readAsStringSync())
+        ?.group(1);
+    final clang =
+        path.join(_toolchainPath, Platform.isWindows ? 'clang.exe' : 'clang');
+    return revision == ndkVersion && File(clang).existsSync();
   }
 
   void installNdk({
@@ -82,19 +100,7 @@ class AndroidEnvironment {
   }
 
   Future<Map<String, String>> buildEnvironment() async {
-    final hostArch = Platform.isMacOS
-        ? "darwin-x86_64"
-        : (Platform.isLinux ? "linux-x86_64" : "windows-x86_64");
-
-    final ndkPath = path.join(sdkPath, 'ndk', ndkVersion);
-    final toolchainPath = path.join(
-      ndkPath,
-      'toolchains',
-      'llvm',
-      'prebuilt',
-      hostArch,
-      'bin',
-    );
+    final toolchainPath = _toolchainPath;
 
     final minSdkVersion =
         math.max(target.androidMinSdkVersion!, this.minSdkVersion);

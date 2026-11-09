@@ -18,6 +18,7 @@ import 'package:mangayomi/services/http/m_client.dart';
 import '../../models/manga.dart';
 import '../interface.dart';
 import 'models.dart';
+import 'source_identity.dart';
 
 class MihonExtensionService implements ExtensionService {
   late String androidProxyServer;
@@ -54,10 +55,6 @@ class MihonExtensionService implements ExtensionService {
       "method": "getPopular$name",
       "page": page + 1,
       "search": "",
-      "preferences": getSourcePreferences(),
-      "data": source.sourceCode,
-      "lang": source.lang,
-      "sourceId": source.id?.toString(),
     });
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     final pages = MangaPages.fromJson(data, source.itemType);
@@ -88,10 +85,6 @@ class MihonExtensionService implements ExtensionService {
       "method": "getLatest$name",
       "page": page + 1,
       "search": "",
-      "preferences": getSourcePreferences(),
-      "data": source.sourceCode,
-      "lang": source.lang,
-      "sourceId": source.id?.toString(),
     });
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     final pages = MangaPages.fromJson(data, source.itemType);
@@ -123,10 +116,6 @@ class MihonExtensionService implements ExtensionService {
       "page": max(1, page),
       "search": query,
       "filterList": _convertFilters(filters),
-      "preferences": getSourcePreferences(),
-      "data": source.sourceCode,
-      "lang": source.lang,
-      "sourceId": source.id?.toString(),
     });
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     final pages = MangaPages.fromJson(data, source.itemType);
@@ -157,10 +146,6 @@ class MihonExtensionService implements ExtensionService {
       "method": "getDetails$name",
       if (source.itemType == ItemType.manga) "mangaData": {"url": url},
       if (source.itemType == ItemType.anime) "animeData": {"url": url},
-      "preferences": getSourcePreferences(),
-      "data": source.sourceCode,
-      "lang": source.lang,
-      "sourceId": source.id?.toString(),
     });
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     final chapters = await getChapterList(url);
@@ -196,10 +181,6 @@ class MihonExtensionService implements ExtensionService {
           : "getChapterList",
       if (source.itemType == ItemType.manga) "mangaData": {"url": url},
       if (source.itemType == ItemType.anime) "animeData": {"url": url},
-      "preferences": getSourcePreferences(),
-      "data": source.sourceCode,
-      "lang": source.lang,
-      "sourceId": source.id?.toString(),
     });
     final data = jsonDecode(res.body) as List;
     return data
@@ -216,15 +197,25 @@ class MihonExtensionService implements ExtensionService {
         .toList();
   }
 
+  /// Internal chapter/manga identifiers are not necessarily website URLs.
+  /// Let the original extension select its reader domain and current mirror.
+  Future<String> getWebUrl(String url, {bool chapter = false}) async {
+    final anime = source.itemType == ItemType.anime;
+    final type = chapter
+        ? (anime ? 'Episode' : 'Chapter')
+        : (anime ? 'Anime' : 'Manga');
+    final res = await _dalvik({
+      'method': 'get${type}Url',
+      '${type.toLowerCase()}Data': {'url': url},
+    });
+    return jsonDecode(res.body) as String;
+  }
+
   @override
   Future<List<PageUrl>> getPageList(String url) async {
     final res = await _dalvik({
       "method": "getPageList",
       "chapterData": {"url": url},
-      "preferences": getSourcePreferences(),
-      "data": source.sourceCode,
-      "lang": source.lang,
-      "sourceId": source.id?.toString(),
     });
     final data = jsonDecode(res.body) as List;
     return data
@@ -242,10 +233,6 @@ class MihonExtensionService implements ExtensionService {
     final res = await _dalvik({
       "method": "getVideoList",
       "episodeData": {"url": url},
-      "preferences": getSourcePreferences(),
-      "data": source.sourceCode,
-      "lang": source.lang,
-      "sourceId": source.id?.toString(),
     });
     final data = jsonDecode(res.body) as List;
     return data.map((e) {
@@ -352,10 +339,8 @@ class MihonExtensionService implements ExtensionService {
     return {
       ...MClient.getCookiesPref(source.baseUrl!),
       'user-agent': ?userAgent,
-      // Which source of the extension this call is for. The id sent alongside
-      // it is a Dart hashCode of the original one (see ExtensionStoreService),
-      // which the server cannot reproduce on the JVM, so an extension holding
-      // several sources would otherwise always resolve to the same one.
+      // Retain the header for older bridge versions; current bridges also
+      // receive the original source ID and base URL in the JSON body.
       'source-base-url': ?source.baseUrl,
       // Lets an extension server that supports it solve the challenge itself,
       // which is better placed than the retry below: it owns the request and
@@ -389,8 +374,16 @@ class MihonExtensionService implements ExtensionService {
   Future<Response> _postDalvik(Map<String, dynamic> body) {
     return client.post(
       Uri.parse("$androidProxyServer/dalvik"),
-      body: jsonEncode(body),
-      headers: getCookie(),
+      body: jsonEncode({
+        ...body,
+        ...source.mihonSourceIdentity,
+        'data': source.sourceCode,
+        'preferences': getSourcePreferences(),
+      }),
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        ...getCookie(),
+      },
     );
   }
 

@@ -43,7 +43,7 @@ void main() {
     tester,
   ) async {
     final retry = Completer<void>();
-    var retries = 0, backs = 0;
+    var retries = 0, backs = 0, webViews = 0;
     String? failure;
     late StateSetter change;
     await mount(
@@ -60,6 +60,7 @@ void main() {
               return retry.future;
             },
             onBack: () => backs++,
+            onOpenWebView: () => webViews++,
           );
         },
       ),
@@ -70,9 +71,12 @@ void main() {
     final before = tester.getTopLeft(title);
     expect(find.text('Getting chapter images…'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Retry'), findsNothing);
+    expect(find.byTooltip('Open in browser'), findsNothing);
     change(() => failure = 'Could not load this chapter');
     await tester.pump();
     expect(tester.getTopLeft(title), before);
+    await tester.tap(find.byTooltip('Open in browser'));
+    expect(webViews, 1);
     final button = find.widgetWithText(FilledButton, 'Retry');
     await tester.ensureVisible(button);
     await tester.tap(button);
@@ -81,6 +85,7 @@ void main() {
     await tester.pump();
     expect(find.text('Chapter 12 — The letter from the sea'), findsOneWidget);
     expect(button, findsNothing);
+    expect(find.byTooltip('Open in browser'), findsNothing);
     await tester.tap(find.byTooltip('Back'));
     expect(backs, 1);
     await tester.pumpWidget(const SizedBox.shrink());

@@ -51,6 +51,10 @@ android {
        }
    }
    buildTypes {
+       debug {
+           // Keep emulator/development builds separate from signed user installs.
+           applicationIdSuffix ".debug"
+       }
        release {
            signingConfig signingConfigs.release
        }

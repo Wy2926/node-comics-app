@@ -109,6 +109,7 @@ dependencies:
   m_extension_server:
     git:
       url: https://github.com/kodjodevf/m_extension_server.git
+      ref: 6c48ad82116b64384a977a179334570d0986c498
   flutter_tts: ^4.2.5
   code_assets: ^2.0.0
   hooks: ^2.2.0

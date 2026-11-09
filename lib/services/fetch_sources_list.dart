@@ -1,4 +1,3 @@
-import 'package:mangayomi/utils/version.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -9,6 +8,7 @@ import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/eval/aidoku/service.dart';
+import 'package:mangayomi/eval/mihon/source_identity.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
@@ -16,6 +16,7 @@ import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/services/isolate_service.dart';
 import 'package:mangayomi/services/extension_store_service.dart';
 import 'package:mangayomi/services/source_package.dart';
+import 'package:mangayomi/utils/version.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 Future<void> fetchSourcesList({
@@ -118,11 +119,16 @@ Future<void> fetchSourcesList({
             existing!.repo?.jsonUrl != url ||
             freshMetadata &&
                 (existing.catalogMetadataJson != source.catalogMetadataJson ||
-                    existing.isNsfw != source.isNsfw)) {
+                    existing.isNsfw != source.isNsfw ||
+                    source.sourceCodeLanguage == SourceCodeLanguage.mihon &&
+                        existing.additionalParams != source.additionalParams)) {
           existing.repo = repo;
           if (freshMetadata) {
             existing.catalogMetadataJson = source.catalogMetadataJson;
             existing.isNsfw = source.isNsfw;
+            if (source.sourceCodeLanguage == SourceCodeLanguage.mihon) {
+              existing.additionalParams = source.additionalParams;
+            }
           }
           if (compareVersions(existing.versionLast ?? '', source.version!) <
               0) {
@@ -444,21 +450,35 @@ Future<void> checkIfSourceIsObsolete(
   });
 }
 
+Future<Response> _fetchDalvikMetadata(
+  InterceptedClient client,
+  Source source,
+  String androidProxyServer,
+  String method,
+) {
+  final type = source.itemType == ItemType.anime ? 'Anime' : 'Manga';
+  return client.post(
+    Uri.parse('$androidProxyServer/dalvik'),
+    body: jsonEncode({
+      'method': '$method$type',
+      'data': source.sourceCode,
+      ...source.mihonSourceIdentity,
+    }),
+    headers: {'content-type': 'application/json; charset=utf-8'},
+  );
+}
+
 Future<Map<String, String>> fetchHeadersDalvik(
   InterceptedClient client,
   Source source,
   String androidProxyServer,
 ) async {
   try {
-    final name = source.itemType == ItemType.anime ? "Anime" : "Manga";
-    final res = await client.post(
-      Uri.parse("$androidProxyServer/dalvik"),
-      body: jsonEncode({
-        "method": "headers$name",
-        "data": source.sourceCode,
-        "lang": source.lang,
-        "sourceId": source.id?.toString(),
-      }),
+    final res = await _fetchDalvikMetadata(
+      client,
+      source,
+      androidProxyServer,
+      'headers',
     );
     final data = jsonDecode(res.body) as List;
     final Map<String, String> headers = {};
@@ -477,15 +497,11 @@ Future<bool> fetchSupportLatestDalvik(
   String androidProxyServer,
 ) async {
   try {
-    final name = source.itemType == ItemType.anime ? "Anime" : "Manga";
-    final res = await client.post(
-      Uri.parse("$androidProxyServer/dalvik"),
-      body: jsonEncode({
-        "method": "supportLatest$name",
-        "data": source.sourceCode,
-        "lang": source.lang,
-        "sourceId": source.id?.toString(),
-      }),
+    final res = await _fetchDalvikMetadata(
+      client,
+      source,
+      androidProxyServer,
+      'supportLatest',
     );
     return res.body.trim() == "true";
   } catch (_) {
@@ -499,15 +515,11 @@ Future<FilterList?> fetchFilterListDalvik(
   String androidProxyServer,
 ) async {
   try {
-    final name = source.itemType == ItemType.anime ? "Anime" : "Manga";
-    final res = await client.post(
-      Uri.parse("$androidProxyServer/dalvik"),
-      body: jsonEncode({
-        "method": "filters$name",
-        "data": source.sourceCode,
-        "lang": source.lang,
-        "sourceId": source.id?.toString(),
-      }),
+    final res = await _fetchDalvikMetadata(
+      client,
+      source,
+      androidProxyServer,
+      'filters',
     );
     final data = jsonDecode(res.body) as List;
 
@@ -597,15 +609,11 @@ Future<List<SourcePreference>?> fetchPreferencesDalvik(
   String androidProxyServer,
 ) async {
   try {
-    final name = source.itemType == ItemType.anime ? "Anime" : "Manga";
-    final res = await client.post(
-      Uri.parse("$androidProxyServer/dalvik"),
-      body: jsonEncode({
-        "method": "preferences$name",
-        "data": source.sourceCode,
-        "lang": source.lang,
-        "sourceId": source.id?.toString(),
-      }),
+    final res = await _fetchDalvikMetadata(
+      client,
+      source,
+      androidProxyServer,
+      'preferences',
     );
     final data = jsonDecode(res.body) as List;
     return data
