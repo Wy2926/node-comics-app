@@ -104,7 +104,7 @@ class TranslationViewController extends ChangeNotifier {
         targets,
         automatic: shouldTranslateAutomatically,
       );
-      _restore();
+      if (showTranslation) _restore();
     } else {
       runtime?.pause(consumer);
     }

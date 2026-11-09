@@ -54,7 +54,6 @@ class WebTranslationBridge {
   String _token = '', _document = '', _state = '';
   int _sequence = 0, _epoch = 0;
   bool _ready = false, _disposed = false;
-  DateTime _lastMessage = DateTime.fromMillisecondsSinceEpoch(0);
   bool get active => view.foreground && view.runtime != null && !_disposed;
 
   void navigate() {
@@ -62,7 +61,6 @@ class WebTranslationBridge {
     _ready = false;
     _token = '';
     _sequence = 0;
-    _lastMessage = DateTime.fromMillisecondsSinceEpoch(0);
     _state = '';
     _elements.clear();
     _displayed.clear();
@@ -71,6 +69,9 @@ class WebTranslationBridge {
 
   Future<void> install(Uri url) async {
     if (_disposed || !{'https', 'http'}.contains(url.scheme)) return;
+    // WebView can report load completion more than once for one document.
+    // A new script starts a new sequence and invalidates the prior display.
+    navigate();
     final epoch = _epoch;
     final token = translationUuid();
     _token = token;
@@ -116,15 +117,9 @@ class WebTranslationBridge {
     }
     _sequence = value['seq'] as int;
     if (value['action'] != null) {
-      final epoch = _epoch;
       final id = value['id'];
       final entry = _elements[id];
-      if (entry == null ||
-          value['revision'] != entry['revision'] ||
-          (await controller.getUrl())?.toString().split('#').first !=
-              _document ||
-          epoch != _epoch ||
-          !active) {
+      if (entry == null || value['revision'] != entry['revision']) {
         return false;
       }
       final page = entry['page'] as TranslationPage;
@@ -149,28 +144,14 @@ class WebTranslationBridge {
       await view.perform(target, action);
       return true;
     }
-    if (DateTime.now().difference(_lastMessage) <
-        const Duration(milliseconds: 80)) {
-      return false;
-    }
-    _lastMessage = DateTime.now();
     final items = value['items'];
     if (items is! List || items.length > 4) return false;
-    final epoch = _epoch;
-    if ((await controller.getUrl())?.toString().split('#').first != _document ||
-        epoch != _epoch ||
-        !active) {
-      return false;
-    }
     final targets = <TranslationTarget>[];
     final entries = <String, Map<String, dynamic>>{};
     for (final item in items) {
       if (item is! Map ||
           item['id'] is! String ||
           item['revision'] is! String ||
-          item['slot'] is! int ||
-          (item['slot'] as int) < 0 ||
-          (item['slot'] as int) >= 512 ||
           !{'http', 'blob', 'canvas'}.contains(item['kind']) ||
           item['url'] is! String) {
         return false;
@@ -181,13 +162,13 @@ class WebTranslationBridge {
       }
       final entry = Map<String, dynamic>.from(item);
       final page = TranslationPage(
-        translationKey(['web', _document, item['slot']]),
+        translationKey(['web', _token, id]),
         translationKey(item['revision']),
       );
       entry['page'] = page;
       entries[id] = entry;
       targets.add(
-        TranslationTarget(page, _WebImageSource(this, id, entry, epoch)),
+        TranslationTarget(page, _WebImageSource(this, id, entry, _epoch)),
       );
     }
     _elements
@@ -208,17 +189,33 @@ class WebTranslationBridge {
     }
     final result = await controller
         .callAsyncJavaScript(
-          functionBody: 'return await window.__nodelaneReader.call(token, operation, args);',
+          functionBody: '''
+try {
+  return {value: await window.__nodelaneReader.call(token, operation, args)};
+} catch (error) {
+  return {error: error.message};
+}
+''',
           arguments: {'token': _token, 'operation': operation, 'args': args},
         )
         .timeout(const Duration(seconds: 10));
     if (!_ready || _disposed || epoch != _epoch) {
       throw const TranslationCancelled();
     }
-    if (result == null || result.error != null) {
+    if (result == null || result.error != null || result.value is! Map) {
       throw const TranslationFailure('BRIDGE_INVALID');
     }
-    return result.value;
+    final payload = result.value as Map;
+    if (payload['error'] == 'SOURCE_CHANGED') {
+      throw const TranslationCancelled();
+    }
+    if (payload['error'] != null) {
+      throw TranslationFailure(switch (payload['error']) {
+        'SOURCE_MISSING' || 'RESOURCE_LIMIT' => payload['error'] as String,
+        _ => 'BRIDGE_INVALID',
+      });
+    }
+    return payload['value'];
   }
 
   Future<Map<String, dynamic>?> captureAnchor() async {
@@ -344,7 +341,7 @@ class WebTranslationBridge {
           })
           .whenComplete(() {
             _sending.remove(entry.key);
-            if (epoch == _epoch && view.images[page.identity] != image) {
+            if (epoch != _epoch || view.images[page.identity] != image) {
               _changed();
             }
           });

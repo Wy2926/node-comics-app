@@ -14,7 +14,7 @@
   let theme = {};
   let next = 0, seq = 0, active = false, translated = false, timer, disposed = false;
   let input = null, output = null, observer, restoreTimer;
-  const MAX_BYTES = 32 * 1024 * 1024, CHUNK = 128 * 1024;
+  const MAX_BYTES = 32 * 1024 * 1024, PIXEL_BUDGET = 64 * 1024 * 1024, CHUNK = 128 * 1024;
   const encode = bytes => {
     let text = '';
     for (let at = 0; at < bytes.length; at += 8192) text += String.fromCharCode(...bytes.subarray(at, at + 8192));
@@ -217,7 +217,7 @@
       const id = ids.get(el), version = revision(el), url = source(el);
       if (!/^(https?:|blob:)/.test(url) && url !== 'canvas') continue;
       records.set(id, {el, revision: version});
-      candidates.push({id, revision: version, slot: index, url, kind: url === 'canvas' ? 'canvas' : url.startsWith('blob:') ? 'blob' : 'http', top: box.top});
+      candidates.push({id, revision: version, url, kind: url === 'canvas' ? 'canvas' : url.startsWith('blob:') ? 'blob' : 'http', top: box.top});
     }
     candidates.sort((a,b) => a.top - b.top);
     const selected = candidates.slice(0, 4);
@@ -263,30 +263,51 @@
     if (operation === 'inputBegin') {
       if (input) throw Error('RESOURCE_LIMIT');
       const {el} = record(args.id, args.revision);
-      let blob;
-      if (el instanceof HTMLCanvasElement) {
-        if (!config.canvas || el.width * el.height * 12 > 64 * 1024 * 1024) throw Error('RESOURCE_LIMIT');
-        blob = await new Promise((resolve, reject) => { try { el.toBlob(resolve, 'image/png'); } catch(e) { reject(e); } });
+      const isCanvas = el instanceof HTMLCanvasElement;
+      if (isCanvas) {
+        if (!config.canvas) throw Error('SOURCE_MISSING');
       } else {
         const url = new URL(source(el), location.href);
-        if (url.protocol !== 'blob:' || url.origin !== location.origin) throw Error('SOURCE_MISSING');
-        const response = await fetch(url.href, {signal: AbortSignal.timeout(15000)});
-        if (!response.ok) throw Error('SOURCE_MISSING');
-        const reader = response.body.getReader(), chunks = []; let size = 0;
-        try { while (true) { const part = await reader.read(); if (part.done) break; size += part.value.length;
-          if (size > MAX_BYTES) throw Error('RESOURCE_LIMIT'); chunks.push(part.value); } }
-        finally { reader.cancel(); }
-        blob = new Blob(chunks);
+        if (url.protocol !== 'blob:' || url.origin !== location.origin || !el.complete) throw Error('SOURCE_MISSING');
       }
-      record(args.id, args.revision);
-      if (!blob || blob.size > MAX_BYTES || !active) throw Error('RESOURCE_LIMIT');
-      input = {blob, id: args.id, revision: args.revision, offset: 0}; return {size: blob.size};
+      const width = isCanvas ? el.width : el.naturalWidth, height = isCanvas ? el.height : el.naturalHeight;
+      if (!width || !height) throw Error('SOURCE_MISSING');
+      if (width * height * 12 > PIXEL_BUDGET) throw Error('RESOURCE_LIMIT');
+      const value = {blob: null, id: args.id, revision: args.revision, offset: 0};
+      input = value;
+      let canvas;
+      try {
+        let blob;
+        try {
+          // Read decoded pixels consistently, even when the page revoked its Blob URL.
+          canvas = isCanvas ? el : document.createElement('canvas');
+          if (!isCanvas) {
+            canvas.width = width; canvas.height = height;
+            canvas.getContext('2d').drawImage(el, 0, 0);
+          }
+          blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        } catch (_) { throw Error('SOURCE_MISSING'); }
+        record(args.id, args.revision);
+        if (input !== value || !active || disposed) throw Error('BRIDGE_INVALID');
+        if (!blob || !blob.size) throw Error('SOURCE_MISSING');
+        if (blob.size > MAX_BYTES) throw Error('RESOURCE_LIMIT');
+        value.blob = blob;
+        return {size: blob.size};
+      } catch (error) {
+        if (input === value) input = null;
+        throw error;
+      } finally {
+        if (canvas && !isCanvas) canvas.width = canvas.height = 0;
+      }
     }
     if (operation === 'inputChunk') {
-      if (!input || args.id !== input.id || args.offset !== input.offset) throw Error('BRIDGE_INVALID');
-      record(input.id, input.revision);
-      const bytes = new Uint8Array(await input.blob.slice(input.offset, input.offset + CHUNK).arrayBuffer());
-      input.offset += bytes.length; return encode(bytes);
+      const value = input;
+      if (!value?.blob || args.id !== value.id || args.offset !== value.offset) throw Error('BRIDGE_INVALID');
+      record(value.id, value.revision);
+      const bytes = new Uint8Array(await value.blob.slice(value.offset, value.offset + CHUNK).arrayBuffer());
+      record(value.id, value.revision);
+      if (input !== value) throw Error('BRIDGE_INVALID');
+      value.offset += bytes.length; return encode(bytes);
     }
     if (operation === 'inputEnd') { const value = input; input = null; if (value) record(value.id, value.revision); return true; }
     if (operation === 'resultClear') { drop(args.id); return true; }
@@ -308,7 +329,7 @@
       record(value.id, value.revision);
       const bitmap = await createImageBitmap(new Blob(value.chunks, {type:'image/png'}));
       try {
-        if (!active || disposed || bitmap.width * bitmap.height * 8 > 64 * 1024 * 1024) throw Error('RESOURCE_LIMIT');
+        if (!active || disposed || bitmap.width * bitmap.height * 8 > PIXEL_BUDGET) throw Error('RESOURCE_LIMIT');
         record(value.id, value.revision);
         const canvas = document.createElement('canvas'); canvas.dataset.nodelaneOverlay = 'true';
         canvas.width = bitmap.width; canvas.height = bitmap.height;

@@ -164,13 +164,14 @@ class TranslationImageWork {
 
   Future<PreparedTranslationImage> prepare(
     File original,
-    TranslationCancellation cancel,
-  ) => _queue.run(() async {
+    TranslationCancellation cancel, {
+    String? sourceSha,
+  }) => _queue.run(() async {
     cancel.check();
     await temporary.create(recursive: true);
     final path = '${temporary.path}/${translationUuid()}.png';
     final sourcePath = original.path;
-    final result = await _prepareInWorker(sourcePath, path);
+    final result = await _prepareInWorker(sourcePath, path, sourceSha);
     if (cancel.isCancelled) {
       await File(path).delete().catchError((_) => File(path));
       cancel.check();
@@ -224,12 +225,19 @@ class TranslationImageWork {
 
 // These top-level wrappers ensure the isolate closure cannot capture the
 // scheduler's Future tail or the caller's cancellation listeners.
-Future<Map<String, Object>> _prepareInWorker(String input, String output) =>
-    Isolate.run(() => _prepare(input, output));
+Future<Map<String, Object>> _prepareInWorker(
+  String input,
+  String output,
+  String? sourceSha,
+) => Isolate.run(() => _prepare(input, output, sourceSha));
 Future<void> _compositeInWorker(Map<String, Object> args) =>
     Isolate.run(() => _composite(args));
 
-Future<Map<String, Object>> _prepare(String sourcePath, String output) async {
+Future<Map<String, Object>> _prepare(
+  String sourcePath,
+  String output,
+  String? knownSha,
+) async {
   final file = File(sourcePath);
   final header = await readImageHeader(file);
   final size = await file.length();
@@ -241,7 +249,7 @@ Future<Map<String, Object>> _prepare(String sourcePath, String output) async {
   if (max(header.width, header.height) > 16383) {
     throw const TranslationFailure('UNSUPPORTED_IMAGE');
   }
-  final sourceSha = await imageDigest(file);
+  final sourceSha = knownSha ?? await imageDigest(file);
   var decoded = img.decodeImage(await file.readAsBytes());
   if (decoded == null ||
       decoded.numFrames != 1 ||
@@ -274,7 +282,7 @@ Future<Map<String, Object>> _prepare(String sourcePath, String output) async {
   }
   return {
     'path': actual.path,
-    'sha256': await imageDigest(actual),
+    'sha256': actual == file ? sourceSha : await imageDigest(actual),
     'sourceSha256': sourceSha,
     'width': width,
     'height': height,

@@ -54,9 +54,13 @@ class TranslationRepository {
   /// Binding and operation are one commit; a crash cannot hide an intent and
   /// cause the next visit to allocate another operation ID.
   Future<void> writeBatch(
-    List<(String, String, String, Map<String, dynamic>)> values,
-  ) => _writes.run(
+    List<(String, String, String, Map<String, dynamic>)> values, {
+    Iterable<String> remove = const [],
+  }) => _writes.run(
     () => database.writeTxn(() async {
+      for (final key in remove) {
+        await database.translationEntrys.deleteByKey(key);
+      }
       for (final (key, scope, kind, value) in values) {
         final payload = jsonEncode(value);
         final old = await database.translationEntrys.getByKey(key);

@@ -7,8 +7,6 @@ class OfficialReceipt {
     required this.id,
     required this.key,
     required this.scope,
-    required this.pageKey,
-    required this.revision,
     required this.language,
     required this.inputKey,
     required this.inputSha,
@@ -20,19 +18,17 @@ class OfficialReceipt {
     this.sent = false,
     this.accepted = false,
     this.snapshot,
-    this.resultSha,
     this.resultKey,
     this.unavailable = false,
   });
-  final String id, key, scope, pageKey, language;
-  String revision;
+  final String id, key, scope, language;
   final String inputKey, inputSha, sourceSha, mime;
   final int width, height;
   final Map<String, dynamic> request;
   bool sent, accepted;
   bool unavailable;
   Map<String, dynamic>? snapshot;
-  String? resultSha, resultKey;
+  String? resultKey;
   String get state =>
       snapshot?['state'] as String? ?? (sent ? 'uncertain' : 'local');
   bool get active => !const {'succeeded', 'failed'}.contains(state);
@@ -105,8 +101,6 @@ class OfficialReceipt {
     'id': id,
     'key': key,
     'scope': scope,
-    'pageKey': pageKey,
-    'revision': revision,
     'language': language,
     'inputKey': inputKey,
     'inputSha': inputSha,
@@ -119,7 +113,6 @@ class OfficialReceipt {
     'accepted': accepted,
     'unavailable': unavailable,
     'snapshot': snapshot,
-    'resultSha': resultSha,
     'resultKey': resultKey,
   };
   factory OfficialReceipt.fromJson(Map<String, dynamic> value) {
@@ -132,8 +125,6 @@ class OfficialReceipt {
       id: value['id'] as String,
       key: value['key'] as String,
       scope: value['scope'] as String,
-      pageKey: value['pageKey'] as String,
-      revision: value['revision'] as String,
       language: value['language'] as String,
       inputKey: value['inputKey'] as String,
       inputSha: value['inputSha'] as String,
@@ -148,7 +139,6 @@ class OfficialReceipt {
       snapshot: value['snapshot'] == null
           ? null
           : Map<String, dynamic>.from(value['snapshot'] as Map),
-      resultSha: value['resultSha'] as String?,
       resultKey: value['resultKey'] as String?,
     );
   }

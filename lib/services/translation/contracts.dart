@@ -3,8 +3,8 @@ import 'package:mangayomi/utils/localized_message.dart';
 import 'dart:async';
 import 'dart:io';
 
-/// The source owns this identity and its locator. No URL or credentials are
-/// sent to a translation channel. Split-page views use the same source key.
+/// A source-owned display locator, not a persistent translation identity.
+/// Translation reuse is based on the acquired image's content hash.
 class TranslationPage {
   const TranslationPage(this.key, this.revision);
   final String key;

@@ -24,13 +24,26 @@ window.flutter_inappwebview = {callHandler: async (name, value) => { if (value.a
 const assert = (value, text) => { if (!value) throw Error(text); };
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const call = (operation, args) => window.__nodelaneReader.call('fixture', operation, args);
+const rejects = async (run, code) => {
+  let error; try { await run(); } catch (value) { error=value; }
+  assert(error?.message===code, 'expected '+code+', got '+error?.message);
+};
+const readInput = async item => {
+  const meta=await call('inputBegin',item), chunks=[]; let offset=0;
+  while(offset<meta.size) {
+    const data=await call('inputChunk',{id:item.id,offset}), length=atob(data).length;
+    assert(length<=128*1024,'oversized bridge chunk'); chunks.push({data,offset}); offset+=length;
+  }
+  await call('inputEnd',{});
+  return {meta,chunks};
+};
 (async () => {
   const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=768;
   const pixels = canvas.getContext('2d').createImageData(512,768);
   let seed=7;
   for(let at=0;at<pixels.data.length;at++) { seed=(seed*1664525+1013904223)>>>0; pixels.data[at]=at%4===3?255:seed>>>24; }
   canvas.getContext('2d').putImageData(pixels,0,0);
-  const blob = await new Promise(resolve => canvas.toBlob(resolve,'image/png'));
+  const blob = await new Promise(resolve => canvas.toBlob(resolve,'image/jpeg',.9));
   const url = URL.createObjectURL(blob);
   const img = document.createElement('img'); img.src=url; img.style='display:block;width:256px;height:384px';
   document.body.append(img); await img.decode();
@@ -38,15 +51,42 @@ const call = (operation, args) => window.__nodelaneReader.call('fixture', operat
   await call('state',{active:true,translated:true}); await wait(250);
   const item=windows.at(-1).items[0];
   assert(windows.at(-1).items.length<=4,'unbounded discovery');
+  const neighbour=img.nextElementSibling;
+  document.body.insertBefore(neighbour,img); await wait(250);
+  const reordered=windows.at(-1).items.find(value=>value.id===item.id);
+  assert(reordered?.revision===item.revision && !('slot' in reordered),'DOM order became translation identity');
+  document.body.insertBefore(img,neighbour); await wait(250);
   let rejected=false; try { await window.__nodelaneReader.call('stale','state',{}); } catch { rejected=true; }
   assert(rejected,'stale document token accepted');
-  const meta=await call('inputBegin',item); const chunks=[]; let offset=0;
-  while(offset<meta.size) {
-    const data=await call('inputChunk',{id:item.id,offset}); const length=atob(data).length;
-    assert(length<=128*1024,'oversized bridge chunk'); chunks.push({data,offset}); offset+=length;
-  }
+  const live=await readInput(item);
+  assert(atob(live.chunks[0].data).slice(1,4)==='PNG','Blob input must consistently use decoded PNG pixels');
+  URL.revokeObjectURL(url);
+  await rejects(async () => { try { await fetch(url); } catch (_) { throw Error('revoked'); } },'revoked');
+  const {meta,chunks}=await readInput(item);
+  assert(JSON.stringify(live)===JSON.stringify({meta,chunks}),'revocation changed the input bytes');
   assert(chunks.length>1,'fixture must cross chunk boundaries');
-  await call('inputEnd',{});
+  const toBlob=HTMLCanvasElement.prototype.toBlob;
+  let temporary;
+  for (const encode of [function(){throw new DOMException('tainted','SecurityError');},function(done){done(null);}]) {
+    HTMLCanvasElement.prototype.toBlob=function(done){temporary=this;encode.call(this,done);};
+    await rejects(()=>call('inputBegin',item),'SOURCE_MISSING');
+    assert(temporary.width===0 && temporary.height===0,'failed capture retained canvas pixels');
+  }
+  HTMLCanvasElement.prototype.toBlob=toBlob;
+  assert((await readInput(item)).meta.size===meta.size,'failed capture blocked retry');
+  Object.defineProperty(img,'naturalWidth',{value:100000,configurable:true});
+  await rejects(()=>call('inputBegin',{...item,revision:img.src+':100000:'+img.naturalHeight}),'RESOURCE_LIMIT');
+  delete img.naturalWidth;
+  let finish;
+  HTMLCanvasElement.prototype.toBlob=function(done){temporary=this;finish=()=>done(blob);};
+  const pending=call('inputBegin',item);
+  await rejects(()=>call('inputBegin',item),'RESOURCE_LIMIT');
+  await call('state',{active:false,translated:false});
+  await call('state',{active:true,translated:true});
+  finish(); await rejects(()=>pending,'BRIDGE_INVALID');
+  assert(temporary.width===0 && temporary.height===0,'cancelled capture retained canvas pixels');
+  HTMLCanvasElement.prototype.toBlob=toBlob;
+  assert((await readInput(item)).meta.size===meta.size,'cancelled capture blocked next input');
   const original=img.src, top=img.getBoundingClientRect().top, before=scrollY;
   await call('resultBegin',{...item,size:meta.size});
   for(const chunk of chunks) await call('resultChunk',{id:item.id,...chunk});
@@ -97,7 +137,12 @@ const call = (operation, args) => window.__nodelaneReader.call('fixture', operat
   assert(Math.abs(scrollY-before)<2,'cold tab anchor restoration failed');
   await call('state',{active:true,translated:false});
   assert(document.querySelector('canvas[data-nodelane-overlay]').style.display==='none','original toggle failed');
+  HTMLCanvasElement.prototype.toBlob=function(done){temporary=this;finish=()=>done(blob);};
+  const replaced=call('inputBegin',item);
   img.src=URL.createObjectURL(blob); await img.decode();
+  finish(); await rejects(()=>replaced,'SOURCE_CHANGED');
+  assert(temporary.width===0 && temporary.height===0,'replaced capture retained canvas pixels');
+  HTMLCanvasElement.prototype.toBlob=toBlob;
   rejected=false; try { await call('resultBegin',{...item,size:meta.size}); } catch { rejected=true; }
   assert(rejected,'stale element revision accepted');
   await call('state',{active:true,translated:true,items:[failed]});
@@ -127,7 +172,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    chrome = os.environ.get('CHROME_BINARY') or shutil.which('chromium') or '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    chrome = os.environ.get('CHROME_BINARY') or shutil.which('chromium') or (
+        str(Path(os.environ.get('PROGRAMFILES', 'C:/Program Files')) / 'Google/Chrome/Application/chrome.exe')
+        if os.name == 'nt' else '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
     server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -157,15 +204,18 @@ for(let attempt=0;attempt<150;attempt++) {
  if(status!=='pending') break;
  await new Promise(resolve=>setTimeout(resolve,100));
 }
-ws.close(); console.log(status); if(status!=='NODELANE_BRIDGE_PASS') process.exitCode=1;
+await send('Browser.close',{}); ws.close(); console.log(status); if(status!=='NODELANE_BRIDGE_PASS') process.exitCode=1;
 '''
                 run = subprocess.run([node, '--input-type=module', '-e', probe,
                     f'http://127.0.0.1:{port}', f'http://127.0.0.1:{server.server_port}'], capture_output=True, text=True, timeout=25)
                 if run.returncode: raise SystemExit(run.stdout.strip() or run.stderr[:500])
-                print('PASS: image status, native theme, targeted retry/verify, duplicate guard, original/position, chunked transfer, stale revision and hidden release')
+                print('PASS: live/revoked Blob PNG identity, capture failure/retry/release, replacement/cancellation, image status, targeted actions, original/position and chunked transfer')
             finally:
-                browser.terminate()
-                browser.wait(timeout=10)
+                try:
+                    browser.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    browser.terminate()
+                    browser.wait(timeout=10)
     finally:
         server.shutdown()
         server.server_close()

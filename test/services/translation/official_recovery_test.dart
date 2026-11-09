@@ -18,12 +18,14 @@ class _Source implements SourceImageReader {
   _Source(this.file);
   final File file;
   int reads = 0;
+  String? failure;
   @override
   Future<OriginalImageLease> acquire(
     TranslationPage page,
     TranslationCancellation cancellation,
   ) async {
     reads++;
+    if (failure != null) throw TranslationFailure(failure!);
     return OriginalImageLease(file);
   }
 }
@@ -264,11 +266,53 @@ void main() {
     expect(puts, hasLength(1));
     expect(uploads, 1);
   });
+  test('source failure retries preparation without a remote verification or retry_of', () async {
+    final source = target.source as _Source;
+    source.failure = 'SOURCE_MISSING';
+    final value = runtime()..setWindow('browser', [target]);
+    await _until(
+      () => value.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(
+      value.stateFor(target.page).message,
+      const TranslationFailure('SOURCE_MISSING').message,
+    );
+    expect(value.stateFor(target.page).actions, {TranslationAction.retry});
+    expect(puts, isEmpty);
+    expect(gets, isEmpty);
+    expect(uploads, 0);
+    await value.perform(target, TranslationAction.retry);
+    await _until(
+      () =>
+          source.reads == 2 &&
+          value.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(puts, isEmpty);
+    source.failure = null;
+    await value.perform(target, TranslationAction.retry);
+    await _until(() => value.stateFor(target.page).noText);
+    expect(puts, hasLength(1));
+    expect(puts.single.$2, contains('image'));
+    expect(puts.single.$2, isNot(contains('retry_of')));
+    expect(gets, isEmpty);
+    expect(uploads, 1);
+  });
   test('lost create response survives runtime restart and verifies the original UUID', () async {
     dropCreate = true;
     final first = runtime()..setWindow('reader', [target]);
     await _until(
       () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
+    );
+    expect(first.stateFor(target.page).actions, {TranslationAction.verify});
+    await expectLater(
+      first.perform(target, TranslationAction.retry),
+      throwsA(
+        isA<TranslationFailure>().having(
+          (e) => e.code,
+          'code',
+          'OUTCOME_UNKNOWN',
+        ),
+      ),
     );
     await first.dispose();
     runtimes.remove(first);
@@ -284,6 +328,21 @@ void main() {
     await _until(() => other.stateFor(target.page).noText);
     expect(puts, hasLength(2));
     expect(puts[0].$1, isNot(puts[1].$1));
+  });
+  test('missing saved operation remains uncertain instead of starting a preparation retry', () async {
+    final value = runtime() as OfficialRuntime;
+    final sha = await imageDigest((target.source as _Source).file);
+    final key = 'binding:${translationKey([value.scope, sha, 'zh-Hans'])}';
+    await repository.write(key, value.scope, 'binding', {
+      'id': 'missing-operation',
+    });
+    value.setWindow('browser', [target]);
+    await _until(
+      () => value.stateFor(target.page).phase == TranslationPhase.uncertain,
+    );
+    expect(value.stateFor(target.page).actions, {TranslationAction.verify});
+    expect(puts, isEmpty);
+    expect(uploads, 0);
   });
   test('cold cached display and single-image regeneration work without enabling automatic translation', () async {
     final first = runtime() as OfficialRuntime;
@@ -324,7 +383,6 @@ void main() {
       receipt.resultKey!,
       source.file,
     );
-    receipt.resultSha = await imageDigest(cached);
     await repository.write(
       operation,
       first.scope,
@@ -337,18 +395,25 @@ void main() {
     final next = runtime();
     final untouched = TranslationTarget(
       const TranslationPage('next-page', '1'),
-      source,
+      _Source(
+        await File('${directory.path}/untouched.png').writeAsBytes(
+          img.encodePng(
+            img.Image(width: 8, height: 12, numChannels: 4)
+              ..setPixelRgba(0, 0, 0, 255, 0, 255),
+          ),
+        ),
+      ),
     );
     final view = TranslationViewController()..configure(enabled: false);
     addTearDown(view.dispose);
     view.attach(next);
     view.window([target, untouched]);
-    await _until(() => view.state(target).result != null);
     expect(view.images, isEmpty);
+    expect(source.reads, 0);
     view.configure(showTranslation: true);
     await _until(() => view.images.isNotEmpty);
     expect(view.images[target.page.identity]!.file.path, cached.path);
-    expect(source.reads, 0);
+    expect(source.reads, 1);
     expect(puts, hasLength(1));
     expect(gets, isEmpty);
     expect(uploads, 1);
@@ -381,9 +446,9 @@ void main() {
         if (!held.resume.isCompleted) held.resume.complete();
       });
       final next = runtime();
+      next.setWindow('reader', [target], automatic: false);
       final restoration = next.restore([target]);
       await held.started.future;
-      next.setWindow('reader', [target], automatic: false);
       terminalFailure = 'REMOTE_FAILED';
       await next.perform(target, TranslationAction.regenerate);
       await _until(
@@ -482,26 +547,34 @@ void main() {
     },
   );
 
-  test('a changed original never displays an old result or silently starts another task', () async {
+  test('recycled page positions translate new hashes and reuse the original on return', () async {
     final value = runtime()..setWindow('reader', [target]);
     await _until(() => value.stateFor(target.page).noText);
+    final source = target.source as _Source;
+    final firstBytes = await source.file.readAsBytes();
+    final firstId = puts.single.$1;
+    expect(source.reads, 1);
     value.pause('reader');
     final replacement = img.Image(width: 8, height: 12, numChannels: 4)
       ..setPixelRgba(0, 0, 255, 0, 0, 255);
-    await (target.source as _Source).file.writeAsBytes(
-      img.encodePng(replacement),
-    );
+    await source.file.writeAsBytes(img.encodePng(replacement));
     value.setWindow('reader', [target]);
-    await _until(
-      () => value.stateFor(target.page).phase == TranslationPhase.failed,
-    );
-    expect(value.stateFor(target.page).result, isNull);
-    expect(puts, hasLength(1));
-    await Future<void>.delayed(const Duration(milliseconds: 25));
-    await value.perform(target, TranslationAction.regenerate);
     await _until(() => puts.length == 2 && value.stateFor(target.page).noText);
     expect(puts.last.$2, contains('image'));
-    expect(puts.last.$1, isNot(puts.first.$1));
+    expect(puts.last.$1, isNot(firstId));
+    expect(source.reads, 2);
+    value.pause('reader');
+    await source.file.writeAsBytes(firstBytes);
+    target = TranslationTarget(
+      const TranslationPage('other-dom-node', 'new-blob-url'),
+      source,
+    );
+    value.setWindow('reader', [target]);
+    await _until(() => value.stateFor(target.page).noText);
+    expect(puts, hasLength(2));
+    expect(uploads, 2);
+    expect(gets, isEmpty);
+    expect(source.reads, 3);
   });
   test('lost upload response verifies completion; explicit regenerate alone creates new UUID', () async {
     dropUpload = true;
@@ -520,5 +593,62 @@ void main() {
     await _until(() => puts.length == 2 && next.stateFor(target.page).noText);
     expect(puts.last.$2, {'regenerate_of': puts.first.$1});
     expect(puts.last.$1, isNot(puts.first.$1));
+  });
+
+  test(
+    'different elements with the same content share one submission and upload',
+    () async {
+      final duplicate = TranslationTarget(
+        const TranslationPage('other-element', 'another-blob'),
+        target.source,
+      );
+      final value = runtime()..setWindow('browser', [target, duplicate]);
+      await _until(
+        () =>
+            value.stateFor(target.page).noText &&
+            value.stateFor(duplicate.page).noText,
+      );
+      expect(puts, hasLength(1));
+      expect(uploads, 1);
+    },
+  );
+
+  test('slot receipts are reindexed by hash without discarding UUIDs or resubmitting', () async {
+    final first = runtime() as OfficialRuntime;
+    first.setWindow('browser', [target]);
+    await _until(() => first.stateFor(target.page).noText);
+    await first.dispose();
+    runtimes.remove(first);
+    final operation = 'operation:${first.scope}:${puts.single.$1}';
+    final data = (await repository.read(operation))!;
+    final contentKey = data['key'] as String;
+    final oldKey =
+        'binding:${translationKey([first.scope, 'old-dom-slot', 'zh-Hans'])}';
+    data.addAll({
+      'key': oldKey,
+      'pageKey': 'old-dom-slot',
+      'revision': 'old-blob',
+    });
+    await repository.writeBatch(
+      [
+        (operation, first.scope, 'completed', data),
+        (oldKey, first.scope, 'binding', {'id': puts.single.$1}),
+      ],
+      remove: [contentKey, 'image-bindings:${first.scope}'],
+    );
+    target = TranslationTarget(
+      const TranslationPage('new-dom-slot', 'new-blob'),
+      target.source,
+    );
+    final next = runtime()..setWindow('browser', [target]);
+    await _until(() => next.stateFor(target.page).noText);
+    expect(puts, hasLength(1));
+    expect(uploads, 1);
+    expect(gets, isEmpty);
+    expect(await repository.read(oldKey), isNull);
+    expect((await repository.read(contentKey))!['id'], puts.single.$1);
+    final updated = (await repository.read(operation))!;
+    expect(updated.containsKey('pageKey'), isFalse);
+    expect(updated.containsKey('revision'), isFalse);
   });
 }
