@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:isar_community/isar.dart';
+import 'package:path/path.dart' as p;
 import 'package:mangayomi/models/translation_entry.dart';
 import 'package:mangayomi/repositories/db_write_queue.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
@@ -17,10 +18,10 @@ class TranslationRepository {
   final _files = DbWriteQueue();
   final _leases = <String, int>{};
   final _deleted = <String>{};
+  String _path(File file) => p.normalize(file.absolute.path);
   int cacheEpoch = 0;
   static const inputBudget = 128 * 1024 * 1024;
   static const resultBudget = 256 * 1024 * 1024;
-  static const metadataBudget = 16 * 1024 * 1024;
 
   Future<Map<String, dynamic>?> read(String key) async {
     final entry = await database.translationEntrys.getByKey(key);
@@ -64,11 +65,6 @@ class TranslationRepository {
       for (final (key, scope, kind, value) in values) {
         final payload = jsonEncode(value);
         final old = await database.translationEntrys.getByKey(key);
-        final size = await database.translationEntrys.getSize();
-        if (size + payload.length * 3 - (old?.payload.length ?? 0) * 3 >
-            metadataBudget) {
-          throw const TranslationFailure('STORAGE_FULL');
-        }
         final entry = TranslationEntry()
           ..id = old?.id ?? Isar.autoIncrement
           ..key = key
@@ -138,7 +134,7 @@ class TranslationRepository {
   }
 
   void Function() retain(File file) {
-    final path = file.path;
+    final path = _path(file);
     _leases[path] = (_leases[path] ?? 0) + 1;
     var released = false;
     return () {
@@ -155,8 +151,8 @@ class TranslationRepository {
   }
 
   Future<void> deleteFile(File file) async {
-    if (_leases.containsKey(file.path)) {
-      _deleted.add(file.path);
+    if (_leases.containsKey(_path(file))) {
+      _deleted.add(_path(file));
     } else if (await file.exists()) {
       await file.delete();
     }
@@ -175,8 +171,7 @@ class TranslationRepository {
 
   Future<void> _evict(String kind, int incoming, String target) async {
     final budget = kind == 'input' ? inputBudget : resultBudget;
-    if (incoming > budget) throw const TranslationFailure('STORAGE_FULL');
-    final pinned = <String>{target, ..._leases.keys};
+    final pinned = <String>{_path(File(target)), ..._leases.keys};
     if (kind == 'input') {
       final active = await database.translationEntrys
           .filter()
@@ -184,7 +179,7 @@ class TranslationRepository {
           .findAll();
       for (final entry in active) {
         final value = jsonDecode(entry.payload) as Map<String, dynamic>;
-        pinned.add(file('input', value['inputKey'] as String).path);
+        pinned.add(_path(file('input', value['inputKey'] as String)));
       }
     }
     final dir = Directory('${directory.path}/$kind');
@@ -195,7 +190,7 @@ class TranslationRepository {
       if (file is! File) continue;
       final stat = await file.stat();
       size += stat.size;
-      if (!pinned.contains(file.path)) files.add((file, stat));
+      if (!pinned.contains(_path(file))) files.add((file, stat));
     }
     files.sort((a, b) => a.$2.modified.compareTo(b.$2.modified));
     for (final item in files) {
@@ -203,8 +198,6 @@ class TranslationRepository {
       await item.$1.delete();
       size -= item.$2.size;
     }
-    if (size + incoming > budget) {
-      throw const TranslationFailure('STORAGE_FULL');
-    }
+    // A cache target is not image admission: current/leased files may exceed it.
   }
 }

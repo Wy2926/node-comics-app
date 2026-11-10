@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,11 +9,25 @@ import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/modules/webview/translation_bridge.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 
+import 'fixtures.dart';
+
 class _Controller extends Fake implements InAppWebViewController {
   CallAsyncJavaScriptResult? result;
   Completer<CallAsyncJavaScriptResult?>? pending;
   Function? handler;
   String? token;
+  String? archive;
+  int archiveCalls = 0;
+  @override
+  Future<String?> saveWebArchive({
+    required String filePath,
+    bool autoname = false,
+  }) async {
+    archiveCalls++;
+    if (archive == null) return null;
+    await File(filePath).writeAsString(archive!);
+    return filePath;
+  }
 
   @override
   void addJavaScriptHandler({
@@ -47,12 +62,20 @@ class _Controller extends Fake implements InAppWebViewController {
 }
 
 class _Runtime extends Fake implements ChannelRuntime {
+  void Function(List<TranslationTarget>)? onWindow;
+  @override
+  Stream<void> get changes => const Stream.empty();
+  @override
+  Future<void> restore(List<TranslationTarget> targets) async {}
   @override
   void setWindow(
     String consumer,
     List<TranslationTarget> targets, {
     bool automatic = true,
-  }) {}
+  }) {
+    onWindow?.call(targets);
+  }
+
   @override
   PageTranslationState stateFor(TranslationPage page) =>
       const PageTranslationState();
@@ -97,8 +120,8 @@ void main() {
                   {
                     'id': '1',
                     'revision': revision,
-                    'kind': 'blob',
-                    'url': 'blob:https://reader.example/$revision',
+                    'kind': 'pixels',
+                    'url': '',
                   },
                 ],
               },
@@ -185,4 +208,87 @@ void main() {
       );
     },
   );
+
+  test('HTTP images use the loaded WebView bytes, and validate their live DOM revision', () async {
+    final storage = WebImageTestDirectory();
+    await storage.setUp();
+    final directory = storage.directory;
+    try {
+      view.runtime = _Runtime();
+      controller.archive = archiveFixture({
+        'https://cdn.invalid/image': [1, 2, 3],
+      });
+      controller.result = CallAsyncJavaScriptResult(value: {'value': true});
+      await controller.handler!(
+        JavaScriptHandlerFunctionData(
+          isMainFrame: true,
+          origin: WebUri('https://reader.example'),
+          requestUrl: WebUri('https://reader.example/chapter'),
+          args: [
+            {
+              'token': controller.token,
+              'seq': 1,
+              'items': [
+                {
+                  'id': '1',
+                  'revision': '1',
+                  'kind': 'http',
+                  'url': 'https://cdn.invalid/image',
+                },
+              ],
+            },
+          ],
+        ),
+      );
+      final target = view.targets.single;
+      final lease = await target.source.acquire(
+        target.page,
+        TranslationCancellation(),
+      );
+      expect(await lease.file.readAsBytes(), [1, 2, 3]);
+      expect(
+        controller.archiveCalls,
+        1,
+        reason: 'No native HTTP fetch of the inaccessible CDN',
+      );
+      lease.release();
+      // The runtime starts reads before view listeners receive foreground or
+      // account changes; those valid new reads must not be cancelled as stale.
+      Future<OriginalImageLease>? resumed;
+      void readWindow(List<TranslationTarget> targets) {
+        if (targets.isNotEmpty && resumed == null) {
+          resumed = targets.first.source.acquire(
+            targets.first.page,
+            TranslationCancellation(),
+          );
+        }
+      }
+
+      view.configure(foreground: false);
+      (view.runtime! as _Runtime).onWindow = readWindow;
+      view.configure(foreground: true);
+      final resumedLease = await resumed!;
+      expect(await resumedLease.file.readAsBytes(), [1, 2, 3]);
+      resumedLease.release();
+      resumed = null;
+      view.attach(_Runtime()..onWindow = readWindow);
+      final switchedLease = await resumed!;
+      expect(await switchedLease.file.readAsBytes(), [1, 2, 3]);
+      switchedLease.release();
+      controller.result = CallAsyncJavaScriptResult(
+        value: {'error': 'SOURCE_CHANGED'},
+      );
+      await expectLater(
+        target.source.acquire(target.page, TranslationCancellation()),
+        throwsA(isA<TranslationCancelled>()),
+      );
+      bridge.navigate();
+      for (var i = 0; i < 100 && await directory.list().isEmpty == false; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      expect(await directory.list().length, 0);
+    } finally {
+      await storage.tearDown();
+    }
+  });
 }

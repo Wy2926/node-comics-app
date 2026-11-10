@@ -21,6 +21,7 @@
 		A33AA3042B62949C00A19BF1 /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A33AA3032B62949C00A19BF1 /* libresolv.9.tbd */; };
 		BD6B77269478430A78AA58DF /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E2094F599D0B1CB916B8786 /* Pods_RunnerTests.framework */; };
 		CDE000012026102900000001 /* NodeLaneTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE000012026102900000002 /* NodeLaneTabBar.swift */; };
+		CDE000012026111000000001 /* NodeLaneWebImageArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE000012026111000000002 /* NodeLaneWebImageArchive.swift */; };
 		D081C25C294826C0006EB10B /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D081C25B294826C0006EB10B /* libc++.tbd */; };
 /* End PBXBuildFile section */
 
@@ -77,6 +78,7 @@
 		ACC40DA92A254673A59F1907 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		BA0123AC435F4FC2839CA699 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		CDE000012026102900000002 /* NodeLaneTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeLaneTabBar.swift; sourceTree = "<group>"; };
+		CDE000012026111000000002 /* NodeLaneWebImageArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeLaneWebImageArchive.swift; sourceTree = "<group>"; };
 		D081C25B294826C0006EB10B /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		D8DD1C19F61FEEC41B693519 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		08DA687B5BD10009AC2E0570 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "ja"; path = "ja.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -195,6 +197,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				CDE000012026102900000002 /* NodeLaneTabBar.swift */,
+				CDE000012026111000000002 /* NodeLaneWebImageArchive.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -448,6 +451,7 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				CDE000012026102900000001 /* NodeLaneTabBar.swift in Sources */,
+				CDE000012026111000000001 /* NodeLaneWebImageArchive.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

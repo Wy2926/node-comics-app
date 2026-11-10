@@ -481,7 +481,7 @@ class OfficialRuntime implements ChannelRuntime {
     var receipt = await _load(target, cancel);
     cancel.check();
     if (receipt == null) {
-      final caps = await _capabilities(cancel);
+      await _capabilities(cancel);
       final original = await _sources.acquire(target, cancel);
       PreparedTranslationImage? input;
       try {
@@ -491,15 +491,6 @@ class OfficialRuntime implements ChannelRuntime {
           cancel,
           sourceSha: original.sha,
         );
-        final limits = caps['limits'] as Map? ?? const {};
-        if (input.byteSize >
-                ((limits['max_bytes'] as num?)?.toInt() ?? 128 * 1024 * 1024) ||
-            input.width >
-                ((limits['max_dimension'] as num?)?.toInt() ?? 100000) ||
-            input.height >
-                ((limits['max_dimension'] as num?)?.toInt() ?? 100000)) {
-          throw const TranslationFailure('RESOURCE_LIMIT');
-        }
         receipt = await _control.run(() async {
           cancel.check();
           final existing = await _load(target, cancel);
@@ -974,7 +965,6 @@ class OfficialRuntime implements ChannelRuntime {
         artifact['path'] != '/v1/translations/${receipt.id}/result' ||
         artifact['byte_size'] is! int ||
         (artifact['byte_size'] as int) <= 0 ||
-        (artifact['byte_size'] as int) > TranslationRepository.inputBudget ||
         artifact['sha256'] is! String ||
         !RegExp(r'^[a-f0-9]{64}$').hasMatch(artifact['sha256'] as String) ||
         !['x', 'y', 'width', 'height'].every((key) => box[key] is int) ||

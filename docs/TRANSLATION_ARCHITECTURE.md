@@ -1,6 +1,6 @@
 # 漫画翻译架构
 
-本文只描述手机 App 的当前实现与验证边界。开发约定与许可见 [AGENTS](../AGENTS.md)、[UPSTREAM](../UPSTREAM.md)。
+本文只描述手机 App 的当前实现与验证边界。开发约定与许可见 [AGENTS](../AGENTS.md)、[UPSTREAM](../UPSTREAM.md)、[第三方声明](../THIRD_PARTY.md)。
 
 ## 模块边界
 
@@ -13,7 +13,7 @@
 | [image_work.dart](../lib/services/translation/image_work.dart)、[translation_repository.dart](../lib/repositories/translation_repository.dart) | 串行图片准备／合成，私有回执、输入与完整译图缓存 |
 | [translation_view_controller.dart](../lib/modules/translation/translation_view_controller.dart) | 原译图选择、窗口、图内状态、单图动作和显示租约 |
 | [reader_translation.dart](../lib/modules/manga/reader/reader_translation.dart) | 阅读器原始页定位与取图，不覆盖来源页数据 |
-| [translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[nodelane_reader.js](../assets/nodelane_reader.js) | 网页图片发现、取图、显示定位与传输，没有 Comipo 特判 |
+| [translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[image_archive.dart](../lib/modules/webview/image_archive.dart)、[nodelane_reader.js](../assets/nodelane_reader.js) | 网页图片发现、浏览器已加载资源取流、显示定位与传输，没有站点特判 |
 
 当前仅接入 NodeLane 官方 classic 渠道。阅读器与网页依赖统一渠道契约；完整图片 FakeChannel 验证替换边界，不要求其他渠道实现官方 UUID、SSE、覆盖图或计费协议。同级 PC 插件仅作设计参考，不是运行时依赖。
 
@@ -35,7 +35,7 @@ TranslationPage.key/revision 只标识当前来源定位。网页使用文档代
 
 首次显示原图，自动翻译开关默认开启；仅前台显示译图且自动翻译开启时自动送译。切回原图停止新增送译并保留开关选择。关闭自动翻译仍可显示缓存、读取已有结果和显式操作单张图片。
 
-阅读器从当前页向后取，拆页共用同一源图，窗口上限为 min(visibleCount + 2, 4)。网页选取当前视口及下方附近已加载图片，最多四张。最多两个本地调度任务在途，像素工作、提交／上传分别串行；服务端控制执行并发和限流，不根据累计旧任务数量阻止新图片。
+阅读器从当前页向后取，拆页共用同一源图，窗口上限为 min(visibleCount + 2, 4)。网页遍历主文档全部 img/canvas，按视口和阅读焦点优先选择附近已加载图片，当前处理窗口最多四张；没有最小尺寸或 DOM 前若干元素截断。小图、图标和广告也可能成为候选，不在客户端判断是否有可译文字。最多两个本地调度任务在途，像素工作、提交／上传分别串行；服务端控制执行并发和限流，不根据累计旧任务数量阻止新图片。
 
 离窗取消本地工作，原图文件在最后一个使用者释放后清理；结果显示租约独立释放。后台已受理任务可以继续完成。迟到结果不能贴到已经替换的元素上。原译图切换不重建来源页、不改变阅读位置。
 
@@ -54,17 +54,23 @@ SSE 聚合当前窗口的活动 UUID，每批最多 32 项，沿用现有超时�
 
 ## 网页取图与资源边界
 
-HTTP(S) 图片由原生来源客户端读取到临时文件，CookieManager 按实际目标 URL 提供会话，跨站重定向不盲目转发敏感 headers。当前网页来源客户端仍限制私网地址，Fake-IP 代理解析可能被拒绝，尚未解决。
+HTTP(S) 图片优先复用 WebView 已加载的原始响应字节。通过现有插件调用 [Android WebView.saveWebArchive](https://developer.android.com/reference/android/webkit/WebView#saveWebArchive(java.lang.String,%20boolean,%20android.webkit.ValueCallback%3Cjava.lang.String%3E)) 或 [iOS WKWebView.createWebArchiveData](https://developer.apple.com/documentation/webkit/wkwebview/createwebarchivedata(completionhandler:))，按当前元素 URL 提取原始图片，不重载页面、不截图、不修改跨域设置。Android 按 MIME 流式解码，iOS 使用系统 property-list 解码；两者都不把 HTML、Cookie 或其他页面资源交给翻译服务。
 
-Blob 图片统一从已解码 img 按自然尺寸导出 PNG，包括已撤销 Blob URL 的图片，不再 fetch Blob URL。临时 Canvas 在成功、失败或取消后释放。不能读取像素时报告取图失败，不上传整页截图。
+同一窗口的并发取图合并一次归档，提取后立即删除完整归档，仅保留当前图片窗口需要的压缩文件。离窗、切换账号／渠道、后台或导航时释放缓存所有权，最后一个读取租约释放后删除图片及临时目录；原生归档无法中断时清理其迟到结果。返回图片前重新核验文档代次与 DOM 修订，避免换源时送错图。归档缓存未命中或平台不支持时继续使用原生 HTTP 来源读取；不会因缓存失败取消原有下载能力。
 
-桥接每块 128 KiB，输入／输出各串行一个传输，原生流式写文件。元素修订和文档代次只保证读取、动作及覆盖仍属于当前元素。译图采用不拦截触控的独立 Canvas 覆盖层，不改写原始 src/srcset。
+原生 HTTP 来源客户端流式读取到临时文件，不按文件大小、私网或 Fake-IP 地址拒绝，也不固定 DNS 或强制直连。CookieManager 按每次实际目标 URL 提供会话；重定向没有固定跳数，保留重复 URL 循环检测、取消和网络超时。来源客户端不持有翻译服务凭据。若图片不在浏览器归档中且原生请求也被源站拒绝，仍如实报告取图失败。
+
+Blob、data 图片与 Canvas 共用 `pixels` 取图路径，没有站点专用 Blob 适配。图片从已解码 img 按自然尺寸导出 PNG，包括已撤销 Blob URL 的图片。可读 Canvas 默认参与发现；窗口内定时采样其像素修订，重绘后取消旧定位。临时 Canvas 在成功、失败或取消后释放。归档只替代 HTTP(S) 图片的重复网络读取，不能整体替代这条像素路径；平台不允许读取像素时报告取图失败，不上传整页截图。
+
+桥接每块 128 KiB，输入／输出各串行一个传输，原生流式写文件，不限制单张图片的总传输大小。元素修订和文档代次只保证读取、动作及显示仍属于当前元素；data URL 不放入窗口消息，元素修订使用短标识。
+
+沿用 NodeLane Comics 扩展的显示方式：img 通过 CSS content 显示译图，保留 src/srcset、裁剪、变换及事件；Canvas 使用不拦截触控的同级图片覆盖，跟随原元素的变换。切回原图、离窗或关闭页面时恢复属性并释放对象 URL。
 
 脚本重新安装时统一释放旧窗口并重置消息序号；同一文档重复触发加载完成也按新桥接处理。图片发现由脚本合并事件，原生不再额外按时间丢弃窗口更新，也不逐条重复查询当前 URL。
 
-新增像素工作预算为 64 MiB，原图传输上限 32 MiB；输入和完整结果磁盘预算为 128 MiB、256 MiB。它们限制实际分配与缓存占用，不是 App 总内存的实测保证。像素估算仍较保守，部分高清页会被拒绝。
+客户端不设图片宽高、像素数、文件体积或解码预算硬上限，也不自动缩到固定短边。服务 capabilities 中的尺寸字段不再作为本地拒收条件，服务端最终响应仍按实际结果处理。输入和完整结果缓存的 128 MiB、256 MiB 仅用于淘汰未使用文件；当前大文件、在途输入和显示租约可超过目标，不因此拒收。磁盘实际不足、平台解码失败或服务端限制仍可能导致失败；取消客户端限制不代表设备资源无限。
 
-Canvas 主动发现由 NODELANE_READABLE_CANVAS 默认关闭。data URL、跨域 iframe、受污染 Canvas、CSS 变换／cover 图形、16-bit／ICC／动画／AVIF、超预算图片和 tiles 结果未作为可用能力交付。网页活动 1 个、温存 1 个／30 秒，最多 12 个逻辑标签；空标签不创建 WebView。
+图片使用现有 image 解码器，不按 ICC、16-bit、色彩元数据或动画预先拒绝。EXIF 方向归一化；原生动图取首帧，网页像素导出取当前显示帧。Dart 解码器不支持的格式交由 Flutter 平台编解码器，AVIF 可使用已有解码实现；实际可用格式取决于平台。没有实现 iframe 内图片发现、平台禁止读取的 Canvas 或 tiles 结果协议；这些不能通过删除判断直接获得支持。网页活动 1 个、温存 1 个／30 秒，最多 12 个逻辑标签；空标签不创建 WebView。
 
 ## 认证与设置
 
@@ -82,6 +88,10 @@ flutter build apk --debug --target-platform android-arm64 --no-pub
 
 回归关注内容换页、返回旧图、同内容合并、冷缓存恢复、旧记录升级、重复脚本安装、丢失响应、取消释放、账号隔离与原译图切换。
 
-MuMu Android 12 使用真实官方服务验证了 Comipo 样本 BJ02519788：连续翻阅第 1–8 页、相邻页预读、冷启动缓存恢复、刷新后翻页及原译图切换。返回和刷新复用原 UUID，没有新增翻译任务。
+回归覆盖大图和长图原尺寸准备／合成、超过原传输上限的 HTTP 图片流、长重定向与循环、缓存软淘汰、16-bit PNG 与动图首帧；Chrome DOM 夹具覆盖小图、512 个元素之后的图片、data/Blob/Canvas、CSS transform/cover、Canvas 重绘、原译图切换与释放。
 
-桌面 Chrome 夹具、Flutter 测试、Android 构建与 MuMu 运行分别验收，不能替代真机或所有源站兼容性。iOS WebView、真实设备峰值内存、长图和特殊格式仍未验收。
+Android 模拟器已验证 comix.to 已加载图片的归档取流、真实官方翻译及译图显示：原生 HTTP 403 的 800×1280 图片可直接复用浏览器原图；原译图切换保持图片地址、尺寸与滚动位置，离开页面释放归档和图片缓存，返回后复用既有任务。归档回归覆盖分块字节完整性、并发合并、换源／导航取消、账号切换、后台恢复、损坏归档与租约释放。
+
+桌面 Chrome 夹具、Flutter 测试和 Android 构建不能替代 iOS 验收。iOS 仅接入归档接口与系统 property-list 提取，当前尚未在 Apple 工具链构建或实机运行。大页面归档的峰值内存、特殊图片格式和平台归档失败仍需设备验证；没有因此添加图片准入上限。
+
+待办：重开 comix.to 页面存在回到顶部的位置恢复问题，独立于已验证的原译图原位切换；需分别核对原生滚动坐标与 DOM 锚点、异步页面加载后的恢复时机。

@@ -14,6 +14,8 @@ import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 
+import 'image_archive.dart';
+
 class WebTranslationBridge {
   WebTranslationBridge(
     this.controller,
@@ -30,6 +32,11 @@ class WebTranslationBridge {
     );
     view.addListener(_changed);
   }
+  late final _archive = WebImageArchive(
+    save: (path) => controller.saveWebArchive(filePath: path),
+    apple: Platform.isIOS || Platform.isMacOS,
+  );
+  ChannelRuntime? _archiveRuntime;
   final InAppWebViewController controller;
   final TranslationViewController view;
   final String tabId;
@@ -57,6 +64,7 @@ class WebTranslationBridge {
   bool get active => view.foreground && view.runtime != null && !_disposed;
 
   void navigate() {
+    _archive.clear();
     _epoch++;
     _ready = false;
     _token = '';
@@ -81,10 +89,7 @@ class WebTranslationBridge {
     await controller.evaluateJavascript(
       source: script.replaceFirst(
         '__NODELANE_CONFIG__',
-        jsonEncode({
-          'token': token,
-          'canvas': const bool.fromEnvironment('NODELANE_READABLE_CANVAS'),
-        }),
+        jsonEncode({'token': token}),
       ),
     );
     if (_disposed || epoch != _epoch) return;
@@ -109,8 +114,7 @@ class WebTranslationBridge {
       return false;
     }
     final value = data.args.first as Map;
-    if (jsonEncode(value).length > 65536 ||
-        value['token'] != _token ||
+    if (value['token'] != _token ||
         value['seq'] is! int ||
         value['seq'] <= _sequence) {
       return false;
@@ -152,12 +156,12 @@ class WebTranslationBridge {
       if (item is! Map ||
           item['id'] is! String ||
           item['revision'] is! String ||
-          !{'http', 'blob', 'canvas'}.contains(item['kind']) ||
+          !{'http', 'pixels'}.contains(item['kind']) ||
           item['url'] is! String) {
         return false;
       }
       final id = item['id'] as String;
-      if (!RegExp(r'^\d{1,8}$').hasMatch(id) || entries.containsKey(id)) {
+      if (!RegExp(r'^\d+$').hasMatch(id) || entries.containsKey(id)) {
         return false;
       }
       final entry = Map<String, dynamic>.from(item);
@@ -175,6 +179,7 @@ class WebTranslationBridge {
       ..clear()
       ..addAll(entries);
     _displayed.removeWhere((id, _) => !entries.containsKey(id));
+    _syncArchive();
     view.window(targets);
     return true;
   }
@@ -187,18 +192,16 @@ class WebTranslationBridge {
     if (!_ready || _disposed || epoch != _epoch) {
       throw const TranslationCancelled();
     }
-    final result = await controller
-        .callAsyncJavaScript(
-          functionBody: '''
+    final result = await controller.callAsyncJavaScript(
+      functionBody: '''
 try {
   return {value: await window.__nodelaneReader.call(token, operation, args)};
 } catch (error) {
   return {error: error.message};
 }
 ''',
-          arguments: {'token': _token, 'operation': operation, 'args': args},
-        )
-        .timeout(const Duration(seconds: 10));
+      arguments: {'token': _token, 'operation': operation, 'args': args},
+    );
     if (!_ready || _disposed || epoch != _epoch) {
       throw const TranslationCancelled();
     }
@@ -236,6 +239,7 @@ try {
   }
 
   void _changed() {
+    _syncArchive();
     if (!_ready || _disposed) return;
     final status = {
       'active': active,
@@ -263,7 +267,7 @@ try {
     final state = jsonEncode(status);
     if (_state != state) {
       _state = state;
-      if (!active) _displayed.clear();
+      if (!active || !view.showTranslation) _displayed.clear();
       final epoch = _epoch;
       // Display switches must not wait behind a full image's chunk transfer.
       _call('state', status, epoch).catchError((_) {
@@ -348,6 +352,22 @@ try {
     }
   }
 
+  void _syncArchive() {
+    if (!active || !identical(_archiveRuntime, view.runtime)) {
+      _archive.clear();
+      _archiveRuntime = view.runtime;
+    }
+    if (active) {
+      _archive.retain({
+        for (final entry in _elements.values)
+          if (entry['kind'] == 'http')
+            (entry['page'] as TranslationPage).identity: Uri.parse(
+              entry['url'] as String,
+            ).removeFragment().toString(),
+      });
+    }
+  }
+
   Future<OriginalImageLease> acquire(
     String id,
     Map<String, dynamic> entry,
@@ -361,31 +381,48 @@ try {
       throw const TranslationCancelled();
     }
     if (entry['kind'] == 'http') {
+      // Runtime scheduling can start before the view's changed notification.
+      _syncArchive();
       final pageUrl = Uri.parse(_document),
           url = Uri.parse(entry['url'] as String);
-      return HttpSourceImageReader(
-        url,
-        publicOnly: true,
-        headers: (target) async {
-          final cookies = await CookieManager.instance().getCookies(
-            url: WebUri(target.toString()),
-          );
-          final sameOrigin = target.origin == pageUrl.origin;
-          return {
-            'Referer': sameOrigin ? _document : '${pageUrl.origin}/',
-            'Cookie': cookies
-                .where(
-                  (cookie) =>
-                      sameOrigin ||
-                      (cookie.sameSite == HTTPCookieSameSitePolicy.NONE &&
-                          cookie.isSecure == true),
-                )
-                .map((cookie) => '${cookie.name}=${cookie.value}')
-                .join('; '),
-            'User-Agent': await InAppWebViewController.getDefaultUserAgent(),
-          };
-        },
-      ).acquire(entry['page'] as TranslationPage, cancel);
+      final original =
+          await _archive.acquire(
+            (entry['page'] as TranslationPage).identity,
+            cancel,
+          ) ??
+          await HttpSourceImageReader(
+            url,
+            headers: (target) async {
+              final cookies = await CookieManager.instance().getCookies(
+                url: WebUri(target.toString()),
+              );
+              final sameOrigin = target.origin == pageUrl.origin;
+              return {
+                'Referer': sameOrigin ? _document : '${pageUrl.origin}/',
+                'Cookie': cookies
+                    .map((cookie) => '${cookie.name}=${cookie.value}')
+                    .join('; '),
+                'User-Agent':
+                    await InAppWebViewController.getDefaultUserAgent(),
+              };
+            },
+          ).acquire(entry['page'] as TranslationPage, cancel);
+      try {
+        cancel.check();
+        if (!active ||
+            epoch != _epoch ||
+            _elements[id]?['revision'] != entry['revision']) {
+          throw const TranslationCancelled();
+        }
+        await _call('validate', {
+          'id': id,
+          'revision': entry['revision'],
+        }, epoch);
+        return original;
+      } catch (_) {
+        original.release();
+        rethrow;
+      }
     }
     return _inputQueue.run(() async {
       cancel.check();
@@ -397,11 +434,8 @@ try {
           'id': id,
           'revision': entry['revision'],
         }, epoch);
-        if (meta is! Map ||
-            meta['size'] is! int ||
-            meta['size'] <= 0 ||
-            meta['size'] > 32 * 1024 * 1024) {
-          throw const TranslationFailure('RESOURCE_LIMIT');
+        if (meta is! Map || meta['size'] is! int || meta['size'] <= 0) {
+          throw const TranslationFailure('BRIDGE_INVALID');
         }
         final sink = file.openWrite();
         var offset = 0;
@@ -447,6 +481,7 @@ try {
   }
 
   void dispose() {
+    _archive.clear();
     _disposed = true;
     _ready = false;
     _epoch++;

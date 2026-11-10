@@ -1,0 +1,9 @@
+# 第三方与参考实现
+
+Mangayomi 上游基线采用 Apache-2.0，原始许可见 [LICENSE](LICENSE)，基线见 [UPSTREAM.md](UPSTREAM.md)。
+
+`assets/nodelane_reader.js` 的图片呈现、Canvas 同级覆盖与视口排序基于 [NodeLane Comics](https://github.com/Wy2926/node-comics) 的 `apps/extension/src/inline/display.ts`、`canvas-display.ts`、`window.ts` 适配，参考提交为 `92f16b548da98431be1607eed57bb561b239156d`。该脚本采用 **GPL-3.0-only**，条款见 [GPL 许可全文](assets/brand/LICENSE-GPL-3.0-only)；不应将它标为 Apache-2.0。分发包含该代码的组合应用需遵循 GPL-3.0-only，保留上游 Apache-2.0 及其他第三方声明。
+
+没有引入同级仓库的运行时路径依赖。图片解码继续使用项目已有的 `image`、Flutter 平台编解码器与 AVIF 支持。
+
+网页归档提取直接使用 [Dart mime](https://pub.dev/packages/mime) 的流式 MIME multipart 解析器，许可为 **BSD-3-Clause**（[源码与许可](https://github.com/dart-lang/tools/tree/main/pkgs/mime)）。该包从既有间接依赖改为显式依赖，版本沿用锁文件；分发时随 Flutter 依赖许可保留原始声明。WebView 归档创建继续使用现有 `flutter_inappwebview`，iOS property-list 解码使用系统 Foundation。

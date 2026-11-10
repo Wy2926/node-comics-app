@@ -1,16 +1,17 @@
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:math';
+import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as img;
 import 'package:mangayomi/repositories/db_write_queue.dart';
+import 'package:mangayomi/utils/avif.dart';
 
 import 'contracts.dart';
 import 'identity.dart';
 
-const translationPixelBudget = 64 * 1024 * 1024;
+// Persisted protocol tag: keep existing operations readable and recoverable.
 const translationInputProfile = 'mobile-short-edge-1800-png-v1';
 const translationEncoderVersion = 'image-4.10.1';
 
@@ -38,122 +39,54 @@ class PreparedTranslationImage {
 }
 
 class ImageHeader {
-  const ImageHeader(this.width, this.height, this.mime, {this.exif = false});
+  const ImageHeader(this.width, this.height, this.mime);
   final int width, height;
   final String mime;
-  final bool exif;
 }
 
 Future<String> imageDigest(File file) async =>
     (await sha256.bind(file.openRead()).first).toString();
 
-/// A bounded header probe before any decoder sees untrusted pixel dimensions.
-/// ICC/animation are deliberately unsupported until native normalization has
-/// fixtures; stripping their metadata would change the image's meaning.
-Future<ImageHeader> readImageHeader(File file) async {
-  final length = await file.length();
-  final builder = BytesBuilder(copy: false);
-  await for (final chunk in file.openRead(0, min(length, 1024 * 1024))) {
-    builder.add(chunk);
-  }
-  final bytes = builder.takeBytes();
-  final data = ByteData.sublistView(bytes);
-  int be(int at) => data.getUint32(at);
-  int le24(int at) => bytes[at] | (bytes[at + 1] << 8) | (bytes[at + 2] << 16);
-  String tag(int at, int count) =>
-      String.fromCharCodes(bytes.sublist(at, at + count));
-  ImageHeader valid(int w, int h, String mime, {bool exif = false}) {
-    if (w < 1 || h < 1 || w > 100000 || h > 100000) {
-      throw const TranslationFailure('INVALID_IMAGE');
-    }
-    return ImageHeader(w, h, mime, exif: exif);
-  }
+String _mime(img.Decoder decoder) =>
+    'image/${decoder.format == img.ImageFormat.jpg ? 'jpeg' : decoder.format.name}';
 
-  if (bytes.length >= 33 && tag(1, 3) == 'PNG' && bytes[0] == 137) {
-    if (tag(12, 4) != 'IHDR') throw const TranslationFailure('INVALID_IMAGE');
-    if (bytes[24] > 8) throw const TranslationFailure('UNSUPPORTED_IMAGE');
-    var at = 8;
-    var exif = false;
-    while (at + 12 <= bytes.length) {
-      final size = be(at), type = tag(at + 4, 4);
-      if (type == 'iCCP' || type == 'acTL' || type == 'cICP') {
-        throw const TranslationFailure('UNSUPPORTED_IMAGE');
-      }
-      if (type == 'gAMA' &&
-          (size != 4 || at + 16 > bytes.length || be(at + 8) != 45455)) {
-        throw const TranslationFailure('UNSUPPORTED_IMAGE');
-      }
-      if (type == 'eXIf') exif = true;
-      if (type == 'IDAT') return valid(be(16), be(20), 'image/png', exif: exif);
-      at += size + 12;
-    }
+/// Use the installed decoder's capabilities, not a separate format whitelist.
+Future<ImageHeader> readImageHeader(File file) async {
+  final bytes = await file.readAsBytes();
+  final decoder = img.findDecoderForData(bytes);
+  final info = decoder?.startDecode(bytes);
+  if (info == null || info.width <= 0 || info.height <= 0) {
     throw const TranslationFailure('INVALID_IMAGE');
   }
-  if (bytes.length >= 4 && bytes[0] == 255 && bytes[1] == 216) {
-    var at = 2, width = 0, height = 0;
-    var exif = false;
-    while (at + 4 <= bytes.length) {
-      if (bytes[at++] != 255) throw const TranslationFailure('INVALID_IMAGE');
-      while (at < bytes.length && bytes[at] == 255) {
-        at++;
+  return ImageHeader(info.width, info.height, _mime(decoder!));
+}
+
+/// Platform codecs cover formats (including device-supported AVIF) absent from
+/// the Dart decoder. Animation is explicitly materialized as its first frame.
+Future<void> _normalizeNative(File original, String path) async {
+  final bytes = await original.readAsBytes();
+  Uint8List png;
+  try {
+    final codec = await ui.instantiateImageCodec(bytes);
+    try {
+      final frame = await codec.getNextFrame();
+      try {
+        final data = await frame.image.toByteData(
+          format: ui.ImageByteFormat.png,
+        );
+        if (data == null) throw const TranslationFailure('INVALID_IMAGE');
+        png = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      } finally {
+        frame.image.dispose();
       }
-      if (at + 2 >= bytes.length) break;
-      final marker = bytes[at++];
-      if (marker == 218) return valid(width, height, 'image/jpeg', exif: exif);
-      final size = data.getUint16(at);
-      if (size < 2 || at + size > bytes.length) break;
-      if (marker == 225 && size >= 8 && tag(at + 2, 4) == 'Exif') exif = true;
-      if (marker == 226 && size >= 14 && tag(at + 2, 11) == 'ICC_PROFILE') {
-        throw const TranslationFailure('UNSUPPORTED_IMAGE');
-      }
-      if (const {192, 193, 194}.contains(marker) && size >= 8) {
-        if (bytes[at + 2] != 8) {
-          throw const TranslationFailure('UNSUPPORTED_IMAGE');
-        }
-        height = data.getUint16(at + 3);
-        width = data.getUint16(at + 5);
-        if (bytes[at + 7] != 1 && bytes[at + 7] != 3) {
-          throw const TranslationFailure('UNSUPPORTED_IMAGE');
-        }
-      }
-      at += size;
+    } finally {
+      codec.dispose();
     }
-    throw const TranslationFailure('INVALID_IMAGE');
+  } catch (_) {
+    if (!isAvifImage(bytes)) rethrow;
+    png = await decodeAvifToPng(bytes);
   }
-  if (bytes.length >= 30 && tag(0, 4) == 'RIFF' && tag(8, 4) == 'WEBP') {
-    final type = tag(12, 4);
-    if (type == 'VP8X') {
-      final flags = bytes[20];
-      if ((flags & 0x22) != 0) {
-        throw const TranslationFailure('UNSUPPORTED_IMAGE');
-      }
-      return valid(
-        1 + le24(24),
-        1 + le24(27),
-        'image/webp',
-        exif: (flags & 8) != 0,
-      );
-    }
-    if (type == 'VP8 ' &&
-        bytes[23] == 157 &&
-        bytes[24] == 1 &&
-        bytes[25] == 42) {
-      return valid(
-        data.getUint16(26, Endian.little) & 0x3fff,
-        data.getUint16(28, Endian.little) & 0x3fff,
-        'image/webp',
-      );
-    }
-    if (type == 'VP8L' && bytes[20] == 47) {
-      final bits = data.getUint32(21, Endian.little);
-      return valid(
-        (bits & 0x3fff) + 1,
-        ((bits >> 14) & 0x3fff) + 1,
-        'image/webp',
-      );
-    }
-  }
-  throw const TranslationFailure('UNSUPPORTED_IMAGE');
+  await File(path).writeAsBytes(png, flush: true);
 }
 
 /// One queue for input and composition, shared by all readers and tabs.
@@ -171,7 +104,23 @@ class TranslationImageWork {
     await temporary.create(recursive: true);
     final path = '${temporary.path}/${translationUuid()}.png';
     final sourcePath = original.path;
-    final result = await _prepareInWorker(sourcePath, path, sourceSha);
+    late Map<String, Object> result;
+    try {
+      try {
+        result = await _prepareInWorker(sourcePath, path, sourceSha);
+      } on TranslationFailure catch (error) {
+        if (error.code != 'UNSUPPORTED_IMAGE') rethrow;
+        cancel.check();
+        await _normalizeNative(original, path);
+        cancel.check();
+        result = await _prepareInWorker(path, path, null);
+        result['sourceSha256'] = sourceSha ?? await imageDigest(original);
+      }
+    } catch (error) {
+      await File(path).delete().catchError((_) => File(path));
+      if (error is TranslationFailure || error is FileSystemException) rethrow;
+      throw const TranslationFailure('INVALID_IMAGE');
+    }
     if (cancel.isCancelled) {
       await File(path).delete().catchError((_) => File(path));
       cancel.check();
@@ -239,45 +188,32 @@ Future<Map<String, Object>> _prepare(
   String? knownSha,
 ) async {
   final file = File(sourcePath);
-  final header = await readImageHeader(file);
-  final size = await file.length();
-  // Includes encoded input and three possible pixel buffers. The existing
-  // reader's decode cache is separate and must be measured on devices too.
-  if (size * 4 + header.width * header.height * 24 > translationPixelBudget) {
-    throw const TranslationFailure('RESOURCE_LIMIT');
-  }
-  if (max(header.width, header.height) > 16383) {
-    throw const TranslationFailure('UNSUPPORTED_IMAGE');
-  }
-  final sourceSha = knownSha ?? await imageDigest(file);
-  var decoded = img.decodeImage(await file.readAsBytes());
-  if (decoded == null ||
-      decoded.numFrames != 1 ||
-      !((decoded.width == header.width && decoded.height == header.height) ||
-          (header.exif &&
-              decoded.width == header.height &&
-              decoded.height == header.width))) {
+  final bytes = await file.readAsBytes();
+  final decoder = img.findDecoderForData(bytes);
+  if (decoder == null) throw const TranslationFailure('UNSUPPORTED_IMAGE');
+  final info = decoder.startDecode(bytes);
+  final decoded = info == null ? null : decoder.decodeFrame(0);
+  if (decoded == null || decoded.width <= 0 || decoded.height <= 0) {
     throw const TranslationFailure('INVALID_IMAGE');
   }
-  var actual = file,
-      mime = header.mime,
-      width = header.width,
-      height = header.height;
-  if (header.exif || min(width, height) > 1800) {
-    decoded = img.bakeOrientation(decoded);
-    if (min(decoded.width, decoded.height) > 1800) {
-      final scale = 1800 / min(decoded.width, decoded.height);
-      decoded = img.copyResize(
-        decoded,
-        width: (decoded.width * scale).round(),
-        height: (decoded.height * scale).round(),
-        interpolation: img.Interpolation.average,
-      );
-    }
-    width = decoded.width;
-    height = decoded.height;
+  final sourceSha = knownSha ?? await imageDigest(file);
+  var actual = file, mime = _mime(decoder);
+  var width = decoded.width, height = decoded.height;
+  // JPEG decoding already bakes orientation and clears its EXIF orientation.
+  // Freeze those normalized pixels, rather than uploading the old byte layout.
+  final hasExif = decoder.format == img.ImageFormat.jpg
+      ? img.decodeJpgExif(bytes) != null
+      : !decoded.exif.isEmpty;
+  if (hasExif ||
+      info!.numFrames > 1 ||
+      !const {'image/png', 'image/jpeg', 'image/webp'}.contains(mime)) {
+    final normalized = img
+        .bakeOrientation(decoded)
+        .convert(format: img.Format.uint8);
+    width = normalized.width;
+    height = normalized.height;
     actual = await File(output)
-        .writeAsBytes(img.encodePng(decoded), flush: true);
+        .writeAsBytes(img.encodePng(normalized), flush: true);
     mime = 'image/png';
   }
   return {
@@ -304,13 +240,6 @@ Future<void> _composite(Map<String, Object> args) async {
       patchHeader.width != pw ||
       patchHeader.height != ph) {
     throw const TranslationFailure('INVALID_RESULT');
-  }
-  if (width * height * 12 +
-          pw * ph * 8 +
-          (await input.length()) * 2 +
-          (await patch.length()) * 2 >
-      translationPixelBudget) {
-    throw const TranslationFailure('RESOURCE_LIMIT');
   }
   final base = img
       .decodeImage(await input.readAsBytes())

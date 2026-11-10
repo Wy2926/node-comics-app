@@ -88,6 +88,7 @@ void main() {
   int uploads = 0;
   String? terminalFailure;
   bool expiredResult = false;
+  bool smallReportedLimits = false;
 
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
@@ -114,6 +115,7 @@ void main() {
     uploads = 0;
     terminalFailure = null;
     expiredResult = false;
+    smallReportedLimits = false;
     dropCreate = false;
     absentCreate = false;
     dropUpload = false;
@@ -137,7 +139,9 @@ void main() {
               'languages': ['zh-Hans'],
             },
           ],
-          'limits': {},
+          'limits': smallReportedLimits
+              ? {'max_bytes': 1, 'max_dimension': 1}
+              : {},
         };
       } else if (path.endsWith('/events')) {
         request.response.headers.contentType = ContentType(
@@ -236,6 +240,39 @@ void main() {
     runtimes.add(value);
     return value;
   }
+
+  test(
+    'service capability sizes do not become client admission gates',
+    () async {
+      smallReportedLimits = true;
+      final value = runtime()..setWindow('browser', [target]);
+      await _until(() => value.stateFor(target.page).noText);
+      expect(puts, hasLength(1));
+      expect(uploads, 1);
+    },
+  );
+
+  test('cache eviction targets never reject a large or pinned input', () async {
+    final large = File('${directory.path}/large');
+    final handle = await large.open(mode: FileMode.write);
+    await handle.truncate(TranslationRepository.inputBudget + 1);
+    await handle.close();
+    final key = translationKey('large-cache-input');
+    final saved = await repository.publish('input', key, large);
+    expect(await saved.length(), TranslationRepository.inputBudget + 1);
+    final release = repository.retain(saved);
+    try {
+      final other = await repository.publish(
+        'input',
+        translationKey('other-input'),
+        (target.source as _Source).file,
+      );
+      expect(await other.exists(), isTrue);
+      expect(await saved.exists(), isTrue);
+    } finally {
+      release();
+    }
+  });
 
   test('original display stops automatic preparation and translated display resumes only when enabled', () async {
     final source = _HeldSource((target.source as _Source).file);

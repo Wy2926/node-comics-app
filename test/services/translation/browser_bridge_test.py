@@ -14,7 +14,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = (ROOT / 'assets/nodelane_reader.js').read_text().replace(
-    '__NODELANE_CONFIG__', '{token:"fixture",canvas:false}')
+    '__NODELANE_CONFIG__', '{token:"fixture"}')
 FIXTURE = r'''
 <html><body style="margin:0"><pre id="result">pending</pre>
 <script>
@@ -50,6 +50,8 @@ const readInput = async item => {
   for(let i=0;i<5;i++) { const el=img.cloneNode(); document.body.append(el); }
   await call('state',{active:true,translated:true}); await wait(250);
   const item=windows.at(-1).items[0];
+  assert(item.kind==='pixels' && item.url==='', 'Blob should use the shared pixel transport');
+  assert(await call('validate',item),'current source cannot be validated');
   assert(windows.at(-1).items.length<=4,'unbounded discovery');
   const neighbour=img.nextElementSibling;
   document.body.insertBefore(neighbour,img); await wait(250);
@@ -74,9 +76,8 @@ const readInput = async item => {
   }
   HTMLCanvasElement.prototype.toBlob=toBlob;
   assert((await readInput(item)).meta.size===meta.size,'failed capture blocked retry');
-  Object.defineProperty(img,'naturalWidth',{value:100000,configurable:true});
-  await rejects(()=>call('inputBegin',{...item,revision:img.src+':100000:'+img.naturalHeight}),'RESOURCE_LIMIT');
-  delete img.naturalWidth;
+  await call('resultBegin',{...item,size:33*1024*1024});
+  await call('resultAbort',{});
   let finish;
   HTMLCanvasElement.prototype.toBlob=function(done){temporary=this;finish=()=>done(blob);};
   const pending=call('inputBegin',item);
@@ -91,7 +92,8 @@ const readInput = async item => {
   await call('resultBegin',{...item,size:meta.size});
   for(const chunk of chunks) await call('resultChunk',{id:item.id,...chunk});
   await call('resultEnd',{id:item.id});
-  assert(document.querySelectorAll('[data-nodelane-overlay]').length===1,'overlay missing');
+  assert(img.style.content.startsWith('url('),'image replacement missing');
+  assert(JSON.stringify(await readInput(item))===JSON.stringify({meta,chunks}),'translation replacement contaminated original pixels');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'source or reading anchor mutated');
   const theme={surface:'#1e242c',ink:'#f0f3f8',line:'#353e4a',accent:'#006eff',error:'#ff8888',inset:8,gap:8,padding:12,radius:24,tap:44,fontSize:13,reduceMotion:true};
   const failed={...item,label:'翻译失败',detail:'连接失败，请重试',issue:true,working:false,action:'retry',actionLabel:'重试',actionSemanticLabel:'重试此图片'};
@@ -136,7 +138,7 @@ const readInput = async item => {
   scrollTo(0,800); await call('restore',saved); await wait(1000);
   assert(Math.abs(scrollY-before)<2,'cold tab anchor restoration failed');
   await call('state',{active:true,translated:false});
-  assert(document.querySelector('canvas[data-nodelane-overlay]').style.display==='none','original toggle failed');
+  assert(!img.style.content,'original toggle failed');
   HTMLCanvasElement.prototype.toBlob=function(done){temporary=this;finish=()=>done(blob);};
   const replaced=call('inputBegin',item);
   img.src=URL.createObjectURL(blob); await img.decode();
@@ -151,6 +153,48 @@ const readInput = async item => {
   const count=windows.length; dispatchEvent(new Event('scroll')); await wait(250);
   assert(windows.length===count,'hidden page submitted work');
   assert(!document.querySelector('[data-nodelane-overlay]'),'hidden display leaked');
+  // No minimum size, DOM-index cutoff, CSS-mode exclusion or data/canvas opt-in.
+  for (const image of document.querySelectorAll('img,canvas')) image.remove();
+  for (let i=0;i<520;i++) {
+    const hidden=document.createElement('img'); hidden.style.display='none'; document.body.append(hidden);
+  }
+  const tiny=document.createElement('canvas'); tiny.width=9; tiny.height=7;
+  tiny.getContext('2d').fillRect(0,0,9,7);
+  const dataImage=new Image(); dataImage.src=tiny.toDataURL();
+  dataImage.style='display:block;width:24px;height:30px;object-fit:cover;transform:rotate(15deg)';
+  document.body.append(dataImage); await dataImage.decode(); scrollTo(0,0);
+  await call('state',{active:true,translated:true}); await wait(250);
+  const dataItem=windows.at(-1).items.find(value=>value.kind==='pixels');
+  assert(dataItem && dataItem.url==='' && dataItem.revision.length<20,'small data image beyond 512 elements was not compactly discovered');
+  const dataInput=await readInput(dataItem), rect=dataImage.getBoundingClientRect();
+  await call('resultBegin',{...dataItem,size:dataInput.meta.size});
+  for(const chunk of dataInput.chunks) await call('resultChunk',{id:dataItem.id,...chunk});
+  await call('resultEnd',{id:dataItem.id});
+  const displayed=dataImage.getBoundingClientRect();
+  assert(dataImage.style.content && Math.abs(rect.width-displayed.width)<.1 && Math.abs(rect.height-displayed.height)<.1,'CSS transform/cover geometry changed');
+  assert(dataImage.src===tiny.toDataURL(),'data image source changed');
+  await call('state',{active:true,translated:false});
+  assert(!dataImage.style.content && dataImage.style.objectFit==='cover' && dataImage.style.transform==='rotate(15deg)','original CSS not restored');
+  dataImage.remove();
+  tiny.style='display:block;width:24px;height:30px;transform:rotate(10deg)'; document.body.append(tiny);
+  await call('state',{active:true,translated:true}); await wait(300);
+  const canvasItem=windows.at(-1).items.find(value=>value.kind==='pixels');
+  assert(canvasItem,'readable small/uniform canvas required an opt-in');
+  const canvasInput=await readInput(canvasItem), pixelsBefore=tiny.toDataURL();
+  await call('resultBegin',{...canvasItem,size:canvasInput.meta.size});
+  for(const chunk of canvasInput.chunks) await call('resultChunk',{id:canvasItem.id,...chunk});
+  await call('resultEnd',{id:canvasItem.id});
+  const preview=tiny.nextElementSibling;
+  assert(preview?.dataset.nodelaneOverlay==='translation' && getComputedStyle(preview).transform===getComputedStyle(tiny).transform,'canvas replacement lost its transform');
+  assert(tiny.toDataURL()===pixelsBefore,'canvas pixels changed by translation');
+  tiny.getContext('2d').fillStyle='red'; tiny.getContext('2d').fillRect(0,0,9,7);
+  await wait(800);
+  const changedCanvas=windows.at(-1).items.find(value=>value.id===canvasItem.id);
+  assert(changedCanvas.revision!==canvasItem.revision,'same-size canvas repaint retained old identity');
+  await rejects(()=>call('validate',canvasItem),'SOURCE_CHANGED');
+  await rejects(()=>call('resultBegin',{...canvasItem,size:canvasInput.meta.size}),'SOURCE_CHANGED');
+  await call('state',{active:false,translated:false});
+  assert(!document.querySelector('[data-nodelane-overlay]'),'canvas display leaked on pause');
   window.__nodelaneReader.dispose();
   document.getElementById('result').textContent='NODELANE_BRIDGE_PASS';
 })().catch(error => document.getElementById('result').textContent='NODELANE_BRIDGE_FAIL: '+error.message);
@@ -209,7 +253,7 @@ await send('Browser.close',{}); ws.close(); console.log(status); if(status!=='NO
                 run = subprocess.run([node, '--input-type=module', '-e', probe,
                     f'http://127.0.0.1:{port}', f'http://127.0.0.1:{server.server_port}'], capture_output=True, text=True, timeout=25)
                 if run.returncode: raise SystemExit(run.stdout.strip() or run.stderr[:500])
-                print('PASS: live/revoked Blob PNG identity, capture failure/retry/release, replacement/cancellation, image status, targeted actions, original/position and chunked transfer')
+                print('PASS: Blob/data/canvas capture, small images beyond 512 elements, CSS transform/cover, canvas repaint identity, cancellation/retry, status/actions, original/position and chunked transfer')
             finally:
                 try:
                     browser.wait(timeout=10)

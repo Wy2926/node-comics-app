@@ -1,4 +1,7 @@
-/* NodeLane mobile image bridge. Independently implemented; no extension runtime. */
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Image presentation adapted from NodeLane Comics; see ../THIRD_PARTY.md.
+ * Standalone mobile bridge; no extension runtime dependency.
+ */
 (() => {
   'use strict';
   if (window.top !== window) return;
@@ -7,21 +10,38 @@
   const config = __NODELANE_CONFIG__;
   const records = new Map();
   const ids = new WeakMap();
+  const versions = new WeakMap();
   const overlays = new Map();
   const badges = new Map();
   const menus = new Map();
   let press = null, pressTimer, menuBusy = false, suppressClick = null;
   let theme = {};
-  let next = 0, seq = 0, active = false, translated = false, timer, disposed = false;
+  let next = 0, nextVersion = 0, seq = 0, active = false, translated = false, timer, disposed = false;
   let input = null, output = null, observer, restoreTimer;
-  const MAX_BYTES = 32 * 1024 * 1024, PIXEL_BUDGET = 64 * 1024 * 1024, CHUNK = 128 * 1024;
+  const CHUNK = 128 * 1024;
+  const probe = document.createElement('canvas'); probe.width = probe.height = 32;
   const encode = bytes => {
     let text = '';
     for (let at = 0; at < bytes.length; at += 8192) text += String.fromCharCode(...bytes.subarray(at, at + 8192));
     return btoa(text);
   };
   function source(el) { return el instanceof HTMLCanvasElement ? 'canvas' : el.currentSrc || el.src || ''; }
-  function revision(el) { return source(el) + ':' + (el.naturalWidth || el.width) + ':' + (el.naturalHeight || el.height); }
+  function revision(el) {
+    let pixels = '';
+    if (el instanceof HTMLCanvasElement) {
+      try {
+        const context = probe.getContext('2d', {willReadFrequently:true});
+        context.clearRect(0, 0, 32, 32); context.drawImage(el, 0, 0, 32, 32);
+        pixels = encode(context.getImageData(0, 0, 32, 32).data);
+      } catch (_) { probe.width = 32; }
+    }
+    const url = source(el), width = el.naturalWidth || el.width, height = el.naturalHeight || el.height;
+    let value = versions.get(el);
+    if (!value || value.url !== url || value.width !== width || value.height !== height || value.pixels !== pixels) {
+      value = {url, width, height, pixels, version:String(++nextVersion)}; versions.set(el, value);
+    }
+    return value.version;
+  }
   function record(id, version) {
     const rec = records.get(id);
     if (!rec || !rec.el.isConnected || revision(rec.el) !== version) throw Error('SOURCE_CHANGED');
@@ -30,7 +50,61 @@
   function drop(id) {
     const value = overlays.get(id);
     if (!value) return;
-    value.canvas.remove(); overlays.delete(id);
+    value.restore(); URL.revokeObjectURL(value.url); overlays.delete(id);
+  }
+  function display(el, url) {
+    const undo = [], repairs = [];
+    const set = (element, name, value) => {
+      let old = element.style.getPropertyValue(name), priority = element.style.getPropertyPriority(name);
+      element.style.setProperty(name, value, 'important');
+      const applied = element.style.getPropertyValue(name);
+      repairs.push(() => {
+        if (element.style.getPropertyValue(name) === applied && element.style.getPropertyPriority(name) === 'important') return;
+        old = element.style.getPropertyValue(name); priority = element.style.getPropertyPriority(name);
+        element.style.setProperty(name, value, 'important');
+      });
+      undo.push(() => {
+        if (element.style.getPropertyValue(name) !== applied || element.style.getPropertyPriority(name) !== 'important') return;
+        if (old) element.style.setProperty(name, old, priority); else element.style.removeProperty(name);
+      });
+    };
+    if (el instanceof HTMLImageElement) {
+      if (!el.hasAttribute('style')) undo.push(() => { if (!el.style.length) el.removeAttribute('style'); });
+      for (const [name, value] of [['width',el.naturalWidth],['height',el.naturalHeight]]) {
+        if (el.hasAttribute(name)) continue;
+        el.setAttribute(name, String(value));
+        undo.push(() => { if (el.getAttribute(name) === String(value)) el.removeAttribute(name); });
+      }
+      const ratio = getComputedStyle(el).aspectRatio;
+      if (ratio === 'auto' || ratio.startsWith('auto ')) set(el, 'aspect-ratio', el.naturalWidth+' / '+el.naturalHeight);
+      set(el, 'content', 'url("'+url+'")');
+    } else {
+      const preview = new Image(), parent = el.parentElement;
+      preview.src = url; preview.alt = ''; preview.dataset.nodelaneOverlay = 'translation';
+      preview.setAttribute('aria-hidden', 'true'); el.after(preview);
+      undo.push(() => preview.remove());
+      if (getComputedStyle(parent).position === 'static') set(parent, 'position', 'relative');
+      repairs.push(() => {
+        if (el.parentElement !== parent) { drop(ids.get(el)); return; }
+        if (preview.previousElementSibling !== el) el.after(preview);
+        const css = getComputedStyle(el);
+        const size = axis => {
+          const value = parseFloat(css[axis]);
+          if (!css[axis].endsWith('px') || !Number.isFinite(value)) return axis === 'width' ? el.offsetWidth : el.offsetHeight;
+          const edges = axis === 'width' ? ['left','right'] : ['top','bottom'];
+          return value + (css.boxSizing === 'border-box' ? 0 : edges.reduce((sum, edge) => sum +
+            (parseFloat(css.getPropertyValue('padding-'+edge)) || 0) + (parseFloat(css.getPropertyValue('border-'+edge+'-width')) || 0), 0));
+        };
+        const props = {all:'initial',position:'absolute',display:'block',left:el.offsetLeft+'px',top:el.offsetTop+'px',
+          width:size('width')+'px',height:size('height')+'px','max-width':'none','max-height':'none',
+          'pointer-events':'none','user-select':'none','object-fit':css.objectFit,'object-position':css.objectPosition,'z-index':'1'};
+        for (const name of ['transform','transform-origin','translate','rotate','scale','border-radius']) props[name] = css.getPropertyValue(name);
+        for (const [name, value] of Object.entries(props)) {
+          if (preview.style.getPropertyValue(name) !== value || preview.style.getPropertyPriority(name) !== 'important') preview.style.setProperty(name, value, 'important');
+        }
+      });
+    }
+    return {sync:() => repairs.forEach(repair => repair()), restore:() => undo.reverse().forEach(restore => restore())};
   }
   function dropBadge(id) {
     badges.get(id)?.host.remove(); badges.delete(id);
@@ -180,11 +254,8 @@
   function place() {
     for (const [id, value] of overlays) {
       const rec = records.get(id);
-      if (!rec || !rec.el.isConnected || revision(rec.el) !== value.revision) { drop(id); continue; }
-      const box = rec.el.getBoundingClientRect();
-      const visible = active && translated && box.bottom >= 0 && box.top <= innerHeight && box.right >= 0 && box.left <= innerWidth;
-      value.canvas.style.display = visible ? 'block' : 'none';
-      if (visible) Object.assign(value.canvas.style, {left: box.left + 'px', top: box.top + 'px', width: box.width + 'px', height: box.height + 'px'});
+      if (!active || !translated || !rec || !rec.el.isConnected || revision(rec.el) !== value.revision) { drop(id); continue; }
+      value.sync();
     }
     for (const [id, badge] of badges) {
       const rec=records.get(id);
@@ -203,24 +274,28 @@
   async function scan() {
     if (!active || disposed || document.visibilityState === 'hidden') return;
     const candidates = [];
-    // Broad ordinary-image fallback only. Site-specific canvas mappings remain gated.
-    const elements = document.querySelectorAll(config.canvas ? 'img,canvas' : 'img');
-    for (let index = 0; index < Math.min(elements.length, 512); index++) {
-      const el = elements[index];
+    const elements = document.querySelectorAll('img,canvas');
+    for (const el of elements) {
       if (el.dataset.nodelaneOverlay) continue;
       const box = el.getBoundingClientRect();
-      if (box.width < 180 || box.height < 180 || box.bottom < 0 || box.top > innerHeight * 3 || getComputedStyle(el).visibility === 'hidden') continue;
+      if (box.width <= 0 || box.height <= 0 || box.bottom < 0 || box.top > innerHeight * 3) continue;
       const style = getComputedStyle(el);
-      if (style.transform !== 'none' || !['fill','contain'].includes(style.objectFit)) continue;
-      if (el instanceof HTMLImageElement && (!el.complete || el.naturalWidth < 180 || el.naturalHeight < 180)) continue;
+      if (style.visibility !== 'visible' || Number(style.opacity) === 0 ||
+          (el.checkVisibility && !el.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}))) continue;
+      if (el instanceof HTMLImageElement && (!el.complete || !el.naturalWidth || !el.naturalHeight)) continue;
+      if (el instanceof HTMLCanvasElement && (!el.width || !el.height)) continue;
       if (!ids.has(el)) ids.set(el, String(++next));
       const id = ids.get(el), version = revision(el), url = source(el);
-      if (!/^(https?:|blob:)/.test(url) && url !== 'canvas') continue;
-      records.set(id, {el, revision: version});
-      candidates.push({id, revision: version, url, kind: url === 'canvas' ? 'canvas' : url.startsWith('blob:') ? 'blob' : 'http', top: box.top});
+      if (!/^(https?:|blob:|data:image\/)/i.test(url) && url !== 'canvas') continue;
+      records.set(id, {el});
+      const kind = /^https?:/i.test(url) ? 'http' : 'pixels';
+      candidates.push({id, revision: version, url:kind === 'http' ? url : '', kind, box});
     }
-    candidates.sort((a,b) => a.top - b.top);
-    const selected = candidates.slice(0, 4);
+    const distance = ({box}) => Math.max(0, box.top-innerHeight, -box.bottom) ** 2 + Math.max(0, box.left-innerWidth, -box.right) ** 2;
+    const focus = Math.min(innerHeight * .3, 240);
+    const focusDistance = ({box}) => Math.max(0, box.top-focus, focus-box.bottom);
+    candidates.sort((a,b) => distance(a)-distance(b) || focusDistance(a)-focusDistance(b) || a.box.top-b.box.top);
+    const selected = candidates.slice(0, 4).map(({box, ...item}) => item);
     const keep = new Set(selected.map(item => item.id));
     for (const id of records.keys()) if (!keep.has(id)) { records.delete(id); drop(id); dropBadge(id); dropMenu(id); }
     place();
@@ -232,9 +307,9 @@
   }
   function anchor() {
     const elements = document.querySelectorAll('img,canvas');
-    for (let index=0; index<Math.min(elements.length,512); index++) {
+    for (let index=0; index<elements.length; index++) {
       const el=elements[index], box=el.getBoundingClientRect();
-      if (el.dataset.nodelaneOverlay || box.width<180 || box.height<180 || box.bottom<innerHeight/2 || box.top>innerHeight/2) continue;
+      if (el.dataset.nodelaneOverlay || box.width<=0 || box.height<=0 || box.bottom<innerHeight/2 || box.top>innerHeight/2) continue;
       return {slot:index, fraction:(innerHeight/2-box.top)/box.height, x:scrollX, y:scrollY};
     }
     return {x:scrollX,y:scrollY};
@@ -242,7 +317,7 @@
   function cancelRestore() { clearTimeout(restoreTimer); }
   function restore(value, attempt=0) {
     cancelRestore();
-    const el=Number.isInteger(value.slot) && value.slot>=0 && value.slot<512 ? document.querySelectorAll('img,canvas')[value.slot] : null;
+    const el=Number.isInteger(value.slot) && value.slot>=0 ? document.querySelectorAll('img,canvas')[value.slot] : null;
     const box=el?.getBoundingClientRect();
     const y=box?.height>0 && Number.isFinite(value.fraction) ? scrollY+box.top+Math.max(0,Math.min(1,value.fraction))*box.height-innerHeight/2 : value.y;
     if (Number.isFinite(y) && Number.isFinite(value.x)) scrollTo(value.x,Math.max(0,y));
@@ -260,19 +335,14 @@
       place(); if (active) schedule(); return true;
     }
     if (!active) throw Error('BRIDGE_INVALID');
+    if (operation === 'validate') { record(args.id, args.revision); return true; }
     if (operation === 'inputBegin') {
       if (input) throw Error('RESOURCE_LIMIT');
       const {el} = record(args.id, args.revision);
       const isCanvas = el instanceof HTMLCanvasElement;
-      if (isCanvas) {
-        if (!config.canvas) throw Error('SOURCE_MISSING');
-      } else {
-        const url = new URL(source(el), location.href);
-        if (url.protocol !== 'blob:' || url.origin !== location.origin || !el.complete) throw Error('SOURCE_MISSING');
-      }
+      if (!isCanvas && !el.complete) throw Error('SOURCE_MISSING');
       const width = isCanvas ? el.width : el.naturalWidth, height = isCanvas ? el.height : el.naturalHeight;
       if (!width || !height) throw Error('SOURCE_MISSING');
-      if (width * height * 12 > PIXEL_BUDGET) throw Error('RESOURCE_LIMIT');
       const value = {blob: null, id: args.id, revision: args.revision, offset: 0};
       input = value;
       let canvas;
@@ -290,7 +360,6 @@
         record(args.id, args.revision);
         if (input !== value || !active || disposed) throw Error('BRIDGE_INVALID');
         if (!blob || !blob.size) throw Error('SOURCE_MISSING');
-        if (blob.size > MAX_BYTES) throw Error('RESOURCE_LIMIT');
         value.blob = blob;
         return {size: blob.size};
       } catch (error) {
@@ -313,7 +382,7 @@
     if (operation === 'resultClear') { drop(args.id); return true; }
     if (operation === 'resultBegin') {
       record(args.id, args.revision);
-      if (output || args.size < 1 || args.size > MAX_BYTES) throw Error('RESOURCE_LIMIT');
+      if (output || !Number.isSafeInteger(args.size) || args.size < 1) throw Error('BRIDGE_INVALID');
       output = {...args, chunks: [], offset: 0}; return true;
     }
     if (operation === 'resultChunk') {
@@ -327,23 +396,21 @@
       const value = output; output = null;
       if (!value || value.id !== args.id || value.offset !== value.size) throw Error('BRIDGE_INVALID');
       record(value.id, value.revision);
-      const bitmap = await createImageBitmap(new Blob(value.chunks, {type:'image/png'}));
+      const url = URL.createObjectURL(new Blob(value.chunks, {type:'image/png'}));
+      const preview = new Image(); preview.src = url;
       try {
-        if (!active || disposed || bitmap.width * bitmap.height * 8 > PIXEL_BUDGET) throw Error('RESOURCE_LIMIT');
-        record(value.id, value.revision);
-        const canvas = document.createElement('canvas'); canvas.dataset.nodelaneOverlay = 'true';
-        canvas.width = bitmap.width; canvas.height = bitmap.height;
-        Object.assign(canvas.style, {position:'fixed', pointerEvents:'none', zIndex:'2147483646', margin:'0', padding:'0', border:'0'});
-        canvas.getContext('2d').drawImage(bitmap, 0, 0);
-        drop(value.id); document.documentElement.append(canvas);
-        overlays.set(value.id, {canvas, revision:value.revision}); place(); return true;
-      } finally { bitmap.close(); }
+        await preview.decode();
+        if (!active || !translated || disposed) throw Error('SOURCE_CHANGED');
+        const {el} = record(value.id, value.revision);
+        drop(value.id);
+        overlays.set(value.id, {...display(el, url), url, revision:value.revision}); place(); return true;
+      } catch (error) { URL.revokeObjectURL(url); throw error; }
     }
     if (operation === 'resultAbort') { output = null; return true; }
     throw Error('BRIDGE_INVALID');
   }
   function dispose() {
-    disposed = true; cancelPress(); clearTimeout(timer); cancelRestore(); observer?.disconnect();
+    disposed = true; cancelPress(); clearTimeout(timer); clearInterval(canvasTimer); cancelRestore(); observer?.disconnect();
     removeEventListener('scroll', schedule, true); removeEventListener('resize', schedule);
     document.removeEventListener('load', schedule, true);
     removeEventListener('pointerdown',cancelRestore); removeEventListener('wheel',cancelRestore);
@@ -354,7 +421,7 @@
     removeEventListener('pointerup',cancelPress,true); removeEventListener('pointercancel',cancelPress,true);
     removeEventListener('scroll',cancelPress,true); removeEventListener('contextmenu',contextMenu,true);
     removeEventListener('click',afterPress,true);
-    records.clear(); input = null; output = null;
+    records.clear(); input = null; output = null; probe.width = probe.height = 0;
   }
   window.__nodelaneReader = {call, dispose};
   addEventListener('scroll', schedule, {passive:true,capture:true}); addEventListener('resize', schedule, {passive:true});
@@ -369,5 +436,8 @@
   observer = new MutationObserver(changes => {
     if (changes.some(change => !(change.target instanceof Element && change.target.closest('[data-nodelane-overlay]')))) schedule();
   });
-  observer.observe(document.documentElement, {subtree:true,childList:true,attributes:true,attributeFilter:['src','srcset','sizes','width','height']});
+  observer.observe(document.documentElement, {subtree:true,childList:true,attributes:true,attributeFilter:['src','srcset','sizes','width','height','style','class']});
+  const canvasTimer = setInterval(() => {
+    if (active && [...records.values()].some(({el}) => el instanceof HTMLCanvasElement)) schedule();
+  }, 500);
 })();
