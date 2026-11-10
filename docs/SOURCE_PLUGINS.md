@@ -2,6 +2,8 @@
 
 插件源码位于独立仓库 [nodelane-comics-extensions](https://github.com/Wy2926/nodelane-comics-extensions)。本 App 只通过 HTTP 目录下载产物，不依赖同级路径构建或运行。来源 ID 86001001 继续属于 Comix，86001002 属于 S2READ；来源发现、正文图片、阅读状态与翻译契约各自负责。
 
+新版本直接使用 Keiyoushi 原版扩展，不转换或重写为 JavaScript。测试目录中的 Comix 0.3.0 保留本地 ID 86001001，分发原版 1.6.63 APK，由既有 Mihon 桥运行，无需 App 新增实现；正式目录仍为旧版。Comix 不兼容旧自研版网址，不增加映射、迁移或专用能力，也不删除设备数据；旧测试书籍需从新来源重新打开。版本、许可和 MuMu 验证边界统一见[插件说明](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/src/comix/README.md)。
+
 ## 本地联调
 
 在插件仓库运行 `npm ci`、`npm run check`、`npm run release -- testing`、`npm run serve`。App 默认读取 `https://comics-extensions.nodelane.net/stable/index.json`。本地调试以 `--dart-define=NODELANE_CATALOG_URL=http://127.0.0.1:8787/index.json` 切换开发源。iOS 模拟器可连接 Mac 回环地址；真实 iPhone 使用开发机局域网地址，并以 `--dart-define=NODELANE_CATALOG_URL=http://开发机IP:8787/index.json` 启动 App。开发服务器必须绑定局域网接口，文件服务根目录仅为插件仓库的 `repo/`。
@@ -16,13 +18,13 @@
 
 ## Keiyoushi 原生扩展
 
-Keiyoushi 通过第三方仓库入口接入，不把 APK 改写为 JavaScript，也不把 GPL 插件源码并入 App。目录支持 gzip Protobuf、当前 JSON、旧 JSON 与外部来源列表。原始 64 位来源 ID 以字符串保存在 `Source.additionalParams.mihonSourceId`，安装元数据与运行请求共用该身份；本地数据库 ID 不变。同版本目录刷新也会补齐身份，不重新下载插件或替换阅读记录。
+Keiyoushi 可通过第三方仓库入口接入，也可由 NodeLane 目录原样分发 APK，不把 GPL 插件源码并入 App。目录支持 gzip Protobuf、当前 JSON、旧 JSON 与外部来源列表。原始 64 位来源 ID 以字符串保存在 `Source.additionalParams.mihonSourceId`，安装元数据与运行请求共用该身份；本地数据库 ID 不变。同版本目录刷新也会补齐身份，不重新下载插件或替换阅读记录。
 
 扩展桥使用原项目已有的第三方依赖 [m_extension_server](https://github.com/kodjodevf/m_extension_server)，固定为 `6c48ad82116b64384a977a179334570d0986c498`（0.1.2）。App 内的同名服务仅负责启动、连接与停止；Android 沿用原扩展的图片请求／拦截器和本地图片代理。桥请求使用 UTF-8 JSON。漫画、章节、动画和剧集的网址交由扩展自身的 URL 方法解析，不假设内部路径属于目录域名。手机章节加载失败时仍可打开真实章节网页，返回后手动重试；不把任意 403 都判定为可自动解决的 Cloudflare 挑战。
 
 MuMu Android 12 x86_64 上，未修改的包子漫画 1.6.33 已验证安装、热门、最新、中文搜索、详情与章节目录。新会话遇到站点验证时，在应用内浏览器访问目录网站后可恢复列表。
 
-原 Keiyoushi APK 的正文仍未通过：内置阅读域名返回 403，普通镜像设置不改变其强制使用 App 阅读域名的行为。公共层回归覆盖来源身份、同版本迁移、原扩展网址解析和失败恢复入口，不替代全部来源、原生图片代理正文、iOS 或 ARM 真机验收。Windows JVM 的 APK 转换兼容性仍需单独处理。
+原 Keiyoushi 包子漫画 APK 的正文仍未通过：内置阅读域名返回 403，普通镜像设置不改变其强制使用 App 阅读域名的行为。公共层回归覆盖来源身份、同版本迁移、原扩展网址解析和失败恢复入口，不替代全部来源、原生图片代理正文、iOS 或 ARM 真机验收。Windows JVM 的 APK 转换兼容性仍需单独处理。
 
 独立插件仓库已发布 NodeLane 包子 0.1.5，正文请求使用 `tw.twbzmg.com`，不改来源 ID、已保存的章节 URL，也不在 App 公共层写入站点替换规则。现有正式 App 0.1.0 无需升级；MuMu 已从正式目录更新该插件，验证《一拳超人》正文首尾页、跨章与后台页码恢复。开发包另验证《全知读者视角》跨网页的 97 页正文。这是 NodeLane JavaScript 插件的修订，不代表原 Keiyoushi APK 或所有镜像已恢复；上述 App 公共层改动尚未随正式 App 发布。
 
@@ -89,7 +91,7 @@ NodeLane 与 Mangayomi 格式的来源 JSON 行可提供独立的可选 `catalog
 
 来源运行时只释放 JavaScript 定时器、回调与原生引用。HTTP、提取器与 WebView 等宿主桥在调用者的 Zone 中执行，维持共享 HTTPS 连接的生命周期。普通 JavaScript 阅读调用直接执行，不经过安装工作线程，因而不受安装的 40 秒响应限时约束。
 
-CF 继续走现有 MClient／设备 WebView，Cookie 和 UA 留设备端。Comix 的 `captcha_required` 单独提示在源站处理；不把所有 403 当作 CF，不自动解题。日志隐藏请求凭据和查询值。
+JavaScript 来源的 CF 继续走现有 MClient／设备 WebView，Cookie 和 UA 留设备端；原生来源沿用原扩展的验证处理。不把所有 403 当作 CF，日志隐藏请求凭据和查询值。
 
 `PageUrl.imageProcessing` 是可选声明式图片操作。`image.tile-shuffle.v1` 接收算法 3 及插件提供的种子掩码，公共图片层根据响应头恢复图块；不含站点判断，不传整章图片到 JS，也不把源站细节加入翻译层。未知协议失败。页面序列保留重复 URL，防止页槽和进度偏移；章节缓存序列化处理参数。
 
@@ -107,4 +109,4 @@ CF 继续走现有 MClient／设备 WebView，Cookie 和 UA 留设备端。Comix
 
 来源图块协议参考 `node-comics` 提交 `af3df6ee75276ba1970ba0a7dc22488d54712e18` 的 `images.ts`（SHA-256 `3a7eedd0c9a8fbf1a14e67f89285d71f71dfc2e40d60fa3ce67e66ce0ad92113`），App 通用 Dart 置换独立实现，未复制该 GPL TypeScript 文件；具体种子掩码留在 GPL 插件。使用既有 `image` 4.10.1 依赖，不引入模型或字体。独立插件仓库保留其 GPL-3.0-only 许可和移植来源，App 上游 Apache-2.0 声明不改标。
 
-合成样本、QuickJS、真实 HTTP、iOS 模拟器和真机分别记录。S2READ 已在 iOS 27 模拟器验证安装／更新、搜索、完整目录、真实正文首尾页、下一章与后台返回保持位置；瓜子漫画已验证真实在线连续跨章与后台返回保持页码。图块还原另以合成图片验证真实 HTTP 到阅读器图片入口、像素结果与失败重试。Comix 在设备现有会话中已加载热门与完整章节目录，但章节接口仍要求站点验证码，不能视为真实图片或 CF 已验收。上述 S2READ、瓜子漫画与 Comix 的真机、性能及 Android 正文阅读尚未验收；包子漫画与 Keiyoushi 的 Android 验证范围见上文。
+合成样本、QuickJS、真实 HTTP、iOS 模拟器和真机分别记录。S2READ 已在 iOS 27 模拟器验证安装／更新、搜索、完整目录、真实正文首尾页、下一章与后台返回保持位置；瓜子漫画已验证真实在线连续跨章与后台返回保持页码。图块还原另以合成图片验证真实 HTTP 到阅读器图片入口、像素结果与失败重试。S2READ 与瓜子漫画的真机、性能及 Android 正文阅读尚未验收；Comix 原生验证边界见插件说明，包子漫画的 Android 验证范围见上文。
