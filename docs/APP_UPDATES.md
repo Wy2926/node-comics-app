@@ -2,6 +2,14 @@
 
 客户端默认从 `https://comics-updates.nodelane.net/stable/index.json` 读取静态清单，不需要 GitHub 凭据，也不直接查询 GitHub Releases API。安装包和发布页可以使用任意 HTTP／HTTPS 地址，包括自建服务器、CDN、端口、查询参数和片段。清单入口可通过 `NODELANE_UPDATE_MANIFEST_URL` 构建参数替换。
 
+## Android 发布签名
+
+发布沿用同一份签名，不生成替代密钥。Windows 本地备份放在 `%LOCALAPPDATA%\nodelane\signing\node-comics-app\`，包含 `nodelane-comics-release.p12` 和 `signing.json`；两者都不进入 Git。证书 SHA-256 为 `88e9e506650f50c76cb4ef8bb70ecaf885723d81f12417c6064270e4d5d804bc`。
+
+GitHub Actions 使用仓库 Secrets `SIGNING_KEY_STORE_BASE64`（密钥文件的 Base64）与 `SIGNING_KEY_PROPERTIES`（包含 `storeFile=upload-keystore.jks`、`storeType=PKCS12`、别名和密码的 Java properties）。工作流只向签名步骤传入它们，不把内容写入源码或日志；产物只上传 APK。Secrets 可供获准运行的工作流读取，不替代独立的密钥备份。
+
+发布前核对 APK 的包名、版本、构建号及签名与已发布版本兼容。构建号以实际发布 APK 为准并递增；对外更新说明使用简洁的用户语言，不使用自动生成的提交日志。
+
 ## 生成与手动发布
 
 Actions → **Build & Release** 继续从已有的 `v<版本号>` 标签构建并发布 GitHub 安装包，随后生成 `nodelane-comics-v<版本号>-update-manifest` Actions 产物。此流程不部署服务器。

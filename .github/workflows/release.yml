@@ -119,9 +119,13 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
 
       - name: Setup Android keystore
+        env:
+          SIGNING_KEY_STORE_BASE64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          SIGNING_KEY_PROPERTIES: ${{ secrets.SIGNING_KEY_PROPERTIES }}
         run: |
-          echo "${{ secrets.SIGNING_KEY_STORE_BASE64 }}" | base64 -di > android/app/upload-keystore.jks
-          echo "${{ secrets.SIGNING_KEY_PROPERTIES }}" > android/key.properties
+          umask 077
+          printf '%s' "$SIGNING_KEY_STORE_BASE64" | base64 -di > android/app/upload-keystore.jks
+          printf '%s' "$SIGNING_KEY_PROPERTIES" > android/key.properties
 
       - name: flutter pub get
         run: flutter pub get
@@ -129,7 +133,7 @@ jobs:
       - name: build android apks (split per ABI)
         run: |
           export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
-          flutter build apk --release --split-per-abi --verbose
+          flutter build apk --release --split-per-abi
           cd build/app/outputs/flutter-apk
           mv app-arm64-v8a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-arm64-v8a.apk
           mv app-armeabi-v7a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-armeabi-v7a.apk
@@ -190,9 +194,13 @@ jobs:
         run: cargo install 'flutter_rust_bridge_codegen'
 
       - name: Setup Android keystore
+        env:
+          SIGNING_KEY_STORE_BASE64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          SIGNING_KEY_PROPERTIES: ${{ secrets.SIGNING_KEY_PROPERTIES }}
         run: |
-          echo "${{ secrets.SIGNING_KEY_STORE_BASE64 }}" | base64 -di > android/app/upload-keystore.jks
-          echo "${{ secrets.SIGNING_KEY_PROPERTIES }}" > android/key.properties
+          umask 077
+          printf '%s' "$SIGNING_KEY_STORE_BASE64" | base64 -di > android/app/upload-keystore.jks
+          printf '%s' "$SIGNING_KEY_PROPERTIES" > android/key.properties
 
       - name: flutter pub get
         run: flutter pub get
@@ -200,7 +208,7 @@ jobs:
       - name: build android tv apks (split per ABI)
         run: |
           export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
-          flutter build apk --release --split-per-abi --verbose
+          flutter build apk --release --split-per-abi
           cd build/app/outputs/flutter-apk
           mv app-arm64-v8a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-arm64-v8a.apk
           mv app-armeabi-v7a-release.apk nodelane-comics-${{ env.RELEASE_TAG }}-android-tv-armeabi-v7a.apk

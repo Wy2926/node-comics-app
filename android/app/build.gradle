@@ -44,6 +44,7 @@ android {
 
     signingConfigs {
        release {
+           storeType keystoreProperties['storeType'] ?: 'jks'
            keyAlias keystoreProperties['keyAlias']
            keyPassword keystoreProperties['keyPassword']
            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
