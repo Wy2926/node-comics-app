@@ -52,6 +52,14 @@ TranslationPage.key/revision 只标识当前来源定位。网页使用文档代
 
 SSE 聚合当前窗口的活动 UUID，每批最多 32 项，沿用现有超时与网络退避。隐藏、暂停、换账号或释放后断开，不为旧页保活 WebView。
 
+### 送译与结果协议
+
+- `X-Translation-Protocol: overlay-v1` 是所有翻译 API 请求的协议头；`result_format` 是新任务的结果格式选择，两者独立。先读取 `/v1/capabilities`，再以 `PUT /v1/translations/{UUID}` 提交冻结的图片描述、`classic` 和目标语言；收到 `needs_input` 才把同一文件的原始字节 PUT 到 `/input`。
+- 普通图片省略 `result_format`；归一化输入任一边超过 WebP 的 16383 像素时，按 `representations` 协商 `overlay-tiles-v1`。服务未公布该能力时显示服务暂不可用，显式重试重新读取能力。这是结果编码协商，输入仍保持原尺寸。已冻结请求的恢复、补传和同 UUID 重放使用原请求体；显式新建的重试／重译可协商 tiles。
+- 支持 `original`、`overlay-v1`、`overlay-tiles-v1` 和 `full-image-v1`。覆盖结果核对冻结输入身份及尺寸；完整图片按结果声明的输出尺寸解码，无需恢复输入文件。所有译图校验摘要、字节数、MIME 与实际像素后保存为完整 PNG，供阅读器与网页共用；缓存保留输出尺寸，结果过期后仍可读取本地译图。
+- tiles 使用 `NCOT0001` 容器：校验清单、每块摘要、位置、范围及不重叠，逐块解码并以 `source-atop` 合成，保留原图透明度；损坏结果不发布半成品。清单与块规格来自协议，不作为原图尺寸或体积上限。
+- 结果从鉴权后的 `/result` 入口下载，可跟随 HTTP 重定向；跨 origin 后移除 API 凭据，资源主机的 401 归为结果读取失败。限流等待支持响应头及 `error.retry_after_seconds`。
+
 ## 网页取图与资源边界
 
 HTTP(S) 图片优先复用 WebView 已加载的原始响应字节。通过现有插件调用 [Android WebView.saveWebArchive](https://developer.android.com/reference/android/webkit/WebView#saveWebArchive(java.lang.String,%20boolean,%20android.webkit.ValueCallback%3Cjava.lang.String%3E)) 或 [iOS WKWebView.createWebArchiveData](https://developer.apple.com/documentation/webkit/wkwebview/createwebarchivedata(completionhandler:))，按当前元素 URL 提取原始图片，不重载页面、不截图、不修改跨域设置。Android 按 MIME 流式解码，iOS 使用系统 property-list 解码；两者都不把 HTML、Cookie 或其他页面资源交给翻译服务。
@@ -70,7 +78,7 @@ Blob、data 图片与 Canvas 共用 `pixels` 取图路径，没有站点专用 B
 
 客户端不设图片宽高、像素数、文件体积或解码预算硬上限，也不自动缩到固定短边。服务 capabilities 中的尺寸字段不再作为本地拒收条件，服务端最终响应仍按实际结果处理。输入和完整结果缓存的 128 MiB、256 MiB 仅用于淘汰未使用文件；当前大文件、在途输入和显示租约可超过目标，不因此拒收。磁盘实际不足、平台解码失败或服务端限制仍可能导致失败；取消客户端限制不代表设备资源无限。
 
-图片使用现有 image 解码器，不按 ICC、16-bit、色彩元数据或动画预先拒绝。EXIF 方向归一化；原生动图取首帧，网页像素导出取当前显示帧。Dart 解码器不支持的格式交由 Flutter 平台编解码器，AVIF 可使用已有解码实现；实际可用格式取决于平台。没有实现 iframe 内图片发现、平台禁止读取的 Canvas 或 tiles 结果协议；这些不能通过删除判断直接获得支持。网页活动 1 个、温存 1 个／30 秒，最多 12 个逻辑标签；空标签不创建 WebView。
+图片使用现有 image 解码器，不按 ICC、16-bit、色彩元数据或动画预先拒绝。EXIF 方向归一化；原生动图取首帧，网页像素导出取当前显示帧。Dart 解码器不支持的格式交由 Flutter 平台编解码器，AVIF 可使用已有解码实现；实际可用格式取决于平台。没有实现 iframe 内图片发现或平台禁止读取的 Canvas。网页活动 1 个、温存 1 个／30 秒，最多 12 个逻辑标签；空标签不创建 WebView。
 
 ## 认证与设置
 
@@ -89,6 +97,10 @@ flutter build apk --debug --target-platform android-arm64 --no-pub
 回归关注内容换页、返回旧图、同内容合并、冷缓存恢复、旧记录升级、重复脚本安装、丢失响应、取消释放、账号隔离与原译图切换。
 
 回归覆盖大图和长图原尺寸准备／合成、超过原传输上限的 HTTP 图片流、长重定向与循环、缓存软淘汰、16-bit PNG 与动图首帧；Chrome DOM 夹具覆盖小图、512 个元素之后的图片、data/Blob/Canvas、CSS transform/cover、Canvas 重绘、原译图切换与释放。
+
+协议回归使用本地 HTTP 服务与合成图片，覆盖 tiles 能力协商、丢失响应后的精确重放、旧长图显式重试、分块损坏与读取重试、完整图片的独立输出尺寸及过期缓存、跨源结果下载和取消。线上匿名 capabilities 已核对；完整图片输出与跨源结果下载目前仅有本地协议回归，未做真实服务设备验收。
+
+Android x86_64 模拟器使用正式签名 release 包和真实账号完成 800×20000 合成长图送译：请求与结果均为 `overlay-tiles-v1`，完整译图保持原尺寸，顶部／中部／底部正常显示；原译图切换保持图片地址、布局尺寸与滚动位置。重启后复用缓存；移走该图结果缓存后，可按同一任务 UUID 重新下载分块并合成，恢复文件与原缓存逐字节一致。此验证不替代 ARM 真机或 iOS 验收。
 
 Android 模拟器已验证 comix.to 已加载图片的归档取流、真实官方翻译及译图显示：原生 HTTP 403 的 800×1280 图片可直接复用浏览器原图；原译图切换保持图片地址、尺寸与滚动位置，离开页面释放归档和图片缓存，返回后复用既有任务。归档回归覆盖分块字节完整性、并发合并、换源／导航取消、账号切换、后台恢复、损坏归档与租约释放。
 

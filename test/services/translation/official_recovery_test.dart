@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:isar_community/isar.dart';
@@ -13,6 +14,8 @@ import 'package:mangayomi/services/translation/image_work.dart';
 import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/receipt.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
+
+import 'overlay_tiles_fixture.dart';
 
 class _Source implements SourceImageReader {
   _Source(this.file);
@@ -89,6 +92,10 @@ void main() {
   String? terminalFailure;
   bool expiredResult = false;
   bool smallReportedLimits = false;
+  bool tilesAvailable = true, modeLanguages = true, modeEnabled = true;
+  Map<String, dynamic>? translatedResult;
+  List<int>? artifactBytes;
+  int downloads = 0;
 
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
@@ -116,6 +123,12 @@ void main() {
     terminalFailure = null;
     expiredResult = false;
     smallReportedLimits = false;
+    tilesAvailable = true;
+    modeLanguages = true;
+    modeEnabled = true;
+    translatedResult = null;
+    artifactBytes = null;
+    downloads = 0;
     dropCreate = false;
     absentCreate = false;
     dropUpload = false;
@@ -132,11 +145,17 @@ void main() {
       if (path == '/v1/capabilities') {
         body = {
           'result_protocol': 'overlay-v1',
+          'representations': [
+            'original',
+            'full-image-v1',
+            'overlay-v1',
+            if (tilesAvailable) 'overlay-tiles-v1',
+          ],
           'modes': [
             {
               'id': 'classic',
-              'enabled': true,
-              'languages': ['zh-Hans'],
+              'enabled': modeEnabled,
+              if (modeLanguages) 'languages': ['zh-Hans'],
             },
           ],
           'limits': smallReportedLimits
@@ -154,7 +173,16 @@ void main() {
       } else {
         final parts = path.split('/');
         final id = parts[3];
-        if (request.method == 'PUT' && !path.endsWith('/input')) {
+        if (path.endsWith('/result')) {
+          downloads++;
+          request.response.headers.set(
+            'content-type',
+            translatedResult!['artifact']['mime'],
+          );
+          request.response.add(artifactBytes!);
+          await request.response.close();
+          return;
+        } else if (request.method == 'PUT' && !path.endsWith('/input')) {
           body = jsonDecode(
             await utf8.decoder.bind(request).join(),
           ) as Map<String, dynamic>;
@@ -187,14 +215,21 @@ void main() {
           body = remote[id]!;
           body['state'] = 'succeeded';
           body['execution_resolved'] = true;
+          final header = await readImageHeader((target.source as _Source).file);
           body['result'] = {
             'kind': 'no_text',
             'representation': 'original',
             'input_sha256': body['image_sha256'],
             'normalization_version': 1,
-            'width': 8,
-            'height': 12,
+            'width': header.width,
+            'height': header.height,
             'artifact': null,
+            ...?translatedResult,
+            if (translatedResult != null)
+              'artifact': {
+                ...translatedResult!['artifact'] as Map,
+                'path': '/v1/translations/$id/result',
+              },
           };
           if (terminalFailure != null) {
             body['state'] = 'failed';
@@ -249,6 +284,60 @@ void main() {
       await _until(() => value.stateFor(target.page).noText);
       expect(puts, hasLength(1));
       expect(uploads, 1);
+    },
+  );
+
+  test(
+    'optional mode languages are compatible with the extension contract',
+    () async {
+      modeLanguages = false;
+      final value = runtime()..setWindow('reader', [target]);
+      await _until(() => value.stateFor(target.page).noText);
+      expect(puts, hasLength(1));
+    },
+  );
+
+  test('long input negotiates tiles before creating an intent and can retry when available', () async {
+    tilesAvailable = false;
+    await (target.source as _Source).file.writeAsBytes(
+      img.encodePng(img.Image(width: 8, height: 20000)),
+    );
+    final value = runtime() as OfficialRuntime;
+    value.setWindow('reader', [target]);
+    await _until(
+      () => value.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(
+      value.stateFor(target.page).message,
+      const TranslationFailure('RESULT_FORMAT_UNAVAILABLE').message,
+    );
+    expect(value.stateFor(target.page).actions, {TranslationAction.retry});
+    expect(puts, isEmpty);
+    expect(await repository.entries(value.scope, 'active'), isEmpty);
+    tilesAvailable = true;
+    await value.perform(target, TranslationAction.retry);
+    await _until(() => value.stateFor(target.page).noText);
+    expect(puts.single.$2['result_format'], 'overlay-tiles-v1');
+    expect(uploads, 1);
+  });
+
+  test(
+    'disabled mode is a service failure and recovers after policy refresh',
+    () async {
+      modeEnabled = false;
+      final value = runtime()..setWindow('reader', [target]);
+      await _until(
+        () => value.stateFor(target.page).phase == TranslationPhase.failed,
+      );
+      expect(
+        value.stateFor(target.page).message,
+        const TranslationFailure('TRANSLATION_MODE_UNAVAILABLE').message,
+      );
+      expect(puts, isEmpty);
+      modeEnabled = true;
+      await value.perform(target, TranslationAction.retry);
+      await _until(() => value.stateFor(target.page).noText);
+      expect(puts, hasLength(1));
     },
   );
 
@@ -498,26 +587,232 @@ void main() {
       expect(next.stateFor(target.page).actions, {TranslationAction.retry});
     },
   );
-  test(
-    'only a verified absent request replays the same UUID and exact body',
-    () async {
-      dropCreate = true;
-      absentCreate = true;
-      final first = runtime()..setWindow('reader', [target]);
-      await _until(
-        () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
+  for (final (width, height) in [(8, 16383), (8, 16384), (16384, 8)]) {
+    test(
+      'verified absent $width x $height request replays its frozen format and UUID',
+      () async {
+        await (target.source as _Source).file.writeAsBytes(
+          img.encodePng(img.Image(width: width, height: height)),
+        );
+        dropCreate = true;
+        absentCreate = true;
+        final first = runtime()..setWindow('reader', [target]);
+        await _until(
+          () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
+        );
+        await first.dispose();
+        runtimes.remove(first);
+        absentCreate = false;
+        tilesAvailable = false;
+        final next = runtime()..setWindow('reader', [target]);
+        await _until(() => next.stateFor(target.page).noText);
+        expect(puts, hasLength(2));
+        expect(puts.first.$1, puts.last.$1);
+        expect(puts.first.$2, puts.last.$2);
+        expect(
+          puts.first.$2['result_format'],
+          width > 16383 || height > 16383 ? 'overlay-tiles-v1' : isNull,
+        );
+        expect(gets, [puts.first.$1]);
+      },
+    );
+  }
+
+  for (final action in [
+    TranslationAction.retry,
+    TranslationAction.regenerate,
+  ]) {
+    test('legacy long image $action upgrades only the new operation', () async {
+      final source = (target.source as _Source).file;
+      await source.writeAsBytes(
+        img.encodePng(img.Image(width: 8, height: 20000)),
       );
-      await first.dispose();
-      runtimes.remove(first);
-      absentCreate = false;
-      final next = runtime()..setWindow('reader', [target]);
-      await _until(() => next.stateFor(target.page).noText);
-      expect(puts, hasLength(2));
-      expect(puts.first.$1, puts.last.$1);
-      expect(puts.first.$2, puts.last.$2);
-      expect(gets, [puts.first.$1]);
-    },
-  );
+      final value = runtime() as OfficialRuntime;
+      final sha = await imageDigest(source);
+      final previous = OfficialReceipt(
+        id: translationUuid(),
+        key: 'binding:${translationKey([value.scope, sha, 'zh-Hans'])}',
+        scope: value.scope,
+        language: 'zh-Hans',
+        inputKey: translationKey('legacy-input'),
+        inputSha: sha,
+        sourceSha: sha,
+        width: 8,
+        height: 20000,
+        mime: 'image/png',
+        request: {
+          'image': {
+            'sha256': sha,
+            'byte_size': await source.length(),
+            'content_type': 'image/png',
+            'normalization_version': 1,
+          },
+          'mode': 'classic',
+          'target_language': 'zh-Hans',
+        },
+        sent: true,
+        accepted: true,
+      );
+      previous.snapshot = {
+        'id': previous.id,
+        'state': action == TranslationAction.retry ? 'failed' : 'succeeded',
+        'execution_resolved': true,
+        'image': previous.request['image'],
+        'error': action == TranslationAction.retry
+            ? {'code': 'CLASSIC_OUTPUT_TOO_LARGE'}
+            : null,
+      };
+      remote[previous.id] = previous.snapshot!;
+      await repository.publish('input', previous.inputKey, source);
+      final operation = 'operation:${value.scope}:${previous.id}';
+      final frozen = previous.toJson();
+      await repository.write(operation, value.scope, 'completed', frozen);
+      await repository.write(previous.key, value.scope, 'binding', {
+        'id': previous.id,
+      });
+      value.setWindow('reader', [target], automatic: false);
+      await value.restore([target]);
+      expect(puts, isEmpty);
+      await value.perform(target, action);
+      await _until(() => value.stateFor(target.page).noText);
+      expect(puts.single.$1, isNot(previous.id));
+      expect(puts.single.$2, {
+        action == TranslationAction.retry ? 'retry_of' : 'regenerate_of':
+            previous.id,
+        'result_format': 'overlay-tiles-v1',
+      });
+      expect(await repository.read(operation), frozen);
+    });
+  }
+
+  for (final tiled in [false, true]) {
+    test(
+      'download ${tiled ? 'tiles' : 'overlay'} validates, composes and restores complete cached PNG',
+      () async {
+        final height = tiled ? 47974 : 12;
+        final base = img.Image(width: 8, height: height, numChannels: 4);
+        img.fill(base, color: img.ColorRgba8(100, 100, 100, 128));
+        final source = (target.source as _Source).file;
+        await source.writeAsBytes(img.encodePng(base));
+        final sha = await imageDigest(source);
+        final bytes = tiled
+            ? tileContainer(tileManifest(sha, 8, height))
+            : tileWebp;
+        translatedResult = {
+          'kind': 'translated',
+          'representation': tiled ? 'overlay-tiles-v1' : 'overlay-v1',
+          'composite': 'source-atop',
+          'bbox': tiled ? null : {'x': 0, 'y': 0, 'width': 2, 'height': 2},
+          'artifact': {
+            'mime': tiled
+                ? 'application/vnd.nodelane.overlay-tiles'
+                : 'image/webp',
+            'byte_size': bytes.length,
+            'sha256': sha256.convert(bytes).toString(),
+          },
+        };
+        artifactBytes = bytes.toList()..[bytes.length - 1] ^= 1;
+        final first = runtime() as OfficialRuntime;
+        first.setWindow('reader', [target]);
+        await _until(() => first.stateFor(target.page).result != null);
+        final ref = first.stateFor(target.page).result!;
+        await expectLater(
+          first.readResult(ref, TranslationCancellation()),
+          throwsA(
+            isA<TranslationFailure>().having(
+              (e) => e.code,
+              'code',
+              'INVALID_RESULT',
+            ),
+          ),
+        );
+        final operation = 'operation:${first.scope}:${puts.single.$1}';
+        expect(
+          OfficialReceipt.fromJson((await repository.read(operation))!)
+              .resultKey,
+          isNull,
+        );
+        expect(
+          await Directory('${directory.path}/temporary').list().toList(),
+          isEmpty,
+        );
+        artifactBytes = bytes;
+        final display = await first.readResult(ref, TranslationCancellation());
+        final output = img.decodePng(await display.file.readAsBytes())!;
+        expect((output.width, output.height), (8, height));
+        expect(output.getPixel(0, 0).r, closeTo(150, 1));
+        expect(output.getPixel(0, 0).a, 128);
+        expect(output.getPixel(1, tiled ? height - 1 : 1).b, 200);
+        final cachedPath = display.file.path;
+        display.release();
+        await first.dispose();
+        runtimes.remove(first);
+        artifactBytes = null;
+        final next = runtime();
+        next.setWindow('reader', [target], automatic: false);
+        await next.restore([target]);
+        final restored = await next.readResult(
+          next.stateFor(target.page).result!,
+          TranslationCancellation(),
+        );
+        expect(restored.file.path, cachedPath);
+        restored.release();
+        expect(downloads, 2);
+        expect(puts, hasLength(1));
+        expect(uploads, 1);
+      },
+    );
+  }
+
+  test('full-image results use output dimensions without input and survive expiry in cache', () async {
+    final pixels = img.Image(width: 2, height: 2, numChannels: 4)
+      ..setPixelRgba(0, 0, 20, 40, 60, 128);
+    final bytes = img.encodePng(pixels);
+    translatedResult = {
+      'kind': 'partial',
+      'representation': 'full-image-v1',
+      'width': 2,
+      'height': 2,
+      'artifact': {
+        'mime': 'image/png',
+        'byte_size': bytes.length,
+        'sha256': sha256.convert(bytes).toString(),
+      },
+    };
+    artifactBytes = bytes;
+    final first = runtime() as OfficialRuntime;
+    first.setWindow('reader', [target]);
+    await _until(() => first.stateFor(target.page).result != null);
+    final ref = first.stateFor(target.page).result!;
+    final operation = 'operation:${first.scope}:${ref.operationId}';
+    final receipt = OfficialReceipt.fromJson(
+      (await repository.read(operation))!,
+    );
+    await repository.file('input', receipt.inputKey).delete();
+    await first.dispose();
+    runtimes.remove(first);
+    final next = runtime() as OfficialRuntime;
+    final display = await next.readResult(ref, TranslationCancellation());
+    expect((display.width, display.height, display.mime), (2, 2, 'image/png'));
+    final decoded = img.decodePng(await display.file.readAsBytes())!;
+    expect(decoded.getPixel(0, 0).a, 128);
+    expect(decoded.getPixel(0, 0).r, 20);
+    final path = display.file.path;
+    display.release();
+    final saved = OfficialReceipt.fromJson((await repository.read(operation))!);
+    saved.accept({
+      ...saved.snapshot!,
+      'result': null,
+      'error': {'code': 'RESULT_EXPIRED'},
+    });
+    await repository.write(operation, next.scope, 'completed', saved.toJson());
+    final cached = await next.readResult(ref, TranslationCancellation());
+    expect((cached.width, cached.height), (2, 2));
+    expect(cached.file.path, path);
+    cached.release();
+    expect(downloads, 1);
+    expect(puts, hasLength(1));
+  });
 
   test(
     'NodeLane failed-image retry uses a new UUID and preserves retry_of',

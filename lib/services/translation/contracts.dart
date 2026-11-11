@@ -182,7 +182,9 @@ class TranslationFailure implements Exception {
       'CLASSIC_ANALYSIS_TOO_LARGE' => l10n.translation_analysis_too_large,
       'CLASSIC_REGION_LIMIT_EXCEEDED' => l10n.translation_region_limit,
       'CLASSIC_TEXT_LIMIT_EXCEEDED' => l10n.translation_text_limit,
-      'TRANSLATION_UNAVAILABLE' => l10n.translation_unavailable,
+      'TRANSLATION_UNAVAILABLE' ||
+      'RESULT_FORMAT_UNAVAILABLE' ||
+      'TRANSLATION_MODE_UNAVAILABLE' => l10n.translation_unavailable,
       'OUTCOME_UNKNOWN' => l10n.translation_outcome_unknown,
       'RATE_LIMITED' => l10n.translation_rate_limited,
       'QUOTA_EXHAUSTED' => l10n.translation_quota_exhausted,

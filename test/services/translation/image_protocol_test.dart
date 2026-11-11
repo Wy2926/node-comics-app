@@ -76,15 +76,24 @@ void main() {
       final patch = await File('${directory.path}/patch')
           .writeAsBytes(img.encodePng(overlay));
       final work = TranslationImageWork(directory);
+      final patches = <TranslationImagePatch>[
+        (
+          x: 0,
+          y: 0,
+          width: 2,
+          height: 1,
+          offset: 0,
+          length: await patch.length(),
+          sha256: await imageDigest(patch),
+        ),
+      ];
       final output = await work.composite(
         input: input,
         patch: patch,
-        x: 0,
-        y: 0,
         width: 2,
         height: 1,
-        patchWidth: 2,
-        patchHeight: 1,
+        patchMime: 'image/png',
+        patches: patches,
         cancellation: TranslationCancellation(),
       );
       final decoded = img.decodePng(await output.readAsBytes())!;
@@ -95,12 +104,10 @@ void main() {
         work.composite(
           input: input,
           patch: patch,
-          x: 0,
-          y: 0,
           width: 1,
           height: 1,
-          patchWidth: 1,
-          patchHeight: 1,
+          patchMime: 'image/png',
+          patches: patches,
           cancellation: TranslationCancellation(),
         ),
         throwsA(isA<TranslationFailure>()),
@@ -137,12 +144,20 @@ void main() {
           final result = await work.composite(
             input: prepared.file,
             patch: patch,
-            x: 0,
-            y: 0,
             width: width,
             height: height,
-            patchWidth: 1,
-            patchHeight: 1,
+            patchMime: 'image/png',
+            patches: [
+              (
+                x: 0,
+                y: 0,
+                width: 1,
+                height: 1,
+                offset: 0,
+                length: await patch.length(),
+                sha256: await imageDigest(patch),
+              ),
+            ],
             cancellation: TranslationCancellation(),
           );
           final header = await readImageHeader(result);
@@ -205,6 +220,43 @@ void main() {
       }
     },
   );
+
+  test('complete-image decode rejects mismatched and corrupt artifacts before publication', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'nodelane-full-result-',
+    );
+    try {
+      final artifact = File('${directory.path}/artifact');
+      final work = TranslationImageWork(Directory('${directory.path}/work'));
+      final png = img.encodePng(img.Image(width: 2, height: 2));
+      for (final (bytes, width, mime) in [
+        (png, 3, 'image/png'),
+        (png, 2, 'image/webp'),
+        (<int>[1, 2, 3], 2, 'image/png'),
+      ]) {
+        await artifact.writeAsBytes(bytes);
+        await expectLater(
+          work.decodeResult(
+            artifact,
+            width: width,
+            height: 2,
+            mime: mime,
+            cancellation: TranslationCancellation(),
+          ),
+          throwsA(
+            isA<TranslationFailure>().having(
+              (e) => e.code,
+              'code',
+              'INVALID_RESULT',
+            ),
+          ),
+        );
+        expect(await work.temporary.list().toList(), isEmpty);
+      }
+    } finally {
+      await directory.delete(recursive: true);
+    }
+  });
 
   test('local source transport streams over 32 MiB and follows more than five redirects', () async {
     final directory = await Directory.systemTemp.createTemp(

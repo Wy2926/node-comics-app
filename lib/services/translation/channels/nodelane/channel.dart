@@ -10,10 +10,12 @@ import 'package:mangayomi/repositories/translation_repository.dart';
 import '../../contracts.dart';
 import '../../identity.dart';
 import '../../image_work.dart';
+import '../../languages.dart';
 import '../../source_images.dart';
 import 'http.dart';
 import 'receipt.dart';
 import 'protocol.dart';
+import 'overlay_tiles.dart';
 
 class NodeLaneChannel implements TranslationChannel {
   NodeLaneChannel({
@@ -447,15 +449,16 @@ class OfficialRuntime implements ChannelRuntime {
       throw const TranslationFailure('CLIENT_UPGRADE_REQUIRED');
     }
     final modes = value['modes'];
-    if (modes is! List ||
-        !modes.any(
-          (m) =>
-              m is Map &&
-              m['id'] == 'classic' &&
-              m['enabled'] == true &&
-              m['languages'] is List &&
-              (m['languages'] as List).contains(options.language),
-        )) {
+    final mode = modes is List
+        ? modes.whereType<Map>().where((m) => m['id'] == 'classic').firstOrNull
+        : null;
+    if (mode == null || mode['enabled'] != true) {
+      throw const TranslationFailure('TRANSLATION_MODE_UNAVAILABLE');
+    }
+    final languages = mode['languages'];
+    if (languages is List
+        ? !languages.contains(options.language)
+        : !translationLanguageNames.containsKey(options.language)) {
       throw const TranslationFailure('UNSUPPORTED_LANGUAGE');
     }
     _policy = value;
@@ -481,7 +484,7 @@ class OfficialRuntime implements ChannelRuntime {
     var receipt = await _load(target, cancel);
     cancel.check();
     if (receipt == null) {
-      await _capabilities(cancel);
+      final capabilities = await _capabilities(cancel);
       final original = await _sources.acquire(target, cancel);
       PreparedTranslationImage? input;
       try {
@@ -490,6 +493,11 @@ class OfficialRuntime implements ChannelRuntime {
           original.file,
           cancel,
           sourceSha: original.sha,
+        );
+        final format = nodeLaneResultFormat(
+          capabilities,
+          input.width,
+          input.height,
         );
         receipt = await _control.run(() async {
           cancel.check();
@@ -518,6 +526,7 @@ class OfficialRuntime implements ChannelRuntime {
               'image': frozen.descriptor,
               'mode': 'classic',
               'target_language': options.language,
+              'result_format': ?format,
             },
           );
           await _bind(created);
@@ -809,6 +818,7 @@ class OfficialRuntime implements ChannelRuntime {
       // preparation path report another read failure or submit the new image.
       if (action == TranslationAction.retry &&
           _receiptFor(target.page) == null) {
+        _policyTime = null;
         _requested.add(target.page.identity);
         _handled.remove(target.page.identity);
         _pump();
@@ -846,7 +856,13 @@ class OfficialRuntime implements ChannelRuntime {
         if (action == TranslationAction.retry && !previous.canRetry) {
           throw TranslationFailure(previous.errorCode ?? 'REMOTE_FAILED');
         }
-        await _capabilities(cancel);
+        _policyTime = null;
+        final capabilities = await _capabilities(cancel);
+        final format = nodeLaneResultFormat(
+          capabilities,
+          previous.width,
+          previous.height,
+        );
         final created = OfficialReceipt(
           id: translationUuid(),
           key: previous.key,
@@ -861,6 +877,7 @@ class OfficialRuntime implements ChannelRuntime {
           request: {
             action == TranslationAction.retry ? 'retry_of' : 'regenerate_of':
                 previous.id,
+            'result_format': ?format,
           },
         );
         // Recover and check frozen input before creating the explicit new intent.
@@ -940,7 +957,7 @@ class OfficialRuntime implements ChannelRuntime {
         cancel.check();
         if (epoch != repository.cacheEpoch) throw const TranslationCancelled();
         await cached.setLastModified(DateTime.now());
-        return (cached, receipt.width, receipt.height);
+        return (cached, receipt.displayWidth, receipt.displayHeight);
       }
     }
     if (receipt.result == null) {
@@ -949,69 +966,82 @@ class OfficialRuntime implements ChannelRuntime {
       );
     }
     final result = receipt.result!;
-    if (result['normalization_version'] != 1 ||
-        result['input_sha256'] != receipt.inputSha ||
-        result['width'] != receipt.width ||
-        result['height'] != receipt.height ||
-        result['representation'] != 'overlay-v1' ||
-        result['composite'] != 'source-atop' ||
-        !const {'translated', 'partial'}.contains(result['kind'])) {
-      throw const TranslationFailure('INVALID_RESULT');
-    }
-    final artifact = result['artifact'], box = result['bbox'];
-    if (artifact is! Map ||
-        box is! Map ||
-        artifact['mime'] != 'image/webp' ||
-        artifact['path'] != '/v1/translations/${receipt.id}/result' ||
-        artifact['byte_size'] is! int ||
-        (artifact['byte_size'] as int) <= 0 ||
-        artifact['sha256'] is! String ||
-        !RegExp(r'^[a-f0-9]{64}$').hasMatch(artifact['sha256'] as String) ||
-        !['x', 'y', 'width', 'height'].every((key) => box[key] is int) ||
-        box['x'] < 0 ||
-        box['y'] < 0 ||
-        box['width'] < 1 ||
-        box['height'] < 1 ||
-        box['x'] + box['width'] > receipt.width ||
-        box['y'] + box['height'] > receipt.height) {
-      throw const TranslationFailure('INVALID_RESULT');
-    }
+    final tiled = result['representation'] == overlayTilesFormat;
+    final full = result['representation'] == 'full-image-v1';
+    validateNodeLaneResult(
+      result,
+      id: receipt.id,
+      inputSha: receipt.inputSha,
+      width: receipt.width,
+      height: receipt.height,
+    );
+    final artifact = result['artifact'];
+    if (artifact is! Map) throw const TranslationFailure('RESULT_UNAVAILABLE');
+    final width = result['width'] as int, height = result['height'] as int;
     final key = translationKey([
       scope,
       receipt.id,
       artifact['sha256'],
       'mobile-png-composite-v1',
     ]);
-    final input = await _input(receipt, cancel);
     await images.temporary.create(recursive: true);
-    final patch = File('${images.temporary.path}/${translationUuid()}.webp');
+    final patch = File(
+      '${images.temporary.path}/${translationUuid()}.artifact',
+    );
+    OriginalImageLease? input;
     File? complete;
     try {
+      if (!full) input = await _input(receipt, cancel);
       await api.download(
         receipt.id,
         patch,
         expectedSize: artifact['byte_size'] as int,
-        mime: 'image/webp',
+        mime: artifact['mime'] as String,
         cancellation: cancel,
       );
       if (await imageDigest(patch) != artifact['sha256']) {
         throw const TranslationFailure('INVALID_RESULT');
       }
-      if ((await readImageHeader(patch)).mime != artifact['mime']) {
-        throw const TranslationFailure('INVALID_RESULT');
-      }
       cancel.check();
-      complete = await images.composite(
-        input: input.file,
-        patch: patch,
-        x: box['x'] as int,
-        y: box['y'] as int,
-        width: receipt.width,
-        height: receipt.height,
-        patchWidth: box['width'] as int,
-        patchHeight: box['height'] as int,
-        cancellation: cancel,
-      );
+      if (full) {
+        complete = await images.decodeResult(
+          patch,
+          width: width,
+          height: height,
+          mime: artifact['mime'] as String,
+          cancellation: cancel,
+        );
+      } else {
+        final box = result['bbox'];
+        final patches = tiled
+            ? await readOverlayTiles(
+                patch,
+                inputSha: receipt.inputSha,
+                width: width,
+                height: height,
+              )
+            : <TranslationImagePatch>[
+                (
+                  x: box['x'] as int,
+                  y: box['y'] as int,
+                  width: box['width'] as int,
+                  height: box['height'] as int,
+                  offset: 0,
+                  length: artifact['byte_size'] as int,
+                  sha256: artifact['sha256'] as String,
+                ),
+              ];
+        cancel.check();
+        complete = await images.composite(
+          input: input!.file,
+          patch: patch,
+          width: width,
+          height: height,
+          patchMime: 'image/webp',
+          patches: patches,
+          cancellation: cancel,
+        );
+      }
       cancel.check();
       final file = await repository.publish(
         'result',
@@ -1021,15 +1051,19 @@ class OfficialRuntime implements ChannelRuntime {
       );
       cancel.check();
       receipt.resultKey = key;
+      receipt.resultWidth = width;
+      receipt.resultHeight = height;
       await _save(receipt);
       // Keep the live receipt in sync so a later status save cannot drop cache metadata.
       final live = _receipts[receipt.sourceSha];
       if (live?.id == receipt.id) {
         live!.resultKey = key;
+        live.resultWidth = width;
+        live.resultHeight = height;
       }
-      return (file, receipt.width, receipt.height);
+      return (file, width, height);
     } finally {
-      input.release();
+      input?.release();
       await patch.delete().catchError((_) => patch);
       if (complete != null) {
         await complete.delete().catchError((_) => complete!);

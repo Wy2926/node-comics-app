@@ -44,6 +44,18 @@ class ImageHeader {
   final String mime;
 }
 
+/// One encoded image region in a downloaded artifact. Decode regions in order
+/// while retaining only the output canvas and one region's pixels.
+typedef TranslationImagePatch = ({
+  int x,
+  int y,
+  int width,
+  int height,
+  int offset,
+  int length,
+  String sha256,
+});
+
 Future<String> imageDigest(File file) async =>
     (await sha256.bind(file.openRead()).first).toString();
 
@@ -139,12 +151,10 @@ class TranslationImageWork {
   Future<File> composite({
     required File input,
     required File patch,
-    required int x,
-    required int y,
     required int width,
     required int height,
-    required int patchWidth,
-    required int patchHeight,
+    required String patchMime,
+    required List<TranslationImagePatch> patches,
     required TranslationCancellation cancellation,
   }) => _queue.run(() async {
     cancellation.check();
@@ -154,20 +164,56 @@ class TranslationImageWork {
       'input': input.path,
       'patch': patch.path,
       'output': output,
-      'x': x,
-      'y': y,
       'width': width,
       'height': height,
-      'patchWidth': patchWidth,
-      'patchHeight': patchHeight,
+      'patchMime': patchMime,
+      'patches': patches,
     };
     try {
       await _compositeInWorker(args);
       cancellation.check();
       return File(output);
-    } catch (_) {
+    } catch (error) {
       await File(output).delete().catchError((_) => File(output));
-      rethrow;
+      if (error is TranslationFailure ||
+          error is TranslationCancelled ||
+          error is FileSystemException) {
+        rethrow;
+      }
+      throw const TranslationFailure('INVALID_RESULT');
+    }
+  });
+
+  /// Complete-image deliveries need no frozen input. Keep the shared reader /
+  /// WebView output contract as a validated, single-frame PNG.
+  Future<File> decodeResult(
+    File artifact, {
+    required int width,
+    required int height,
+    required String mime,
+    required TranslationCancellation cancellation,
+  }) => _queue.run(() async {
+    cancellation.check();
+    await temporary.create(recursive: true);
+    final output = File('${temporary.path}/${translationUuid()}.png');
+    try {
+      await _decodeResultInWorker(
+        artifact.path,
+        output.path,
+        width,
+        height,
+        mime,
+      );
+      cancellation.check();
+      return output;
+    } catch (error) {
+      await output.delete().catchError((_) => output);
+      if (error is TranslationFailure ||
+          error is TranslationCancelled ||
+          error is FileSystemException) {
+        rethrow;
+      }
+      throw const TranslationFailure('INVALID_RESULT');
     }
   });
 }
@@ -181,6 +227,29 @@ Future<Map<String, Object>> _prepareInWorker(
 ) => Isolate.run(() => _prepare(input, output, sourceSha));
 Future<void> _compositeInWorker(Map<String, Object> args) =>
     Isolate.run(() => _composite(args));
+
+Future<void> _decodeResultInWorker(
+  String path,
+  String output,
+  int width,
+  int height,
+  String mime,
+) => Isolate.run(() async {
+  final bytes = await File(path).readAsBytes();
+  final decoder = img.findDecoderForData(bytes);
+  final info = decoder?.startDecode(bytes);
+  if (info == null || _mime(decoder!) != mime || info.numFrames > 1) {
+    throw const TranslationFailure('INVALID_RESULT');
+  }
+  final image = decoder.decodeFrame(0);
+  if (image == null ||
+      image.numFrames != 1 ||
+      image.width != width ||
+      image.height != height) {
+    throw const TranslationFailure('INVALID_RESULT');
+  }
+  await File(output).writeAsBytes(img.encodePng(image), flush: true);
+});
 
 Future<Map<String, Object>> _prepare(
   String sourcePath,
@@ -231,38 +300,71 @@ Future<void> _composite(Map<String, Object> args) async {
   final input = File(args['input'] as String),
       patch = File(args['patch'] as String);
   final width = args['width'] as int, height = args['height'] as int;
-  final pw = args['patchWidth'] as int, ph = args['patchHeight'] as int;
-  final x = args['x'] as int, y = args['y'] as int;
-  final inputHeader = await readImageHeader(input),
-      patchHeader = await readImageHeader(patch);
-  if (inputHeader.width != width ||
-      inputHeader.height != height ||
-      patchHeader.width != pw ||
-      patchHeader.height != ph) {
+  final inputHeader = await readImageHeader(input);
+  if (inputHeader.width != width || inputHeader.height != height) {
     throw const TranslationFailure('INVALID_RESULT');
   }
   final base = img
       .decodeImage(await input.readAsBytes())
       ?.convert(numChannels: 4, format: img.Format.uint8);
-  final overlay = img.decodeImage(await patch.readAsBytes());
   if (base == null ||
-      overlay == null ||
       base.width != width ||
       base.height != height ||
-      overlay.width != pw ||
-      overlay.height != ph ||
-      base.numFrames != 1 ||
-      overlay.numFrames != 1 ||
-      x < 0 ||
-      y < 0 ||
-      x + pw > width ||
-      y + ph > height) {
+      base.numFrames != 1) {
     throw const TranslationFailure('INVALID_RESULT');
   }
+  final handle = await patch.open();
+  try {
+    final length = await handle.length();
+    for (final region in args['patches'] as List<TranslationImagePatch>) {
+      if (region.x < 0 ||
+          region.y < 0 ||
+          region.width < 1 ||
+          region.height < 1 ||
+          region.x + region.width > width ||
+          region.y + region.height > height ||
+          region.offset < 0 ||
+          region.length < 1 ||
+          region.offset + region.length > length) {
+        throw const TranslationFailure('INVALID_RESULT');
+      }
+      await handle.setPosition(region.offset);
+      final bytes = await handle.read(region.length);
+      if (bytes.length != region.length ||
+          sha256.convert(bytes).toString() != region.sha256) {
+        throw const TranslationFailure('INVALID_RESULT');
+      }
+      final decoder = img.findDecoderForData(bytes);
+      final info = decoder?.startDecode(bytes);
+      if (info == null ||
+          _mime(decoder!) != args['patchMime'] ||
+          // The image decoder reports zero animation frames for static WebP.
+          info.numFrames > 1 ||
+          info.width != region.width ||
+          info.height != region.height) {
+        throw const TranslationFailure('INVALID_RESULT');
+      }
+      final overlay = decoder.decodeFrame(0);
+      if (overlay == null ||
+          overlay.numFrames != 1 ||
+          overlay.width != region.width ||
+          overlay.height != region.height) {
+        throw const TranslationFailure('INVALID_RESULT');
+      }
+      _applyPatch(base, overlay, region.x, region.y);
+    }
+  } finally {
+    await handle.close();
+  }
+  await File(args['output'] as String)
+      .writeAsBytes(img.encodePng(base), flush: true);
+}
+
+void _applyPatch(img.Image base, img.Image overlay, int x, int y) {
   // source-atop in straight-alpha storage: output alpha is the original's.
   // A transparent destination must stay transparent, including its RGB.
-  for (var row = 0; row < ph; row++) {
-    for (var col = 0; col < pw; col++) {
+  for (var row = 0; row < overlay.height; row++) {
+    for (var col = 0; col < overlay.width; col++) {
       final a = overlay.getPixel(col, row), b = base.getPixel(x + col, y + row);
       final alpha = a.aNormalized;
       if (b.aNormalized == 0) {
@@ -280,6 +382,4 @@ Future<void> _composite(Map<String, Object> args) async {
       );
     }
   }
-  await File(args['output'] as String)
-      .writeAsBytes(img.encodePng(base), flush: true);
 }

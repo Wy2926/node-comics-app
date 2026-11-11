@@ -19,6 +19,8 @@ class OfficialReceipt {
     this.accepted = false,
     this.snapshot,
     this.resultKey,
+    this.resultWidth,
+    this.resultHeight,
     this.unavailable = false,
   });
   final String id, key, scope, language;
@@ -29,6 +31,10 @@ class OfficialReceipt {
   bool unavailable;
   Map<String, dynamic>? snapshot;
   String? resultKey;
+  // Cache metadata survives a later RESULT_EXPIRED snapshot without a descriptor.
+  int? resultWidth, resultHeight;
+  int get displayWidth => resultWidth ?? result?['width'] as int? ?? width;
+  int get displayHeight => resultHeight ?? result?['height'] as int? ?? height;
   String get state =>
       snapshot?['state'] as String? ?? (sent ? 'uncertain' : 'local');
   bool get active => !const {'succeeded', 'failed'}.contains(state);
@@ -79,15 +85,16 @@ class OfficialReceipt {
         value['result'] == null;
     if (value['state'] == 'succeeded' && !expired) {
       final result = value['result'];
-      if (result is! Map ||
-          result['normalization_version'] != 1 ||
-          result['input_sha256'] != inputSha ||
-          result['width'] != width ||
-          result['height'] != height ||
-          (result['representation'] == 'original' &&
-              (result['kind'] != 'no_text' || result['artifact'] != null))) {
+      if (result is! Map) {
         throw const TranslationFailure('INVALID_RESULT');
       }
+      validateNodeLaneResult(
+        result,
+        id: id,
+        inputSha: inputSha,
+        width: width,
+        height: height,
+      );
     }
     accepted = true;
     unavailable = false;
@@ -114,6 +121,8 @@ class OfficialReceipt {
     'unavailable': unavailable,
     'snapshot': snapshot,
     'resultKey': resultKey,
+    if (resultWidth != null) 'resultWidth': resultWidth,
+    if (resultHeight != null) 'resultHeight': resultHeight,
   };
   factory OfficialReceipt.fromJson(Map<String, dynamic> value) {
     if (value['version'] != 1 ||
@@ -140,6 +149,8 @@ class OfficialReceipt {
           ? null
           : Map<String, dynamic>.from(value['snapshot'] as Map),
       resultKey: value['resultKey'] as String?,
+      resultWidth: value['resultWidth'] as int?,
+      resultHeight: value['resultHeight'] as int?,
     );
   }
 }

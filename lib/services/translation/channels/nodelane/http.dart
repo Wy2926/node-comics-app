@@ -120,51 +120,98 @@ class NodeLaneHttp {
     required String mime,
     required TranslationCancellation cancellation,
   }) async {
-    final request = await _open(
-      'GET',
-      '/v1/translations/$id/result',
-      cancellation,
-    );
-    final remove = cancellation.onCancel(
-      () => request.abort(const TranslationCancelled()),
-    );
-    try {
-      final response = await request.close().timeout(
-        const Duration(seconds: 30),
-      );
-      if (response.statusCode != 200) {
-        await _jsonResponse(response, cancellation);
-        throw const TranslationFailure('RESULT_UNAVAILABLE');
-      }
-      if (response.headers.contentType?.mimeType != mime ||
-          expectedSize < 1 ||
-          (response.contentLength >= 0 &&
-              response.contentLength != expectedSize)) {
+    final path = '/v1/translations/$id/result';
+    var destination = uri(path), first = true;
+    var authorized = true;
+    String? authorization;
+    final visited = <Uri>{};
+    while (true) {
+      cancellation.check();
+      if (!visited.add(destination.removeFragment())) {
         throw const TranslationFailure('INVALID_RESULT');
       }
-      final sink = output.openWrite();
-      var length = 0;
+      final request = first
+          ? await _open('GET', path, cancellation)
+          : await _client
+                .getUrl(destination)
+                .timeout(const Duration(seconds: 30));
+      final remove = cancellation.onCancel(
+        () => request.abort(const TranslationCancelled()),
+      );
       try {
-        await for (final chunk in response.timeout(
+        cancellation.check();
+        request.followRedirects = false;
+        if (first) {
+          authorization = request.headers.value(
+            HttpHeaders.authorizationHeader,
+          );
+        }
+        if (!first && authorized) {
+          if (authorization != null) {
+            request.headers.set(HttpHeaders.authorizationHeader, authorization);
+          }
+          request.headers.set(
+            nodeLaneTranslationProtocolHeader,
+            nodeLaneTranslationProtocol,
+          );
+        }
+        request.headers.set(HttpHeaders.acceptHeader, mime);
+        final response = await request.close().timeout(
           const Duration(seconds: 30),
-        )) {
-          cancellation.check();
-          length += chunk.length;
-          if (length > expectedSize) {
+        );
+        if (const {301, 302, 303, 307, 308}.contains(response.statusCode)) {
+          final location = response.headers.value(HttpHeaders.locationHeader);
+          final next = location == null ? null : destination.resolve(location);
+          if (next == null ||
+              !const {'https', 'http'}.contains(next.scheme) ||
+              next.userInfo.isNotEmpty) {
             throw const TranslationFailure('INVALID_RESULT');
           }
-          sink.add(chunk);
-          await sink.flush();
+          // Match fetch: credentials are stripped on crossing an origin, even
+          // for another port or a later redirect back to the original host.
+          authorized = authorized && next.origin == destination.origin;
+          destination = next;
+          first = false;
+          continue;
         }
-        if (length != expectedSize) {
+        if (response.statusCode != 200) {
+          // Asset-host authorization failures do not invalidate the API login.
+          if (authorized) await _jsonResponse(response, cancellation);
+          throw const TranslationFailure('RESULT_UNAVAILABLE');
+        }
+        final contentType = response.headers.contentType?.mimeType;
+        if ((contentType != null && contentType != mime) ||
+            expectedSize < 1 ||
+            (response.contentLength >= 0 &&
+                response.contentLength != expectedSize)) {
           throw const TranslationFailure('INVALID_RESULT');
         }
-        await sink.flush();
+        final sink = output.openWrite();
+        var length = 0;
+        try {
+          await for (final chunk in response.timeout(
+            const Duration(seconds: 30),
+          )) {
+            cancellation.check();
+            length += chunk.length;
+            if (length > expectedSize) {
+              throw const TranslationFailure('INVALID_RESULT');
+            }
+            sink.add(chunk);
+            await sink.flush();
+          }
+          if (length != expectedSize) {
+            throw const TranslationFailure('INVALID_RESULT');
+          }
+          await sink.flush();
+        } finally {
+          await sink.close();
+        }
+        return;
       } finally {
-        await sink.close();
+        request.abort();
+        remove();
       }
-    } finally {
-      remove();
     }
   }
 
@@ -230,6 +277,10 @@ class NodeLaneHttp {
       } catch (_) {}
     }
     final error = value?['error'];
+    final bodyRetry = error is Map ? error['retry_after_seconds'] : null;
+    if (bodyRetry is num && bodyRetry.isFinite && bodyRetry > 0) {
+      seconds = bodyRetry.ceil();
+    }
     final code = error is Map ? error['code'] : null;
     final mapped = switch (response.statusCode) {
       401 || 403 => 'AUTH_REQUIRED',
@@ -240,6 +291,10 @@ class NodeLaneHttp {
       402 => 'QUOTA_EXHAUSTED',
       _ when code == 'DAILY_QUOTA_EXHAUSTED' => 'QUOTA_EXHAUSTED',
       _ when code == 'LANGUAGE_UNSUPPORTED' => 'UNSUPPORTED_LANGUAGE',
+      _ when code == 'RESULT_UNAVAILABLE' => 'RESULT_UNAVAILABLE',
+      _ when code == 'RESULT_FORMAT_UNAVAILABLE' => 'RESULT_FORMAT_UNAVAILABLE',
+      _ when code == 'TRANSLATION_MODE_UNAVAILABLE' =>
+        'TRANSLATION_MODE_UNAVAILABLE',
       _ when code is String && nodeLaneNonRetryableErrors.contains(code) =>
         code,
       _ => 'NETWORK',
