@@ -1,112 +1,47 @@
-# 官方来源插件与独立仓库
+# 来源插件与宿主
 
-插件源码位于独立仓库 [nodelane-comics-extensions](https://github.com/Wy2926/nodelane-comics-extensions)。本 App 只通过 HTTP 目录下载产物，不依赖同级路径构建或运行。来源 ID 86001001 继续属于 Comix，86001002 属于 S2READ；来源发现、正文图片、阅读状态与翻译契约各自负责。
-
-新版本直接使用 Keiyoushi 原版扩展，不转换或重写为 JavaScript。测试目录中的 Comix 0.3.0 保留本地 ID 86001001，分发原版 1.6.63 APK，由既有 Mihon 桥运行，无需 App 新增实现；正式目录仍为旧版。Comix 不兼容旧自研版网址，不增加映射、迁移或专用能力，也不删除设备数据；旧测试书籍需从新来源重新打开。版本、许可和 MuMu 验证边界统一见[插件说明](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/src/comix/README.md)。
+来源位于独立的 [nodelane-comics-extensions](https://github.com/Wy2926/nodelane-comics-extensions)，App 通过 HTTP 目录下载产物，两仓库没有构建或运行时目录依赖。新增／修复网站使用插件仓库的 [nodelane-source-adapter 技能](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/.agents/skills/nodelane-source-adapter/SKILL.md)。站点协议留在插件，App 负责通用运行、书架、阅读进度、下载与翻译。
 
 ## 本地联调
 
-在插件仓库运行 `npm ci`、`npm run check`、`npm run release -- testing`、`npm run serve`。App 默认读取 `https://comics-extensions.nodelane.net/stable/index.json`。本地调试以 `--dart-define=NODELANE_CATALOG_URL=http://127.0.0.1:8787/index.json` 切换开发源。iOS 模拟器可连接 Mac 回环地址；真实 iPhone 使用开发机局域网地址，并以 `--dart-define=NODELANE_CATALOG_URL=http://开发机IP:8787/index.json` 启动 App。开发服务器必须绑定局域网接口，文件服务根目录仅为插件仓库的 `repo/`。
+在插件仓库按[维护说明](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/docs/MAINTENANCE.md)构建并启动服务。App 默认目录为 `https://comics-extensions.nodelane.net/stable/index.json`，可通过 `--dart-define=NODELANE_CATALOG_URL=http://127.0.0.1:8787/index.json` 切换。iOS 模拟器可使用 Mac 回环地址；真机使用开发机局域网 IP，插件服务器需绑定局域网接口。
 
-来源页下拉可立即刷新；启动、回到前台和进入官方目录时按间隔检查。官方入口固定安装目录中全部兼容的缺失插件，并更新所有已有新版本的官方插件，不提供开关，也不读取第三方的检查／自动更新开关；语言、18+ 和显示偏好只影响展示，不限制安装。第三方继续由原开关控制，只自动更新已安装项。官方入口仅向共享目录同步流程传入安装策略，沿用包校验和安装路径，不新增下载服务或轮询。
+插件仓库的 `npm run test:app -- --app /明确的App绝对路径` 显式运行 QuickJS 契约检查；App 普通 CI 不读取相邻仓库。APK 通过 Mihon 桥单独验证，不能用 QuickJS 测试代替。
 
-目录校验后整批写入，页面只等待目录就绪，不等待插件全部安装。共享安装器不读取页面或更新开关；同一仓库、来源、版本和摘要的请求合并，全部安装共用一个串行队列。点击尚未安装的网站会把待执行项提前至下一项，只在该行显示等待；已安装网站直接打开当前版本，更新不强制重载正在阅读的来源。官方和第三方分段分别刷新，不互相等待目录请求。
+## 目录与安装
 
-全部同步成功后 12 小时内不重复检查，真正失败后 15 分钟内不自动重试；记录按官方地址隔离，持久化不可用时仅在内存中计时，手动刷新可绕过间隔。后台或应用锁定后停止启动新的自动安装，当前项可完成；恢复前台／解锁时重新检查缺失项。暂停及进程中断不写成功或失败冷却，同版本已安装项不重复下载。单项失败不阻塞其他项，失败保留旧代码；最终事务重新读取归属、版本及用户状态，保留安装期间修改的固定、显示和最近使用状态。
+官方目录自动安装全部兼容的缺失插件并更新已有插件，不受第三方自动更新开关、语言或成人内容显示偏好控制；第三方只按已有开关更新已安装项。目录先整批保存并展示，安装共用串行队列，同仓库／来源／版本／摘要合并请求。点击缺失项优先处理，已安装项立即打开当前版本；更新不强制重载正在阅读的来源。
 
-插件下载继续使用既有 Dart HTTP 分发路径与拦截器，每项操作独立持有客户端；连接与下载有 25 秒上限，失败时关闭客户端中止剩余请求，不关闭站点阅读使用的共享连接。JavaScript 安装初始化使用既有 isolate 执行器，按需创建工作线程；QuickJS 单次执行限 5 秒，工作线程响应限 40 秒，响应超时的线程退出并重建，不带着旧任务回到空闲池。正常结束、初始化失败及主动释放均清理 QuickJS 原生引擎、回调、引用和计时器。没有新增持久任务队列或轮询；额外开销为缺失包下载、后台线程和临时引擎，真实流量、耗时、帧率与耗电尚未测量。
+成功同步后 12 小时、失败后 15 分钟内不自动重试，手动刷新可绕过；记录按目录地址隔离。后台／锁定后停止启动新自动安装，当前项可完成，恢复时补查缺失项；暂停和进程中断不记失败。单项失败保留旧版本，不阻塞其他来源；写入时保留用户在安装期间修改的固定、显示和最近使用状态。
 
-## Keiyoushi 原生扩展
+包安装检查仓库／来源身份、同源下载地址、兼容性、文件大小和 SHA-256；下载禁止跳转，上限 1 MiB，初始化成功才替换。旧版本不能覆盖新版本，同版本改摘要会拒绝；目录损坏整批失败，版本不兼容不等于来源已删除。下载有 25 秒上限；JS 初始化经工作线程执行，QuickJS 单次执行限 5 秒、线程响应限 40 秒，超时线程重建。安装和阅读的连接／超时分开管理。
 
-Keiyoushi 可通过第三方仓库入口接入，也可由 NodeLane 目录原样分发 APK，不把 GPL 插件源码并入 App。目录支持 gzip Protobuf、当前 JSON、旧 JSON 与外部来源列表。原始 64 位来源 ID 以字符串保存在 `Source.additionalParams.mihonSourceId`，安装元数据与运行请求共用该身份；本地数据库 ID 不变。同版本目录刷新也会补齐身份，不重新下载插件或替换阅读记录。
-
-扩展桥使用原项目已有的第三方依赖 [m_extension_server](https://github.com/kodjodevf/m_extension_server)，固定为 `6c48ad82116b64384a977a179334570d0986c498`（0.1.2）。App 内的同名服务仅负责启动、连接与停止；Android 沿用原扩展的图片请求／拦截器和本地图片代理。桥请求使用 UTF-8 JSON。漫画、章节、动画和剧集的网址交由扩展自身的 URL 方法解析，不假设内部路径属于目录域名。手机章节加载失败时仍可打开真实章节网页，返回后手动重试；不把任意 403 都判定为可自动解决的 Cloudflare 挑战。
-
-MuMu Android 12 x86_64 上，未修改的包子漫画 1.6.33 已验证安装、热门、最新、中文搜索、详情与章节目录。新会话遇到站点验证时，在应用内浏览器访问目录网站后可恢复列表。
-
-原 Keiyoushi 包子漫画 APK 的正文仍未通过：内置阅读域名返回 403，普通镜像设置不改变其强制使用 App 阅读域名的行为。公共层回归覆盖来源身份、同版本迁移、原扩展网址解析和失败恢复入口，不替代全部来源、原生图片代理正文、iOS 或 ARM 真机验收。Windows JVM 的 APK 转换兼容性仍需单独处理。
-
-独立插件仓库已发布 NodeLane 包子 0.1.5，正文请求使用 `tw.twbzmg.com`，不改来源 ID、已保存的章节 URL，也不在 App 公共层写入站点替换规则。现有正式 App 0.1.0 无需升级；MuMu 已从正式目录更新该插件，验证《一拳超人》正文首尾页、跨章与后台页码恢复。开发包另验证《全知读者视角》跨网页的 97 页正文。这是 NodeLane JavaScript 插件的修订，不代表原 Keiyoushi APK 或所有镜像已恢复；上述 App 公共层改动尚未随正式 App 发布。
-
-## 分发与身份
-
-手动创建的本地来源以 `nodelane-comics-<语言>.<名称>`（Dart）或 `nodelane-comics-js-<语言>.<名称>`（JavaScript）生成 ID，不查询或迁移上游前缀。JavaScript 模板只包含实现骨架，元数据由运行时通过 `this.source` 提供，不在代码中重复插入用户填写的名称、地址和备注。第三方目录的来源 ID 和运行时接口沿用各自协议。
-
-沿用 Mangayomi 原 JSON 索引，NodeLane 包增加第 1 版 `nodelane` 元数据，包含永久仓库／插件身份、文件 SHA-256 和字节数、精确请求主机与所需主机能力。`Source.packageInfoJson` 保存所安装代码的对应元数据，旧第三方来源保持空值兼容。
+永久来源 ID、仓库身份和 slug 不随改名、域名或版本变化；另一仓库相同 ID 拒绝写入。目录格式和能力声明见插件仓库的 [CONTRACT.md](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/docs/CONTRACT.md)，本文件不重复字段表。
 
 ### 来源卡片资料
 
-NodeLane 与 Mangayomi 格式的来源 JSON 行可提供独立的可选 `catalogMetadata`，官方和第三方目录共用，不放入 `nodelane` 包校验信息或插件执行参数：
+`catalogMetadata` 与顶层 `isNsfw` 只驱动展示，不改变安装和阅读权限。[字段定义](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/docs/CONTRACT.md#来源卡片资料)由插件仓库维护。缺失资料保持未标注，不推断免费；资料随来源备份，可独立于插件版本刷新，迟到的旧记录不能覆盖新资料或用户状态。
 
-```json
-{
-  "catalogMetadata": {
-    "schema": 1,
-    "regions": ["kr", "cn"],
-    "formats": ["vertical"],
-    "creations": ["original"],
-    "pricing": "partial"
-  }
-}
-```
+## 运行边界
 
-| 字段 | 当前值 |
-| --- | --- |
-| `regions` | `jp` 日漫、`kr` 韩漫、`cn` 国漫、`hk_tw` 港台漫画、`western` 欧美漫画、`other` 其他地区 |
-| `formats` | `page` 页漫、`vertical` 条漫、`strip` 短篇条格 |
-| `creations` | `original` 原创、`fan` 同人、`adaptation` 改编 |
-| `pricing` | `unknown` 未标注、`free` 免费、`partial` 部分收费、`paid` 付费 |
+- **原版 APK**：沿用 `m_extension_server` 与 Mihon 桥。上游 64 位 ID 以字符串保存在 `additionalParams.mihonSourceId`，安装与调用使用相同身份，本地数据库 ID 不变。作品／章节网址由原扩展解析，Android 图片沿用其拦截器及本地代理。更换运行类型不保证旧 URL 可用，不自动增加站点映射或删除书籍。
+- **JavaScript**：QuickJS 实例化 `DefaultExtension extends MProvider`，通过 `this.source` 取得元数据；不提供 Node 或完整浏览器环境。`Client` 按声明的精确 HTTPS 主机校验请求和重定向，现有预算见契约。释放运行时清理 JS 引用和定时器，宿主 HTTP／提取器／WebView 桥在调用者 Zone 中运行，不能误关阅读共享连接。
+- **网页验证**：复用现有设备 WebView；Cookie、UA 留设备。隐藏页面与可见浏览器的会话共享须实测，不把所有 403 当作 Cloudflare，也不承诺自动解题。日志隐藏凭据和查询值。
+- **图片处理**：`PageUrl.imageProcessing` 声明通用操作，具体参数留插件。当前 `image.tile-shuffle.v1` 由公共图片层还原，阅读、下载、翻译共用结果；缓存键包含处理参数，成功才缓存。既有实现每张限 12 MiB、800 万像素、256 块、单帧，后台串行处理且最多排队 4 项。这是当前图块处理边界，不是普通图片准入规则，也不授权新增限制。
 
-前三项是可多选的独立维度，描述网站覆盖范围，不承诺每部作品都具有这些属性。语言继续读取 `lang`。缺失字段、未知枚举或不支持的资料版本不推断为免费；未知分类键保留但不显示为标签。未提供的分类和收费资料保持未标注。
-
-成人标记只读取来源顶层的 `isNsfw`：`true` 显示 18+ 切角并参与已有成人来源过滤，`false` 或缺失不显示切角；不额外声明全年龄或细分成人等级。其他第三方格式由现有适配器转换到同一字段。
-
-`regions` 描述所覆盖漫画的地区分类，不表示网站服务器所在地，也不代替阅读语言。地区、形式与创作关系分开保存，允许同一网站同时覆盖日漫／韩漫、页漫／条漫以及原创／同人等内容；展示文字由 App 统一映射。
-
-`pricing` 是目录维护者声明的网站收费模式：免费、免费与付费内容并存、付费或未标注。它只驱动卡片说明与收费底带，不包含具体价格、订阅方案、广告、登录要求或用户购买状态，也不控制解析、下载和阅读权限。收费与 `isNsfw` 独立，可任意组合。客户端不实时检测站点收费，真实目录必须提供这些资料才会显示相应属性。
-
-资料存入 `Source.catalogMetadataJson` 并随来源备份导入导出。目录刷新可在插件版本不变时更新资料；已安装来源的较旧目录记录不能覆盖新资料，正在下载的插件也不覆盖期间收到的新资料。更新不改动来源 ID、安装代码、常用、显示和阅读状态。现有官方目录未声明的属性不会在 App 内按站名补写。
-
-### 包兼容性
-
-`appMinVerReq` 表示最低 NodeLane 应用版本，与安装包实际版本比较，不另设上游兼容版本。NodeLane 包同时检查 `requires`，缺少所需能力时拒绝安装或更新。
-
-安装前核对来源 ID 所有权、元数据与同源产物地址；下载禁止跳转，流式检查 1 MiB 最大包大小和声明字节数，校验 SHA-256，再初始化 QuickJS，成功后才持久替换旧版本。初始化、网络、摘要或能力失败保留已安装代码和固定状态；目录中一条损坏记录会拒绝整次更新，不静默丢行。目录不兼容项仍参与存在性核对，不因客户端版本旧就标记来源消失。迟到的旧版本不能覆盖新版本，同版本改变摘要会拒绝覆盖。
-
-仓库同名不是授权迁移依据。现有官方包可按永久仓库身份、来源 ID 和 slug 跟随显式配置的官方地址迁移。来自另一仓库的相同 ID 在写入前整批拒绝。永久来源 ID 不随站点名称、域名或版本改变，书架与章节仍使用现有单来源身份。
-
-章节入库按当前作品内的完整 URL 匹配，不按名称或浮点编号删除不同 URL；例如 `64.2` 与 `64.20`、同名的分段上传可以同时存在。旧新目录都只有一条候选、名称一致且旧 URL 不在新目录时，才沿用既有记录处理地址更换并保留进度。顺序阅读仅合并明确标注不同汉化组且每组只有一条的替代版本；未知组或同组同号的多条记录保留。已有作品刷新详情目录后才会同步缺失的记录和最新元数据。
-
-上传日期使用插件返回的毫秒字符串；缺失时留空，不把发现时间写成上传时间。刷新已有章节会补正日期，保留记录 ID、阅读位置与书签；有效日期覆盖旧值，明确空字符串／零表示未知，省略或无效值保留已有日期。纯日期修正不产生新章节通知。
-
-正式和本地目录沿用相同的 JSON 来源数组，正式目录通过 HTTPS 分发；SHA-256 与文件大小检查具体插件内容一致性。插件仓库维护不可变版本产物、独立测试／稳定索引，以及“更高版本发布旧实现”的恢复入口；客户端不自动降版。
-
-正式分发验证范围包括 GitHub Pages 部署、自有域名 DNS／Pages 绑定与 HTTPS、正式和测试 JSON 目录、三个插件包的同源下载及完整性。回归测试覆盖官方全量安装与第三方开关隔离、目录先就绪、手动优先与下载合并、并发用户状态保存、失败隔离、暂停恢复、检查间隔、记录不可用、工作线程超时替换及 QuickJS 资源释放；widget 测试验证有更新时直接打开已有来源。这些不代替真机性能和真实站点验收。
-
-当前自动安装实现已通过 iOS 模拟器构建、签名校验与安装；模拟器验证启动、官方／第三方切换、刷新期间切页及后台返回保留所在分段，并从真实官方目录自动安装全部三个插件，重复刷新未重新下载同版本插件。版本升级、下载失败与恢复另由本地 HTTP 回归使用真实数据库、包校验和后台解释器验证，不能视为真实官方版本升级验收。真机性能及 Android 运行尚未验收。
-
-## 主机能力与开销
-
-`NodeLane.capabilities` 在 QuickJS 中只读提供，`requires` 声明不支持的包不会安装。NodeLane 插件的 `Client` 在 App 请求桥校验精确 HTTPS 主机、每次重定向、1 MiB 请求体、4 MiB 文本响应、30 秒超时和最多 4 次跳转；使用证书验证开启的 Dart HTTP 通道。该边界覆盖此 Client，不宣称上游所有可执行扩展能力已经形成完整恶意代码沙箱。
-
-来源运行时只释放 JavaScript 定时器、回调与原生引用。HTTP、提取器与 WebView 等宿主桥在调用者的 Zone 中执行，维持共享 HTTPS 连接的生命周期。普通 JavaScript 阅读调用直接执行，不经过安装工作线程，因而不受安装的 40 秒响应限时约束。
-
-JavaScript 来源的 CF 继续走现有 MClient／设备 WebView，Cookie 和 UA 留设备端；原生来源沿用原扩展的验证处理。不把所有 403 当作 CF，日志隐藏请求凭据和查询值。
-
-`PageUrl.imageProcessing` 是可选声明式图片操作。`image.tile-shuffle.v1` 接收算法 3 及插件提供的种子掩码，公共图片层根据响应头恢复图块；不含站点判断，不传整章图片到 JS，也不把源站细节加入翻译层。未知协议失败。页面序列保留重复 URL，防止页槽和进度偏移；章节缓存序列化处理参数。
-
-还原限制为每张 12 MiB、800 万像素、256 块和单帧。阅读器后台同时处理一张，最多排队 4 项；下载沿用有限 worker，并在各 worker 内同步处理。缓存键包含处理参数，还原成功才写入缓存或离线 PNG。翻译和图片操作通过相同缓存取得还原后的原图。每个任务会增加解码和输出缓冲，两个 RGBA 缓冲在像素上限约 64 MB，不含编码器及其他阅读缓存；耗时、总内存与耗电未做真机测量。直接在 JS 传 Base64 或复制浏览器运行时会增加桥接／生命周期成本；本实现复用现有图片入口。
+章节按作品内完整 URL 匹配，不能因同名／同编号删除不同 URL；页面保留重复 URL 的页槽。上传日期按插件毫秒字符串处理，未知不改成抓取时间，刷新保留阅读位置与书签。具体数据语义见契约，App 不解析站点目录规则。
 
 ## 代码与验证入口
 
-- `lib/services/source_package.dart`：包校验、下载边界与来源归属。
-- `lib/eval/javascript/http.dart`：声明主机和文本请求预算。
-- `lib/eval/javascript/source_runtime.dart`、`test/eval/js_http_lifecycle_test.dart`：JavaScript 与宿主资源的释放边界，本地 HTTPS 同连接跨运行时复用、失败后恢复。
-- `lib/services/source_images/tile_shuffle.dart`：独立通用图块还原，阅读缓存与下载共同使用。
-- `test/services/source_package_test.dart`、`nodelane_catalog_test.dart`、`source_image_processing_test.dart`：失败恢复、隔离、重复操作、像素和缓存边界。
-- `test/modules/manga/detail/chapter_catalog_identity_test.dart`、`test/modules/manga/reader/min_subsampling_headers_test.dart`：目录入库／顺序阅读的章节身份、重复刷新与进度保留，以及阅读器初始化时安全读取图片请求头。
-- `tool/source_plugin_contract_test.dart`：由所选插件仓库的 `npm run test:app -- /App路径` 显式调用；App 普通 CI 不读取相邻仓库。
+| 职责 | 实现与回归 |
+| --- | --- |
+| 目录、包与安装 | `lib/services/source_package.dart`、`lib/services/fetch_sources_list.dart`；`test/services/source_package_test.dart`、`test/services/nodelane_catalog_test.dart` |
+| 原生来源身份与失败恢复 | `lib/eval/mihon/source_identity.dart`、`lib/eval/mihon/service.dart`；`test/eval/mihon/` |
+| JS 请求与资源释放 | `lib/eval/javascript/http.dart`、`source_runtime.dart`；`test/eval/js_http_test.dart`、`js_http_lifecycle_test.dart` |
+| 图片还原与缓存 | `lib/services/source_images/tile_shuffle.dart`；`test/services/source_image_processing_test.dart` |
+| 章节身份与进度 | `test/modules/manga/detail/chapter_catalog_identity_test.dart` |
+| 跨仓库 JS 契约 | `tool/source_plugin_contract_test.dart`，由插件仓库显式传入构建产物与样本 |
 
-来源图块协议参考 `node-comics` 提交 `af3df6ee75276ba1970ba0a7dc22488d54712e18` 的 `images.ts`（SHA-256 `3a7eedd0c9a8fbf1a14e67f89285d71f71dfc2e40d60fa3ce67e66ce0ad92113`），App 通用 Dart 置换独立实现，未复制该 GPL TypeScript 文件；具体种子掩码留在 GPL 插件。使用既有 `image` 4.10.1 依赖，不引入模型或字体。独立插件仓库保留其 GPL-3.0-only 许可和移植来源，App 上游 Apache-2.0 声明不改标。
+静态检查、合成样本、真实 HTTP、QuickJS、Android／iOS 模拟器与真机分开报告。包安装、目录或图片清单成功不等于正文阅读通过。各来源当前验证范围只维护在插件仓库 `src/<slug>/README.md`，此处不复制易过期的版本和站点验收记录。APK 的 iOS、ARM 真机与 Windows JVM 转换兼容性仍需分别验收；移动端性能、内存和耗电未完成真机测量。
 
-合成样本、QuickJS、真实 HTTP、iOS 模拟器和真机分别记录。S2READ 已在 iOS 27 模拟器验证安装／更新、搜索、完整目录、真实正文首尾页、下一章与后台返回保持位置；瓜子漫画已验证真实在线连续跨章与后台返回保持页码。图块还原另以合成图片验证真实 HTTP 到阅读器图片入口、像素结果与失败重试。S2READ 与瓜子漫画的真机、性能及 Android 正文阅读尚未验收；Comix 原生验证边界见插件说明，包子漫画的 Android 验证范围见上文。
+App 保留 Apache-2.0 上游声明；原版 APK 与 GPL-3.0-only 插件分别保留许可。图块算法由 App 独立实现，未复制浏览器项目的 GPL TypeScript；具体协议参数留在 GPL 插件。来源记录见 [THIRD_PARTY.md](../THIRD_PARTY.md)及[插件第三方声明](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/THIRD_PARTY.md)。
