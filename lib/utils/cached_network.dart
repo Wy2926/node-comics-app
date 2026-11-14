@@ -60,6 +60,7 @@ Widget cachedNetworkImage({
           headers: headers,
           cache: true,
           cacheMaxAge: const Duration(days: 30),
+          printError: false,
         );
   return ExtendedImage(
     image: maxBytes == null

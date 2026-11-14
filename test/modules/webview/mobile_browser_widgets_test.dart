@@ -11,6 +11,11 @@ import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_tabs_sheet.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mangayomi/modules/webview/browser_library_store.dart';
+import 'package:mangayomi/modules/webview/browser_url.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_library_sheet.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_menu.dart';
 
 void main() {
   test(
@@ -359,4 +364,289 @@ void main() {
     expect(decisions, [false, true]);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'omnibox searches with the selected engine and keeps URL navigation',
+    (tester) async {
+      final opened = <String>[];
+      await mount(
+        tester,
+        MobileBrowserAddressField(
+          engine: BrowserSearchEngine.duckDuckGo,
+          onSubmitted: opened.add,
+        ),
+      );
+      await tester.enterText(find.byType(TextField), '漫画 & novels');
+      expect(opened, isEmpty);
+      await tester.testTextInput.receiveAction(TextInputAction.go);
+      await tester.pumpAndSettle();
+      expect(Uri.parse(opened.single).host, 'duckduckgo.com');
+      expect(Uri.parse(opened.single).queryParameters['q'], '漫画 & novels');
+      await tester.enterText(find.byType(TextField), 'example.org/read');
+      await tester.testTextInput.receiveAction(TextInputAction.go);
+      expect(opened.last, 'https://example.org/read');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'history search, deletion, confirmation and bookmarks are independent',
+    (tester) async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final store = BrowserLibraryStore();
+      addTearDown(store.dispose);
+      await store.visit('https://example.org/a', 'Alpha');
+      await store.visit('https://example.org/b', 'Beta');
+      await store.setBookmarked('https://example.org/b', 'Beta', true);
+      await mount(
+        tester,
+        Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showNodeLaneCatalogSheet<String>(
+              context,
+              MobileBrowserLibrarySheet(store: store),
+            ),
+            child: const Text('History'),
+          ),
+        ),
+      );
+      await tester.tap(find.text('History'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'ALPHA');
+      await tester.pumpAndSettle();
+      expect(find.text('Alpha'), findsOneWidget);
+      final title = tester.widget<Text>(find.text('Alpha'));
+      expect(title.maxLines, 1);
+      expect(title.overflow, TextOverflow.ellipsis);
+      expect(
+        tester
+            .widget<NodeLaneWebsiteIcon>(find.byType(NodeLaneWebsiteIcon))
+            .url,
+        'https://example.org/favicon.ico',
+      );
+      expect(find.text('Beta'), findsNothing);
+      await tester.tap(find.byTooltip('删除'));
+      await tester.pumpAndSettle();
+      expect(store.history.single.title, 'Beta');
+      expect(find.text('这里还是空的'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), '');
+      tester.testTextInput.hide();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('清除浏览历史'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('取消'));
+      await tester.pumpAndSettle();
+      expect(store.history, hasLength(1));
+      await tester.tap(find.text('清除浏览历史'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('全部清除'));
+      await tester.pumpAndSettle();
+      expect(store.history, isEmpty);
+      expect(store.bookmarks.single.title, 'Beta');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('engine choice and find controls fit a narrow large-text menu', (
+    tester,
+  ) async {
+    BrowserSearchEngine? selected;
+    await mount(
+      tester,
+      Navigator(
+        onGenerateRoute: (_) => MaterialPageRoute<void>(
+          builder: (context) => Align(
+            alignment: Alignment.topLeft,
+            child: Builder(
+              builder: (anchor) => TextButton(
+                onPressed: () async =>
+                    selected = await showBrowserSearchEngines(
+                      anchor,
+                      BrowserSearchEngine.google,
+                    ),
+                child: const Text('Engines'),
+              ),
+            ),
+          ),
+        ),
+      ),
+      scale: 2,
+    );
+    await tester.tap(find.text('Engines'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bing'));
+    await tester.pumpAndSettle();
+    expect(selected, BrowserSearchEngine.bing);
+    expect(find.text('Engines'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    final searches = <String>[], steps = <bool>[];
+    await mount(
+      tester,
+      MobileBrowserFindBar(
+        current: 1,
+        total: 3,
+        onFind: searches.add,
+        onNext: steps.add,
+        onClose: () {},
+      ),
+      scale: 2,
+    );
+    await tester.enterText(find.byType(TextField), 'Example');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.tap(find.byTooltip('上一个匹配'));
+    await tester.tap(find.byTooltip('下一个匹配'));
+    expect(searches, ['Example']);
+    expect(steps, [false, true]);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'engine selection and cancellation preserve the address draft and selection',
+    (tester) async {
+      tester.view.viewInsets = const FakeViewPadding(bottom: 260);
+      addTearDown(tester.view.resetViewInsets);
+      var engine = BrowserSearchEngine.google;
+      var changes = 0;
+      final opened = <String>[];
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      await mount(
+        tester,
+        StatefulBuilder(
+          builder: (context, update) => MobileBrowserAddressField(
+            url: 'https://example.org/chapter',
+            compact: true,
+            focusNode: focus,
+            engine: engine,
+            onEngine: (value) async => update(() {
+              engine = value;
+              changes++;
+            }),
+            onSubmitted: opened.add,
+          ),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), '漫画 & draft');
+      final input = tester
+          .widget<TextField>(find.byType(TextField))
+          .controller!;
+      const selection = TextSelection(baseOffset: 3, extentOffset: 7);
+      input.selection = selection;
+      await tester.tap(find.byTooltip('搜索引擎 · Google'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.byType(PopupMenuItem<BrowserSearchEngine>), findsNWidgets(6));
+      final menu = find.ancestor(
+        of: find.text('DuckDuckGo'),
+        matching: find.byType(SingleChildScrollView),
+      );
+      expect(tester.getBottomRight(menu).dy, lessThanOrEqualTo(340));
+      await tester.tap(find.text('Bing'));
+      await tester.pumpAndSettle();
+      expect(engine, BrowserSearchEngine.bing);
+      expect(input.text, '漫画 & draft');
+      expect(input.selection, selection);
+      expect(focus.hasFocus, isTrue);
+      await tester.tap(find.byTooltip('搜索引擎 · Bing'));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(310, 580));
+      await tester.pumpAndSettle();
+      expect(changes, 1);
+      expect(input.text, '漫画 & draft');
+      expect(input.selection, selection);
+      expect(focus.hasFocus, isTrue);
+      expect(opened, isEmpty);
+      await tester.testTextInput.receiveAction(TextInputAction.go);
+      expect(Uri.parse(opened.single).host, 'www.bing.com');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'engine menu can open above the field and scroll while the keyboard is visible',
+    (tester) async {
+      tester.view.viewInsets = const FakeViewPadding(bottom: 260);
+      addTearDown(tester.view.resetViewInsets);
+      BrowserSearchEngine? selected;
+      await mount(
+        tester,
+        Padding(
+          padding: const EdgeInsets.only(top: 200),
+          child: MobileBrowserAddressField(
+            onSubmitted: (_) {},
+            onEngine: (value) async => selected = value,
+          ),
+        ),
+        scale: 2,
+      );
+      await tester.tap(find.byTooltip('搜索引擎 · Google'));
+      await tester.pumpAndSettle();
+      final menu = find.ancestor(
+        of: find.text('DuckDuckGo'),
+        matching: find.byType(SingleChildScrollView),
+      );
+      expect(
+        tester.getBottomRight(menu).dy,
+        lessThanOrEqualTo(
+          tester.getTopLeft(find.byTooltip('搜索引擎 · Google')).dy,
+        ),
+      );
+      await tester.ensureVisible(find.text('搜狗'));
+      await tester.tap(find.text('搜狗'));
+      await tester.pumpAndSettle();
+      expect(selected, BrowserSearchEngine.sogou);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'page menu is anchored, scrolls at large text, and returns actions through a nested navigator',
+    (tester) async {
+      String? action;
+      await mount(
+        tester,
+        Navigator(
+          onGenerateRoute: (_) => MaterialPageRoute<void>(
+            builder: (_) => Align(
+              alignment: Alignment.topRight,
+              child: Builder(
+                builder: (anchor) => TextButton(
+                  onPressed: () async => action = await showBrowserPageMenu(
+                    anchor,
+                    canForward: false,
+                    bookmarked: false,
+                    pageReady: false,
+                    clearingLogins: false,
+                  ),
+                  child: const Text('Menu'),
+                ),
+              ),
+            ),
+          ),
+        ),
+        scale: 2,
+      );
+      await tester.tap(find.text('Menu'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+      final forward = tester.widget<IconButton>(
+        find.byWidgetPredicate(
+          (widget) => widget is IconButton && widget.tooltip == '前进',
+        ),
+      );
+      expect(forward.onPressed, isNull);
+      await tester.tap(find.byTooltip('添加书签'));
+      await tester.pumpAndSettle();
+      expect(action, 'bookmark');
+      expect(find.text('Menu'), findsOneWidget);
+      await tester.tap(find.text('Menu'));
+      await tester.pumpAndSettle();
+      final copy = find.text('复制链接');
+      await tester.ensureVisible(copy);
+      await tester.tap(copy);
+      await tester.pumpAndSettle();
+      expect(action, 'copy');
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

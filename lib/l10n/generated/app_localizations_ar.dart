@@ -10,6 +10,79 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get browser_search_hint => 'ابحث أو أدخل عنوان URL';
+
+  @override
+  String get browser_start_hint => 'صفحة جديدة لاكتشافات جديدة.';
+
+  @override
+  String get browser_search_engine => 'محرك البحث';
+
+  @override
+  String get browser_bookmarks => 'الإشارات المرجعية';
+
+  @override
+  String get browser_search_library => 'ابحث في العناوين أو الروابط';
+
+  @override
+  String get browser_data_failed =>
+      'تعذرت قراءة بيانات المتصفح أو حفظها. حاول مجددًا.';
+
+  @override
+  String get browser_clear_history => 'مسح سجل التصفح';
+
+  @override
+  String get browser_clear_history_hint =>
+      'هل تريد حذف سجل التصفح بالكامل على هذا الجهاز؟ ستبقى الإشارات المرجعية وجلسات تسجيل الدخول.';
+
+  @override
+  String get browser_library_empty => 'لا توجد عناصر بعد';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'أضف الصفحة إلى الإشارات المرجعية من قائمتها لتجدها هنا.';
+
+  @override
+  String get browser_history_hint =>
+      'تبقى الصفحات التي تزورها هنا حتى بعد إغلاق علامات تبويبها.';
+
+  @override
+  String get browser_recent => 'الزيارات الأخيرة';
+
+  @override
+  String get browser_pinned_hint =>
+      'ثبّت مواقعك المفضلة في المصادر للوصول السريع إليها.';
+
+  @override
+  String get browser_start_page => 'صفحة البداية';
+
+  @override
+  String get browser_remove_bookmark => 'إزالة الإشارة المرجعية';
+
+  @override
+  String get browser_add_bookmark => 'إضافة إشارة مرجعية';
+
+  @override
+  String get browser_find => 'البحث في الصفحة';
+
+  @override
+  String get browser_copy_link => 'نسخ الرابط';
+
+  @override
+  String get browser_action_failed => 'تعذر إكمال الإجراء. حاول مجددًا.';
+
+  @override
+  String get browser_find_previous => 'التطابق السابق';
+
+  @override
+  String get browser_find_next => 'التطابق التالي';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'التطابق $current من $total';
+  }
+
+  @override
   String get app_update_details_hint => 'عرض ملاحظات الإصدار وخيارات التثبيت';
 
   @override
@@ -5179,9 +5252,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get browser_unopened => 'لم يتم فتح أي صفحة بعد';
-
-  @override
-  String get browser_address_hint => 'أدخل أو الصق URL';
 
   @override
   String get browser_invalid_address => 'أدخل URL صالحًا';

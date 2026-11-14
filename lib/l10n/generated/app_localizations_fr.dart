@@ -10,6 +10,80 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Rechercher ou saisir une URL';
+
+  @override
+  String get browser_start_hint => 'Une nouvelle page pour vos découvertes.';
+
+  @override
+  String get browser_search_engine => 'Moteur de recherche';
+
+  @override
+  String get browser_bookmarks => 'Favoris';
+
+  @override
+  String get browser_search_library => 'Rechercher des titres ou des URL';
+
+  @override
+  String get browser_data_failed =>
+      'Impossible de lire ou d’enregistrer les données du navigateur. Réessayez.';
+
+  @override
+  String get browser_clear_history => 'Effacer l’historique de navigation';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Supprimer tout l’historique sur cet appareil ? Les favoris et les connexions aux sites seront conservés.';
+
+  @override
+  String get browser_library_empty => 'Aucun élément pour le moment';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Ajoutez une page aux favoris depuis son menu pour la retrouver ici.';
+
+  @override
+  String get browser_history_hint =>
+      'Les pages visitées restent ici même après la fermeture de leurs onglets.';
+
+  @override
+  String get browser_recent => 'Visites récentes';
+
+  @override
+  String get browser_pinned_hint =>
+      'Épinglez vos sites préférés dans Sources pour y accéder rapidement.';
+
+  @override
+  String get browser_start_page => 'Page d’accueil';
+
+  @override
+  String get browser_remove_bookmark => 'Retirer des favoris';
+
+  @override
+  String get browser_add_bookmark => 'Ajouter aux favoris';
+
+  @override
+  String get browser_find => 'Rechercher dans la page';
+
+  @override
+  String get browser_copy_link => 'Copier le lien';
+
+  @override
+  String get browser_action_failed =>
+      'Impossible de terminer cette action. Réessayez.';
+
+  @override
+  String get browser_find_previous => 'Résultat précédent';
+
+  @override
+  String get browser_find_next => 'Résultat suivant';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Résultat $current sur $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Afficher les notes de version et les options d\'installation';
 
@@ -5266,9 +5340,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Aucune page ouverte pour le moment';
-
-  @override
-  String get browser_address_hint => 'Saisissez ou collez un URL';
 
   @override
   String get browser_invalid_address => 'Entrez un URL valide';

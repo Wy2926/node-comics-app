@@ -10,6 +10,74 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get browser_search_hint => '搜索或输入网址';
+
+  @override
+  String get browser_start_hint => '从这里，发现新的精彩。';
+
+  @override
+  String get browser_search_engine => '搜索引擎';
+
+  @override
+  String get browser_bookmarks => '书签';
+
+  @override
+  String get browser_search_library => '搜索标题或网址';
+
+  @override
+  String get browser_data_failed => '浏览器数据读取或保存失败，请重试。';
+
+  @override
+  String get browser_clear_history => '清除浏览历史';
+
+  @override
+  String get browser_clear_history_hint => '删除此设备上的全部浏览历史？书签和网站登录状态将保留。';
+
+  @override
+  String get browser_library_empty => '这里还是空的';
+
+  @override
+  String get browser_bookmarks_hint => '在网页菜单中添加书签，即可在这里找到它。';
+
+  @override
+  String get browser_history_hint => '访问过的网页会留在这里，关闭标签页后也能找回。';
+
+  @override
+  String get browser_recent => '最近访问';
+
+  @override
+  String get browser_pinned_hint => '在来源中固定常用网站，即可快捷访问。';
+
+  @override
+  String get browser_start_page => '开始页';
+
+  @override
+  String get browser_remove_bookmark => '移除书签';
+
+  @override
+  String get browser_add_bookmark => '添加书签';
+
+  @override
+  String get browser_find => '页内查找';
+
+  @override
+  String get browser_copy_link => '复制链接';
+
+  @override
+  String get browser_action_failed => '操作未完成，请重试。';
+
+  @override
+  String get browser_find_previous => '上一个匹配';
+
+  @override
+  String get browser_find_next => '下一个匹配';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return '第 $current 项，共 $total 项';
+  }
+
+  @override
   String get app_update_details_hint => '查看更新说明与安装方式';
 
   @override
@@ -4915,9 +4983,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_unopened => '尚未打开网页';
 
   @override
-  String get browser_address_hint => '输入或粘贴网址';
-
-  @override
   String get browser_invalid_address => '请输入有效的网址';
 
   @override
@@ -5955,6 +6020,74 @@ class AppLocalizationsZh extends AppLocalizations {
 /// The translations for Chinese, using the Han script (`zh_Hant`).
 class AppLocalizationsZhHant extends AppLocalizationsZh {
   AppLocalizationsZhHant() : super('zh_Hant');
+
+  @override
+  String get browser_search_hint => '搜尋或輸入網址';
+
+  @override
+  String get browser_start_hint => '從這裡，發現新的精彩。';
+
+  @override
+  String get browser_search_engine => '搜尋引擎';
+
+  @override
+  String get browser_bookmarks => '書籤';
+
+  @override
+  String get browser_search_library => '搜尋標題或網址';
+
+  @override
+  String get browser_data_failed => '瀏覽器資料讀取或儲存失敗，請重試。';
+
+  @override
+  String get browser_clear_history => '清除瀏覽記錄';
+
+  @override
+  String get browser_clear_history_hint => '刪除此裝置上的全部瀏覽記錄？書籤和網站登入狀態將保留。';
+
+  @override
+  String get browser_library_empty => '這裡還是空的';
+
+  @override
+  String get browser_bookmarks_hint => '在網頁選單中加入書籤，即可在這裡找到它。';
+
+  @override
+  String get browser_history_hint => '造訪過的網頁會留在這裡，關閉分頁後也能找回。';
+
+  @override
+  String get browser_recent => '最近造訪';
+
+  @override
+  String get browser_pinned_hint => '在來源中釘選常用網站，即可快速造訪。';
+
+  @override
+  String get browser_start_page => '起始頁';
+
+  @override
+  String get browser_remove_bookmark => '移除書籤';
+
+  @override
+  String get browser_add_bookmark => '加入書籤';
+
+  @override
+  String get browser_find => '在頁面中尋找';
+
+  @override
+  String get browser_copy_link => '複製連結';
+
+  @override
+  String get browser_action_failed => '操作未完成，請重試。';
+
+  @override
+  String get browser_find_previous => '上一個相符項目';
+
+  @override
+  String get browser_find_next => '下一個相符項目';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return '第 $current 項，共 $total 項';
+  }
 
   @override
   String get app_update_details_hint => '檢視更新說明與安裝方式';
@@ -10862,9 +10995,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get browser_unopened => '尚未開啟網頁';
-
-  @override
-  String get browser_address_hint => '輸入或貼上網址';
 
   @override
   String get browser_invalid_address => '請輸入有效的網址';

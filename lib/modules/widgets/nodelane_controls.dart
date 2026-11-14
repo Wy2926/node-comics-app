@@ -166,6 +166,7 @@ class NodeLaneRow extends StatelessWidget {
   const NodeLaneRow({
     super.key,
     required this.title,
+    this.titleMaxLines,
     this.subtitle,
     this.subtitleMaxLines,
     this.metadata,
@@ -197,6 +198,7 @@ class NodeLaneRow extends StatelessWidget {
   const NodeLaneRow.card({
     super.key,
     required this.title,
+    this.titleMaxLines,
     this.subtitle,
     this.subtitleMaxLines,
     this.metadata,
@@ -237,7 +239,7 @@ class NodeLaneRow extends StatelessWidget {
 
   /// Current selection, aligned to the trailing side of the title.
   final String? value;
-  final int? subtitleMaxLines;
+  final int? titleMaxLines, subtitleMaxLines;
   final IconData? icon;
   final Size leadingSize;
   final double? minHeight;
@@ -328,6 +330,7 @@ class NodeLaneRow extends StatelessWidget {
                       children: [
                         _NodeLaneLabelValue(
                           title: title,
+                          titleMaxLines: titleMaxLines,
                           titleStyle:
                               (prominent ? t.readerTitle : t.readerLabel)
                                   .copyWith(color: color),
@@ -413,18 +416,27 @@ class _NodeLaneLabelValue extends StatelessWidget {
   const _NodeLaneLabelValue({
     required this.title,
     required this.titleStyle,
+    this.titleMaxLines,
     this.value,
     this.valueLeading,
   });
   final String title;
   final TextStyle titleStyle;
+  final int? titleMaxLines;
   final String? value;
   final Widget? valueLeading;
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Expanded(child: Text(title, style: titleStyle)),
+      Expanded(
+        child: Text(
+          title,
+          style: titleStyle,
+          maxLines: titleMaxLines,
+          overflow: titleMaxLines == null ? null : TextOverflow.ellipsis,
+        ),
+      ),
       if (valueLeading != null) ...[
         const SizedBox(width: NodeLaneTokens.space12),
         Flexible(
@@ -1641,12 +1653,14 @@ class NodeLaneTextField extends StatefulWidget {
     this.trailing,
     this.validator,
     this.leading,
+    this.leadingWidget,
     this.compact = false,
     this.textAlign = TextAlign.start,
     this.errorText,
     this.onEditingComplete,
     this.onTapOutside,
   }) : assert(controller == null || initialValue == null),
+       assert(leading == null || leadingWidget == null),
        _search = false;
 
   const NodeLaneTextField.search({
@@ -1661,6 +1675,7 @@ class NodeLaneTextField extends StatefulWidget {
     this.autofocus = false,
   }) : validator = null,
        leading = null,
+       leadingWidget = null,
        compact = false,
        textAlign = TextAlign.start,
        errorText = null,
@@ -1697,6 +1712,7 @@ class NodeLaneTextField extends StatefulWidget {
   final Widget? trailing;
   final FormFieldValidator<String>? validator;
   final IconData? leading;
+  final Widget? leadingWidget;
   final bool compact;
   final TextAlign textAlign;
   final String? errorText;
@@ -1740,21 +1756,23 @@ class NodeLaneTextField extends StatefulWidget {
       decoration: t
           .inputDecoration(
             hint,
-            prefixIcon: _search || leading != null
-                ? Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: NodeLaneTokens.space16,
-                      end: NodeLaneTokens.space12,
-                    ),
-                    child: Icon(
-                      leading ?? icons.search,
-                      size: compact
-                          ? NodeLaneTokens.smallIconSize
-                          : NodeLaneTokens.iconSize,
-                      color: t.muted,
-                    ),
-                  )
-                : null,
+            prefixIcon:
+                leadingWidget ??
+                (_search || leading != null
+                    ? Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          start: NodeLaneTokens.space16,
+                          end: NodeLaneTokens.space12,
+                        ),
+                        child: Icon(
+                          leading ?? icons.search,
+                          size: compact
+                              ? NodeLaneTokens.smallIconSize
+                              : NodeLaneTokens.iconSize,
+                          color: t.muted,
+                        ),
+                      )
+                    : null),
             suffixIcon:
                 trailing ??
                 (controller == null

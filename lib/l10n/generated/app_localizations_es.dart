@@ -10,6 +10,80 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Buscar o introducir una URL';
+
+  @override
+  String get browser_start_hint => 'Una nueva página para descubrir.';
+
+  @override
+  String get browser_search_engine => 'Motor de búsqueda';
+
+  @override
+  String get browser_bookmarks => 'Marcadores';
+
+  @override
+  String get browser_search_library => 'Buscar títulos o URL';
+
+  @override
+  String get browser_data_failed =>
+      'No se pudieron leer o guardar los datos del navegador. Inténtalo de nuevo.';
+
+  @override
+  String get browser_clear_history => 'Borrar historial de navegación';
+
+  @override
+  String get browser_clear_history_hint =>
+      '¿Borrar todo el historial de este dispositivo? Se conservarán los marcadores y las sesiones de los sitios.';
+
+  @override
+  String get browser_library_empty => 'Todavía no hay nada';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Añade una página a marcadores desde su menú para encontrarla aquí.';
+
+  @override
+  String get browser_history_hint =>
+      'Las páginas visitadas aparecen aquí, incluso después de cerrar sus pestañas.';
+
+  @override
+  String get browser_recent => 'Visitas recientes';
+
+  @override
+  String get browser_pinned_hint =>
+      'Fija tus sitios favoritos en Fuentes para acceder rápidamente.';
+
+  @override
+  String get browser_start_page => 'Página de inicio';
+
+  @override
+  String get browser_remove_bookmark => 'Eliminar marcador';
+
+  @override
+  String get browser_add_bookmark => 'Añadir marcador';
+
+  @override
+  String get browser_find => 'Buscar en la página';
+
+  @override
+  String get browser_copy_link => 'Copiar enlace';
+
+  @override
+  String get browser_action_failed =>
+      'No se pudo completar la acción. Inténtalo de nuevo.';
+
+  @override
+  String get browser_find_previous => 'Coincidencia anterior';
+
+  @override
+  String get browser_find_next => 'Coincidencia siguiente';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Coincidencia $current de $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Ver notas de la versión y opciones de instalación';
 
@@ -5254,9 +5328,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Aún no se ha abierto ninguna página';
-
-  @override
-  String get browser_address_hint => 'Ingrese o pegue un URL';
 
   @override
   String get browser_invalid_address => 'Ingrese un URL válido';

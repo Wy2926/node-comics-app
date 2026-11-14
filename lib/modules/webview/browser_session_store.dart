@@ -62,6 +62,10 @@ class BrowserSessionStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearPreview(String id) {
+    if (_previews.remove(id) != null) notifyListeners();
+  }
+
   Future<void> save(List<Map<String, dynamic>> values) {
     entries = values
         .take(maxTabs)

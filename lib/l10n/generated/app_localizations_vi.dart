@@ -10,6 +10,80 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Tìm kiếm hoặc nhập URL';
+
+  @override
+  String get browser_start_hint => 'Một trang mới cho những khám phá mới.';
+
+  @override
+  String get browser_search_engine => 'Công cụ tìm kiếm';
+
+  @override
+  String get browser_bookmarks => 'Dấu trang';
+
+  @override
+  String get browser_search_library => 'Tìm tiêu đề hoặc URL';
+
+  @override
+  String get browser_data_failed =>
+      'Không thể đọc hoặc lưu dữ liệu trình duyệt. Vui lòng thử lại.';
+
+  @override
+  String get browser_clear_history => 'Xóa lịch sử duyệt web';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Xóa toàn bộ lịch sử trên thiết bị này? Dấu trang và phiên đăng nhập trang web sẽ được giữ lại.';
+
+  @override
+  String get browser_library_empty => 'Chưa có mục nào';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Thêm dấu trang từ menu của trang để tìm lại tại đây.';
+
+  @override
+  String get browser_history_hint =>
+      'Các trang đã truy cập vẫn ở đây ngay cả sau khi đóng thẻ.';
+
+  @override
+  String get browser_recent => 'Truy cập gần đây';
+
+  @override
+  String get browser_pinned_hint =>
+      'Ghim trang web yêu thích trong Nguồn để truy cập nhanh.';
+
+  @override
+  String get browser_start_page => 'Trang bắt đầu';
+
+  @override
+  String get browser_remove_bookmark => 'Xóa dấu trang';
+
+  @override
+  String get browser_add_bookmark => 'Thêm dấu trang';
+
+  @override
+  String get browser_find => 'Tìm trong trang';
+
+  @override
+  String get browser_copy_link => 'Sao chép liên kết';
+
+  @override
+  String get browser_action_failed =>
+      'Không thể hoàn tất thao tác. Vui lòng thử lại.';
+
+  @override
+  String get browser_find_previous => 'Kết quả trước';
+
+  @override
+  String get browser_find_next => 'Kết quả tiếp theo';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Kết quả $current trên $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Xem ghi chú phát hành và tùy chọn cài đặt';
 
@@ -5203,9 +5277,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Chưa có trang nào được mở';
-
-  @override
-  String get browser_address_hint => 'Nhập hoặc dán URL';
 
   @override
   String get browser_invalid_address => 'Nhập URL hợp lệ';

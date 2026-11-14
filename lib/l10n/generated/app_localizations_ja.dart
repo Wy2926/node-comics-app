@@ -10,6 +10,75 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get browser_search_hint => '検索または URL を入力';
+
+  @override
+  String get browser_start_hint => 'ここから、新しい発見を。';
+
+  @override
+  String get browser_search_engine => '検索エンジン';
+
+  @override
+  String get browser_bookmarks => 'ブックマーク';
+
+  @override
+  String get browser_search_library => 'タイトルや URL を検索';
+
+  @override
+  String get browser_data_failed => 'ブラウザーデータの読み込みまたは保存に失敗しました。再試行してください。';
+
+  @override
+  String get browser_clear_history => '閲覧履歴を削除';
+
+  @override
+  String get browser_clear_history_hint =>
+      'この端末の閲覧履歴をすべて削除しますか？ブックマークとサイトのログイン状態は保持されます。';
+
+  @override
+  String get browser_library_empty => 'まだ何もありません';
+
+  @override
+  String get browser_bookmarks_hint => 'ページのメニューからブックマークを追加すると、ここに表示されます。';
+
+  @override
+  String get browser_history_hint => '訪問したページは、タブを閉じた後もここに表示されます。';
+
+  @override
+  String get browser_recent => '最近訪問したページ';
+
+  @override
+  String get browser_pinned_hint => 'ソースでよく使うサイトを固定すると、すぐにアクセスできます。';
+
+  @override
+  String get browser_start_page => 'スタートページ';
+
+  @override
+  String get browser_remove_bookmark => 'ブックマークを削除';
+
+  @override
+  String get browser_add_bookmark => 'ブックマークに追加';
+
+  @override
+  String get browser_find => 'ページ内を検索';
+
+  @override
+  String get browser_copy_link => 'リンクをコピー';
+
+  @override
+  String get browser_action_failed => '操作を完了できませんでした。再試行してください。';
+
+  @override
+  String get browser_find_previous => '前の一致';
+
+  @override
+  String get browser_find_next => '次の一致';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return '$total 件中 $current 件目';
+  }
+
+  @override
   String get app_update_details_hint => 'リリース ノートとインストール オプションを表示する';
 
   @override
@@ -5022,9 +5091,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get browser_unopened => 'まだページが開いていません';
-
-  @override
-  String get browser_address_hint => 'URL を入力または貼り付けてください';
 
   @override
   String get browser_invalid_address => '有効な URL を入力してください';

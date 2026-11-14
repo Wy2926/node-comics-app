@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -9,6 +12,7 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/modules/webview/browser_pinned_sources_provider.dart';
 import 'package:mangayomi/modules/webview/browser_session_store.dart';
+import 'package:mangayomi/modules/webview/browser_webview_cache.dart';
 import 'package:mangayomi/modules/webview/mobile_browser.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
@@ -20,11 +24,47 @@ class _Service extends TranslationService {
 
 class _WebPlatform extends InAppWebViewPlatform {
   int created = 0, disposed = 0;
+  final tokens = <InAppWebViewKeepAlive?>[];
+  @override
+  PlatformInAppWebViewController createPlatformInAppWebViewControllerStatic() =>
+      _StaticController();
+  @override
+  PlatformFindInteractionController createPlatformFindInteractionController(
+    PlatformFindInteractionControllerCreationParams params,
+  ) => _FindController(params);
   @override
   PlatformInAppWebViewWidget createPlatformInAppWebViewWidget(
     PlatformInAppWebViewWidgetCreationParams params,
   ) {
+    tokens.add(params.keepAlive);
     return _WebWidget(params, () => created++, () => disposed++);
+  }
+}
+
+class _StaticController extends PlatformInAppWebViewController {
+  _StaticController()
+    : super.implementation(
+        const PlatformInAppWebViewControllerCreationParams(id: null),
+      );
+  @override
+  Future<void> disposeKeepAlive(InAppWebViewKeepAlive keepAlive) async {}
+}
+
+class _SlowScreenshot extends _StaticController {
+  final result = Completer<Uint8List?>();
+  @override
+  Future<Uint8List?> takeScreenshot({
+    ScreenshotConfiguration? screenshotConfiguration,
+  }) => result.future;
+}
+
+class _FindController extends PlatformFindInteractionController {
+  _FindController(super.params) : super.implementation();
+  bool disposed = false;
+  @override
+  void dispose({bool isKeepAlive = false}) {
+    expect(disposed, isFalse, reason: 'Only the WebView owns this controller');
+    disposed = true;
   }
 }
 
@@ -39,7 +79,9 @@ class _WebWidget extends PlatformInAppWebViewWidget {
   T controllerFromPlatform<T>(PlatformInAppWebViewController controller) =>
       throw UnimplementedError();
   @override
-  void dispose() {}
+  void dispose() => params.findInteractionController?.dispose(
+    isKeepAlive: params.keepAlive != null,
+  );
 }
 
 class _WebProbe extends StatefulWidget {
@@ -68,7 +110,13 @@ class _WebProbeState extends State<_WebProbe> {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+  setUp(() {
+    FlutterSecureStorage.setMockInitialValues({});
+    final original = InAppWebViewPlatform.instance;
+    addTearDown(() {
+      if (original != null) InAppWebViewPlatform.instance = original;
+    });
+  });
 
   test('blank restoration drops webpage state and first navigation has real history only', () {
     final tab = BrowserTab.fromJson({
@@ -164,6 +212,75 @@ void main() {
     return router;
   }
 
+  Future<void> verifyMountedTabs(WidgetTester tester) async {
+    final platform = _WebPlatform();
+    InAppWebViewPlatform.instance = platform;
+    await browserSessionStore.save([
+      for (final id in ['a', 'b', 'c', 'd'])
+        {'id': id, 'url': 'https://$id.example', 'title': 'Page $id'},
+    ]);
+    await mount(
+      tester,
+      openBrowser: true,
+      tabId: 'a',
+      url: 'https://a.example',
+    );
+    final dynamic state = tester.state(find.byType(MobileComicBrowser));
+    final first = state.current as BrowserTab;
+    final screenshot = _SlowScreenshot();
+    final anchor = Completer<Map<String, dynamic>?>();
+    first
+      ..pageReady = true
+      ..controller = InAppWebViewController.fromPlatform(platform: screenshot)
+      ..captureAnchor = () => anchor.future;
+    Future<void> select(String id) async {
+      await tester.tap(find.byTooltip('标签页 · 4'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Page $id'), findsOneWidget);
+      await tester.tap(find.text('Page $id'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect((state.current as BrowserTab).id, id);
+    }
+
+    await select('b');
+    expect(screenshot.result.isCompleted, isFalse);
+    expect(anchor.isCompleted, isFalse);
+    screenshot.result.complete(null);
+    anchor.complete(null);
+    await tester.pump();
+    await select('c');
+    await select('a');
+    await select('b');
+    expect(platform.created, 3);
+    expect(platform.disposed, 0);
+    expect(find.byType(InAppWebView), findsOneWidget);
+    expect(find.byType(InAppWebView, skipOffstage: false), findsNWidgets(3));
+    await select('d');
+    expect(platform.created, 4);
+    expect(platform.disposed, 1);
+    await select('a');
+    expect(
+      platform.created,
+      4,
+      reason: 'LRU recency follows selection, not creation',
+    );
+    tester.binding.handleMemoryPressure();
+    await tester.pump();
+    expect(platform.disposed, 3);
+    expect(find.byType(InAppWebView, skipOffstage: false), findsOneWidget);
+    await select('b');
+    expect(platform.created, 5);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+    for (final id in ['a', 'b', 'c', 'd']) {
+      browserWebViewCache.remove(id);
+    }
+    await browserSessionStore.save([]);
+  }
+
   testWidgets(
     'blank tabs share the root page while website identity survives switching and capacity limits',
     (tester) async {
@@ -202,11 +319,6 @@ void main() {
       expect(find.byType(InAppWebView), findsNothing);
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
-      await browserSessionStore.save(browserSessionStore.entries);
-      final restored = BrowserSessionStore();
-      await restored.load();
-      expect(restored.entries.single['url'], '');
-      restored.dispose();
 
       // Keep the singleton session's serialized writes in the same fake clock.
       await browserSessionStore.save([
@@ -231,15 +343,9 @@ void main() {
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
 
-      // Returning to a blank tab uses the root page and releases the webpage view.
+      // The Flutter view leaves the root page; the native document keeps its token.
       final platform = _WebPlatform();
-      final originalPlatform = InAppWebViewPlatform.instance;
       InAppWebViewPlatform.instance = platform;
-      addTearDown(() {
-        if (originalPlatform != null) {
-          InAppWebViewPlatform.instance = originalPlatform;
-        }
-      });
       await browserSessionStore.save([
         {
           'id': 'web',
@@ -257,6 +363,8 @@ void main() {
         openBrowser: true,
       );
       expect(platform.created, 1);
+      final originalToken = platform.tokens.single;
+      expect(originalToken, isNotNull);
       await tester.tap(find.byTooltip('新建标签页'));
       await tester.pumpAndSettle();
       expect(tester.getSize(find.byType(MobileBrowserStartPage)).width, 390);
@@ -274,6 +382,7 @@ void main() {
       expect(find.byType(MobileBrowserStartPage), findsNothing);
       expect(platform.created, 2);
       expect(platform.disposed, 1);
+      expect(platform.tokens.last, same(originalToken));
       await tester.tap(find.byTooltip('标签页 · 2'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
@@ -299,10 +408,18 @@ void main() {
         )['url'],
         'https://example.org/next',
       );
+      await tester.tap(find.text('返回'));
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/browser');
+      expect(find.byType(MobileBrowserStartPage), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
-      await browserSessionStore.save(browserSessionStore.entries);
+      for (final entry in browserSessionStore.entries) {
+        browserWebViewCache.remove(entry['id'] as String);
+      }
+      // Singleton storage queues must stay on the same fake clock.
+      await verifyMountedTabs(tester);
     },
   );
 }

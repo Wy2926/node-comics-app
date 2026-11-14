@@ -10,6 +10,80 @@ class AppLocalizationsId extends AppLocalizations {
   AppLocalizationsId([String locale = 'id']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Cari atau masukkan URL';
+
+  @override
+  String get browser_start_hint => 'Halaman baru untuk penemuan baru.';
+
+  @override
+  String get browser_search_engine => 'Mesin pencari';
+
+  @override
+  String get browser_bookmarks => 'Bookmark';
+
+  @override
+  String get browser_search_library => 'Cari judul atau URL';
+
+  @override
+  String get browser_data_failed =>
+      'Tidak dapat membaca atau menyimpan data browser. Coba lagi.';
+
+  @override
+  String get browser_clear_history => 'Hapus riwayat penjelajahan';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Hapus semua riwayat di perangkat ini? Bookmark dan sesi masuk situs akan tetap tersimpan.';
+
+  @override
+  String get browser_library_empty => 'Belum ada apa pun';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Tambahkan halaman ke bookmark melalui menunya untuk menemukannya di sini.';
+
+  @override
+  String get browser_history_hint =>
+      'Halaman yang dikunjungi tetap ada di sini meskipun tab sudah ditutup.';
+
+  @override
+  String get browser_recent => 'Kunjungan terbaru';
+
+  @override
+  String get browser_pinned_hint =>
+      'Sematkan situs favorit di Sumber untuk akses cepat.';
+
+  @override
+  String get browser_start_page => 'Halaman awal';
+
+  @override
+  String get browser_remove_bookmark => 'Hapus bookmark';
+
+  @override
+  String get browser_add_bookmark => 'Tambahkan bookmark';
+
+  @override
+  String get browser_find => 'Cari di halaman';
+
+  @override
+  String get browser_copy_link => 'Salin tautan';
+
+  @override
+  String get browser_action_failed =>
+      'Tindakan tidak dapat diselesaikan. Coba lagi.';
+
+  @override
+  String get browser_find_previous => 'Hasil sebelumnya';
+
+  @override
+  String get browser_find_next => 'Hasil berikutnya';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Hasil $current dari $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Lihat catatan rilis dan opsi instalasi';
 
@@ -5197,9 +5271,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Belum ada halaman yang dibuka';
-
-  @override
-  String get browser_address_hint => 'Masukkan atau tempel URL';
 
   @override
   String get browser_invalid_address => 'Masukkan URL yang valid';

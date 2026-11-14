@@ -10,6 +10,80 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Поиск или ввод URL';
+
+  @override
+  String get browser_start_hint => 'Новая страница для новых открытий.';
+
+  @override
+  String get browser_search_engine => 'Поисковая система';
+
+  @override
+  String get browser_bookmarks => 'Закладки';
+
+  @override
+  String get browser_search_library => 'Поиск по заголовкам или URL';
+
+  @override
+  String get browser_data_failed =>
+      'Не удалось прочитать или сохранить данные браузера. Повторите попытку.';
+
+  @override
+  String get browser_clear_history => 'Очистить историю просмотров';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Удалить всю историю на этом устройстве? Закладки и входы на сайты сохранятся.';
+
+  @override
+  String get browser_library_empty => 'Здесь пока пусто';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Добавьте страницу в закладки через её меню, чтобы найти её здесь.';
+
+  @override
+  String get browser_history_hint =>
+      'Посещённые страницы остаются здесь даже после закрытия вкладок.';
+
+  @override
+  String get browser_recent => 'Недавно посещённые';
+
+  @override
+  String get browser_pinned_hint =>
+      'Закрепите любимые сайты в разделе источников для быстрого доступа.';
+
+  @override
+  String get browser_start_page => 'Начальная страница';
+
+  @override
+  String get browser_remove_bookmark => 'Удалить закладку';
+
+  @override
+  String get browser_add_bookmark => 'Добавить в закладки';
+
+  @override
+  String get browser_find => 'Найти на странице';
+
+  @override
+  String get browser_copy_link => 'Копировать ссылку';
+
+  @override
+  String get browser_action_failed =>
+      'Не удалось выполнить действие. Повторите попытку.';
+
+  @override
+  String get browser_find_previous => 'Предыдущее совпадение';
+
+  @override
+  String get browser_find_next => 'Следующее совпадение';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Совпадение $current из $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Просмотр примечаний к выпуску и вариантов установки';
 
@@ -5251,9 +5325,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Ни одна страница еще не открыта';
-
-  @override
-  String get browser_address_hint => 'Введите или вставьте URL';
 
   @override
   String get browser_invalid_address => 'Введите действительный URL.';

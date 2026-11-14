@@ -10,6 +10,80 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Пошук або введення URL';
+
+  @override
+  String get browser_start_hint => 'Нова сторінка для нових відкриттів.';
+
+  @override
+  String get browser_search_engine => 'Пошукова система';
+
+  @override
+  String get browser_bookmarks => 'Закладки';
+
+  @override
+  String get browser_search_library => 'Пошук за назвами або URL';
+
+  @override
+  String get browser_data_failed =>
+      'Не вдалося прочитати або зберегти дані браузера. Спробуйте ще раз.';
+
+  @override
+  String get browser_clear_history => 'Очистити історію перегляду';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Видалити всю історію на цьому пристрої? Закладки та входи на сайти буде збережено.';
+
+  @override
+  String get browser_library_empty => 'Тут поки порожньо';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Додайте сторінку до закладок через її меню, щоб знайти її тут.';
+
+  @override
+  String get browser_history_hint =>
+      'Відвідані сторінки залишаються тут навіть після закриття вкладок.';
+
+  @override
+  String get browser_recent => 'Нещодавно відвідані';
+
+  @override
+  String get browser_pinned_hint =>
+      'Закріпіть улюблені сайти в Джерелах для швидкого доступу.';
+
+  @override
+  String get browser_start_page => 'Початкова сторінка';
+
+  @override
+  String get browser_remove_bookmark => 'Видалити закладку';
+
+  @override
+  String get browser_add_bookmark => 'Додати закладку';
+
+  @override
+  String get browser_find => 'Знайти на сторінці';
+
+  @override
+  String get browser_copy_link => 'Копіювати посилання';
+
+  @override
+  String get browser_action_failed =>
+      'Не вдалося виконати дію. Спробуйте ще раз.';
+
+  @override
+  String get browser_find_previous => 'Попередній збіг';
+
+  @override
+  String get browser_find_next => 'Наступний збіг';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Збіг $current із $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Переглянути примітки до випуску та параметри встановлення';
 
@@ -5234,9 +5308,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Сторінка ще не відкрита';
-
-  @override
-  String get browser_address_hint => 'Введіть або вставте URL';
 
   @override
   String get browser_invalid_address => 'Введіть дійсний URL';

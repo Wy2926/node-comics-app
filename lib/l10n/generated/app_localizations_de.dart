@@ -10,6 +10,80 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Suchen oder URL eingeben';
+
+  @override
+  String get browser_start_hint => 'Eine neue Seite für deine Entdeckungen.';
+
+  @override
+  String get browser_search_engine => 'Suchmaschine';
+
+  @override
+  String get browser_bookmarks => 'Lesezeichen';
+
+  @override
+  String get browser_search_library => 'Titel oder URLs suchen';
+
+  @override
+  String get browser_data_failed =>
+      'Browserdaten konnten nicht gelesen oder gespeichert werden. Bitte erneut versuchen.';
+
+  @override
+  String get browser_clear_history => 'Browserverlauf löschen';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Den gesamten Verlauf auf diesem Gerät löschen? Lesezeichen und Website-Anmeldungen bleiben erhalten.';
+
+  @override
+  String get browser_library_empty => 'Noch keine Einträge';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Speichere eine Seite über ihr Menü als Lesezeichen, um sie hier zu finden.';
+
+  @override
+  String get browser_history_hint =>
+      'Besuchte Seiten bleiben hier sichtbar, auch nachdem ihre Tabs geschlossen wurden.';
+
+  @override
+  String get browser_recent => 'Zuletzt besucht';
+
+  @override
+  String get browser_pinned_hint =>
+      'Hefte häufig besuchte Websites unter Quellen für den Schnellzugriff an.';
+
+  @override
+  String get browser_start_page => 'Startseite';
+
+  @override
+  String get browser_remove_bookmark => 'Lesezeichen entfernen';
+
+  @override
+  String get browser_add_bookmark => 'Lesezeichen hinzufügen';
+
+  @override
+  String get browser_find => 'Auf Seite suchen';
+
+  @override
+  String get browser_copy_link => 'Link kopieren';
+
+  @override
+  String get browser_action_failed =>
+      'Die Aktion konnte nicht abgeschlossen werden. Bitte erneut versuchen.';
+
+  @override
+  String get browser_find_previous => 'Vorheriger Treffer';
+
+  @override
+  String get browser_find_next => 'Nächster Treffer';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Treffer $current von $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Versionshinweise und Installationsoptionen anzeigen';
 
@@ -5243,10 +5317,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Noch keine Seite geöffnet';
-
-  @override
-  String get browser_address_hint =>
-      'Geben Sie ein URL ein oder fügen Sie es ein.';
 
   @override
   String get browser_invalid_address => 'Geben Sie einen gültigen URL ein.';

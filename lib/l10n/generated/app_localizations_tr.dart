@@ -10,6 +10,80 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Arayın veya URL girin';
+
+  @override
+  String get browser_start_hint => 'Yeni keşifler için yeni bir sayfa.';
+
+  @override
+  String get browser_search_engine => 'Arama motoru';
+
+  @override
+  String get browser_bookmarks => 'Yer imleri';
+
+  @override
+  String get browser_search_library => 'Başlık veya URL ara';
+
+  @override
+  String get browser_data_failed =>
+      'Tarayıcı verileri okunamadı veya kaydedilemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get browser_clear_history => 'Tarama geçmişini temizle';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Bu cihazdaki tüm geçmiş silinsin mi? Yer imleri ve site oturumları korunur.';
+
+  @override
+  String get browser_library_empty => 'Henüz bir şey yok';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Bir sayfayı burada bulmak için menüsünden yer imlerine ekleyin.';
+
+  @override
+  String get browser_history_hint =>
+      'Ziyaret ettiğiniz sayfalar, sekmeler kapatılsa da burada kalır.';
+
+  @override
+  String get browser_recent => 'Son ziyaretler';
+
+  @override
+  String get browser_pinned_hint =>
+      'Hızlı erişim için favori sitelerinizi Kaynaklar bölümünde sabitleyin.';
+
+  @override
+  String get browser_start_page => 'Başlangıç sayfası';
+
+  @override
+  String get browser_remove_bookmark => 'Yer imini kaldır';
+
+  @override
+  String get browser_add_bookmark => 'Yer imi ekle';
+
+  @override
+  String get browser_find => 'Sayfada bul';
+
+  @override
+  String get browser_copy_link => 'Bağlantıyı kopyala';
+
+  @override
+  String get browser_action_failed =>
+      'İşlem tamamlanamadı. Lütfen tekrar deneyin.';
+
+  @override
+  String get browser_find_previous => 'Önceki eşleşme';
+
+  @override
+  String get browser_find_next => 'Sonraki eşleşme';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return '$total eşleşmeden $current.';
+  }
+
+  @override
   String get app_update_details_hint =>
       'Sürüm notlarını ve yükleme seçeneklerini görüntüleyin';
 
@@ -5201,9 +5275,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get browser_unopened => 'Henüz sayfa açılmadı';
-
-  @override
-  String get browser_address_hint => 'Bir URL girin veya yapıştırın';
 
   @override
   String get browser_invalid_address => 'Geçerli bir URL girin';

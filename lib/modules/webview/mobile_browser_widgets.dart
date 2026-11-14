@@ -9,19 +9,18 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'browser_url.dart';
+import 'mobile_browser_menu.dart';
 
 import 'package:mangayomi/modules/translation/translation_display_switch.dart';
 
-ButtonStyle _barIconStyle(Color color, {Color? background}) =>
-    IconButton.styleFrom(
-      fixedSize: const Size.square(NodeLaneTokens.minTapTarget),
-      padding: EdgeInsets.zero,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      visualDensity: VisualDensity.standard,
-      iconSize: NodeLaneTokens.iconSize,
-      foregroundColor: color,
-      backgroundColor: background,
-    );
+ButtonStyle _barIconStyle(Color color) => IconButton.styleFrom(
+  fixedSize: const Size.square(NodeLaneTokens.minTapTarget),
+  padding: EdgeInsets.zero,
+  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  visualDensity: VisualDensity.standard,
+  iconSize: NodeLaneTokens.iconSize,
+  foregroundColor: color,
+);
 
 /// Pure presentation. WebViews, translation and persistence stay in the host.
 class MobileBrowserHeader extends StatelessWidget {
@@ -33,12 +32,18 @@ class MobileBrowserHeader extends StatelessWidget {
     required this.onClose,
     required this.menu,
     this.onReload,
+    this.engine = BrowserSearchEngine.google,
+    this.onEngine,
+    this.loading = false,
   });
   final String url;
   final ValueChanged<String> onSubmitted;
   final FocusNode addressFocus;
   final VoidCallback onClose;
   final VoidCallback? onReload;
+  final BrowserSearchEngine engine;
+  final Future<void> Function(BrowserSearchEngine)? onEngine;
+  final bool loading;
   final Widget menu;
   @override
   Widget build(BuildContext context) {
@@ -94,6 +99,9 @@ class MobileBrowserHeader extends StatelessWidget {
                     focusNode: addressFocus,
                     onSubmitted: onSubmitted,
                     onReload: onReload,
+                    engine: engine,
+                    onEngine: onEngine,
+                    loading: loading,
                   ),
                 ),
                 if (!addressFocus.hasFocus) ...[
@@ -336,12 +344,18 @@ class MobileBrowserAddressField extends StatefulWidget {
     this.compact = false,
     this.focusNode,
     this.onReload,
+    this.engine = BrowserSearchEngine.google,
+    this.onEngine,
+    this.loading = false,
   });
   final String url;
   final bool compact;
   final FocusNode? focusNode;
   final ValueChanged<String> onSubmitted;
   final VoidCallback? onReload;
+  final BrowserSearchEngine engine;
+  final Future<void> Function(BrowserSearchEngine)? onEngine;
+  final bool loading;
 
   @override
   State<MobileBrowserAddressField> createState() =>
@@ -352,6 +366,7 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   late final focus = widget.focusNode ?? FocusNode();
   late final input = TextEditingController(text: _displayUrl);
   bool invalid = false;
+  bool choosingEngine = false;
   String get _displayUrl =>
       widget.compact ? Uri.tryParse(widget.url)?.host ?? '' : widget.url;
 
@@ -362,6 +377,7 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   }
 
   void _focusChanged() {
+    if (choosingEngine) return;
     if (widget.compact) {
       input.text = focus.hasFocus ? widget.url : _displayUrl;
       if (focus.hasFocus) {
@@ -377,19 +393,47 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   @override
   void didUpdateWidget(MobileBrowserAddressField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url && !focus.hasFocus) {
+    if (oldWidget.url != widget.url && !focus.hasFocus && !choosingEngine) {
       input.text = _displayUrl;
     }
   }
 
   void _submit() {
-    final url = normalizeBrowserAddress(input.text);
+    final url = resolveBrowserInput(input.text, engine: widget.engine);
     if (url == null) {
       setState(() => invalid = true);
       return;
     }
     focus.unfocus();
     widget.onSubmitted(url);
+  }
+
+  Future<void> _chooseEngine(BuildContext anchor) async {
+    if (choosingEngine) return;
+    choosingEngine = true;
+    final draft = input.value, hadFocus = focus.hasFocus, url = widget.url;
+    try {
+      final selected = await showBrowserSearchEngines(anchor, widget.engine);
+      if (mounted && selected != null) await widget.onEngine?.call(selected);
+    } catch (_) {
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.browser_data_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    } finally {
+      if (mounted) {
+        if (hadFocus && widget.url == url) {
+          focus.requestFocus();
+          input.value = draft;
+        } else if (widget.url != url && !focus.hasFocus) {
+          input.text = _displayUrl;
+        }
+        await WidgetsBinding.instance.endOfFrame;
+        choosingEngine = false;
+      }
+    }
   }
 
   @override
@@ -413,20 +457,37 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
               controller: input,
               focusNode: focus,
               compact: widget.compact,
-              hint: context.l10n.browser_address_hint,
+              hint: context.l10n.browser_search_hint,
               textAlign: widget.compact && !focus.hasFocus
                   ? TextAlign.center
                   : TextAlign.start,
-              leading: widget.compact && widget.url.startsWith('https:')
-                  ? icons.lock
-                  : icons.web,
-              keyboardType: TextInputType.url,
+              leadingWidget: TextFieldTapRegion(
+                child: Builder(
+                  builder: (anchor) => NodeLaneIconButton(
+                    tooltip:
+                        '${context.l10n.browser_search_engine} · ${widget.engine.label}',
+                    style: NodeLaneIconButtonStyle.plain,
+                    iconWidget: Image.asset(
+                      widget.engine.logoAsset,
+                      width: NodeLaneTokens.iconSize,
+                      height: NodeLaneTokens.iconSize,
+                      excludeFromSemantics: true,
+                    ),
+                    onPressed: widget.onEngine == null
+                        ? null
+                        : () => _chooseEngine(anchor),
+                  ),
+                ),
+              ),
+              keyboardType: TextInputType.text,
               textInputAction: TextInputAction.go,
               autocorrect: false,
               enableSuggestions: false,
               onSubmitted: (_) => _submit(),
               onEditingComplete: () {},
-              onTapOutside: (_) => focus.unfocus(),
+              onTapOutside: (_) {
+                if (!choosingEngine) focus.unfocus();
+              },
               onChanged: (_) {
                 if (invalid) setState(() => invalid = false);
               },
@@ -435,13 +496,19 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
                 tooltip: widget.compact
                     ? (focus.hasFocus
                           ? context.l10n.browser_clear_address
+                          : widget.loading
+                          ? context.l10n.stop
                           : context.l10n.refresh)
                     : (input.text.isEmpty
                           ? context.l10n.browser_paste_address
                           : context.l10n.browser_open_address),
                 style: NodeLaneIconButtonStyle.plain,
                 icon: widget.compact
-                    ? (focus.hasFocus ? icons.clear : icons.refresh)
+                    ? (focus.hasFocus
+                          ? icons.clear
+                          : widget.loading
+                          ? icons.stop
+                          : icons.refresh)
                     : (input.text.isEmpty ? icons.clipboard : icons.forward),
                 onPressed: widget.compact
                     ? (focus.hasFocus ? input.clear : widget.onReload)
@@ -577,6 +644,98 @@ class MobileBrowserLoadError extends StatelessWidget {
             TextButton(
               onPressed: onEditAddress,
               child: Text(context.l10n.browser_edit_address),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MobileBrowserFindBar extends StatefulWidget {
+  const MobileBrowserFindBar({
+    super.key,
+    required this.current,
+    required this.total,
+    required this.onFind,
+    required this.onNext,
+    required this.onClose,
+  });
+  final int current, total;
+  final ValueChanged<String> onFind;
+  final ValueChanged<bool> onNext;
+  final VoidCallback onClose;
+
+  @override
+  State<MobileBrowserFindBar> createState() => _MobileBrowserFindBarState();
+}
+
+class _MobileBrowserFindBarState extends State<MobileBrowserFindBar> {
+  final input = TextEditingController();
+  @override
+  void dispose() {
+    input.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final icons = NodeLaneIcons.of(context), t = NodeLaneTokens.of(context);
+    return Material(
+      color: t.surface,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space12),
+        child: Column(
+          children: [
+            NodeLaneTextField(
+              controller: input,
+              hint: context.l10n.browser_find,
+              autofocus: true,
+              textInputAction: TextInputAction.search,
+              onSubmitted: widget.onFind,
+              onChanged: (_) {
+                if (input.text.isEmpty) widget.onFind('');
+              },
+              trailing: NodeLaneIconButton(
+                icon: icons.search,
+                tooltip: context.l10n.browser_find,
+                style: NodeLaneIconButtonStyle.plain,
+                onPressed: () => widget.onFind(input.text),
+              ),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${widget.current} / ${widget.total}',
+                    style: t.secondary,
+                    semanticsLabel: context.l10n.browser_find_matches(
+                      widget.current,
+                      widget.total,
+                    ),
+                  ),
+                ),
+                NodeLaneIconButton(
+                  icon: icons.up,
+                  tooltip: context.l10n.browser_find_previous,
+                  style: NodeLaneIconButtonStyle.plain,
+                  onPressed: widget.total == 0
+                      ? null
+                      : () => widget.onNext(false),
+                ),
+                NodeLaneIconButton(
+                  icon: icons.down,
+                  tooltip: context.l10n.browser_find_next,
+                  style: NodeLaneIconButtonStyle.plain,
+                  onPressed: widget.total == 0
+                      ? null
+                      : () => widget.onNext(true),
+                ),
+                NodeLaneCloseButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  onPressed: widget.onClose,
+                ),
+              ],
             ),
           ],
         ),

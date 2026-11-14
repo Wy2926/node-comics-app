@@ -10,6 +10,80 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get browser_search_hint => 'Search or enter a URL';
+
+  @override
+  String get browser_start_hint => 'A fresh page for your next discovery.';
+
+  @override
+  String get browser_search_engine => 'Search engine';
+
+  @override
+  String get browser_bookmarks => 'Bookmarks';
+
+  @override
+  String get browser_search_library => 'Search titles or URLs';
+
+  @override
+  String get browser_data_failed =>
+      'Could not read or save browser data. Please retry.';
+
+  @override
+  String get browser_clear_history => 'Clear browsing history';
+
+  @override
+  String get browser_clear_history_hint =>
+      'Delete all browsing history on this device? Bookmarks and website sign-ins are kept.';
+
+  @override
+  String get browser_library_empty => 'Nothing here yet';
+
+  @override
+  String get browser_bookmarks_hint =>
+      'Save a page from its menu to find it here.';
+
+  @override
+  String get browser_history_hint =>
+      'Pages you visit appear here, even after closing their tabs.';
+
+  @override
+  String get browser_recent => 'Recently visited';
+
+  @override
+  String get browser_pinned_hint =>
+      'Pin favorite websites from Sources for quick access.';
+
+  @override
+  String get browser_start_page => 'Start page';
+
+  @override
+  String get browser_remove_bookmark => 'Remove bookmark';
+
+  @override
+  String get browser_add_bookmark => 'Bookmark this page';
+
+  @override
+  String get browser_find => 'Find on page';
+
+  @override
+  String get browser_copy_link => 'Copy link';
+
+  @override
+  String get browser_action_failed =>
+      'Could not complete this action. Please retry.';
+
+  @override
+  String get browser_find_previous => 'Previous match';
+
+  @override
+  String get browser_find_next => 'Next match';
+
+  @override
+  String browser_find_matches(int current, int total) {
+    return 'Match $current of $total';
+  }
+
+  @override
   String get app_update_details_hint =>
       'View release notes and installation options';
 
@@ -5182,9 +5256,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get browser_unopened => 'No page opened yet';
-
-  @override
-  String get browser_address_hint => 'Enter or paste a URL';
 
   @override
   String get browser_invalid_address => 'Enter a valid URL';

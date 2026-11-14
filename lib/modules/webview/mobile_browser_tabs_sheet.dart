@@ -76,53 +76,58 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
             icon: NodeLaneIcons.of(context).browserStart,
             title: context.l10n.browser_no_tabs,
           )
-        : GridView.builder(
-            shrinkWrap: true,
-            controller: scroll,
-            padding: const EdgeInsets.symmetric(
-              horizontal: NodeLaneTokens.gutter,
-            ),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: NodeLaneTokens.browserTabGap,
-              mainAxisSpacing: NodeLaneTokens.browserTabGap,
-              mainAxisExtent: NodeLaneTokens.browserTabHeight,
-            ),
-            itemCount: entries.length,
-            itemBuilder: (context, i) {
-              final entry = entries[i], id = entries[i]['id'] as String;
-              return MobileBrowserTabCard(
-                key: ValueKey(id),
-                title: entry['title'] as String? ?? '',
-                url: entry['url'] as String,
-                selected: entry['active'] == true,
-                preview: browserSessionStore.preview(id),
-                onSelect: () {
-                  if (!closing.contains(id)) Navigator.pop(context, id);
-                },
-                onClose: () async {
-                  if (closing.isNotEmpty) return;
-                  setState(() => closing.add(id));
-                  try {
-                    final updated = await widget.onClose(id);
-                    if (mounted) {
-                      setState(() {
-                        entries
-                          ..clear()
-                          ..addAll(updated);
-                        error = null;
-                      });
+        : ListenableBuilder(
+            listenable: browserSessionStore,
+            builder: (context, _) => GridView.builder(
+              shrinkWrap: true,
+              controller: scroll,
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.gutter,
+              ),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: NodeLaneTokens.browserTabGap,
+                mainAxisSpacing: NodeLaneTokens.browserTabGap,
+                mainAxisExtent: NodeLaneTokens.browserTabHeight,
+              ),
+              itemCount: entries.length,
+              itemBuilder: (context, i) {
+                final entry = entries[i], id = entries[i]['id'] as String;
+                return MobileBrowserTabCard(
+                  key: ValueKey(id),
+                  title: entry['title'] as String? ?? '',
+                  url: entry['url'] as String,
+                  selected: entry['active'] == true,
+                  preview: browserSessionStore.preview(id),
+                  onSelect: () {
+                    if (!closing.contains(id)) Navigator.pop(context, id);
+                  },
+                  onClose: () async {
+                    if (closing.isNotEmpty) return;
+                    setState(() => closing.add(id));
+                    try {
+                      final updated = await widget.onClose(id);
+                      if (mounted) {
+                        setState(() {
+                          entries
+                            ..clear()
+                            ..addAll(updated);
+                          error = null;
+                        });
+                      }
+                    } catch (_) {
+                      if (mounted) {
+                        setState(
+                          () => error = context.l10n.browser_close_failed,
+                        );
+                      }
+                    } finally {
+                      if (mounted) setState(() => closing.remove(id));
                     }
-                  } catch (_) {
-                    if (mounted) {
-                      setState(() => error = context.l10n.browser_close_failed);
-                    }
-                  } finally {
-                    if (mounted) setState(() => closing.remove(id));
-                  }
-                },
-              );
-            },
+                  },
+                );
+              },
+            ),
           ),
   );
 }

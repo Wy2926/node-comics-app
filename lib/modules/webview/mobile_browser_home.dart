@@ -12,8 +12,11 @@ import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'browser_pinned_sources_provider.dart';
 import 'browser_session_store.dart';
+import 'browser_webview_cache.dart';
 import 'mobile_browser_start_page.dart';
 import 'mobile_browser_tabs_sheet.dart';
+import 'browser_library_store.dart';
+import 'mobile_browser_library_sheet.dart';
 
 class MobileBrowserHome extends ConsumerStatefulWidget {
   const MobileBrowserHome({super.key});
@@ -34,6 +37,25 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
     browserSessionStore.load().then((_) {
       if (mounted) setState(() => ready = true);
     });
+    browserLibraryStore.load().catchError((_) {
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.browser_data_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    });
+  }
+
+  Future<void> _library({bool bookmarks = false}) async {
+    final url = await showNodeLaneCatalogSheet<String>(
+      context,
+      MobileBrowserLibrarySheet(
+        store: browserLibraryStore,
+        bookmarks: bookmarks,
+      ),
+    );
+    if (mounted && url != null) await _open(url, '');
   }
 
   Future<void> _open(String url, String title, {String? tabId}) async {
@@ -71,6 +93,7 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
           entries: browserSessionStore.entries,
           onClose: (id) async {
             await browserSessionStore.close(id);
+            browserWebViewCache.remove(id);
             return browserSessionStore.entries;
           },
         ),
@@ -110,7 +133,10 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
   Widget build(BuildContext context) => NodeLaneSurface(
     child: Scaffold(
       body: ListenableBuilder(
-        listenable: browserSessionStore,
+        listenable: Listenable.merge([
+          browserSessionStore,
+          browserLibraryStore,
+        ]),
         builder: (context, _) => MobileBrowserStartPage(
           key: ValueKey(_blank?['id']),
           sources: ref.watch(browserPinnedSourcesProvider),
@@ -119,6 +145,11 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
           onTabs: ready ? _tabs : null,
           onManage: () => context.go('/browse'),
           bottomInset: pageBottomInsets(context).bottom,
+          engine: browserLibraryStore.engine,
+          recent: browserLibraryStore.history.take(3).toList(),
+          onEngine: browserLibraryStore.setEngine,
+          onHistory: _library,
+          onBookmarks: () => _library(bookmarks: true),
         ),
       ),
     ),

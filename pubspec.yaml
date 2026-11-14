@@ -166,6 +166,7 @@ flutter:
     - path: assets/fonts/
       platforms: [android]
     - assets/trackers_icons/
+    - assets/browser/
     - assets/brand/app-mark.png
     - assets/brand/account-mark.png
 

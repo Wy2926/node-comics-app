@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mangayomi/modules/webview/browser_session_store.dart';
-import 'package:mangayomi/modules/webview/browser_url.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -75,23 +74,4 @@ void main() {
     expect(store.preview('large'), isNull);
     store.dispose();
   });
-  test(
-    'address input supports domains but excludes credentials and other schemes',
-    () {
-      expect(
-        normalizeBrowserAddress(' example.org/read '),
-        'https://example.org/read',
-      );
-      expect(
-        normalizeBrowserAddress('https://example.org/read'),
-        'https://example.org/read',
-      );
-      expect(normalizeBrowserAddress('javascript:alert(1)'), isNull);
-      expect(
-        normalizeBrowserAddress('https://user:secret@example.org'),
-        isNull,
-      );
-      expect(normalizeBrowserAddress('file:///private'), isNull);
-    },
-  );
 }

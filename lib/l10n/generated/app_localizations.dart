@@ -127,6 +127,138 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
+  /// No description provided for @browser_search_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or enter a URL'**
+  String get browser_search_hint;
+
+  /// No description provided for @browser_start_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'A fresh page for your next discovery.'**
+  String get browser_start_hint;
+
+  /// No description provided for @browser_search_engine.
+  ///
+  /// In en, this message translates to:
+  /// **'Search engine'**
+  String get browser_search_engine;
+
+  /// No description provided for @browser_bookmarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get browser_bookmarks;
+
+  /// No description provided for @browser_search_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Search titles or URLs'**
+  String get browser_search_library;
+
+  /// No description provided for @browser_data_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read or save browser data. Please retry.'**
+  String get browser_data_failed;
+
+  /// No description provided for @browser_clear_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear browsing history'**
+  String get browser_clear_history;
+
+  /// No description provided for @browser_clear_history_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all browsing history on this device? Bookmarks and website sign-ins are kept.'**
+  String get browser_clear_history_hint;
+
+  /// No description provided for @browser_library_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get browser_library_empty;
+
+  /// No description provided for @browser_bookmarks_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a page from its menu to find it here.'**
+  String get browser_bookmarks_hint;
+
+  /// No description provided for @browser_history_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages you visit appear here, even after closing their tabs.'**
+  String get browser_history_hint;
+
+  /// No description provided for @browser_recent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently visited'**
+  String get browser_recent;
+
+  /// No description provided for @browser_pinned_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin favorite websites from Sources for quick access.'**
+  String get browser_pinned_hint;
+
+  /// No description provided for @browser_start_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Start page'**
+  String get browser_start_page;
+
+  /// No description provided for @browser_remove_bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove bookmark'**
+  String get browser_remove_bookmark;
+
+  /// No description provided for @browser_add_bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark this page'**
+  String get browser_add_bookmark;
+
+  /// No description provided for @browser_find.
+  ///
+  /// In en, this message translates to:
+  /// **'Find on page'**
+  String get browser_find;
+
+  /// No description provided for @browser_copy_link.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get browser_copy_link;
+
+  /// No description provided for @browser_action_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete this action. Please retry.'**
+  String get browser_action_failed;
+
+  /// No description provided for @browser_find_previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match'**
+  String get browser_find_previous;
+
+  /// No description provided for @browser_find_next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match'**
+  String get browser_find_next;
+
+  /// No description provided for @browser_find_matches.
+  ///
+  /// In en, this message translates to:
+  /// **'Match {current} of {total}'**
+  String browser_find_matches(int current, int total);
+
   /// No description provided for @app_update_details_hint.
   ///
   /// In en, this message translates to:
@@ -9154,12 +9286,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No page opened yet'**
   String get browser_unopened;
-
-  /// No description provided for @browser_address_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter or paste a URL'**
-  String get browser_address_hint;
 
   /// No description provided for @browser_invalid_address.
   ///
