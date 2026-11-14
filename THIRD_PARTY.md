@@ -11,3 +11,5 @@ Mangayomi 上游基线采用 Apache-2.0，原始许可见 [LICENSE](LICENSE)，�
 官方翻译协议对照 [NodeLane Comics](https://github.com/Wy2926/node-comics) 提交 `74204b088df724797fb95be9302d47104c3ca67e` 的 `apps/extension/src/api.ts`、`translation/channels/adapters/nodelane/` 与 `shared/translation-images/`（**GPL-3.0-only**），并核对服务端 HTTP 契约。Dart 适配器按请求、结果描述及 `NCOT0001` 容器格式独立实现互通；测试 WebP 是自行生成的合成像素，不含第三方漫画素材，也未增加编码器运行时依赖。
 
 网页归档提取直接使用 [Dart mime](https://pub.dev/packages/mime) 的流式 MIME multipart 解析器，许可为 **BSD-3-Clause**（[源码与许可](https://github.com/dart-lang/tools/tree/main/pkgs/mime)）。该包从既有间接依赖改为显式依赖，版本沿用锁文件；分发时随 Flutter 依赖许可保留原始声明。WebView 归档创建继续使用现有 `flutter_inappwebview`，iOS property-list 解码使用系统 Foundation。
+
+Flutter 界面图标使用已有 [cupertino_icons](https://pub.dev/packages/cupertino_icons)（**MIT**），版本与摘要以 `pubspec.lock` 为准；iOS 原生底栏使用系统 SF Symbols。品牌素材及生成设计图的来源见[品牌说明](docs/design/nodelane-brand-assets.md)与[设计参考](docs/MOBILE_UI_DESIGN.md#设计参考与素材)。

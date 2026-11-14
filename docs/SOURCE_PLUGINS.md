@@ -6,6 +6,8 @@
 
 在插件仓库按[维护说明](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/docs/MAINTENANCE.md)构建并启动服务。App 默认目录为 `https://comics-extensions.nodelane.net/stable/index.json`，可通过 `--dart-define=NODELANE_CATALOG_URL=http://127.0.0.1:8787/index.json` 切换。iOS 模拟器可使用 Mac 回环地址；真机使用开发机局域网 IP，插件服务器需绑定局域网接口。
 
+Android 本地使用 MuMu，按 [AGENTS](../AGENTS.md) 查询实际 ADB 地址；使用设备可达的开发机地址，或先配置对应设备的 `adb reverse tcp:8787 tcp:8787` 再使用回环地址。Flutter 调试启动加 `--print-dtd`。
+
 插件仓库的 `npm run test:app -- --app /明确的App绝对路径` 显式运行 QuickJS 契约检查；App 普通 CI 不读取相邻仓库。APK 通过 Mihon 桥单独验证，不能用 QuickJS 测试代替。
 
 ## 目录与安装

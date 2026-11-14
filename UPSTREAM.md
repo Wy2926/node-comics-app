@@ -12,6 +12,6 @@
 
 本地 Git remote `upstream` 指向上述源码仓库，保留其历史与版本标记；`origin` 指向 NodeLane 的独立仓库 [Wy2926/node-comics-app](https://github.com/Wy2926/node-comics-app)。
 
-`pubspec.lock`、`rust/Cargo.lock` 及现有第三方版权、许可文件保留上游状态。固定应用提交不代表外部依赖、平台 SDK 或构建结果已经验证；后续构建应核对锁文件与实际解析版本。
+`pubspec.lock`、`rust/Cargo.lock` 记录当前依赖解析版本，第三方版权和许可声明继续保留。固定上游基线不代表当前依赖、平台 SDK 或构建结果已经验证；构建应核对锁文件与实际解析版本。
 
-更新上游时先核对差异，再显式选择迁移范围。NodeLane 的包标识、更新服务、签名、商店信息及发布工作流在发布前单独配置，不向上游发布 NodeLane 构建。
+更新上游时先核对差异，再显式选择迁移范围。NodeLane 使用独立包标识、更新服务及发行工作流，当前配置与验证边界见[发行说明](docs/APP_UPDATES.md)，不向上游发布 NodeLane 构建。

@@ -1,14 +1,12 @@
-# NodeLane Comics App — 开发约定
+# NodeLane Comics App
 
-基于 Mangayomi 的独立 Flutter 应用，首版支持 iOS 和 Android。以代码、配置和运行结果核实现状，按需读取专题文档。
+基于 Mangayomi 的 Flutter / Rust 应用，首版面向 iOS、Android；专题按需读 `docs/`。
 
-- 按已确认需求做最小完整实现，复用现有契约与组件；保持来源解析、阅读器、翻译渠道解耦，阅读器与网页共享翻译能力，不引入无实际用途的框架、重复状态或掩盖故障的兜底。
-- 网站适配使用插件仓库的 [nodelane-source-adapter 技能](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/.agents/skills/nodelane-source-adapter/SKILL.md)。新增网站先实测 Keiyoushi 原版，可用即复用；既有 JS 来源按自身契约维护。App 只修复通用宿主能力，保留永久来源 ID，不擅自迁移或删除数据；Android 与 iOS 分别验收。
-- 控制移动端并发、图片窗口与 WebView 保活；缓存和在途任务有明确释放边界，任务与结果按来源、账号和渠道隔离。
-- 不自行增加限制 App 能力的安全门禁、图片尺寸或体积上限；确需新增限制先与用户沟通。并发与缓存调度不能变成图片准入限制，真实平台或服务错误应如实报告。
-- 保留现有漫画、小说、动画等功能及用户已有修改。完成改动时删除本次范围内过期代码、临时代码、重复测试和无用文档，保留必要的行为回归测试。
-- 沿用 Flutter / Rust 与 CI 入口，按改动验证失败、重试、恢复和位置保持。分别说明 iOS、Android 及真实服务的验证范围，不把静态检查或模拟测试当作设备验收。
-- 同级 `node-comics` 仅作参考，先读其 README；未经任务要求不修改，也不引入运行时目录依赖。
-- 保留 [上游基线](UPSTREAM.md)、LICENSE 和第三方声明；新增依赖或素材记录来源与许可，区分 Apache-2.0 与 GPL-3.0-only。凭据、敏感数据和签名地址不进入仓库或默认日志，供应商密钥留后端。
-- 默认仅修改工作区并验证，不创建 Git 提交。提交、推送、发布和部署分别需要用户明确授权，提交授权不包含推送，不沿用其他任务的授权。默认用中文简洁说明结果与未验证项。
-- 文档只保留当前实现、使用方式、验证边界与待办；README 不承担开发导航。移除流水记录、历史测试计数和重复规范，变更历史由 Git 保留。
+- 保留漫画／小说／动画及用户修改。来源、阅读器、翻译解耦，网页与阅读器共用翻译；任务按来源／账号／渠道隔离，图片、缓存、WebView 明确释放。
+- 网站适配按[插件技能](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/.agents/skills/nodelane-source-adapter/SKILL.md)：新站先实测 Keiyoushi 原版，既有 JS 守原契约；App 只修通用宿主，保留永久 ID，不擅自迁移／删数据。
+- 控制移动端并发与窗口，不擅自加能力门禁或图片尺寸／体积限制；缓存预算不是准入条件。
+- 沿用 CI，按改动验证失败、重试、恢复和位置保持；Android、iOS、真实服务分别报告，静态／模拟测试不算设备验收。
+- 本地 Android 用 MuMu，MuMuManager 查实际 ADB 地址；CLI／Dart MCP 与 `android/local.properties` 共用 SDK，Windows Pub 缓存与项目同盘，启动加 `--print-dtd`。
+- 同级 `node-comics` 先读 README，仅供参考，未经要求不修改、不引入目录依赖。保留 LICENSE、[上游](UPSTREAM.md)与[第三方声明](THIRD_PARTY.md)，记录新增来源／许可，区分 Apache-2.0 与 GPL-3.0-only。
+- 凭据、敏感数据、签名地址不入仓库或默认日志，供应商密钥留后端。提交／推送／发布／部署各需本次授权；默认只改工作区，中文说明结果与未验证项。
+- 文档只留现状、用法、验证边界和待办，每项事实维护一处；删流水与重复论证，历史交给 Git，README 面向用户。

@@ -6,7 +6,7 @@
 - 版本：`nodelane-logo-v1`，512 × 512 RGBA PNG；应用内素材保留原始字节，不重绘、不改色、不分发字体。
 - 两份 PNG 的 SHA-256：`dce89a469d12bbfaacb3e67d7176ca20bd46a57e362f089d8c2985f637ff6406`。
 - 来源素材清单记载由 `gpt-image-2` 生成，经过透明边缘清理、裁切、留边和缩放。图形为对白框、N 字母与粉色折页。
-- 许可记录：来源仓库声明 `GPL-3.0-only`，素材目录没有单独声明其他许可，因此保留该来源许可信息，不把素材改标为本项目上游的 Apache-2.0。用户指定复用 NodeLane 品牌图形；本次没有复制参考仓库的运行时代码、导出脚本或字体。
+- 许可记录：来源仓库声明 `GPL-3.0-only`，素材目录没有单独许可，因此沿用该许可，不改标为上游 Apache-2.0。品牌资源未引入来源仓库的运行时代码、导出脚本或字体。
 - [GPL 许可全文](../../assets/brand/LICENSE-GPL-3.0-only)来自来源仓库提交 `811e267b6ef82e0d583ab594ad40110fb785e0a8` 的 `LICENSE`，SHA-256 为 `3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`。应用代码的上游 Apache-2.0 许可继续由仓库根目录 `LICENSE` 保存。
 
 软件更新参考图见[软件更新设计](software-update.png)，通过本机 imagegen CLI 及 OpenAI 官方 API，使用 `gpt-image-2.6-sunburst` 生成，[完整提示词](software-update.prompts.txt)保留输入。没有输入第三方图片，参考图不随应用打包；运行界面的页纹、页片标记与小角标为 Flutter 几何绘制，不新增字体、图标或第三方素材依赖。既有品牌标识仍沿用上述 GPL-3.0-only 许可，版本与更新说明来自实际查询。
@@ -36,7 +36,7 @@ Windows 使用同一工具与输入导出 `windows/runner/resources/app_icon.ico
 
 Linux 的 `linux/packaging/icons/hicolor/<尺寸>/apps/nodelane-comics.png` 复用上述 macOS 的 16／32／64／128／256／512 像素输出，通过仓库内相对符号链接引用；发行打包时解引用为 PNG，安装后不依赖 macOS 目录。桌面入口、AppImage、RPM 与 Debian 共用这些资源，不另存重复图片。
 
-Android 使用同一工具与输入导出五种密度的 `launcher_icon.png`，以及自适应图标的 `ic_launcher_foreground.png`；背景为白色，前景留边为 24%，避免圆形遮罩裁切对白框尾部。生成时只启用 Android，不更新其他平台资源。手机与 TV 共用图标，已删除未引用的旧 `ic_launcher.png`、启动视频、重复 TV 图标目录及构建覆盖步骤。
+Android 使用同一工具与输入导出五种密度的 `launcher_icon.png`，以及自适应图标的 `ic_launcher_foreground.png`；背景为白色，前景留边为 24%，避免圆形遮罩裁切对白框尾部。按平台单独生成，手机与 TV 共用图标。
 
 TV 横幅为 320 × 180 PNG，复用品牌图形并合成浅色背景与应用名称；英文显示 NodeLane Comics，中文显示 NodeLane漫译。文字使用 macOS 系统字体栅格化，只分发 PNG，不引入字体文件。`drawable-xhdpi/tv_banner.png` 为默认横幅，`tv_banner_zh.png` 由简繁中文资源映射共用；没有按地区复制图片。尺寸及文字规则依据 [Android TV 图标指南](https://developer.android.com/design/ui/tv/guides/system/tv-app-icon-guidelines)。
 

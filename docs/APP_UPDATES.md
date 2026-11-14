@@ -1,6 +1,35 @@
-# 应用更新清单
+# 发行与应用更新
 
 客户端默认从 `https://comics-updates.nodelane.net/stable/index.json` 读取静态清单，不需要 GitHub 凭据，也不直接查询 GitHub Releases API。安装包和发布页可以使用任意 HTTP／HTTPS 地址，包括自建服务器、CDN、端口、查询参数和片段。清单入口可通过 `NODELANE_UPDATE_MANIFEST_URL` 构建参数替换。
+
+## 平台身份与构建
+
+版本与构建号只以 `pubspec.yaml` 为准，关于页显示实际安装包信息。NodeLane 使用独立应用身份，不覆盖上游 Mangayomi 或迁移其私有数据；后续覆盖安装须保持包标识与兼容签名。
+
+| 平台 | 身份与打包入口 |
+| --- | --- |
+| iOS | `com.nodelane.comics`，最低 iOS 15；Flutter 构建与既有 IPA 流程，测试目标为 `com.nodelane.comics.RunnerTests` |
+| Android／TV | applicationId、namespace 为 `com.nodelane.comics`；APK 按 ABI 分发，TV 使用独立文件名。FileProvider 为 `${applicationId}.fileprovider`，仅共享应用专属 `Download/app-updates/` |
+| macOS | `com.nodelane.comics`、`nodelane-comics.app`；`tool/package_macos_dmg.py` 使用 `ditto`、`hdiutil`、Xcode `SetFile`，校验成功才替换 DMG，不自动签名／公证 |
+| Windows | 展示名 `nodelane-comics`、发布者 NodeLane，安装器 ID `D80A683F-91A2-4296-BC85-2A903B6E247C` 保持稳定；内部可执行文件仍为 `mangayomi.exe`，使用锁定的 `inno_bundle` |
+| Linux | 程序／包名 `nodelane-comics`，桌面标识 `com.nodelane.comics`；`linuxdeploy`、`rpmbuild`、`dpkg-deb` 及现有 CI 分别生成 AppImage／RPM／DEB，安装到 `/opt/nodelane-comics` |
+| Arch | `packaging/arch/PKGBUILD.in` 生成 `nodelane-comics-bin` 配方，`pkgver`／`pkgrel` 取应用版本／构建号；解压配方包后在对应目录运行 `makepkg -si`，下载同版 Linux ZIP |
+
+平台图标与许可见[品牌素材](design/nodelane-brand-assets.md)，组合应用的分发条款见[第三方声明](../THIRD_PARTY.md)。包内保留上游基线、许可与素材来源；应用协议配置见[应用链接](MOBILE_UI_DESIGN.md#应用链接)。
+
+macOS Podfile 在解析前准备锁定 media-kit 库，失败即终止；CI 预装 `aarch64-apple-darwin`、`x86_64-apple-darwin` 两个 Rust 目标，再使用锁定 Pods 构建。DMG 包含完整 `.app`、Applications 快捷方式、卷图标及许可文件。Linux 各格式共用桌面文件和图标，Arch 配方使用实际资源摘要。
+
+## 发布入口
+
+`.github/workflows/release.yml` 的 **Build & Release** 由 Actions 手动运行，输入已推送的 `v<应用版本>` 标签和平台，默认 macOS，`all` 构建全部平台。校验标签与正整数构建号后固定到同一提交，只等待所选平台；失败／取消不发布，同标签运行不自动互相取消。
+
+新 Release 先上传草稿，成功后公开；重试可继续草稿，补发平台保留已有说明和资源。产物名为 `nodelane-comics-<tag>-<platform>.<ext>`，Android／TV 在平台后附 ABI；CI 调试产物为 `nodelane-comics-<platform>-debug`。缺少预期文件时失败。执行发布仍需明确授权。
+
+### iOS 侧载订阅
+
+`repo/update_source.py` 按 `repo/config.json` 生成 `repo/source.json`，源 ID 为 `com.nodelane.comics.source`，应用 ID 为 `com.nodelane.comics`。只收录项目公开 Releases 中正式版本及同仓库已上传的 `nodelane-comics-<tag>-ios.ipa`，无 IPA 时 `apps`／`news` 为空。
+
+版本按数值降序、同版本去重；订阅按版本号更新，不区分同版本 build。版本、最低系统和权限须与实际签名 IPA 核对，字段遵循 [AltStore Source 格式](https://faq.altstore.io/developers/make-a-source)。请求或解析失败保留旧源，生成成功才原子替换；工作流先运行 `python3 -B -m unittest discover -s repo -p 'test_*.py'`，iOS 构建和发布成功后更新，也可手动重建。
 
 ## Android 发布签名
 
@@ -12,7 +41,7 @@ GitHub Actions 使用仓库 Secrets `SIGNING_KEY_STORE_BASE64`（密钥文件的
 
 ## 生成与手动发布
 
-Actions → **Build & Release** 继续从已有的 `v<版本号>` 标签构建并发布 GitHub 安装包，随后生成 `nodelane-comics-v<版本号>-update-manifest` Actions 产物。此流程不部署服务器。
+发布后生成 `nodelane-comics-v<版本号>-update-manifest` Actions 产物，清单部署使用以下步骤：
 
 1. 下载并解压该 Actions 产物，得到 `stable/index.json`。
 2. 按需修改条目的 `url` 和 `page_url`，将安装包放到对应地址。
@@ -89,7 +118,20 @@ flutter build apk --debug
 本地静态服务可通过构建参数切换清单入口：
 
 ```sh
-flutter run --dart-define=NODELANE_UPDATE_MANIFEST_URL=http://10.0.2.2:8787/stable/index.json
+flutter run -d <设备ID> --print-dtd --dart-define=NODELANE_UPDATE_MANIFEST_URL=http://<开发机可达地址>:8787/stable/index.json
 ```
 
-`10.0.2.2` 用于 Android 模拟器访问宿主机。覆盖安装本地调试包时保留原应用数据，不通过卸载绕过签名或版本不兼容。
+替换命令中的占位值。本地 Android 使用 MuMu，通过 MuMuManager 查询实际 ADB 地址，再确认设备到开发服务的连通性，不假定其他模拟器的宿主机地址。SDK 与缓存要求见 [AGENTS](../AGENTS.md)。覆盖安装保留原应用数据，不通过卸载绕过签名或版本不兼容。
+
+## 验证边界
+
+| 平台／范围 | 已有证据 | 仍需验收 |
+| --- | --- | --- |
+| Android 更新 | API 36 arm64 模拟器使用本地 HTTP、同签名 Debug 包覆盖后台下载、进程恢复、重复任务、503／404、取消、权限拒绝、安装取消及覆盖安装保留数据 | 真实发行服务器的完整更新链路、ARM 真机、其他 API／ABI 与 TV |
+| Android Release | x86_64 模拟器使用正式签名包完成真实翻译，范围见[翻译验证](TRANSLATION_ARCHITECTURE.md#验证与待办) | 不据此推断其他平台或全部发行功能通过 |
+| iOS | 指定 arm64 模拟器构建与更新入口；无签名 Release 打包，个人 Apple ID 重签后在 iPhone 安装和首次启动 | 正式团队／CI 签名、续签、版本间覆盖更新、侧载订阅客户端与完整真机功能 |
+| macOS | Apple Silicon 本地通用 Release、ad-hoc 签名、DMG 安装／覆盖、启动及空书库偏好保留 | Intel、旧系统、公开下载 Gatekeeper、Developer ID、公证、真实授权 |
+| Windows／Linux／Arch | 配置、脚本及打包目录模拟检查 | 原生构建、实际包安装／升级、桌面展示与回调；Arch 未向 AUR 发布 |
+| 自动化与 CI | 清单／客户端共享夹具，版本选择、失败恢复、订阅重复生成、失败保留及工作流选择条件有回归 | 模拟检查不代表远端构建发布或真实安装；每次发行以对应 job 和设备结果为准 |
+
+已知构建边界：通用 iOS 模拟器构建受媒体插件 Swift 架构组合影响，指定模拟器可用；本地 iOS Release 曾需 `--no-tree-shake-icons`，默认字体裁剪仍需复核。macOS 宿主声明最低 12，而既有 torrent 动态库要求 26，支持范围尚待统一，不能据宿主声明承诺旧系统可用。
