@@ -319,6 +319,8 @@ const _redactedHeaders = {
   'x-api-key',
   'simkl-api-key',
   'trakt-api-key',
+  'token',
+  'tokenparam',
 };
 
 /// Logs end up in a file users share on bug reports, so tracker bearer

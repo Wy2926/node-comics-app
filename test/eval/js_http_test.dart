@@ -3,11 +3,42 @@ import 'dart:io';
 
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:mangayomi/eval/http_response_extensions.dart';
 import 'package:mangayomi/eval/javascript/http.dart';
 import 'package:mangayomi/eval/javascript/source_runtime.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 
 void main() {
+  test('bridge tolerates trailing MIME separators without losing charset or headers', () {
+    for (final (contentType, bytes, text) in [
+      (
+        'application/json; charset=utf-8;',
+        utf8.encode('{"text":"测试 🌊"}'),
+        '{"text":"测试 🌊"}',
+      ),
+      ('application/json;  ', utf8.encode('{"text":"测试"}'), '{"text":"测试"}'),
+      ('text/plain; charset=iso-8859-1;', [0xe9], 'é'),
+      ('text/plain; charset=utf-8', utf8.encode('测试'), '测试'),
+    ]) {
+      final response = http.Response.bytes(
+        bytes,
+        200,
+        headers: {'content-type': contentType},
+      );
+      expect(response.toJson()['body'], text);
+      expect(response.toJson()['headers'], response.headers);
+    }
+    expect(
+      () => http.Response.bytes(
+        [0xff],
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8;'},
+      ).toJson(),
+      throwsFormatException,
+    );
+  });
+
   tearDownAll(() => MClient.defaultClient.close());
 
   for (final method in ['head', 'get', 'post', 'put', 'delete', 'patch']) {
@@ -26,10 +57,14 @@ void main() {
           'header': request.headers.value('x-client-method'),
           'body': await utf8.decoder.bind(request).join(),
         });
+        request.response.headers.set(
+          'content-type',
+          'text/plain; charset=utf-8;',
+        );
         request.response
           ..statusCode = status
           ..headers.set('x-server-method', request.method)
-          ..write('response:$method');
+          ..write('response:$method 测试');
         await request.response.close();
       });
 
@@ -76,7 +111,7 @@ void main() {
         });
         expect(response['statusCode'], status);
         expect(response['headers']['x-server-method'], method.toUpperCase());
-        expect(response['body'], method == 'head' ? '' : 'response:$method');
+        expect(response['body'], method == 'head' ? '' : 'response:$method 测试');
       }
     });
   }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
 
@@ -10,6 +11,102 @@ import 'package:mangayomi/services/source_images/tile_shuffle.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 
 void main() {
+  test(
+    'static WebP with no animation frame table works in both image operations',
+    () {
+      // Synthetic 2x2 image, also used by the translation overlay fixtures.
+      final webp = base64Decode(
+        'UklGRj4AAABXRUJQVlA4TDEAAAAvAUAAEB8gpiGmlf6XVmoIBAj+x1wREhBm+d+sIiAoum65+MeEjKAgbQMWdTei/5EDAA==',
+      );
+      expect(img.WebPDecoder().startDecode(webp)!.numFrames, 0);
+      final raw = img.decodeWebP(webp)!;
+      final stripSpec = SourceImageProcessing.fromJson({
+        'type': 'strip-reverse-v1',
+        'rows': 2,
+        'skipGif': true,
+      });
+      final restored = img.decodePng(restoreSourceImage(webp, {}, stripSpec))!;
+      expect(restored.getPixel(0, 0).toList(), raw.getPixel(0, 1).toList());
+      expect(restored.getPixel(1, 1).toList(), raw.getPixel(1, 0).toList());
+      final tileSpec = SourceImageProcessing.fromJson({
+        'type': 'tile-shuffle-v1',
+        'algorithm': 3,
+        'seedMasks': <String, int>{},
+      });
+      expect(
+        img
+            .decodePng(
+              restoreSourceImage(webp, {
+                'X-Scramble-Algo': '3',
+                'X-Scramble-Grid': '1x1',
+                'X-Scramble-Seed': '42',
+              }, tileSpec),
+            )!
+            .getPixel(0, 0)
+            .toList(),
+        raw.getPixel(0, 0).toList(),
+      );
+    },
+  );
+  final strips = SourceImageProcessing.fromJson({
+    'type': 'strip-reverse-v1',
+    'rows': 3,
+    'skipGif': true,
+  });
+  test('strip reversal preserves remainder rows, width and alpha', () {
+    final image = img.Image(width: 2, height: 7, numChannels: 4);
+    for (var y = 0; y < 7; y++) {
+      for (var x = 0; x < 2; x++) {
+        image.setPixelRgba(x, y, y * 30, x * 40, 50, 120);
+      }
+    }
+    final restored = img.decodePng(
+      restoreSourceImage(Uint8List.fromList(img.encodePng(image)), {}, strips),
+    )!;
+    for (var y = 0; y < 7; y++) {
+      expect(restored.getPixel(1, y).r, [4, 5, 6, 2, 3, 0, 1][y] * 30);
+      expect(restored.getPixel(1, y).g, 40);
+      expect(restored.getPixel(1, y).a, 120);
+    }
+    expect(
+      SourceImageProcessing.fromJson(strips.toJson()).toJson(),
+      strips.toJson(),
+    );
+    final other = SourceImageProcessing.fromJson({
+      ...strips.toJson(),
+      'rows': 2,
+    });
+    expect(
+      other.cacheKey('https://image.test/a'),
+      isNot(strips.cacheKey('https://image.test/a')),
+    );
+  });
+  test('strip GIF passthrough retains animation; invalid parameters and impossible grids fail', () {
+    final animation = img.Image(width: 2, height: 2);
+    animation.addFrame(img.Image(width: 2, height: 2));
+    final gif = Uint8List.fromList(img.encodeGif(animation));
+    expect(restoreSourceImage(gif, {}, strips), gif);
+    final strict = SourceImageProcessing.fromJson({
+      ...strips.toJson(),
+      'skipGif': false,
+    });
+    expect(() => restoreSourceImage(gif, {}, strict), throwsStateError);
+    for (final changes in [
+      {'rows': 0},
+      {'rows': 257},
+      {'rows': 2.5},
+      {'skipGif': 'yes'},
+    ]) {
+      expect(
+        () => SourceImageProcessing.fromJson({...strips.toJson(), ...changes}),
+        throwsStateError,
+      );
+    }
+    final small = Uint8List.fromList(
+      img.encodePng(img.Image(width: 2, height: 2)),
+    );
+    expect(() => restoreSourceImage(small, {}, strips), throwsStateError);
+  });
   final spec = SourceImageProcessing.fromJson({
     'type': 'tile-shuffle-v1',
     'algorithm': 3,

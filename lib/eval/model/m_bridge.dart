@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:html/dom.dart' hide Text;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -735,6 +736,23 @@ class MBridge {
 
   static String decryptAESCryptoJS(String encrypted, String passphrase) {
     return CryptoAES.decryptAESCryptoJS(encrypted, passphrase);
+  }
+
+  static String md5(String text) =>
+      crypto.md5.convert(utf8.encode(text)).toString();
+
+  static String decryptAESECB(String encrypted, String keyHex) {
+    if (!RegExp(r'^(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{48}|[a-fA-F0-9]{64})$')
+        .hasMatch(keyHex)) {
+      throw ArgumentError('AES key must contain 16, 24 or 32 bytes');
+    }
+    final cipher = encrypt.Encrypter(
+      encrypt.AES(
+        encrypt.Key(Uint8List.fromList(hex.decode(keyHex))),
+        mode: encrypt.AESMode.ecb,
+      ),
+    );
+    return cipher.decrypt64(encrypted);
   }
 
   static Video toVideo(

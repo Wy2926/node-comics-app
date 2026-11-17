@@ -1,15 +1,25 @@
-// Wire-serialization helpers shared by the eval backends' JS-bridge HTTP
-// glue (eval/javascript/http.dart, eval/lnreader/http.dart): turning a
-// package:http Response into the JSON shape the JS side expects, and
-// normalizing whatever key/value types come back from the JS runtime's
-// maps. Pure data mapping, so unlike the rest of that glue - which differs
-// per backend in argument order and client-caching strategy - this part is
-// safe to share.
+// Keep the HTTP wire shape shared across eval backends.
 import 'package:http/http.dart';
 
 extension ResponseExtexsion on Response {
+  String get _decodedBody {
+    // Some servers append an empty MIME parameter; keep the declared charset.
+    final contentType = headers['content-type'];
+    if (contentType == null || !contentType.trimRight().endsWith(';')) {
+      return body;
+    }
+    return Response.bytes(
+      bodyBytes,
+      statusCode,
+      headers: {
+        ...headers,
+        'content-type': contentType.replaceFirst(RegExp(r'(;\s*)+$'), ''),
+      },
+    ).body;
+  }
+
   Map<String, dynamic> toJson() => {
-    'body': body,
+    'body': _decodedBody,
     'headers': headers,
     'isRedirect': isRedirect,
     'persistentConnection': persistentConnection,

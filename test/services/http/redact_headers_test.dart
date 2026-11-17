@@ -8,6 +8,8 @@ void main() {
       'cookie': 'session=1',
       'Set-Cookie': 'session=2',
       'simkl-api-key': 'key',
+      'Token': 'signature',
+      'Tokenparam': 'timestamp,version',
     });
 
     expect(redacted.values, everyElement('<redacted>'));

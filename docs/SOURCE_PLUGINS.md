@@ -29,7 +29,8 @@ Android 本地使用 MuMu，按 [AGENTS](../AGENTS.md) 查询实际 ADB 地址�
 - **原版 APK**：沿用 `m_extension_server` 与 Mihon 桥。上游 64 位 ID 以字符串保存在 `additionalParams.mihonSourceId`，安装与调用使用相同身份，本地数据库 ID 不变。作品／章节网址由原扩展解析，Android 图片沿用其拦截器及本地代理。更换运行类型不保证旧 URL 可用，不自动增加站点映射或删除书籍。
 - **JavaScript**：QuickJS 实例化 `DefaultExtension extends MProvider`，通过 `this.source` 取得元数据；不提供 Node 或完整浏览器环境。`Client` 按声明的精确 HTTPS 主机校验请求和重定向，现有预算见契约。释放运行时清理 JS 引用和定时器，宿主 HTTP／提取器／WebView 桥在调用者 Zone 中运行，不能误关阅读共享连接。
 - **网页验证**：复用现有设备 WebView；Cookie、UA 留设备。隐藏页面与可见浏览器的会话共享须实测，不把所有 403 当作 Cloudflare，也不承诺自动解题。日志隐藏凭据和查询值。
-- **图片处理**：`PageUrl.imageProcessing` 声明通用操作，具体参数留插件。当前 `image.tile-shuffle.v1` 由公共图片层还原，阅读、下载、翻译共用结果；缓存键包含处理参数，成功才缓存。既有实现每张限 12 MiB、800 万像素、256 块、单帧，后台串行处理且最多排队 4 项。这是当前图块处理边界，不是普通图片准入规则，也不授权新增限制。
+- **图片处理**：`PageUrl.imageProcessing` 声明通用操作，具体参数留插件。当前支持 `image.tile-shuffle.v1` 网格还原与 `image.strip-reverse.v1` 横向条带倒序（余数归首条）；阅读、下载、翻译共用结果，缓存身份包含处理参数，成功才缓存。既有像素处理每张限 12 MiB、800 万像素、256 块、单帧，后台串行处理且最多排队 4 项。条带操作可由插件声明 `skipGif: true` 原样保留 GIF 动画，下载保留 PNG／GIF 扩展名。这是处理边界，不是普通图片准入规则。
+- **通用密码工具**：`crypto.md5.v1` 提供同步 UTF-8 `md5(text)`；`crypto.aes-ecb.v1` 提供同步 `decryptAESECB(base64, keyHex)`（AES-ECB／PKCS7，16／24／32 字节密钥）。使用现有 crypto／encrypt 依赖，非法密钥、密文和解码失败抛错；网站协议常量与签名规则留插件。
 
 章节按作品内完整 URL 匹配，不能因同名／同编号删除不同 URL；页面保留重复 URL 的页槽。上传日期按插件毫秒字符串处理，未知不改成抓取时间，刷新保留阅读位置与书签。具体数据语义见契约，App 不解析站点目录规则。
 

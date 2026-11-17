@@ -10,6 +10,8 @@ Mangayomi 上游基线采用 Apache-2.0，原始许可见 [LICENSE](LICENSE)，�
 
 来源图块协议参考 `node-comics` 提交 `af3df6ee75276ba1970ba0a7dc22488d54712e18` 的 `images.ts`（SHA-256 `3a7eedd0c9a8fbf1a14e67f89285d71f71dfc2e40d60fa3ce67e66ce0ad92113`）。App 的通用 Dart 置换独立实现，未复制该 GPL TypeScript 文件；具体种子掩码留在独立 GPL 插件仓库。
 
+通用横向条带倒序的余数排列与 GIF 透传行为对照 [Keiyoushi ScrambledImageInterceptor](https://github.com/keiyoushi/extensions-source/blob/b0353107338f4d7eb110a70f0c5ff83f83f75fba/src/zh/jinmantiantang/src/eu/kanade/tachiyomi/extension/zh/jinmantiantang/ScrambledImageInterceptor.kt)（提交 `b0353107338f4d7eb110a70f0c5ff83f83f75fba`，2015 Javier Tomás 与 Keiyoushi/Tachiyomi 贡献者，Apache-2.0）。Dart 像素操作独立实现；网站域名、编号阈值与条带计算留在插件。MD5 与 AES-ECB 复用既有 `crypto`、`encrypt` 依赖，无新增运行库。
+
 官方翻译协议对照 [NodeLane Comics](https://github.com/Wy2926/node-comics) 提交 `74204b088df724797fb95be9302d47104c3ca67e` 的 `apps/extension/src/api.ts`、`translation/channels/adapters/nodelane/` 与 `shared/translation-images/`（**GPL-3.0-only**），并核对服务端 HTTP 契约。Dart 适配器按请求、结果描述及 `NCOT0001` 容器格式独立实现互通；测试 WebP 是自行生成的合成像素，不含第三方漫画素材，也未增加编码器运行时依赖。
 
 网页归档提取直接使用 [Dart mime](https://pub.dev/packages/mime) 的流式 MIME multipart 解析器，许可为 **BSD-3-Clause**（[源码与许可](https://github.com/dart-lang/tools/tree/main/pkgs/mime)）。该包从既有间接依赖改为显式依赖，版本沿用锁文件；分发时随 Flutter 依赖许可保留原始声明。WebView 归档创建继续使用现有 `flutter_inappwebview`，iOS property-list 解码使用系统 Foundation。

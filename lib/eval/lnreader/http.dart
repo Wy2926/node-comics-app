@@ -107,20 +107,9 @@ Future<String> _toHttpResponse(Client client, String method, List args) async {
       )) ??
       false) {
     request.body = json.encode(body);
-    request.headers.addAll(headers);
-    http.StreamedResponse response = await client.send(request);
-    final res = Response(
-      "",
-      response.statusCode,
-      request: response.request,
-      headers: response.headers,
-      isRedirect: response.isRedirect,
-      persistentConnection: response.persistentConnection,
-      reasonPhrase: response.reasonPhrase,
+    return jsonEncode(
+      (await http.Response.fromStream(await client.send(request))).toJson(),
     );
-    Map<String, dynamic> resMap = res.toJson();
-    resMap["body"] = await response.stream.bytesToString();
-    return jsonEncode(resMap);
   }
   String? formData;
   if (body is Map && body.containsKey("_data")) {

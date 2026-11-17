@@ -33,6 +33,37 @@ Uint8List restoreSourceImage(
   if (bytes.length < 12 || bytes.length > sourceImageMaxBytes) {
     throw StateError('图片超过处理大小限制');
   }
+  if (spec.rows != null) {
+    final decoder = img.findDecoderForData(bytes);
+    final info = decoder?.startDecode(bytes);
+    if (info == null) throw StateError('图片无法解码');
+    if (spec.skipGif && decoder is img.GifDecoder) return bytes;
+    final rows = spec.rows!;
+    if (info.height < rows ||
+        info.width * info.height > sourceImageMaxPixels ||
+        info.numFrames > 1) {
+      throw StateError('图片格式、尺寸或动画不在还原范围内');
+    }
+    final input = decoder!.decodeFrame(0);
+    if (input == null) throw StateError('图片无法解码');
+    final output = img.Image.from(input, noAnimation: true);
+    final stripHeight = input.height ~/ rows, remainder = input.height % rows;
+    for (var i = 0; i < rows; i++) {
+      final height = stripHeight + (i == 0 ? remainder : 0);
+      img.compositeImage(
+        output,
+        input,
+        srcY: input.height - stripHeight * (i + 1) - remainder,
+        srcW: input.width,
+        srcH: height,
+        dstY: stripHeight * i + (i == 0 ? 0 : remainder),
+        dstW: input.width,
+        dstH: height,
+        blend: img.BlendMode.direct,
+      );
+    }
+    return Uint8List.fromList(img.encodePng(output, level: 1));
+  }
   final h = {for (final e in headers.entries) e.key.toLowerCase(): e.value};
   final grid = RegExp(r'^(\d+)x(\d+)$').firstMatch(h['x-scramble-grid'] ?? '');
   final seedText = h['x-scramble-seed'] ?? '';
@@ -52,7 +83,7 @@ Uint8List restoreSourceImage(
       info.width < cols ||
       info.height < rows ||
       info.width * info.height > sourceImageMaxPixels ||
-      info.numFrames != 1) {
+      info.numFrames > 1) {
     throw StateError('图片格式、尺寸或动画不在还原范围内');
   }
   final input = decoder!.decodeFrame(0);

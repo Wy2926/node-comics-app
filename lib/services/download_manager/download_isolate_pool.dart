@@ -577,7 +577,11 @@ Future<void> _downloadFile(
           pageUrl.imageProcessing!,
         );
         // Restoration must succeed before a downloaded page becomes visible.
-        final target = File(path.setExtension(pageUrl.fileName!, '.png'));
+        final extension =
+            restored[0] == 0x47 && restored[1] == 0x49 && restored[2] == 0x46
+            ? '.gif'
+            : '.png';
+        final target = File(path.setExtension(pageUrl.fileName!, extension));
         final partial = File('${target.path}.partial');
         try {
           await partial.writeAsBytes(restored, flush: true);

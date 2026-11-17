@@ -27,7 +27,13 @@ class JsHttpClient {
         // Linux source catalogue requests otherwise carry no browser identity.
         // Keep other platforms unchanged and preserve any explicit source UA.
         () => MClient.init(
-          reqcopyWith: package == null ? map : {...?map, 'useDartHttpClient': true, 'verifyCertificates': true},
+          reqcopyWith: package == null
+              ? map
+              : {
+                  ...?map,
+                  'useDartHttpClient': true,
+                  'verifyCertificates': true,
+                },
           useDefaultUserAgent: Platform.isLinux,
         ),
       );
@@ -87,7 +93,6 @@ class Client {
         this.reqcopyWith = reqcopyWith;
     }
     async head(url, headers) {
-        headers = headers;
         const result = await sendMessage(
             "http_head",
             JSON.stringify([null, this.reqcopyWith, url, headers])
@@ -95,7 +100,6 @@ class Client {
         return JSON.parse(result);
     }
     async get(url, headers) {
-        headers = headers;
         const result = await sendMessage(
             "http_get",
             JSON.stringify([null, this.reqcopyWith, url, headers])
@@ -103,7 +107,6 @@ class Client {
         return JSON.parse(result);
     }
     async post(url, headers, body) {
-        headers = headers;
         const result = await sendMessage(
             "http_post",
             JSON.stringify([null, this.reqcopyWith, url, headers, body])
@@ -111,7 +114,6 @@ class Client {
         return JSON.parse(result);
     }
     async put(url, headers, body) {
-        headers = headers;
         const result = await sendMessage(
             "http_put",
             JSON.stringify([null, this.reqcopyWith, url, headers, body])
@@ -119,7 +121,6 @@ class Client {
         return JSON.parse(result);
     }
     async delete(url, headers, body) {
-        headers = headers;
         const result = await sendMessage(
             "http_delete",
             JSON.stringify([null, this.reqcopyWith, url, headers, body])
@@ -127,7 +128,6 @@ class Client {
         return JSON.parse(result);
     }
     async patch(url, headers, body) {
-        headers = headers;
         const result = await sendMessage(
             "http_patch",
             JSON.stringify([null, this.reqcopyWith, url, headers, body])
@@ -164,20 +164,9 @@ Future<String> _toHttpResponse(
       )) ??
       false) {
     request.body = json.encode(body);
-    request.headers.addAll(headers ?? {});
-    http.StreamedResponse response = await client.send(request);
-    final res = Response(
-      "",
-      response.statusCode,
-      request: response.request,
-      headers: response.headers,
-      isRedirect: response.isRedirect,
-      persistentConnection: response.persistentConnection,
-      reasonPhrase: response.reasonPhrase,
+    return jsonEncode(
+      (await http.Response.fromStream(await client.send(request))).toJson(),
     );
-    Map<String, dynamic> resMap = res.toJson();
-    resMap["body"] = await response.stream.bytesToString();
-    return jsonEncode(resMap);
   }
   final future = switch (method) {
     "HEAD" => client.head(Uri.parse(url), headers: headers),
