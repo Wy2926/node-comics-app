@@ -2,6 +2,8 @@ import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
@@ -713,7 +715,17 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                                   });
                                 },
                               ),
-                              actions: [_menu(catalog)],
+                              actions: [
+                                NodeLaneIconButton(
+                                  tooltip: context.l10n.feedback_source,
+                                  icon: NodeLaneIcons.of(context).chat,
+                                  onPressed: () => showSupportRequest(
+                                    context,
+                                    SupportRequestKind.website,
+                                  ),
+                                ),
+                                _menu(catalog),
+                              ],
                             ),
                             const SizedBox(height: NodeLaneTokens.space16),
                             SizedBox(

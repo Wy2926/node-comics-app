@@ -13,6 +13,8 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parent.parent
 REPOSITORY = "Wy2926/node-comics-app"
 VERSION = r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
+# Flutter's --split-per-abi adds these offsets to the base versionCode.
+ANDROID_ABI_BUILD_OFFSET = {"armeabi-v7a": 1000, "arm64-v8a": 2000, "x86": 3000, "x86_64": 4000}
 
 
 def fetch_releases():
@@ -119,6 +121,8 @@ def build_manifest(releases, build_for_version=read_build, download_base_url=Non
         build = builds[version]
         if type(build) is not int or build <= 0:
             raise ValueError(f"Invalid build number for {version}")
+        if entry["platform"] in ("android", "android-tv"):
+            build += ANDROID_ABI_BUILD_OFFSET.get(entry["arch"], 0)
         updates.append({**entry, "build": build})
     return {"schema": 1, "updates": updates}
 

@@ -297,6 +297,7 @@ void main() {
           ],
           tabCount: 2,
           onOpen: (url, _) => opened.add(url),
+          onRequestSource: () {},
           onManage: () {},
           onTabs: () {},
         ),

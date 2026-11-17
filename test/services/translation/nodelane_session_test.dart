@@ -5,9 +5,11 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/services/nodelane_requests.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/session.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/account.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,14 @@ void main() {
   final reads = <(String, String)>[];
 
   setUp(() async {
+    PackageInfo.setMockInitialValues(
+      appName: 'NodeLane Comics',
+      packageName: 'com.nodelane.comics',
+      version: '9.8.7',
+      buildNumber: '654',
+      buildSignature: '',
+    );
+    final userAgent = await NodeLaneRequests.userAgent;
     FlutterSecureStorage.setMockInitialValues({});
     exchanges.clear();
     callbackOverride = null;
@@ -33,6 +43,8 @@ void main() {
     reads.clear();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
+      expect(request.headers.value('user-agent'), userAgent);
+      expect(request.headers.value('accept'), 'application/json');
       request.response.headers.contentType = ContentType.json;
       final Object body;
       switch (request.uri.path) {
@@ -46,6 +58,11 @@ void main() {
             'audience': 'https://api.example',
           };
         case '/oidc/token':
+          expect(request.headers.value('authorization'), isNull);
+          expect(
+            request.headers.contentType?.mimeType,
+            'application/x-www-form-urlencoded',
+          );
           final form = Uri.splitQueryString(
             await utf8.decoder.bind(request).join(),
           );
@@ -281,8 +298,6 @@ class _LoopbackClient implements HttpClient {
     method,
     url.replace(scheme: 'http', host: '127.0.0.1', port: port),
   );
-  @override
-  Future<HttpClientRequest> postUrl(Uri url) => openUrl('POST', url);
   @override
   void close({bool force = false}) => client.close(force: force);
   @override

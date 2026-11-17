@@ -7,9 +7,12 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mangayomi/services/app_update_feed.dart';
 import 'package:mangayomi/services/app_update_manifest.dart';
+import 'package:mangayomi/services/nodelane_requests.dart';
 import 'package:mangayomi/utils/nodelane_brand.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   final fixture = File('test/fixtures/app_update_manifest.json')
       .readAsStringSync();
   final uri = Uri.parse(NodeLaneBrand.updateManifestUrl);
@@ -127,6 +130,13 @@ void main() {
   late Directory directory;
   late File cache;
   setUp(() async {
+    PackageInfo.setMockInitialValues(
+      appName: 'NodeLane Comics',
+      packageName: 'com.nodelane.comics',
+      version: '9.8.7',
+      buildNumber: '654',
+      buildSignature: '',
+    );
     directory = await Directory.systemTemp.createTemp('nodelane-update-test-');
     cache = File('${directory.path}/cache.json');
   });
@@ -137,6 +147,10 @@ void main() {
     var requests = 0;
     final client = MockClient((request) async {
       requests++;
+      expect(request.headers['User-Agent'], await NodeLaneRequests.userAgent);
+      expect(request.headers['Accept'], 'application/json');
+      expect(request.headers['Authorization'], isNull);
+      expect(request.followRedirects, isTrue);
       if (requests == 1 || request.url.host == 'another.example') {
         expect(request.headers['If-None-Match'], isNull);
         return http.Response(

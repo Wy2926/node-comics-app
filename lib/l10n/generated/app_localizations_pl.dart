@@ -10,6 +10,64 @@ class AppLocalizationsPl extends AppLocalizations {
   AppLocalizationsPl([String locale = 'pl']) : super(locale);
 
   @override
+  String get feedback_app => 'Opinia o aplikacji';
+
+  @override
+  String get feedback_source => 'Zaproponuj źródło';
+
+  @override
+  String get feedback_app_hint =>
+      'Problem lub sugestia? Napisz do nas bez logowania.';
+
+  @override
+  String get feedback_source_hint =>
+      'Którą witrynę mamy obsługiwać? Logowanie nie jest wymagane.';
+
+  @override
+  String get feedback_site_name => 'Nazwa witryny';
+
+  @override
+  String get feedback_comment => 'Opinia';
+
+  @override
+  String get feedback_optional_comment => 'Dodatkowe informacje (opcjonalnie)';
+
+  @override
+  String get feedback_contact => 'Dane kontaktowe (opcjonalnie)';
+
+  @override
+  String get feedback_submit => 'Wyślij opinię';
+
+  @override
+  String get feedback_retry => 'Ponów, aby potwierdzić';
+
+  @override
+  String get feedback_unknown =>
+      'Wysłanie nie zostało jeszcze potwierdzone. Ponów z tym samym identyfikatorem, aby uniknąć duplikatów.';
+
+  @override
+  String get feedback_failed =>
+      'Nie udało się wysłać. Sprawdź dane i spróbuj ponownie.';
+
+  @override
+  String get feedback_limited => 'Zbyt wiele zgłoszeń. Spróbuj później.';
+
+  @override
+  String get feedback_received => 'Opinia odebrana. Dziękujemy!';
+
+  @override
+  String get feedback_another => 'Wyślij kolejną opinię';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Wpisz maksymalnie $max znaków.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Nie udało się wczytać poprzedniej opinii. Spróbuj ponownie.';
+
+  @override
   String get browser_search_hint => 'Szukaj lub wpisz URL';
 
   @override

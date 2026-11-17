@@ -10,6 +10,63 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get feedback_app => 'ملاحظات التطبيق';
+
+  @override
+  String get feedback_source => 'طلب إضافة مصدر';
+
+  @override
+  String get feedback_app_hint =>
+      'هل لديك مشكلة أو اقتراح؟ أخبرنا دون الحاجة إلى تسجيل الدخول.';
+
+  @override
+  String get feedback_source_hint =>
+      'ما الموقع الذي تريد دعمه؟ لا يلزم تسجيل الدخول.';
+
+  @override
+  String get feedback_site_name => 'اسم الموقع';
+
+  @override
+  String get feedback_comment => 'الملاحظات';
+
+  @override
+  String get feedback_optional_comment => 'تفاصيل إضافية (اختياري)';
+
+  @override
+  String get feedback_contact => 'معلومات التواصل (اختياري)';
+
+  @override
+  String get feedback_submit => 'إرسال الملاحظات';
+
+  @override
+  String get feedback_retry => 'إعادة المحاولة للتأكيد';
+
+  @override
+  String get feedback_unknown =>
+      'لم يتأكد الإرسال بعد. أعد المحاولة بنفس معرّف الطلب لتجنب التكرار.';
+
+  @override
+  String get feedback_failed => 'تعذر الإرسال. تحقق من المعلومات وحاول مجددًا.';
+
+  @override
+  String get feedback_limited => 'طلبات كثيرة جدًا. حاول لاحقًا.';
+
+  @override
+  String get feedback_received => 'تم استلام الملاحظات. شكرًا لك!';
+
+  @override
+  String get feedback_another => 'إرسال ملاحظات أخرى';
+
+  @override
+  String feedback_limit(int max) {
+    return 'أدخل $max حرفًا كحد أقصى.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'تعذر تحميل ملاحظاتك السابقة. حاول مجددًا.';
+
+  @override
   String get browser_search_hint => 'ابحث أو أدخل عنوان URL';
 
   @override

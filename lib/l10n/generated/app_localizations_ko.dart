@@ -10,6 +10,60 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
+  String get feedback_app => '앱 피드백';
+
+  @override
+  String get feedback_source => '소스 추가 요청';
+
+  @override
+  String get feedback_app_hint => '문제나 개선 의견을 알려 주세요. 로그인은 필요하지 않습니다.';
+
+  @override
+  String get feedback_source_hint => '어떤 웹사이트를 지원하면 좋을까요? 로그인 없이 요청할 수 있습니다.';
+
+  @override
+  String get feedback_site_name => '웹사이트 이름';
+
+  @override
+  String get feedback_comment => '피드백 내용';
+
+  @override
+  String get feedback_optional_comment => '추가 설명 (선택)';
+
+  @override
+  String get feedback_contact => '연락처 (선택)';
+
+  @override
+  String get feedback_submit => '피드백 보내기';
+
+  @override
+  String get feedback_retry => '다시 시도하여 확인';
+
+  @override
+  String get feedback_unknown =>
+      '제출 결과가 확인되지 않았습니다. 같은 요청 ID로 다시 시도하므로 중복 제출되지 않습니다.';
+
+  @override
+  String get feedback_failed => '제출하지 못했습니다. 입력 내용을 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get feedback_limited => '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get feedback_received => '피드백을 받았습니다. 감사합니다!';
+
+  @override
+  String get feedback_another => '피드백 더 보내기';
+
+  @override
+  String feedback_limit(int max) {
+    return '최대 $max자까지 입력해 주세요.';
+  }
+
+  @override
+  String get feedback_load_failed => '이전 피드백을 불러오지 못했습니다. 다시 시도해 주세요.';
+
+  @override
   String get browser_search_hint => '검색 또는 URL 입력';
 
   @override

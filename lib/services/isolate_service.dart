@@ -309,12 +309,16 @@ class GetIsolateService {
 
     final timer = Timer(responseTimeout, () async {
       if (!completer.isCompleted) {
-        completer.completeError(TimeoutException('Isolate response timeout'));
         sub.cancel();
         responsePort.close();
         worker.cancelRequest = null;
         _workers.remove(worker);
-        await worker.stop();
+        try {
+          await worker.stop();
+        } finally {
+          // Callers may close the database as soon as the failed request returns.
+          completer.completeError(TimeoutException('Isolate response timeout'));
+        }
         if (_isRunning && _pendingWorkers.isNotEmpty) {
           final waiting = _pendingWorkers.removeAt(0);
           _getAvailableWorker().then(

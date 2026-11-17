@@ -25,6 +25,7 @@ class MobileAboutScreen extends StatefulWidget {
     required this.onUpdates,
     required this.onShareLogs,
     required this.onGitHub,
+    required this.onFeedback,
   });
   final AsyncValue<PackageInfo> packageInfo;
   final VoidCallback onRetryPackageInfo;
@@ -33,6 +34,7 @@ class MobileAboutScreen extends StatefulWidget {
   final Future<void> Function(bool) onLogsChanged;
   final int Function() reportCount;
   final Future<void> Function() onReports, onShareLogs, onGitHub;
+  final VoidCallback onFeedback;
   final Future<void> Function() onUpdates;
   @override
   State<MobileAboutScreen> createState() => _MobileAboutScreenState();
@@ -140,6 +142,11 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
               ),
               MobileSettingsGroup(
                 children: [
+                  NodeLaneRow(
+                    title: l.feedback_app,
+                    icon: icons.chat,
+                    onTap: widget.onFeedback,
+                  ),
                   NodeLaneRow(
                     title: 'GitHub',
                     subtitle: NodeLaneBrand.repository,

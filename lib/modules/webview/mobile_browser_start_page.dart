@@ -20,6 +20,7 @@ class MobileBrowserStartPage extends StatelessWidget {
     required this.sources,
     required this.tabCount,
     required this.onOpen,
+    required this.onRequestSource,
     this.onTabs,
     this.onManage,
     this.bottomInset = 0,
@@ -32,6 +33,7 @@ class MobileBrowserStartPage extends StatelessWidget {
   final List<Source> sources;
   final int tabCount;
   final void Function(String url, String title) onOpen;
+  final VoidCallback onRequestSource;
   final VoidCallback? onTabs, onManage;
   final double bottomInset;
   final BrowserSearchEngine engine;
@@ -107,6 +109,13 @@ class MobileBrowserStartPage extends StatelessWidget {
                 onPressed: onBookmarks,
                 icon: NodeLaneIcons.of(context).bookmarkOutline,
                 label: context.l10n.browser_bookmarks,
+              ),
+            ),
+            Expanded(
+              child: NodeLaneToolbarAction(
+                onPressed: onRequestSource,
+                icon: NodeLaneIcons.of(context).chat,
+                label: context.l10n.feedback_source,
               ),
             ),
           ],

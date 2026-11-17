@@ -10,6 +10,64 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get feedback_app => 'Góp ý ứng dụng';
+
+  @override
+  String get feedback_source => 'Yêu cầu nguồn mới';
+
+  @override
+  String get feedback_app_hint =>
+      'Gặp vấn đề hoặc có đề xuất? Hãy cho chúng tôi biết, không cần đăng nhập.';
+
+  @override
+  String get feedback_source_hint =>
+      'Bạn muốn hỗ trợ trang web nào? Không cần đăng nhập.';
+
+  @override
+  String get feedback_site_name => 'Tên trang web';
+
+  @override
+  String get feedback_comment => 'Nội dung góp ý';
+
+  @override
+  String get feedback_optional_comment => 'Thông tin bổ sung (không bắt buộc)';
+
+  @override
+  String get feedback_contact => 'Thông tin liên hệ (không bắt buộc)';
+
+  @override
+  String get feedback_submit => 'Gửi góp ý';
+
+  @override
+  String get feedback_retry => 'Thử lại để xác nhận';
+
+  @override
+  String get feedback_unknown =>
+      'Chưa xác nhận được kết quả gửi. Thử lại với cùng mã yêu cầu để tránh gửi trùng.';
+
+  @override
+  String get feedback_failed =>
+      'Không thể gửi. Hãy kiểm tra nội dung rồi thử lại.';
+
+  @override
+  String get feedback_limited => 'Quá nhiều yêu cầu. Vui lòng thử lại sau.';
+
+  @override
+  String get feedback_received => 'Đã nhận góp ý. Cảm ơn bạn!';
+
+  @override
+  String get feedback_another => 'Gửi góp ý khác';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Nhập tối đa $max ký tự.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Không thể tải góp ý trước đó. Vui lòng thử lại.';
+
+  @override
   String get browser_search_hint => 'Tìm kiếm hoặc nhập URL';
 
   @override

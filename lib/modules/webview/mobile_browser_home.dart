@@ -6,6 +6,8 @@ import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -142,6 +144,8 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
           sources: ref.watch(browserPinnedSourcesProvider),
           tabCount: browserSessionStore.entries.length,
           onOpen: _open,
+          onRequestSource: () =>
+              showSupportRequest(context, SupportRequestKind.website),
           onTabs: ready ? _tabs : null,
           onManage: () => context.go('/browse'),
           bottomInset: pageBottomInsets(context).bottom,

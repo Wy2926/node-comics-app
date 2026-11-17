@@ -10,6 +10,64 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get feedback_app => 'Comentarios de la app';
+
+  @override
+  String get feedback_source => 'Solicitar una fuente';
+
+  @override
+  String get feedback_app_hint =>
+      '¿Un problema o una sugerencia? Cuéntanos, sin iniciar sesión.';
+
+  @override
+  String get feedback_source_hint =>
+      '¿Qué sitio web te gustaría que admitiéramos? No necesitas iniciar sesión.';
+
+  @override
+  String get feedback_site_name => 'Nombre del sitio';
+
+  @override
+  String get feedback_comment => 'Comentarios';
+
+  @override
+  String get feedback_optional_comment => 'Detalles adicionales (opcional)';
+
+  @override
+  String get feedback_contact => 'Datos de contacto (opcional)';
+
+  @override
+  String get feedback_submit => 'Enviar comentarios';
+
+  @override
+  String get feedback_retry => 'Reintentar para confirmar';
+
+  @override
+  String get feedback_unknown =>
+      'El envío aún no se ha confirmado. Reintenta con el mismo identificador para evitar duplicados.';
+
+  @override
+  String get feedback_failed =>
+      'No se pudo enviar. Revisa los datos e inténtalo de nuevo.';
+
+  @override
+  String get feedback_limited => 'Demasiadas solicitudes. Inténtalo más tarde.';
+
+  @override
+  String get feedback_received => 'Comentarios recibidos. ¡Gracias!';
+
+  @override
+  String get feedback_another => 'Enviar más comentarios';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Introduce como máximo $max caracteres.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'No se pudieron cargar los comentarios anteriores. Reinténtalo.';
+
+  @override
   String get browser_search_hint => 'Buscar o introducir una URL';
 
   @override

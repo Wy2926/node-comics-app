@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/settings_search.dart';
 import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
@@ -72,6 +74,15 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
         title: l.settings_frequent,
         entries: [
           entry(l.download_queue, const _DownloadQueueLink()),
+          entry(
+            l.feedback_app,
+            NodeLaneRow(
+              title: l.feedback_app,
+              icon: icons.chat,
+              onTap: () => showSupportRequest(context, SupportRequestKind.app),
+            ),
+            l.feedback_app_hint,
+          ),
           entry(l.downloaded_only, const DownloadedOnlyWidget(mobile: true)),
           entry(l.incognito_mode, const IncognitoModeWidget(mobile: true)),
           if (hidden.contains('/browser'))

@@ -127,6 +127,108 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
+  /// No description provided for @feedback_app.
+  ///
+  /// In en, this message translates to:
+  /// **'App feedback'**
+  String get feedback_app;
+
+  /// No description provided for @feedback_source.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a source'**
+  String get feedback_source;
+
+  /// No description provided for @feedback_app_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a problem or suggestion? Tell us here, no sign-in needed.'**
+  String get feedback_app_hint;
+
+  /// No description provided for @feedback_source_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Which website would you like us to support? No sign-in needed.'**
+  String get feedback_source_hint;
+
+  /// No description provided for @feedback_site_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Website name'**
+  String get feedback_site_name;
+
+  /// No description provided for @feedback_comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get feedback_comment;
+
+  /// No description provided for @feedback_optional_comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional details (optional)'**
+  String get feedback_optional_comment;
+
+  /// No description provided for @feedback_contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details (optional)'**
+  String get feedback_contact;
+
+  /// No description provided for @feedback_submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send feedback'**
+  String get feedback_submit;
+
+  /// No description provided for @feedback_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry to confirm'**
+  String get feedback_retry;
+
+  /// No description provided for @feedback_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission is not yet confirmed. Retry with the same request ID to avoid duplicates.'**
+  String get feedback_unknown;
+
+  /// No description provided for @feedback_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not submit. Check your details and try again.'**
+  String get feedback_failed;
+
+  /// No description provided for @feedback_limited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please try again later.'**
+  String get feedback_limited;
+
+  /// No description provided for @feedback_received.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback received. Thank you!'**
+  String get feedback_received;
+
+  /// No description provided for @feedback_another.
+  ///
+  /// In en, this message translates to:
+  /// **'Send more feedback'**
+  String get feedback_another;
+
+  /// No description provided for @feedback_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter at most {max} characters.'**
+  String feedback_limit(int max);
+
+  /// No description provided for @feedback_load_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your previous feedback. Please retry.'**
+  String get feedback_load_failed;
+
   /// No description provided for @browser_search_hint.
   ///
   /// In en, this message translates to:

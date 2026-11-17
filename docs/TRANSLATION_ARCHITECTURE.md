@@ -78,11 +78,15 @@ Blob、data 图片与 Canvas 共用 `pixels` 取图路径，没有站点专用 B
 
 客户端不设图片宽高、像素数、文件体积或解码预算硬上限，也不自动缩到固定短边。服务 capabilities 中的尺寸字段不再作为本地拒收条件，服务端最终响应仍按实际结果处理。输入和完整结果缓存的 128 MiB、256 MiB 仅用于淘汰未使用文件；当前大文件、在途输入和显示租约可超过目标，不因此拒收。磁盘实际不足、平台解码失败或服务端限制仍可能导致失败；取消客户端限制不代表设备资源无限。
 
-图片使用现有 image 解码器，不按 ICC、16-bit、色彩元数据或动画预先拒绝。EXIF 方向归一化；原生动图取首帧，网页像素导出取当前显示帧。Dart 解码器不支持的格式交由 Flutter 平台编解码器，AVIF 可使用已有解码实现；实际可用格式取决于平台。没有实现 iframe 内图片发现或平台禁止读取的 Canvas。网页活动 1 个、温存 1 个／30 秒，最多 12 个逻辑标签；空标签不创建 WebView。
+图片使用现有 image 解码器，不按 ICC、16-bit、色彩元数据或动画预先拒绝。EXIF 方向归一化；原生动图取首帧，网页像素导出取当前显示帧。Dart 解码器不支持的格式交由 Flutter 平台编解码器，AVIF 可使用已有解码实现；实际可用格式取决于平台。没有实现 iframe 内图片发现或平台禁止读取的 Canvas。网页缓存与标签释放规则见[多标签浏览器](MOBILE_UI_DESIGN.md#多标签浏览器)。
 
 ## 认证与设置
 
 默认服务为 https://comics.nodelane.net，构建可通过 NODELANE_API_BASE 指定兼容服务。账号入口在“更多”，语言与缓存管理复用现有设置。目标语言支持 17 项，首次按应用／系统语言选择，之后保留已保存值。
+
+账号、计费、翻译（含上传、结果重定向与 SSE）、原生 OAuth 换令牌、反馈及更新检查共用 [NodeLaneRequests](../lib/services/nodelane_requests.dart) 构造请求。统一 `User-Agent: nodelane-comics/<version>+<build> (<os>; <arch>)`，例如 `nodelane-comics/0.1.2+2003 (android; arm64)`；版本取已安装包信息，平台取运行系统，架构取当前进程 ABI。无构建号时省略 `+<build>`，包信息不可用时版本为 `unknown`。
+
+构造器只提供身份和默认 JSON Accept，不持有账号凭据；各调用保留超时、取消、幂等和重定向策略。来源／WebView 的 UA 独立管理。统一请求头已由本地 HTTP／MockClient 回归覆盖，尚未完成 iOS 或真实后端请求头验收。
 
 移动 OAuth 使用 Native public client，回调为 nodelane-comics://nodelane-auth，使用 PKCE、state、账号隔离和系统安全存储。供应商密钥不进入 App。平台配置见 [应用链接](MOBILE_UI_DESIGN.md#应用链接)。
 

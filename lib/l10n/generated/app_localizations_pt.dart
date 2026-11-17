@@ -10,6 +10,65 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
+  String get feedback_app => 'Feedback do app';
+
+  @override
+  String get feedback_source => 'Solicitar uma fonte';
+
+  @override
+  String get feedback_app_hint =>
+      'Tem um problema ou sugestão? Conte para nós, sem precisar entrar.';
+
+  @override
+  String get feedback_source_hint =>
+      'Qual site você gostaria que fosse compatível? Não é necessário entrar.';
+
+  @override
+  String get feedback_site_name => 'Nome do site';
+
+  @override
+  String get feedback_comment => 'Feedback';
+
+  @override
+  String get feedback_optional_comment => 'Detalhes adicionais (opcional)';
+
+  @override
+  String get feedback_contact => 'Contato (opcional)';
+
+  @override
+  String get feedback_submit => 'Enviar feedback';
+
+  @override
+  String get feedback_retry => 'Tentar novamente para confirmar';
+
+  @override
+  String get feedback_unknown =>
+      'O envio ainda não foi confirmado. Tente novamente com o mesmo identificador para evitar duplicatas.';
+
+  @override
+  String get feedback_failed =>
+      'Não foi possível enviar. Confira os dados e tente novamente.';
+
+  @override
+  String get feedback_limited =>
+      'Muitas solicitações. Tente novamente mais tarde.';
+
+  @override
+  String get feedback_received => 'Feedback recebido. Obrigado!';
+
+  @override
+  String get feedback_another => 'Enviar outro feedback';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Digite no máximo $max caracteres.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Não foi possível carregar o feedback anterior. Tente novamente.';
+
+  @override
   String get browser_search_hint => 'Pesquisar ou digitar uma URL';
 
   @override

@@ -62,7 +62,9 @@ python3 -B tool/generate_update_manifest.py \
 
 输出默认为 `build/app-updates/stable/index.json`，可通过 `--output` 指定。`--download-base-url` 仅改写清单，不上传或镜像安装包；指定后生成空 `page_url`，需要安装说明页时可自行填写。脚本使用 Python 标准库，可选 `GH_TOKEN` 仅用于请求 GitHub API，不写入产物。请求或生成失败时保留旧输出。
 
-该生成器是现有 GitHub 发行流水线的适配工具：按现有文件名识别平台／架构，读取正式 `vX.Y.Z` 标签下 `pubspec.yaml` 的构建号，跳过草稿、预发布和未上传完成的资源。每个平台／架构独立选择最高版本；桌面同版本多格式优先选择 DMG、EXE、AppImage。下载 URL 使用资源提供的地址或指定的下载根地址，不核对仓库路径、资源大小或摘要。客户端不依赖该生成器，可以直接发布符合下列契约的 JSON。
+生成器按现有文件名识别平台／架构，读取正式 `vX.Y.Z` 标签下 `pubspec.yaml` 的基础构建号；Android／TV 分架构包按 Flutter 规则加偏移（armeabi-v7a +1000、arm64-v8a +2000、x86 +3000、x86_64 +4000），通用包与其他平台不加偏移。发布前须与实际 APK 核对。
+
+草稿、预发布和未上传完成的资源不进入清单。每个平台／架构独立选择最高版本；桌面同版本多格式优先 DMG、EXE、AppImage。下载 URL 沿用资源地址或指定下载根地址；客户端不依赖生成器，也可直接发布符合下列契约的 JSON。
 
 ## 清单契约
 
@@ -128,7 +130,7 @@ flutter run -d <设备ID> --print-dtd --dart-define=NODELANE_UPDATE_MANIFEST_URL
 | 平台／范围 | 已有证据 | 仍需验收 |
 | --- | --- | --- |
 | Android 更新 | API 36 arm64 模拟器使用本地 HTTP、同签名 Debug 包覆盖后台下载、进程恢复、重复任务、503／404、取消、权限拒绝、安装取消及覆盖安装保留数据 | 真实发行服务器的完整更新链路、ARM 真机、其他 API／ABI 与 TV |
-| Android Release | x86_64 模拟器使用正式签名包完成真实翻译，范围见[翻译验证](TRANSLATION_ARCHITECTURE.md#验证与待办) | 不据此推断其他平台或全部发行功能通过 |
+| Android Release | MuMu x86_64 正式签名 0.1.2 → 0.1.3 覆盖安装、冷启动及引导状态／翻译语言偏好保留；真实翻译范围见[翻译验证](TRANSLATION_ARCHITECTURE.md#验证与待办) | ARM 真机、完整书库／阅读进度升级保留及其他发行功能 |
 | iOS | 指定 arm64 模拟器构建与更新入口；无签名 Release 打包，个人 Apple ID 重签后在 iPhone 安装和首次启动 | 正式团队／CI 签名、续签、版本间覆盖更新、侧载订阅客户端与完整真机功能 |
 | macOS | Apple Silicon 本地通用 Release、ad-hoc 签名、DMG 安装／覆盖、启动及空书库偏好保留 | Intel、旧系统、公开下载 Gatekeeper、Developer ID、公证、真实授权 |
 | Windows／Linux／Arch | 配置、脚本及打包目录模拟检查 | 原生构建、实际包安装／升级、桌面展示与回调；Arch 未向 AUR 发布 |

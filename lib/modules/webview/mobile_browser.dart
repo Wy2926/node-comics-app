@@ -2,6 +2,10 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 import 'dart:async';
+
+import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/services/support_requests.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -492,6 +496,12 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
     try {
       switch (action) {
+        case 'requestSource':
+          await showSupportRequest(
+            context,
+            SupportRequestKind.website,
+            website: pageUrl,
+          );
         case 'forward':
           await _history(1);
         case 'home':

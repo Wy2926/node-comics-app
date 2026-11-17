@@ -46,7 +46,7 @@ class ManifestTests(unittest.TestCase):
         reader = lambda version: int(version.split(".")[1])
         manifest = generator.build_manifest(releases + [ignored, pending, beta, prerelease, no_package], reader)
         fixture = generator.ROOT / "test/fixtures/app_update_manifest.json"
-        self.assertEqual(manifest, json.loads(fixture.read_text()))
+        self.assertEqual(manifest, json.loads(fixture.read_text(encoding="utf-8")))
         self.assertEqual(manifest, generator.build_manifest(list(reversed(releases)), reader))
         self.assertEqual(generator.build_manifest([]), {"schema": 1, "updates": []})
 
@@ -66,7 +66,7 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(target.read_text(), "previous feed")
             with patch.object(generator, "fetch_releases", return_value=[]), redirect_stdout(io.StringIO()):
                 self.assertEqual(generator.main(["--output", str(target)]), 0)
-            self.assertEqual(json.loads(target.read_text()), {"schema": 1, "updates": []})
+            self.assertEqual(json.loads(target.read_text(encoding="utf-8")), {"schema": 1, "updates": []})
 
     def test_cli_uses_source_urls_or_download_mirror(self):
         candidate = release("0.2.0", "macos.dmg")
@@ -84,7 +84,7 @@ class ManifestTests(unittest.TestCase):
                         patch.object(generator, "urlopen", return_value=io.BytesIO(b"version: 0.2.0+2\n")), \
                         redirect_stdout(io.StringIO()):
                     self.assertEqual(generator.main(args), 0)
-                entry = json.loads(target.read_text())["updates"][0]
+                entry = json.loads(target.read_text(encoding="utf-8"))["updates"][0]
                 self.assertEqual(entry["url"], asset_url if mirror is None else
                     "http://cdn.example:8080/packages/v0.2.0/nodelane-comics-v0.2.0-macos.dmg?key=example")
                 self.assertEqual(entry["page_url"], page_url if mirror is None else "")

@@ -10,6 +10,59 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get feedback_app => 'アプリへのご意見';
+
+  @override
+  String get feedback_source => 'ソース追加を申請';
+
+  @override
+  String get feedback_app_hint => '問題や改善のご提案をお聞かせください。ログインは不要です。';
+
+  @override
+  String get feedback_source_hint => '対応を希望するサイトを教えてください。ログインは不要です。';
+
+  @override
+  String get feedback_site_name => 'サイト名';
+
+  @override
+  String get feedback_comment => 'ご意見・ご要望';
+
+  @override
+  String get feedback_optional_comment => '補足情報（任意）';
+
+  @override
+  String get feedback_contact => '連絡先（任意）';
+
+  @override
+  String get feedback_submit => '送信';
+
+  @override
+  String get feedback_retry => '再試行して確認';
+
+  @override
+  String get feedback_unknown => '送信結果が確認できません。同じリクエスト ID で再試行するため、重複送信されません。';
+
+  @override
+  String get feedback_failed => '送信できませんでした。入力内容を確認して再試行してください。';
+
+  @override
+  String get feedback_limited => '送信が多すぎます。しばらくしてから再試行してください。';
+
+  @override
+  String get feedback_received => '受け付けました。ありがとうございます！';
+
+  @override
+  String get feedback_another => '続けて送信';
+
+  @override
+  String feedback_limit(int max) {
+    return '$max 文字以内で入力してください。';
+  }
+
+  @override
+  String get feedback_load_failed => '前回の内容を読み込めませんでした。再試行してください。';
+
+  @override
   String get browser_search_hint => '検索または URL を入力';
 
   @override

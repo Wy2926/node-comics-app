@@ -10,6 +10,64 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get feedback_app => 'Avis sur l’application';
+
+  @override
+  String get feedback_source => 'Demander une source';
+
+  @override
+  String get feedback_app_hint =>
+      'Un problème ou une suggestion ? Dites-le-nous, sans vous connecter.';
+
+  @override
+  String get feedback_source_hint =>
+      'Quel site souhaitez-vous voir pris en charge ? Aucune connexion requise.';
+
+  @override
+  String get feedback_site_name => 'Nom du site';
+
+  @override
+  String get feedback_comment => 'Votre avis';
+
+  @override
+  String get feedback_optional_comment => 'Précisions (facultatif)';
+
+  @override
+  String get feedback_contact => 'Coordonnées (facultatif)';
+
+  @override
+  String get feedback_submit => 'Envoyer';
+
+  @override
+  String get feedback_retry => 'Réessayer pour confirmer';
+
+  @override
+  String get feedback_unknown =>
+      'L’envoi n’est pas encore confirmé. Réessayez avec le même identifiant pour éviter les doublons.';
+
+  @override
+  String get feedback_failed =>
+      'Envoi impossible. Vérifiez les informations et réessayez.';
+
+  @override
+  String get feedback_limited => 'Trop de demandes. Réessayez plus tard.';
+
+  @override
+  String get feedback_received => 'Votre message a été reçu. Merci !';
+
+  @override
+  String get feedback_another => 'Envoyer un autre avis';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Saisissez au maximum $max caractères.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Impossible de charger votre précédent avis. Réessayez.';
+
+  @override
   String get browser_search_hint => 'Rechercher ou saisir une URL';
 
   @override

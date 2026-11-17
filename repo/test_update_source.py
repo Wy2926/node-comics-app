@@ -84,7 +84,7 @@ class SourceUpdaterTests(unittest.TestCase):
         self.assertNotIn("Mangayomi", first.decode())
         # A withdrawn final IPA must leave no stale download or news entry.
         updater.update_json_file(self.config, [])
-        empty = json.loads(self.target.read_text())
+        empty = json.loads(self.target.read_text(encoding="utf-8"))
         self.assertEqual(empty["apps"], [])
         self.assertEqual(empty["news"], [])
 

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:mangayomi/services/app_update_manifest.dart';
+import 'package:mangayomi/services/nodelane_requests.dart';
 
 /// Public static feed, with a URL-scoped cache and one in-flight refresh.
 class AppUpdateFeed {
@@ -36,20 +37,20 @@ class AppUpdateFeed {
 
   Future<List<UpdateInfo>> _refresh(_FeedCache? cached) async {
     final abort = Completer<void>();
-    final request = http.AbortableRequest(
-      'GET',
-      uri,
-      abortTrigger: abort.future,
-    );
-    request.headers.addAll({
-      'Accept': 'application/json',
-      if (cached?.etag != null) 'If-None-Match': cached!.etag!,
-    });
     final http.Response response;
     try {
-      response = await (() async => http.Response.fromStream(
-        await _client.send(request),
-      ))().timeout(const Duration(seconds: 20));
+      response = await (() async {
+        final request = await NodeLaneRequests.request(
+          'GET',
+          uri,
+          abortTrigger: abort.future,
+          followRedirects: true,
+        );
+        if (cached?.etag != null) {
+          request.headers['If-None-Match'] = cached!.etag!;
+        }
+        return http.Response.fromStream(await _client.send(request));
+      })().timeout(const Duration(seconds: 20));
     } finally {
       abort.complete();
     }

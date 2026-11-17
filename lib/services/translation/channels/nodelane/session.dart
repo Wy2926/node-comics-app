@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:mangayomi/utils/url_protocol/protocol.dart' show appUrlScheme;
 import 'package:crypto/crypto.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
+import 'package:mangayomi/services/nodelane_requests.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
 import '../../contracts.dart';
@@ -254,8 +255,7 @@ class NodeLaneSession {
       ..connectionTimeout = const Duration(seconds: 15);
     try {
       return await (() async {
-        final request = await client.postUrl(uri);
-        request.followRedirects = false;
+        final request = await NodeLaneRequests.open(client, 'POST', uri);
         request.headers.contentType = ContentType(
           'application',
           'x-www-form-urlencoded',

@@ -10,6 +10,64 @@ class AppLocalizationsId extends AppLocalizations {
   AppLocalizationsId([String locale = 'id']) : super(locale);
 
   @override
+  String get feedback_app => 'Masukan aplikasi';
+
+  @override
+  String get feedback_source => 'Minta sumber baru';
+
+  @override
+  String get feedback_app_hint =>
+      'Ada masalah atau saran? Beri tahu kami tanpa perlu masuk.';
+
+  @override
+  String get feedback_source_hint =>
+      'Situs web apa yang ingin Anda tambahkan? Tidak perlu masuk.';
+
+  @override
+  String get feedback_site_name => 'Nama situs web';
+
+  @override
+  String get feedback_comment => 'Masukan';
+
+  @override
+  String get feedback_optional_comment => 'Keterangan tambahan (opsional)';
+
+  @override
+  String get feedback_contact => 'Kontak (opsional)';
+
+  @override
+  String get feedback_submit => 'Kirim masukan';
+
+  @override
+  String get feedback_retry => 'Coba lagi untuk memastikan';
+
+  @override
+  String get feedback_unknown =>
+      'Pengiriman belum dikonfirmasi. Coba lagi dengan ID permintaan yang sama agar tidak terjadi duplikasi.';
+
+  @override
+  String get feedback_failed =>
+      'Tidak dapat mengirim. Periksa isian lalu coba lagi.';
+
+  @override
+  String get feedback_limited => 'Terlalu banyak permintaan. Coba lagi nanti.';
+
+  @override
+  String get feedback_received => 'Masukan diterima. Terima kasih!';
+
+  @override
+  String get feedback_another => 'Kirim masukan lain';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Masukkan maksimal $max karakter.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Tidak dapat memuat masukan sebelumnya. Coba lagi.';
+
+  @override
   String get browser_search_hint => 'Cari atau masukkan URL';
 
   @override

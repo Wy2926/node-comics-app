@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/utils/ios_archive_path.dart';
+import 'package:path/path.dart' as p;
 
 void main() {
   test('recovers an existing file only at its relative path in the current iOS container', () async {
@@ -17,7 +18,7 @@ void main() {
     Future<String> resolve(String path) =>
         resolveRelocatedIosArchivePath(path, documentsPath: documents);
     final previous = '$oldRoot/tmp/Reader.cbz';
-    expect(await resolve(previous), current.path);
+    expect(p.equals(await resolve(previous), current.path), isTrue);
     expect(
       await resolve('$oldRoot/tmp/Missing.cbz'),
       '$oldRoot/tmp/Missing.cbz',

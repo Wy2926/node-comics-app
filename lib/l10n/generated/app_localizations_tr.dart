@@ -10,6 +10,65 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get feedback_app => 'Uygulama geri bildirimi';
+
+  @override
+  String get feedback_source => 'Kaynak iste';
+
+  @override
+  String get feedback_app_hint =>
+      'Bir sorun veya öneriniz mi var? Oturum açmadan bize yazın.';
+
+  @override
+  String get feedback_source_hint =>
+      'Hangi web sitesini desteklememizi istersiniz? Oturum açmanız gerekmez.';
+
+  @override
+  String get feedback_site_name => 'Web sitesi adı';
+
+  @override
+  String get feedback_comment => 'Geri bildirim';
+
+  @override
+  String get feedback_optional_comment => 'Ek bilgiler (isteğe bağlı)';
+
+  @override
+  String get feedback_contact => 'İletişim bilgileri (isteğe bağlı)';
+
+  @override
+  String get feedback_submit => 'Geri bildirim gönder';
+
+  @override
+  String get feedback_retry => 'Doğrulamak için yeniden dene';
+
+  @override
+  String get feedback_unknown =>
+      'Gönderim henüz doğrulanmadı. Yinelenen kayıtları önlemek için aynı istek kimliğiyle yeniden deneyin.';
+
+  @override
+  String get feedback_failed =>
+      'Gönderilemedi. Bilgileri kontrol edip yeniden deneyin.';
+
+  @override
+  String get feedback_limited =>
+      'Çok fazla istek. Lütfen daha sonra yeniden deneyin.';
+
+  @override
+  String get feedback_received => 'Geri bildiriminiz alındı. Teşekkürler!';
+
+  @override
+  String get feedback_another => 'Başka geri bildirim gönder';
+
+  @override
+  String feedback_limit(int max) {
+    return 'En fazla $max karakter girin.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Önceki geri bildiriminiz yüklenemedi. Yeniden deneyin.';
+
+  @override
   String get browser_search_hint => 'Arayın veya URL girin';
 
   @override

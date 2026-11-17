@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/services/nodelane_requests.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/http.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +17,7 @@ void main() {
   late HttpServer apiServer, assetServer;
   late NodeLaneHttp api;
   late File output;
+  late String userAgent;
   final requests = <(String, String?)>[];
   final bytes = [1, 2, 3, 4];
   var assetStatus = 200, loop = false, returnToApi = false;
@@ -22,6 +25,14 @@ void main() {
   var hold = false;
 
   setUp(() async {
+    PackageInfo.setMockInitialValues(
+      appName: 'NodeLane Comics',
+      packageName: 'com.nodelane.comics',
+      version: '9.8.7',
+      buildNumber: '654',
+      buildSignature: '',
+    );
+    userAgent = await NodeLaneRequests.userAgent;
     directory = await Directory.systemTemp.createTemp('nodelane-http-');
     output = File('${directory.path}/artifact');
     requests.clear();
@@ -40,6 +51,7 @@ void main() {
       request.response.headers.removeAll(HttpHeaders.contentTypeHeader);
       requests.add((request.uri.path, request.headers.value('authorization')));
       expect(request.headers.value('cookie'), isNull);
+      expect(request.headers.value('user-agent'), userAgent);
       if (request.uri.path == '/v1/capabilities') {
         request.response.statusCode = 429;
         request.response.headers.contentType = ContentType.json;
@@ -48,7 +60,29 @@ void main() {
             'error': {'code': 'IMAGE_RATE_LIMITED', 'retry_after_seconds': 3.5},
           }),
         );
+      } else if (request.uri.path == '/v1/translations/events') {
+        expect(request.headers.value('accept'), 'text/event-stream');
+        expect(request.headers.value('X-Translation-Protocol'), 'overlay-v1');
+        request.response.headers.contentType = ContentType(
+          'text',
+          'event-stream',
+        );
+        request.response.write(
+          'event: snapshot\ndata: {"id":"page"}\n\n'
+          'event: end\n\n',
+        );
+      } else if (request.uri.path.endsWith('/input')) {
+        expect(request.method, 'PUT');
+        expect(request.headers.contentType?.mimeType, 'image/webp');
+        expect(request.headers.value('X-Translation-Protocol'), 'overlay-v1');
+        expect(
+          await request.fold<List<int>>([], (all, part) => all..addAll(part)),
+          bytes,
+        );
+        request.response.headers.contentType = ContentType.json;
+        request.response.write('{"state":"queued"}');
       } else if (request.uri.path == '/returned') {
+        expect(request.headers.value('X-Translation-Protocol'), isNull);
         request.response.add(bytes);
       } else {
         expect(request.headers.value('X-Translation-Protocol'), 'overlay-v1');
@@ -68,6 +102,8 @@ void main() {
       request.response.headers.removeAll(HttpHeaders.contentTypeHeader);
       requests.add((request.uri.path, request.headers.value('authorization')));
       expect(request.headers.value('cookie'), isNull);
+      expect(request.headers.value('user-agent'), userAgent);
+      expect(request.headers.value('X-Translation-Protocol'), isNull);
       if (!received.isCompleted) received.complete();
       if (hold) await held.future;
       request.response.statusCode = returnToApi ? 302 : assetStatus;
@@ -179,4 +215,27 @@ void main() {
       ),
     );
   });
+
+  test(
+    'uploads and event streams share identity and keep their wire formats',
+    () async {
+      final input = await File('${directory.path}/input').writeAsBytes(bytes);
+      expect(
+        await api.upload(
+          'page',
+          input,
+          'image/webp',
+          TranslationCancellation(),
+        ),
+        {'state': 'queued'},
+      );
+      expect(await api.events(['page'], TranslationCancellation()).toList(), [
+        {'id': 'page'},
+      ]);
+      expect(requests, [
+        ('/v1/translations/page/input', 'Bearer fixture-only'),
+        ('/v1/translations/events', 'Bearer fixture-only'),
+      ]);
+    },
+  );
 }

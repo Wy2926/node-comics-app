@@ -154,6 +154,8 @@ Future<String?> showBrowserPageMenu(
       ),
     ),
     const PopupMenuDivider(),
+    row('requestSource', l.feedback_source, icons.chat),
+    const PopupMenuDivider(),
     row('bookmarks', l.browser_bookmarks, icons.bookmarkOutline),
     row('history', l.history, icons.history),
     row('find', l.browser_find, icons.search, enabled: pageReady),

@@ -10,6 +10,64 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
+  String get feedback_app => 'Відгук про застосунок';
+
+  @override
+  String get feedback_source => 'Запропонувати джерело';
+
+  @override
+  String get feedback_app_hint =>
+      'Проблема чи пропозиція? Напишіть нам без входу в обліковий запис.';
+
+  @override
+  String get feedback_source_hint =>
+      'Який сайт ви хочете додати? Вхід не потрібен.';
+
+  @override
+  String get feedback_site_name => 'Назва сайту';
+
+  @override
+  String get feedback_comment => 'Відгук';
+
+  @override
+  String get feedback_optional_comment => 'Додаткові відомості (необов’язково)';
+
+  @override
+  String get feedback_contact => 'Контакти (необов’язково)';
+
+  @override
+  String get feedback_submit => 'Надіслати відгук';
+
+  @override
+  String get feedback_retry => 'Повторити для підтвердження';
+
+  @override
+  String get feedback_unknown =>
+      'Надсилання ще не підтверджено. Повторіть із тим самим ID запиту, щоб уникнути дублікатів.';
+
+  @override
+  String get feedback_failed =>
+      'Не вдалося надіслати. Перевірте дані та спробуйте знову.';
+
+  @override
+  String get feedback_limited => 'Забагато запитів. Спробуйте пізніше.';
+
+  @override
+  String get feedback_received => 'Відгук отримано. Дякуємо!';
+
+  @override
+  String get feedback_another => 'Надіслати ще один відгук';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Введіть не більше $max символів.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Не вдалося завантажити попередній відгук. Спробуйте знову.';
+
+  @override
   String get browser_search_hint => 'Пошук або введення URL';
 
   @override

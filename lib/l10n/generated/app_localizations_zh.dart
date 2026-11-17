@@ -10,6 +10,59 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get feedback_app => 'APP 反馈';
+
+  @override
+  String get feedback_source => '申请新增来源';
+
+  @override
+  String get feedback_app_hint => '遇到问题或有改进建议？无需登录，直接告诉我们。';
+
+  @override
+  String get feedback_source_hint => '希望适配哪个网站？无需登录即可提交申请。';
+
+  @override
+  String get feedback_site_name => '网站名称';
+
+  @override
+  String get feedback_comment => '反馈内容';
+
+  @override
+  String get feedback_optional_comment => '补充说明（选填）';
+
+  @override
+  String get feedback_contact => '联系方式（选填）';
+
+  @override
+  String get feedback_submit => '提交反馈';
+
+  @override
+  String get feedback_retry => '重试确认';
+
+  @override
+  String get feedback_unknown => '提交结果尚未确认。重试会沿用同一编号，不会重复提交。';
+
+  @override
+  String get feedback_failed => '无法提交，请检查填写内容后重试。';
+
+  @override
+  String get feedback_limited => '提交较频繁，请稍后重试。';
+
+  @override
+  String get feedback_received => '反馈已收到，感谢你的反馈！';
+
+  @override
+  String get feedback_another => '继续反馈';
+
+  @override
+  String feedback_limit(int max) {
+    return '最多输入 $max 个字符。';
+  }
+
+  @override
+  String get feedback_load_failed => '无法读取上次反馈，请重试。';
+
+  @override
   String get browser_search_hint => '搜索或输入网址';
 
   @override
@@ -6020,6 +6073,59 @@ class AppLocalizationsZh extends AppLocalizations {
 /// The translations for Chinese, using the Han script (`zh_Hant`).
 class AppLocalizationsZhHant extends AppLocalizationsZh {
   AppLocalizationsZhHant() : super('zh_Hant');
+
+  @override
+  String get feedback_app => 'APP 回饋';
+
+  @override
+  String get feedback_source => '申請新增來源';
+
+  @override
+  String get feedback_app_hint => '遇到問題或有改進建議？無需登入，直接告訴我們。';
+
+  @override
+  String get feedback_source_hint => '希望支援哪個網站？無需登入即可提交申請。';
+
+  @override
+  String get feedback_site_name => '網站名稱';
+
+  @override
+  String get feedback_comment => '回饋內容';
+
+  @override
+  String get feedback_optional_comment => '補充說明（選填）';
+
+  @override
+  String get feedback_contact => '聯絡方式（選填）';
+
+  @override
+  String get feedback_submit => '提交回饋';
+
+  @override
+  String get feedback_retry => '重試確認';
+
+  @override
+  String get feedback_unknown => '提交結果尚未確認。重試會沿用同一編號，不會重複提交。';
+
+  @override
+  String get feedback_failed => '無法提交，請檢查填寫內容後重試。';
+
+  @override
+  String get feedback_limited => '提交過於頻繁，請稍後重試。';
+
+  @override
+  String get feedback_received => '已收到回饋，感謝你的回饋！';
+
+  @override
+  String get feedback_another => '繼續回饋';
+
+  @override
+  String feedback_limit(int max) {
+    return '最多輸入 $max 個字元。';
+  }
+
+  @override
+  String get feedback_load_failed => '無法讀取上次回饋，請重試。';
 
   @override
   String get browser_search_hint => '搜尋或輸入網址';

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:mangayomi/services/nodelane_requests.dart';
+
 import '../../contracts.dart';
 import 'protocol.dart';
 
@@ -22,8 +24,7 @@ class NodeLaneHttp {
   final HttpClient _client = HttpClient()
     ..connectionTimeout = const Duration(seconds: 30);
 
-  Uri uri(String path) =>
-      base.resolve('${base.path.replaceFirst(RegExp(r'/$'), '')}$path');
+  Uri uri(String path) => NodeLaneRequests.uri(base, path);
 
   Future<HttpClientRequest> _open(
     String method,
@@ -33,10 +34,11 @@ class NodeLaneHttp {
     cancel.check();
     final authorization = token == null ? null : await token!();
     cancel.check();
-    final request = await _client
-        .openUrl(method, uri(path))
-        .timeout(const Duration(seconds: 30));
-    request.followRedirects = false;
+    final request = await NodeLaneRequests.open(
+      _client,
+      method,
+      uri(path),
+    ).timeout(const Duration(seconds: 30));
     if (authorization != null) {
       request.headers.set(
         HttpHeaders.authorizationHeader,
@@ -49,7 +51,6 @@ class NodeLaneHttp {
         nodeLaneTranslationProtocol,
       );
     }
-    request.headers.set(HttpHeaders.acceptHeader, 'application/json');
     return request;
   }
 
@@ -132,15 +133,16 @@ class NodeLaneHttp {
       }
       final request = first
           ? await _open('GET', path, cancellation)
-          : await _client
-                .getUrl(destination)
-                .timeout(const Duration(seconds: 30));
+          : await NodeLaneRequests.open(
+              _client,
+              'GET',
+              destination,
+            ).timeout(const Duration(seconds: 30));
       final remove = cancellation.onCancel(
         () => request.abort(const TranslationCancelled()),
       );
       try {
         cancellation.check();
-        request.followRedirects = false;
         if (first) {
           authorization = request.headers.value(
             HttpHeaders.authorizationHeader,

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/more/about/mobile_about_screen.dart';
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/about/providers/get_package_info.dart';
@@ -50,6 +52,7 @@ class AboutScreen extends ConsumerWidget {
           await context.push('/errorReports');
         },
         onUpdates: () => context.push('/appUpdate'),
+        onFeedback: () => showSupportRequest(context, SupportRequestKind.app),
         onShareLogs: () => _shareLogs(context),
         onGitHub: () =>
             _launchInBrowser(Uri.parse(NodeLaneBrand.repositoryUrl)),

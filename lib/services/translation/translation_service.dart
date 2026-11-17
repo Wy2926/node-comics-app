@@ -1,4 +1,5 @@
 import 'package:mangayomi/utils/localized_message.dart';
+import 'package:mangayomi/utils/nodelane_brand.dart';
 import 'package:mangayomi/l10n/languages.dart';
 
 import 'dart:io';
@@ -50,16 +51,7 @@ class TranslationService extends ChangeNotifier {
   }) : language = translationLanguageForLocales(
          preferredLocales ?? PlatformDispatcher.instance.locales,
        ),
-       _session =
-           session ??
-           NodeLaneSession(
-             Uri.parse(
-               const String.fromEnvironment(
-                 'NODELANE_API_BASE',
-                 defaultValue: 'https://comics.nodelane.net',
-               ),
-             ),
-           );
+       _session = session ?? NodeLaneSession(Uri.parse(NodeLaneBrand.apiBase));
   final NodeLaneSession _session;
   ChannelRuntime? runtime;
   TranslationRepository? _repository;

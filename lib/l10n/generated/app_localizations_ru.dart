@@ -10,6 +10,64 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get feedback_app => 'Отзыв о приложении';
+
+  @override
+  String get feedback_source => 'Запросить источник';
+
+  @override
+  String get feedback_app_hint =>
+      'Проблема или предложение? Напишите нам, вход не требуется.';
+
+  @override
+  String get feedback_source_hint =>
+      'Какой сайт вы хотите добавить? Вход не требуется.';
+
+  @override
+  String get feedback_site_name => 'Название сайта';
+
+  @override
+  String get feedback_comment => 'Отзыв';
+
+  @override
+  String get feedback_optional_comment => 'Подробности (необязательно)';
+
+  @override
+  String get feedback_contact => 'Контакты (необязательно)';
+
+  @override
+  String get feedback_submit => 'Отправить отзыв';
+
+  @override
+  String get feedback_retry => 'Повторить для подтверждения';
+
+  @override
+  String get feedback_unknown =>
+      'Отправка ещё не подтверждена. Повторите с тем же ID запроса, чтобы избежать дубликатов.';
+
+  @override
+  String get feedback_failed =>
+      'Не удалось отправить. Проверьте данные и повторите попытку.';
+
+  @override
+  String get feedback_limited => 'Слишком много запросов. Повторите позже.';
+
+  @override
+  String get feedback_received => 'Отзыв получен. Спасибо!';
+
+  @override
+  String get feedback_another => 'Отправить ещё отзыв';
+
+  @override
+  String feedback_limit(int max) {
+    return 'Введите не более $max символов.';
+  }
+
+  @override
+  String get feedback_load_failed =>
+      'Не удалось загрузить предыдущий отзыв. Повторите попытку.';
+
+  @override
   String get browser_search_hint => 'Поиск или ввод URL';
 
   @override

@@ -83,6 +83,7 @@ void main() {
     onUpdates: onUpdates ?? () async {},
     onShareLogs: onShare ?? () async {},
     onGitHub: () async {},
+    onFeedback: () {},
   );
 
   testWidgets(

@@ -6,6 +6,10 @@ abstract final class NodeLaneBrand {
   static const userAgent = 'nodelane-comics';
   static const repository = 'Wy2926/node-comics-app';
   static const repositoryUrl = 'https://github.com/$repository';
+  static const apiBase = String.fromEnvironment(
+    'NODELANE_API_BASE',
+    defaultValue: 'https://comics.nodelane.net',
+  );
   static const updateManifestUrl = String.fromEnvironment(
     'NODELANE_UPDATE_MANIFEST_URL',
     defaultValue: 'https://comics-updates.nodelane.net/stable/index.json',
