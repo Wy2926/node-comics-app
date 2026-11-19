@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -63,6 +64,29 @@ void main() {
       expect(await cache.getPageListFromCache(oldChapter), isNotNull);
       expect(await cache.getPageListFromCache(newChapter), isNull);
       expect(await cache.getPageListFromCache(otherManga), isNull);
+    });
+
+    test('Mihon proxy handles never survive a bridge restart', () async {
+      final chapter = Chapter(name: 'Ch 1', mangaId: 1, url: '/ch1');
+      final token = 'a' * 64;
+      final direct = PageUrl('https://example.org/image/$token');
+      final proxy = PageUrl('http://127.0.0.1:42001/image/$token');
+      await cache.putPageListToCache(chapter, [direct]);
+      final file = await tempDir.list().cast<File>().single;
+      await file.writeAsString(
+        jsonEncode({
+          'pages': [direct.toJson(), proxy.url],
+        }),
+      );
+      expect(await cache.getPageListFromCache(chapter), isNull);
+
+      await cache.putPageListToCache(chapter, [direct, proxy]);
+      expect(await tempDir.list().isEmpty, isTrue);
+      await cache.putPageListToCache(chapter, [direct]);
+      expect(
+        (await cache.getPageListFromCache(chapter))!.single.url,
+        direct.url,
+      );
     });
 
     test('remove and clear methods work properly', () async {

@@ -534,7 +534,6 @@ class _MangaChapterPageGalleryState
       _viewportAnchor.restore(
         anchor,
         index: index,
-        list: _listController,
         isCurrent: () => !_disposed.isCompleted,
       );
 
@@ -1149,9 +1148,15 @@ class _MangaChapterPageGalleryState
     if (range == null) return;
     final (first, last) = range;
     final visible = _viewportAnchor.capture(_continuousScrollController);
-    final actual = visible == null
+    var actual = visible == null
         ? -1
         : pages.indexWhere((p) => p.identity == visible.identity);
+    // The finished banner can be visible below several short final images.
+    if (last == pages.length - 1 &&
+        pages.last.chapterState == ChapterLoadState.exhausted &&
+        pages.last.boundaryDirection == ChapterDirection.next) {
+      actual = pages.length - 2;
+    }
     final newIndex = actual >= 0 ? _actualToPageViewIndex(actual) : first;
     final bool pageChanged = _currentIndex != newIndex;
     if (pageChanged) _readingBackward = newIndex < (_currentIndex ?? newIndex);

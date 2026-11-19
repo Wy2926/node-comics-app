@@ -143,7 +143,6 @@ void main() {
           final restored = anchors.restore(
             anchor,
             index: index,
-            list: list,
             isCurrent: () => true,
           );
           // Sizes must follow the page, not its former global index; otherwise
@@ -184,7 +183,6 @@ void main() {
         final cancelled = anchors.restore(
           anchor,
           index: anchorIndex,
-          list: list,
           isCurrent: () => current,
         );
         current = false;
@@ -219,7 +217,6 @@ void main() {
       final restored = anchors.restore(
         const ReaderViewportAnchor('page-4', 0),
         index: 4,
-        list: list,
         isCurrent: () => true,
       );
       await tester.pumpWidget(
@@ -267,10 +264,10 @@ void main() {
         expect(anchors.capture(scroll)!.leading, closeTo(leading, .1));
       }
 
-      // Several downloads above/below the reading point complete together.
+      // A preceding long strip grows past the entire cache on decode.
       rebuild(() {
-        heights[3] = 1500;
-        heights[5] = 1200;
+        heights[3] = 6500;
+        heights[5] = 6500;
       });
       await tester.pump();
       expectPosition(0);
@@ -314,7 +311,6 @@ void main() {
       final reset = anchors.restore(
         const ReaderViewportAnchor('page-4', 0),
         index: 4,
-        list: list,
         isCurrent: () => true,
       );
       await tester.pump();
@@ -336,6 +332,13 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
       expect(anchors.capture(scroll)!.leading, lessThan(ballistic));
       await tester.pumpAndSettle();
+
+      // A deliberate jump beyond the cache must be allowed to leave the anchor.
+      final jump = scroll.position.maxScrollExtent;
+      scroll.jumpTo(jump);
+      await tester.pumpAndSettle();
+      expect(anchors.capture(scroll)!.identity, isNot('page-4'));
+      expect(scroll.offset, scroll.position.maxScrollExtent);
 
       await tester.pumpWidget(const SizedBox());
       expect(tester.takeException(), isNull);

@@ -20,6 +20,13 @@ class ChapterCache {
   factory ChapterCache() => _instance;
 
   static const String cacheFolderName = 'chapter_disk_cache';
+  // Mihon's /image handles refer to an in-memory registration and a per-run port.
+  static final _mihonImageHandle = RegExp(
+    r'^http://127\.0\.0\.1:[0-9]+/image/[0-9a-f]{64}$',
+  );
+
+  bool _usesMihonProxy(List<PageUrl> pages) =>
+      pages.any((page) => _mihonImageHandle.hasMatch(page.url));
 
   @visibleForTesting
   Directory? customCacheDir;
@@ -72,6 +79,7 @@ class ChapterCache {
         }
       }
 
+      if (_usesMihonProxy(pageUrls)) return null;
       return pageUrls.isNotEmpty ? pageUrls : null;
     } catch (e) {
       if (kDebugMode) {
@@ -86,6 +94,10 @@ class ChapterCache {
     try {
       // Do not cache empty or placeholder page lists
       if (pages.isEmpty || pages.every((p) => p.url.isEmpty)) return;
+      if (_usesMihonProxy(pages)) {
+        await remove(chapter);
+        return;
+      }
 
       final file = await _getCacheFile(chapter);
       final data = {

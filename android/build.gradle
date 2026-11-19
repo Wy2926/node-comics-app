@@ -6,6 +6,24 @@ allprojects {
 }
 
 rootProject.buildDir = '../build'
+project(':m_extension_server') {
+    afterEvaluate {
+        // Adapt the pinned Android bridge in build/, never edit the shared Pub cache.
+        def original = file('src/main/kotlin')
+        def patched = tasks.register('prepareNodeLaneMihonSources', Sync) {
+            from(original)
+            exclude('eu/kanade/tachiyomi/network/interceptor/UserAgentInterceptor.kt')
+            into(layout.buildDirectory.dir('generated/nodelane-mihon'))
+            filteringCharset = 'UTF-8'
+            filesMatching('eu/kanade/tachiyomi/network/NetworkHelper.kt') {
+                filter { line -> line.replace('UserAgentInterceptor(::userAgentFor)', 'UserAgentInterceptor(::userAgentFor, ::hasSolvedClearance)') }
+            }
+        }
+        android.sourceSets.main.java.setSrcDirs(android.sourceSets.main.java.srcDirs - original)
+        kotlin.sourceSets.main.kotlin.setSrcDirs([patched, rootProject.file('mihon/src/main/kotlin')])
+        kotlin.sourceSets.test.kotlin.srcDir(rootProject.file('mihon/src/test/kotlin'))
+    }
+}
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
     afterEvaluate { project ->

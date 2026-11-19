@@ -55,6 +55,15 @@ class ReaderViewportAnchor {
   final double leading;
 }
 
+class _VisibleAnchor extends ReaderViewportAnchor {
+  const _VisibleAnchor(super.identity, super.leading, this.index, this.extent);
+  final int index;
+  final double extent;
+}
+
+bool _isVisible(double leading, double extent, double viewport) =>
+    leading + extent > 0.5 && leading < viewport - 0.5;
+
 /// Only mounted cells are retained. Chapter loading and page grouping stay with
 /// the caller; this controller measures and restores an image's viewport offset.
 class ReaderViewportAnchorController {
@@ -79,7 +88,7 @@ class ReaderViewportAnchorController {
     if (pending != null && !pending.done.isCompleted) pending.done.complete();
   }
 
-  (double, double, double)? _geometry(
+  (double, double, double, int)? _geometry(
     String identity,
     AxisDirection direction,
   ) {
@@ -90,16 +99,19 @@ class ReaderViewportAnchorController {
     final parent = RenderAbstractViewport.maybeOf(box);
     if (parent is! RenderBox) return null;
     final viewport = parent as RenderBox;
+    int? index;
     for (
       RenderObject? item = box;
       item != null && item != viewport;
       item = item.parent
     ) {
       final data = item.parentData;
-      if (data is SliverMultiBoxAdaptorParentData && data.keptAlive) {
-        return null;
+      if (data is SliverMultiBoxAdaptorParentData) {
+        if (data.keptAlive) return null;
+        index = data.index;
       }
     }
+    if (index == null) return null;
     final offset = box.localToGlobal(Offset.zero, ancestor: viewport);
     final leading = switch (direction) {
       AxisDirection.down => offset.dy,
@@ -113,6 +125,7 @@ class ReaderViewportAnchorController {
       leading,
       vertical ? box.size.height : box.size.width,
       vertical ? viewport.size.height : viewport.size.width,
+      index,
     );
   }
 
@@ -159,15 +172,15 @@ class ReaderViewportAnchorController {
     return _capture(scroll.position.axisDirection);
   }
 
-  ReaderViewportAnchor? _capture(AxisDirection direction) {
-    ReaderViewportAnchor? anchor;
+  _VisibleAnchor? _capture(AxisDirection direction) {
+    _VisibleAnchor? anchor;
     for (final itemIdentity in _items.keys) {
       final geometry = _geometry(itemIdentity, direction);
       if (geometry == null) continue;
-      final (leading, extent, viewport) = geometry;
-      if (leading + extent <= 0.5 || leading >= viewport - 0.5) continue;
+      final (leading, extent, viewport, index) = geometry;
+      if (!_isVisible(leading, extent, viewport)) continue;
       if (anchor == null || leading < anchor.leading) {
-        anchor = ReaderViewportAnchor(itemIdentity, leading);
+        anchor = _VisibleAnchor(itemIdentity, leading, index, extent);
       }
     }
     return anchor;
@@ -213,11 +226,10 @@ class ReaderViewportAnchorController {
   Future<void> restore(
     ReaderViewportAnchor anchor, {
     required int index,
-    required ListController list,
     required bool Function() isCurrent,
   }) {
     cancelRestore();
-    final request = _pending = _AnchorRequest(anchor, index, list, isCurrent);
+    final request = _pending = _AnchorRequest(anchor, index, isCurrent);
     _retained.value = anchor.identity;
     _viewport?.markNeedsLayout();
     return request.done.future;
@@ -225,10 +237,9 @@ class ReaderViewportAnchorController {
 }
 
 class _AnchorRequest {
-  _AnchorRequest(this.anchor, this.index, this.list, this.isCurrent);
+  _AnchorRequest(this.anchor, this.index, this.isCurrent);
   final ReaderViewportAnchor anchor;
   final int index;
-  final ListController list;
   final bool Function() isCurrent;
   final done = Completer<void>();
 }
@@ -242,7 +253,7 @@ class ReaderViewportList extends SuperListView {
     required this.viewportAnchor,
     required super.itemBuilder,
     required super.itemCount,
-    required super.listController,
+    required ListController super.listController,
     required super.controller,
     super.findChildIndexCallback,
     super.extentEstimation,
@@ -263,6 +274,7 @@ class ReaderViewportList extends SuperListView {
     List<Widget> slivers,
   ) => _ReaderViewport(
     controller: viewportAnchor,
+    list: listController!,
     offset: offset,
     axisDirection: axisDirection,
     scrollCacheExtent: ScrollCacheExtent.pixels(imageCacheExtent),
@@ -273,17 +285,20 @@ class ReaderViewportList extends SuperListView {
 class _ReaderViewport extends Viewport {
   _ReaderViewport({
     required this.controller,
+    required this.list,
     required super.offset,
     required super.axisDirection,
     required super.scrollCacheExtent,
     required super.slivers,
   });
   final ReaderViewportAnchorController controller;
+  final ListController list;
 
   @override
   RenderViewport createRenderObject(BuildContext context) =>
       _RenderReaderViewport(
         controller,
+        list,
         offset: offset,
         axisDirection: axisDirection,
         crossAxisDirection: Viewport.getDefaultCrossAxisDirection(
@@ -296,13 +311,16 @@ class _ReaderViewport extends Viewport {
   @override
   void updateRenderObject(BuildContext context, RenderViewport renderObject) {
     super.updateRenderObject(context, renderObject);
-    (renderObject as _RenderReaderViewport).controller = controller;
+    (renderObject as _RenderReaderViewport)
+      ..controller = controller
+      ..list = list;
   }
 }
 
 class _RenderReaderViewport extends RenderViewport {
   _RenderReaderViewport(
-    this._controller, {
+    this._controller,
+    this.list, {
     required super.offset,
     required super.axisDirection,
     required super.crossAxisDirection,
@@ -310,7 +328,8 @@ class _RenderReaderViewport extends RenderViewport {
   });
 
   ReaderViewportAnchorController _controller;
-  ReaderViewportAnchor? _lastAnchor;
+  ListController list;
+  _VisibleAnchor? _lastAnchor;
   double? _lastPixels;
 
   set controller(ReaderViewportAnchorController value) {
@@ -360,13 +379,25 @@ class _RenderReaderViewport extends RenderViewport {
               ));
     super.performLayout();
     if (expected != null) {
+      // A decoded strip above the reader can push the held page out of cache.
+      // Seek it again only if the user's scroll would still leave it visible.
+      final viewportExtent = axis == Axis.vertical ? size.height : size.width;
+      var index = request?.index;
+      if (index == null &&
+          previous != null &&
+          _isVisible(expected.leading, previous.extent, viewportExtent)) {
+        index = previous.index;
+      }
       double? leading() => _measure(
         () => _controller._geometry(expected.identity, axisDirection)?.$1,
       );
       double? lastEstimate;
-      while (leading() == null && request != null && request.list.isAttached) {
+      while (index != null &&
+          list.isAttached &&
+          index < list.numberOfItems &&
+          leading() == null) {
         final target = _measure(
-          () => _controller._offsetForIndex(request.index, request.list, this),
+          () => _controller._offsetForIndex(index!, list, this),
         );
         if (!target.isFinite || target == lastEstimate) break;
         lastEstimate = target;

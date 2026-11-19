@@ -224,6 +224,33 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('a short final image reports the last page at the end', (
+    tester,
+  ) async {
+    await mount(tester);
+    tester.view.physicalSize = const Size(400, 1800);
+    await tester.pumpAndSettle();
+    final view = content(tester);
+    final scroll = view.scrollController;
+    expect(view.pages.last.chapterState, ChapterLoadState.exhausted);
+    view.listController.jumpToItem(
+      index: view.pages.length - 1,
+      scrollController: scroll,
+      alignment: 1,
+    );
+    await tester.pumpAndSettle();
+    expect(scroll.position.extentAfter, closeTo(0, .5));
+    expect(view.viewportAnchor.capture(scroll)!.identity, isNot('1-7'));
+    expect(find.text('8 / 8'), findsWidgets);
+    scroll.jumpTo(scroll.offset - 20);
+    await tester.pumpAndSettle();
+    expect(scroll.position.extentAfter, greaterThan(0));
+    expect(find.text('8 / 8'), findsWidgets);
+    scroll.jumpTo(0);
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 8'), findsWidgets);
+  });
+
   testWidgets(
     'real scroll stays paused while nested translation preserves the reading panel',
     (tester) async {

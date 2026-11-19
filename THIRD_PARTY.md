@@ -6,6 +6,8 @@ Mangayomi 上游基线采用 Apache-2.0，原始许可见 [LICENSE](LICENSE)，�
 
 没有引入同级仓库的运行时路径依赖。图片解码继续使用项目已有的 `image`、Flutter 平台编解码器与 AVIF 支持。
 
+Android 原版 APK 运行使用锁定的 [`m_extension_server` 源码](https://github.com/kodjodevf/m_extension_server/tree/6c48ad82116b64384a977a179334570d0986c498)。`android/mihon/` 是 NodeLane 的构建适配，调整宿主与扩展请求头的优先级；上游代码及各网站 APK 的原有声明保留。
+
 `assets/browser/` 的搜索引擎 Logo 从各家官方站点 favicon 转为 PNG，仅用于识别对应搜索服务；品牌及商标权归各自权利人所有，不属于本项目 Apache-2.0／GPL 代码许可。来源：[Google](https://www.google.com/favicon.ico)、[Bing](https://www.bing.com/sa/simg/favicon-2x.ico)、[百度](https://www.baidu.com/favicon.ico)、[DuckDuckGo](https://duckduckgo.com/favicon.ico)、[Yahoo](https://s.yimg.com/rz/l/favicon.ico)、[搜狗](https://www.sogou.com/favicon.ico)。
 
 来源图块协议参考 `node-comics` 提交 `af3df6ee75276ba1970ba0a7dc22488d54712e18` 的 `images.ts`（SHA-256 `3a7eedd0c9a8fbf1a14e67f89285d71f71dfc2e40d60fa3ce67e66ce0ad92113`）。App 的通用 Dart 置换独立实现，未复制该 GPL TypeScript 文件；具体种子掩码留在独立 GPL 插件仓库。
