@@ -5083,22 +5083,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_edit_address => '编辑网址';
 
   @override
-  String get browser_clear_cookies_confirm => '清除所有网站登录状态？';
-
-  @override
   String get browser_clear_cookies_hint => '所有标签页中的网站可能需要重新登录。';
 
   @override
-  String get browser_clear_cookies_action => '清除登录状态';
+  String browser_tab_limit(int count) {
+    return '最多保留 $count 个标签页，请先关闭一个。';
+  }
 
   @override
-  String get browser_tab_limit => '最多保留 12 个标签页，请先关闭一个。';
+  String get browser_undo_close => '撤销关闭标签页';
+
+  @override
+  String get browser_background_tab => '在后台标签页打开链接';
+
+  @override
+  String get browser_leave_page => '离开网页';
+
+  @override
+  String get browser_extensions_failed => '浏览器扩展未能启动';
 
   @override
   String get browser_forward => '前进';
-
-  @override
-  String get browser_clear_all_cookies => '清除所有网站登录状态';
 
   @override
   String get browser_clear_failed => '清除失败，请重试。';
@@ -5107,13 +5112,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_save_failed => '标签状态保存失败，请重试。';
 
   @override
-  String get browser_tabs_full => '已打开 12 个标签页';
+  String browser_tabs_full(int count) {
+    return '已打开 $count 个标签页';
+  }
 
   @override
   String get browser_no_tabs => '还没有打开的标签页';
-
-  @override
-  String get browser_close_failed => '标签状态保存失败，请再次点击关闭重试。';
 
   @override
   String get source_pinned_websites => '常用网站';
@@ -11171,22 +11175,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_edit_address => '編輯網址';
 
   @override
-  String get browser_clear_cookies_confirm => '清除所有網站登入狀態？';
-
-  @override
   String get browser_clear_cookies_hint => '所有標籤頁中的網站可能需要重新登入。';
 
   @override
-  String get browser_clear_cookies_action => '清除登入狀態';
+  String browser_tab_limit(int count) {
+    return '最多保留 $count 個標籤頁，請先關閉一個。';
+  }
 
   @override
-  String get browser_tab_limit => '最多保留 12 個標籤頁，請先關閉一個。';
+  String get browser_undo_close => '復原關閉的分頁';
+
+  @override
+  String get browser_background_tab => '在背景分頁開啟連結';
+
+  @override
+  String get browser_leave_page => '離開網頁';
+
+  @override
+  String get browser_extensions_failed => '瀏覽器擴充功能無法啟動';
 
   @override
   String get browser_forward => '前進';
-
-  @override
-  String get browser_clear_all_cookies => '清除所有網站登入狀態';
 
   @override
   String get browser_clear_failed => '清除失敗，請重試。';
@@ -11195,13 +11204,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_save_failed => '標籤狀態儲存失敗，請重試。';
 
   @override
-  String get browser_tabs_full => '已開啟 12 個標籤頁';
+  String browser_tabs_full(int count) {
+    return '已開啟 $count 個標籤頁';
+  }
 
   @override
   String get browser_no_tabs => '還沒有開啟的標籤頁';
-
-  @override
-  String get browser_close_failed => '標籤狀態儲存失敗，請再次點選關閉重試。';
 
   @override
   String get source_pinned_websites => '常用網站';

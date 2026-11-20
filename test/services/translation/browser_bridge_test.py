@@ -124,6 +124,7 @@ const readInput = async item => {
   }
   const beforeHold=actions.length;
   img.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,isPrimary:true,pointerId:1,clientX:20,clientY:20}));
+  assert(await call('imageMenuClaimed',{}),'native link menu stole a translated image press');
   img.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:1,clientX:20,clientY:60}));
   await wait(580);
   assert(actions.length===beforeHold,'scroll gesture opened image menu');
@@ -166,6 +167,12 @@ const readInput = async item => {
   await call('state',{active:true,translated:true}); await wait(250);
   const dataItem=windows.at(-1).items.find(value=>value.kind==='pixels');
   assert(dataItem && dataItem.url==='' && dataItem.revision.length<20,'small data image beyond 512 elements was not compactly discovered');
+  const rectOf=HTMLImageElement.prototype.getBoundingClientRect;
+  let queries=0;
+  HTMLImageElement.prototype.getBoundingClientRect=function(){queries++;return rectOf.call(this);};
+  const reports=windows.length; dispatchEvent(new Event('scroll')); await wait(250); await call('anchor',{});
+  delete HTMLImageElement.prototype.getBoundingClientRect;
+  assert(windows.length>reports && queries>0 && queries<20,'scroll/anchor measured distant or hidden images');
   const dataInput=await readInput(dataItem), rect=dataImage.getBoundingClientRect();
   await call('resultBegin',{...dataItem,size:dataInput.meta.size});
   for(const chunk of dataInput.chunks) await call('resultChunk',{id:dataItem.id,...chunk});

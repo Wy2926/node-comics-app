@@ -5422,26 +5422,29 @@ class AppLocalizationsPt extends AppLocalizations {
   String get browser_edit_address => 'Editar URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Limpar sessões de login para todos os sites?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Sites em todas as guias podem exigir que você faça login novamente.';
 
   @override
-  String get browser_clear_cookies_action => 'Limpar sessões de login';
+  String browser_tab_limit(int count) {
+    return 'Você pode manter até $count abas abertas. Feche uma primeiro.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Você pode manter até 12 abas abertas. Feche um primeiro.';
+  String get browser_undo_close => 'Reabrir aba fechada';
+
+  @override
+  String get browser_background_tab => 'Abrir link em uma aba em segundo plano';
+
+  @override
+  String get browser_leave_page => 'Sair da página';
+
+  @override
+  String get browser_extensions_failed =>
+      'Não foi possível iniciar as extensões do navegador';
 
   @override
   String get browser_forward => 'Avançar';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Limpar todas as sessões de login do site';
 
   @override
   String get browser_clear_failed =>
@@ -5452,14 +5455,12 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível salvar as guias. Por favor, tente novamente.';
 
   @override
-  String get browser_tabs_full => '12 abas já estão abertas';
+  String browser_tabs_full(int count) {
+    return '$count abas já estão abertas';
+  }
 
   @override
   String get browser_no_tabs => 'Ainda não há abas abertas';
-
-  @override
-  String get browser_close_failed =>
-      'Não foi possível salvar as guias. Toque em fechar novamente para tentar novamente.';
 
   @override
   String get source_pinned_websites => 'Sites fixados';

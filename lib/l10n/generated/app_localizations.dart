@@ -9479,41 +9479,47 @@ abstract class AppLocalizations {
   /// **'Edit URL'**
   String get browser_edit_address;
 
-  /// No description provided for @browser_clear_cookies_confirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear sign-in sessions for all websites?'**
-  String get browser_clear_cookies_confirm;
-
   /// No description provided for @browser_clear_cookies_hint.
   ///
   /// In en, this message translates to:
   /// **'Websites in all tabs may require you to sign in again.'**
   String get browser_clear_cookies_hint;
 
-  /// No description provided for @browser_clear_cookies_action.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear sign-in sessions'**
-  String get browser_clear_cookies_action;
-
   /// No description provided for @browser_tab_limit.
   ///
   /// In en, this message translates to:
-  /// **'You can keep up to 12 tabs open. Close one first.'**
-  String get browser_tab_limit;
+  /// **'You can keep up to {count} tabs open. Close one first.'**
+  String browser_tab_limit(int count);
+
+  /// No description provided for @browser_undo_close.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen closed tab'**
+  String get browser_undo_close;
+
+  /// No description provided for @browser_background_tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Open link in background tab'**
+  String get browser_background_tab;
+
+  /// No description provided for @browser_leave_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave webpage'**
+  String get browser_leave_page;
+
+  /// No description provided for @browser_extensions_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser extensions could not start'**
+  String get browser_extensions_failed;
 
   /// No description provided for @browser_forward.
   ///
   /// In en, this message translates to:
   /// **'Forward'**
   String get browser_forward;
-
-  /// No description provided for @browser_clear_all_cookies.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear all website sign-in sessions'**
-  String get browser_clear_all_cookies;
 
   /// No description provided for @browser_clear_failed.
   ///
@@ -9530,20 +9536,14 @@ abstract class AppLocalizations {
   /// No description provided for @browser_tabs_full.
   ///
   /// In en, this message translates to:
-  /// **'12 tabs are already open'**
-  String get browser_tabs_full;
+  /// **'{count} tabs are already open'**
+  String browser_tabs_full(int count);
 
   /// No description provided for @browser_no_tabs.
   ///
   /// In en, this message translates to:
   /// **'No open tabs yet'**
   String get browser_no_tabs;
-
-  /// No description provided for @browser_close_failed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save tabs. Tap close again to retry.'**
-  String get browser_close_failed;
 
   /// No description provided for @source_pinned_websites.
   ///

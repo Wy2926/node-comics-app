@@ -9,6 +9,8 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'browser_url.dart';
+import 'browser_library_store.dart';
+import 'browser_session_store.dart';
 import 'mobile_browser_menu.dart';
 
 import 'package:mangayomi/modules/translation/translation_display_switch.dart';
@@ -32,6 +34,8 @@ class MobileBrowserHeader extends StatelessWidget {
     required this.onClose,
     required this.menu,
     this.protection,
+    this.onMatch,
+    this.openTabs,
     this.onReload,
     this.engine = BrowserSearchEngine.google,
     this.onEngine,
@@ -46,6 +50,8 @@ class MobileBrowserHeader extends StatelessWidget {
   final Future<void> Function(BrowserSearchEngine)? onEngine;
   final bool loading;
   final Widget menu;
+  final ValueChanged<BrowserMatch>? onMatch;
+  final Iterable<Map<String, dynamic>>? openTabs;
   final ({String name, VoidCallback open})? protection;
   @override
   Widget build(BuildContext context) {
@@ -68,32 +74,11 @@ class MobileBrowserHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!addressFocus.hasFocus) ...[
-                  TextButton(
+                  NodeLaneIconButton(
+                    tooltip: context.l10n.browser_leave_page,
+                    style: NodeLaneIconButtonStyle.plain,
+                    icon: icons.close,
                     onPressed: onClose,
-                    style: TextButton.styleFrom(
-                      foregroundColor: t.accent,
-                      fixedSize: const Size(
-                        NodeLaneTokens.browserBackWidth,
-                        NodeLaneTokens.minTapTarget,
-                      ),
-                      padding: EdgeInsets.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.standard,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(icons.back, size: NodeLaneTokens.smallIconSize),
-                        const SizedBox(width: NodeLaneTokens.space4),
-                        Flexible(
-                          child: Text(
-                            context.l10n.go_back,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: t.readerLabel.copyWith(color: t.accent),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                   const SizedBox(width: NodeLaneTokens.space8),
                 ],
@@ -108,6 +93,8 @@ class MobileBrowserHeader extends StatelessWidget {
                     engine: engine,
                     onEngine: onEngine,
                     loading: loading,
+                    onMatch: onMatch,
+                    openTabs: openTabs,
                   ),
                 ),
                 if (!addressFocus.hasFocus) ...[
@@ -360,6 +347,8 @@ class MobileBrowserAddressField extends StatefulWidget {
     this.engine = BrowserSearchEngine.google,
     this.onEngine,
     this.loading = false,
+    this.onMatch,
+    this.openTabs,
   });
   final String url;
   final bool compact;
@@ -369,6 +358,8 @@ class MobileBrowserAddressField extends StatefulWidget {
   final BrowserSearchEngine engine;
   final Future<void> Function(BrowserSearchEngine)? onEngine;
   final bool loading;
+  final ValueChanged<BrowserMatch>? onMatch;
+  final Iterable<Map<String, dynamic>>? openTabs;
 
   @override
   State<MobileBrowserAddressField> createState() =>
@@ -459,6 +450,56 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.onMatch == null) return _field(context);
+    return RawAutocomplete<BrowserMatch>(
+      textEditingController: input,
+      focusNode: focus,
+      displayStringForOption: (m) => m.url,
+      optionsBuilder: (v) => v.text == widget.url || choosingEngine
+          ? const []
+          : browserLibraryStore
+                .matches(v.text, widget.openTabs ?? browserSessionStore.entries)
+                .take(5),
+      fieldViewBuilder: (context, _, _, _) => _field(context),
+      onSelected: (m) {
+        focus.unfocus();
+        widget.onMatch!(m);
+      },
+      optionsViewBuilder: (context, select, options) => Align(
+        alignment: AlignmentDirectional.topStart,
+        child: Material(
+          elevation: 4,
+          color: NodeLaneTokens.of(context).surface,
+          borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 240),
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              children: [
+                for (final m in options)
+                  NodeLaneRow(
+                    title: m.title.isEmpty ? Uri.parse(m.url).host : m.title,
+                    titleMaxLines: 1,
+                    subtitleMaxLines: 1,
+                    compact: true,
+                    subtitle:
+                        '${m.tabId != null
+                            ? context.l10n.tabs
+                            : m.bookmark
+                            ? context.l10n.browser_bookmarks
+                            : context.l10n.history} · ${Uri.parse(m.url).host}',
+                    onTap: () => select(m),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _field(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,7 +685,7 @@ class MobileBrowserLoadError extends StatelessWidget {
       child: NodeLaneEmptyState(
         icon: NodeLaneIcons.of(context).web,
         title: extensionFailure
-            ? context.l10n.extensions
+            ? context.l10n.browser_extensions_failed
             : context.l10n.browser_load_failed,
         message: extensionFailure
             ? context.l10n.operation_retry
@@ -763,11 +804,15 @@ class _MobileBrowserFindBarState extends State<MobileBrowserFindBar> {
   }
 }
 
-Future<bool> confirmClearBrowserLogins(BuildContext context) =>
+Future<bool> confirmClearBrowserLogins(BuildContext context, {String? host}) =>
     showNodeLaneConfirmation(
       context,
-      title: context.l10n.browser_clear_cookies_confirm,
-      message: context.l10n.browser_clear_cookies_hint,
-      confirmLabel: context.l10n.browser_clear_cookies_action,
+      title: host == null
+          ? context.l10n.delete_all_cookies
+          : context.l10n.source_clear_cookies,
+      message: host == null
+          ? context.l10n.browser_clear_cookies_hint
+          : '$host\n${context.l10n.source_clear_cookies_hint}',
+      confirmLabel: context.l10n.clear_cookie,
       destructive: true,
     );

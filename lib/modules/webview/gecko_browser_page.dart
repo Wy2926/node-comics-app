@@ -35,7 +35,6 @@ class GeckoBrowserPage extends BrowserPageController
   }
   final MethodChannel _channel;
   ReaderMessage? _receive;
-  String? icon;
   static Widget view(String lease, ValueChanged<int> created) => AndroidView(
     viewType: _host,
     creationParams: lease,
@@ -129,6 +128,9 @@ class GeckoBrowserPage extends BrowserPageController
   @override
   Future<void> load(String url) => _channel.invokeMethod('load', url);
   @override
+  Future<bool> traverse(int delta) async =>
+      await _channel.invokeMethod<bool>('traverse', delta) == true;
+  @override
   Future<void> reload() => _channel.invokeMethod('reload');
   @override
   Future<void> stop() => _channel.invokeMethod('stop');
@@ -146,9 +148,6 @@ class GeckoBrowserPage extends BrowserPageController
   ) async {
     final reply = await call(url, token, 'install', const {});
     if (reply['error'] != null) throw StateError('Document unavailable');
-    if (isCurrent()) {
-      icon = isBrowserUrl(reply['value']) ? reply['value'] as String : null;
-    }
   }
 
   @override

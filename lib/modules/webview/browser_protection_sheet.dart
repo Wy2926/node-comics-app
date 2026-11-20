@@ -101,6 +101,13 @@ class _BrowserProtectionSheetState extends State<BrowserProtectionSheet> {
                 ],
               ),
             ],
+            NodeLaneRow(
+              title: l.source_clear_cookies,
+              icon: icons.cookies,
+              enabled: !_busy,
+              onTap: () =>
+                  Navigator.pop(context, SiteProtectionAction.clearSite),
+            ),
             NodeLaneCatalogHeading(widget.protection.name),
             NodeLaneGroupSurface(
               children: [

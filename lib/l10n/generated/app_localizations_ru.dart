@@ -5432,26 +5432,29 @@ class AppLocalizationsRu extends AppLocalizations {
   String get browser_edit_address => 'Редактировать URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Очистить сеансы входа для всех веб-сайтов?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Веб-сайты на всех вкладках могут потребовать повторного входа в систему.';
 
   @override
-  String get browser_clear_cookies_action => 'Очистить сеансы входа в систему';
+  String browser_tab_limit(int count) {
+    return 'Лимит открытых вкладок: $count. Сначала закройте одну.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Вы можете держать открытыми до 12 вкладок. Сначала закройте один.';
+  String get browser_undo_close => 'Открыть закрытую вкладку';
+
+  @override
+  String get browser_background_tab => 'Открыть ссылку в фоновой вкладке';
+
+  @override
+  String get browser_leave_page => 'Выйти со страницы';
+
+  @override
+  String get browser_extensions_failed =>
+      'Не удалось запустить расширения браузера';
 
   @override
   String get browser_forward => 'Вперед';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Очистить все сеансы входа на веб-сайт.';
 
   @override
   String get browser_clear_failed =>
@@ -5462,14 +5465,12 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось сохранить вкладки. Пожалуйста, попробуйте еще раз.';
 
   @override
-  String get browser_tabs_full => 'Уже открыто 12 вкладок';
+  String browser_tabs_full(int count) {
+    return 'Открыто вкладок: $count';
+  }
 
   @override
   String get browser_no_tabs => 'Открытых вкладок пока нет';
-
-  @override
-  String get browser_close_failed =>
-      'Не удалось сохранить вкладки. Нажмите «Закрыть» еще раз, чтобы повторить попытку.';
 
   @override
   String get source_pinned_websites => 'Закрепленные веб-сайты';

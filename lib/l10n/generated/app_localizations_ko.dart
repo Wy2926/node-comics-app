@@ -5208,22 +5208,27 @@ class AppLocalizationsKo extends AppLocalizations {
   String get browser_edit_address => '편집 URL';
 
   @override
-  String get browser_clear_cookies_confirm => '모든 웹사이트의 로그인 세션을 삭제하시겠습니까?';
-
-  @override
   String get browser_clear_cookies_hint => '모든 탭의 웹사이트에서는 다시 로그인해야 할 수도 있습니다.';
 
   @override
-  String get browser_clear_cookies_action => '로그인 세션 지우기';
+  String browser_tab_limit(int count) {
+    return '최대 $count개의 탭을 열어 둘 수 있습니다. 먼저 하나를 닫으세요.';
+  }
 
   @override
-  String get browser_tab_limit => '최대 12개의 탭을 열어 둘 수 있습니다. 먼저 하나를 닫으세요.';
+  String get browser_undo_close => '닫은 탭 다시 열기';
+
+  @override
+  String get browser_background_tab => '백그라운드 탭에서 링크 열기';
+
+  @override
+  String get browser_leave_page => '웹페이지 나가기';
+
+  @override
+  String get browser_extensions_failed => '브라우저 확장 프로그램을 시작할 수 없습니다';
 
   @override
   String get browser_forward => '앞으로';
-
-  @override
-  String get browser_clear_all_cookies => '모든 웹사이트 로그인 세션 지우기';
 
   @override
   String get browser_clear_failed => '세션을 지울 수 없습니다. 다시 시도해 주세요.';
@@ -5232,13 +5237,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get browser_save_failed => '탭을 저장할 수 없습니다. 다시 시도해 주세요.';
 
   @override
-  String get browser_tabs_full => '12개의 탭이 이미 열려 있습니다.';
+  String browser_tabs_full(int count) {
+    return '$count개의 탭이 이미 열려 있습니다.';
+  }
 
   @override
   String get browser_no_tabs => '아직 열린 탭이 없습니다';
-
-  @override
-  String get browser_close_failed => '탭을 저장할 수 없습니다. 다시 시도하려면 닫기를 탭하세요.';
 
   @override
   String get source_pinned_websites => '고정된 웹사이트';

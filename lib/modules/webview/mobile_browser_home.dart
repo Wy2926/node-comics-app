@@ -3,6 +3,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'dart:async';
 
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,7 +28,7 @@ class MobileBrowserHome extends ConsumerStatefulWidget {
 }
 
 class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
-  bool ready = false, opening = false, showingTabs = false;
+  bool ready = false, failed = false, opening = false, showingTabs = false;
 
   Map<String, dynamic>? get _blank => browserSessionStore.entries
       .where((entry) => entry['active'] == true && entry['url'] == '')
@@ -36,9 +37,7 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
   @override
   void initState() {
     super.initState();
-    browserSessionStore.load().then((_) {
-      if (mounted) setState(() => ready = true);
-    });
+    _loadTabs();
     browserLibraryStore.load().catchError((_) {
       if (mounted) {
         showNodeLaneNotice(
@@ -47,6 +46,16 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
         );
       }
     });
+  }
+
+  Future<void> _loadTabs() async {
+    setState(() => failed = false);
+    try {
+      await browserSessionStore.load();
+      if (mounted) setState(() => ready = true);
+    } catch (_) {
+      if (mounted) setState(() => failed = true);
+    }
   }
 
   Future<void> _library({bool bookmarks = false}) async {
@@ -80,7 +89,9 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
 
   Future<void> _new() async {
     if (!await browserSessionStore.createBlank() && mounted) {
-      showNodeLaneNotice(context.l10n.browser_tab_limit);
+      showNodeLaneNotice(
+        context.l10n.browser_tab_limit(BrowserSessionStore.maxTabs),
+      );
     }
   }
 
@@ -93,6 +104,10 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
         context,
         MobileBrowserTabsSheet(
           entries: browserSessionStore.entries,
+          onUndo: () async {
+            await browserSessionStore.undoClose();
+            return browserSessionStore.entries;
+          },
           onClose: (id) async {
             await browserSessionStore.close(id);
             browserWebViewCache.remove(id);
@@ -134,28 +149,34 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
   @override
   Widget build(BuildContext context) => NodeLaneSurface(
     child: Scaffold(
-      body: ListenableBuilder(
-        listenable: Listenable.merge([
-          browserSessionStore,
-          browserLibraryStore,
-        ]),
-        builder: (context, _) => MobileBrowserStartPage(
-          key: ValueKey(_blank?['id']),
-          sources: ref.watch(browserPinnedSourcesProvider),
-          tabCount: browserSessionStore.entries.length,
-          onOpen: _open,
-          onRequestSource: () =>
-              showSupportRequest(context, SupportRequestKind.website),
-          onTabs: ready ? _tabs : null,
-          onManage: () => context.go('/browse'),
-          bottomInset: pageBottomInsets(context).bottom,
-          engine: browserLibraryStore.engine,
-          recent: browserLibraryStore.history.take(3).toList(),
-          onEngine: browserLibraryStore.setEngine,
-          onHistory: _library,
-          onBookmarks: () => _library(bookmarks: true),
-        ),
-      ),
+      body: failed
+          ? NodeLaneEmptyState.error(
+              title: context.l10n.browser_data_failed,
+              onRetry: _loadTabs,
+            )
+          : ListenableBuilder(
+              listenable: Listenable.merge([
+                browserSessionStore,
+                browserLibraryStore,
+              ]),
+              builder: (context, _) => MobileBrowserStartPage(
+                key: ValueKey(_blank?['id']),
+                sources: ref.watch(browserPinnedSourcesProvider),
+                tabCount: browserSessionStore.entries.length,
+                onOpen: _open,
+                onMatch: (m) => _open(m.url, m.title, tabId: m.tabId),
+                onRequestSource: () =>
+                    showSupportRequest(context, SupportRequestKind.website),
+                onTabs: ready ? _tabs : null,
+                onManage: () => context.go('/browse'),
+                bottomInset: pageBottomInsets(context).bottom,
+                engine: browserLibraryStore.engine,
+                recent: browserLibraryStore.history.take(3).toList(),
+                onEngine: browserLibraryStore.setEngine,
+                onHistory: _library,
+                onBookmarks: () => _library(bookmarks: true),
+              ),
+            ),
     ),
   );
 }

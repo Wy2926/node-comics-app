@@ -5378,25 +5378,28 @@ class AppLocalizationsId extends AppLocalizations {
   String get browser_edit_address => 'Sunting URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Hapus sesi masuk untuk semua situs web?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Situs web di semua tab mungkin mengharuskan Anda masuk lagi.';
 
   @override
-  String get browser_clear_cookies_action => 'Hapus sesi masuk';
+  String browser_tab_limit(int count) {
+    return 'Anda dapat membuka hingga $count tab. Tutup satu dulu.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Anda dapat membuka hingga 12 tab. Tutup satu dulu.';
+  String get browser_undo_close => 'Buka kembali tab yang ditutup';
+
+  @override
+  String get browser_background_tab => 'Buka tautan di tab latar belakang';
+
+  @override
+  String get browser_leave_page => 'Tinggalkan halaman';
+
+  @override
+  String get browser_extensions_failed => 'Ekstensi peramban gagal dimulai';
 
   @override
   String get browser_forward => 'Maju';
-
-  @override
-  String get browser_clear_all_cookies => 'Hapus semua sesi masuk situs web';
 
   @override
   String get browser_clear_failed =>
@@ -5407,14 +5410,12 @@ class AppLocalizationsId extends AppLocalizations {
       'Tidak dapat menyimpan tab. Silakan coba lagi.';
 
   @override
-  String get browser_tabs_full => '12 tab sudah terbuka';
+  String browser_tabs_full(int count) {
+    return '$count tab sudah terbuka';
+  }
 
   @override
   String get browser_no_tabs => 'Belum ada tab yang terbuka';
-
-  @override
-  String get browser_close_failed =>
-      'Tidak dapat menyimpan tab. Ketuk tutup lagi untuk mencoba lagi.';
 
   @override
   String get source_pinned_websites => 'Situs web yang disematkan';

@@ -2,9 +2,10 @@
 (() => {
   let port;
   function connect() {
-    port = browser.runtime.connectNative('reader');
-    port.onMessage.addListener(async ({id, url, operation, token, args}) => {
-      const owner = port;
+    const owner = port = browser.runtime.connectNative('reader');
+    owner.onDisconnect.addListener(() => { if (port === owner) port = null; });
+    owner.onMessage.addListener(async ({id, url, operation, token, args}) => {
+      if (port !== owner) return;
       let value, error;
       try {
         if (url.split('#')[0] !== location.href.split('#')[0]) throw Error('SOURCE_CHANGED');
@@ -29,9 +30,11 @@
               if (!/^image\//i.test(blob.type)) (await createImageBitmap(blob)).close();
               return blob;
             }});
-          const icon = [...document.querySelectorAll('link[rel~="icon"],link[rel^="apple-touch-icon"]')]
-            .find(link => /^https?:/.test(link.href) && link.type !== 'image/svg+xml');
-          value = icon?.href || null;
+        } else if (operation === 'icon') {
+          const icons = [...document.querySelectorAll('link[rel~="icon"],link[rel^="apple-touch-icon"]')]
+            .filter(link => /^https?:/.test(link.href) && link.type !== 'image/svg+xml' && !/\.svg(?:[?#]|$)/i.test(link.href));
+          value = (icons.find(link => link.rel.startsWith('apple-touch-icon')) ||
+            icons.find(link => link.type === 'image/png') || icons[0])?.href;
         } else {
           value = await window.__nodelaneReader.call(token, operation, args);
         }
@@ -45,7 +48,7 @@
   connect();
   addEventListener('pagehide', () => {
     window.__nodelaneReader?.dispose();
-    port.disconnect();
+    port?.disconnect();
     port = null;
   });
   addEventListener('pageshow', event => { if (event.persisted) connect(); });

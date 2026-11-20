@@ -5363,25 +5363,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get browser_edit_address => 'Edit URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Clear sign-in sessions for all websites?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Websites in all tabs may require you to sign in again.';
 
   @override
-  String get browser_clear_cookies_action => 'Clear sign-in sessions';
+  String browser_tab_limit(int count) {
+    return 'You can keep up to $count tabs open. Close one first.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'You can keep up to 12 tabs open. Close one first.';
+  String get browser_undo_close => 'Reopen closed tab';
+
+  @override
+  String get browser_background_tab => 'Open link in background tab';
+
+  @override
+  String get browser_leave_page => 'Leave webpage';
+
+  @override
+  String get browser_extensions_failed => 'Browser extensions could not start';
 
   @override
   String get browser_forward => 'Forward';
-
-  @override
-  String get browser_clear_all_cookies => 'Clear all website sign-in sessions';
 
   @override
   String get browser_clear_failed =>
@@ -5391,14 +5394,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get browser_save_failed => 'Could not save tabs. Please try again.';
 
   @override
-  String get browser_tabs_full => '12 tabs are already open';
+  String browser_tabs_full(int count) {
+    return '$count tabs are already open';
+  }
 
   @override
   String get browser_no_tabs => 'No open tabs yet';
-
-  @override
-  String get browser_close_failed =>
-      'Could not save tabs. Tap close again to retry.';
 
   @override
   String get source_pinned_websites => 'Pinned websites';

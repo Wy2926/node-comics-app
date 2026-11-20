@@ -8,6 +8,24 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'browser_url.dart';
 
+// A regular PopupMenuItem merges the four shortcuts into one accessibility action.
+class _Shortcuts extends PopupMenuItem<String> {
+  const _Shortcuts({required super.child});
+  @override
+  PopupMenuItemState<String, _Shortcuts> createState() => _ShortcutsState();
+}
+
+class _ShortcutsState extends PopupMenuItemState<String, _Shortcuts> {
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: widget.height,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space8),
+      child: widget.child,
+    ),
+  );
+}
+
 Future<T?> _showBrowserMenu<T>(
   BuildContext anchor,
   List<PopupMenuEntry<T>> items,
@@ -116,8 +134,7 @@ Future<String?> showBrowserPageMenu(
     ),
   );
   return _showBrowserMenu(anchor, [
-    PopupMenuItem<String>(
-      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space8),
+    _Shortcuts(
       child: Builder(
         builder: (context) {
           Widget action(
@@ -163,8 +180,14 @@ Future<String?> showBrowserPageMenu(
     row('copy', l.browser_copy_link, icons.copy),
     row('external', l.open_in_browser, icons.external),
     row(
+      'siteCookies',
+      l.source_clear_cookies,
+      icons.cookies,
+      enabled: !clearingLogins,
+    ),
+    row(
       'cookies',
-      l.browser_clear_all_cookies,
+      l.delete_all_cookies,
       icons.cookies,
       enabled: !clearingLogins,
     ),

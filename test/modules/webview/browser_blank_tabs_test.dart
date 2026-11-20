@@ -38,7 +38,8 @@ class _WebPlatform extends InAppWebViewPlatform {
     PlatformInAppWebViewWidgetCreationParams params,
   ) {
     tokens.add(params.keepAlive);
-    return _WebWidget(params, () => created++, () => disposed++);
+    created++;
+    return _WebWidget(params, () => disposed++);
   }
 }
 
@@ -51,12 +52,12 @@ class _StaticController extends PlatformInAppWebViewController {
   Future<void> disposeKeepAlive(InAppWebViewKeepAlive keepAlive) async {}
 }
 
-class _SlowScreenshot extends _StaticController {
+class _SlowScreenshot extends Fake implements BrowserPageController {
   final result = Completer<Uint8List?>();
   @override
-  Future<Uint8List?> takeScreenshot({
-    ScreenshotConfiguration? screenshotConfiguration,
-  }) => result.future;
+  BrowserProtection? get protection => null;
+  @override
+  Future<Uint8List?> preview() => result.future;
 }
 
 class _FindController extends PlatformFindInteractionController {
@@ -70,43 +71,20 @@ class _FindController extends PlatformFindInteractionController {
 }
 
 class _WebWidget extends PlatformInAppWebViewWidget {
-  _WebWidget(super.params, this.onMount, this.onDispose)
-    : super.implementation();
-  final VoidCallback onMount, onDispose;
+  _WebWidget(super.params, this.onDispose) : super.implementation();
+  final VoidCallback onDispose;
   @override
-  Widget build(BuildContext context) =>
-      _WebProbe(onMount: onMount, onDispose: onDispose);
+  Widget build(BuildContext context) => const SizedBox.expand();
   @override
   T controllerFromPlatform<T>(PlatformInAppWebViewController controller) =>
       throw UnimplementedError();
   @override
-  void dispose() => params.findInteractionController?.dispose(
-    isKeepAlive: params.keepAlive != null,
-  );
-}
-
-class _WebProbe extends StatefulWidget {
-  const _WebProbe({required this.onMount, required this.onDispose});
-  final VoidCallback onMount, onDispose;
-  @override
-  State<_WebProbe> createState() => _WebProbeState();
-}
-
-class _WebProbeState extends State<_WebProbe> {
-  @override
-  void initState() {
-    super.initState();
-    widget.onMount();
-  }
-
-  @override
   void dispose() {
-    widget.onDispose();
-    super.dispose();
+    onDispose();
+    params.findInteractionController?.dispose(
+      isKeepAlive: params.keepAlive != null,
+    );
   }
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.expand();
 }
 
 void main() {
@@ -155,6 +133,14 @@ void main() {
     expect(restored.historyIndex, 1);
     expect(restored.translation.enabled, isFalse);
     expect(restored.translation.showTranslation, isTrue);
+    restored.bindHistory(false);
+    restored.visited('https://reader.example/replaced');
+    restored.nativeHistory([restored.url], 0);
+    expect(
+      restored.history,
+      ['https://reader.example/1', restored.url],
+      reason: 'replaceState must not create a phantom back entry after a cold restore',
+    );
     restored.visited('https://other.example/chapter');
     expect(restored.translation.showTranslation, isFalse);
     expect(restored.translation.enabled, isFalse);
@@ -232,9 +218,7 @@ void main() {
     final anchor = Completer<Map<String, dynamic>?>();
     first
       ..pageReady = true
-      ..controller = SystemBrowserPage(
-        InAppWebViewController.fromPlatform(platform: screenshot),
-      )
+      ..controller = screenshot
       ..captureAnchor = () => anchor.future;
     Future<void> select(String id) async {
       await tester.tap(find.byTooltip('标签页 · 4'));
@@ -275,6 +259,20 @@ void main() {
     expect(find.byType(InAppWebView, skipOffstage: false), findsOneWidget);
     await select('b');
     expect(platform.created, 5);
+    final native = tester
+        .widget<InAppWebView>(find.byType(InAppWebView))
+        .platform;
+    native.params.onWebContentProcessDidTerminate!(
+      InAppWebViewController.fromPlatform(platform: _StaticController()),
+    );
+    await tester.pump();
+    await tester.tap(find.text('编辑网址'));
+    await tester.enterText(find.byType(TextField), 'fixed.example/ch');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(platform.created, 6);
+    expect((state.current as BrowserTab).url, 'https://fixed.example/ch');
+    expect(find.text('编辑网址'), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
@@ -287,6 +285,11 @@ void main() {
   testWidgets(
     'blank tabs share the root page while website identity survives switching and capacity limits',
     (tester) async {
+      Future<void> tap(Finder f) async {
+        await tester.tap(f);
+        await tester.pumpAndSettle();
+      }
+
       await browserSessionStore.save([]);
       await mount(tester);
       expect(find.byType(MobileBrowserStartPage), findsOneWidget);
@@ -294,30 +297,21 @@ void main() {
       expect(tester.testTextInput.isVisible, isFalse);
       expect(find.byTooltip('新建标签页'), findsNothing);
       expect(find.byTooltip('返回'), findsNothing);
-      await tester.tap(find.byTooltip('标签页 · 0'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('新建标签页'));
-      await tester.pumpAndSettle();
+      await tap(find.byTooltip('标签页 · 0'));
+      await tap(find.text('新建标签页'));
       final firstId = browserSessionStore.entries.single['id'];
-      await tester.tap(find.byTooltip('标签页 · 1'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('新建标签页'));
-      await tester.pumpAndSettle();
-      await tester.pump(const Duration(milliseconds: 500));
+      await tap(find.byTooltip('标签页 · 1'));
+      await tap(find.text('新建标签页'));
       expect(browserSessionStore.entries.length, 2);
       expect(browserSessionStore.entries.first['id'], firstId);
       expect(browserSessionStore.entries.every((e) => e['url'] == ''), isTrue);
-      await tester.tap(find.byTooltip('标签页 · 2'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('关闭标签页').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('关闭标签页').first);
-      await tester.pumpAndSettle();
+      await tap(find.byTooltip('标签页 · 2'));
+      await tap(find.byTooltip('关闭标签页').first);
+      await tap(find.byTooltip('关闭标签页').first);
       expect(find.text('标签页 · 1'), findsOneWidget);
       expect(browserSessionStore.entries.single['url'], '');
       expect(browserSessionStore.entries.single['id'], isNot(firstId));
-      await tester.tap(find.text('新标签页'));
-      await tester.pumpAndSettle();
+      await tap(find.text('新标签页'));
       expect(find.byType(MobileBrowserStartPage), findsOneWidget);
       expect(find.byType(InAppWebView), findsNothing);
       await tester.pumpWidget(const SizedBox());
@@ -329,18 +323,17 @@ void main() {
           {'id': 'tab-$i', 'url': '', 'title': ''},
       ]);
       await mount(tester, tabId: 'tab-3', openBrowser: true);
-      expect(find.byTooltip('标签页 · 12'), findsOneWidget);
+      expect(find.byTooltip('标签页 · 20'), findsOneWidget);
       expect(
         browserSessionStore.entries
             .where((e) => e['active'] == true)
             .single['id'],
         'tab-3',
       );
-      await tester.tap(find.byTooltip('标签页 · 12'));
-      await tester.pumpAndSettle();
-      expect(find.text('已打开 12 个标签页'), findsOneWidget);
+      await tap(find.byTooltip('标签页 · 20'));
+      expect(find.text('已打开 20 个标签页'), findsOneWidget);
       expect(browserSessionStore.entries.map((e) => e['id']), [
-        for (var i = 0; i < 12; i++) 'tab-$i',
+        for (var i = 0; i < 20; i++) 'tab-$i',
       ]);
       expect(find.byType(InAppWebView), findsNothing);
       await tester.pumpWidget(const SizedBox());
@@ -368,8 +361,7 @@ void main() {
       expect(platform.created, 1);
       final originalToken = platform.tokens.single;
       expect(originalToken, isNotNull);
-      await tester.tap(find.byTooltip('新建标签页'));
-      await tester.pumpAndSettle();
+      await tap(find.byTooltip('新建标签页'));
       expect(tester.getSize(find.byType(MobileBrowserStartPage)).width, 390);
       expect(router.routeInformationProvider.value.uri.path, '/browser');
       final blankId = browserSessionStore.entries.last['id'];
@@ -377,8 +369,7 @@ void main() {
       expect(browserSessionStore.entries.first['translated'], isFalse);
       expect(platform.created, 1);
       expect(platform.disposed, 1);
-      await tester.tap(find.byTooltip('标签页 · 2'));
-      await tester.pumpAndSettle();
+      await tap(find.byTooltip('标签页 · 2'));
       await tester.tap(find.text('example.org'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
@@ -389,8 +380,7 @@ void main() {
       await tester.tap(find.byTooltip('标签页 · 2'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
-      await tester.tap(find.text('新标签页'));
-      await tester.pumpAndSettle();
+      await tap(find.text('新标签页'));
       expect(router.routeInformationProvider.value.uri.path, '/browser');
       await tester.enterText(find.byType(TextField), 'example.org/next');
       await tester.testTextInput.receiveAction(TextInputAction.go);
@@ -411,9 +401,18 @@ void main() {
         )['url'],
         'https://example.org/next',
       );
-      await tester.tap(find.text('返回'));
-      await tester.pumpAndSettle();
+      final slowPreview = _SlowScreenshot();
+      final dynamic state = tester.state(find.byType(MobileComicBrowser));
+      (state.current as BrowserTab)
+        ..pageReady = true
+        ..controller = slowPreview;
+      await tester.tap(find.byTooltip('离开网页'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
       expect(router.routeInformationProvider.value.uri.path, '/browser');
+      expect(slowPreview.result.isCompleted, isFalse);
+      slowPreview.result.complete(null);
+      await tester.pumpAndSettle();
       expect(find.byType(MobileBrowserStartPage), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());

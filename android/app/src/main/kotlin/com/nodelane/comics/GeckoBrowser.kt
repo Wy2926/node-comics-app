@@ -15,6 +15,7 @@ import org.json.JSONObject
 import org.mozilla.geckoview.*
 import java.io.ByteArrayOutputStream
 import java.net.URI
+import java.util.concurrent.CompletableFuture
 
 private const val HOST = "nodelane/browser"
 private const val READER = "reader@nodelane.net"
@@ -52,6 +53,7 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
     private var panelId = 0
     private var panel: GeckoSession? = null
     private var disposed = false
+    private var previewing = false
 
     init {
         manager.setMethodCallHandler { call, result ->
@@ -136,6 +138,25 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
 
     fun isActive(session: GeckoSession) = active === session
 
+    fun preview(view: GeckoView, result: MethodChannel.Result) {
+        if (previewing || disposed) { result.success(null); return }
+        val pixels = view.capturePixels()
+        previewing = true
+        fun finish(bytes: ByteArray?) { previewing = false; result.success(bytes) }
+        pixels.accept({ bitmap ->
+            if (bitmap == null) { finish(null); return@accept }
+            CompletableFuture.supplyAsync {
+                try {
+                    val w = minOf(bitmap.width, 340)
+                    val scaled = Bitmap.createScaledBitmap(bitmap, w, maxOf(1, bitmap.height * w / bitmap.width), true)
+                    try { ByteArrayOutputStream().use { out ->
+                        if (scaled.compress(Bitmap.CompressFormat.JPEG, 55, out)) out.toByteArray() else null
+                    } } finally { if (scaled !== bitmap) scaled.recycle() }
+                } finally { bitmap.recycle() }
+            }.whenComplete { bytes, _ -> activity.runOnUiThread { finish(bytes) } }
+        }, { finish(null) })
+    }
+
     fun openBlocker(target: String?) {
         when (target) {
             "tools" -> checkNotNull(action).click()
@@ -203,7 +224,7 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
 }
 
 private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegate, GeckoSession.ProgressDelegate,
-    GeckoSession.ContentDelegate, GeckoSession.ScrollDelegate, WebExtension.MessageDelegate, WebExtension.PortDelegate {
+    GeckoSession.ContentDelegate, GeckoSession.ScrollDelegate, GeckoSession.HistoryDelegate, WebExtension.MessageDelegate, WebExtension.PortDelegate {
     private val session = GeckoSession(GeckoSessionSettings.Builder().suspendMediaWhenInactive(true).build())
     private var view: GeckoView? = null
     private var events: MethodChannel? = null
@@ -216,6 +237,8 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
     private var loaded = false
     private var failed = false
     private var stopped = false
+    private var back = false
+    private var forward = false
     private var firstUrl: String? = null
     private var requested = ""
     private val startupTimeout = Runnable {
@@ -228,7 +251,7 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
         val target = firstUrl ?: return
         firstUrl = null
         handler.removeCallbacks(startupTimeout)
-        if (!closed && session.isOpen) session.loadUri(target)
+        if (!closed && session.isOpen) session.load(GeckoSession.Loader().uri(target).flags(GeckoSession.LOAD_FLAGS_REPLACE_HISTORY))
     }
 
     private fun load(target: String) {
@@ -263,6 +286,7 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
                     val retained = session.isOpen
                     if (!retained) {
                         session.navigationDelegate = this
+                        session.historyDelegate = this
                         session.progressDelegate = this
                         session.contentDelegate = this
                         session.scrollDelegate = this
@@ -278,7 +302,7 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
                         event("location", url)
                         event("title", title)
                         if (failed) event("error", url) else if (loaded) {
-                            event("stop", url)
+                            event("retained", url)
                             reportReady()
                         }
                     }
@@ -311,10 +335,25 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
                 visible = call.arguments == true
                 if (session.isOpen) host.activate(session, if (visible) channel else null)
             }
+            "traverse" -> {
+                val previous = call.arguments == -1
+                val available = session.isOpen && if (previous) back else forward
+                if (available) { if (previous) session.goBack(false) else session.goForward(false) }
+                result.success(available)
+                return
+            }
             "blocker" -> {
                 check(host.isActive(session) && webUrl(url) && call.argument<String>("url") == url)
-                if (call.argument<String>("action") == "reload") session.reload()
-                else host.openBlocker(call.argument("action"))
+                when (val action = call.argument<String>("action")) {
+                    "reload" -> session.reload()
+                    "clearSite" -> {
+                        host.runtime.storageController.clearDataFromHost(URI(url).host,
+                            StorageController.ClearFlags.COOKIES or StorageController.ClearFlags.AUTH_SESSIONS
+                        ).accept({ result.success(null) }, { result.error("cookies", null, null) })
+                        return
+                    }
+                    else -> host.openBlocker(action)
+                }
             }
             "find" -> {
                 val forward = call.argument<Boolean>("forward") != false
@@ -326,17 +365,7 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
             }
             "clearFind" -> session.finder.clear()
             "preview" -> {
-                owner.capturePixels().accept({ bitmap ->
-                    if (bitmap == null || bitmap.width <= 0) { result.success(null); return@accept }
-                    try {
-                        val w = minOf(bitmap.width, 340)
-                        val scaled = Bitmap.createScaledBitmap(bitmap, w, maxOf(1, bitmap.height * w / bitmap.width), true)
-                        val out = ByteArrayOutputStream()
-                        scaled.compress(Bitmap.CompressFormat.JPEG, 55, out)
-                        if (scaled !== bitmap) scaled.recycle()
-                        result.success(out.toByteArray())
-                    } finally { bitmap.recycle() }
-                }, { result.success(null) })
+                host.preview(owner, result)
                 return
             }
             "reader" -> {
@@ -367,6 +396,21 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
         sender.session === session && sender.webExtension.id == READER && sender.isTopLevel &&
             sender.environmentType == WebExtension.MessageSender.ENV_TYPE_CONTENT_SCRIPT && webUrl(sender.url)
 
+    override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) { back = canGoBack }
+    override fun onCanGoForward(session: GeckoSession, canGoForward: Boolean) { forward = canGoForward }
+    override fun onHistoryStateChange(session: GeckoSession, historyList: GeckoSession.HistoryDelegate.HistoryList) {
+        if (historyList.isEmpty()) return
+        val index = historyList.currentIndex
+        if (index !in historyList.indices) return
+        val start = maxOf(0, index - 19)
+        val urls = historyList.subList(start, minOf(historyList.size, index + 20)).map { it.uri }
+        event("history", listOf(index - start, urls))
+    }
+    override fun onContextMenu(session: GeckoSession, screenX: Int, screenY: Int, element: GeckoSession.ContentDelegate.ContextElement) {
+        if (visible && webUrl(element.linkUri))
+            event("linkMenu", listOf(url, element.linkUri, element.type == GeckoSession.ContentDelegate.ContextElement.TYPE_IMAGE))
+    }
+
     override fun onConnect(port: WebExtension.Port) {
         if (closed || !valid(port.sender)) { port.disconnect(); return }
         clearPort()
@@ -375,12 +419,11 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
         reportReady()
     }
     override fun onDisconnect(port: WebExtension.Port) {
-        if (port === this.port) clearPort(false)
+        if (port === this.port) clearPort()
     }
-    private fun clearPort(disconnect: Boolean = true) {
-        val old = port
+    private fun clearPort() {
+        // The document disconnects on pagehide (or Gecko on destruction); don't shut down its dispatcher twice.
         port = null
-        if (disconnect) old?.disconnect()
         pending.values.forEach { handler.removeCallbacksAndMessages(it); it.error("document", null, null) }
         pending.clear()
     }
@@ -435,7 +478,7 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
         if (!webUrl(url)) return
         loaded = success && !failed
         if (!loaded && !stopped) failed = true
-        event(if (failed) "error" else "stop", url)
+        event(if (failed) "error" else if (stopped) "cancelled" else "stop", url)
         reportReady()
     }
     override fun onProgressChange(session: GeckoSession, progress: Int) { event("progress", progress) }

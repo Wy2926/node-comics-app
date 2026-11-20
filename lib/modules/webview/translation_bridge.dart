@@ -212,6 +212,20 @@ class WebTranslationBridge {
     if (anchor != null) await _call('restore', anchor, _epoch);
   }
 
+  Future<bool> imageMenuClaimed() async {
+    if (!active || !_ready) return false;
+    try {
+      return await _call(
+            'imageMenuClaimed',
+            {},
+            _epoch,
+          ).timeout(const Duration(milliseconds: 400)) ==
+          true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   void _changed() {
     _syncArchive();
     if (!_ready || _disposed) return;

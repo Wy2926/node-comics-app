@@ -1,11 +1,20 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:mangayomi/repositories/db_write_queue.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
 
 import 'browser_url.dart';
 
 final browserLibraryStore = BrowserLibraryStore();
+
+typedef BrowserMatch = ({
+  String title,
+  String url,
+  String? tabId,
+  bool bookmark,
+});
 
 class BrowserPageEntry {
   const BrowserPageEntry({
@@ -53,12 +62,48 @@ class BrowserLibraryStore extends ChangeNotifier {
   List<BrowserPageEntry> _history = [], _bookmarks = [];
   BrowserSearchEngine _engine = BrowserSearchEngine.google;
   Future<void>? _loading;
-  Future<void> _writes = Future.value();
+  final _writes = DbWriteQueue();
 
   List<BrowserPageEntry> get history => List.unmodifiable(_history);
   List<BrowserPageEntry> get bookmarks => List.unmodifiable(_bookmarks);
   BrowserSearchEngine get engine => _engine;
   bool isBookmarked(String url) => _bookmarks.any((e) => e.url == url);
+
+  Iterable<BrowserMatch> matches(
+    String query,
+    Iterable<Map<String, dynamic>> tabs,
+  ) sync* {
+    final term = query.trim().toLowerCase();
+    if (term.isEmpty) return;
+    final seen = <String>{};
+    bool match(String title, String url) =>
+        url.isNotEmpty &&
+        '$title $url'.toLowerCase().contains(term) &&
+        seen.add(url);
+    for (final t in tabs) {
+      final url = t['url'] as String, title = t['title'] as String? ?? '';
+      if (match(title, url)) {
+        yield (
+          url: url,
+          title: title,
+          tabId: t['id'] as String,
+          bookmark: false,
+        );
+      }
+    }
+    for (final entries in [_bookmarks, _history]) {
+      for (final e in entries) {
+        if (match(e.title, e.url)) {
+          yield (
+            url: e.url,
+            title: e.displayTitle,
+            tabId: null,
+            bookmark: identical(entries, _bookmarks),
+          );
+        }
+      }
+    }
+  }
 
   Future<void> load() => _loading ??= _load().catchError((Object error) {
     _loading = null;
@@ -96,54 +141,53 @@ class BrowserLibraryStore extends ChangeNotifier {
 
   // Apply mutations inside the queue, publishing only after a successful write.
   Future<void> _change({
-    List<BrowserPageEntry> Function()? history,
+    FutureOr<List<BrowserPageEntry>> Function()? history,
     List<BrowserPageEntry> Function()? bookmarks,
     BrowserSearchEngine? engine,
-  }) {
-    _writes = _writes.catchError((_) {}).then((_) async {
-      await load();
-      final nextHistory = history?.call() ?? _history;
-      final nextBookmarks = bookmarks?.call() ?? _bookmarks;
-      final nextEngine = engine ?? _engine;
-      if (history == null && bookmarks == null && nextEngine == _engine) return;
-      await nodeLanePrivateVault.write(
-        key: storageKey,
-        value: jsonEncode({
-          'history': nextHistory.map((e) => e.toJson()).toList(),
-          'bookmarks': nextBookmarks.map((e) => e.toJson()).toList(),
-          'engine': nextEngine.name,
-        }),
-      );
-      _history = nextHistory;
-      _bookmarks = nextBookmarks;
-      _engine = nextEngine;
-      notifyListeners();
-    });
-    return _writes;
-  }
+  }) => _writes.run(() async {
+    await load();
+    final nextHistory = history == null ? _history : await history();
+    final nextBookmarks = bookmarks?.call() ?? _bookmarks;
+    final nextEngine = engine ?? _engine;
+    if (history == null && bookmarks == null && nextEngine == _engine) return;
+    await nodeLanePrivateVault.write(
+      key: storageKey,
+      value: jsonEncode({
+        'history': nextHistory.map((e) => e.toJson()).toList(),
+        'bookmarks': nextBookmarks.map((e) => e.toJson()).toList(),
+        'engine': nextEngine.name,
+      }),
+    );
+    _history = nextHistory;
+    _bookmarks = nextBookmarks;
+    _engine = nextEngine;
+    notifyListeners();
+  });
 
   Future<void> visit(
     String url,
     String title, {
     DateTime? time,
-    String? iconUrl,
+    FutureOr<String?> iconUrl,
   }) {
     if (!isBrowserUrl(url)) return Future.value();
-    final entry = BrowserPageEntry(
-      url: url,
-      title: title,
-      time: time ?? DateTime.now(),
-      iconUrl: isBrowserUrl(iconUrl) ? iconUrl : null,
-    );
+    final when = time ?? DateTime.now();
     return _change(
-      history: () => [
-        entry,
-        ..._history.where(
-          (old) =>
-              old.url != url ||
-              !_sameDay(old.time.toLocal(), entry.time.toLocal()),
-        ),
-      ].take(maxHistory).toList(),
+      history: () async {
+        final icon = await iconUrl;
+        return [
+          BrowserPageEntry(
+            url: url,
+            title: title,
+            time: when,
+            iconUrl: isBrowserUrl(icon) ? icon : null,
+          ),
+          ..._history.where(
+            (old) =>
+                old.url != url || !_sameDay(old.time.toLocal(), when.toLocal()),
+          ),
+        ].take(maxHistory).toList();
+      },
     );
   }
 

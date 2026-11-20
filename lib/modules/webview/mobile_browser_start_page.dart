@@ -29,6 +29,7 @@ class MobileBrowserStartPage extends StatelessWidget {
     this.onEngine,
     this.onHistory,
     this.onBookmarks,
+    this.onMatch,
   });
   final List<Source> sources;
   final int tabCount;
@@ -39,6 +40,7 @@ class MobileBrowserStartPage extends StatelessWidget {
   final BrowserSearchEngine engine;
   final List<BrowserPageEntry> recent;
   final Future<void> Function(BrowserSearchEngine)? onEngine;
+  final ValueChanged<BrowserMatch>? onMatch;
   final VoidCallback? onHistory, onBookmarks;
 
   @override
@@ -76,6 +78,7 @@ class MobileBrowserStartPage extends StatelessWidget {
                 engine: engine,
                 onEngine: onEngine,
                 onSubmitted: (url) => onOpen(url, ''),
+                onMatch: onMatch,
               ),
             ),
             const SizedBox(width: NodeLaneTokens.space8),
