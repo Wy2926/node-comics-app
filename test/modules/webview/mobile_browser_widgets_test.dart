@@ -30,52 +30,25 @@ void main() {
         isForMainFrame: mainFrame,
         navigationType: NavigationType.LINK_ACTIVATED,
       );
-      expect(
-        browserNavigationPolicy(
-          action(),
-          isIos: true,
-          active: true,
-          openTab: opened.add,
-        ),
-        NavigationActionPolicy.CANCEL,
+      NavigationActionPolicy policy(
+        NavigationAction request, {
+        bool ios = true,
+        bool active = true,
+      }) => browserNavigationPolicy(
+        request,
+        isIos: ios,
+        active: active,
+        openTab: opened.add,
       );
+      expect(policy(action()), NavigationActionPolicy.CANCEL);
       expect(opened, ['https://preview.example/next']);
+      expect(policy(action(), active: false), NavigationActionPolicy.CANCEL);
       expect(
-        browserNavigationPolicy(
-          action(),
-          isIos: true,
-          active: false,
-          openTab: opened.add,
-        ),
+        policy(action(url: 'file:///private/page')),
         NavigationActionPolicy.CANCEL,
       );
-      expect(
-        browserNavigationPolicy(
-          action(url: 'file:///private/page'),
-          isIos: true,
-          active: true,
-          openTab: opened.add,
-        ),
-        NavigationActionPolicy.CANCEL,
-      );
-      expect(
-        browserNavigationPolicy(
-          action(mainFrame: true),
-          isIos: true,
-          active: true,
-          openTab: opened.add,
-        ),
-        NavigationActionPolicy.ALLOW,
-      );
-      expect(
-        browserNavigationPolicy(
-          action(),
-          isIos: false,
-          active: true,
-          openTab: opened.add,
-        ),
-        NavigationActionPolicy.ALLOW,
-      );
+      expect(policy(action(mainFrame: true)), NavigationActionPolicy.ALLOW);
+      expect(policy(action(), ios: false), NavigationActionPolicy.ALLOW);
       expect(opened, ['https://preview.example/next']);
     },
   );
@@ -111,6 +84,7 @@ void main() {
     tester,
   ) async {
     var closes = 0, tabs = 0, controls = 0, pages = 0, newTabs = 0;
+    var protection = 0;
     final displays = <bool>[];
     final focus = FocusNode();
     addTearDown(focus.dispose);
@@ -123,6 +97,7 @@ void main() {
             onSubmitted: (_) {},
             addressFocus: focus,
             onClose: () => closes++,
+            protection: (name: '站点保护', open: () => protection++),
             menu: IconButton(
               onPressed: () {},
               icon: const Icon(Icons.more_horiz),
@@ -147,15 +122,18 @@ void main() {
       ),
     );
     expect(find.textContaining('private'), findsNothing);
+    await tester.tap(find.byTooltip('站点保护'));
+    expect(protection, 1);
     await tester.tap(find.byType(TextField));
     await tester.pumpAndSettle();
+    expect(find.byTooltip('站点保护'), findsNothing);
     expect(
       find.text('https://preview.example/chapter?private=value'),
       findsOneWidget,
     );
     await tester.tap(find.text('取消'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('返回'));
+    await tester.tap(find.byTooltip('离开网页'));
     await tester.tap(find.text('12'));
     await tester.tap(find.text('译图'));
     await tester.tap(find.byTooltip('新建标签页'));
@@ -214,6 +192,7 @@ void main() {
             onPressed: () => showNodeLaneCatalogSheet<void>(
               context,
               MobileBrowserTabsSheet(
+                onUndo: () async => [],
                 entries: const [
                   {'id': 'a', 'title': 'Chapter', 'url': 'https://example.org'},
                 ],
@@ -238,7 +217,7 @@ void main() {
       expect(attempts, 1);
       first.completeError(StateError('temporary storage failure'));
       await tester.pumpAndSettle();
-      expect(find.text('标签状态保存失败，请再次点击关闭重试。'), findsOneWidget);
+      expect(find.text('标签状态保存失败，请重试。'), findsOneWidget);
       await tester.tap(find.byTooltip('关闭标签页'));
       await tester.pumpAndSettle();
       expect(attempts, 2);
@@ -360,7 +339,7 @@ void main() {
     expect(decisions, [false]);
     await tester.tap(find.text('Clear'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('清除登录状态'));
+    await tester.tap(find.text('清除Cookie'));
     await tester.pumpAndSettle();
     expect(decisions, [false, true]);
     expect(tester.takeException(), isNull);
@@ -370,13 +349,22 @@ void main() {
     'omnibox searches with the selected engine and keeps URL navigation',
     (tester) async {
       final opened = <String>[];
+      final selected = <BrowserMatch>[];
       await mount(
         tester,
         MobileBrowserAddressField(
           engine: BrowserSearchEngine.duckDuckGo,
           onSubmitted: opened.add,
+          onMatch: selected.add,
+          openTabs: const [
+            {'id': 'open', 'url': 'https://reader.example/ch', 'title': '已开章节'},
+          ],
         ),
       );
+      await tester.enterText(find.byType(TextField), '已开');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('已开章节'));
+      expect(selected.single.tabId, 'open');
       await tester.enterText(find.byType(TextField), '漫画 & novels');
       expect(opened, isEmpty);
       await tester.testTextInput.receiveAction(TextInputAction.go);

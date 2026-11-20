@@ -14,9 +14,11 @@ class MobileBrowserTabsSheet extends StatefulWidget {
     super.key,
     required this.entries,
     required this.onClose,
+    required this.onUndo,
   });
   final List<Map<String, dynamic>> entries;
   final Future<List<Map<String, dynamic>>> Function(String) onClose;
+  final Future<List<Map<String, dynamic>>> Function() onUndo;
   @override
   State<MobileBrowserTabsSheet> createState() => _MobileBrowserTabsSheetState();
 }
@@ -31,8 +33,28 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
             2) *
         (NodeLaneTokens.browserTabHeight + NodeLaneTokens.browserTabGap),
   );
-  final closing = <String>{};
+  bool busy = false;
   String? error;
+
+  Future<void> _edit(Future<List<Map<String, dynamic>>> Function() edit) async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      final next = await edit();
+      if (mounted) {
+        setState(() {
+          entries
+            ..clear()
+            ..addAll(next);
+          error = null;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => error = context.l10n.browser_save_failed);
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -57,16 +79,21 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
               style: NodeLaneTokens.of(context).readerSecondary,
             ),
           ),
+        if (browserSessionStore.canUndo)
+          TextButton.icon(
+            onPressed: busy ? null : () => _edit(widget.onUndo),
+            icon: Icon(NodeLaneIcons.of(context).reset),
+            label: Text(context.l10n.browser_undo_close),
+          ),
         FilledButton.icon(
-          onPressed:
-              entries.length < BrowserSessionStore.maxTabs && closing.isEmpty
+          onPressed: entries.length < BrowserSessionStore.maxTabs && !busy
               ? () => Navigator.pop(context, '')
               : null,
           icon: Icon(NodeLaneIcons.of(context).add),
           label: Text(
             entries.length < BrowserSessionStore.maxTabs
                 ? context.l10n.browser_new_tab_action
-                : context.l10n.browser_tabs_full,
+                : context.l10n.browser_tabs_full(BrowserSessionStore.maxTabs),
           ),
         ),
       ],
@@ -100,31 +127,9 @@ class _MobileBrowserTabsSheetState extends State<MobileBrowserTabsSheet> {
                   selected: entry['active'] == true,
                   preview: browserSessionStore.preview(id),
                   onSelect: () {
-                    if (!closing.contains(id)) Navigator.pop(context, id);
+                    if (!busy) Navigator.pop(context, id);
                   },
-                  onClose: () async {
-                    if (closing.isNotEmpty) return;
-                    setState(() => closing.add(id));
-                    try {
-                      final updated = await widget.onClose(id);
-                      if (mounted) {
-                        setState(() {
-                          entries
-                            ..clear()
-                            ..addAll(updated);
-                          error = null;
-                        });
-                      }
-                    } catch (_) {
-                      if (mounted) {
-                        setState(
-                          () => error = context.l10n.browser_close_failed,
-                        );
-                      }
-                    } finally {
-                      if (mounted) setState(() => closing.remove(id));
-                    }
-                  },
+                  onClose: () => _edit(() => widget.onClose(id)),
                 );
               },
             ),

@@ -10,6 +10,27 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get browser_protection => 'Bảo vệ trang web';
+
+  @override
+  String get browser_filter_site => 'Lọc quảng cáo trên trang web này';
+
+  @override
+  String get browser_blocked_here => 'Đã chặn trên trang này';
+
+  @override
+  String get browser_blocked_total => 'Đã chặn từ khi cài đặt';
+
+  @override
+  String get browser_filter_tools => 'Công cụ cho trang web';
+
+  @override
+  String get browser_filter_dashboard => 'Cài đặt bộ lọc';
+
+  @override
+  String get browser_reload_page => 'Tải lại và quay về trang';
+
+  @override
   String get feedback_app => 'Góp ý ứng dụng';
 
   @override
@@ -5363,26 +5384,29 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_edit_address => 'Chỉnh sửa URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Xóa phiên đăng nhập cho tất cả các trang web?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Các trang web trong tất cả các tab có thể yêu cầu bạn đăng nhập lại.';
 
   @override
-  String get browser_clear_cookies_action => 'Xóa phiên đăng nhập';
+  String browser_tab_limit(int count) {
+    return 'Bạn có thể mở tối đa $count tab. Hãy đóng một tab trước.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Bạn có thể mở tối đa 12 tab. Đóng một cái trước.';
+  String get browser_undo_close => 'Mở lại thẻ vừa đóng';
+
+  @override
+  String get browser_background_tab => 'Mở liên kết trong thẻ nền';
+
+  @override
+  String get browser_leave_page => 'Rời trang web';
+
+  @override
+  String get browser_extensions_failed =>
+      'Không thể khởi động tiện ích trình duyệt';
 
   @override
   String get browser_forward => 'Chuyển tiếp';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Xóa tất cả các phiên đăng nhập trang web';
 
   @override
   String get browser_clear_failed => 'Không thể xóa phiên. Vui lòng thử lại.';
@@ -5391,14 +5415,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_save_failed => 'Không thể lưu tab. Vui lòng thử lại.';
 
   @override
-  String get browser_tabs_full => '12 tab đã được mở';
+  String browser_tabs_full(int count) {
+    return '$count tab đã được mở';
+  }
 
   @override
   String get browser_no_tabs => 'Chưa có tab nào được mở';
-
-  @override
-  String get browser_close_failed =>
-      'Không thể lưu tab. Nhấn vào đóng lại để thử lại.';
 
   @override
   String get source_pinned_websites => 'Trang web được ghim';

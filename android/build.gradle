@@ -2,6 +2,10 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://maven.mozilla.org/maven2/")
+            content { includeGroup "org.mozilla.geckoview" }
+        }
     }
 }
 
@@ -30,7 +34,7 @@ subprojects {
     if (project.plugins.hasPlugin("com.android.application") ||
       project.plugins.hasPlugin("com.android.library")) {
       project.android {
-        compileSdkVersion 36
+        if (project.path != ':app') compileSdkVersion 36
         buildToolsVersion "34.0.0"
       }
     }

@@ -10,6 +10,27 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get browser_protection => 'サイトの保護';
+
+  @override
+  String get browser_filter_site => 'このサイトの広告をブロック';
+
+  @override
+  String get browser_blocked_here => 'このページでのブロック数';
+
+  @override
+  String get browser_blocked_total => 'インストール後のブロック数';
+
+  @override
+  String get browser_filter_tools => 'サイト用ツール';
+
+  @override
+  String get browser_filter_dashboard => 'フィルター設定';
+
+  @override
+  String get browser_reload_page => '再読み込みしてページに戻る';
+
+  @override
   String get feedback_app => 'アプリへのご意見';
 
   @override
@@ -5172,24 +5193,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String get browser_edit_address => 'URL を編集';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'すべての Web サイトのサインイン セッションをクリアしますか?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'ウェブサイトのすべてのタブでは、再度サインインする必要がある場合があります。';
 
   @override
-  String get browser_clear_cookies_action => 'サインイン セッションをクリアします';
+  String browser_tab_limit(int count) {
+    return '開けるタブは最大 $count 個です。先にタブを閉じてください。';
+  }
 
   @override
-  String get browser_tab_limit => '最大 12 個のタブを開いたままにすることができます。まず 1 つを閉じます。';
+  String get browser_undo_close => '閉じたタブを開き直す';
+
+  @override
+  String get browser_background_tab => 'リンクをバックグラウンドのタブで開く';
+
+  @override
+  String get browser_leave_page => 'ウェブページを離れる';
+
+  @override
+  String get browser_extensions_failed => 'ブラウザー拡張機能を起動できませんでした';
 
   @override
   String get browser_forward => '前進';
-
-  @override
-  String get browser_clear_all_cookies => 'すべての Web サイトのサインイン セッションをクリアする';
 
   @override
   String get browser_clear_failed => 'セッションをクリアできませんでした。もう一度試してください。';
@@ -5198,13 +5223,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get browser_save_failed => 'タブを保存できませんでした。もう一度試してください。';
 
   @override
-  String get browser_tabs_full => '12 個のタブがすでに開いています';
+  String browser_tabs_full(int count) {
+    return '$count 個のタブがすでに開いています';
+  }
 
   @override
   String get browser_no_tabs => '開いているタブはまだありません';
-
-  @override
-  String get browser_close_failed => 'タブを保存できませんでした。再試行するには、もう一度「閉じる」をタップします。';
 
   @override
   String get source_pinned_websites => 'ピン留めされたウェブサイト';

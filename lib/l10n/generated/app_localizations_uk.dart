@@ -10,6 +10,27 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
+  String get browser_protection => 'Захист сайту';
+
+  @override
+  String get browser_filter_site => 'Блокувати рекламу на цьому сайті';
+
+  @override
+  String get browser_blocked_here => 'Заблоковано на цій сторінці';
+
+  @override
+  String get browser_blocked_total => 'Заблоковано від часу встановлення';
+
+  @override
+  String get browser_filter_tools => 'Інструменти сайту';
+
+  @override
+  String get browser_filter_dashboard => 'Налаштування фільтрів';
+
+  @override
+  String get browser_reload_page => 'Оновити й повернутися на сторінку';
+
+  @override
   String get feedback_app => 'Відгук про застосунок';
 
   @override
@@ -5394,26 +5415,29 @@ class AppLocalizationsUk extends AppLocalizations {
   String get browser_edit_address => 'Редагувати URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Очистити сеанси входу для всіх веб-сайтів?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Веб-сайти на всіх вкладках можуть вимагати повторного входу.';
 
   @override
-  String get browser_clear_cookies_action => 'Очистити сеанси входу';
+  String browser_tab_limit(int count) {
+    return 'Ліміт відкритих вкладок: $count. Спершу закрийте одну.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Ви можете тримати відкритими до 12 вкладок. Спочатку закрийте один.';
+  String get browser_undo_close => 'Відкрити закриту вкладку';
+
+  @override
+  String get browser_background_tab => 'Відкрити посилання у фоновій вкладці';
+
+  @override
+  String get browser_leave_page => 'Вийти зі сторінки';
+
+  @override
+  String get browser_extensions_failed =>
+      'Не вдалося запустити розширення браузера';
 
   @override
   String get browser_forward => 'Вперед';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Очистити всі сеанси входу на веб-сайті';
 
   @override
   String get browser_clear_failed =>
@@ -5424,14 +5448,12 @@ class AppLocalizationsUk extends AppLocalizations {
       'Не вдалося зберегти вкладки. Спробуйте ще раз.';
 
   @override
-  String get browser_tabs_full => '12 вкладок вже відкрито';
+  String browser_tabs_full(int count) {
+    return 'Відкритих вкладок: $count';
+  }
 
   @override
   String get browser_no_tabs => 'Ще немає відкритих вкладок';
-
-  @override
-  String get browser_close_failed =>
-      'Не вдалося зберегти вкладки. Натисніть «Закрити» ще раз, щоб повторити спробу.';
 
   @override
   String get source_pinned_websites => 'Закріплені веб-сайти';

@@ -1,4 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Gecko is registered only on supported devices; Android 7 keeps System WebView. -->
+    <uses-sdk tools:overrideLibrary="org.mozilla.geckoview"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />

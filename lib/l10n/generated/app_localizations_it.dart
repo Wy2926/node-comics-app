@@ -10,6 +10,27 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String get browser_protection => 'Protezione del sito';
+
+  @override
+  String get browser_filter_site => 'Filtra la pubblicità su questo sito';
+
+  @override
+  String get browser_blocked_here => 'Richieste bloccate su questa pagina';
+
+  @override
+  String get browser_blocked_total => 'Bloccate dall’installazione';
+
+  @override
+  String get browser_filter_tools => 'Strumenti del sito';
+
+  @override
+  String get browser_filter_dashboard => 'Impostazioni dei filtri';
+
+  @override
+  String get browser_reload_page => 'Ricarica e torna alla pagina';
+
+  @override
   String get feedback_app => 'Feedback sull’app';
 
   @override
@@ -5409,26 +5430,30 @@ class AppLocalizationsIt extends AppLocalizations {
   String get browser_edit_address => 'Modifica URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Cancellare le sessioni di accesso per tutti i siti web?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'I siti web in tutte le schede potrebbero richiedere di effettuare nuovamente l\'accesso.';
 
   @override
-  String get browser_clear_cookies_action => 'Cancella sessioni di accesso';
+  String browser_tab_limit(int count) {
+    return 'Puoi tenere aperte fino a $count schede. Prima chiudine una.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Si possono tenere aperte fino a 12 schede. Prima chiudine uno.';
+  String get browser_undo_close => 'Riapri la scheda chiusa';
+
+  @override
+  String get browser_background_tab =>
+      'Apri il link in una scheda in secondo piano';
+
+  @override
+  String get browser_leave_page => 'Esci dalla pagina';
+
+  @override
+  String get browser_extensions_failed =>
+      'Impossibile avviare le estensioni del browser';
 
   @override
   String get browser_forward => 'Avanti';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Cancella tutte le sessioni di accesso al sito web';
 
   @override
   String get browser_clear_failed =>
@@ -5439,14 +5464,12 @@ class AppLocalizationsIt extends AppLocalizations {
       'Impossibile salvare le schede. Per favore riprova.';
 
   @override
-  String get browser_tabs_full => '12 schede sono già aperte';
+  String browser_tabs_full(int count) {
+    return 'Sono già aperte $count schede';
+  }
 
   @override
   String get browser_no_tabs => 'Ancora nessuna scheda aperta';
-
-  @override
-  String get browser_close_failed =>
-      'Impossibile salvare le schede. Tocca di nuovo chiudi per riprovare.';
 
   @override
   String get source_pinned_websites => 'Siti web appuntati';

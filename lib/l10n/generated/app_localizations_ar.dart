@@ -10,6 +10,27 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get browser_protection => 'حماية الموقع';
+
+  @override
+  String get browser_filter_site => 'حجب الإعلانات على هذا الموقع';
+
+  @override
+  String get browser_blocked_here => 'الطلبات المحجوبة في هذه الصفحة';
+
+  @override
+  String get browser_blocked_total => 'الطلبات المحجوبة منذ التثبيت';
+
+  @override
+  String get browser_filter_tools => 'أدوات الموقع';
+
+  @override
+  String get browser_filter_dashboard => 'إعدادات التصفية';
+
+  @override
+  String get browser_reload_page => 'إعادة التحميل والعودة إلى الصفحة';
+
+  @override
   String get feedback_app => 'ملاحظات التطبيق';
 
   @override
@@ -5337,26 +5358,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser_edit_address => 'تحرير URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'هل تريد مسح جلسات تسجيل الدخول لجميع مواقع الويب؟';
-
-  @override
   String get browser_clear_cookies_hint =>
       'قد تطلب منك مواقع الويب الموجودة في جميع علامات التبويب تسجيل الدخول مرة أخرى.';
 
   @override
-  String get browser_clear_cookies_action => 'مسح جلسات تسجيل الدخول';
+  String browser_tab_limit(int count) {
+    return 'يمكنك إبقاء $count علامة تبويب مفتوحة. أغلق واحدة أولاً.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'يمكنك الاحتفاظ بما يصل إلى 12 علامة تبويب مفتوحة. أغلق واحدًا أولاً.';
+  String get browser_undo_close => 'إعادة فتح علامة التبويب المغلقة';
+
+  @override
+  String get browser_background_tab => 'فتح الرابط في علامة تبويب في الخلفية';
+
+  @override
+  String get browser_leave_page => 'مغادرة الصفحة';
+
+  @override
+  String get browser_extensions_failed => 'تعذّر بدء إضافات المتصفح';
 
   @override
   String get browser_forward => 'إلى الأمام';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'مسح جميع جلسات تسجيل الدخول إلى موقع الويب';
 
   @override
   String get browser_clear_failed =>
@@ -5367,14 +5390,12 @@ class AppLocalizationsAr extends AppLocalizations {
       'لا يمكن حفظ علامات التبويب. يرجى المحاولة مرة أخرى.';
 
   @override
-  String get browser_tabs_full => '12 علامة تبويب مفتوحة بالفعل';
+  String browser_tabs_full(int count) {
+    return '$count علامة تبويب مفتوحة بالفعل';
+  }
 
   @override
   String get browser_no_tabs => 'لا توجد علامات تبويب مفتوحة بعد';
-
-  @override
-  String get browser_close_failed =>
-      'تعذر حفظ علامات التبويب. انقر فوق إغلاق مرة أخرى لإعادة المحاولة.';
 
   @override
   String get source_pinned_websites => 'المواقع المثبتة';

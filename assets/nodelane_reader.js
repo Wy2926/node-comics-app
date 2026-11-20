@@ -8,6 +8,7 @@
   const old = window.__nodelaneReader;
   if (old) old.dispose();
   const config = __NODELANE_CONFIG__;
+  const send = config.send || (message => window.flutter_inappwebview.callHandler('nodelaneImages', message));
   const records = new Map();
   const ids = new WeakMap();
   const versions = new WeakMap();
@@ -18,6 +19,33 @@
   let theme = {};
   let next = 0, nextVersion = 0, seq = 0, active = false, translated = false, timer, disposed = false;
   let input = null, output = null, observer, restoreTimer;
+  const near = new Set();
+  let viewport, margin, slots;
+  const ordered = () => slots ??= Array.from(document.querySelectorAll('img,canvas'));
+  function watch(node, added) {
+    if (!(node instanceof Element)) return;
+    const track = el => {
+      slots = null;
+      if (!added) { near.delete(el); viewport?.unobserve(el); }
+      else if (!el.dataset.nodelaneOverlay) viewport?.observe(el);
+    };
+    if (node.matches('img,canvas')) track(node);
+    node.querySelectorAll('img,canvas').forEach(track);
+  }
+  function watchViewport() {
+    const rootMargin = `0px ${innerWidth * 2}px ${innerHeight * 2}px`;
+    if (typeof IntersectionObserver === 'undefined' || margin === rootMargin) return;
+    margin = rootMargin;
+    viewport?.disconnect();
+    near.clear();
+    viewport = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (e.isIntersecting && e.target.isConnected) near.add(e.target); else near.delete(e.target);
+      }
+      schedule();
+    }, {rootMargin});
+    for (const el of ordered()) if (!el.dataset.nodelaneOverlay) viewport.observe(el);
+  }
   const CHUNK = 128 * 1024;
   const probe = document.createElement('canvas'); probe.width = probe.height = 32;
   const encode = bytes => {
@@ -145,7 +173,7 @@
   }
   function cancelPress() { clearTimeout(pressTimer); press=null; }
   function sendAction(item, action) {
-    return window.flutter_inappwebview.callHandler('nodelaneImages', {
+    return send({
       token:config.token, seq:++seq, id:item.id, revision:item.revision, action,
     });
   }
@@ -274,7 +302,7 @@
   async function scan() {
     if (!active || disposed || document.visibilityState === 'hidden') return;
     const candidates = [];
-    const elements = document.querySelectorAll('img,canvas');
+    const elements = viewport ? near : ordered();
     for (const el of elements) {
       if (el.dataset.nodelaneOverlay) continue;
       const box = el.getBoundingClientRect();
@@ -299,25 +327,25 @@
     const keep = new Set(selected.map(item => item.id));
     for (const id of records.keys()) if (!keep.has(id)) { records.delete(id); drop(id); dropBadge(id); dropMenu(id); }
     place();
-    try { await window.flutter_inappwebview.callHandler('nodelaneImages', {token: config.token, seq: ++seq, items: selected}); } catch (_) {}
+    try { await send({token: config.token, seq: ++seq, items: selected}); } catch (_) {}
   }
   function schedule() {
+    if (!active || disposed || document.visibilityState === 'hidden') return;
     place();
     if (!timer) timer = setTimeout(() => { timer = null; scan(); }, 100);
   }
   function anchor() {
-    const elements = document.querySelectorAll('img,canvas');
-    for (let index=0; index<elements.length; index++) {
-      const el=elements[index], box=el.getBoundingClientRect();
-      if (el.dataset.nodelaneOverlay || box.width<=0 || box.height<=0 || box.bottom<innerHeight/2 || box.top>innerHeight/2) continue;
-      return {slot:index, fraction:(innerHeight/2-box.top)/box.height, x:scrollX, y:scrollY};
+    for (const el of viewport ? near : ordered()) {
+      const box=el.getBoundingClientRect();
+      if (el.dataset.nodelaneOverlay || box.width<=0 || box.height<=0 || box.right<=0 || box.left>=innerWidth || box.bottom<innerHeight/2 || box.top>innerHeight/2) continue;
+      return {slot:ordered().indexOf(el), fraction:(innerHeight/2-box.top)/box.height, x:scrollX, y:scrollY};
     }
     return {x:scrollX,y:scrollY};
   }
   function cancelRestore() { clearTimeout(restoreTimer); }
   function restore(value, attempt=0) {
     cancelRestore();
-    const el=Number.isInteger(value.slot) && value.slot>=0 ? document.querySelectorAll('img,canvas')[value.slot] : null;
+    const el=Number.isInteger(value.slot) && value.slot>=0 ? ordered()[value.slot] : null;
     const box=el?.getBoundingClientRect();
     const y=box?.height>0 && Number.isFinite(value.fraction) ? scrollY+box.top+Math.max(0,Math.min(1,value.fraction))*box.height-innerHeight/2 : value.y;
     if (Number.isFinite(y) && Number.isFinite(value.x)) scrollTo(value.x,Math.max(0,y));
@@ -326,12 +354,13 @@
   async function call(token, operation, args) {
     if (token !== config.token || disposed) throw Error('BRIDGE_INVALID');
     if (operation === 'anchor') return anchor();
+    if (operation === 'imageMenuClaimed') return !!press || menuBusy || Date.now() < (suppressClick?.until || 0);
     if (operation === 'restore') { restore(args); return true; }
     if (operation === 'state') {
       active = args.active; translated = args.translated;
       if (args.theme) theme=args.theme;
       if (args.items) { updateBadges(active ? args.items : []); updateMenus(active ? args.items : []); }
-      if (!active) { cancelPress(); for (const id of [...menus.keys()]) dropMenu(id); input = null; output = null; for (const id of [...overlays.keys()]) drop(id); for (const id of [...badges.keys()]) dropBadge(id); }
+      if (!active) { cancelPress(); for (const id of [...menus.keys()]) dropMenu(id); input?.abort?.abort(); input = null; output = null; for (const id of [...overlays.keys()]) drop(id); for (const id of [...badges.keys()]) dropBadge(id); }
       place(); if (active) schedule(); return true;
     }
     if (!active) throw Error('BRIDGE_INVALID');
@@ -348,7 +377,12 @@
       let canvas;
       try {
         let blob;
-        try {
+        if (config.readImage && !isCanvas && /^https?:/i.test(source(el))) {
+          value.abort = new AbortController();
+          try { blob = await config.readImage(el, value.abort.signal); } catch (_) {}
+          if (input !== value || !active || disposed) throw Error('SOURCE_CHANGED');
+        }
+        if (!blob?.size) try {
           // Read decoded pixels consistently, even when the page revoked its Blob URL.
           canvas = isCanvas ? el : document.createElement('canvas');
           if (!isCanvas) {
@@ -378,7 +412,7 @@
       if (input !== value) throw Error('BRIDGE_INVALID');
       value.offset += bytes.length; return encode(bytes);
     }
-    if (operation === 'inputEnd') { const value = input; input = null; if (value) record(value.id, value.revision); return true; }
+    if (operation === 'inputEnd') { const value = input; input = null; value?.abort?.abort(); if (value) record(value.id, value.revision); return true; }
     if (operation === 'resultClear') { drop(args.id); return true; }
     if (operation === 'resultBegin') {
       record(args.id, args.revision);
@@ -411,6 +445,7 @@
   }
   function dispose() {
     disposed = true; cancelPress(); clearTimeout(timer); clearInterval(canvasTimer); cancelRestore(); observer?.disconnect();
+    viewport?.disconnect(); near.clear(); slots=null; removeEventListener('resize', watchViewport);
     removeEventListener('scroll', schedule, true); removeEventListener('resize', schedule);
     document.removeEventListener('load', schedule, true);
     removeEventListener('pointerdown',cancelRestore); removeEventListener('wheel',cancelRestore);
@@ -421,7 +456,7 @@
     removeEventListener('pointerup',cancelPress,true); removeEventListener('pointercancel',cancelPress,true);
     removeEventListener('scroll',cancelPress,true); removeEventListener('contextmenu',contextMenu,true);
     removeEventListener('click',afterPress,true);
-    records.clear(); input = null; output = null; probe.width = probe.height = 0;
+    records.clear(); input?.abort?.abort(); input = null; output = null; probe.width = probe.height = 0;
   }
   window.__nodelaneReader = {call, dispose};
   addEventListener('scroll', schedule, {passive:true,capture:true}); addEventListener('resize', schedule, {passive:true});
@@ -434,9 +469,14 @@
   addEventListener('scroll',cancelPress,{passive:true,capture:true});
   addEventListener('contextmenu',contextMenu,true); addEventListener('click',afterPress,true);
   observer = new MutationObserver(changes => {
+    for (const change of changes) if (change.type === 'childList') {
+      change.removedNodes.forEach(node => watch(node,false));
+      change.addedNodes.forEach(node => watch(node,true));
+    }
     if (changes.some(change => !(change.target instanceof Element && change.target.closest('[data-nodelane-overlay]')))) schedule();
   });
   observer.observe(document.documentElement, {subtree:true,childList:true,attributes:true,attributeFilter:['src','srcset','sizes','width','height','style','class']});
+  watchViewport(); addEventListener('resize', watchViewport, {passive:true});
   const canvasTimer = setInterval(() => {
     if (active && [...records.values()].some(({el}) => el instanceof HTMLCanvasElement)) schedule();
   }, 500);

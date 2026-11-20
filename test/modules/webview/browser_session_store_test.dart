@@ -25,9 +25,9 @@ void main() {
       final restored = BrowserSessionStore();
       await restored.load();
       expect(restored.entries.single['url'], '');
-      final blankId = restored.entries.single['id'];
-      await restored.close('a');
-      expect(restored.entries.single['id'], blankId);
+      await store.undoClose();
+      expect(store.entries.single['id'], 'a');
+      expect(store.canUndo, isFalse);
       store.dispose();
       restored.dispose();
     },

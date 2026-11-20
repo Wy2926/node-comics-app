@@ -10,7 +10,6 @@ import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/utils/language.dart';
 
 enum SourceCardAction { open, install, update, retry, loading, pin, unpin }
 
@@ -75,7 +74,6 @@ class SourceWebsiteCard extends StatelessWidget {
       SourcePricing.paid => icons.sourcePaid,
       SourcePricing.unknown => icons.sourceUnknown,
     };
-    final language = source.lang?.toLowerCase() ?? '';
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -183,13 +181,10 @@ class SourceWebsiteCard extends StatelessWidget {
                                         height: NodeLaneTokens.space4,
                                       ),
                                       Text(
-                                        language == 'all'
-                                            ? context.l10n.source_multilingual
-                                            : language.isEmpty
-                                            ? context
-                                                  .l10n
-                                                  .source_language_unknown
-                                            : completeLanguageName(language),
+                                        sourceLanguageLabel(
+                                          source.lang ?? '',
+                                          context.l10n,
+                                        ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: t.sourceMetadata,

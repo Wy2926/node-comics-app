@@ -330,6 +330,113 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('English site'), findsOneWidget);
       expect(find.text('Japanese site'), findsNothing);
+      await tester.tap(find.text('NodeLane'));
+      await tester.pumpAndSettle();
+      expect(find.text('Japanese site'), findsOneWidget);
+      expect(find.text('English site'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'directory facets preview live counts, cancel, clear and recover from no matches',
+    (tester) async {
+      final entries = StreamController<List<Source>>();
+      addTearDown(entries.close);
+      Source site(
+        int id,
+        String region,
+        String price, {
+        String? name,
+        bool adult = false,
+      }) => Source(
+        id: id,
+        name: name ?? 'Site $id',
+        lang: 'en',
+        repo: repo,
+        isNsfw: adult,
+        isPinned: id == 1,
+        catalogMetadataJson:
+            '{"schema":1,"regions":["$region"],"pricing":"$price"}',
+      );
+      final initial = [
+        site(1, 'jp', 'free'),
+        site(2, 'kr', 'paid'),
+        site(3, 'jp', 'unknown'),
+        site(4, 'jp', 'free', name: 'Archive'),
+        site(5, 'jp', 'free', adult: true),
+      ];
+      entries.add(initial);
+      final container = ProviderContainer(
+        overrides: [
+          extensionsRepoStateProvider(ItemType.manga).overrideWith(_Repos.new),
+          hideItemsStateProvider.overrideWith(_Hidden.new),
+          showNSFWStateProvider.overrideWith(_Nsfw.new),
+          nodeLaneCatalogRepositoryProvider(ItemType.manga)
+              .overrideWithValue(repo),
+          nodeLaneCatalogLoadProvider(ItemType.manga)
+              .overrideWith((ref) async {}),
+          fetchItemSourcesListProvider(
+            reFresh: false,
+            itemType: ItemType.manga,
+          ).overrideWith((ref) async {}),
+          mobileCatalogEntriesProvider(ItemType.manga)
+              .overrideWith((ref) => entries.stream),
+        ],
+      );
+      addTearDown(container.dispose);
+      await mount(tester, const MobileSourcesScreen(), container, scale: 1.5);
+      await tester.enterText(find.byType(TextField), 'Site');
+      await tester.pumpAndSettle();
+      final bar = find.byKey(const PageStorageKey('directory-filter-bar'));
+      final horizontal = tester
+          .state<ScrollableState>(
+            find.descendant(of: bar, matching: find.byType(Scrollable)),
+          )
+          .position;
+      await tester.drag(bar, const Offset(-290, 0));
+      await tester.pumpAndSettle();
+      expect(horizontal.pixels, greaterThan(0));
+      final sheet = find.byType(NodeLaneCatalogSheet);
+      Finder inside(String text) =>
+          find.descendant(of: sheet, matching: find.text(text));
+      Future<void> tap(Finder finder) async {
+        await tester.ensureVisible(finder);
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
+      }
+
+      await tap(find.widgetWithText(ActionChip, '收费'));
+      expect(inside('3 个结果'), findsOneWidget);
+      await tap(inside('免费阅读'));
+      expect(inside('1 个结果'), findsOneWidget);
+      await tap(inside('付费阅读'));
+      expect(inside('2 个结果'), findsOneWidget);
+      await tap(inside('地区'));
+      await tap(inside('日漫'));
+      expect(inside('1 个结果'), findsOneWidget);
+      entries.add([...initial, site(6, 'jp', 'paid')]);
+      await tester.pumpAndSettle();
+      expect(inside('2 个结果'), findsOneWidget);
+      await tap(inside('应用'));
+      expect(find.textContaining('2 个结果 ·'), findsOneWidget);
+      expect(find.text('Site 1'), findsOneWidget);
+      expect(find.text('Site 2'), findsNothing);
+      expect(find.text('Site 3'), findsNothing);
+      await tap(find.textContaining('2 个结果 ·'));
+      await tap(inside('清空'));
+      expect(inside('4 个结果'), findsOneWidget);
+      await tap(find.descendant(of: sheet, matching: find.byTooltip('关闭')));
+      expect(find.textContaining('2 个结果 ·'), findsOneWidget);
+      await tap(find.textContaining('2 个结果 ·'));
+      await tap(inside('清空'));
+      await tap(inside('地区'));
+      await tap(inside('国漫'));
+      expect(inside('0 个结果'), findsOneWidget);
+      await tap(inside('应用'));
+      expect(find.text('没有匹配的网站'), findsOneWidget);
+      await tap(find.byTooltip('清除搜索'));
+      await tap(find.text('清空'));
+      expect(find.textContaining('5 个结果 ·'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

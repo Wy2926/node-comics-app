@@ -9,13 +9,23 @@ import 'package:flutter_secure_storage/test/test_flutter_secure_storage_platform
 import 'package:flutter_secure_storage_platform_interface/flutter_secure_storage_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/webview/browser_library_store.dart';
+import 'package:mangayomi/modules/webview/browser_session_store.dart';
 import 'package:mangayomi/modules/webview/browser_url.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
 import 'package:image/image.dart' as image;
 
 class _FailingStorage extends TestFlutterSecureStoragePlatform {
-  _FailingStorage() : super({});
-  bool fail = true;
+  _FailingStorage([Map<String, String>? seed]) : super(seed ?? {});
+  bool fail = true, failRead = false;
+  @override
+  Future<String?> read({
+    required String key,
+    required Map<String, String> options,
+  }) {
+    if (failRead) throw PlatformException(code: 'unavailable');
+    return super.read(key: key, options: options);
+  }
+
   @override
   Future<void> write({
     required String key,
@@ -30,6 +40,48 @@ class _FailingStorage extends TestFlutterSecureStoragePlatform {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
+  test('tab snapshots recover read/write failures and round-trip twenty long histories', () async {
+    final old = {'id': 'old', 'url': 'https://example.org/old', 'title': 'old'};
+    final vault = _FailingStorage({
+      BrowserSessionStore.storageKey: jsonEncode([old]),
+    })..failRead = true;
+    FlutterSecureStoragePlatform.instance = vault;
+    final store = BrowserSessionStore();
+    await expectLater(store.load(), throwsA(isA<PlatformException>()));
+    await expectLater(store.save([]), throwsA(isA<PlatformException>()));
+    vault.failRead = false;
+    await store.load();
+    await expectLater(store.close('old'), throwsA(isA<PlatformException>()));
+    expect(store.entries.single['id'], 'old');
+    vault.fail = false;
+    final entries = [
+      for (var i = 0; i < 20; i++)
+        {
+          'id': 't$i',
+          'url': 'https://example.org/$i',
+          'active': i == 19,
+          'y': 732,
+          'history': [
+            for (var j = 0; j < 20; j++)
+              'https://example.org/$i/$j?q=${'x' * 1100}',
+          ],
+        },
+    ];
+    await store.save(entries);
+    expect(await store.createBlank(), isFalse);
+    final reopened = BrowserSessionStore();
+    await reopened.load();
+    expect(reopened.entries.last['history'], entries.last['history']);
+    await reopened.close('t19');
+    await reopened.undoClose();
+    expect(reopened.entries.length, 20);
+    expect(reopened.entries.last['y'], 732);
+    expect(
+      reopened.entries.where((e) => e['active'] == true).single['id'],
+      't19',
+    );
+  });
 
   test(
     'six packaged logos and website ICO files decode without a network service',
@@ -167,6 +219,11 @@ void main() {
     ]);
     expect(restored.engine, BrowserSearchEngine.bing);
     expect(restored.isBookmarked('https://example.org/b'), isTrue);
+    final matches = restored.matches('example.org', [
+      {'id': 'live', 'url': 'https://example.org/a', 'title': 'Live'},
+    ]).toList();
+    expect(matches.map((m) => m.tabId), ['live', null]);
+    expect(matches.last.bookmark, isTrue);
     await restored.removeHistory(restored.history[1]);
     expect(restored.history.map((e) => e.title), ['Tomorrow', 'B']);
     await restored.clearHistory();

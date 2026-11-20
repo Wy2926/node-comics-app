@@ -6,7 +6,7 @@ import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
 import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/browse/widgets/source_directory_filters.dart';
 import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
@@ -24,7 +24,6 @@ import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -46,7 +45,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   bool get selecting => thirdParty && ref.read(isLongPressedStateProvider);
   final busy = <int>{};
   final failedActions = <int, ({bool open, bool latest})>{};
-  final languages = <(ItemType, bool), Set<String>>{};
+  final filtersByDirectory = <(ItemType, bool), DirectoryFilters>{};
   bool _refreshing = false;
   NodeLaneNoticeHandle? _notice;
   @override
@@ -72,34 +71,21 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     super.dispose();
   }
 
-  Future<void> _languageFilter(List<Source> catalog) async {
+  Future<void> _openFilters(DirectoryFacet facet) async {
     final key = (type, thirdParty);
-    final available = catalog.map((s) => s.lang ?? '').toSet().toList()..sort();
-    final initial =
-        languages[key] ??
-        catalog
-            .where((s) => s.isActive == true)
-            .map((s) => s.lang ?? '')
-            .toSet();
-    final result = await showSourceMultiChoice<String>(
+    FocusScope.of(context).unfocus();
+    final result = await showNodeLaneCatalogSheet<DirectoryFilters>(
       context,
-      title: context.l10n.source_language_filter,
-      subtitle: context.l10n.source_language_filter_hint,
-      current: initial,
-      options: [
-        for (final language in available)
-          SourceOption(
-            language,
-            language.toLowerCase() == 'all'
-                ? context.l10n.source_multilingual
-                : completeLanguageName(language.toLowerCase()),
-          ),
-      ],
-      allLabel: context.l10n.source_all_languages,
-      saveLabel: context.l10n.action_apply,
-      reset: true,
+      SourceDirectoryFilterSheet(
+        initial: filtersByDirectory[key] ?? const {},
+        facet: facet,
+        directory: key,
+        keyword: query.text.trim().toLowerCase(),
+      ),
     );
-    if (mounted && result != null) setState(() => languages[key] = result);
+    if (mounted && result != null) {
+      setState(() => filtersByDirectory[key] = result);
+    }
   }
 
   Future<void> _fetch(
@@ -475,7 +461,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       icon: icons.more,
       onSelected: (value) {
         if (value == 'search') _searchContents();
-        if (value == 'filter') _languageFilter(catalog);
+        if (value == 'filter') _openFilters(DirectoryFacet.language);
         if (value == 'update') _updateInstalled();
         if (value == 'manage') {
           _startSelection();
@@ -507,33 +493,51 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     );
   }
 
-  Widget _emptyState({required bool loading, required bool searching}) {
-    if (loading) return const NodeLaneEmptyState.loading();
-    final icons = NodeLaneIcons.of(context);
+  Widget _emptyState({
+    required bool searching,
+    required bool filtered,
+    required bool hasSources,
+  }) {
+    final icons = NodeLaneIcons.of(context), l10n = context.l10n;
+    final noMatch = searching || filtered || hasSources;
+    final (String, VoidCallback) action;
+    if (searching) {
+      action = (l10n.source_global_search, _searchContents);
+    } else if (filtered) {
+      action = (
+        l10n.action_clear,
+        () => setState(() => filtersByDirectory.remove((type, thirdParty))),
+      );
+    } else if (hasSources) {
+      action = (
+        l10n.source_language_filter,
+        () => _openFilters(DirectoryFacet.language),
+      );
+    } else if (thirdParty) {
+      action = (
+        l10n.source_manage_repositories,
+        () => showMobileRepositories(context, type),
+      );
+    } else {
+      action = (
+        l10n.source_view_third_party,
+        () => setState(() {
+          thirdParty = true;
+          managing = false;
+          _notice?.dismiss();
+        }),
+      );
+    }
     return Center(
       child: NodeLaneEmptyState(
-        icon: searching ? icons.search : icons.web,
-        title: searching
-            ? context.l10n.source_no_matching_websites
-            : context.l10n.source_no_websites,
-        message: searching ? context.l10n.source_search_installed_hint : null,
+        icon: noMatch ? icons.search : icons.web,
+        title: noMatch
+            ? l10n.source_no_matching_websites
+            : l10n.source_no_websites,
+        message: searching ? l10n.source_search_installed_hint : null,
         action: NodeLaneSecondaryButton(
-          onPressed: searching
-              ? _searchContents
-              : thirdParty
-              ? () => showMobileRepositories(context, type)
-              : () => setState(() {
-                  thirdParty = true;
-                  managing = false;
-                  _notice?.dismiss();
-                }),
-          child: Text(
-            searching
-                ? context.l10n.source_global_search
-                : thirdParty
-                ? context.l10n.source_manage_repositories
-                : context.l10n.source_view_third_party,
-          ),
+          onPressed: action.$2,
+          child: Text(action.$1),
         ),
       ),
     );
@@ -555,6 +559,146 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       if (!mounted) return;
       await _fetch(source);
     }
+  }
+
+  Widget _header(List<ItemType> types, DirectoryFilters filters) {
+    final l10n = context.l10n;
+    return Material(
+      color: NodeLaneTokens.of(context).canvas,
+      child: Padding(
+        padding: NodeLaneTokens.headerPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: NodeLaneTokens.space8,
+              runSpacing: NodeLaneTokens.space4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                MobileMediaMenu(
+                  value: type,
+                  availableTypes: types,
+                  onChanged: (value) {
+                    FocusScope.of(context).unfocus();
+                    setState(() {
+                      type = value;
+                      managing = false;
+                      query.clear();
+                      _notice?.dismiss();
+                    });
+                  },
+                ),
+                SizedBox(
+                  width:
+                      NodeLaneTokens.catalogTabsWidth *
+                      (MediaQuery.textScalerOf(context).scale(15) / 15).clamp(
+                        1,
+                        2,
+                      ),
+                  child: NodeLaneSegments<bool>(
+                    value: thirdParty,
+                    pill: true,
+                    segments: [
+                      const ButtonSegment(
+                        value: false,
+                        label: Text('NodeLane'),
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        label: Text(l10n.source_third_party),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      FocusScope.of(context).unfocus();
+                      setState(() {
+                        thirdParty = value;
+                        managing = false;
+                        query.clear();
+                        _notice?.dismiss();
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: NodeLaneTokens.space12),
+            NodeLaneTextField.search(
+              controller: query,
+              hint: l10n.source_name_or_title,
+              clearLabel: l10n.search_clear,
+              onSubmitted: (_) => _searchContents(),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: NodeLaneTokens.space8),
+            SourceDirectoryFilterBar(
+              filters: filters,
+              type: type,
+              onOpen: _openFilters,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summary(
+    List<Source> catalog,
+    DirectoryFilters filters,
+    String keyword,
+    int? count,
+  ) {
+    final l10n = context.l10n, t = NodeLaneTokens.of(context);
+    final description = [
+      if (keyword.isNotEmpty) keyword,
+      for (final entry in filters.entries)
+        entry.key.summary(entry.value, l10n, type),
+    ].join(' · ');
+    return PinnedHeaderSliver(
+      child: Material(
+        color: t.canvas,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: NodeLaneTokens.gutter,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Tooltip(
+                  message: description.isEmpty
+                      ? l10n.filter
+                      : '${l10n.filter} · $description',
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      alignment: AlignmentDirectional.centerStart,
+                      minimumSize: const Size(0, NodeLaneTokens.minTapTarget),
+                    ),
+                    onPressed: () => _openFilters(
+                      filters.keys.firstOrNull ?? DirectoryFacet.language,
+                    ),
+                    icon: Icon(NodeLaneIcons.of(context).filter),
+                    label: Text(
+                      [
+                        if (count != null) l10n.search_result_count(count),
+                        description.isEmpty ? l10n.filter : description,
+                      ].join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ),
+              NodeLaneIconButton(
+                tooltip: l10n.feedback_source,
+                icon: NodeLaneIcons.of(context).chat,
+                onPressed: () =>
+                    showSupportRequest(context, SupportRequestKind.website),
+              ),
+              _menu(catalog),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -585,7 +729,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         ref.read(browseInitialTabProvider.notifier).clear();
       });
     });
-    final official = ref.watch(nodeLaneCatalogRepositoryProvider(type));
     final loading = ref.watch(nodeLaneCatalogLoadProvider(type));
     ref.watch(fetchItemSourcesListProvider(reFresh: false, itemType: type));
     final sources = ref.watch(mobileCatalogEntriesProvider(type));
@@ -604,33 +747,18 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
         _showFailure(context.l10n.source_catalog_load_failed);
       }
     });
-    final repositories = ref.watch(extensionsRepoStateProvider(type));
-    final showNsfw = ref.watch(showNSFWStateProvider);
-    final catalog = (sources.value ?? <Source>[])
-        .where(
-          (s) =>
-              (showNsfw || s.isNsfw != true) &&
-              !repositories.any(
-                (r) => r.jsonUrl == s.repo?.jsonUrl && r.hidden == true,
-              ) &&
-              (thirdParty
-                  ? !isNodeLaneCatalogSource(s, official)
-                  : isNodeLaneCatalogSource(s, official)),
-        )
-        .toList();
-    final selectedLanguages = languages[(type, thirdParty)];
+    final catalog = ref.watch(
+      mobileDirectorySourcesProvider((type, thirdParty)),
+    );
+    final DirectoryFilters filters =
+        filtersByDirectory[(type, thirdParty)] ?? const {};
     final keyword = query.text.trim();
-    final all =
-        catalog
-            .where(
-              (s) =>
-                  (selectedLanguages == null
-                      ? s.isActive == true
-                      : selectedLanguages.contains(s.lang ?? '')) &&
-                  (s.name ?? '').toLowerCase().contains(keyword.toLowerCase()),
-            )
-            .toList()
-          ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    final search = keyword.toLowerCase();
+    final all = catalog.where((s) => filters.matches(s, search)).toList()
+      ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    final waitingForDirectory =
+        catalog.isEmpty &&
+        ((!thirdParty && loading.isLoading) || sources.isLoading);
     final groups = <(String, List<Source>)>[
       (
         context.l10n.settings_frequent,
@@ -687,181 +815,90 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
             : null,
         body: SafeArea(
           bottom: false,
-          child: LayoutBuilder(
-            builder: (context, constraints) => Column(
-              children: [
-                if (!selecting)
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: constraints.maxHeight * .65,
+          child: RefreshIndicator(
+            onRefresh: _refreshCatalog,
+            child: CustomScrollView(
+              key: PageStorageKey('catalog-${type.name}-$thirdParty'),
+              physics: const AlwaysScrollableScrollPhysics(),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: [
+                if (!selecting) ...[
+                  SliverFloatingHeader(child: _header(types, filters)),
+                  _summary(
+                    catalog,
+                    filters,
+                    keyword,
+                    waitingForDirectory ? null : all.length,
+                  ),
+                ],
+                if (all.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: pageBottomInsets(context).bottom,
+                      ),
+                      child: waitingForDirectory
+                          ? const NodeLaneEmptyState.loading()
+                          : _emptyState(
+                              searching: keyword.isNotEmpty,
+                              filtered: filters.isNotEmpty,
+                              hasSources: catalog.isNotEmpty,
+                            ),
                     ),
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: NodeLaneTokens.headerPadding,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            NodeLanePageHeading.toolbar(
-                              mediaMenu: MobileMediaMenu(
-                                value: type,
-                                availableTypes: types,
-                                onChanged: (value) {
-                                  FocusScope.of(context).unfocus();
-                                  setState(() {
-                                    type = value;
-                                    managing = false;
-                                    query.clear();
-                                    _notice?.dismiss();
-                                  });
-                                },
-                              ),
-                              actions: [
-                                NodeLaneIconButton(
-                                  tooltip: context.l10n.feedback_source,
-                                  icon: NodeLaneIcons.of(context).chat,
-                                  onPressed: () => showSupportRequest(
-                                    context,
-                                    SupportRequestKind.website,
-                                  ),
-                                ),
-                                _menu(catalog),
-                              ],
-                            ),
-                            const SizedBox(height: NodeLaneTokens.space16),
-                            SizedBox(
-                              width:
-                                  NodeLaneTokens.catalogTabsWidth *
-                                  (MediaQuery.textScalerOf(context).scale(15) /
-                                          15)
-                                      .clamp(1, 2),
-                              child: NodeLaneSegments<bool>(
-                                value: thirdParty,
-                                pill: true,
-                                segments: [
-                                  ButtonSegment(
-                                    value: false,
-                                    label: Text('NodeLane'),
-                                  ),
-                                  ButtonSegment(
-                                    value: true,
-                                    label: Text(
-                                      context.l10n.source_third_party,
-                                    ),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  FocusScope.of(context).unfocus();
-                                  setState(() {
-                                    thirdParty = value;
-                                    managing = false;
-                                    _notice?.dismiss();
-                                    query.clear();
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: NodeLaneTokens.space16),
-                            NodeLaneTextField.search(
-                              controller: query,
-                              hint: context.l10n.source_name_or_title,
-                              clearLabel: context.l10n.search_clear,
-                              onSubmitted: (_) => _searchContents(),
-                              onChanged: (_) => setState(() {}),
-                            ),
-                          ],
-                        ),
+                  ),
+                for (
+                  var groupIndex = 0;
+                  groupIndex < groups.length;
+                  groupIndex++
+                ) ...[
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NodeLaneTokens.gutter,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: NodeLaneCatalogHeading(
+                        groups[groupIndex].$1,
+                        action: groupIndex == 0 && !selecting
+                            ? thirdParty
+                                  ? context.l10n.source_manage_repositories
+                                  : managing
+                                  ? context.l10n.action_done
+                                  : context.l10n.manage
+                            : null,
+                        onAction: groupIndex == 0 && !selecting
+                            ? thirdParty
+                                  ? () => showMobileRepositories(context, type)
+                                  : () => setState(() => managing = !managing)
+                            : null,
                       ),
                     ),
                   ),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _refreshCatalog,
-                    child: CustomScrollView(
-                      key: PageStorageKey('catalog-${type.name}-$thirdParty'),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      slivers: [
-                        if (all.isEmpty)
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                bottom: pageBottomInsets(context).bottom,
-                              ),
-                              child: _emptyState(
-                                loading:
-                                    (!thirdParty && loading.isLoading) ||
-                                    sources.isLoading,
-                                searching: keyword.isNotEmpty,
-                              ),
-                            ),
-                          ),
-                        for (
-                          var groupIndex = 0;
-                          groupIndex < groups.length;
-                          groupIndex++
-                        ) ...[
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: NodeLaneTokens.gutter,
-                            ),
-                            sliver: SliverToBoxAdapter(
-                              child: NodeLaneCatalogHeading(
-                                groups[groupIndex].$1,
-                                action: groupIndex == 0 && !selecting
-                                    ? thirdParty
-                                          ? context
-                                                .l10n
-                                                .source_manage_repositories
-                                          : managing
-                                          ? context.l10n.action_done
-                                          : context.l10n.manage
-                                    : null,
-                                onAction: groupIndex == 0 && !selecting
-                                    ? thirdParty
-                                          ? () => showMobileRepositories(
-                                              context,
-                                              type,
-                                            )
-                                          : () => setState(
-                                              () => managing = !managing,
-                                            )
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: NodeLaneTokens.gutter,
-                            ),
-                            sliver: SliverList.builder(
-                              itemCount: groups[groupIndex].$2.length,
-                              itemBuilder: (_, i) => Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: i == groups[groupIndex].$2.length - 1
-                                      ? 0
-                                      : NodeLaneTokens.space12,
-                                ),
-                                child: _card(groups[groupIndex].$2[i]),
-                              ),
-                            ),
-                          ),
-                        ],
-                        if (all.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height:
-                                  (selecting
-                                      ? 0
-                                      : pageBottomInsets(context).bottom) +
-                                  NodeLaneTokens.space24,
-                            ),
-                          ),
-                      ],
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NodeLaneTokens.gutter,
+                    ),
+                    sliver: SliverList.builder(
+                      itemCount: groups[groupIndex].$2.length,
+                      itemBuilder: (_, i) => Padding(
+                        padding: EdgeInsets.only(
+                          bottom: i == groups[groupIndex].$2.length - 1
+                              ? 0
+                              : NodeLaneTokens.space12,
+                        ),
+                        child: _card(groups[groupIndex].$2[i]),
+                      ),
                     ),
                   ),
-                ),
+                ],
+                if (all.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height:
+                          (selecting ? 0 : pageBottomInsets(context).bottom) +
+                          NodeLaneTokens.space24,
+                    ),
+                  ),
               ],
             ),
           ),

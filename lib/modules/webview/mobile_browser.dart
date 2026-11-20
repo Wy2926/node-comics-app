@@ -24,6 +24,10 @@ import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 
 import 'browser_session_store.dart';
 import 'browser_webview_cache.dart';
+import 'browser_page_controller.dart';
+import 'browser_protection_sheet.dart';
+import 'gecko_browser_page.dart';
+import 'reader_transport.dart';
 import 'mobile_browser_tabs_sheet.dart';
 
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -59,11 +63,20 @@ class BrowserTab {
   int x, y, historyIndex;
   int viewGeneration = 0;
   final List<String> history;
+  List<String> _savedBack = const [], _savedForward = const [];
+  bool _reattached = false;
   bool get isBlank => url.isEmpty;
   bool pageReady = false;
+  bool readable = false,
+      nativeBack = false,
+      nativeForward = false,
+      needsRecreate = false;
+  bool canMove(int delta) => delta < 0
+      ? nativeBack || historyIndex > 0
+      : nativeForward || historyIndex + 1 < history.length;
   bool loading = true, findOpen = false;
   final translation = TranslationViewController();
-  InAppWebViewController? controller;
+  BrowserPageController? controller;
   Future<Map<String, dynamic>?> Function()? captureAnchor;
   Map<String, dynamic>? anchor;
   void visited(String value) {
@@ -82,13 +95,40 @@ class BrowserTab {
     historyIndex = history.length - 1;
   }
 
+  void bindHistory(bool retained) {
+    _savedBack = history.take(historyIndex).toList();
+    _savedForward = history.skip(historyIndex + 1).toList();
+    _reattached = retained;
+  }
+
+  void nativeHistory(List<String> urls, int index) {
+    if (index < 0 || index >= urls.length || urls[index] != url) return;
+    final before = urls.take(index).where(isBrowserUrl).toList();
+    final after = urls.skip(index + 1).where(isBrowserUrl).toList();
+    nativeBack = before.isNotEmpty;
+    nativeForward = after.isNotEmpty;
+    if (_reattached) {
+      final overlap = _savedBack.indexOf(before.firstOrNull ?? url);
+      if (overlap >= 0) _savedBack = _savedBack.take(overlap).toList();
+      _reattached = false;
+    }
+    if (nativeBack || nativeForward) _savedForward = const [];
+    final merged = [..._savedBack, ...before, url, ...after, ..._savedForward];
+    final cursor = _savedBack.length + before.length;
+    final start = (merged.length - 20).clamp(0, cursor);
+    historyIndex = cursor - start;
+    history
+      ..clear()
+      ..addAll(merged.skip(start).take(20));
+  }
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'url': url,
     'title': title,
     'x': x,
     'y': y,
-    'history': history,
+    'history': [...history],
     'historyIndex': historyIndex,
     'translated': translation.showTranslation,
     'autoTranslate': translation.enabled,
@@ -156,7 +196,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   final _addressFocus = FocusNode();
   String? active;
   Timer? _saveTimer;
+  int _saveEpoch = 0;
+  bool _editingTabs = false, _saveFailed = false;
   bool foreground = true, ready = false;
+  bool _useGecko = false, _restoreFailed = false;
   bool _leaving = false, _showingTabs = false, _clearingLogins = false;
   bool _savedOnExit = false;
   late final service = ref.read(translationServiceProvider);
@@ -193,18 +236,17 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
 
   Future<void> _restore() async {
     try {
+      if (Platform.isAndroid) {
+        _useGecko = await GeckoBrowserPage.supported();
+        if (!mounted) return;
+      }
       await browserSessionStore.load();
-      for (final value in browserSessionStore.entries) {
-        final tab = BrowserTab.fromJson(value);
-        if (tab != null && !tabs.any((other) => other.id == tab.id)) {
-          tabs.add(tab);
-        }
-      }
-    } catch (_) {}
-    if (!mounted) {
-      for (final tab in tabs) {
-        tab.translation.dispose();
-      }
+      if (!mounted) return;
+      tabs.addAll(
+        browserSessionStore.entries.map(BrowserTab.fromJson).nonNulls,
+      );
+    } catch (_) {
+      if (mounted) setState(() => _restoreFailed = true);
       return;
     }
     final existing = tabs
@@ -287,12 +329,30 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   void _save() {
+    if (_editingTabs || _leaving || !ready) return;
+    final epoch = ++_saveEpoch;
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 400), () async {
       final tab = current;
       if (tab != null && foreground) await _captureAnchor(tab);
-      if (!mounted) return;
-      await browserSessionStore.save(_entries).catchError((_) {});
+      if (!mounted || epoch != _saveEpoch) return;
+      try {
+        await browserSessionStore.save(_entries);
+        _saveFailed = false;
+      } catch (_) {
+        if (mounted && !_saveFailed) {
+          _saveFailed = true;
+          showNodeLaneNotice(
+            context.l10n.browser_save_failed,
+            kind: NodeLaneNoticeKind.error,
+            actionLabel: context.l10n.retry,
+            onAction: () {
+              _saveFailed = false;
+              if (mounted) _save();
+            },
+          );
+        }
+      }
     });
   }
 
@@ -322,15 +382,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     if (tab.isBlank || !tab.pageReady || !_previewing.add(tab.id)) return;
     final controller = tab.controller, url = tab.url, x = tab.x, y = tab.y;
     try {
-      final bytes = await controller
-          ?.takeScreenshot(
-            screenshotConfiguration: ScreenshotConfiguration(
-              snapshotWidth: 340,
-              compressFormat: CompressFormat.JPEG,
-              quality: 55,
-            ),
-          )
-          .timeout(const Duration(seconds: 2));
+      final bytes = await controller?.preview().timeout(
+        const Duration(seconds: 2),
+      );
       if (mounted &&
           tabs.contains(tab) &&
           identical(tab.controller, controller) &&
@@ -347,16 +401,35 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   Future<void> _leave({bool toStart = false, BrowserTab? previous}) async {
-    if (!mounted || _leaving) return;
+    if (!mounted || _leaving || _editingTabs) return;
     setState(() => _leaving = true);
+    ++_saveEpoch;
     _saveTimer?.cancel();
     final tab = previous ?? current;
     if (tab != null) {
-      await Future.wait([_captureAnchor(tab), _capturePreview(tab)]);
+      unawaited(_capturePreview(tab));
+      await _captureAnchor(tab);
     }
     if (!mounted) return;
-    await browserSessionStore.save(_entries).catchError((_) {});
-    _savedOnExit = true;
+    try {
+      await browserSessionStore.save(_entries);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _leaving = false;
+          _saveFailed = true;
+          if (previous != null && tabs.contains(previous)) active = previous.id;
+        });
+        _attach();
+        showNodeLaneNotice(
+          context.l10n.browser_save_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _savedOnExit = true);
     _attach();
     if (toStart) {
       if (mounted) context.go('/browser');
@@ -367,7 +440,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   Future<void> _select(BrowserTab tab) async {
-    if (!mounted || !tabs.contains(tab) || active == tab.id) return;
+    if (!mounted || _editingTabs || !tabs.contains(tab) || active == tab.id) {
+      return;
+    }
     _addressFocus.unfocus();
     final previous = current;
     if (tab.isBlank) {
@@ -386,7 +461,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _save();
   }
 
-  Future<void> _new(String url) async {
+  Future<void> _new(String url, {bool background = false}) async {
+    if (_editingTabs || _leaving) return;
     if (url.isNotEmpty && !isBrowserUrl(url)) return;
     if (tabs.length >= BrowserSessionStore.maxTabs) {
       _tabLimit();
@@ -394,32 +470,89 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
     final tab = BrowserTab(url);
     tabs.add(tab);
-    await _select(tab);
+    if (background) {
+      tab.translation.configure(foreground: false);
+      setState(() {});
+      _save();
+    } else {
+      await _select(tab);
+    }
   }
 
-  void _close(BrowserTab tab) {
-    tabs.remove(tab);
-    _mountedTabs.remove(tab.id);
-    browserWebViewCache.remove(tab.id);
-    tab.translation.configure(foreground: false);
-    tab.translation.dispose();
-    if (tabs.isEmpty) tabs.add(BrowserTab(''));
-    if (active == tab.id) active = tabs.last.id;
-    _retainView(current!);
-    _attach();
-    setState(() {});
-    _save();
+  Future<List<Map<String, dynamic>>> _editTabs([String? closeId]) async {
+    _editingTabs = true;
+    ++_saveEpoch;
+    _saveTimer?.cancel();
+    try {
+      if (closeId == null) {
+        await browserSessionStore.undoClose(snapshot: _entries);
+      } else {
+        final target = current;
+        if (target?.id == closeId) await _captureAnchor(target!);
+        await browserSessionStore.close(closeId, snapshot: _entries);
+      }
+      final entries = browserSessionStore.entries;
+      if (!mounted) return entries;
+      final previous = {for (final t in tabs) t.id: t};
+      tabs.clear();
+      for (final e in entries) {
+        final t = previous.remove(e['id']) ?? BrowserTab.fromJson(e)!;
+        tabs.add(t);
+        if (e['active'] == true) active = t.id;
+      }
+      for (final t in previous.values) {
+        _mountedTabs.remove(t.id);
+        browserWebViewCache.remove(t.id);
+        t.translation.dispose();
+      }
+      _retainView(current!);
+      _attach();
+      setState(() {});
+      return entries;
+    } finally {
+      _editingTabs = false;
+      if (mounted && !_showingTabs && current?.isBlank == true) {
+        _leave(toStart: true);
+      }
+    }
   }
 
   void _tabLimit() {
-    showNodeLaneNotice(context.l10n.browser_tab_limit);
+    showNodeLaneNotice(
+      context.l10n.browser_tab_limit(BrowserSessionStore.maxTabs),
+    );
     _showTabs();
   }
 
   void _openAddress(String url) {
     final tab = current;
     if (tab == null || !isBrowserUrl(url)) return;
-    tab.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
+    if (tab.needsRecreate || tab.controller == null) {
+      tab.visited(url);
+      tab.anchor = null;
+      tab.x = tab.y = 0;
+      _recreate(tab);
+    } else {
+      tab.controller!.load(url).catchError((_) {
+        if (mounted && current == tab) {
+          showNodeLaneNotice(
+            context.l10n.browser_action_failed,
+            kind: NodeLaneNoticeKind.error,
+          );
+        }
+      });
+    }
+  }
+
+  void _recreate(BrowserTab tab) {
+    browserWebViewCache.remove(tab.id);
+    setState(() {
+      tab.viewGeneration++;
+      tab.loading = true;
+      tab.nativeBack = tab.nativeForward = tab.readable = tab.pageReady =
+          tab.needsRecreate = false;
+    });
+    _save();
   }
 
   Future<void> _showTabs() async {
@@ -436,12 +569,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         context,
         MobileBrowserTabsSheet(
           entries: _entries,
-          onClose: (id) async {
-            final tab = tabs.where((e) => e.id == id).firstOrNull;
-            if (tab != null) _close(tab);
-            await browserSessionStore.save(_entries);
-            return _entries;
-          },
+          onClose: _editTabs,
+          onUndo: _editTabs,
         ),
       );
       if (!mounted) return;
@@ -486,9 +615,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     final bookmarked = browserLibraryStore.isBookmarked(tab.url);
     final action = await showBrowserPageMenu(
       anchor,
-      canForward: tab.historyIndex + 1 < tab.history.length,
+      canForward: tab.canMove(1),
       bookmarked: bookmarked,
-      pageReady: tab.pageReady,
+      pageReady: tab.readable,
       clearingLogins: _clearingLogins,
     );
     if (!mounted || action == null || current != tab || tab.url != pageUrl) {
@@ -547,6 +676,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
           }
         case 'cookies':
           await _clearLogins();
+        case 'siteCookies':
+          await _clearLogins(tab);
       }
     } catch (_) {
       if (mounted) {
@@ -558,18 +689,41 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
   }
 
-  Future<void> _clearLogins() async {
+  Future<void> _clearLogins([BrowserTab? site]) async {
     if (_clearingLogins) return;
     _clearingLogins = true;
     try {
-      final confirmed = await confirmClearBrowserLogins(context);
-      if (!mounted || confirmed != true) return;
-      for (final item in tabs) {
-        item.translation.configure(showTranslation: false);
+      final url = site?.url;
+      final host = url == null ? null : Uri.parse(url).host;
+      final confirmed = await confirmClearBrowserLogins(context, host: host);
+      if (!mounted ||
+          !confirmed ||
+          (site != null && (site != current || site.url != url))) {
+        return;
       }
-      await CookieManager.instance().deleteAllCookies();
-      await MClient.deleteAllCookies();
-      if (mounted) await current?.controller?.reload();
+      for (final item in tabs) {
+        if (host == null || Uri.tryParse(item.url)?.host == host) {
+          item.translation.configure(showTranslation: false);
+        }
+      }
+      if (url == null) {
+        if (_useGecko) await GeckoBrowserPage.clearCookies();
+        await CookieManager.instance().deleteAllCookies();
+        await MClient.deleteAllCookies();
+      } else if (_useGecko) {
+        final protection = site?.controller?.protection;
+        if (protection == null) throw StateError('Site unavailable');
+        await protection.perform(url, SiteProtectionAction.clearSite);
+      } else {
+        await CookieManager.instance().deleteCookies(
+          url: WebUri(url),
+          domain: host,
+        );
+        await MClient.deleteAllCookies(url);
+      }
+      if (mounted && (site == null || (current == site && site.url == url))) {
+        await current?.controller?.reload();
+      }
     } catch (_) {
       if (mounted) {
         showNodeLaneNotice(
@@ -582,18 +736,63 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
   }
 
+  Future<void> _showProtection(
+    BrowserTab tab,
+    BrowserProtection protection,
+  ) async {
+    final page = tab.controller, url = tab.url;
+    final action = await showNodeLaneCatalogSheet<SiteProtectionAction>(
+      context,
+      BrowserProtectionSheet(protection: protection, url: url),
+    );
+    if (!mounted ||
+        current != tab ||
+        tab.controller != page ||
+        tab.url != url ||
+        action == null) {
+      return;
+    }
+    try {
+      if (action == SiteProtectionAction.clearSite) {
+        await _clearLogins(tab);
+      } else {
+        await protection.perform(url, action);
+      }
+    } catch (_) {
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.browser_action_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    }
+  }
+
   Future<void> _history(int delta) async {
     final tab = current;
-    if (tab == null) return;
+    if (tab == null || !tab.canMove(delta)) return;
     final next = tab.historyIndex + delta;
-    if (next < 0 || next >= tab.history.length) return;
-    tab.historyIndex = next;
-    tab.visited(tab.history[next]);
-    tab.x = 0;
-    tab.y = 0;
-    await tab.controller?.loadUrl(urlRequest: URLRequest(url: WebUri(tab.url)));
-    if (mounted) setState(() {});
-    _save();
+    final target = next >= 0 && next < tab.history.length
+        ? tab.history[next]
+        : null;
+    final old = tab.historyIndex;
+    if (target != null) tab.historyIndex = next;
+    try {
+      if (await tab.controller?.traverse(delta) == true) return;
+      if (!mounted || current != tab || target == null) return;
+      tab.visited(target);
+      tab.x = tab.y = 0;
+      tab.anchor = null;
+      _recreate(tab);
+    } catch (_) {
+      if (mounted && current == tab) {
+        tab.historyIndex = old.clamp(0, tab.history.length - 1);
+        showNodeLaneNotice(
+          context.l10n.browser_action_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    }
   }
 
   @override
@@ -617,9 +816,15 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   Widget build(BuildContext context) {
     final tab = current;
     return PopScope(
-      canPop: _leaving || tab == null || tab.historyIndex == 0,
+      canPop: _savedOnExit || tab == null,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _history(-1);
+        if (!didPop && !_leaving) {
+          if (tab?.canMove(-1) == true) {
+            _history(-1);
+          } else {
+            _leave();
+          }
+        }
       },
       child: NodeLaneSurface(
         child: Scaffold(
@@ -631,11 +836,26 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                   url: tab.url,
                   addressFocus: _addressFocus,
                   onSubmitted: _openAddress,
+                  openTabs: tabs.map(
+                    (t) => {'id': t.id, 'url': t.url, 'title': t.title},
+                  ),
+                  onMatch: (m) {
+                    final existing = tabs
+                        .where((t) => t.id == m.tabId)
+                        .firstOrNull;
+                    if (existing == null) {
+                      _openAddress(m.url);
+                    } else {
+                      _select(existing);
+                    }
+                  },
                   onClose: _leave,
                   onReload: () async {
                     try {
-                      if (tab.loading) {
-                        await tab.controller?.stopLoading();
+                      if (tab.needsRecreate) {
+                        _recreate(tab);
+                      } else if (tab.loading) {
+                        await tab.controller?.stop();
                         if (mounted) setState(() => tab.loading = false);
                       } else {
                         await tab.controller?.reload();
@@ -653,10 +873,30 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                   engine: browserLibraryStore.engine,
                   onEngine: browserLibraryStore.setEngine,
                   menu: _menu(tab),
+                  protection: switch (tab.controller?.protection) {
+                    null => null,
+                    final protection => (
+                      name: context.l10n.browser_protection,
+                      open: () => _showProtection(tab, protection),
+                    ),
+                  },
                 ),
               Expanded(
                 key: const ValueKey('browser-content'),
-                child: !ready || tab?.isBlank == true
+                child: _restoreFailed || (tab?.isBlank == true && _saveFailed)
+                    ? NodeLaneEmptyState.error(
+                        title: context.l10n.browser_data_failed,
+                        message: context.l10n.operation_retry,
+                        onRetry: () {
+                          if (!ready) {
+                            setState(() => _restoreFailed = false);
+                            _restore();
+                          } else {
+                            _leave(toStart: true);
+                          }
+                        },
+                      )
+                    : !ready || tab?.isBlank == true
                     ? const NodeLaneEmptyState.loading()
                     : Stack(
                         fit: StackFit.expand,
@@ -678,6 +918,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                   excluding: item.id != active,
                                   child: _BrowserTabView(
                                     tab: item,
+                                    useGecko: _useGecko,
                                     active:
                                         foreground &&
                                         !_leaving &&
@@ -691,14 +932,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                     save: _save,
                                     newTab: _new,
                                     editAddress: _addressFocus.requestFocus,
-                                    recreate: () {
-                                      browserWebViewCache.remove(item.id);
-                                      setState(() {
-                                        item.viewGeneration++;
-                                        item.loading = true;
-                                        item.pageReady = false;
-                                      });
-                                    },
+                                    recreate: () => _recreate(item),
                                   ),
                                 ),
                               ),
@@ -713,7 +947,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                   listenable: tab.translation,
                   builder: (context, _) => MobileBrowserToolbar(
                     tabCount: tabs.length,
-                    onBack: tab.historyIndex > 0 ? () => _history(-1) : null,
+                    onBack: tab.canMove(-1) ? () => _history(-1) : null,
                     onNew: () => _new(''),
                     showTranslation: tab.translation.showTranslation,
                     onDisplayChanged: tab.pageReady
@@ -739,6 +973,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
 class _BrowserTabView extends StatefulWidget {
   const _BrowserTabView({
     required this.tab,
+    required this.useGecko,
     required this.active,
     required this.changed,
     required this.save,
@@ -747,10 +982,11 @@ class _BrowserTabView extends StatefulWidget {
     required this.recreate,
   });
   final BrowserTab tab;
+  final bool useGecko;
   final bool active;
   final VoidCallback changed;
   final VoidCallback save;
-  final void Function(String) newTab;
+  final void Function(String, {bool background}) newTab;
   final VoidCallback editAddress;
   final VoidCallback recreate;
   @override
@@ -760,14 +996,17 @@ class _BrowserTabView extends StatefulWidget {
 class _BrowserTabViewState extends State<_BrowserTabView> {
   late final lease = browserWebViewCache.acquire(widget.tab.id);
   late final retained = lease.created;
-  late final webview = _createWebView();
+  late final webview = widget.useGecko ? _createGeckoView() : _createWebView();
   late final preview = browserSessionStore.preview(widget.tab.id);
   bool _revealed = false;
   InAppWebViewController? controller;
+  BrowserPageController? page;
+  GeckoBrowserPage? gecko;
   WebTranslationBridge? bridge;
   late int restoreX = widget.tab.x, restoreY = widget.tab.y;
   bool loadError = false;
-  bool rendererGone = false;
+  bool get rendererGone => widget.tab.needsRecreate;
+  bool extensionsFailed = false;
   bool get loading => widget.tab.loading;
   bool _imageMenuOpen = false;
   double progress = 0;
@@ -776,7 +1015,11 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   int activeMatch = 0, matches = 0;
   late final finder = FindInteractionController(
     onFindResultReceived: (_, ordinal, count, done) {
-      if (mounted && widget.active && widget.tab.findOpen && done) {
+      if (mounted &&
+          widget.active &&
+          widget.tab.findOpen &&
+          _hasQuery &&
+          done) {
         setState(() {
           activeMatch = count == 0 ? 0 : ordinal + 1;
           matches = count;
@@ -798,12 +1041,13 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     }
   }
 
-  Future<void> _recordVisit() async {
-    final tab = widget.tab, epoch = navigation, url = widget.tab.url;
+  Future<String?> _icon(String url) async {
     try {
       // shortcut: SVG-only sites use /favicon.ico, add SVG decoding if needed.
-      final icon = await tab.controller?.evaluateJavascript(
-        source: r'''
+      final icon = gecko != null
+          ? (await gecko!.call(url, '', 'icon', const {}))['value']
+          : await controller?.evaluateJavascript(
+              source: r'''
 (() => {
   const links = [...document.querySelectorAll('link[rel~="icon"], link[rel^="apple-touch-icon"]')];
   const icons = links.filter(link => /^https?:/.test(link.href) &&
@@ -813,13 +1057,21 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     icons[0])?.href || null;
 })()
 ''',
-      );
-      if (!mounted || epoch != navigation || tab.url != url) return;
-      tab.iconUrl = isBrowserUrl(icon) ? icon as String : null;
+            );
+      return isBrowserUrl(icon) ? icon as String : null;
     } catch (_) {}
-    if (!mounted || epoch != navigation || tab.url != url) return;
+    return null;
+  }
+
+  Future<void> _recordVisit() async {
+    final tab = widget.tab, url = tab.url;
+    final icon = _icon(url)
+        .timeout(const Duration(milliseconds: 400), onTimeout: () => null);
     try {
-      await browserLibraryStore.visit(url, tab.title, iconUrl: tab.iconUrl);
+      // Queue the visit now, so a later Clear cannot be undone by a slow favicon.
+      await browserLibraryStore.visit(url, tab.title, iconUrl: icon);
+      final value = await icon;
+      if (mounted && tab.url == url) tab.iconUrl = value;
     } catch (_) {
       if (mounted && widget.active) {
         showNodeLaneNotice(
@@ -837,9 +1089,15 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   }
 
   Future<void> _visibility({bool? active}) async {
+    final visible = active ?? widget.active;
+    if (gecko case final engine?) {
+      try {
+        await engine.visible(visible);
+      } catch (_) {}
+      return;
+    }
     final controller = this.controller;
     if (controller == null) return;
-    final visible = active ?? widget.active;
     try {
       await Future.wait([
         if (Platform.isAndroid)
@@ -860,7 +1118,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       _visibility();
       if (!widget.active && widget.tab.findOpen) {
         widget.tab.findOpen = false;
-        _find(finder.clearMatches);
+        _find(_clearFind);
       }
     }
   }
@@ -881,13 +1139,74 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   @override
   void dispose() {
     bridge?.dispose();
-    if (identical(widget.tab.controller, controller)) {
+    gecko?.detach();
+    if (identical(widget.tab.controller, page)) {
       widget.tab.controller = null;
       widget.tab.captureAnchor = null;
-      widget.tab.pageReady = false;
+      widget.tab.pageReady = widget.tab.readable = false;
     }
     browserWebViewCache.release(lease);
     super.dispose();
+  }
+
+  int _findGeneration = 0;
+  bool _hasQuery = false;
+  Future<void> _clearFind() async {
+    _findGeneration++;
+    _hasQuery = false;
+    activeMatch = matches = 0;
+    await (gecko?.clearFind() ?? finder.clearMatches());
+  }
+
+  Future<void> _linkMenu(String url, {bool image = false}) async {
+    if (!mounted || !widget.active || !isBrowserUrl(url) || _imageMenuOpen) {
+      return;
+    }
+    final doc = widget.tab.url;
+    if (image && await bridge?.imageMenuClaimed() == true) return;
+    if (!mounted || !widget.active || widget.tab.url != doc || _imageMenuOpen) {
+      return;
+    }
+    final confirmed = await showNodeLaneCatalogSheet<bool>(
+      context,
+      NodeLaneCatalogSheet(
+        title: Uri.parse(url).host,
+        fitContent: true,
+        child: NodeLaneRow(
+          title: context.l10n.browser_background_tab,
+          icon: NodeLaneIcons.of(context).add,
+          onTap: () => Navigator.of(context, rootNavigator: true).pop(true),
+        ),
+      ),
+    );
+    if (confirmed == true &&
+        mounted &&
+        widget.active &&
+        widget.tab.url == doc) {
+      widget.newTab(url, background: true);
+    }
+  }
+
+  Future<void> _searchText(String? text, bool forward) async {
+    if (text != null) _hasQuery = text.isNotEmpty;
+    final engine = gecko;
+    if (engine == null) {
+      await (text == null
+          ? finder.findNext(forward: forward)
+          : finder.findAll(find: text));
+      return;
+    }
+    final epoch = ++_findGeneration;
+    final counts = await engine.find(text, forward);
+    if (mounted &&
+        widget.active &&
+        widget.tab.findOpen &&
+        epoch == _findGeneration) {
+      setState(() {
+        activeMatch = counts.first;
+        matches = counts.last;
+      });
+    }
   }
 
   @override
@@ -902,16 +1221,12 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
               activeMatch = 0;
               matches = 0;
             });
-            _find(
-              () => text.isEmpty
-                  ? finder.clearMatches()
-                  : finder.findAll(find: text),
-            );
+            _find(() => text.isEmpty ? _clearFind() : _searchText(text, true));
           },
-          onNext: (forward) => _find(() => finder.findNext(forward: forward)),
+          onNext: (forward) => _find(() => _searchText(null, forward)),
           onClose: () {
             setState(() => widget.tab.findOpen = false);
-            _find(finder.clearMatches);
+            _find(_clearFind);
           },
         ),
       Expanded(child: _buildPage(context)),
@@ -957,18 +1272,149 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       if (loadError)
         Positioned.fill(
           child: MobileBrowserLoadError(
+            extensionFailure: extensionsFailed,
             onEditAddress: widget.editAddress,
             onRetry: rendererGone
                 ? widget.recreate
-                : () => widget.tab.controller?.loadUrl(
-                    urlRequest: URLRequest(
-                      url: WebUri(loadingUrl ?? widget.tab.url),
-                    ),
-                  ),
+                : () =>
+                      widget.tab.controller?.load(loadingUrl ?? widget.tab.url),
           ),
         ),
     ],
   );
+
+  void _bindPage(BrowserPageController engine, ReaderTransport transport) {
+    widget.tab.bindHistory(retained);
+    widget.tab.controller = page = engine;
+    bridge = WebTranslationBridge(
+      transport,
+      widget.tab.translation,
+      widget.tab.id,
+      l10n: context.l10n,
+      theme: translationImageTheme(context),
+      onImageMenu: (target) async {
+        if (!mounted || !widget.active || _imageMenuOpen) return;
+        _imageMenuOpen = true;
+        try {
+          await showTranslationImageMenu(
+            context,
+            widget.tab.translation,
+            target,
+          );
+        } finally {
+          _imageMenuOpen = false;
+        }
+      },
+    );
+    widget.tab.captureAnchor = bridge!.captureAnchor;
+  }
+
+  Widget _createGeckoView() {
+    final key = lease.geckoId;
+    lease.releaseNative = () => GeckoBrowserPage.release(key);
+    return GeckoBrowserPage.view(key, (id) async {
+      if (!mounted) return;
+      final engine = GeckoBrowserPage(id, _geckoEvent);
+      gecko = engine;
+      _bindPage(engine, engine);
+      try {
+        _restoreGeckoPosition = !await engine.attach(
+          widget.tab.url,
+          widget.active,
+        );
+        if (mounted) {
+          lease.created = true;
+          await _visibility();
+          widget.changed();
+        }
+      } on PlatformException catch (error) {
+        if (mounted) {
+          extensionsFailed = error.code == 'extensions';
+          _rendererGone();
+        }
+      } catch (_) {
+        if (mounted) _rendererGone();
+      }
+    });
+  }
+
+  bool _restoreGeckoPosition = false;
+  Future<void> _geckoEvent(MethodCall event) async {
+    if (!mounted) return;
+    final tab = widget.tab;
+    final value = event.arguments;
+    switch (event.method) {
+      case 'blockerPanel':
+        final ticket = value as int;
+        if (widget.active) {
+          await GeckoBrowserPage.showTools(context, ticket);
+        } else {
+          await GeckoBrowserPage.releaseTools(ticket);
+        }
+      case 'start':
+        _loadStart(value as String);
+      case 'location':
+        if (isBrowserUrl(value) && tab.url != value) {
+          navigation++;
+          bridge?.navigate();
+          tab.visited(value as String);
+          if (tab.findOpen) _find(_clearFind);
+          tab.findOpen = false;
+          tab.pageReady = false;
+          if (tab.readable) _recordVisit();
+          widget.changed();
+        }
+      case 'history':
+        final values = value as List;
+        tab.nativeHistory((values[1] as List).cast<String>(), values[0] as int);
+        widget.changed();
+      case 'linkMenu':
+        final link = value as List;
+        if (tab.url == link[0]) {
+          await _linkMenu(link[1] as String, image: link[2] == true);
+        }
+      case 'cancelled':
+        setState(() => tab.loading = false);
+        _revealPage();
+        widget.changed();
+      case 'retained':
+      case 'stop':
+        _loaded(visit: event.method == 'stop');
+      case 'document':
+        if (tab.url != value || loadError) return;
+        if (await _installReader(
+          value as String,
+          restore: _restoreGeckoPosition,
+        )) {
+          _restoreGeckoPosition = false;
+        }
+      case 'error':
+        _failed();
+      case 'gone':
+        _rendererGone();
+      case 'extensionsFailed':
+        extensionsFailed = true;
+        _rendererGone();
+      case 'newTab':
+        if (widget.active && isBrowserUrl(value)) {
+          widget.newTab(value as String);
+        }
+      case 'title':
+        tab.title = value as String;
+        widget.changed();
+      case 'progress':
+        if (widget.active && loading) {
+          setState(() => progress = (value as int) / 100);
+        }
+      case 'scroll':
+        if (widget.active &&
+            !loading &&
+            !_restoreGeckoPosition &&
+            value is List) {
+          _scrolled(value[0] as int, value[1] as int);
+        }
+    }
+  }
 
   InAppWebView _createWebView() => InAppWebView(
     keepAlive: lease.keepAlive,
@@ -993,28 +1439,10 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       final reused = retained;
       lease.created = true;
       this.controller = controller;
-      widget.tab.controller = controller;
-      bridge = WebTranslationBridge(
-        controller,
-        widget.tab.translation,
-        widget.tab.id,
-        l10n: context.l10n,
-        theme: translationImageTheme(context),
-        onImageMenu: (target) async {
-          if (!mounted || !widget.active || _imageMenuOpen) return;
-          _imageMenuOpen = true;
-          try {
-            await showTranslationImageMenu(
-              context,
-              widget.tab.translation,
-              target,
-            );
-          } finally {
-            _imageMenuOpen = false;
-          }
-        },
+      _bindPage(
+        SystemBrowserPage(controller),
+        SystemReaderTransport(controller),
       );
-      widget.tab.captureAnchor = bridge!.captureAnchor;
       _visibility();
       if (reused) unawaited(_resumeDocument(controller));
     },
@@ -1035,32 +1463,26 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       }
       return false;
     },
+    onLongPressHitTestResult: !Platform.isAndroid
+        ? null
+        : (web, hit) async {
+            if (hit.type == InAppWebViewHitTestResultType.SRC_ANCHOR_TYPE &&
+                isBrowserUrl(hit.extra)) {
+              _linkMenu(hit.extra!);
+            } else if (hit.type ==
+                InAppWebViewHitTestResultType.SRC_IMAGE_ANCHOR_TYPE) {
+              final epoch = navigation;
+              final target = (await web.requestFocusNodeHref().catchError(
+                (_) => null,
+              ))?.url?.toString();
+              if (mounted && navigation == epoch && isBrowserUrl(target)) {
+                await _linkMenu(target!, image: true);
+              }
+            }
+          },
     onRenderProcessGone: (_, _) => _rendererGone(),
     onWebContentProcessDidTerminate: (_) => _rendererGone(),
-    onLoadStart: (controller, url) {
-      if (!mounted) return;
-      navigation++;
-      setState(() {
-        widget.tab.loading = true;
-        widget.tab.findOpen = false;
-        loadError = false;
-        lease.loadFailed = false;
-        progress = 0;
-        loadingUrl = url?.toString();
-      });
-      bridge?.navigate();
-      if (url?.toString() != widget.tab.url) {
-        browserSessionStore.clearPreview(widget.tab.id);
-        restoreX = 0;
-        restoreY = 0;
-        widget.tab.anchor = null;
-        widget.tab.x = widget.tab.y = 0;
-        widget.tab.title = '';
-      }
-      widget.tab.pageReady = false;
-      if (url != null) widget.tab.visited(url.toString());
-      widget.changed();
-    },
+    onLoadStart: (_, url) => _loadStart(url?.toString()),
     onPageCommitVisible: (_, _) {
       if (!retained) _revealPage();
     },
@@ -1071,23 +1493,17 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       final title = await controller.getTitle() ?? '';
       if (!mounted || epoch != navigation) return;
       widget.tab.title = title;
+      _loaded();
+      _syncSystemHistory(controller);
+      if (!await _installReader(url.toString(), restore: true)) return;
       try {
-        await bridge?.install(Uri.parse(url.toString()));
         final ua = await controller.evaluateJavascript(
           source: 'navigator.userAgent',
         );
-        await MClient.setCookie(url.toString(), ua ?? '', controller);
-        if (restoreX != 0 || restoreY != 0) {
-          await controller.scrollTo(x: restoreX, y: restoreY);
+        if (mounted && widget.tab.url == url.toString()) {
+          await MClient.setCookie(url.toString(), ua ?? '', controller);
         }
-        await bridge?.restoreAnchor(widget.tab.anchor);
       } catch (_) {}
-      if (!mounted || epoch != navigation) return;
-      setState(() => widget.tab.loading = false);
-      widget.tab.pageReady = true;
-      _revealPage();
-      widget.changed();
-      unawaited(_recordVisit());
     },
     onUpdateVisitedHistory: (controller, url, isReload) async {
       if (!mounted ||
@@ -1096,23 +1512,16 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
           url.toString() == widget.tab.url) {
         return;
       }
-      navigation++;
-      bridge?.navigate();
       widget.tab.visited(url.toString());
-      try {
-        await bridge?.install(Uri.parse(url.toString()));
-      } catch (_) {}
-      if (mounted && widget.tab.url == url.toString()) {
-        widget.changed();
-        unawaited(_recordVisit());
-      }
+      if (widget.tab.findOpen) _find(_clearFind);
+      widget.tab.findOpen = false;
+      _loaded();
+      _syncSystemHistory(controller);
+      await _installReader(url.toString());
     },
     onScrollChanged: (controller, x, y) {
       if (mounted && widget.active && !loading) {
-        widget.tab.anchor = null;
-        widget.tab.x = restoreX = x;
-        widget.tab.y = restoreY = y;
-        widget.save();
+        _scrolled(x, y);
       }
     },
     onTitleChanged: (controller, title) {
@@ -1133,16 +1542,84 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
           request.url.toString() != (loadingUrl ?? widget.tab.url)) {
         return;
       }
-      setState(() {
-        widget.tab.loading = false;
-        loadError = true;
-        lease.loadFailed = true;
-      });
-      widget.tab.pageReady = false;
-      widget.changed();
-      _revealPage();
+      _failed();
     },
   );
+
+  void _scrolled(int x, int y) {
+    widget.tab.anchor = null;
+    widget.tab.x = restoreX = x;
+    widget.tab.y = restoreY = y;
+    widget.save();
+  }
+
+  void _loaded({bool visit = true}) {
+    widget.tab.readable = true;
+    setState(() => widget.tab.loading = false);
+    _revealPage();
+    widget.changed();
+    if (visit) _recordVisit();
+  }
+
+  Future<void> _syncSystemHistory(InAppWebViewController web) async {
+    try {
+      final history = await web.getCopyBackForwardList();
+      if (!mounted || history?.list == null) return;
+      widget.tab.nativeHistory([
+        for (final e in history!.list!) e.url?.toString() ?? '',
+      ], history.currentIndex ?? -1);
+      widget.changed();
+    } catch (_) {}
+  }
+
+  // A reader failure disables translation only; the native page and finder stay usable.
+  Future<bool> _installReader(String url, {bool restore = false}) async {
+    final tab = widget.tab, epoch = ++navigation;
+    tab.pageReady = false;
+    try {
+      await bridge!.install(Uri.parse(url));
+      if (!mounted || epoch != navigation) return false;
+      if (restore && (tab.anchor != null || restoreX != 0 || restoreY != 0)) {
+        if (controller != null) {
+          await controller!.scrollTo(x: restoreX, y: restoreY);
+        }
+        if (!mounted || epoch != navigation) return false;
+        await bridge!.restoreAnchor(
+          tab.anchor ?? (gecko == null ? null : {'x': restoreX, 'y': restoreY}),
+        );
+      }
+      if (!mounted || epoch != navigation) return false;
+      tab.pageReady = true;
+    } catch (_) {
+      if (!mounted || epoch != navigation) return false;
+    }
+    widget.changed();
+    return true;
+  }
+
+  void _loadStart(String? url) {
+    if (!mounted) return;
+    if (widget.tab.findOpen) _find(_clearFind);
+    navigation++;
+    setState(() {
+      widget.tab.loading = true;
+      widget.tab.findOpen = false;
+      loadError = lease.loadFailed = false;
+      progress = 0;
+      loadingUrl = url;
+    });
+    bridge?.navigate();
+    if (url != widget.tab.url) {
+      browserSessionStore.clearPreview(widget.tab.id);
+      restoreX = restoreY = 0;
+      widget.tab.anchor = null;
+      widget.tab.x = widget.tab.y = 0;
+      widget.tab.title = '';
+    }
+    widget.tab.pageReady = widget.tab.readable = false;
+    if (url != null) widget.tab.visited(url);
+    widget.changed();
+  }
 
   Future<void> _resumeDocument(InAppWebViewController controller) async {
     final epoch = navigation;
@@ -1152,11 +1629,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       final isLoading = await controller.isLoading();
       if (!mounted || epoch != navigation) return;
       if (lease.loadFailed) {
-        setState(() {
-          widget.tab.loading = false;
-          loadError = true;
-        });
-        widget.changed();
+        _failed();
         return;
       }
       if (url == null || !isBrowserUrl(url.toString())) {
@@ -1165,23 +1638,15 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       widget.tab.visited(url.toString());
       widget.tab.title = title ?? widget.tab.title;
       if (!isLoading) {
-        await bridge?.install(Uri.parse(url.toString()));
-        if (!mounted || epoch != navigation) return;
-        // Native DOM, forms, JS state and scroll already belong to this document.
-        widget.tab.pageReady = true;
+        _loaded(visit: false);
+        _syncSystemHistory(controller);
+        await _installReader(url.toString());
+      } else {
+        setState(() => widget.tab.loading = true);
+        widget.changed();
       }
-      setState(() => widget.tab.loading = isLoading);
-      widget.tab.translation.configure(foreground: widget.active);
-      _revealPage();
-      widget.changed();
     } catch (_) {
-      if (mounted && epoch == navigation) {
-        setState(() {
-          widget.tab.loading = false;
-          loadError = true;
-          rendererGone = true;
-        });
-      }
+      if (mounted && epoch == navigation) _rendererGone();
     }
   }
 
@@ -1195,16 +1660,21 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   }
 
   void _rendererGone() {
+    _failed(recreate: true);
+  }
+
+  void _failed({bool recreate = false}) {
     if (!mounted) return;
     navigation++;
     bridge?.navigate();
-    browserWebViewCache.remove(widget.tab.id);
+    if (recreate) browserWebViewCache.remove(widget.tab.id);
     setState(() {
-      rendererGone = true;
-      loadError = true;
+      if (recreate) widget.tab.needsRecreate = true;
+      loadError = lease.loadFailed = true;
       widget.tab.loading = false;
-      widget.tab.pageReady = false;
+      widget.tab.pageReady = widget.tab.readable = false;
     });
+    _revealPage();
     widget.changed();
   }
 }

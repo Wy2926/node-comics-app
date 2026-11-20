@@ -10,6 +10,27 @@ class AppLocalizationsPl extends AppLocalizations {
   AppLocalizationsPl([String locale = 'pl']) : super(locale);
 
   @override
+  String get browser_protection => 'Ochrona witryny';
+
+  @override
+  String get browser_filter_site => 'Blokuj reklamy w tej witrynie';
+
+  @override
+  String get browser_blocked_here => 'Zablokowane na tej stronie';
+
+  @override
+  String get browser_blocked_total => 'Zablokowane od instalacji';
+
+  @override
+  String get browser_filter_tools => 'Narzędzia witryny';
+
+  @override
+  String get browser_filter_dashboard => 'Ustawienia filtrów';
+
+  @override
+  String get browser_reload_page => 'Odśwież i wróć do strony';
+
+  @override
   String get feedback_app => 'Opinia o aplikacji';
 
   @override
@@ -5411,26 +5432,29 @@ class AppLocalizationsPl extends AppLocalizations {
   String get browser_edit_address => 'Edytuj URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Wyczyścić sesje logowania dla wszystkich stron internetowych?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Strony internetowe na wszystkich kartach mogą wymagać ponownego zalogowania się.';
 
   @override
-  String get browser_clear_cookies_action => 'Wyczyść sesje logowania';
+  String browser_tab_limit(int count) {
+    return 'Limit otwartych kart: $count. Najpierw zamknij jedną.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Możesz mieć otwartych maksymalnie 12 kart. Najpierw zamknij jeden.';
+  String get browser_undo_close => 'Otwórz ponownie zamkniętą kartę';
+
+  @override
+  String get browser_background_tab => 'Otwórz link w karcie w tle';
+
+  @override
+  String get browser_leave_page => 'Opuść stronę';
+
+  @override
+  String get browser_extensions_failed =>
+      'Nie udało się uruchomić rozszerzeń przeglądarki';
 
   @override
   String get browser_forward => 'Do przodu';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Wyczyść wszystkie sesje logowania do witryny internetowej';
 
   @override
   String get browser_clear_failed =>
@@ -5441,14 +5465,12 @@ class AppLocalizationsPl extends AppLocalizations {
       'Nie można zapisać zakładek. Spróbuj ponownie.';
 
   @override
-  String get browser_tabs_full => '12 zakładek jest już otwartych';
+  String browser_tabs_full(int count) {
+    return 'Otwarte karty: $count';
+  }
 
   @override
   String get browser_no_tabs => 'Nie ma jeszcze otwartych zakładek';
-
-  @override
-  String get browser_close_failed =>
-      'Nie można zapisać zakładek. Kliknij ponownie, aby spróbować ponownie.';
 
   @override
   String get source_pinned_websites => 'Przypięte strony internetowe';

@@ -10,6 +10,27 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get browser_protection => 'Protection du site';
+
+  @override
+  String get browser_filter_site => 'Filtrer les publicités sur ce site';
+
+  @override
+  String get browser_blocked_here => 'Requêtes bloquées sur cette page';
+
+  @override
+  String get browser_blocked_total => 'Requêtes bloquées depuis l’installation';
+
+  @override
+  String get browser_filter_tools => 'Outils du site';
+
+  @override
+  String get browser_filter_dashboard => 'Réglages des filtres';
+
+  @override
+  String get browser_reload_page => 'Actualiser et revenir à la page';
+
+  @override
   String get feedback_app => 'Avis sur l’application';
 
   @override
@@ -5426,27 +5447,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String get browser_edit_address => 'Modifier URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Effacer les sessions de connexion pour tous les sites Web ?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Les sites Web dans tous les onglets peuvent vous demander de vous reconnecter.';
 
   @override
-  String get browser_clear_cookies_action =>
-      'Effacer les sessions de connexion';
+  String browser_tab_limit(int count) {
+    return 'Vous pouvez conserver jusqu’à $count onglets ouverts. Fermez-en un d’abord.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Vous pouvez conserver jusqu\'à 12 onglets ouverts. Fermez-en un d’abord.';
+  String get browser_undo_close => 'Rouvrir l’onglet fermé';
+
+  @override
+  String get browser_background_tab =>
+      'Ouvrir le lien dans un onglet en arrière-plan';
+
+  @override
+  String get browser_leave_page => 'Quitter la page';
+
+  @override
+  String get browser_extensions_failed =>
+      'Impossible de démarrer les extensions du navigateur';
 
   @override
   String get browser_forward => 'Avant';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Effacer toutes les sessions de connexion au site Web';
 
   @override
   String get browser_clear_failed =>
@@ -5457,14 +5481,12 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible de sauvegarder les onglets. Veuillez réessayer.';
 
   @override
-  String get browser_tabs_full => '12 onglets sont déjà ouverts';
+  String browser_tabs_full(int count) {
+    return '$count onglets sont déjà ouverts';
+  }
 
   @override
   String get browser_no_tabs => 'Aucun onglet ouvert pour l\'instant';
-
-  @override
-  String get browser_close_failed =>
-      'Impossible de sauvegarder les onglets. Appuyez à nouveau sur Fermer pour réessayer.';
 
   @override
   String get source_pinned_websites => 'Sites Web épinglés';

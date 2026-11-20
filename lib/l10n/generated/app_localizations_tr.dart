@@ -10,6 +10,27 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get browser_protection => 'Site koruması';
+
+  @override
+  String get browser_filter_site => 'Bu sitedeki reklamları filtrele';
+
+  @override
+  String get browser_blocked_here => 'Bu sayfada engellenen';
+
+  @override
+  String get browser_blocked_total => 'Kurulumdan beri engellenen';
+
+  @override
+  String get browser_filter_tools => 'Site araçları';
+
+  @override
+  String get browser_filter_dashboard => 'Filtre ayarları';
+
+  @override
+  String get browser_reload_page => 'Yenile ve sayfaya dön';
+
+  @override
   String get feedback_app => 'Uygulama geri bildirimi';
 
   @override
@@ -5363,26 +5384,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get browser_edit_address => 'Düzenle URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Tüm web siteleri için oturum açma oturumları temizlensin mi?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Tüm sekmelerdeki web siteleri yeniden oturum açmanızı gerektirebilir.';
 
   @override
-  String get browser_clear_cookies_action => 'Oturum açma oturumlarını temizle';
+  String browser_tab_limit(int count) {
+    return 'En fazla $count sekmeyi açık tutabilirsiniz. Önce birini kapatın.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'En fazla 12 sekmeyi açık tutabilirsiniz. Önce birini kapat.';
+  String get browser_undo_close => 'Kapatılan sekmeyi yeniden aç';
+
+  @override
+  String get browser_background_tab => 'Bağlantıyı arka plan sekmesinde aç';
+
+  @override
+  String get browser_leave_page => 'Web sayfasından çık';
+
+  @override
+  String get browser_extensions_failed => 'Tarayıcı eklentileri başlatılamadı';
 
   @override
   String get browser_forward => 'İleri';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Tüm web sitesinde oturum açma oturumlarını temizle';
 
   @override
   String get browser_clear_failed =>
@@ -5393,14 +5416,12 @@ class AppLocalizationsTr extends AppLocalizations {
       'Sekmeler kaydedilemedi. Lütfen tekrar deneyin.';
 
   @override
-  String get browser_tabs_full => '12 sekme zaten açık';
+  String browser_tabs_full(int count) {
+    return '$count sekme zaten açık';
+  }
 
   @override
   String get browser_no_tabs => 'Henüz açık sekme yok';
-
-  @override
-  String get browser_close_failed =>
-      'Sekmeler kaydedilemedi. Yeniden denemek için kapat\'a tekrar dokunun.';
 
   @override
   String get source_pinned_websites => 'Sabitlenmiş web siteleri';

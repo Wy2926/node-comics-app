@@ -466,7 +466,11 @@ void _showCloudflareAlert(BaseResponse response) {
           ? null
           : () => AppNavigator.push(
               '/mangawebview',
-              extra: {'url': response.request!.url.toString(), 'title': ''},
+              extra: {
+                'url': response.request!.url.toString(),
+                'title': '',
+                'sourceSession': true,
+              },
             ),
     );
   } catch (e) {

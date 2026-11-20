@@ -10,6 +10,27 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
+  String get browser_protection => 'Website-Schutz';
+
+  @override
+  String get browser_filter_site => 'Werbung auf dieser Website filtern';
+
+  @override
+  String get browser_blocked_here => 'Auf dieser Seite blockiert';
+
+  @override
+  String get browser_blocked_total => 'Seit der Installation blockiert';
+
+  @override
+  String get browser_filter_tools => 'Website-Werkzeuge';
+
+  @override
+  String get browser_filter_dashboard => 'Filtereinstellungen';
+
+  @override
+  String get browser_reload_page => 'Neu laden und zur Seite zurückkehren';
+
+  @override
   String get feedback_app => 'App-Feedback';
 
   @override
@@ -5405,26 +5426,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get browser_edit_address => 'Bearbeiten URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      'Anmeldesitzungen für alle Websites löschen?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Websites auf allen Registerkarten erfordern möglicherweise eine erneute Anmeldung.';
 
   @override
-  String get browser_clear_cookies_action => 'Anmeldesitzungen löschen';
+  String browser_tab_limit(int count) {
+    return 'Sie können bis zu $count Tabs geöffnet lassen. Schließen Sie zuerst einen.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Sie können bis zu 12 Tabs geöffnet lassen. Schließen Sie zuerst eines.';
+  String get browser_undo_close => 'Geschlossenen Tab wieder öffnen';
+
+  @override
+  String get browser_background_tab => 'Link in einem Hintergrundtab öffnen';
+
+  @override
+  String get browser_leave_page => 'Webseite verlassen';
+
+  @override
+  String get browser_extensions_failed =>
+      'Browser-Erweiterungen konnten nicht starten';
 
   @override
   String get browser_forward => 'Vorwärts';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Löschen Sie alle Website-Anmeldesitzungen';
 
   @override
   String get browser_clear_failed =>
@@ -5435,14 +5459,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Tabs konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.';
 
   @override
-  String get browser_tabs_full => '12 Tabs sind bereits geöffnet';
+  String browser_tabs_full(int count) {
+    return '$count Tabs sind bereits geöffnet';
+  }
 
   @override
   String get browser_no_tabs => 'Noch keine geöffneten Tabs';
-
-  @override
-  String get browser_close_failed =>
-      'Tabs konnten nicht gespeichert werden. Tippen Sie erneut auf „Schließen“, um es noch einmal zu versuchen.';
 
   @override
   String get source_pinned_websites => 'Angepinnte Websites';

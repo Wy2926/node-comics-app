@@ -10,6 +10,27 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get browser_protection => 'Protección del sitio';
+
+  @override
+  String get browser_filter_site => 'Filtrar anuncios en este sitio';
+
+  @override
+  String get browser_blocked_here => 'Solicitudes bloqueadas en esta página';
+
+  @override
+  String get browser_blocked_total => 'Bloqueadas desde la instalación';
+
+  @override
+  String get browser_filter_tools => 'Herramientas del sitio';
+
+  @override
+  String get browser_filter_dashboard => 'Ajustes de los filtros';
+
+  @override
+  String get browser_reload_page => 'Recargar y volver a la página';
+
+  @override
   String get feedback_app => 'Comentarios de la app';
 
   @override
@@ -5414,27 +5435,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get browser_edit_address => 'Editar URL';
 
   @override
-  String get browser_clear_cookies_confirm =>
-      '¿Borrar sesiones de inicio de sesión para todos los sitios web?';
-
-  @override
   String get browser_clear_cookies_hint =>
       'Es posible que los sitios web en todas las pestañas requieran que inicie sesión nuevamente.';
 
   @override
-  String get browser_clear_cookies_action =>
-      'Borrar sesiones de inicio de sesión';
+  String browser_tab_limit(int count) {
+    return 'Puedes abrir hasta $count pestañas. Cierra una primero.';
+  }
 
   @override
-  String get browser_tab_limit =>
-      'Puede mantener abiertas hasta 12 pestañas. Cierra uno primero.';
+  String get browser_undo_close => 'Reabrir la pestaña cerrada';
+
+  @override
+  String get browser_background_tab =>
+      'Abrir enlace en una pestaña en segundo plano';
+
+  @override
+  String get browser_leave_page => 'Salir de la página';
+
+  @override
+  String get browser_extensions_failed =>
+      'No se pudieron iniciar las extensiones del navegador';
 
   @override
   String get browser_forward => 'Adelante';
-
-  @override
-  String get browser_clear_all_cookies =>
-      'Borrar todas las sesiones de inicio de sesión del sitio web';
 
   @override
   String get browser_clear_failed =>
@@ -5445,14 +5469,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudieron guardar pestañas. Por favor inténtalo de nuevo.';
 
   @override
-  String get browser_tabs_full => '12 pestañas ya están abiertas';
+  String browser_tabs_full(int count) {
+    return 'Ya hay $count pestañas abiertas';
+  }
 
   @override
   String get browser_no_tabs => 'Aún no hay pestañas abiertas';
-
-  @override
-  String get browser_close_failed =>
-      'No se pudieron guardar pestañas. Toca cerrar nuevamente para volver a intentarlo.';
 
   @override
   String get source_pinned_websites => 'Sitios web fijados';
