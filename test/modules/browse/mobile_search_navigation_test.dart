@@ -168,7 +168,7 @@ void main() {
   });
 
   testWidgets(
-    'installed official website opens its usable version while an update is available',
+    'installed site opens its usable version and back restores the filtered directory anchor',
     (tester) async {
       final installed = Source.fromJson(source.toJson())
         ..version = '1.0.0'
@@ -183,8 +183,17 @@ void main() {
             reFresh: false,
             itemType: ItemType.manga,
           ).overrideWith((ref) async {}),
-          mobileCatalogEntriesProvider(ItemType.manga)
-              .overrideWith((ref) => Stream.value([installed])),
+          mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
+            (ref) => Stream.value([
+              for (var i = 0; i < 30; i++)
+                Source.fromJson(installed.toJson())
+                  ..id = 300 + i
+                  ..name = 'Local ${i.toString().padLeft(2, '0')}'
+                  ..catalogMetadataJson = i.isEven
+                      ? '{"schema":1,"formats":["page"]}'
+                      : null,
+            ]),
+          ),
         ],
       );
       final router = GoRouter(
@@ -208,6 +217,9 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(router.dispose);
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       await tester.runAsync(() async {
         await tester.pumpWidget(
           UncontrolledProviderScope(
@@ -222,9 +234,57 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('local'));
+        await tester.enterText(find.byType(TextField), 'Local');
+        await tester.pumpAndSettle();
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(MobileSourcesScreen)),
+        )!;
+        await tester.drag(
+          find.byKey(const PageStorageKey('directory-filter-bar')),
+          const Offset(-180, 0),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(ActionChip, l10n.source_format));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l10n.source_format_page).hitTestable().last);
+        await tester.tap(find.text(l10n.action_apply));
+        await tester.pumpAndSettle();
+        final summary = find.textContaining(
+          '${l10n.search_result_count(15)} · Local',
+        );
+        final catalog = find.byKey(const PageStorageKey('catalog-manga-false'));
+        final position = Scrollable.of(tester.element(find.text('Local 00')))
+            .position;
+        await tester.drag(catalog, const Offset(0, -960));
+        await tester.pumpAndSettle();
+        expect(find.byType(TextField).hitTestable(), findsNothing);
+        expect(summary.hitTestable(), findsOneWidget);
+        expect(
+          find.byTooltip(l10n.feedback_source).hitTestable(),
+          findsOneWidget,
+        );
+        await tester.drag(catalog, const Offset(0, 180));
+        await tester.pumpAndSettle();
+        expect(position.pixels, greaterThan(300));
+        expect(find.byType(TextField).hitTestable(), findsOneWidget);
+        await tester.drag(catalog, const Offset(0, -230));
+        await tester.pumpAndSettle();
+        final y = position.pixels;
+        final name = tester
+            .widget<Text>(
+              find.textContaining(RegExp(r'^Local \d+$')).hitTestable().first,
+            )
+            .data!;
+        final before = tester.getRect(find.text(name));
+        await tester.tap(find.text(name));
         await tester.pumpAndSettle();
         expect(find.text('Opened existing website'), findsOneWidget);
+        router.pop();
+        await tester.pumpAndSettle();
+        expect(summary.hitTestable(), findsOneWidget);
+        expect(find.byType(TextField).hitTestable(), findsNothing);
+        expect(position.pixels, y);
+        expect(tester.getRect(find.text(name)), before);
         await database.sources.count();
         await tester.pumpWidget(const SizedBox());
         expect(tester.takeException(), isNull);

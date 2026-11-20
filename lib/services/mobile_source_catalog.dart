@@ -99,3 +99,22 @@ final mobileCatalogEntriesProvider =
     StreamProvider.family<List<Source>, ItemType>(
       (ref, type) => sourceRepository.watchByItemType(type),
     );
+
+/// The list and the open filter sheet use the same live directory.
+final mobileDirectorySourcesProvider = Provider.autoDispose
+    .family<List<Source>, (ItemType, bool)>((ref, directory) {
+      final (type, thirdParty) = directory;
+      final official = ref.watch(nodeLaneCatalogRepositoryProvider(type));
+      final repos = ref.watch(extensionsRepoStateProvider(type));
+      final showNsfw = ref.watch(showNSFWStateProvider);
+      final sources = ref.watch(mobileCatalogEntriesProvider(type)).value;
+      return [
+        for (final s in sources ?? const <Source>[])
+          if ((showNsfw || s.isNsfw != true) &&
+              !repos.any(
+                (r) => r.hidden == true && r.jsonUrl == s.repo?.jsonUrl,
+              ) &&
+              isNodeLaneCatalogSource(s, official) != thirdParty)
+            s,
+      ];
+    });
