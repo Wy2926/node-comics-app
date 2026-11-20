@@ -170,6 +170,16 @@ class AppLocalizationsUk extends AppLocalizations {
   String get app_update_download => 'Завантажити оновлення';
 
   @override
+  String app_update_delta(String size) {
+    return 'Завантажити патч ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return 'Завантажити повний APK ($size)';
+  }
+
+  @override
   String get app_update_download_hint =>
       'Після завантаження дотримуйтесь підказок, щоб установити оновлення.';
 

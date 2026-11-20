@@ -48,6 +48,8 @@
   "@@locale": "vi",
   "app_update_details_hint": "Xem ghi chú phát hành và tùy chọn cài đặt",
   "app_update_download": "Tải xuống bản cập nhật",
+  "app_update_delta": "Tải bản vá ({size})",
+  "app_update_full": "Tải APK đầy đủ ({size})",
   "app_update_download_hint": "Sau khi tải xuống, hãy làm theo lời nhắc để cài đặt bản cập nhật.",
   "bookshelf_all": "Tất cả",
   "bookshelf_search": "Thư viện tìm kiếm",

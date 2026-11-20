@@ -1,6 +1,7 @@
 """Generate a public update feed for manual upload; never deploy to a server."""
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -9,12 +10,109 @@ import tempfile
 from pathlib import Path
 from urllib.parse import quote, urlsplit
 from urllib.request import Request, urlopen
+from android_apk import APP_ID, ROOT, asset_sha, published_apk, valid_sha
 
-ROOT = Path(__file__).resolve().parent.parent
 REPOSITORY = "Wy2926/node-comics-app"
 VERSION = r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
-# Flutter's --split-per-abi adds these offsets to the base versionCode.
-ANDROID_ABI_BUILD_OFFSET = {"armeabi-v7a": 1000, "arm64-v8a": 2000, "x86": 3000, "x86_64": 4000}
+FULL_UPDATES = set(json.loads((ROOT / "tool/android_full_updates.json").read_text(encoding="utf-8")))
+
+
+def version_key(version):
+    return tuple(map(int, version.split(".")))
+
+
+def allows_delta(base, version):
+    before, after = version_key(base), version_key(version)
+    return ((0, 2, 0) <= before < after
+            and not any(before < version_key(v) <= after for v in FULL_UPDATES))
+
+
+def previous_android(releases, version, suffix):
+    matches = []
+    for release in releases:
+        tag = release.get("tag_name", "")
+        if (release.get("draft") or release.get("prerelease") or not re.fullmatch("v" + VERSION, tag)
+                or not allows_delta(tag[1:], version)):
+            continue
+        for asset in release.get("assets", []):
+            if asset.get("state") == "uploaded" and asset.get("name") == f"nodelane-comics-{tag}-{suffix}":
+                matches.append((version_key(tag[1:]), tag[1:], asset))
+    return max(matches, key=lambda item: item[0])[1:] if matches else None
+
+
+def uploaded(release, name):
+    return next((a for a in release["assets"] if a.get("state") == "uploaded" and a.get("name") == name), None)
+
+
+def patch_name(apk, base_sha, target_sha):
+    # Rebuilding/replacing a same-tag binary must not republish its old recipe.
+    return f"{apk}.from-{base_sha}.to-{target_sha}.nld1"
+
+
+def asset_url(asset, tag, mirror):
+    if mirror is not None:
+        path = f"{mirror.path.rstrip('/')}/{quote(tag, safe='')}/{quote(asset['name'], safe='')}"
+        return mirror._replace(path=path).geturl()
+    url = asset.get("browser_download_url")
+    web_url(url)
+    return url
+
+
+def read_record(asset):
+    with urlopen(asset["browser_download_url"], timeout=30) as response:
+        raw = response.read()
+    if (asset_sha(asset) not in (None, hashlib.sha256(raw).hexdigest()) or
+            asset.get("size") not in (None, len(raw))):
+        raise ValueError(f"Invalid release record: {asset['name']}")
+    return json.loads(raw)
+
+
+def android_delivery(release, asset, arch, mirror):
+    tag = release["tag_name"]
+    version = tag[1:]
+    name = asset["name"]
+    sidecar = uploaded(release, name + ".json")
+    record = read_record(sidecar) if sidecar else published_apk(asset, version, arch)
+    abis = record.get("abis") if isinstance(record, dict) else None
+    if (not isinstance(record, dict) or record.get("package") != APP_ID or record.get("version") != version
+            or record.get("arch") != arch or type(record.get("build")) is not int or record["build"] <= 0
+            or not isinstance(abis, list) or not abis or not all(isinstance(a, str) and a for a in abis)
+            or (len(set(abis)) < 2 if arch == "universal" else abis != [arch])
+            or type(record.get("size")) is not int or record["size"] <= 0
+            or not valid_sha(record.get("sha256"))
+            or asset.get("size") not in (None, record["size"]) or asset_sha(asset) not in (None, record["sha256"])):
+        raise ValueError(f"APK identity record does not match {name}")
+    # Without a remote digest, bind the record to the actual downloadable bytes.
+    if sidecar and not asset_sha(asset):
+        actual = published_apk(asset, version, arch)
+        if any(record[k] != actual[k] for k in actual):
+            raise ValueError(f"Unmatched published APK: {name}")
+    result = {key: record[key] for key in ("build", "size", "sha256")}
+    if arch == "universal":
+        result["abis"] = abis
+    if version in FULL_UPDATES:
+        return {**result, "full_only": True}
+    delta = record.get("delta")
+    if not isinstance(delta, dict):
+        return result
+    base = delta.get("from_version")
+    if (delta.get("format") != "nld1" or not isinstance(base, str) or not re.fullmatch(VERSION, base)
+            or not allows_delta(base, version) or type(delta.get("from_build")) is not int
+            or not 0 < delta["from_build"] < record["build"] or not valid_sha(delta.get("from_sha256"))):
+        return result
+    patch = uploaded(release, patch_name(name, delta["from_sha256"], record["sha256"]))
+    if (patch and valid_sha(delta.get("sha256"))
+            and patch.get("digest") == "sha256:" + delta["sha256"]
+            and type(delta.get("size")) is int and 0 < delta["size"] < record["size"]
+            and delta["size"] == patch.get("size")):
+        try:
+            url = asset_url(patch, tag, mirror)
+        except ValueError:
+            return result
+        result["delta"] = {key: delta[key] for key in
+                           ("format", "from_version", "from_build", "from_sha256", "sha256", "size")}
+        result["delta"]["url"] = url
+    return result
 
 
 def fetch_releases():
@@ -74,7 +172,18 @@ def web_url(value):
 
 def build_manifest(releases, build_for_version=read_build, download_base_url=None):
     mirror = web_url(download_base_url) if download_base_url is not None else None
+    builds = {}
+
+    def build_number(version):
+        if version not in builds:
+            value = build_for_version(version)
+            if type(value) is not int or value <= 0:
+                raise ValueError(f"Invalid build number for {version}")
+            builds[version] = value
+        return builds[version]
+
     candidates = {}
+    invalid_urls = False
     for release in releases:
         if release.get("draft") or release.get("prerelease"):
             continue
@@ -90,40 +199,38 @@ def build_manifest(releases, build_for_version=read_build, download_base_url=Non
             if target is None or asset.get("state") != "uploaded":
                 continue
             platform, arch, rank = target
-            if mirror is not None:
-                path = f"{mirror.path.rstrip('/')}/{quote(tag, safe='')}/{quote(name, safe='')}"
-                url = mirror._replace(path=path).geturl()
-            else:
-                url = asset.get("browser_download_url")
-                web_url(url)
-            page_url = "" if mirror is not None else release.get("html_url") or ""
-            if page_url:
-                web_url(page_url)
-            candidate = (order, -rank, {
+            try:
+                url = asset_url(asset, tag, mirror)
+                page_url = "" if mirror is not None else release.get("html_url") or ""
+                if page_url:
+                    web_url(page_url)
+            except ValueError:
+                invalid_urls = True
+                print(f"Skipping {name}: invalid release URL", file=sys.stderr)
+                continue
+            entry = {
                 "platform": platform, "arch": arch, "version": version,
                 "notes": release.get("body") or "",
                 "page_url": page_url, "url": url,
-            })
+            }
+            candidate = order, -rank, entry, release, asset
             key = platform, arch
             existing = candidates.get(key)
             if existing is None or candidate[:2] > existing[:2]:
                 candidates[key] = candidate
-            elif candidate[:2] == existing[:2] and candidate[2] != existing[2]:
+            elif candidate[:2] == existing[:2] and (entry != existing[2] or asset != existing[4]):
                 raise ValueError(f"Conflicting release assets for {key} at {version}")
 
-    builds = {}
+    if invalid_urls and not candidates:
+        raise ValueError("No release targets have valid URLs")
     updates = []
     for key in sorted(candidates):
-        entry = candidates[key][2]
-        version = entry["version"]
-        if version not in builds:
-            builds[version] = build_for_version(version)
-        build = builds[version]
-        if type(build) is not int or build <= 0:
-            raise ValueError(f"Invalid build number for {version}")
+        _, _, entry, release, asset = candidates[key]
         if entry["platform"] in ("android", "android-tv"):
-            build += ANDROID_ABI_BUILD_OFFSET.get(entry["arch"], 0)
-        updates.append({**entry, "build": build})
+            entry.update(android_delivery(release, asset, entry["arch"], mirror))
+        else:
+            entry["build"] = build_number(entry["version"])
+        updates.append(entry)
     return {"schema": 1, "updates": updates}
 
 

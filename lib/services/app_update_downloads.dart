@@ -2,8 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/services/app_update_manifest.dart';
 
-enum UpdateDownloadPhase { queued, downloading, waiting, ready, failed }
+enum UpdateDownloadPhase {
+  queued,
+  downloading,
+  waiting,
+  preparing,
+  ready,
+  failed,
+}
 
 enum UpdateInstallResult { opened, permissionRequired }
 
@@ -17,15 +25,24 @@ class UpdateDownload {
     this.notes = '',
     this.received = 0,
     this.total = 0,
+    this.fullSize = 0,
+    this.sha256,
+    this.isDelta = false,
+    this.patchUrl,
+    this.token,
   });
 
   final String version, url, notes;
   final int build;
   final UpdateDownloadPhase phase;
-  final int received, total;
+  final int received, total, fullSize;
+  final String? sha256, patchUrl, token;
+  final bool isDelta;
+  Object get identity => token ?? (version, build, url, isDelta);
   bool get active => switch (phase) {
     UpdateDownloadPhase.queued ||
     UpdateDownloadPhase.downloading ||
+    UpdateDownloadPhase.preparing ||
     UpdateDownloadPhase.waiting => true,
     _ => false,
   };
@@ -35,13 +52,12 @@ class UpdateDownload {
 abstract class AppUpdateDownloads {
   Future<UpdateDownload?> current();
   Future<UpdateDownload> start({
-    required String version,
-    required int build,
-    required String url,
+    required UpdateInfo release,
     required String title,
-    required String notes,
+    UpdateDelta? delta,
   });
   Future<void> cancel(UpdateDownload download);
+  Future<UpdateDownload?> discardFailed(UpdateDownload download);
   Future<UpdateInstallResult> install(UpdateDownload download);
 }
 
@@ -62,6 +78,11 @@ class AndroidAppUpdateDownloads implements AppUpdateDownloads {
           notes: value['notes'] as String? ?? '',
           received: (value['received'] as num).toInt(),
           total: (value['total'] as num).toInt(),
+          fullSize: (value['size'] as num?)?.toInt() ?? 0,
+          sha256: value['sha256'] as String?,
+          isDelta: value['delta'] == true,
+          patchUrl: value['patchUrl'] as String?,
+          token: value['token'] as String?,
         );
 
   @override
@@ -70,31 +91,49 @@ class AndroidAppUpdateDownloads implements AppUpdateDownloads {
 
   @override
   Future<UpdateDownload> start({
-    required String version,
-    required int build,
-    required String url,
+    required UpdateInfo release,
     required String title,
-    required String notes,
+    UpdateDelta? delta,
   }) async {
     return _decode(
       await _channel.invokeMapMethod('start', {
-        'version': version,
-        'build': build,
-        'url': url,
-        'title': '$title $version',
-        'notes': notes,
+        'version': release.version,
+        'build': release.build,
+        'url': release.url,
+        'title': '$title ${release.version}',
+        'notes': release.notes,
+        'size': release.size,
+        'sha256': release.sha256,
+        if (delta != null)
+          'delta': {
+            'version': delta.fromVersion,
+            'build': delta.fromBuild,
+            'base': delta.fromSha,
+            'url': delta.url,
+            'sha256': delta.sha256,
+            'size': delta.size,
+          },
       }),
     )!;
   }
 
-  Map<String, String> _identity(UpdateDownload download) => {
+  Map<String, Object?> _identity(UpdateDownload download) => {
     'version': download.version,
+    'build': download.build,
     'url': download.url,
+    'delta': download.isDelta,
+    'token': download.token,
   };
 
   @override
   Future<void> cancel(UpdateDownload download) =>
       _channel.invokeMethod('cancel', _identity(download));
+
+  @override
+  Future<UpdateDownload?> discardFailed(UpdateDownload download) async =>
+      _decode(
+        await _channel.invokeMapMethod('discardFailed', _identity(download)),
+      );
 
   @override
   Future<UpdateInstallResult> install(UpdateDownload download) async =>

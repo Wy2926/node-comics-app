@@ -48,6 +48,8 @@
   "@@locale": "id",
   "app_update_details_hint": "Lihat catatan rilis dan opsi instalasi",
   "app_update_download": "Unduh pembaruan",
+  "app_update_delta": "Unduh patch ({size})",
+  "app_update_full": "Unduh APK lengkap ({size})",
   "app_update_download_hint": "Setelah mengunduh, ikuti petunjuk untuk menginstal pembaruan.",
   "bookshelf_all": "Semua",
   "bookshelf_search": "Cari perpustakaan",

@@ -45,7 +45,7 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
     _foreground =
         WidgetsBinding.instance.lifecycleState == null ||
         WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
-    unawaited(_check());
+    unawaited(_check(announced: widget.update));
   }
 
   UpdateInfo _releaseFor(UpdateDownload task) => UpdateInfo(
@@ -53,9 +53,11 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
     build: task.build,
     notes: task.notes,
     url: task.url,
+    size: task.fullSize,
+    sha256: task.sha256,
   );
 
-  Future<void> _check() async {
+  Future<void> _check({UpdateInfo? announced}) async {
     if (_checking || _busy) return;
     final epoch = ++_epoch;
     setState(() {
@@ -70,18 +72,54 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
         // An unavailable native service must not prevent release discovery.
       }
       if (!mounted || epoch != _epoch) return;
-      final release = local != null
-          ? _releaseFor(local)
-          : widget.update ?? await ref.read(manualAppUpdateCheckProvider)();
+      UpdateInfo? release;
+      var offline = false;
+      if (local?.phase == UpdateDownloadPhase.failed) {
+        final failed = local!;
+        UpdateInfo? latest;
+        try {
+          latest = await ref.read(manualAppUpdateCheckProvider)();
+        } catch (_) {
+          offline = true;
+        }
+        if (!mounted || epoch != _epoch) return;
+        if (offline) {
+          release = _releaseFor(failed);
+        } else if (latest == null ||
+            latest.version != failed.version ||
+            latest.build != failed.build ||
+            latest.url != failed.url ||
+            latest.size != failed.fullSize ||
+            latest.sha256 != failed.sha256 ||
+            (failed.patchUrl != null &&
+                latest.delta != null &&
+                failed.patchUrl != latest.delta!.url)) {
+          // A retry from another page may have become active during the lookup.
+          local = await _downloads!.discardFailed(failed);
+          release = local == null ? latest : _releaseFor(local);
+        } else {
+          release = latest;
+        }
+      } else {
+        release = local != null
+            ? _releaseFor(local)
+            : announced ?? await ref.read(manualAppUpdateCheckProvider)();
+      }
       if (mounted && epoch == _epoch) {
         setState(() {
           _update = release;
           _download = local;
           _error = false;
+          _checkFailed = offline;
         });
       }
     } catch (_) {
-      if (mounted && epoch == _epoch) setState(() => _checkFailed = true);
+      if (mounted && epoch == _epoch) {
+        setState(() {
+          _checkFailed = true;
+          _update = null;
+        });
+      }
     } finally {
       if (mounted && epoch == _epoch) setState(() => _checking = false);
       _schedule();
@@ -153,9 +191,26 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
 
   Future<void> _continue() async {
     if (!mounted || _busy || _checking || _update == null) return;
+    final download = _download;
+    final retry = download?.phase == UpdateDownloadPhase.failed;
+    if (retry) {
+      await _check();
+      if (!mounted ||
+          _update == null ||
+          _download?.phase != UpdateDownloadPhase.failed ||
+          _download?.identity != download!.identity) {
+        return;
+      }
+    }
     final l10n = context.l10n;
     final title = l10n.app_name;
-    final download = _download;
+    final info = ref.read(getPackageInfoProvider).asData?.value;
+    final offeredDelta = download == null
+        ? _update!.deltaFrom(
+            info?.version,
+            int.tryParse(info?.buildNumber ?? ''),
+          )
+        : null;
     ++_epoch;
     setState(() {
       _busy = true;
@@ -183,16 +238,23 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
       } else {
         // Recover a late enqueue before starting another download.
         var current = await downloads.current();
-        if (current == null || current.phase == UpdateDownloadPhase.failed) {
+        if (current == null
+            ? download == null || retry
+            : current.phase == UpdateDownloadPhase.failed &&
+                  retry &&
+                  current.identity == download!.identity) {
           current = await downloads.start(
-            version: current?.version ?? _update!.version,
-            build: current?.build ?? _update!.build,
-            url: current?.url ?? _update!.url,
+            release: _update!,
             title: title,
-            notes: current?.notes ?? _update!.notes,
+            delta: offeredDelta,
           );
         }
-        if (mounted) setState(() => _download = current);
+        if (mounted) {
+          setState(() {
+            _download = current;
+            _checkFailed = false;
+          });
+        }
       }
     } catch (_) {
       if (mounted) setState(() => _error = true);
@@ -207,11 +269,14 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
     if (!mounted || _busy || download == null) return;
     ++_epoch;
     setState(() => _busy = true);
+    var cancelled = false;
     try {
       await _downloads!.cancel(download);
       if (mounted) {
+        cancelled = true;
         setState(() {
           _download = null;
+          _update = null;
           _error = false;
           _permissionRequired = false;
         });
@@ -222,16 +287,21 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
       if (mounted) setState(() => _busy = false);
       _schedule();
     }
+    if (cancelled && mounted) await _check();
   }
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n, t = NodeLaneTokens.of(context);
-    final currentVersion =
-        ref.watch(getPackageInfoProvider).asData?.value.version ?? '';
+    final info = ref.watch(getPackageInfoProvider).asData?.value;
+    final currentVersion = info?.version ?? '';
     final download = _download;
     final ready = download?.phase == UpdateDownloadPhase.ready;
     final release = _update;
+    final delta = release?.deltaFrom(
+      currentVersion,
+      int.tryParse(info?.buildNumber ?? ''),
+    );
     return NodeLaneSurface(
       child: Scaffold(
         appBar: nodeLaneAppBar(context, title: l.app_updates),
@@ -247,7 +317,9 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
                       notes: download?.notes ?? release.notes,
                       downloadOnDevice: _downloads != null,
                       busy: _busy || download?.active == true,
-                      installing: _busy && ready,
+                      installing:
+                          (_busy && ready) ||
+                          download?.phase == UpdateDownloadPhase.preparing,
                       readyToInstall: ready,
                       waiting:
                           download?.phase == UpdateDownloadPhase.waiting ||
@@ -259,6 +331,27 @@ class _SoftwareUpdateScreenState extends ConsumerState<SoftwareUpdateScreen>
                       hasError:
                           _error ||
                           download?.phase == UpdateDownloadPhase.failed,
+                      checkFailed: _checkFailed,
+                      onRecheck:
+                          download?.phase == UpdateDownloadPhase.failed &&
+                              !_busy
+                          ? () => _check()
+                          : null,
+                      downloadLabel:
+                          download?.phase == UpdateDownloadPhase.failed &&
+                              download!.fullSize > 0
+                          ? l.app_update_full(
+                              '${(download.fullSize / 1048576).toStringAsFixed(1)} MiB',
+                            )
+                          : download == null && delta != null
+                          ? l.app_update_delta(
+                              '${(delta.size / 1048576).toStringAsFixed(1)} MiB',
+                            )
+                          : download == null && release.size > 0
+                          ? l.app_update_full(
+                              '${(release.size / 1048576).toStringAsFixed(1)} MiB',
+                            )
+                          : null,
                       onContinue: _continue,
                       onCancelDownload: download != null && !_busy
                           ? _cancelDownload

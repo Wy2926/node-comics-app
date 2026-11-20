@@ -415,6 +415,18 @@ abstract class AppLocalizations {
   /// **'Download update'**
   String get app_update_download;
 
+  /// No description provided for @app_update_delta.
+  ///
+  /// In en, this message translates to:
+  /// **'Download patch ({size})'**
+  String app_update_delta(String size);
+
+  /// No description provided for @app_update_full.
+  ///
+  /// In en, this message translates to:
+  /// **'Download full APK ({size})'**
+  String app_update_full(String size);
+
   /// No description provided for @app_update_download_hint.
   ///
   /// In en, this message translates to:

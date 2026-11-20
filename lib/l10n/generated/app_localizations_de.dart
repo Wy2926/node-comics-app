@@ -171,6 +171,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get app_update_download => 'Update herunterladen';
 
   @override
+  String app_update_delta(String size) {
+    return 'Patch herunterladen ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return 'Vollständige APK herunterladen ($size)';
+  }
+
+  @override
   String get app_update_download_hint =>
       'Befolgen Sie nach dem Herunterladen die Anweisungen zur Installation des Updates.';
 

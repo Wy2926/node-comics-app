@@ -159,6 +159,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get app_update_download => 'ダウンロードアップデート';
 
   @override
+  String app_update_delta(String size) {
+    return '差分パッチをダウンロード（$size）';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return '完全版 APK をダウンロード（$size）';
+  }
+
+  @override
   String get app_update_download_hint => 'ダウンロード後、プロンプトに従ってアップデートをインストールします。';
 
   @override

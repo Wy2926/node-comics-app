@@ -160,6 +160,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get app_update_download => '업데이트 다운로드';
 
   @override
+  String app_update_delta(String size) {
+    return '패치 다운로드 ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return '전체 APK 다운로드 ($size)';
+  }
+
+  @override
   String get app_update_download_hint => '다운로드 후 지시에 따라 업데이트를 설치하십시오.';
 
   @override

@@ -48,6 +48,8 @@
   "@@locale": "tr",
   "app_update_details_hint": "Sürüm notlarını ve yükleme seçeneklerini görüntüleyin",
   "app_update_download": "Güncellemeyi indir",
+  "app_update_delta": "Yamayı indir ({size})",
+  "app_update_full": "Tam APK dosyasını indir ({size})",
   "app_update_download_hint": "İndirdikten sonra güncellemeyi yüklemek için talimatları izleyin.",
   "bookshelf_all": "Hepsi",
   "bookshelf_search": "Kütüphanede arama yapın",

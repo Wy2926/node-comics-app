@@ -48,6 +48,8 @@
   "@@locale": "zh_Hant",
   "app_update_details_hint": "檢視更新說明與安裝方式",
   "app_update_download": "下載更新",
+  "app_update_delta": "下載差分修補檔（{size}）",
+  "app_update_full": "下載完整安裝包（{size}）",
   "app_update_download_hint": "下載完成後，按提示安裝更新。",
   "bookshelf_all": "全部",
   "bookshelf_search": "搜尋書架",

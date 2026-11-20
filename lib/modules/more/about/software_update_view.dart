@@ -25,8 +25,14 @@ class SoftwareUpdateView extends StatelessWidget {
     this.waiting = false,
     this.permissionRequired = false,
     this.onCancelDownload,
+    this.downloadLabel,
+    this.onRecheck,
+    this.checkFailed = false,
   });
   final String currentVersion, targetVersion, notes;
+  final String? downloadLabel;
+  final VoidCallback? onRecheck;
+  final bool checkFailed;
   final bool downloadOnDevice,
       busy,
       installing,
@@ -90,6 +96,8 @@ class SoftwareUpdateView extends StatelessWidget {
     );
     final status = permissionRequired
         ? l.app_update_allow_install
+        : checkFailed
+        ? l.app_update_failed
         : hasError
         ? l.failed
         : busy
@@ -166,13 +174,14 @@ class SoftwareUpdateView extends StatelessWidget {
               downloadOnDevice
                   ? readyToInstall
                         ? l.install
-                        : hasError
-                        ? l.retry
-                        : l.app_update_download
+                        : downloadLabel ??
+                              (hasError ? l.retry : l.app_update_download)
                   : l.open_in_browser,
               textAlign: TextAlign.center,
             ),
           ),
+        if (onRecheck != null)
+          TextButton(onPressed: onRecheck, child: Text(l.check_for_update)),
         if (onCancelDownload != null) ...[
           const SizedBox(height: NodeLaneTokens.space8),
           TextButton(

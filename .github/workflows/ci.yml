@@ -57,7 +57,7 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Test update manifest generation
+      - name: Test update manifests and APK patches
         run: python3 -B -m unittest discover -s tool -p 'test_*.py'
 
   build-android:

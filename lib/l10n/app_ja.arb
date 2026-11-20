@@ -48,6 +48,8 @@
   "@@locale": "ja",
   "app_update_details_hint": "リリース ノートとインストール オプションを表示する",
   "app_update_download": "ダウンロードアップデート",
+  "app_update_delta": "差分パッチをダウンロード（{size}）",
+  "app_update_full": "完全版 APK をダウンロード（{size}）",
   "app_update_download_hint": "ダウンロード後、プロンプトに従ってアップデートをインストールします。",
   "bookshelf_all": "すべて",
   "bookshelf_search": "ライブラリの検索",

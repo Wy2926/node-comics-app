@@ -48,6 +48,8 @@
   "@@locale": "zh",
   "app_update_details_hint": "查看更新说明与安装方式",
   "app_update_download": "下载更新",
+  "app_update_delta": "下载差分补丁（{size}）",
+  "app_update_full": "下载完整安装包（{size}）",
   "app_update_download_hint": "下载完成后，按提示安装更新。",
   "bookshelf_all": "全部",
   "bookshelf_search": "搜索书架",

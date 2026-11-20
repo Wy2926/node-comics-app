@@ -48,6 +48,8 @@
   "@@locale": "de",
   "app_update_details_hint": "Versionshinweise und Installationsoptionen anzeigen",
   "app_update_download": "Update herunterladen",
+  "app_update_delta": "Patch herunterladen ({size})",
+  "app_update_full": "Vollständige APK herunterladen ({size})",
   "app_update_download_hint": "Befolgen Sie nach dem Herunterladen die Anweisungen zur Installation des Updates.",
   "bookshelf_all": "Alle",
   "bookshelf_search": "Bibliothek durchsuchen",

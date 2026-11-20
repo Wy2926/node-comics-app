@@ -170,6 +170,16 @@ class AppLocalizationsId extends AppLocalizations {
   String get app_update_download => 'Unduh pembaruan';
 
   @override
+  String app_update_delta(String size) {
+    return 'Unduh patch ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return 'Unduh APK lengkap ($size)';
+  }
+
+  @override
   String get app_update_download_hint =>
       'Setelah mengunduh, ikuti petunjuk untuk menginstal pembaruan.';
 

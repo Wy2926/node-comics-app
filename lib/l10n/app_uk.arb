@@ -48,6 +48,8 @@
   "@@locale": "uk",
   "app_update_details_hint": "Переглянути примітки до випуску та параметри встановлення",
   "app_update_download": "Завантажити оновлення",
+  "app_update_delta": "Завантажити патч ({size})",
+  "app_update_full": "Завантажити повний APK ({size})",
   "app_update_download_hint": "Після завантаження дотримуйтесь підказок, щоб установити оновлення.",
   "bookshelf_all": "Всі",
   "bookshelf_search": "Пошукова бібліотека",

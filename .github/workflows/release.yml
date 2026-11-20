@@ -38,6 +38,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       commit: ${{ steps.version.outputs.commit }}
+      tools_commit: ${{ steps.version.outputs.tools_commit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,6 +49,7 @@ jobs:
         id: version
         env:
           RELEASE_PLATFORM: ${{ inputs.platform }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           python3 - <<'PY'
           import os
@@ -71,8 +73,12 @@ jobs:
           if tag != f'v{version}':
               raise SystemExit(f'Release tag {tag} does not match app version v{version}')
           commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          tools_commit = subprocess.check_output(
+              ['git', 'ls-remote', '--exit-code', 'origin', f"refs/heads/{os.environ['DEFAULT_BRANCH']}"],
+              text=True,
+          ).split()[0]
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
-              output.write(f'commit={commit}\n')
+              output.write(f'commit={commit}\ntools_commit={tools_commit}\n')
           print(f'Validated NodeLane {version}+{build} for {tag}')
           PY
 
@@ -667,7 +673,7 @@ jobs:
       - name: Checkout release tooling
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.validate-release-version.outputs.commit }}
+          ref: ${{ needs.validate-release-version.outputs.tools_commit }}
 
       - name: Download selected platform artifacts
         uses: actions/download-artifact@v4
@@ -675,6 +681,27 @@ jobs:
           pattern: nodelane-comics-${{ env.RELEASE_TAG }}-*
           merge-multiple: true
           path: release-assets
+
+      - name: Locate Android Build Tools
+        run: |
+          if [[ -d "$ANDROID_HOME/build-tools" ]]; then
+            find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1 >> "$GITHUB_PATH"
+          fi
+
+      - name: Verify Android release APKs and prepare optional patches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_PLATFORM: ${{ inputs.platform }}
+        run: |
+          for platform in android android-tv; do
+            if [[ "$RELEASE_PLATFORM" == all || "$RELEASE_PLATFORM" == "$platform" ]]; then
+              for abi in armeabi-v7a arm64-v8a x86_64; do
+                apk="release-assets/nodelane-comics-$RELEASE_TAG-$platform-$abi.apk"
+                [[ -s "$apk" ]] || { echo "::error::Missing required APK: $apk"; exit 1; }
+              done
+            fi
+          done
+          python3 -B tool/prepare_update_deltas.py release-assets "$RELEASE_TAG"
 
       - name: Upload assets to GitHub Release
         id: release
@@ -689,6 +716,16 @@ jobs:
           omitDraftDuringUpdate: true
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
+
+      - name: Upload optional patches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          for file in release-assets/patches/*.nld1; do
+            gh release upload "$RELEASE_TAG" "$file" --clobber ||
+              echo "::warning::Patch ${file##*/} unavailable; keeping the full APK."
+          done
 
       - name: Publish after successful upload
         env:

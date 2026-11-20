@@ -48,6 +48,8 @@
   "@@locale": "ar",
   "app_update_details_hint": "عرض ملاحظات الإصدار وخيارات التثبيت",
   "app_update_download": "تنزيل التحديث",
+  "app_update_delta": "تنزيل التصحيح ({size})",
+  "app_update_full": "تنزيل حزمة APK الكاملة ({size})",
   "app_update_download_hint": "بعد التنزيل، اتبع المطالبات لتثبيت التحديث.",
   "bookshelf_all": "الكل",
   "bookshelf_search": "مكتبة البحث",

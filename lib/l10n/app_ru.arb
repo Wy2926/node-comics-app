@@ -48,6 +48,8 @@
   "@@locale": "ru",
   "app_update_details_hint": "Просмотр примечаний к выпуску и вариантов установки",
   "app_update_download": "Скачать обновление",
+  "app_update_delta": "Скачать патч ({size})",
+  "app_update_full": "Скачать полный APK ({size})",
   "app_update_download_hint": "После загрузки следуйте инструкциям для установки обновления.",
   "bookshelf_all": "Все",
   "bookshelf_search": "Поиск в библиотеке",

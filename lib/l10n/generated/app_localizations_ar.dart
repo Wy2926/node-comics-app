@@ -167,6 +167,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get app_update_download => 'تنزيل التحديث';
 
   @override
+  String app_update_delta(String size) {
+    return 'تنزيل التصحيح ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return 'تنزيل حزمة APK الكاملة ($size)';
+  }
+
+  @override
   String get app_update_download_hint =>
       'بعد التنزيل، اتبع المطالبات لتثبيت التحديث.';
 

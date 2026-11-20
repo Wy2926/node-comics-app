@@ -44,10 +44,20 @@ class ManifestTests(unittest.TestCase):
         prerelease["prerelease"] = True
         no_package = release("5.0.0", "source.tar.gz")
         reader = lambda version: int(version.split(".")[1])
-        manifest = generator.build_manifest(releases + [ignored, pending, beta, prerelease, no_package], reader)
-        fixture = generator.ROOT / "test/fixtures/app_update_manifest.json"
-        self.assertEqual(manifest, json.loads(fixture.read_text(encoding="utf-8")))
-        self.assertEqual(manifest, generator.build_manifest(list(reversed(releases)), reader))
+        actual_codes = {"arm64-v8a": 7611, "armeabi-v7a": 693, "x86_64": 8409, "universal": 91}
+        def inspect(asset, version, arch):
+            return {"package": generator.APP_ID, "version": version, "arch": arch,
+                    "abis": [arch] if arch != "universal" else ["x86", "arm64-v8a"],
+                    "build": actual_codes[arch], "size": 1000, "sha256": "a"*64}
+        with patch.object(generator, "published_apk", side_effect=inspect):
+            manifest = generator.build_manifest(releases + [ignored, pending, beta, prerelease, no_package], reader)
+            fixture = generator.ROOT / "test/fixtures/app_update_manifest.json"
+            self.assertEqual(manifest, json.loads(fixture.read_text(encoding="utf-8")))
+            self.assertEqual(manifest, generator.build_manifest(list(reversed(releases)), reader))
+            broken_ios = release("1.0.0", "ios.ipa")
+            broken_ios["assets"][0]["browser_download_url"] = "not an HTTP URL"
+            with redirect_stderr(io.StringIO()):
+                self.assertEqual(manifest, generator.build_manifest([broken_ios, *releases], reader))
         self.assertEqual(generator.build_manifest([]), {"schema": 1, "updates": []})
 
     def test_invalid_metadata_or_network_never_overwrites_existing_file(self):

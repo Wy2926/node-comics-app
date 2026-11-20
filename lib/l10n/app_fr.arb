@@ -48,6 +48,8 @@
   "@@locale": "fr",
   "app_update_details_hint": "Afficher les notes de version et les options d'installation",
   "app_update_download": "Télécharger la mise à jour",
+  "app_update_delta": "Télécharger le correctif ({size})",
+  "app_update_full": "Télécharger l’APK complet ({size})",
   "app_update_download_hint": "Après le téléchargement, suivez les invites pour installer la mise à jour.",
   "bookshelf_all": "Tous",
   "bookshelf_search": "Bibliothèque de recherche",

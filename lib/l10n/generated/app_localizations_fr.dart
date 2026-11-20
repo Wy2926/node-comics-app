@@ -170,6 +170,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get app_update_download => 'Télécharger la mise à jour';
 
   @override
+  String app_update_delta(String size) {
+    return 'Télécharger le correctif ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return 'Télécharger l’APK complet ($size)';
+  }
+
+  @override
   String get app_update_download_hint =>
       'Après le téléchargement, suivez les invites pour installer la mise à jour.';
 

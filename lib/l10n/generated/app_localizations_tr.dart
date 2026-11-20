@@ -171,6 +171,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get app_update_download => 'Güncellemeyi indir';
 
   @override
+  String app_update_delta(String size) {
+    return 'Yamayı indir ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return 'Tam APK dosyasını indir ($size)';
+  }
+
+  @override
   String get app_update_download_hint =>
       'İndirdikten sonra güncellemeyi yüklemek için talimatları izleyin.';
 

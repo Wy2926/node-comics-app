@@ -158,6 +158,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get app_update_download => '下载更新';
 
   @override
+  String app_update_delta(String size) {
+    return '下载差分补丁（$size）';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return '下载完整安装包（$size）';
+  }
+
+  @override
   String get app_update_download_hint => '下载完成后，按提示安装更新。';
 
   @override
@@ -6246,6 +6256,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get app_update_download => '下載更新';
+
+  @override
+  String app_update_delta(String size) {
+    return '下載差分修補檔（$size）';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return '下載完整安裝包（$size）';
+  }
 
   @override
   String get app_update_download_hint => '下載完成後，按提示安裝更新。';

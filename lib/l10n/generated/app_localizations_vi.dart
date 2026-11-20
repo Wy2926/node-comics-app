@@ -170,6 +170,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get app_update_download => 'Tải xuống bản cập nhật';
 
   @override
+  String app_update_delta(String size) {
+    return 'Tải bản vá ($size)';
+  }
+
+  @override
+  String app_update_full(String size) {
+    return 'Tải APK đầy đủ ($size)';
+  }
+
+  @override
   String get app_update_download_hint =>
       'Sau khi tải xuống, hãy làm theo lời nhắc để cài đặt bản cập nhật.';
 

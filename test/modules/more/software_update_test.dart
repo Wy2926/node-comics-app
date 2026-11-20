@@ -52,6 +52,8 @@ class _Downloads implements AppUpdateDownloads {
   Completer<UpdateDownload>? pending;
   int starts = 0, cancels = 0, queries = 0, installs = 0;
   String? requestedNotes;
+  UpdateDelta? requestedDelta;
+  UpdateInfo? requestedRelease;
   bool installFails = false, queryFails = false;
   @override
   Future<UpdateDownload?> current() async {
@@ -62,14 +64,14 @@ class _Downloads implements AppUpdateDownloads {
 
   @override
   Future<UpdateDownload> start({
-    required String version,
-    required int build,
-    required String url,
+    required UpdateInfo release,
     required String title,
-    required String notes,
+    UpdateDelta? delta,
   }) async {
     starts++;
-    requestedNotes = notes;
+    requestedNotes = release.notes;
+    requestedDelta = delta;
+    requestedRelease = release;
     return task = await pending!.future;
   }
 
@@ -77,6 +79,15 @@ class _Downloads implements AppUpdateDownloads {
   Future<void> cancel(UpdateDownload download) async {
     cancels++;
     task = null;
+  }
+
+  @override
+  Future<UpdateDownload?> discardFailed(UpdateDownload download) async {
+    if (task?.identity == download.identity &&
+        task?.phase == UpdateDownloadPhase.failed) {
+      task = null;
+    }
+    return task;
   }
 
   @override
@@ -97,6 +108,7 @@ void main() {
     double width = 390,
     double height = 844,
     bool dark = false,
+    PackageInfo? installed,
   }) async {
     tester.view.physicalSize = Size(width, height);
     tester.view.devicePixelRatio = 1;
@@ -136,7 +148,9 @@ void main() {
           manualAppUpdateCheckProvider.overrideWithValue(
             check ?? () async => _update,
           ),
-          getPackageInfoProvider.overrideWith((_) async => _package),
+          getPackageInfoProvider.overrideWith(
+            (_) async => installed ?? _package,
+          ),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -354,6 +368,253 @@ void main() {
     expect(find.text('Download update'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'late patch failure and offline recovery require an explicit full download',
+    (tester) async {
+      const patch = UpdateDelta(
+        '0.2.0',
+        4007,
+        'base',
+        'https://example.invalid/change',
+        1048576,
+        'patch',
+      );
+      const release = UpdateInfo(
+        version: '0.2.1',
+        build: 4008,
+        url: 'https://example.invalid/full.apk',
+        size: 10485760,
+        sha256: 'target',
+        delta: patch,
+      );
+      const failed = UpdateDownload(
+        version: '0.2.1',
+        build: 4008,
+        url: 'https://example.invalid/full.apk',
+        phase: UpdateDownloadPhase.failed,
+        isDelta: true,
+        fullSize: 10485760,
+        sha256: 'target',
+      );
+      final downloads = _Downloads()..pending = Completer<UpdateDownload>();
+      final router = await start(
+        tester,
+        downloads: downloads,
+        check: () async => release,
+        installed: PackageInfo(
+          appName: 'test',
+          packageName: 'test',
+          version: '0.2.0',
+          buildNumber: '4007',
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Download patch (1.0 MiB)'), findsOneWidget);
+      // Native failure arrives after the last UI snapshot, before the tap is handled.
+      downloads.task = failed;
+      await tester.tap(find.text('Download patch (1.0 MiB)'));
+      await tester.pumpAndSettle();
+      expect(downloads.starts, 0);
+      expect(find.text('Download full APK (10.0 MiB)'), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Check for update'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Download full APK (10.0 MiB)'));
+      await tester.pump();
+      expect(downloads.starts, 1);
+      expect(downloads.requestedDelta, isNull);
+      downloads.pending!.complete(
+        const UpdateDownload(
+          version: '0.2.1',
+          build: 4008,
+          url: 'https://example.invalid/full.apk',
+          phase: UpdateDownloadPhase.ready,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Install'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'failed transfer can recheck offline, accept a rotated URL and refresh after cancellation',
+    (tester) async {
+      const failed = UpdateDownload(
+        version: '0.2.1',
+        build: 4008,
+        url: 'https://old.example/a.apk',
+        phase: UpdateDownloadPhase.failed,
+        isDelta: true,
+        fullSize: 10485760,
+        sha256: 'target',
+      );
+      const rotated = UpdateInfo(
+        version: '0.2.1',
+        build: 4008,
+        url: 'https://new.example/a.apk',
+        size: 11534336,
+        sha256: 'target',
+      );
+      const next = UpdateInfo(
+        version: '0.2.2',
+        build: 4009,
+        url: 'https://new.example/b.apk',
+        size: 12582912,
+      );
+      final downloads = _Downloads()
+        ..task = failed
+        ..pending = Completer<UpdateDownload>();
+      var checks = 0;
+      await start(
+        tester,
+        downloads: downloads,
+        check: () async {
+          switch (++checks) {
+            case 1:
+              throw StateError('offline');
+            case 2:
+              return rotated;
+            default:
+              return next;
+          }
+        },
+      );
+      await tester.pumpAndSettle();
+      expect(downloads.task, same(failed));
+      expect(find.text('Download full APK (10.0 MiB)'), findsOneWidget);
+      await tester.tap(find.text('Check for update'));
+      await tester.pumpAndSettle();
+      expect(downloads.task, isNull);
+      expect(downloads.starts, 0);
+      await tester.tap(find.text('Download full APK (11.0 MiB)'));
+      await tester.pump();
+      expect(downloads.requestedRelease?.url, rotated.url);
+      downloads.pending!.complete(
+        const UpdateDownload(
+          version: '0.2.1',
+          build: 4008,
+          url: 'https://new.example/a.apk',
+          phase: UpdateDownloadPhase.downloading,
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Cancel download'));
+      await tester.pumpAndSettle();
+      expect(find.text('0.2.2'), findsOneWidget);
+      expect(find.text('Download full APK (12.0 MiB)'), findsOneWidget);
+      expect(downloads.starts, 1);
+      expect(checks, 3);
+    },
+  );
+
+  testWidgets('rechecking a failed task cannot remove a new active transfer', (
+    tester,
+  ) async {
+    final downloads = _Downloads()
+      ..task = const UpdateDownload(
+        version: '0.2.1',
+        build: 2,
+        url: 'https://old.example/a.apk',
+        phase: UpdateDownloadPhase.failed,
+      );
+    final query = Completer<UpdateInfo?>();
+    await start(tester, downloads: downloads, check: () => query.future);
+    const replacement = UpdateDownload(
+      version: '0.2.2',
+      build: 3,
+      url: 'https://old.example/retry.apk',
+      phase: UpdateDownloadPhase.downloading,
+      received: 2,
+      total: 10,
+    );
+    downloads.task = replacement;
+    query.complete(null);
+    await tester.pumpAndSettle();
+    expect(downloads.task, same(replacement));
+    expect(find.text('20%'), findsOneWidget);
+    expect(downloads.cancels, 0);
+  });
+
+  testWidgets(
+    'retry shows a replacement target before starting a failed full download',
+    (tester) async {
+      const original = UpdateInfo(
+        version: '0.2.1',
+        build: 4008,
+        size: 1048576,
+        url: 'https://cdn.example/old',
+      );
+      const next = UpdateInfo(
+        version: '0.2.2',
+        build: 4009,
+        size: 2097152,
+        url: 'https://cdn.example/new',
+      );
+      final downloads = _Downloads()
+        ..task = UpdateDownload(
+          version: original.version,
+          build: original.build,
+          fullSize: original.size,
+          url: original.url,
+          phase: UpdateDownloadPhase.failed,
+        );
+      var offer = original;
+      await start(tester, downloads: downloads, check: () async => offer);
+      await tester.pumpAndSettle();
+      offer = next;
+      await tester.tap(find.text('Download full APK (1.0 MiB)'));
+      await tester.pumpAndSettle();
+      expect(find.text(next.version), findsOneWidget);
+      expect(find.text('Download full APK (2.0 MiB)'), findsOneWidget);
+      expect(downloads.starts, 0);
+      expect(downloads.task, isNull);
+    },
+  );
+
+  testWidgets(
+    'a replacement patch URL is offered without automatically starting it or the full APK',
+    (tester) async {
+      const oldUrl = 'https://cdn.example/expired';
+      const fullUrl = 'https://cdn.example/full';
+      final downloads = _Downloads()
+        ..task = const UpdateDownload(
+          version: '0.2.1',
+          build: 4008,
+          url: fullUrl,
+          fullSize: 2097152,
+          isDelta: true,
+          patchUrl: oldUrl,
+          phase: UpdateDownloadPhase.failed,
+        );
+      var patchUrl = oldUrl;
+      await start(
+        tester,
+        downloads: downloads,
+        installed: PackageInfo(
+          appName: 'test',
+          packageName: 'test',
+          version: '0.2.0',
+          buildNumber: '4007',
+        ),
+        check: () async => UpdateInfo(
+          version: '0.2.1',
+          build: 4008,
+          url: fullUrl,
+          size: 2097152,
+          delta: UpdateDelta('0.2.0', 4007, 'base', patchUrl, 1048576, 'patch'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      patchUrl = 'https://cdn.example/renewed';
+      await tester.tap(find.text('Check for update'));
+      await tester.pumpAndSettle();
+      expect(find.text('Download patch (1.0 MiB)'), findsOneWidget);
+      expect(downloads.starts, 0);
+      expect(downloads.task, isNull);
+    },
+  );
 
   testWidgets(
     'download survives leaving, resumes offline, retries, keeps position, and installs without redownloading',

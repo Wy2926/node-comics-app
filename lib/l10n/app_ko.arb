@@ -48,6 +48,8 @@
   "@@locale": "ko",
   "app_update_details_hint": "릴리스 정보 및 설치 옵션 보기",
   "app_update_download": "업데이트 다운로드",
+  "app_update_delta": "패치 다운로드 ({size})",
+  "app_update_full": "전체 APK 다운로드 ({size})",
   "app_update_download_hint": "다운로드 후 지시에 따라 업데이트를 설치하십시오.",
   "bookshelf_all": "모두",
   "bookshelf_search": "도서관 검색",
