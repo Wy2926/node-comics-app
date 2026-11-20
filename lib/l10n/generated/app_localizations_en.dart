@@ -10,6 +10,27 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get browser_protection => 'Site protection';
+
+  @override
+  String get browser_filter_site => 'Filter ads on this site';
+
+  @override
+  String get browser_blocked_here => 'Blocked on this page';
+
+  @override
+  String get browser_blocked_total => 'Blocked since install';
+
+  @override
+  String get browser_filter_tools => 'Site tools';
+
+  @override
+  String get browser_filter_dashboard => 'Filter settings';
+
+  @override
+  String get browser_reload_page => 'Reload and return to page';
+
+  @override
   String get feedback_app => 'App feedback';
 
   @override

@@ -46,6 +46,7 @@ class NodeLaneIcons {
   IconData get accountOutline => CupertinoIcons.person;
   IconData get copy => CupertinoIcons.doc_on_doc;
   IconData get security => CupertinoIcons.lock;
+  IconData get shield => CupertinoIcons.shield;
   IconData get cloud => CupertinoIcons.cloud;
   IconData get backup => CupertinoIcons.cloud_upload;
   IconData get restore => CupertinoIcons.cloud_download;

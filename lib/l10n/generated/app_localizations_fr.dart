@@ -10,6 +10,27 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get browser_protection => 'Protection du site';
+
+  @override
+  String get browser_filter_site => 'Filtrer les publicités sur ce site';
+
+  @override
+  String get browser_blocked_here => 'Requêtes bloquées sur cette page';
+
+  @override
+  String get browser_blocked_total => 'Requêtes bloquées depuis l’installation';
+
+  @override
+  String get browser_filter_tools => 'Outils du site';
+
+  @override
+  String get browser_filter_dashboard => 'Réglages des filtres';
+
+  @override
+  String get browser_reload_page => 'Actualiser et revenir à la page';
+
+  @override
   String get feedback_app => 'Avis sur l’application';
 
   @override

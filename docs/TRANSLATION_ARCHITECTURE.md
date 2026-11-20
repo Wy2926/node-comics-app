@@ -62,7 +62,9 @@ SSE 聚合当前窗口的活动 UUID，每批最多 32 项，沿用现有超时�
 
 ## 网页取图与资源边界
 
-HTTP(S) 图片优先复用 WebView 已加载的原始响应字节。通过现有插件调用 [Android WebView.saveWebArchive](https://developer.android.com/reference/android/webkit/WebView#saveWebArchive(java.lang.String,%20boolean,%20android.webkit.ValueCallback%3Cjava.lang.String%3E)) 或 [iOS WKWebView.createWebArchiveData](https://developer.apple.com/documentation/webkit/wkwebview/createwebarchivedata(completionhandler:))，按当前元素 URL 提取原始图片，不重载页面、不截图、不修改跨域设置。Android 按 MIME 流式解码，iOS 使用系统 property-list 解码；两者都不把 HTML、Cookie 或其他页面资源交给翻译服务。
+Android GeckoView 通过随包的顶层内容脚本执行同一份阅读脚本，原生消息绑定标签、文档与元素修订。HTTP(S) 图片在 Gecko 会话中按实际元素地址优先读缓存，未命中可能重新请求；失败尝试读取已显示图片的可读像素。与 Blob／Canvas 共用分块传输，不生成 MHTML，不从系统 WebView 复制登录凭据。
+
+系统 WebView 的 HTTP(S) 图片优先复用已加载的原始响应字节。通过现有插件调用 [Android WebView.saveWebArchive](https://developer.android.com/reference/android/webkit/WebView#saveWebArchive(java.lang.String,%20boolean,%20android.webkit.ValueCallback%3Cjava.lang.String%3E)) 或 [iOS WKWebView.createWebArchiveData](https://developer.apple.com/documentation/webkit/wkwebview/createwebarchivedata(completionhandler:))，按当前元素 URL 提取原始图片，不重载页面、不截图、不修改跨域设置。Android 按 MIME 流式解码，iOS 使用系统 property-list 解码；两者都不把 HTML、Cookie 或其他页面资源交给翻译服务。
 
 同一窗口的并发取图合并一次归档，提取后立即删除完整归档，仅保留当前图片窗口需要的压缩文件。离窗、切换账号／渠道、后台或导航时释放缓存所有权，最后一个读取租约释放后删除图片及临时目录；原生归档无法中断时清理其迟到结果。返回图片前重新核验文档代次与 DOM 修订，避免换源时送错图。归档缓存未命中或平台不支持时继续使用原生 HTTP 来源读取；不会因缓存失败取消原有下载能力。
 

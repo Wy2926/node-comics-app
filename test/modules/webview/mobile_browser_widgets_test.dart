@@ -111,6 +111,7 @@ void main() {
     tester,
   ) async {
     var closes = 0, tabs = 0, controls = 0, pages = 0, newTabs = 0;
+    var protection = 0;
     final displays = <bool>[];
     final focus = FocusNode();
     addTearDown(focus.dispose);
@@ -123,6 +124,7 @@ void main() {
             onSubmitted: (_) {},
             addressFocus: focus,
             onClose: () => closes++,
+            protection: (name: '站点保护', open: () => protection++),
             menu: IconButton(
               onPressed: () {},
               icon: const Icon(Icons.more_horiz),
@@ -147,8 +149,11 @@ void main() {
       ),
     );
     expect(find.textContaining('private'), findsNothing);
+    await tester.tap(find.byTooltip('站点保护'));
+    expect(protection, 1);
     await tester.tap(find.byType(TextField));
     await tester.pumpAndSettle();
+    expect(find.byTooltip('站点保护'), findsNothing);
     expect(
       find.text('https://preview.example/chapter?private=value'),
       findsOneWidget,

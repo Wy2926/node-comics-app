@@ -31,6 +31,7 @@ class MobileBrowserHeader extends StatelessWidget {
     required this.addressFocus,
     required this.onClose,
     required this.menu,
+    this.protection,
     this.onReload,
     this.engine = BrowserSearchEngine.google,
     this.onEngine,
@@ -45,6 +46,7 @@ class MobileBrowserHeader extends StatelessWidget {
   final Future<void> Function(BrowserSearchEngine)? onEngine;
   final bool loading;
   final Widget menu;
+  final ({String name, VoidCallback open})? protection;
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
@@ -82,9 +84,13 @@ class MobileBrowserHeader extends StatelessWidget {
                       children: [
                         Icon(icons.back, size: NodeLaneTokens.smallIconSize),
                         const SizedBox(width: NodeLaneTokens.space4),
-                        Text(
-                          context.l10n.go_back,
-                          style: t.readerLabel.copyWith(color: t.accent),
+                        Flexible(
+                          child: Text(
+                            context.l10n.go_back,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: t.readerLabel.copyWith(color: t.accent),
+                          ),
                         ),
                       ],
                     ),
@@ -105,6 +111,13 @@ class MobileBrowserHeader extends StatelessWidget {
                   ),
                 ),
                 if (!addressFocus.hasFocus) ...[
+                  if (protection case final action?)
+                    IconButton(
+                      tooltip: action.name,
+                      icon: Icon(icons.shield),
+                      style: _barIconStyle(t.ink),
+                      onPressed: action.open,
+                    ),
                   const SizedBox(width: NodeLaneTokens.space8),
                   SizedBox.square(
                     dimension: NodeLaneTokens.minTapTarget,
@@ -618,8 +631,10 @@ class MobileBrowserLoadError extends StatelessWidget {
     super.key,
     required this.onRetry,
     required this.onEditAddress,
+    this.extensionFailure = false,
   });
   final VoidCallback onRetry, onEditAddress;
+  final bool extensionFailure;
 
   @override
   Widget build(BuildContext context) {
@@ -628,8 +643,12 @@ class MobileBrowserLoadError extends StatelessWidget {
       color: t.canvas,
       child: NodeLaneEmptyState(
         icon: NodeLaneIcons.of(context).web,
-        title: context.l10n.browser_load_failed,
-        message: context.l10n.browser_load_failed_hint,
+        title: extensionFailure
+            ? context.l10n.extensions
+            : context.l10n.browser_load_failed,
+        message: extensionFailure
+            ? context.l10n.operation_retry
+            : context.l10n.browser_load_failed_hint,
         scrollable: true,
         action: Wrap(
           alignment: WrapAlignment.center,

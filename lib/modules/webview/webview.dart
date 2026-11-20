@@ -18,6 +18,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/share.dart';
 
+import 'browser_navigation.dart';
+
 class MangaWebView extends ConsumerStatefulWidget {
   final String url;
   final String title;
@@ -255,7 +257,9 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
                           IconButton(
                             icon: Icon(
                               Icons.arrow_back,
-                              color: _canGoback ? null : Theme.of(context).disabledColor,
+                              color: _canGoback
+                                  ? null
+                                  : Theme.of(context).disabledColor,
                             ),
                             onPressed: _canGoback
                                 ? () {
@@ -266,7 +270,9 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
                           IconButton(
                             icon: Icon(
                               Icons.arrow_forward,
-                              color: _canGoForward ? null : Theme.of(context).disabledColor,
+                              color: _canGoForward
+                                  ? null
+                                  : Theme.of(context).disabledColor,
                             ),
                             onPressed: _canGoForward
                                 ? () {
@@ -339,6 +345,15 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
                           autofocus: isTv,
                           child: InAppWebView(
                             webViewEnvironment: webViewEnvironment,
+                            initialSettings: Platform.isAndroid
+                                ? InAppWebViewSettings(
+                                    useShouldOverrideUrlLoading: true,
+                                    allowContentAccess: false,
+                                    allowFileAccess: false,
+                                    allowFileAccessFromFileURLs: false,
+                                    allowUniversalAccessFromFileURLs: false,
+                                  )
+                                : null,
                             onWebViewCreated: (controller) async {
                               _webViewController = controller;
                             },
@@ -349,6 +364,14 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
                             },
                             shouldOverrideUrlLoading:
                                 (controller, navigationAction) async {
+                                  if (Platform.isAndroid) {
+                                    return browserNavigationPolicy(
+                                      navigationAction,
+                                      isIos: false,
+                                      active: false,
+                                      openTab: (_) {},
+                                    );
+                                  }
                                   var uri = navigationAction.request.url!;
                                   if (![
                                     "http",

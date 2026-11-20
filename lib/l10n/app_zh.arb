@@ -1,4 +1,11 @@
 {
+  "browser_protection": "站点保护",
+  "browser_filter_site": "过滤本站广告",
+  "browser_blocked_here": "本页已拦截",
+  "browser_blocked_total": "安装以来已拦截",
+  "browser_filter_tools": "本站高级工具",
+  "browser_filter_dashboard": "过滤设置",
+  "browser_reload_page": "刷新并返回网页",
   "feedback_app": "APP 反馈",
   "feedback_source": "申请新增来源",
   "feedback_app_hint": "遇到问题或有改进建议？无需登录，直接告诉我们。",

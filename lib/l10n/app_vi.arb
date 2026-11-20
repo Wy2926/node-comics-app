@@ -1,4 +1,11 @@
 {
+  "browser_protection": "Bảo vệ trang web",
+  "browser_filter_site": "Lọc quảng cáo trên trang web này",
+  "browser_blocked_here": "Đã chặn trên trang này",
+  "browser_blocked_total": "Đã chặn từ khi cài đặt",
+  "browser_filter_tools": "Công cụ cho trang web",
+  "browser_filter_dashboard": "Cài đặt bộ lọc",
+  "browser_reload_page": "Tải lại và quay về trang",
   "feedback_app": "Góp ý ứng dụng",
   "feedback_source": "Yêu cầu nguồn mới",
   "feedback_app_hint": "Gặp vấn đề hoặc có đề xuất? Hãy cho chúng tôi biết, không cần đăng nhập.",

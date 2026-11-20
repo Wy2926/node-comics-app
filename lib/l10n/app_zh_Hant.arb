@@ -1,4 +1,11 @@
 {
+  "browser_protection": "網站防護",
+  "browser_filter_site": "過濾此網站的廣告",
+  "browser_blocked_here": "本頁已封鎖",
+  "browser_blocked_total": "安裝以來已封鎖",
+  "browser_filter_tools": "網站進階工具",
+  "browser_filter_dashboard": "過濾設定",
+  "browser_reload_page": "重新載入並返回網頁",
   "feedback_app": "APP 回饋",
   "feedback_source": "申請新增來源",
   "feedback_app_hint": "遇到問題或有改進建議？無需登入，直接告訴我們。",

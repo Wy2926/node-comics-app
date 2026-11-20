@@ -10,6 +10,27 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get browser_protection => 'Защита сайта';
+
+  @override
+  String get browser_filter_site => 'Блокировать рекламу на этом сайте';
+
+  @override
+  String get browser_blocked_here => 'Заблокировано на странице';
+
+  @override
+  String get browser_blocked_total => 'Заблокировано с момента установки';
+
+  @override
+  String get browser_filter_tools => 'Инструменты сайта';
+
+  @override
+  String get browser_filter_dashboard => 'Настройки фильтров';
+
+  @override
+  String get browser_reload_page => 'Обновить и вернуться на страницу';
+
+  @override
   String get feedback_app => 'Отзыв о приложении';
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:mangayomi/services/app_update_manifest.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -254,7 +256,8 @@ class RouterNotifier extends ChangeNotifier {
     _genericRoute(name: "downloadQueue", child: const DownloadQueueScreen()),
     _genericRoute<Map<String, dynamic>>(
       name: "mangawebview",
-      builder: (data) => isMobile
+      builder: (data) =>
+          isMobile && !(Platform.isAndroid && data['sourceSession'] == true)
           ? MobileComicBrowser(
               url: data['url']!,
               title: data['title']!,

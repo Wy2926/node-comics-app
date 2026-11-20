@@ -10,6 +10,27 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get browser_protection => 'Site koruması';
+
+  @override
+  String get browser_filter_site => 'Bu sitedeki reklamları filtrele';
+
+  @override
+  String get browser_blocked_here => 'Bu sayfada engellenen';
+
+  @override
+  String get browser_blocked_total => 'Kurulumdan beri engellenen';
+
+  @override
+  String get browser_filter_tools => 'Site araçları';
+
+  @override
+  String get browser_filter_dashboard => 'Filtre ayarları';
+
+  @override
+  String get browser_reload_page => 'Yenile ve sayfaya dön';
+
+  @override
   String get feedback_app => 'Uygulama geri bildirimi';
 
   @override

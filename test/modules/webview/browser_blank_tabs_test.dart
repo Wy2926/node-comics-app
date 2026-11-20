@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/modules/webview/browser_pinned_sources_provider.dart';
+import 'package:mangayomi/modules/webview/browser_page_controller.dart';
 import 'package:mangayomi/modules/webview/browser_session_store.dart';
 import 'package:mangayomi/modules/webview/browser_webview_cache.dart';
 import 'package:mangayomi/modules/webview/mobile_browser.dart';
@@ -231,7 +232,9 @@ void main() {
     final anchor = Completer<Map<String, dynamic>?>();
     first
       ..pageReady = true
-      ..controller = InAppWebViewController.fromPlatform(platform: screenshot)
+      ..controller = SystemBrowserPage(
+        InAppWebViewController.fromPlatform(platform: screenshot),
+      )
       ..captureAnchor = () => anchor.future;
     Future<void> select(String id) async {
       await tester.tap(find.byTooltip('标签页 · 4'));

@@ -10,6 +10,27 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
+  String get browser_protection => '사이트 보호';
+
+  @override
+  String get browser_filter_site => '이 사이트의 광고 차단';
+
+  @override
+  String get browser_blocked_here => '이 페이지에서 차단한 요청';
+
+  @override
+  String get browser_blocked_total => '설치 후 차단한 요청';
+
+  @override
+  String get browser_filter_tools => '사이트 도구';
+
+  @override
+  String get browser_filter_dashboard => '필터 설정';
+
+  @override
+  String get browser_reload_page => '새로고침하고 페이지로 돌아가기';
+
+  @override
   String get feedback_app => '앱 피드백';
 
   @override

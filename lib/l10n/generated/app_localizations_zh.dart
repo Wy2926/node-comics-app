@@ -10,6 +10,27 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get browser_protection => '站点保护';
+
+  @override
+  String get browser_filter_site => '过滤本站广告';
+
+  @override
+  String get browser_blocked_here => '本页已拦截';
+
+  @override
+  String get browser_blocked_total => '安装以来已拦截';
+
+  @override
+  String get browser_filter_tools => '本站高级工具';
+
+  @override
+  String get browser_filter_dashboard => '过滤设置';
+
+  @override
+  String get browser_reload_page => '刷新并返回网页';
+
+  @override
   String get feedback_app => 'APP 反馈';
 
   @override
@@ -6073,6 +6094,27 @@ class AppLocalizationsZh extends AppLocalizations {
 /// The translations for Chinese, using the Han script (`zh_Hant`).
 class AppLocalizationsZhHant extends AppLocalizationsZh {
   AppLocalizationsZhHant() : super('zh_Hant');
+
+  @override
+  String get browser_protection => '網站防護';
+
+  @override
+  String get browser_filter_site => '過濾此網站的廣告';
+
+  @override
+  String get browser_blocked_here => '本頁已封鎖';
+
+  @override
+  String get browser_blocked_total => '安裝以來已封鎖';
+
+  @override
+  String get browser_filter_tools => '網站進階工具';
+
+  @override
+  String get browser_filter_dashboard => '過濾設定';
+
+  @override
+  String get browser_reload_page => '重新載入並返回網頁';
 
   @override
   String get feedback_app => 'APP 回饋';

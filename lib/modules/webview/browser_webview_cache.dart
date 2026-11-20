@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:mangayomi/services/translation/identity.dart';
 
 final browserWebViewCache = BrowserWebViewCache();
 
 class BrowserWebViewLease {
-  final keepAlive = InAppWebViewKeepAlive();
+  late final keepAlive = InAppWebViewKeepAlive();
+  late final geckoId = translationUuid();
+  Future<void> Function()? releaseNative;
   bool created = false;
   bool loadFailed = false;
   bool attached = true;
@@ -70,7 +73,8 @@ class BrowserWebViewCache with WidgetsBindingObserver {
   void _disposePage(BrowserWebViewLease page) {
     // A platform view may already be gone after an engine/process shutdown.
     unawaited(
-      InAppWebViewController.disposeKeepAlive(page.keepAlive)
+      (page.releaseNative?.call() ??
+              InAppWebViewController.disposeKeepAlive(page.keepAlive))
           .catchError((_) {}),
     );
   }

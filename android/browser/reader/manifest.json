@@ -1,0 +1,13 @@
+{
+  "manifest_version": 2,
+  "name": "NodeLane Reader",
+  "version": "1.2",
+  "browser_specific_settings": {"gecko": {"id": "reader@nodelane.net"}},
+  "permissions": ["nativeMessaging", "nativeMessagingFromContent", "geckoViewAddons", "http://*/*", "https://*/*"],
+  "content_scripts": [{
+    "matches": ["http://*/*", "https://*/*"],
+    "js": ["reader.js", "transport.js"],
+    "run_at": "document_end",
+    "all_frames": false
+  }]
+}

@@ -1,4 +1,11 @@
 {
+  "browser_protection": "Website-Schutz",
+  "browser_filter_site": "Werbung auf dieser Website filtern",
+  "browser_blocked_here": "Auf dieser Seite blockiert",
+  "browser_blocked_total": "Seit der Installation blockiert",
+  "browser_filter_tools": "Website-Werkzeuge",
+  "browser_filter_dashboard": "Filtereinstellungen",
+  "browser_reload_page": "Neu laden und zur Seite zurückkehren",
   "feedback_app": "App-Feedback",
   "feedback_source": "Quelle anfragen",
   "feedback_app_hint": "Ein Problem oder Vorschlag? Teile es uns mit, ohne Anmeldung.",

@@ -13,6 +13,7 @@ import android.content.res.Configuration
 
 class MainActivity: FlutterFragmentActivity() {
     private var appUpdates: AppUpdateDownloads? = null
+    private var browser: GeckoBrowser? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -39,6 +40,12 @@ class MainActivity: FlutterFragmentActivity() {
         }
 
         appUpdates = AppUpdateDownloads(this, flutterEngine.dartExecutor.binaryMessenger)
+        val abis = if (android.os.Process.is64Bit()) android.os.Build.SUPPORTED_64_BIT_ABIS else android.os.Build.SUPPORTED_32_BIT_ABIS
+        if (android.os.Build.VERSION.SDK_INT >= 26 && abis.firstOrNull() in setOf("arm64-v8a", "armeabi-v7a", "x86_64")) {
+            browser = GeckoBrowser(this, flutterEngine.dartExecutor.binaryMessenger).also {
+                flutterEngine.platformViewsController.registry.registerViewFactory(GeckoBrowser.TYPE, it)
+            }
+        }
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -49,6 +56,7 @@ class MainActivity: FlutterFragmentActivity() {
                 "isTv" -> {
                     result.success(isTvDevice())
                 }
+                "hasGeckoBrowser" -> result.success(browser != null)
                 else -> {
                     result.notImplemented()
                 }
@@ -69,6 +77,8 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
     override fun cleanUpFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        browser?.close()
+        browser = null
         appUpdates?.close()
         appUpdates = null
         super.cleanUpFlutterEngine(flutterEngine)

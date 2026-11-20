@@ -1,4 +1,11 @@
 {
+  "browser_protection": "Site protection",
+  "browser_filter_site": "Filter ads on this site",
+  "browser_blocked_here": "Blocked on this page",
+  "browser_blocked_total": "Blocked since install",
+  "browser_filter_tools": "Site tools",
+  "browser_filter_dashboard": "Filter settings",
+  "browser_reload_page": "Reload and return to page",
   "feedback_app": "App feedback",
   "feedback_source": "Request a source",
   "feedback_app_hint": "Have a problem or suggestion? Tell us here, no sign-in needed.",

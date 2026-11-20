@@ -1,4 +1,11 @@
 {
+  "browser_protection": "حماية الموقع",
+  "browser_filter_site": "حجب الإعلانات على هذا الموقع",
+  "browser_blocked_here": "الطلبات المحجوبة في هذه الصفحة",
+  "browser_blocked_total": "الطلبات المحجوبة منذ التثبيت",
+  "browser_filter_tools": "أدوات الموقع",
+  "browser_filter_dashboard": "إعدادات التصفية",
+  "browser_reload_page": "إعادة التحميل والعودة إلى الصفحة",
   "feedback_app": "ملاحظات التطبيق",
   "feedback_source": "طلب إضافة مصدر",
   "feedback_app_hint": "هل لديك مشكلة أو اقتراح؟ أخبرنا دون الحاجة إلى تسجيل الدخول.",

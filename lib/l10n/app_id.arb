@@ -1,4 +1,11 @@
 {
+  "browser_protection": "Perlindungan situs",
+  "browser_filter_site": "Filter iklan di situs ini",
+  "browser_blocked_here": "Diblokir di halaman ini",
+  "browser_blocked_total": "Diblokir sejak pemasangan",
+  "browser_filter_tools": "Alat situs",
+  "browser_filter_dashboard": "Pengaturan filter",
+  "browser_reload_page": "Muat ulang dan kembali ke halaman",
   "feedback_app": "Masukan aplikasi",
   "feedback_source": "Minta sumber baru",
   "feedback_app_hint": "Ada masalah atau saran? Beri tahu kami tanpa perlu masuk.",

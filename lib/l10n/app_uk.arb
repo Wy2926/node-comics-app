@@ -1,4 +1,11 @@
 {
+  "browser_protection": "Захист сайту",
+  "browser_filter_site": "Блокувати рекламу на цьому сайті",
+  "browser_blocked_here": "Заблоковано на цій сторінці",
+  "browser_blocked_total": "Заблоковано від часу встановлення",
+  "browser_filter_tools": "Інструменти сайту",
+  "browser_filter_dashboard": "Налаштування фільтрів",
+  "browser_reload_page": "Оновити й повернутися на сторінку",
   "feedback_app": "Відгук про застосунок",
   "feedback_source": "Запропонувати джерело",
   "feedback_app_hint": "Проблема чи пропозиція? Напишіть нам без входу в обліковий запис.",

@@ -10,6 +10,27 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
+  String get browser_protection => 'Proteção do site';
+
+  @override
+  String get browser_filter_site => 'Filtrar anúncios neste site';
+
+  @override
+  String get browser_blocked_here => 'Requisições bloqueadas nesta página';
+
+  @override
+  String get browser_blocked_total => 'Bloqueadas desde a instalação';
+
+  @override
+  String get browser_filter_tools => 'Ferramentas do site';
+
+  @override
+  String get browser_filter_dashboard => 'Configurações dos filtros';
+
+  @override
+  String get browser_reload_page => 'Recarregar e voltar à página';
+
+  @override
   String get feedback_app => 'Feedback do app';
 
   @override

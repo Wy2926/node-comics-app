@@ -10,6 +10,27 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get browser_protection => 'サイトの保護';
+
+  @override
+  String get browser_filter_site => 'このサイトの広告をブロック';
+
+  @override
+  String get browser_blocked_here => 'このページでのブロック数';
+
+  @override
+  String get browser_blocked_total => 'インストール後のブロック数';
+
+  @override
+  String get browser_filter_tools => 'サイト用ツール';
+
+  @override
+  String get browser_filter_dashboard => 'フィルター設定';
+
+  @override
+  String get browser_reload_page => '再読み込みしてページに戻る';
+
+  @override
   String get feedback_app => 'アプリへのご意見';
 
   @override

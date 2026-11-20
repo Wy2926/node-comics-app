@@ -10,6 +10,27 @@ class AppLocalizationsId extends AppLocalizations {
   AppLocalizationsId([String locale = 'id']) : super(locale);
 
   @override
+  String get browser_protection => 'Perlindungan situs';
+
+  @override
+  String get browser_filter_site => 'Filter iklan di situs ini';
+
+  @override
+  String get browser_blocked_here => 'Diblokir di halaman ini';
+
+  @override
+  String get browser_blocked_total => 'Diblokir sejak pemasangan';
+
+  @override
+  String get browser_filter_tools => 'Alat situs';
+
+  @override
+  String get browser_filter_dashboard => 'Pengaturan filter';
+
+  @override
+  String get browser_reload_page => 'Muat ulang dan kembali ke halaman';
+
+  @override
   String get feedback_app => 'Masukan aplikasi';
 
   @override

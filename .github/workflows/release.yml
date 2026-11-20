@@ -106,7 +106,6 @@ jobs:
 
       - name: Setup Gradle properties for CI
         run: |
-          echo "org.gradle.jvmargs=-Xmx4096M -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" >> android/gradle.properties
           echo "org.gradle.parallel=true" >> android/gradle.properties
           echo "org.gradle.daemon=false" >> android/gradle.properties
 
@@ -178,7 +177,6 @@ jobs:
 
       - name: Setup Gradle properties for CI
         run: |
-          echo "org.gradle.jvmargs=-Xmx4096M -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" >> android/gradle.properties
           echo "org.gradle.parallel=true" >> android/gradle.properties
           echo "org.gradle.daemon=false" >> android/gradle.properties
 

@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations_en.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/modules/webview/translation_bridge.dart';
+import 'package:mangayomi/modules/webview/reader_transport.dart';
+import 'package:mangayomi/modules/webview/image_archive.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 
 import 'fixtures.dart';
@@ -83,6 +85,38 @@ class _Runtime extends Fake implements ChannelRuntime {
   void pause(String consumer) {}
 }
 
+class _InPageReader implements ReaderTransport {
+  String? token;
+  ReaderMessage? send;
+  final operations = <String>[];
+  @override
+  WebImageArchive? get archive => null;
+  @override
+  void listen(ReaderMessage? receive) => send = receive;
+  @override
+  Future<void> install(
+    String url,
+    String token,
+    bool Function() isCurrent,
+  ) async => this.token = token;
+  @override
+  Future<Object?> call(
+    String url,
+    String token,
+    String operation,
+    Map<String, dynamic> args,
+  ) async {
+    operations.add(operation);
+    return {
+      'value': switch (operation) {
+        'inputBegin' => {'size': 3},
+        'inputChunk' => 'AQID',
+        _ => true,
+      },
+    };
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late _Controller controller;
@@ -92,7 +126,7 @@ void main() {
     controller = _Controller();
     view = TranslationViewController();
     bridge = WebTranslationBridge(
-      controller,
+      SystemReaderTransport(controller),
       view,
       'tab',
       l10n: AppLocalizationsEn(),
@@ -103,6 +137,82 @@ void main() {
     bridge.dispose();
     view.dispose();
   });
+
+  test(
+    'in-page HTTP images read in chunks only from the current top document',
+    () async {
+      final files = WebImageTestDirectory();
+      await files.setUp();
+      addTearDown(files.tearDown);
+      final engine = _InPageReader(), reader = TranslationViewController();
+      final connected = WebTranslationBridge(
+        engine,
+        reader,
+        'gecko',
+        l10n: AppLocalizationsEn(),
+      );
+      try {
+        reader.attach(_Runtime());
+        await connected.install(Uri.parse('https://reader.example/one'));
+        final message = {
+          'token': engine.token,
+          'seq': 1,
+          'items': [
+            {
+              'id': '1',
+              'revision': '1',
+              'kind': 'http',
+              'url': 'https://unreachable.invalid/img',
+            },
+          ],
+        };
+        expect(
+          await engine.send!(
+            'https://other.example',
+            'https://reader.example/one',
+            message,
+          ),
+          isFalse,
+        );
+        expect(
+          await engine.send!(
+            'https://reader.example',
+            'https://reader.example/two',
+            message,
+          ),
+          isFalse,
+        );
+        expect(
+          await engine.send!(
+            'https://reader.example',
+            'https://reader.example/one',
+            message,
+          ),
+          isTrue,
+        );
+        final target = reader.targets.single;
+        final lease = await target.source.acquire(
+          target.page,
+          TranslationCancellation(),
+        );
+        expect(await lease.file.readAsBytes(), [1, 2, 3]);
+        expect(
+          engine.operations,
+          containsAllInOrder(['inputBegin', 'inputChunk', 'inputEnd']),
+        );
+        lease.release();
+        await waitDeleted(lease.file);
+        connected.navigate();
+        await expectLater(
+          target.source.acquire(target.page, TranslationCancellation()),
+          throwsA(isA<TranslationCancelled>()),
+        );
+      } finally {
+        connected.dispose();
+        reader.dispose();
+      }
+    },
+  );
 
   test('reinstall starts a fresh window sequence and consecutive updates are not dropped', () async {
     view.runtime = _Runtime();

@@ -1,4 +1,11 @@
 {
+  "browser_protection": "Site koruması",
+  "browser_filter_site": "Bu sitedeki reklamları filtrele",
+  "browser_blocked_here": "Bu sayfada engellenen",
+  "browser_blocked_total": "Kurulumdan beri engellenen",
+  "browser_filter_tools": "Site araçları",
+  "browser_filter_dashboard": "Filtre ayarları",
+  "browser_reload_page": "Yenile ve sayfaya dön",
   "feedback_app": "Uygulama geri bildirimi",
   "feedback_source": "Kaynak iste",
   "feedback_app_hint": "Bir sorun veya öneriniz mi var? Oturum açmadan bize yazın.",

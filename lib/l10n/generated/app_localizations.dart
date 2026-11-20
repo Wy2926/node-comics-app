@@ -127,6 +127,48 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
+  /// No description provided for @browser_protection.
+  ///
+  /// In en, this message translates to:
+  /// **'Site protection'**
+  String get browser_protection;
+
+  /// No description provided for @browser_filter_site.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter ads on this site'**
+  String get browser_filter_site;
+
+  /// No description provided for @browser_blocked_here.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked on this page'**
+  String get browser_blocked_here;
+
+  /// No description provided for @browser_blocked_total.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked since install'**
+  String get browser_blocked_total;
+
+  /// No description provided for @browser_filter_tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Site tools'**
+  String get browser_filter_tools;
+
+  /// No description provided for @browser_filter_dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter settings'**
+  String get browser_filter_dashboard;
+
+  /// No description provided for @browser_reload_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload and return to page'**
+  String get browser_reload_page;
+
   /// No description provided for @feedback_app.
   ///
   /// In en, this message translates to:

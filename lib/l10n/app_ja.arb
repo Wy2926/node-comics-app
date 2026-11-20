@@ -1,4 +1,11 @@
 {
+  "browser_protection": "サイトの保護",
+  "browser_filter_site": "このサイトの広告をブロック",
+  "browser_blocked_here": "このページでのブロック数",
+  "browser_blocked_total": "インストール後のブロック数",
+  "browser_filter_tools": "サイト用ツール",
+  "browser_filter_dashboard": "フィルター設定",
+  "browser_reload_page": "再読み込みしてページに戻る",
   "feedback_app": "アプリへのご意見",
   "feedback_source": "ソース追加を申請",
   "feedback_app_hint": "問題や改善のご提案をお聞かせください。ログインは不要です。",

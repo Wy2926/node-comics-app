@@ -10,6 +10,27 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get browser_protection => 'حماية الموقع';
+
+  @override
+  String get browser_filter_site => 'حجب الإعلانات على هذا الموقع';
+
+  @override
+  String get browser_blocked_here => 'الطلبات المحجوبة في هذه الصفحة';
+
+  @override
+  String get browser_blocked_total => 'الطلبات المحجوبة منذ التثبيت';
+
+  @override
+  String get browser_filter_tools => 'أدوات الموقع';
+
+  @override
+  String get browser_filter_dashboard => 'إعدادات التصفية';
+
+  @override
+  String get browser_reload_page => 'إعادة التحميل والعودة إلى الصفحة';
+
+  @override
   String get feedback_app => 'ملاحظات التطبيق';
 
   @override

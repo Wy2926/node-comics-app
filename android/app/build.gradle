@@ -12,7 +12,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.nodelane.comics"
-    compileSdkVersion 36
+    compileSdk { version = release(37) { minorApiLevel = 2 } }
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -27,6 +27,8 @@ android {
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
+    // WebExtensions use _locales/; aapt's default asset filter strips it.
+    androidResources.ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
 
     defaultConfig {
         applicationId "com.nodelane.comics"
@@ -56,9 +58,10 @@ android {
            // Keep emulator/development builds separate from signed user installs.
            applicationIdSuffix ".debug"
        }
-       release {
-           signingConfig signingConfigs.release
-       }
+        release {
+            signingConfig signingConfigs.release
+            proguardFile 'gecko-logging.pro'
+        }
    }
    repositories {
         flatDir {
@@ -71,6 +74,37 @@ flutter {
     source '../..'
 }
 
+// Both extensions are available before the first navigation, even offline.
+def blocker = rootProject.file('browser/ublock-origin-1.76.4.xpi')
+def reader = rootProject.file('../assets/nodelane_reader.js')
+def browserAssetsDir = layout.buildDirectory.dir('generated/browserAssets').get().asFile
+def browserAssets = tasks.register('prepareBrowserExtensions', Sync) {
+    from(zipTree(blocker)) {
+        into 'extensions/ublock'
+        filesMatching('**/background.html') {
+            filter { line -> line.replace('</body>',
+                '<!-- NodeLane, 2026-11-20: site protection UI adapter. -->\n<script type="module" src="nodelane-site.js"></script>\n</body>') }
+        }
+    }
+    from(rootProject.file('browser/ublock')) { into 'extensions/ublock' }
+    from(rootProject.file('browser/reader')) { into 'extensions/reader' }
+    inputs.file(reader)
+    into(browserAssetsDir)
+    doFirst {
+        if (blocker.bytes.digest('SHA-256') != '66d0e3f21ce3b32b1bc0a9399b93cb2c9aa598ef18805d92118c76f66e266c1e') {
+            throw new GradleException('Unexpected uBlock Origin package')
+        }
+    }
+    doLast {
+        new File(destinationDir, 'extensions/reader/reader.js').setText(
+            'function installReader(configForGecko) {\n' +
+            reader.getText('UTF-8').replace('__NODELANE_CONFIG__', 'configForGecko') + '\n}', 'UTF-8')
+    }
+}
+android.sourceSets.main.assets.srcDir(browserAssetsDir)
+tasks.named('preBuild') { dependsOn browserAssets }
+
 dependencies {
+    implementation 'org.mozilla.geckoview:geckoview:160.0.20261116130455'
     implementation(name: 'libmtorrentserver', ext: 'aar')
 }

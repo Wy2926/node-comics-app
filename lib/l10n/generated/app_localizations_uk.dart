@@ -10,6 +10,27 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
+  String get browser_protection => 'Захист сайту';
+
+  @override
+  String get browser_filter_site => 'Блокувати рекламу на цьому сайті';
+
+  @override
+  String get browser_blocked_here => 'Заблоковано на цій сторінці';
+
+  @override
+  String get browser_blocked_total => 'Заблоковано від часу встановлення';
+
+  @override
+  String get browser_filter_tools => 'Інструменти сайту';
+
+  @override
+  String get browser_filter_dashboard => 'Налаштування фільтрів';
+
+  @override
+  String get browser_reload_page => 'Оновити й повернутися на сторінку';
+
+  @override
   String get feedback_app => 'Відгук про застосунок';
 
   @override

@@ -2,6 +2,10 @@
 
 Mangayomi 上游基线采用 Apache-2.0，原始许可见 [LICENSE](LICENSE)，基线见 [UPSTREAM.md](UPSTREAM.md)。
 
+Android 浏览器通过 [Mozilla Maven](https://maven.mozilla.org/maven2/org/mozilla/geckoview/geckoview/) 引入未修改的 GeckoView（MPL-2.0，版本见 `android/app/build.gradle`；组件许可随 `omni.ja` 分发）。`android/browser/ublock-origin-1.76.4.xpi` 是 [Mozilla Add-ons 原件](https://addons.mozilla.org/firefox/downloads/file/5257481/ublock_origin-1.76.4.xpi)，[对应源码](https://github.com/gorhill/uBlock/tree/1.76.4)，GPL-3.0。
+
+构建校验 XPI 的 SHA-256 后解包，仅在 `background.html` 加载 [NodeLane 站点保护界面适配](android/browser/ublock/nodelane-site.js)（GPL-3.0-or-later）。过滤引擎、列表、扩展设置页及许可文件沿用原件。阅读扩展由项目桥接代码和既有 GPL 阅读脚本生成。更新 XPI 时须复核摘要及站点状态、计数和开关的上游接口。
+
 `assets/nodelane_reader.js` 的图片呈现、Canvas 同级覆盖与视口排序基于 [NodeLane Comics](https://github.com/Wy2926/node-comics) 的 `apps/extension/src/inline/display.ts`、`canvas-display.ts`、`window.ts` 适配，参考提交为 `92f16b548da98431be1607eed57bb561b239156d`。该脚本采用 **GPL-3.0-only**，条款见 [GPL 许可全文](assets/brand/LICENSE-GPL-3.0-only)；不应将它标为 Apache-2.0。分发包含该代码的组合应用需遵循 GPL-3.0-only，保留上游 Apache-2.0 及其他第三方声明。
 
 没有引入同级仓库的运行时路径依赖。图片解码继续使用项目已有的 `image`、Flutter 平台编解码器与 AVIF 支持。

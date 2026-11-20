@@ -1,4 +1,11 @@
 {
+  "browser_protection": "Ochrona witryny",
+  "browser_filter_site": "Blokuj reklamy w tej witrynie",
+  "browser_blocked_here": "Zablokowane na tej stronie",
+  "browser_blocked_total": "Zablokowane od instalacji",
+  "browser_filter_tools": "Narzędzia witryny",
+  "browser_filter_dashboard": "Ustawienia filtrów",
+  "browser_reload_page": "Odśwież i wróć do strony",
   "feedback_app": "Opinia o aplikacji",
   "feedback_source": "Zaproponuj źródło",
   "feedback_app_hint": "Problem lub sugestia? Napisz do nas bez logowania.",

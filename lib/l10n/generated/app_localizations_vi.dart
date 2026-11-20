@@ -10,6 +10,27 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get browser_protection => 'Bảo vệ trang web';
+
+  @override
+  String get browser_filter_site => 'Lọc quảng cáo trên trang web này';
+
+  @override
+  String get browser_blocked_here => 'Đã chặn trên trang này';
+
+  @override
+  String get browser_blocked_total => 'Đã chặn từ khi cài đặt';
+
+  @override
+  String get browser_filter_tools => 'Công cụ cho trang web';
+
+  @override
+  String get browser_filter_dashboard => 'Cài đặt bộ lọc';
+
+  @override
+  String get browser_reload_page => 'Tải lại và quay về trang';
+
+  @override
   String get feedback_app => 'Góp ý ứng dụng';
 
   @override

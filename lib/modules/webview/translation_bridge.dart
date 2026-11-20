@@ -14,30 +14,23 @@ import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 
-import 'image_archive.dart';
+import 'reader_transport.dart';
 
 class WebTranslationBridge {
   WebTranslationBridge(
-    this.controller,
+    this.transport,
     this.view,
     this.tabId, {
-    required AppLocalizations l10n,
-    Map<String, Object> theme = const {},
+    required this._l10n,
+    this._theme = const {},
     this.onImageMenu,
-  }) : _theme = theme,
-       _l10n = l10n {
-    controller.addJavaScriptHandler(
-      handlerName: 'nodelaneImages',
-      callback: (JavaScriptHandlerFunctionData data) => _receive(data),
-    );
+  }) {
+    transport.listen(_receive);
     view.addListener(_changed);
   }
-  late final _archive = WebImageArchive(
-    save: (path) => controller.saveWebArchive(filePath: path),
-    apple: Platform.isIOS || Platform.isMacOS,
-  );
+  late final _archive = transport.archive;
   ChannelRuntime? _archiveRuntime;
-  final InAppWebViewController controller;
+  final ReaderTransport transport;
   final TranslationViewController view;
   final String tabId;
   final Future<void> Function(TranslationTarget)? onImageMenu;
@@ -64,7 +57,7 @@ class WebTranslationBridge {
   bool get active => view.foreground && view.runtime != null && !_disposed;
 
   void navigate() {
-    _archive.clear();
+    _archive?.clear();
     _epoch++;
     _ready = false;
     _token = '';
@@ -84,13 +77,10 @@ class WebTranslationBridge {
     final token = translationUuid();
     _token = token;
     _document = url.removeFragment().toString();
-    final script = await rootBundle.loadString('assets/nodelane_reader.js');
-    if (_disposed || epoch != _epoch) return;
-    await controller.evaluateJavascript(
-      source: script.replaceFirst(
-        '__NODELANE_CONFIG__',
-        jsonEncode({'token': token}),
-      ),
+    await transport.install(
+      _document,
+      token,
+      () => !_disposed && epoch == _epoch,
     );
     if (_disposed || epoch != _epoch) return;
     _ready = true;
@@ -98,22 +88,16 @@ class WebTranslationBridge {
     _changed();
   }
 
-  Future<bool> _receive(JavaScriptHandlerFunctionData data) async {
-    if (!active ||
-        !_ready ||
-        !data.isMainFrame ||
-        data.args.length != 1 ||
-        data.args.first is! Map) {
+  Future<bool> _receive(String origin, String url, Object? value) async {
+    if (!active || !_ready || value is! Map) {
       return false;
     }
     final document = Uri.tryParse(_document);
     if (document == null ||
-        data.origin.toString() != document.origin ||
-        Uri.tryParse(data.requestUrl.toString())?.removeFragment().toString() !=
-            _document) {
+        origin != document.origin ||
+        Uri.tryParse(url)?.removeFragment().toString() != _document) {
       return false;
     }
-    final value = data.args.first as Map;
     if (value['token'] != _token ||
         value['seq'] is! int ||
         value['seq'] <= _sequence) {
@@ -192,23 +176,13 @@ class WebTranslationBridge {
     if (!_ready || _disposed || epoch != _epoch) {
       throw const TranslationCancelled();
     }
-    final result = await controller.callAsyncJavaScript(
-      functionBody: '''
-try {
-  return {value: await window.__nodelaneReader.call(token, operation, args)};
-} catch (error) {
-  return {error: error.message};
-}
-''',
-      arguments: {'token': _token, 'operation': operation, 'args': args},
-    );
+    final payload = await transport.call(_document, _token, operation, args);
     if (!_ready || _disposed || epoch != _epoch) {
       throw const TranslationCancelled();
     }
-    if (result == null || result.error != null || result.value is! Map) {
+    if (payload is! Map) {
       throw const TranslationFailure('BRIDGE_INVALID');
     }
-    final payload = result.value as Map;
     if (payload['error'] == 'SOURCE_CHANGED') {
       throw const TranslationCancelled();
     }
@@ -354,11 +328,11 @@ try {
 
   void _syncArchive() {
     if (!active || !identical(_archiveRuntime, view.runtime)) {
-      _archive.clear();
+      _archive?.clear();
       _archiveRuntime = view.runtime;
     }
     if (active) {
-      _archive.retain({
+      _archive?.retain({
         for (final entry in _elements.values)
           if (entry['kind'] == 'http')
             (entry['page'] as TranslationPage).identity: Uri.parse(
@@ -380,7 +354,7 @@ try {
         _elements[id]?['revision'] != entry['revision']) {
       throw const TranslationCancelled();
     }
-    if (entry['kind'] == 'http') {
+    if (entry['kind'] == 'http' && _archive != null) {
       // Runtime scheduling can start before the view's changed notification.
       _syncArchive();
       final pageUrl = Uri.parse(_document),
@@ -429,6 +403,14 @@ try {
       final file = File(
         '${(await getTemporaryDirectory()).path}/nodelane-bridge-${translationUuid()}',
       );
+      cancel.check();
+      final stop = _archive == null
+          ? cancel.onCancel(() {
+              if (_ready && epoch == _epoch) {
+                _call('inputEnd', {}, epoch).catchError((_) => null);
+              }
+            })
+          : null;
       try {
         final meta = await _call('inputBegin', {
           'id': id,
@@ -473,6 +455,7 @@ try {
         await file.delete().catchError((_) => file);
         rethrow;
       } finally {
+        stop?.call();
         if (_ready && epoch == _epoch) {
           await _call('inputEnd', {}, epoch).catchError((_) => null);
         }
@@ -481,12 +464,12 @@ try {
   }
 
   void dispose() {
-    _archive.clear();
+    _archive?.clear();
     _disposed = true;
     _ready = false;
     _epoch++;
     view.removeListener(_changed);
-    controller.removeJavaScriptHandler(handlerName: 'nodelaneImages');
+    transport.listen(null);
   }
 }
 
