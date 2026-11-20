@@ -211,11 +211,15 @@ void main() {
             [],
             (buffer, chunk) => buffer..addAll(chunk),
           );
-          expect(bytes, await (target.source as _Source).file.readAsBytes());
           body = remote[id]!;
+          expect(sha256.convert(bytes).toString(), body['image_sha256']);
+          expect(bytes.length, body['image']['byte_size']);
           body['state'] = 'succeeded';
           body['execution_resolved'] = true;
-          final header = await readImageHeader((target.source as _Source).file);
+          final header = await readImageHeader(
+            await File('${directory.path}/received').writeAsBytes(bytes),
+          );
+          expect(header.mime, body['image']['content_type']);
           body['result'] = {
             'kind': 'no_text',
             'representation': 'original',
@@ -235,6 +239,10 @@ void main() {
             body['state'] = 'failed';
             body['result'] = null;
             body['error'] = {'code': terminalFailure};
+            if (terminalFailure == 'INPUT_NOT_NORMALIZED') {
+              request.response.statusCode = 422;
+              body = {'error': body['error']};
+            }
           } else if (expiredResult) {
             body['result'] = null;
             body['error'] = {'code': 'RESULT_EXPIRED'};
@@ -831,6 +839,81 @@ void main() {
       expect(puts.first.$1, isNot(puts.last.$1));
     },
   );
+
+  test('upload 422 checks the same UUID and does not resend identical bytes', () async {
+    terminalFailure = 'INPUT_NOT_NORMALIZED';
+    final value = runtime()..setWindow('reader', [target]);
+    await _until(
+      () => value.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(gets, [puts.single.$1]);
+    expect(value.stateFor(target.page).actions, {TranslationAction.retry});
+    await expectLater(
+      value.perform(target, TranslationAction.retry),
+      throwsA(isA<TranslationFailure>().having((e) => e.code, 'code', 'INVALID_IMAGE')),
+    );
+    expect(puts, hasLength(1));
+    expect(uploads, 1);
+  });
+
+  test('explicit retry of a legacy rejected upload freezes the corrected bytes once', () async {
+    final value = runtime() as OfficialRuntime;
+    final source = (target.source as _Source).file;
+    await File('test/fixtures/translation/rotated-linear.jpg')
+        .copy(source.path);
+    final sha = await imageDigest(source);
+    final old = OfficialReceipt(
+      id: translationUuid(),
+      key: 'binding:${translationKey([value.scope, sha, 'zh-Hans'])}',
+      scope: value.scope,
+      language: 'zh-Hans',
+      inputKey: translationKey('old-input'),
+      inputSha: sha,
+      sourceSha: sha,
+      width: 16,
+      height: 8,
+      mime: 'image/jpeg',
+      request: {
+        'mode': 'classic',
+        'target_language': 'zh-Hans',
+        'image': {
+          'sha256': sha,
+          'byte_size': await source.length(),
+          'content_type': 'image/jpeg',
+          'normalization_version': 1,
+        },
+      },
+      sent: true,
+      accepted: true,
+      snapshot: {
+        'state': 'failed',
+        'error': {'code': 'INPUT_NOT_NORMALIZED'},
+      },
+    );
+    final key = 'operation:${value.scope}:${old.id}';
+    await repository.publish('input', old.inputKey, source);
+    await repository.writeBatch([
+      (key, value.scope, 'completed', old.toJson()),
+      (old.key, value.scope, 'binding', {'id': old.id}),
+      (
+        'image-bindings:${value.scope}',
+        value.scope,
+        'metadata',
+        {'version': 1},
+      ),
+    ]);
+    value.setWindow('reader', [target], automatic: false);
+    await value.restore([target]);
+    expect(puts, isEmpty);
+    await value.perform(target, TranslationAction.retry);
+    await _until(() => value.stateFor(target.page).noText);
+    final (id, body) = puts.single;
+    expect(id, isNot(old.id));
+    expect(body['image']['sha256'], isNot(sha));
+    expect(body, isNot(contains('retry_of')));
+    expect(uploads, 1);
+    expect(await repository.read(key), old.toJson());
+  });
 
   test(
     'NodeLane analysis limits cannot be retried or silently resubmitted',

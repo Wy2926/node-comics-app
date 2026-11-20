@@ -19,6 +19,77 @@ class _TemporaryPath extends PathProviderPlatform {
 }
 
 void main() {
+  test('tagged inputs freeze upright sRGB pixels, alpha and the uploaded hash', () async {
+    // Synthetic 16x8 swatches: the left half is (64,128,192), the right white.
+    // A linear RGB ICC makes the left half (137,188,225) in sRGB.
+    final work = TranslationImageWork(await Directory.systemTemp.createTemp());
+    addTearDown(() => work.temporary.delete(recursive: true));
+    for (final name in [
+      'linear.png',
+      'linear.webp',
+      'rotated-linear.jpg',
+      'rotated-linear.png',
+      'rotated-linear.webp',
+      'rotated.png',
+    ]) {
+      final source = File('test/fixtures/translation/$name');
+      final sourceSha = await imageDigest(source);
+      final prepared = await work.prepare(
+        source,
+        TranslationCancellation(),
+        sourceSha: sourceSha,
+      );
+      final output = img.decodePng(await prepared.file.readAsBytes())!;
+      final rotated = name.startsWith('rotated');
+      final linear = name.contains('linear');
+      expect(
+        (output.width, output.height),
+        rotated ? (8, 16) : (16, 8),
+        reason: name,
+      );
+      expect((prepared.width, prepared.height), (output.width, output.height));
+      expect(prepared.sourceSha256, sourceSha);
+      expect(await imageDigest(source), sourceSha);
+      expect(prepared.sha256, isNot(sourceSha));
+      expect(prepared.descriptor, {
+        'sha256': await imageDigest(prepared.file),
+        'byte_size': await prepared.file.length(),
+        'content_type': 'image/png',
+        'normalization_version': 1,
+      });
+      expect(output.iccProfile, isNull, reason: name);
+      final pixel = output.getPixel(3, 3);
+      expect(pixel.r, closeTo(linear ? 137 : 64, 2), reason: name);
+      expect(pixel.g, closeTo(linear ? 188 : 128, 2), reason: name);
+      expect(pixel.b, closeTo(linear ? 225 : 192, 2), reason: name);
+      expect(pixel.a, name.endsWith('.jpg') ? 255 : 128);
+      expect(
+        output.getPixel(rotated ? 3 : 12, rotated ? 12 : 3).r,
+        255,
+        reason: name,
+      );
+    }
+  });
+  test('ICC conversion preserves long page coordinates', () async {
+    final work = TranslationImageWork(await Directory.systemTemp.createTemp());
+    addTearDown(() => work.temporary.delete(recursive: true));
+    final swatch = img.decodePng(
+      await File('test/fixtures/translation/linear.png').readAsBytes(),
+    )!;
+    final strip = img.Image(
+      width: 8,
+      height: 20000,
+      numChannels: 4,
+      iccp: swatch.iccProfile,
+    )..setPixelRgba(3, 19999, 64, 128, 192, 128);
+    final source = await File('${work.temporary.path}/strip.png')
+        .writeAsBytes(img.encodePng(strip));
+    final prepared = await work.prepare(source, TranslationCancellation());
+    final output = img.decodePng(await prepared.file.readAsBytes())!;
+    expect((output.width, output.height), (8, 20000));
+    expect(output.getPixel(3, 19999).r, closeTo(137, 2));
+    expect(output.getPixel(3, 19999).a, 128);
+  });
   test(
     'EXIF orientation is baked into frozen PNG bytes and descriptor',
     () async {

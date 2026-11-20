@@ -10,6 +10,11 @@ import android.app.UiModeManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ColorSpace
+import android.os.Build
+import java.io.File
 
 class MainActivity: FlutterFragmentActivity() {
     private var appUpdates: AppUpdateDownloads? = null
@@ -39,6 +44,41 @@ class MainActivity: FlutterFragmentActivity() {
         }
 
         appUpdates = AppUpdateDownloads(this, flutterEngine.dartExecutor.binaryMessenger)
+
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        MethodChannel(
+            messenger, "nodelane/translation_image", StandardMethodCodec.INSTANCE,
+            messenger.makeBackgroundTaskQueue()
+        ).setMethodCallHandler { call, result ->
+            if (call.method != "srgbPng") {
+                result.notImplemented()
+                return@setMethodCallHandler
+            }
+            if (Build.VERSION.SDK_INT < 26) {
+                result.success(false)
+                return@setMethodCallHandler
+            }
+            try {
+                val options = BitmapFactory.Options().apply {
+                    inScaled = false
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                    inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
+                }
+                val bitmap = checkNotNull(BitmapFactory.decodeFile(call.argument<String>("source"), options))
+                try {
+                    File(checkNotNull(call.argument<String>("output"))).outputStream().use {
+                        check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+                    }
+                } finally {
+                    bitmap.recycle()
+                }
+                result.success(true)
+            } catch (_: Exception) {
+                result.error("INVALID_IMAGE", null, null)
+            } catch (_: OutOfMemoryError) {
+                result.error("INVALID_IMAGE", null, null)
+            }
+        }
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,

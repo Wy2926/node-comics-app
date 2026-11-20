@@ -174,7 +174,7 @@ class TranslationFailure implements Exception {
       'SOURCE_MISSING' => l10n.translation_source_missing,
       'RESOURCE_LIMIT' => l10n.translation_resource_limit,
       'STORAGE_FULL' => l10n.translation_storage_full,
-      'INVALID_IMAGE' => l10n.translation_invalid_image,
+      'INVALID_IMAGE' || 'INPUT_NOT_NORMALIZED' => l10n.translation_invalid_image,
       'UNSUPPORTED_IMAGE' => l10n.translation_unsupported_image,
       'INVALID_RESULT' => l10n.translation_invalid_result,
       'RESULT_UNAVAILABLE' => l10n.translation_result_unavailable,

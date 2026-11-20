@@ -466,6 +466,74 @@ class OfficialRuntime implements ChannelRuntime {
     return value;
   }
 
+  Future<OfficialReceipt> _prepareReceipt(
+    TranslationTarget target,
+    TranslationCancellation cancel, {
+    OfficialReceipt? rejected,
+  }) async {
+    final capabilities = await _capabilities(cancel);
+    final original = await _sources.acquire(target, cancel);
+    PreparedTranslationImage? input;
+    try {
+      cancel.check();
+      if (rejected != null && original.sha != rejected.sourceSha) {
+        throw const TranslationFailure('SOURCE_CHANGED');
+      }
+      input = await images.prepare(
+        original.file,
+        cancel,
+        sourceSha: original.sha,
+      );
+      final format = nodeLaneResultFormat(
+        capabilities,
+        input.width,
+        input.height,
+      );
+      return await _control.run(() async {
+        cancel.check();
+        final existing = await _load(target, cancel);
+        if (existing != null && existing.id != rejected?.id) return existing;
+        final frozen = input!;
+        if (frozen.sha256 == rejected?.inputSha) {
+          throw const TranslationFailure('INVALID_IMAGE');
+        }
+        final inputKey = translationKey([
+          scope,
+          frozen.sha256,
+          translationInputProfile,
+        ]);
+        await repository.publish('input', inputKey, frozen.file);
+        cancel.check();
+        final created = OfficialReceipt(
+          id: translationUuid(),
+          key: _binding(original.sha, options.language),
+          scope: scope,
+          language: options.language,
+          inputKey: inputKey,
+          inputSha: frozen.sha256,
+          sourceSha: frozen.sourceSha256,
+          width: frozen.width,
+          height: frozen.height,
+          mime: frozen.mime,
+          request: {
+            'image': frozen.descriptor,
+            'mode': 'classic',
+            'target_language': options.language,
+            'result_format': ?format,
+          },
+        );
+        await _bind(created);
+        _receipts[original.sha] = created;
+        return created;
+      });
+    } finally {
+      if (input != null && input.file.path != original.file.path) {
+        await input.file.delete().catchError((_) => input!.file);
+      }
+      original.release();
+    }
+  }
+
   Future<void> _process(
     TranslationTarget target,
     TranslationCancellation cancel,
@@ -481,68 +549,10 @@ class OfficialRuntime implements ChannelRuntime {
         ),
       );
     }
-    var receipt = await _load(target, cancel);
+    final receipt = await _load(target, cancel);
     cancel.check();
-    if (receipt == null) {
-      final capabilities = await _capabilities(cancel);
-      final original = await _sources.acquire(target, cancel);
-      PreparedTranslationImage? input;
-      try {
-        cancel.check();
-        input = await images.prepare(
-          original.file,
-          cancel,
-          sourceSha: original.sha,
-        );
-        final format = nodeLaneResultFormat(
-          capabilities,
-          input.width,
-          input.height,
-        );
-        receipt = await _control.run(() async {
-          cancel.check();
-          final existing = await _load(target, cancel);
-          if (existing != null) return existing;
-          final frozen = input!;
-          final inputKey = translationKey([
-            scope,
-            frozen.sha256,
-            translationInputProfile,
-          ]);
-          await repository.publish('input', inputKey, frozen.file);
-          cancel.check();
-          final created = OfficialReceipt(
-            id: translationUuid(),
-            key: _binding(original.sha, options.language),
-            scope: scope,
-            language: options.language,
-            inputKey: inputKey,
-            inputSha: frozen.sha256,
-            sourceSha: frozen.sourceSha256,
-            width: frozen.width,
-            height: frozen.height,
-            mime: frozen.mime,
-            request: {
-              'image': frozen.descriptor,
-              'mode': 'classic',
-              'target_language': options.language,
-              'result_format': ?format,
-            },
-          );
-          await _bind(created);
-          _receipts[original.sha] = created;
-          return created;
-        });
-      } finally {
-        if (input != null && input.file.path != original.file.path) {
-          await input.file.delete().catchError((_) => input!.file);
-        }
-        original.release();
-      }
-    }
+    final current = receipt ?? await _prepareReceipt(target, cancel);
     cancel.check();
-    final current = receipt;
-    if (current == null) return;
     // Content lookup keeps the same UUID across new locators and refreshes.
     if (current.sent && current.active && !_verified.contains(current.id)) {
       await _control.run(() async {
@@ -857,39 +867,48 @@ class OfficialRuntime implements ChannelRuntime {
           throw TranslationFailure(previous.errorCode ?? 'REMOTE_FAILED');
         }
         _policyTime = null;
-        final capabilities = await _capabilities(cancel);
-        final format = nodeLaneResultFormat(
-          capabilities,
-          previous.width,
-          previous.height,
-        );
-        final created = OfficialReceipt(
-          id: translationUuid(),
-          key: previous.key,
-          scope: scope,
-          language: previous.language,
-          inputKey: previous.inputKey,
-          inputSha: previous.inputSha,
-          sourceSha: previous.sourceSha,
-          width: previous.width,
-          height: previous.height,
-          mime: previous.mime,
-          request: {
-            action == TranslationAction.retry ? 'retry_of' : 'regenerate_of':
-                previous.id,
-            'result_format': ?format,
-          },
-        );
-        // Recover and check frozen input before creating the explicit new intent.
-        final input = await _input(previous, cancel);
-        try {
-          cancel.check();
-          await _bind(created);
-          _receipts[previous.sourceSha] = created;
-          cancel.check();
-        } finally {
-          input.release();
+        // retry_of inherits the rejected hash. Only an explicit retry of this
+        // terminal upload failure may bind a newly normalized input instead.
+        final OfficialReceipt created;
+        if (action == TranslationAction.retry &&
+            previous.errorCode == 'INPUT_NOT_NORMALIZED') {
+          created = await _prepareReceipt(target, cancel, rejected: previous);
+        } else {
+          final capabilities = await _capabilities(cancel);
+          final format = nodeLaneResultFormat(
+            capabilities,
+            previous.width,
+            previous.height,
+          );
+          created = OfficialReceipt(
+            id: translationUuid(),
+            key: previous.key,
+            scope: scope,
+            language: previous.language,
+            inputKey: previous.inputKey,
+            inputSha: previous.inputSha,
+            sourceSha: previous.sourceSha,
+            width: previous.width,
+            height: previous.height,
+            mime: previous.mime,
+            request: {
+              action == TranslationAction.retry ? 'retry_of' : 'regenerate_of':
+                  previous.id,
+              'result_format': ?format,
+            },
+          );
+          // Recover and check frozen input before creating the explicit new intent.
+          final input = await _input(previous, cancel);
+          try {
+            cancel.check();
+            await _bind(created);
+            _receipts[previous.sourceSha] = created;
+            cancel.check();
+          } finally {
+            input.release();
+          }
         }
+        cancel.check();
         _project(target.page, created);
       } else if (previous != null) {
         _verified.remove(previous.id);

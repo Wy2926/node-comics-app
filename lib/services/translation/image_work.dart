@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:image/image.dart' as img;
 import 'package:mangayomi/repositories/db_write_queue.dart';
 import 'package:mangayomi/utils/avif.dart';
@@ -73,23 +74,89 @@ Future<ImageHeader> readImageHeader(File file) async {
   return ImageHeader(info.width, info.height, _mime(decoder!));
 }
 
-/// Platform codecs cover formats (including device-supported AVIF) absent from
-/// the Dart decoder. Animation is explicitly materialized as its first frame.
-Future<void> _normalizeNative(File original, String path) async {
-  final bytes = await original.readAsBytes();
+/// Drawing applies the embedded profile; encoding the decoded frame directly
+/// can preserve both the original channel values and its ICC profile.
+Future<Uint8List> _srgbPng(ui.Image frame, int width, int height) async {
+  if (frame.width != width || frame.height != height) {
+    throw const TranslationFailure('INVALID_IMAGE');
+  }
+  final recorder = ui.PictureRecorder();
+  ui.Canvas(recorder).drawImage(frame, ui.Offset.zero, ui.Paint());
+  final picture = recorder.endRecording();
+  try {
+    final image = await picture.toImage(frame.width, frame.height);
+    try {
+      if (image.width != width || image.height != height) {
+        throw const TranslationFailure('INVALID_IMAGE');
+      }
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (data == null) throw const TranslationFailure('INVALID_IMAGE');
+      return Uint8List.sublistView(data);
+    } finally {
+      image.dispose();
+    }
+  } finally {
+    picture.dispose();
+  }
+}
+
+Future<int> _normalizeNative(
+  File original,
+  String path,
+  _NeedsNativePixels input,
+) async {
+  if (input.orientation != null && (Platform.isAndroid || Platform.isIOS)) {
+    // Software bitmaps do not silently resize long manga pages to a GPU texture.
+    final converted = await const MethodChannel(
+      'nodelane/translation_image',
+    ).invokeMethod<bool>('srgbPng', {'source': original.path, 'output': path});
+    if (converted == true) return input.orientation!;
+  }
+  var bytes = await original.readAsBytes();
+  // Platform codecs disagree on PNG/WebP EXIF. Remove that chunk
+  // from this private decode buffer and apply its orientation exactly once.
+  final chunk = input.exifChunk;
+  if (chunk != null) {
+    final length = bytes.length - (chunk.end - chunk.start);
+    bytes.setRange(chunk.start, length, bytes, chunk.end);
+    bytes = Uint8List.sublistView(bytes, 0, length);
+    final header = ByteData.sublistView(bytes);
+    if (header.getUint32(0) == 0x52494646) { // RIFF
+      header.setUint32(4, length - 8, Endian.little);
+      if (header.getUint32(12) == 0x56503858) {
+        bytes[20] &= ~0x08; // VP8X EXIF flag
+      }
+    }
+  }
   Uint8List png;
   try {
-    final codec = await ui.instantiateImageCodec(bytes);
+    final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+    late int width, height;
+    final codec = await ui.instantiateImageCodecWithSize(
+      buffer,
+      getTargetSize: (w, h) {
+        width = w;
+        height = h;
+        return const ui.TargetImageSize();
+      },
+    );
     try {
-      final frame = await codec.getNextFrame();
+      final frame = (await codec.getNextFrame()).image;
       try {
-        final data = await frame.image.toByteData(
-          format: ui.ImageByteFormat.png,
-        );
-        if (data == null) throw const TranslationFailure('INVALID_IMAGE');
-        png = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        if (input.orientation == null) {
+          // Keep already normalized platform PNGs byte-identical for frozen receipts.
+          final data = await frame.toByteData(format: ui.ImageByteFormat.png);
+          if (data == null) throw const TranslationFailure('INVALID_IMAGE');
+          png = Uint8List.sublistView(data);
+          final info = img.PngDecoder().startDecode(png);
+          if (info is img.PngInfo && info.iccpData != null) {
+            png = await _srgbPng(frame, width, height);
+          }
+        } else {
+          png = await _srgbPng(frame, width, height);
+        }
       } finally {
-        frame.image.dispose();
+        frame.dispose();
       }
     } finally {
       codec.dispose();
@@ -99,6 +166,7 @@ Future<void> _normalizeNative(File original, String path) async {
     png = await decodeAvifToPng(bytes);
   }
   await File(path).writeAsBytes(png, flush: true);
+  return chunk?.orientation ?? 1;
 }
 
 /// One queue for input and composition, shared by all readers and tabs.
@@ -120,17 +188,25 @@ class TranslationImageWork {
     try {
       try {
         result = await _prepareInWorker(sourcePath, path, sourceSha);
-      } on TranslationFailure catch (error) {
-        if (error.code != 'UNSUPPORTED_IMAGE') rethrow;
+      } on _NeedsNativePixels catch (input) {
         cancel.check();
-        await _normalizeNative(original, path);
+        final orientation = await _normalizeNative(original, path, input);
         cancel.check();
-        result = await _prepareInWorker(path, path, null);
+        result = await _prepareInWorker(
+          path,
+          path,
+          null,
+          orientation: orientation,
+        );
         result['sourceSha256'] = sourceSha ?? await imageDigest(original);
       }
     } catch (error) {
       await File(path).delete().catchError((_) => File(path));
-      if (error is TranslationFailure || error is FileSystemException) rethrow;
+      if (error is TranslationFailure ||
+          error is TranslationCancelled ||
+          error is FileSystemException) {
+        rethrow;
+      }
       throw const TranslationFailure('INVALID_IMAGE');
     }
     if (cancel.isCancelled) {
@@ -223,8 +299,9 @@ class TranslationImageWork {
 Future<Map<String, Object>> _prepareInWorker(
   String input,
   String output,
-  String? sourceSha,
-) => Isolate.run(() => _prepare(input, output, sourceSha));
+  String? sourceSha, {
+  int? orientation,
+}) => Isolate.run(() => _prepare(input, output, sourceSha, orientation));
 Future<void> _compositeInWorker(Map<String, Object> args) =>
     Isolate.run(() => _composite(args));
 
@@ -251,34 +328,122 @@ Future<void> _decodeResultInWorker(
   await File(output).writeAsBytes(img.encodePng(image), flush: true);
 });
 
+class _NeedsNativePixels implements Exception {
+  const _NeedsNativePixels([this.orientation, this.exifChunk]);
+  final int? orientation;
+  final _ExifChunk? exifChunk;
+}
+
+typedef _ExifChunk = ({int start, int end, int orientation});
+
+// package:image ignores PNG eXIf and some WebP encoders prefix their TIFF with "Exif\0\0".
+_ExifChunk? _exifChunk(Uint8List bytes, {required bool webp}) {
+  final data = ByteData.sublistView(bytes);
+  for (var at = webp ? 12 : 8; at + 8 <= bytes.length;) {
+    final size = webp
+        ? data.getUint32(at + 4, Endian.little)
+        : data.getUint32(at);
+    final end = at + 8 + size + (webp ? size & 1 : 4);
+    if (end > bytes.length) throw const TranslationFailure('INVALID_IMAGE');
+    if (webp
+        ? data.getUint32(at) == 0x45584946
+        : data.getUint32(at + 4) == 0x65584966) {
+      return (
+        start: at,
+        end: end,
+        orientation: _exifOrientation(
+          ByteData.sublistView(bytes, at + 8, at + 8 + size),
+        ),
+      ); // EXIF / eXIf
+    }
+    at = end;
+  }
+  return null;
+}
+
+int _exifOrientation(ByteData data) {
+  const invalid = TranslationFailure('INVALID_IMAGE');
+  final start =
+      data.lengthInBytes >= 6 &&
+          data.getUint32(0) == 0x45786966 &&
+          data.getUint16(4) == 0
+      ? 6
+      : 0;
+  if (data.lengthInBytes < start + 8) throw invalid;
+  final endian = switch (data.getUint16(start)) {
+    0x4949 => Endian.little,
+    0x4d4d => Endian.big,
+    _ => throw invalid,
+  };
+  final dir = start + data.getUint32(start + 4, endian);
+  if (data.getUint16(start + 2, endian) != 42 ||
+      dir < start + 8 ||
+      dir + 2 > data.lengthInBytes) {
+    throw invalid;
+  }
+  final end = dir + 2 + data.getUint16(dir, endian) * 12;
+  if (end + 4 > data.lengthInBytes) throw invalid;
+  for (var at = dir + 2; at < end; at += 12) {
+    if (data.getUint16(at, endian) != 274) continue;
+    final orientation = data.getUint16(at + 8, endian);
+    if (data.getUint16(at + 2, endian) != 3 ||
+        data.getUint32(at + 4, endian) != 1 ||
+        orientation < 1 ||
+        orientation > 8) {
+      throw invalid;
+    }
+    return orientation;
+  }
+  return 1;
+}
+
 Future<Map<String, Object>> _prepare(
   String sourcePath,
   String output,
   String? knownSha,
+  int? nativeOrientation,
 ) async {
   final file = File(sourcePath);
   final bytes = await file.readAsBytes();
   final decoder = img.findDecoderForData(bytes);
-  if (decoder == null) throw const TranslationFailure('UNSUPPORTED_IMAGE');
+  if (decoder == null) throw const _NeedsNativePixels();
   final info = decoder.startDecode(bytes);
-  final decoded = info == null ? null : decoder.decodeFrame(0);
+  if (info == null) throw const TranslationFailure('INVALID_IMAGE');
+  final chunk =
+      nativeOrientation == null &&
+          (info is img.PngInfo || info is img.WebPInfo && info.exif.isNotEmpty)
+      ? _exifChunk(bytes, webp: info is img.WebPInfo)
+      : null;
+  final orientation = nativeOrientation ?? chunk?.orientation ?? 1;
+  if (nativeOrientation == null &&
+      (info is img.PngInfo && info.iccpData != null ||
+          info is img.WebPInfo && info.iccp != null)) {
+    throw _NeedsNativePixels(orientation, orientation == 1 ? null : chunk);
+  }
+  final decoded = decoder.decodeFrame(0);
   if (decoded == null || decoded.width <= 0 || decoded.height <= 0) {
     throw const TranslationFailure('INVALID_IMAGE');
+  }
+  if (orientation != 1) decoded.exif.imageIfd.orientation = orientation;
+  final jpegExif = decoder is img.JpegDecoder ? img.decodeJpgExif(bytes) : null;
+  if (nativeOrientation == null && decoded.iccProfile != null) {
+    throw _NeedsNativePixels(
+      jpegExif?.imageIfd.orientation ?? decoded.exif.imageIfd.orientation ?? 1,
+    );
   }
   final sourceSha = knownSha ?? await imageDigest(file);
   var actual = file, mime = _mime(decoder);
   var width = decoded.width, height = decoded.height;
   // JPEG decoding already bakes orientation and clears its EXIF orientation.
   // Freeze those normalized pixels, rather than uploading the old byte layout.
-  final hasExif = decoder.format == img.ImageFormat.jpg
-      ? img.decodeJpgExif(bytes) != null
-      : !decoded.exif.isEmpty;
+  final hasExif = jpegExif != null || !decoded.exif.isEmpty;
   if (hasExif ||
-      info!.numFrames > 1 ||
+      decoded.iccProfile != null ||
+      info.numFrames > 1 ||
       !const {'image/png', 'image/jpeg', 'image/webp'}.contains(mime)) {
-    final normalized = img
-        .bakeOrientation(decoded)
-        .convert(format: img.Format.uint8);
+    final normalized =
+        img.bakeOrientation(decoded).convert(format: img.Format.uint8)
+          ..iccProfile = null;
     width = normalized.width;
     height = normalized.height;
     actual = await File(output)

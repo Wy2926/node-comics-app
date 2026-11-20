@@ -108,7 +108,13 @@ class NodeLaneHttp {
       final response = await request.close().timeout(
         const Duration(seconds: 30),
       );
-      return await _jsonResponse(response, cancel);
+      try {
+        return await _jsonResponse(response, cancel);
+      } on TranslationFailure catch (error) {
+        if (error.code != 'INPUT_NOT_NORMALIZED') rethrow;
+        // The 422 is an upload error, not a task snapshot. Reconcile the same UUID.
+        return await json('GET', '/v1/translations/$id', cancellation: cancel);
+      }
     } finally {
       remove();
     }
@@ -290,6 +296,7 @@ class NodeLaneHttp {
       410 when code == 'RESULT_EXPIRED' => 'RESULT_EXPIRED',
       410 => 'TRANSLATION_UNAVAILABLE',
       409 when code == 'CLIENT_UPGRADE_REQUIRED' => 'CLIENT_UPGRADE_REQUIRED',
+      422 when code == 'INPUT_NOT_NORMALIZED' => 'INPUT_NOT_NORMALIZED',
       402 => 'QUOTA_EXHAUSTED',
       _ when code == 'DAILY_QUOTA_EXHAUSTED' => 'QUOTA_EXHAUSTED',
       _ when code == 'LANGUAGE_UNSUPPORTED' => 'UNSUPPORTED_LANGUAGE',

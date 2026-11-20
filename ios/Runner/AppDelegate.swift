@@ -1,5 +1,6 @@
 import UIKit
 import Flutter
+import ImageIO
 import Libmtorrentserver
 import UniformTypeIdentifiers
 
@@ -15,6 +16,27 @@ import UniformTypeIdentifiers
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
     NodeLaneWebImageArchive.register(messenger: messenger)
+    let imageChannel = FlutterMethodChannel(name: "nodelane/translation_image", binaryMessenger: messenger,
+      codec: FlutterStandardMethodCodec.sharedInstance(), taskQueue: messenger.makeBackgroundTaskQueue?())
+    imageChannel.setMethodCallHandler { call, result in
+      guard call.method == "srgbPng" else { result(FlutterMethodNotImplemented); return }
+      guard let args = call.arguments as? [String: String], let input = args["source"], let output = args["output"],
+            let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: input) as CFURL, nil),
+            let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+            let space = CGColorSpace(name: CGColorSpace.sRGB),
+            let context = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8,
+              bytesPerRow: 0, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+        result(FlutterError(code: "INVALID_IMAGE", message: nil, details: nil)); return
+      }
+      context.draw(image, in: CGRect(x: 0, y: 0, width: CGFloat(image.width), height: CGFloat(image.height)))
+      guard let converted = context.makeImage(), let dest = CGImageDestinationCreateWithURL(
+        URL(fileURLWithPath: output) as CFURL, "public.png" as CFString, 1, nil) else {
+        result(FlutterError(code: "INVALID_IMAGE", message: nil, details: nil)); return
+      }
+      CGImageDestinationAddImage(dest, converted, nil)
+      if CGImageDestinationFinalize(dest) { result(true) }
+      else { result(FlutterError(code: "INVALID_IMAGE", message: nil, details: nil)) }
+    }
     engineBridge.applicationRegistrar.register(
       NodeLaneTabBarFactory(messenger: messenger), withId: "nodelane/native_tab_bar"
     )
