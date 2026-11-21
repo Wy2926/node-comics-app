@@ -26,6 +26,8 @@ class MobileBrowserStartPage extends StatelessWidget {
     this.bottomInset = 0,
     this.engine = BrowserSearchEngine.google,
     this.recent = const [],
+    this.clip,
+    this.onResume,
     this.onEngine,
     this.onHistory,
     this.onBookmarks,
@@ -39,6 +41,8 @@ class MobileBrowserStartPage extends StatelessWidget {
   final double bottomInset;
   final BrowserSearchEngine engine;
   final List<BrowserPageEntry> recent;
+  final BrowserPageEntry? clip;
+  final ValueChanged<BrowserPageEntry>? onResume;
   final Future<void> Function(BrowserSearchEngine)? onEngine;
   final ValueChanged<BrowserMatch>? onMatch;
   final VoidCallback? onHistory, onBookmarks;
@@ -123,6 +127,27 @@ class MobileBrowserStartPage extends StatelessWidget {
             ),
           ],
         ),
+        if (clip case final entry?) ...[
+          const SizedBox(height: NodeLaneTokens.space16),
+          NodeLaneCatalogHeading(context.l10n.browser_continue),
+          NodeLaneRow.card(
+            title: entry.displayTitle,
+            titleMaxLines: 2,
+            subtitle: [
+              entry.host,
+              if (entry.anchor?['page'] case final int page)
+                context.l10n.page(page),
+              MaterialLocalizations.of(context)
+                  .formatShortDate(entry.time.toLocal()),
+            ].join(' · '),
+            icon: NodeLaneIcons.of(context).bookmark,
+            trailing: Icon(
+              NodeLaneIcons.of(context).forward,
+              size: NodeLaneTokens.smallIconSize,
+            ),
+            onTap: onResume == null ? null : () => onResume!(entry),
+          ),
+        ],
         if (recent.isNotEmpty) ...[
           const SizedBox(height: NodeLaneTokens.space16),
           NodeLaneCatalogHeading(

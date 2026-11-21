@@ -10,6 +10,30 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get source_more_filters => 'More filters';
+
+  @override
+  String get browser_clip_here => 'Mark this spot';
+
+  @override
+  String get browser_clip_saved => 'Reading position saved';
+
+  @override
+  String get browser_continue => 'Continue reading';
+
+  @override
+  String get browser_focus => 'Focus reading';
+
+  @override
+  String get browser_web_tools => 'Show browser tools';
+
+  @override
+  String get browser_open_reader => 'Open in the app reader';
+
+  @override
+  String get browser_next_chapter => 'Next chapter';
+
+  @override
   String get browser_protection => 'Site protection';
 
   @override
@@ -5914,13 +5938,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'Pricing not specified';
-
-  @override
-  String get source_language_filter => 'Filter by language';
-
-  @override
-  String get source_language_filter_hint =>
-      'Filter this catalog only. Installed sources are unaffected.';
 
   @override
   String get source_all_languages => 'All languages';

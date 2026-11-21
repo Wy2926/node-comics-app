@@ -139,6 +139,54 @@ void main() {
   });
 
   test(
+    'chapter hints work without translation, never cross document or origin',
+    () async {
+      final engine = _InPageReader(), reader = TranslationViewController();
+      final reports = <(bool, String?)>[];
+      final connected = WebTranslationBridge(
+        engine,
+        reader,
+        'read',
+        l10n: AppLocalizationsEn(),
+        onReading: (chapter, next) => reports.add((chapter, next)),
+      );
+      addTearDown(reader.dispose);
+      addTearDown(connected.dispose);
+      const origin = 'https://reader.example',
+          url = '$origin/read/1',
+          next = '$origin/read/2';
+      await connected.install(Uri.parse(url));
+      final token = engine.token;
+      var seq = 0;
+      Future<bool> send(
+        String? target, {
+        String? documentToken,
+        String document = url,
+      }) => engine.send!(origin, document, {
+        'token': documentToken ?? engine.token,
+        'seq': ++seq,
+        'reading': {'chapter': true, 'nextChapter': target},
+      });
+      expect(await send(next), isTrue);
+      expect(reports.last, (true, next));
+      for (final bad in [
+        'https://other.example/read/2',
+        'javascript:void(0)',
+        '$url#more',
+      ]) {
+        expect(await send(bad), isTrue);
+        expect(reports.last, (true, null));
+      }
+      expect(await send(next, document: next), isFalse);
+      await connected.install(Uri.parse(next));
+      expect(await send(url, document: next, documentToken: token), isFalse);
+      reader.configure(foreground: false);
+      expect(await send(url, document: next), isFalse);
+      expect(reports.length, 4);
+    },
+  );
+
+  test(
     'in-page HTTP images read in chunks only from the current top document',
     () async {
       final files = WebImageTestDirectory();

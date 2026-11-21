@@ -100,7 +100,7 @@ final mobileCatalogEntriesProvider =
       (ref, type) => sourceRepository.watchByItemType(type),
     );
 
-/// The list and the open filter sheet use the same live directory.
+/// The list and its inline filters use the same live directory.
 final mobileDirectorySourcesProvider = Provider.autoDispose
     .family<List<Source>, (ItemType, bool)>((ref, directory) {
       final (type, thirdParty) = directory;

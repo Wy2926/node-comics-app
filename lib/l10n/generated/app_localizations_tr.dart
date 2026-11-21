@@ -10,6 +10,30 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get source_more_filters => 'Diğer filtreler';
+
+  @override
+  String get browser_clip_here => 'Burayı işaretle';
+
+  @override
+  String get browser_clip_saved => 'Okuma konumu kaydedildi';
+
+  @override
+  String get browser_continue => 'Okumaya devam et';
+
+  @override
+  String get browser_focus => 'Odaklanarak oku';
+
+  @override
+  String get browser_web_tools => 'Tarayıcı araçlarını göster';
+
+  @override
+  String get browser_open_reader => 'Uygulamanın okuyucusunda aç';
+
+  @override
+  String get browser_next_chapter => 'Sonraki bölüm';
+
+  @override
   String get browser_protection => 'Site koruması';
 
   @override
@@ -5940,13 +5964,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'Fiyatlandırma belirtilmemiş';
-
-  @override
-  String get source_language_filter => 'Dile göre filtrele';
-
-  @override
-  String get source_language_filter_hint =>
-      'Yalnızca bu kataloğu filtreleyin. Yüklü kaynaklar etkilenmez.';
 
   @override
   String get source_all_languages => 'Tüm diller';

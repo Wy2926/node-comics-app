@@ -14,6 +14,7 @@ import 'package:mangayomi/eval/model/m_pages.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/main.dart' as app;
+import 'package:mangayomi/repositories/browser_reader_repository.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -21,6 +22,7 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
 import 'package:mangayomi/modules/browse/global_search/search_activity.dart';
 import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
+import 'package:mangayomi/modules/browse/widgets/source_directory_filters.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
@@ -83,6 +85,70 @@ void main() {
     await database.close(deleteFromDisk: true);
     await directory.delete(recursive: true);
   });
+
+  test(
+    'browser reader requires one exact installed-source title or chapter',
+    () async {
+      const base = 'https://catalog.example/series',
+          url = '$base/one',
+          chapterUrl = '$url/read?ch=2';
+      final site = Source(
+        id: 701,
+        baseUrl: base,
+        name: 'Site',
+        lang: 'en',
+        isAdded: true,
+        sourceCode: 'fixture',
+      );
+      final book = Manga.fromJson({
+        'id': 702,
+        'link': 'one',
+        'sourceId': 701,
+        'status': 0,
+        'favorite': false,
+      });
+      final chapter = Chapter(
+        id: 703,
+        mangaId: 702,
+        name: 'Two',
+        url: '/series/one/read?ch=2',
+      )..manga.value = book;
+      database.writeTxnSync(() {
+        database.sources.putSync(site);
+        database.mangas.putSync(book);
+        database.chapters.putSync(chapter);
+        chapter.manga.saveSync();
+      });
+      expect(await findBrowserReaderTarget(url), (chapter: false, id: 702));
+      expect(await findBrowserReaderTarget(chapterUrl), (
+        chapter: true,
+        id: 703,
+      ));
+      for (final other in [
+        base,
+        '$base/two',
+        '$url/read?ch=3',
+        chapterUrl.replaceFirst('.example', '.other.example'),
+      ]) {
+        expect(await findBrowserReaderTarget(other), isNull);
+      }
+      database.writeTxnSync(
+        () => database.sources.putSync(site..isAdded = false),
+      );
+      expect(await findBrowserReaderTarget(chapterUrl), isNull);
+      book.link = chapterUrl;
+      database.writeTxnSync(() {
+        database.sources.putSync(site..isAdded = true);
+        database.mangas.putSync(book);
+      });
+      expect(await findBrowserReaderTarget(chapterUrl), isNull);
+      database.writeTxnSync(() {
+        database.chapters.deleteSync(703);
+        database.mangas.deleteSync(702);
+        database.sources.deleteSync(701);
+      });
+    },
+  );
 
   testWidgets('batch actions persist and release the shared selection mode', (
     tester,
@@ -239,15 +305,21 @@ void main() {
         final l10n = AppLocalizations.of(
           tester.element(find.byType(MobileSourcesScreen)),
         )!;
-        await tester.drag(
-          find.byKey(const PageStorageKey('directory-filter-bar')),
-          const Offset(-180, 0),
+        await tester.tap(find.byTooltip(l10n.filter));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(TextButton, l10n.source_format));
+        await tester.pumpAndSettle();
+        final pageChoice = find.widgetWithText(
+          DirectoryFilterChoice,
+          l10n.source_format_page,
         );
+        if (pageChoice.hitTestable().evaluate().isEmpty) {
+          await tester.ensureVisible(pageChoice);
+        }
+        await tester.tap(pageChoice);
         await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(ActionChip, l10n.source_format));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text(l10n.source_format_page).hitTestable().last);
-        await tester.tap(find.text(l10n.action_apply));
+        await tester.ensureVisible(find.byTooltip(l10n.filter));
+        await tester.tap(find.byTooltip(l10n.filter));
         await tester.pumpAndSettle();
         final summary = find.textContaining(
           '${l10n.search_result_count(15)} · Local',

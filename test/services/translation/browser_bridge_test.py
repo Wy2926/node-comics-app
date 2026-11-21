@@ -13,13 +13,13 @@ import threading
 import time
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = (ROOT / 'assets/nodelane_reader.js').read_text().replace(
+SCRIPT = (ROOT / 'assets/nodelane_reader.js').read_text(encoding='utf-8').replace(
     '__NODELANE_CONFIG__', '{token:"fixture"}')
 FIXTURE = r'''
 <html><body style="margin:0"><pre id="result">pending</pre>
 <script>
-const windows = [], actions = [];
-window.flutter_inappwebview = {callHandler: async (name, value) => { if (value.action) actions.push(value); else windows.push(value); return true; }};
+const windows = [], actions = [], reading = [];
+window.flutter_inappwebview = {callHandler: async (name, value) => { if (value.reading) reading.push(value.reading); else if (value.action) actions.push(value); else windows.push(value); return true; }};
 </script><script>__SCRIPT__</script><script>
 const assert = (value, text) => { if (!value) throw Error(text); };
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -202,6 +202,47 @@ const readInput = async item => {
   await rejects(()=>call('resultBegin',{...canvasItem,size:canvasInput.meta.size}),'SOURCE_CHANGED');
   await call('state',{active:false,translated:false});
   assert(!document.querySelector('[data-nodelane-overlay]'),'canvas display leaked on pause');
+  const panel=document.createElement('canvas');
+  panel.style='display:block;width:100%;height:200vh'; document.body.append(panel);
+  const link=document.createElement('a'); link.href='/gallery/2'; link.textContent='Next';
+  document.body.append(link); scrollTo(0,0);
+  await call('state',{active:false,reading:true}); await wait(260);
+  assert(reading.at(-1).chapter===false,'a gallery with a generic next link was called a chapter');
+  document.title='Episode 7';
+  panel.style='display:block;width:24px;height:24px'; await wait(250);
+  assert(!reading.at(-1).chapter,'a chapter title and an icon are not a comic page');
+  panel.style='display:block;width:min(40vw,70vh);height:80vh'; await wait(250);
+  assert(panel.getBoundingClientRect().width<innerWidth/2 && reading.at(-1).chapter,
+    'a height-fitted canvas in a landscape spread was not recognized');
+  panel.style='display:block;width:100%;height:200vh';
+  panel.dataset.pageNumber='7'; link.href='/read/2'; link.textContent='Next chapter'; await wait(260);
+  assert(reading.at(-1).chapter && !reading.at(-1).nextChapter,'next chapter offered before the chapter end');
+  scrollTo(0,document.documentElement.scrollHeight); await wait(260);
+  assert(reading.at(-1).nextChapter===link.href,'chapter end without reliable next link');
+  const other=link.cloneNode(true);other.href='/read/3';document.body.append(other);await wait(260);
+  assert(reading.at(-1).nextChapter===null,'ambiguous chapter target suggested');
+  other.remove();link.href='https://external.example/read/2';await wait(260);
+  assert(reading.at(-1).nextChapter===null,'cross-site chapter target suggested');
+  scrollTo(0,panel.offsetTop+innerHeight*.4);await wait(200);
+  const clip=await call('anchor',{});
+  assert(clip.page===7 && clip.fraction>0 && clip.fraction<1,'clip lacks image position');
+  panel.before(tiny.cloneNode());panel.style.height='300vh';scrollTo(0,0);
+  await call('restore',clip);await wait(250);
+  const reopened=await call('anchor',{});
+  assert(reopened.page===7 && Math.abs(reopened.fraction-clip.fraction)<.01,'reflow changed the clipped image position');
+  const strip=document.createElement('div');
+  strip.style='position:fixed;inset:0;overflow:auto;display:flex';
+  document.body.replaceChildren(document.querySelector('#result'),strip);
+  for(let i=1;i<=3;i++){
+    const img=document.createElement('canvas');img.dataset.pageNumber=i;
+    img.style='flex:none;width:100vw;height:160vh';strip.append(img);
+  }
+  document.body.append(link);link.href='/read/2';link.style='position:fixed;bottom:0';
+  strip.scrollTo(innerWidth,innerHeight/3);await wait(260);
+  assert(reading.at(-1).chapter && !reading.at(-1).nextChapter,'horizontal chapter offered next before the last panel');
+  const horizontal=await call('anchor',{});assert(horizontal.page===2,'horizontal clip chose an offscreen panel');
+  strip.scrollTo(0,0);await call('restore',horizontal);await wait(260);
+  assert(Math.abs(strip.scrollLeft-innerWidth)<2 && Math.abs(strip.scrollTop-innerHeight/3)<2,'inner scroller lost image position');
   window.__nodelaneReader.dispose();
   document.getElementById('result').textContent='NODELANE_BRIDGE_PASS';
 })().catch(error => document.getElementById('result').textContent='NODELANE_BRIDGE_FAIL: '+error.message);
@@ -260,7 +301,7 @@ await send('Browser.close',{}); ws.close(); console.log(status); if(status!=='NO
                 run = subprocess.run([node, '--input-type=module', '-e', probe,
                     f'http://127.0.0.1:{port}', f'http://127.0.0.1:{server.server_port}'], capture_output=True, text=True, timeout=25)
                 if run.returncode: raise SystemExit(run.stdout.strip() or run.stderr[:500])
-                print('PASS: Blob/data/canvas capture, small images beyond 512 elements, CSS transform/cover, canvas repaint identity, cancellation/retry, status/actions, original/position and chunked transfer')
+                print('PASS: image capture, display, actions and chunks; chapter detection, next-link ambiguity and clip restoration after reflow')
             finally:
                 try:
                     browser.wait(timeout=10)

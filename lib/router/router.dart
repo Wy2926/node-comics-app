@@ -262,6 +262,7 @@ class RouterNotifier extends ChangeNotifier {
               url: data['url']!,
               title: data['title']!,
               tabId: data['tabId'],
+              clipAnchor: data['clipAnchor'],
             )
           : MangaWebView(url: data["url"]!, title: data['title']!),
     ),

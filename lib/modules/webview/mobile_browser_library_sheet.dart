@@ -11,11 +11,18 @@ import 'browser_library_store.dart';
 
 /// The same searchable collection is used from the start page and a live tab.
 class MobileBrowserLibrarySheet extends StatefulWidget {
-  const MobileBrowserLibrarySheet({
-    super.key,
+  const MobileBrowserLibrarySheet._({
     required this.store,
-    this.bookmarks = false,
+    required this.bookmarks,
   });
+  static Future<BrowserPageEntry?> show(
+    BuildContext context, {
+    required BrowserLibraryStore store,
+    bool bookmarks = false,
+  }) => showNodeLaneCatalogSheet<BrowserPageEntry>(
+    context,
+    MobileBrowserLibrarySheet._(store: store, bookmarks: bookmarks),
+  );
   final BrowserLibraryStore store;
   final bool bookmarks;
 
@@ -190,7 +197,7 @@ class _MobileBrowserLibrarySheetState extends State<MobileBrowserLibrarySheet> {
                               ),
                               onTap: busy
                                   ? null
-                                  : () => Navigator.pop(context, entry.url),
+                                  : () => Navigator.pop(context, entry),
                               trailing: NodeLaneIconButton(
                                 icon: icons.delete,
                                 tooltip: context.l10n.delete,

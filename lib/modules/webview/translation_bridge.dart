@@ -15,6 +15,7 @@ import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 
 import 'reader_transport.dart';
+import 'browser_url.dart';
 
 class WebTranslationBridge {
   WebTranslationBridge(
@@ -24,6 +25,7 @@ class WebTranslationBridge {
     required this._l10n,
     this._theme = const {},
     this.onImageMenu,
+    this.onReading,
   }) {
     transport.listen(_receive);
     view.addListener(_changed);
@@ -34,6 +36,7 @@ class WebTranslationBridge {
   final TranslationViewController view;
   final String tabId;
   final Future<void> Function(TranslationTarget)? onImageMenu;
+  final void Function(bool chapter, String? next)? onReading;
   Map<String, Object> _theme;
   AppLocalizations _l10n;
 
@@ -89,7 +92,7 @@ class WebTranslationBridge {
   }
 
   Future<bool> _receive(String origin, String url, Object? value) async {
-    if (!active || !_ready || value is! Map) {
+    if (!view.foreground || !_ready || _disposed || value is! Map) {
       return false;
     }
     final document = Uri.tryParse(_document);
@@ -104,6 +107,21 @@ class WebTranslationBridge {
       return false;
     }
     _sequence = value['seq'] as int;
+    if (value['reading'] case {
+      'chapter': bool chapter,
+      'nextChapter': final next,
+    }) {
+      final target =
+          chapter &&
+              isBrowserUrl(next) &&
+              Uri.parse(next as String).origin == document.origin &&
+              Uri.parse(next).removeFragment() != document
+          ? next
+          : null;
+      onReading?.call(chapter, target);
+      return true;
+    }
+    if (!active) return false;
     if (value['action'] != null) {
       final id = value['id'];
       final entry = _elements[id];
@@ -231,6 +249,7 @@ class WebTranslationBridge {
     if (!_ready || _disposed) return;
     final status = {
       'active': active,
+      'reading': onReading != null && view.foreground,
       'translated': view.showTranslation,
       'theme': _theme,
       'items': [

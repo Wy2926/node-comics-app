@@ -10,6 +10,30 @@ class AppLocalizationsId extends AppLocalizations {
   AppLocalizationsId([String locale = 'id']) : super(locale);
 
   @override
+  String get source_more_filters => 'Filter lainnya';
+
+  @override
+  String get browser_clip_here => 'Tandai posisi ini';
+
+  @override
+  String get browser_clip_saved => 'Posisi baca disimpan';
+
+  @override
+  String get browser_continue => 'Lanjutkan membaca';
+
+  @override
+  String get browser_focus => 'Baca tanpa gangguan';
+
+  @override
+  String get browser_web_tools => 'Tampilkan alat peramban';
+
+  @override
+  String get browser_open_reader => 'Buka di pembaca aplikasi';
+
+  @override
+  String get browser_next_chapter => 'Bab berikutnya';
+
+  @override
   String get browser_protection => 'Perlindungan situs';
 
   @override
@@ -5934,13 +5958,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'Harga tidak ditentukan';
-
-  @override
-  String get source_language_filter => 'Filter menurut bahasa';
-
-  @override
-  String get source_language_filter_hint =>
-      'Filter katalog ini saja. Sumber yang diinstal tidak terpengaruh.';
 
   @override
   String get source_all_languages => 'Semua bahasa';

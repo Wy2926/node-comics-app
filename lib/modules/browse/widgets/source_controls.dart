@@ -6,10 +6,9 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class SourceOption<T> {
-  const SourceOption(this.value, this.label, {this.subtitle});
+  const SourceOption(this.value, this.label);
   final T value;
   final String label;
-  final String? subtitle;
 }
 
 Future<T?> showSourceChoice<T>(
@@ -37,9 +36,6 @@ Future<Set<T>?> showSourceMultiChoice<T>(
   String? subtitle,
   required Set<T> current,
   required List<SourceOption<T>> options,
-  String? allLabel,
-  String? saveLabel,
-  bool reset = false,
 }) => showNodeLaneCatalogSheet<Set<T>>(
   context,
   _SourceSelection<T>(
@@ -48,9 +44,6 @@ Future<Set<T>?> showSourceMultiChoice<T>(
     options: options,
     initial: current,
     multiple: true,
-    allLabel: allLabel,
-    saveLabel: saveLabel,
-    reset: reset,
   ),
 );
 
@@ -61,16 +54,13 @@ class _SourceSelection<T> extends StatefulWidget {
     required this.initial,
     required this.multiple,
     this.subtitle,
-    this.allLabel,
-    this.saveLabel,
-    this.reset = false,
     this.hint,
   });
   final String title;
-  final String? subtitle, allLabel, saveLabel, hint;
+  final String? subtitle, hint;
   final List<SourceOption<T>> options;
   final Set<T> initial;
-  final bool multiple, reset;
+  final bool multiple;
   @override
   State<_SourceSelection<T>> createState() => _SourceSelectionState<T>();
 }
@@ -84,12 +74,6 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
     search.dispose();
     super.dispose();
   }
-
-  void selectAll() => setState(() {
-    selected
-      ..clear()
-      ..addAll(widget.options.map((o) => o.value));
-  });
 
   void choose(T value) {
     if (leaving) return;
@@ -122,23 +106,15 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.allLabel == null) ...[
-                  Text(
-                    context.l10n.source_selected_count(selected.length),
-                    style: t.readerSecondary,
-                  ),
-                  const SizedBox(height: NodeLaneTokens.space12),
-                ],
+                Text(
+                  l10n.source_selected_count(selected.length),
+                  style: t.readerSecondary,
+                ),
+                const SizedBox(height: NodeLaneTokens.space12),
                 NodeLaneModalActions(
                   actions: [
-                    if (widget.reset)
-                      NodeLaneDialogAction(
-                        label: l10n.reset,
-                        secondary: true,
-                        onPressed: selectAll,
-                      ),
                     NodeLaneDialogAction(
-                      label: widget.saveLabel ?? l10n.save,
+                      label: l10n.save,
                       onPressed: () {
                         if (leaving) return;
                         leaving = true;
@@ -158,27 +134,16 @@ class _SourceSelectionState<T> extends State<_SourceSelection<T>> {
           if (searchable) ...[
             NodeLaneTextField.search(
               controller: search,
-              hint: widget.allLabel == null
-                  ? context.l10n.bookshelf_search_options
-                  : context.l10n.search_languages,
+              hint: l10n.bookshelf_search_options,
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
           ],
           NodeLaneGroupSurface(
             children: [
-              if (widget.allLabel != null && search.text.isEmpty)
-                NodeLaneRow(
-                  title: widget.allLabel!,
-                  selected: widget.options.every(
-                    (o) => selected.contains(o.value),
-                  ),
-                  onTap: selectAll,
-                ),
               for (final option in filtered)
                 NodeLaneRow(
                   title: option.label,
-                  subtitle: option.subtitle,
                   selected: selected.contains(option.value),
                   onTap: () => choose(option.value),
                 ),

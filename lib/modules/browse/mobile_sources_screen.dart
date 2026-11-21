@@ -46,7 +46,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   final busy = <int>{};
   final failedActions = <int, ({bool open, bool latest})>{};
   final filtersByDirectory = <(ItemType, bool), DirectoryFilters>{};
-  bool _refreshing = false;
+  final keywords = <(ItemType, bool), String>{};
+  bool _refreshing = false, _filtersOpen = false;
   NodeLaneNoticeHandle? _notice;
   @override
   void initState() {
@@ -71,21 +72,28 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     super.dispose();
   }
 
-  Future<void> _openFilters(DirectoryFacet facet) async {
-    final key = (type, thirdParty);
+  void _toggleFilters() {
     FocusScope.of(context).unfocus();
-    final result = await showNodeLaneCatalogSheet<DirectoryFilters>(
-      context,
-      SourceDirectoryFilterSheet(
-        initial: filtersByDirectory[key] ?? const {},
-        facet: facet,
-        directory: key,
-        keyword: query.text.trim().toLowerCase(),
-      ),
-    );
-    if (mounted && result != null) {
-      setState(() => filtersByDirectory[key] = result);
-    }
+    setState(() => _filtersOpen = !_filtersOpen);
+  }
+
+  void _setFilters(DirectoryFilters filters) =>
+      setState(() => filtersByDirectory[(type, thirdParty)] = filters);
+
+  void _switchDirectory(ItemType media, bool community) {
+    FocusScope.of(context).unfocus();
+    keywords[(type, thirdParty)] = query.text;
+    final text = keywords[(media, community)] ?? '';
+    setState(() {
+      type = media;
+      thirdParty = community;
+      _filtersOpen = managing = false;
+      query.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+      _notice?.dismiss();
+    });
   }
 
   Future<void> _fetch(
@@ -461,7 +469,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       icon: icons.more,
       onSelected: (value) {
         if (value == 'search') _searchContents();
-        if (value == 'filter') _openFilters(DirectoryFacet.language);
         if (value == 'update') _updateInstalled();
         if (value == 'manage') {
           _startSelection();
@@ -474,7 +481,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       itemBuilder: (_) => [
         for (final (value, title, icon) in [
           ('search', context.l10n.search_titles, icons.search),
-          ('filter', context.l10n.source_language_filter, icons.filter),
           if (thirdParty && catalog.isNotEmpty)
             ('manage', context.l10n.source_bulk_manage, icons.selected),
           if (thirdParty)
@@ -500,19 +506,11 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   }) {
     final icons = NodeLaneIcons.of(context), l10n = context.l10n;
     final noMatch = searching || filtered || hasSources;
-    final (String, VoidCallback) action;
+    final (String, VoidCallback)? action;
     if (searching) {
       action = (l10n.source_global_search, _searchContents);
-    } else if (filtered) {
-      action = (
-        l10n.action_clear,
-        () => setState(() => filtersByDirectory.remove((type, thirdParty))),
-      );
-    } else if (hasSources) {
-      action = (
-        l10n.source_language_filter,
-        () => _openFilters(DirectoryFacet.language),
-      );
+    } else if (noMatch) {
+      action = null;
     } else if (thirdParty) {
       action = (
         l10n.source_manage_repositories,
@@ -521,11 +519,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     } else {
       action = (
         l10n.source_view_third_party,
-        () => setState(() {
-          thirdParty = true;
-          managing = false;
-          _notice?.dismiss();
-        }),
+        () => _switchDirectory(type, true),
       );
     }
     return Center(
@@ -535,10 +529,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
             ? l10n.source_no_matching_websites
             : l10n.source_no_websites,
         message: searching ? l10n.source_search_installed_hint : null,
-        action: NodeLaneSecondaryButton(
-          onPressed: action.$2,
-          child: Text(action.$1),
-        ),
+        action: action == null
+            ? null
+            : NodeLaneSecondaryButton(
+                onPressed: action.$2,
+                child: Text(action.$1),
+              ),
       ),
     );
   }
@@ -561,7 +557,11 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
     }
   }
 
-  Widget _header(List<ItemType> types, DirectoryFilters filters) {
+  Widget _header(
+    List<ItemType> types,
+    DirectoryFilters filters,
+    List<Source> catalog,
+  ) {
     final l10n = context.l10n;
     return Material(
       color: NodeLaneTokens.of(context).canvas,
@@ -578,15 +578,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                 MobileMediaMenu(
                   value: type,
                   availableTypes: types,
-                  onChanged: (value) {
-                    FocusScope.of(context).unfocus();
-                    setState(() {
-                      type = value;
-                      managing = false;
-                      query.clear();
-                      _notice?.dismiss();
-                    });
-                  },
+                  onChanged: (value) => _switchDirectory(value, thirdParty),
                 ),
                 SizedBox(
                   width:
@@ -608,33 +600,43 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
                         label: Text(l10n.source_third_party),
                       ),
                     ],
-                    onChanged: (value) {
-                      FocusScope.of(context).unfocus();
-                      setState(() {
-                        thirdParty = value;
-                        managing = false;
-                        query.clear();
-                        _notice?.dismiss();
-                      });
-                    },
+                    onChanged: (value) => _switchDirectory(type, value),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: NodeLaneTokens.space12),
-            NodeLaneTextField.search(
-              controller: query,
-              hint: l10n.source_name_or_title,
-              clearLabel: l10n.search_clear,
-              onSubmitted: (_) => _searchContents(),
-              onChanged: (_) => setState(() {}),
+            Row(
+              children: [
+                Expanded(
+                  child: NodeLaneTextField.search(
+                    controller: query,
+                    hint: l10n.source_name_or_title,
+                    clearLabel: l10n.search_clear,
+                    onSubmitted: (_) => _searchContents(),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(width: NodeLaneTokens.space8),
+                NodeLaneIconButton(
+                  tooltip: l10n.filter,
+                  icon: NodeLaneIcons.of(context).adjustments,
+                  style: NodeLaneIconButtonStyle.plain,
+                  active: _filtersOpen || filters.isNotEmpty,
+                  onPressed: _toggleFilters,
+                ),
+              ],
             ),
-            const SizedBox(height: NodeLaneTokens.space8),
-            SourceDirectoryFilterBar(
-              filters: filters,
-              type: type,
-              onOpen: _openFilters,
-            ),
+            if (_filtersOpen) ...[
+              const SizedBox(height: NodeLaneTokens.space8),
+              SourceDirectoryFilterPanel(
+                key: ValueKey((type, thirdParty)),
+                catalog: catalog,
+                type: type,
+                filters: filters,
+                onChanged: _setFilters,
+              ),
+            ],
           ],
         ),
       ),
@@ -649,9 +651,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
   ) {
     final l10n = context.l10n, t = NodeLaneTokens.of(context);
     final description = [
+      if (count != null) l10n.search_result_count(count),
       if (keyword.isNotEmpty) keyword,
-      for (final entry in filters.entries)
-        entry.key.summary(entry.value, l10n, type),
     ].join(' · ');
     return PinnedHeaderSliver(
       child: Material(
@@ -660,40 +661,56 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
           padding: const EdgeInsets.symmetric(
             horizontal: NodeLaneTokens.gutter,
           ),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                child: Tooltip(
-                  message: description.isEmpty
-                      ? l10n.filter
-                      : '${l10n.filter} · $description',
-                  child: TextButton.icon(
-                    style: TextButton.styleFrom(
-                      alignment: AlignmentDirectional.centerStart,
-                      minimumSize: const Size(0, NodeLaneTokens.minTapTarget),
+              Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        description,
+                        style: t.secondary,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    onPressed: () => _openFilters(
-                      filters.keys.firstOrNull ?? DirectoryFacet.language,
-                    ),
-                    icon: Icon(NodeLaneIcons.of(context).filter),
-                    label: Text(
-                      [
-                        if (count != null) l10n.search_result_count(count),
-                        description.isEmpty ? l10n.filter : description,
-                      ].join(' · '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  ),
+                  NodeLaneIconButton(
+                    tooltip: l10n.feedback_source,
+                    icon: NodeLaneIcons.of(context).chat,
+                    onPressed: () =>
+                        showSupportRequest(context, SupportRequestKind.website),
+                  ),
+                  _menu(catalog),
+                ],
+              ),
+              if (filters.isNotEmpty)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final entry in filters.entries)
+                          for (final value in entry.value)
+                            DirectoryFilterChoice(
+                              label: entry.key.options(l10n, type, [
+                                value,
+                              ])[value]!,
+                              selected: true,
+                              remove: true,
+                              onPressed: () =>
+                                  _setFilters(filters.toggle(entry.key, value)),
+                            ),
+                        TextButton(
+                          onPressed: () => _setFilters(const {}),
+                          child: Text(l10n.action_clear),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              NodeLaneIconButton(
-                tooltip: l10n.feedback_source,
-                icon: NodeLaneIcons.of(context).chat,
-                onPressed: () =>
-                    showSupportRequest(context, SupportRequestKind.website),
-              ),
-              _menu(catalog),
             ],
           ),
         ),
@@ -721,11 +738,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (selecting) _finishSelection();
-        setState(() {
-          type = next.type;
-          thirdParty = next.kind == BrowseTabKind.extensions;
-          managing = false;
-        });
+        _switchDirectory(next.type, next.kind == BrowseTabKind.extensions);
         ref.read(browseInitialTabProvider.notifier).clear();
       });
     });
@@ -823,7 +836,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: [
                 if (!selecting) ...[
-                  SliverFloatingHeader(child: _header(types, filters)),
+                  SliverFloatingHeader(child: _header(types, filters, catalog)),
                   _summary(
                     catalog,
                     filters,
@@ -906,9 +919,15 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen> {
       ),
     );
     return PopScope(
-      canPop: !selecting && !_bulkBusy,
+      canPop: !selecting && !_bulkBusy && !_filtersOpen,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && selecting && !_bulkBusy) _finishSelection();
+        if (!didPop && !_bulkBusy) {
+          if (selecting) {
+            _finishSelection();
+          } else if (_filtersOpen) {
+            _toggleFilters();
+          }
+        }
       },
       child: IgnorePointer(ignoring: _bulkBusy, child: page),
     );

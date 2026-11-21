@@ -12,6 +12,7 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/modules/webview/browser_pinned_sources_provider.dart';
 import 'package:mangayomi/modules/webview/browser_page_controller.dart';
+import 'package:mangayomi/modules/webview/browser_library_store.dart';
 import 'package:mangayomi/modules/webview/browser_session_store.dart';
 import 'package:mangayomi/modules/webview/browser_webview_cache.dart';
 import 'package:mangayomi/modules/webview/mobile_browser.dart';
@@ -171,6 +172,7 @@ void main() {
               url: data['url'] as String,
               title: '',
               tabId: data['tabId'] as String?,
+              clipAnchor: data['clipAnchor'] as Map<String, dynamic>?,
             );
           },
         ),
@@ -273,6 +275,31 @@ void main() {
     expect(platform.created, 6);
     expect((state.current as BrowserTab).url, 'https://fixed.example/ch');
     expect(find.text('编辑网址'), findsNothing);
+    final tab = state.current as BrowserTab;
+    final oldUrl = tab.url;
+    final delayed = Completer<Map<String, dynamic>?>();
+    tab
+      ..loading = false
+      ..readable = true
+      ..pageReady = true
+      ..chapter = true
+      ..captureAnchor = (() => delayed.future);
+    final events = tester
+        .widget<InAppWebView>(find.byType(InAppWebView))
+        .platform
+        .params;
+    final web = InAppWebViewController.fromPlatform(
+      platform: _StaticController(),
+    );
+    events.onTitleChanged!(web, 'One');
+    await tester.pump();
+    await tester.tap(find.text('夹在这里'));
+    events.onLoadStart!(web, WebUri('https://fixed.example/other'));
+    delayed.complete({'x': 0, 'y': 599, 'slot': 1, 'fraction': 0.3});
+    await tester.pump();
+    expect(find.text('专注阅读'), findsNothing);
+    expect(browserLibraryStore.isBookmarked(oldUrl), isFalse);
+    expect(browserLibraryStore.isBookmarked(tab.url), isFalse);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();

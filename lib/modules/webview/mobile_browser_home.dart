@@ -59,17 +59,22 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
   }
 
   Future<void> _library({bool bookmarks = false}) async {
-    final url = await showNodeLaneCatalogSheet<String>(
+    final entry = await MobileBrowserLibrarySheet.show(
       context,
-      MobileBrowserLibrarySheet(
-        store: browserLibraryStore,
-        bookmarks: bookmarks,
-      ),
+      store: browserLibraryStore,
+      bookmarks: bookmarks,
     );
-    if (mounted && url != null) await _open(url, '');
+    if (mounted && entry != null) {
+      await _open(entry.url, entry.title, clip: bookmarks ? entry : null);
+    }
   }
 
-  Future<void> _open(String url, String title, {String? tabId}) async {
+  Future<void> _open(
+    String url,
+    String title, {
+    String? tabId,
+    BrowserPageEntry? clip,
+  }) async {
     if (opening || !ready) return;
     opening = true;
     FocusScope.of(context).unfocus();
@@ -77,7 +82,12 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
       unawaited(
         context.push(
           '/mangawebview',
-          extra: {'url': url, 'title': title, 'tabId': ?tabId ?? _blank?['id']},
+          extra: {
+            'url': url,
+            'title': title,
+            'tabId': ?tabId ?? _blank?['id'],
+            'clipAnchor': ?clip?.anchor,
+          },
         ),
       );
       // Guard the transition, not the lifetime of a route that can return via go().
@@ -164,7 +174,10 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
                 sources: ref.watch(browserPinnedSourcesProvider),
                 tabCount: browserSessionStore.entries.length,
                 onOpen: _open,
-                onMatch: (m) => _open(m.url, m.title, tabId: m.tabId),
+                onMatch: (m) =>
+                    _open(m.url, m.title, tabId: m.tabId, clip: m.bookmark),
+                clip: browserLibraryStore.lastClip,
+                onResume: (entry) => _open(entry.url, entry.title, clip: entry),
                 onRequestSource: () =>
                     showSupportRequest(context, SupportRequestKind.website),
                 onTabs: ready ? _tabs : null,

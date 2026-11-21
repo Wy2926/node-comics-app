@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -219,6 +220,76 @@ class MobileBrowserToolbar extends StatelessWidget {
               },
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class BrowserChapterTools extends StatelessWidget {
+  const BrowserChapterTools({
+    super.key,
+    required this.focused,
+    required this.onFocus,
+    required this.onClip,
+    required this.translated,
+    required this.onDisplay,
+    this.onNext,
+  });
+  final bool focused, translated;
+  final VoidCallback onFocus;
+  final VoidCallback? onClip, onNext;
+  final ValueChanged<bool> onDisplay;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n,
+        icons = NodeLaneIcons.of(context),
+        t = NodeLaneTokens.of(context);
+    Widget action(String label, IconData icon, VoidCallback? onPressed) =>
+        TextButton.icon(
+          style: TextButton.styleFrom(
+            foregroundColor: t.accent,
+            textStyle: t.label,
+            minimumSize: const Size(
+              NodeLaneTokens.minTapTarget,
+              NodeLaneTokens.minTapTarget,
+            ),
+          ),
+          onPressed: onPressed,
+          icon: Icon(icon, size: NodeLaneTokens.smallIconSize),
+          label: Text(label),
+        );
+    return NodeLaneNoticeAvoidance(
+      child: NodeLaneGlassSurface(
+        elevated: true,
+        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (focused) ...[
+              NodeLaneIconButton(
+                tooltip: l.browser_web_tools,
+                icon: icons.web,
+                style: NodeLaneIconButtonStyle.plain,
+                onPressed: onFocus,
+              ),
+              SizedBox(
+                width:
+                    NodeLaneTokens.browserDisplayWidth -
+                    NodeLaneTokens.minTapTarget,
+                child: TranslationDisplaySwitch(
+                  translated: translated,
+                  onChanged: onDisplay,
+                ),
+              ),
+            ] else
+              action(l.browser_focus, icons.fullscreen, onFocus),
+            action(l.browser_clip_here, icons.bookmarkOutline, onClip),
+            if (onNext != null)
+              action(l.browser_next_chapter, icons.nextChapter, onNext),
+          ],
         ),
       ),
     );
@@ -486,7 +557,7 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
                     subtitle:
                         '${m.tabId != null
                             ? context.l10n.tabs
-                            : m.bookmark
+                            : m.bookmark != null
                             ? context.l10n.browser_bookmarks
                             : context.l10n.history} · ${Uri.parse(m.url).host}',
                     onTap: () => select(m),

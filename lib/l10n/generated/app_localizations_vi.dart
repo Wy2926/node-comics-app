@@ -10,6 +10,30 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get source_more_filters => 'Bộ lọc khác';
+
+  @override
+  String get browser_clip_here => 'Đánh dấu chỗ này';
+
+  @override
+  String get browser_clip_saved => 'Đã lưu vị trí đọc';
+
+  @override
+  String get browser_continue => 'Đọc tiếp';
+
+  @override
+  String get browser_focus => 'Đọc tập trung';
+
+  @override
+  String get browser_web_tools => 'Hiện công cụ trình duyệt';
+
+  @override
+  String get browser_open_reader => 'Mở trong trình đọc của ứng dụng';
+
+  @override
+  String get browser_next_chapter => 'Chương tiếp theo';
+
+  @override
   String get browser_protection => 'Bảo vệ trang web';
 
   @override
@@ -5934,13 +5958,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'Giá cả không được chỉ định';
-
-  @override
-  String get source_language_filter => 'Lọc theo ngôn ngữ';
-
-  @override
-  String get source_language_filter_hint =>
-      'Chỉ lọc danh mục này. Các nguồn được cài đặt không bị ảnh hưởng.';
 
   @override
   String get source_all_languages => 'Tất cả ngôn ngữ';

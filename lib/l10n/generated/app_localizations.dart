@@ -127,6 +127,54 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
+  /// No description provided for @source_more_filters.
+  ///
+  /// In en, this message translates to:
+  /// **'More filters'**
+  String get source_more_filters;
+
+  /// No description provided for @browser_clip_here.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark this spot'**
+  String get browser_clip_here;
+
+  /// No description provided for @browser_clip_saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading position saved'**
+  String get browser_clip_saved;
+
+  /// No description provided for @browser_continue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get browser_continue;
+
+  /// No description provided for @browser_focus.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus reading'**
+  String get browser_focus;
+
+  /// No description provided for @browser_web_tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Show browser tools'**
+  String get browser_web_tools;
+
+  /// No description provided for @browser_open_reader.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in the app reader'**
+  String get browser_open_reader;
+
+  /// No description provided for @browser_next_chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Next chapter'**
+  String get browser_next_chapter;
+
   /// No description provided for @browser_protection.
   ///
   /// In en, this message translates to:
@@ -10354,18 +10402,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pricing not specified'**
   String get source_pricing_unknown;
-
-  /// No description provided for @source_language_filter.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter by language'**
-  String get source_language_filter;
-
-  /// No description provided for @source_language_filter_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter this catalog only. Installed sources are unaffected.'**
-  String get source_language_filter_hint;
 
   /// No description provided for @source_all_languages.
   ///

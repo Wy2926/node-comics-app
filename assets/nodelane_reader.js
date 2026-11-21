@@ -21,7 +21,53 @@
   let input = null, output = null, observer, restoreTimer;
   const near = new Set();
   let viewport, margin, slots;
-  const ordered = () => slots ??= Array.from(document.querySelectorAll('img,canvas'));
+  const ordered = () => slots ??= Array.from(document.querySelectorAll('img:not([data-nodelane-overlay]),canvas:not([data-nodelane-overlay])'));
+  let reading = false, chapterPanel, hints, lastReading;
+  const chapterWords = /(?:\b(?:chapter|episode|capítulo|chapitre)\s*[#.: -]?\d|\/(?:chapters?|episodes?|read|reader)[/-]|第\s*[\d一二三四五六七八九十百]+\s*[话話章回]|\d+\s*[話화])/i;
+  function chapterHints() {
+    const targets = new Set();
+    for (const a of document.querySelectorAll('a[href]')) {
+      if (a.matches('[aria-disabled="true"],[download]') || a.closest('[hidden],[inert]')) continue;
+      const label = (a.getAttribute('aria-label') || a.getAttribute('title') || a.textContent).trim();
+      if (!/^(?:next (?:chapter|episode)\b|下(?:一)?[话話章回]|次(?:の(?:話|エピソード)|話)|다음\s*화|siguiente cap[íi]tulo|chapitre suivant)/i.test(label)) continue;
+      try {
+        const u = new URL(a.href);
+        if (/^https?:$/.test(u.protocol) && u.origin === location.origin && !u.username && !u.password &&
+            u.href.split('#')[0] !== location.href.split('#')[0]) targets.add(u.href);
+      } catch (_) {}
+    }
+    return {declared: targets.size > 0 || chapterWords.test(location.pathname+' '+document.title),
+      next: targets.size === 1 ? [...targets][0] : null};
+  }
+  function reportReading() {
+    hints ??= chapterHints();
+    if (!chapterPanel?.isConnected) {
+      chapterPanel = null;
+      for (const el of viewport ? near : ordered()) {
+        const marked = el.closest('[data-page-number],[role="doc-chapter"],[itemtype$="/ComicStory"],.reading-content,#readerarea');
+        if ((!marked && !hints.declared) || el.dataset.nodelaneOverlay || el.closest('nav,header,footer,aside')) continue;
+        const b = el.getBoundingClientRect();
+        // A height-fitted page in a landscape spread can be narrower than half the viewport.
+        if (b.width <= 0 || b.height <= 0 || (!marked && (b.width < Math.min(innerWidth, innerHeight) * .5 || b.height < innerHeight * .35)) ||
+            b.right <= 0 || b.left >= innerWidth ||
+            getComputedStyle(el).visibility !== 'visible' ||
+            (el.checkVisibility && !el.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}))) continue;
+        chapterPanel = el; break;
+      }
+    }
+    const chapterSeen = !!chapterPanel;
+    let end = chapterSeen && !!hints.next && scrollY + innerHeight >= document.documentElement.scrollHeight - innerHeight * .25;
+    for (let p=chapterPanel?.parentElement;end && p && p!==document.scrollingElement;p=p.parentElement) {
+      const style=getComputedStyle(p);
+      if (/^(auto|scroll)$/.test(style.overflowX) && Math.abs(p.scrollLeft)+p.clientWidth*1.25 < p.scrollWidth ||
+          /^(auto|scroll)$/.test(style.overflowY) && p.scrollTop+p.clientHeight*1.25 < p.scrollHeight) end=false;
+    }
+    const nextChapter = end ? hints.next : null;
+    const key = JSON.stringify([chapterSeen,nextChapter]);
+    if (lastReading === key) return;
+    lastReading = key;
+    Promise.resolve(send({token:config.token,seq:++seq,reading:{chapter:chapterSeen,nextChapter}})).catch(()=>{});
+  }
   function watch(node, added) {
     if (!(node instanceof Element)) return;
     const track = el => {
@@ -300,7 +346,9 @@
     }
   }
   async function scan() {
-    if (!active || disposed || document.visibilityState === 'hidden') return;
+    if (disposed || document.visibilityState === 'hidden') return;
+    if (reading) reportReading();
+    if (!active) return;
     const candidates = [];
     const elements = viewport ? near : ordered();
     for (const el of elements) {
@@ -330,25 +378,51 @@
     try { await send({token: config.token, seq: ++seq, items: selected}); } catch (_) {}
   }
   function schedule() {
-    if (!active || disposed || document.visibilityState === 'hidden') return;
+    if ((!active && !reading) || disposed || document.visibilityState === 'hidden') return;
     place();
     if (!timer) timer = setTimeout(() => { timer = null; scan(); }, 100);
   }
   function anchor() {
+    let fallback;
     for (const el of viewport ? near : ordered()) {
       const box=el.getBoundingClientRect();
       if (el.dataset.nodelaneOverlay || box.width<=0 || box.height<=0 || box.right<=0 || box.left>=innerWidth || box.bottom<innerHeight/2 || box.top>innerHeight/2) continue;
-      return {slot:ordered().indexOf(el), fraction:(innerHeight/2-box.top)/box.height, x:scrollX, y:scrollY};
+      if (el.checkVisibility && !el.checkVisibility({checkOpacity:true,checkVisibilityCSS:true})) continue;
+      const across=(innerWidth/2-box.left)/box.width;
+      const declared=Number(el.closest('[data-page-number]')?.getAttribute('data-page-number'));
+      const position={slot:ordered().indexOf(el), fraction:(innerHeight/2-box.top)/box.height, x:scrollX, y:scrollY,
+        ...(Number.isSafeInteger(declared) && declared>0 ? {page:declared} : {})};
+      if (across>=0 && across<=1) return {...position,across};
+      fallback ??= position;
     }
-    return {x:scrollX,y:scrollY};
+    return fallback || {x:scrollX,y:scrollY};
   }
   function cancelRestore() { clearTimeout(restoreTimer); }
   function restore(value, attempt=0) {
     cancelRestore();
-    const el=Number.isInteger(value.slot) && value.slot>=0 ? ordered()[value.slot] : null;
-    const box=el?.getBoundingClientRect();
-    const y=box?.height>0 && Number.isFinite(value.fraction) ? scrollY+box.top+Math.max(0,Math.min(1,value.fraction))*box.height-innerHeight/2 : value.y;
-    if (Number.isFinite(y) && Number.isFinite(value.x)) scrollTo(value.x,Math.max(0,y));
+    let el=Number.isInteger(value.slot) && value.slot>=0 ? ordered()[value.slot] : null;
+    if (Number.isSafeInteger(value.page) && value.page>0 && Number(el?.closest('[data-page-number]')?.dataset.pageNumber)!==value.page) {
+      const marked=document.querySelector(`[data-page-number="${value.page}"]`);
+      el=(marked?.matches('img,canvas') ? marked : marked?.querySelector('img,canvas')) ?? el;
+    }
+    let x=value.x, y=value.y;
+    if (el && el.getBoundingClientRect().height>0 && Number.isFinite(value.fraction)) {
+      const offsetY=b=>b.top+Math.max(0,Math.min(1,value.fraction))*b.height-innerHeight/2;
+      const offsetX=b=>Number.isFinite(value.across) ? b.left+value.across*b.width-innerWidth/2 : 0;
+      for (let p=el.parentElement;p && p!==document.scrollingElement;p=p.parentElement) {
+        const style=getComputedStyle(p);
+        const h=/^(auto|scroll)$/.test(style.overflowX) && p.scrollWidth>p.clientWidth;
+        const v=/^(auto|scroll)$/.test(style.overflowY) && p.scrollHeight>p.clientHeight;
+        if (h || v) {
+          const b=el.getBoundingClientRect();
+          p.scrollBy({left:h?offsetX(b):0,top:v?offsetY(b):0,behavior:'instant'});
+        }
+      }
+      const b=el.getBoundingClientRect();
+      if(Number.isFinite(value.across)) x=scrollX+offsetX(b);
+      y=scrollY+offsetY(b);
+    }
+    if (Number.isFinite(y) && Number.isFinite(x)) scrollTo(x,Math.max(0,y));
     if (attempt<4) restoreTimer=setTimeout(()=>restore(value,attempt+1),200);
   }
   async function call(token, operation, args) {
@@ -358,10 +432,12 @@
     if (operation === 'restore') { restore(args); return true; }
     if (operation === 'state') {
       active = args.active; translated = args.translated;
+      reading = args.reading === true;
+      if (!reading) lastReading = null;
       if (args.theme) theme=args.theme;
       if (args.items) { updateBadges(active ? args.items : []); updateMenus(active ? args.items : []); }
       if (!active) { cancelPress(); for (const id of [...menus.keys()]) dropMenu(id); input?.abort?.abort(); input = null; output = null; for (const id of [...overlays.keys()]) drop(id); for (const id of [...badges.keys()]) dropBadge(id); }
-      place(); if (active) schedule(); return true;
+      place(); if (active || reading) schedule(); return true;
     }
     if (!active) throw Error('BRIDGE_INVALID');
     if (operation === 'validate') { record(args.id, args.revision); return true; }
@@ -469,13 +545,21 @@
   addEventListener('scroll',cancelPress,{passive:true,capture:true});
   addEventListener('contextmenu',contextMenu,true); addEventListener('click',afterPress,true);
   observer = new MutationObserver(changes => {
+    if (hints && changes.some(c => {
+      const el = c.target.parentElement;
+      if (c.type === 'characterData') return el?.closest('a,title');
+      if (c.target.closest('[data-nodelane-overlay]')) return false;
+      if (c.type === 'attributes') return c.target.matches('a');
+      return c.target.closest('a,title') || [...c.addedNodes,...c.removedNodes].some(n =>
+        n instanceof Element && (n.matches('a,title') || n.querySelector('a[href],title')));
+    })) hints=null;
     for (const change of changes) if (change.type === 'childList') {
       change.removedNodes.forEach(node => watch(node,false));
       change.addedNodes.forEach(node => watch(node,true));
     }
     if (changes.some(change => !(change.target instanceof Element && change.target.closest('[data-nodelane-overlay]')))) schedule();
   });
-  observer.observe(document.documentElement, {subtree:true,childList:true,attributes:true,attributeFilter:['src','srcset','sizes','width','height','style','class']});
+  observer.observe(document.documentElement, {subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['src','srcset','sizes','width','height','style','class','href','aria-label','title','aria-disabled','hidden','inert']});
   watchViewport(); addEventListener('resize', watchViewport, {passive:true});
   const canvasTimer = setInterval(() => {
     if (active && [...records.values()].some(({el}) => el instanceof HTMLCanvasElement)) schedule();

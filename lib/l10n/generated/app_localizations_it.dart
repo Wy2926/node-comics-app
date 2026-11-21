@@ -10,6 +10,30 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String get source_more_filters => 'Altri filtri';
+
+  @override
+  String get browser_clip_here => 'Segna questo punto';
+
+  @override
+  String get browser_clip_saved => 'Posizione di lettura salvata';
+
+  @override
+  String get browser_continue => 'Continua a leggere';
+
+  @override
+  String get browser_focus => 'Lettura senza distrazioni';
+
+  @override
+  String get browser_web_tools => 'Mostra gli strumenti del browser';
+
+  @override
+  String get browser_open_reader => 'Apri nel lettore dell’app';
+
+  @override
+  String get browser_next_chapter => 'Capitolo successivo';
+
+  @override
   String get browser_protection => 'Protezione del sito';
 
   @override
@@ -5993,13 +6017,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'Prezzo non specificato';
-
-  @override
-  String get source_language_filter => 'Filtra per lingua';
-
-  @override
-  String get source_language_filter_hint =>
-      'Filtra solo questo catalogo. Le origini installate non sono interessate.';
 
   @override
   String get source_all_languages => 'Tutte le lingue';

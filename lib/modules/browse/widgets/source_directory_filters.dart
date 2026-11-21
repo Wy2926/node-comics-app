@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/source_catalog_metadata.dart';
 import 'package:mangayomi/modules/browse/widgets/source_catalog_labels.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/services/mobile_source_catalog.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 typedef DirectoryFilters = Map<DirectoryFacet, Set<String>>;
@@ -45,16 +42,17 @@ enum DirectoryFacet {
         price.name: sourcePricingLabel(price, type, l10n),
     },
   };
-
-  String summary(Set<String> values, AppLocalizations l10n, ItemType type) {
-    final labels = options(l10n, type, values);
-    return values.isEmpty
-        ? l10n.source_selected_count(0)
-        : values.map((code) => labels[code]!).join(', ');
-  }
 }
 
-extension DirectoryMatching on DirectoryFilters {
+extension DirectorySelection on DirectoryFilters {
+  DirectoryFilters toggle(DirectoryFacet facet, String value) {
+    final values = {...?this[facet]};
+    if (!values.remove(value)) values.add(value);
+    final result = {...this, facet: values};
+    if (values.isEmpty) result.remove(facet);
+    return result;
+  }
+
   bool matches(Source source, String keyword) {
     if (!(source.name ?? '').toLowerCase().contains(keyword)) return false;
     final languages = this[DirectoryFacet.language];
@@ -77,67 +75,25 @@ extension DirectoryMatching on DirectoryFilters {
   }
 }
 
-class SourceDirectoryFilterBar extends StatelessWidget {
-  const SourceDirectoryFilterBar({
+class SourceDirectoryFilterPanel extends StatefulWidget {
+  const SourceDirectoryFilterPanel({
     super.key,
     required this.filters,
     required this.type,
-    required this.onOpen,
+    required this.catalog,
+    required this.onChanged,
   });
   final DirectoryFilters filters;
   final ItemType type;
-  final ValueChanged<DirectoryFacet> onOpen;
-
+  final List<Source> catalog;
+  final ValueChanged<DirectoryFilters> onChanged;
   @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n, t = NodeLaneTokens.of(context);
-    return SingleChildScrollView(
-      key: const PageStorageKey('directory-filter-bar'),
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        spacing: NodeLaneTokens.space8,
-        children: [
-          for (final facet in DirectoryFacet.values)
-            ActionChip(
-              label: Text(switch (filters[facet]) {
-                null => facet.label(l10n),
-                final values when values.length == 1 =>
-                  '${facet.label(l10n)} · ${facet.summary(values, l10n, type)}',
-                final values => '${facet.label(l10n)} · ${values.length}',
-              }),
-              backgroundColor: filters.containsKey(facet)
-                  ? t.accentSoft
-                  : t.surface,
-              onPressed: () => onOpen(facet),
-            ),
-        ],
-      ),
-    );
-  }
+  State<SourceDirectoryFilterPanel> createState() => _DirectoryFilterState();
 }
 
-class SourceDirectoryFilterSheet extends ConsumerStatefulWidget {
-  const SourceDirectoryFilterSheet({
-    super.key,
-    required this.initial,
-    required this.facet,
-    required this.directory,
-    required this.keyword,
-  });
-  final DirectoryFilters initial;
-  final DirectoryFacet facet;
-  final (ItemType, bool) directory;
-  final String keyword;
-
-  @override
-  ConsumerState<SourceDirectoryFilterSheet> createState() =>
-      _SourceDirectoryFilterSheetState();
-}
-
-class _SourceDirectoryFilterSheetState
-    extends ConsumerState<SourceDirectoryFilterSheet> {
-  late final DirectoryFilters draft = {...widget.initial};
-  late DirectoryFacet facet = widget.facet;
+class _DirectoryFilterState extends State<SourceDirectoryFilterPanel> {
+  DirectoryFacet facet = DirectoryFacet.language;
+  bool more = false, searching = false;
   final search = TextEditingController();
 
   @override
@@ -149,131 +105,197 @@ class _SourceDirectoryFilterSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final catalog = ref.watch(mobileDirectorySourcesProvider(widget.directory));
+    final catalog = widget.catalog, filters = widget.filters;
     final language = facet == DirectoryFacet.language;
     final options = facet.options(
       l10n,
-      widget.directory.$1,
+      widget.type,
       language
           ? ({
-              ...?draft[facet],
+              ...?filters[facet],
               for (final s in catalog) (s.lang ?? '').toLowerCase(),
             }.toList()..sort())
           : const [],
     );
-    final defaults = <String>{
-      if (language)
-        for (final s in catalog)
-          if (s.isActive == true) (s.lang ?? '').toLowerCase(),
-    };
-    final selected = draft[facet] ?? defaults;
+    final selected = filters[facet] ?? const <String>{};
+    final allLanguages =
+        language && options.isNotEmpty && options.keys.every(selected.contains);
     final needle = search.text.trim().toLowerCase();
     final visible = options.entries.where(
       (o) => o.value.toLowerCase().contains(needle),
     );
-    final count = catalog.where((s) => draft.matches(s, widget.keyword)).length;
-    void choose(String code) => setState(() {
-      final next = {...(draft[facet] ?? defaults)};
-      if (!next.remove(code)) next.add(code);
-      if (!language && next.isEmpty) {
-        draft.remove(facet);
-      } else {
-        draft[facet] = next;
-      }
-    });
-    return NodeLaneCatalogSheet(
-      title: l10n.filter,
-      heightFactor: .9,
-      fitContent: true,
-      bottom: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Semantics(
-            liveRegion: true,
-            child: Text(
-              l10n.search_result_count(count),
-              style: NodeLaneTokens.of(context).readerLabel,
-            ),
-          ),
-          const SizedBox(height: NodeLaneTokens.space8),
-          NodeLaneModalActions(
-            actions: [
-              NodeLaneDialogAction(
-                label: l10n.action_clear,
-                secondary: true,
-                onPressed: draft.isEmpty
-                    ? null
-                    : () => setState(() {
-                        draft.clear();
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    return NodeLaneGroupSurface(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: NodeLaneTokens.space12,
+          vertical: NodeLaneTokens.space4,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              children: [
+                for (final group in [
+                  DirectoryFacet.language,
+                  DirectoryFacet.format,
+                  DirectoryFacet.pricing,
+                  if (more) ...[DirectoryFacet.region, DirectoryFacet.creation],
+                ])
+                  Semantics(
+                    selected: group == facet,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: group == facet ? t.accent : t.muted,
+                        textStyle: t.label,
+                      ),
+                      onPressed: () => setState(() {
+                        facet = group;
+                        searching = false;
                         search.clear();
                       }),
-              ),
-              NodeLaneDialogAction(
-                label: l10n.action_apply,
-                onPressed: () {
-                  if (ModalRoute.of(context)?.isCurrent == true) {
-                    Navigator.pop(context, draft);
-                  }
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        children: [
-          Text(
-            l10n.source_language_filter_hint,
-            style: NodeLaneTokens.of(context).readerSecondary,
-          ),
-          Wrap(
-            spacing: NodeLaneTokens.space8,
-            children: [
-              for (final group in DirectoryFacet.values)
-                ChoiceChip(
-                  label: Text(group.label(l10n)),
-                  selected: group == facet,
-                  onSelected: (_) => setState(() {
-                    facet = group;
-                    search.clear();
-                  }),
+                      child: Text(group.label(l10n)),
+                    ),
+                  ),
+                Semantics(
+                  expanded: more,
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: t.muted,
+                      textStyle: t.label,
+                    ),
+                    icon: Icon(
+                      more ? icons.up : icons.down,
+                      size: NodeLaneTokens.badgeIconSize,
+                    ),
+                    label: Text(l10n.source_more_filters),
+                    onPressed: () => setState(() {
+                      more = !more;
+                      if (!more &&
+                          (facet == DirectoryFacet.region ||
+                              facet == DirectoryFacet.creation)) {
+                        facet = DirectoryFacet.language;
+                      }
+                    }),
+                  ),
                 ),
-            ],
-          ),
-          const SizedBox(height: NodeLaneTokens.space8),
-          if (language) ...[
-            NodeLaneTextField.search(
-              controller: search,
-              hint: l10n.search_languages,
-              onChanged: (_) => setState(() {}),
+              ],
             ),
-            const SizedBox(height: NodeLaneTokens.space8),
+            if (language && searching)
+              NodeLaneTextField.search(
+                controller: search,
+                hint: l10n.search_languages,
+                onChanged: (_) => setState(() {}),
+              ),
+            SingleChildScrollView(
+              key: ValueKey(facet),
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                spacing: NodeLaneTokens.space4,
+                children: [
+                  if (needle.isEmpty)
+                    DirectoryFilterChoice(
+                      label: l10n.default0,
+                      selected: !filters.containsKey(facet),
+                      onPressed: () =>
+                          widget.onChanged({...filters}..remove(facet)),
+                    ),
+                  if (language)
+                    NodeLaneIconButton(
+                      icon: icons.search,
+                      tooltip: l10n.search_languages,
+                      style: NodeLaneIconButtonStyle.plain,
+                      onPressed: () => setState(() {
+                        searching = !searching;
+                        search.clear();
+                      }),
+                    ),
+                  if (language && needle.isEmpty && options.isNotEmpty)
+                    DirectoryFilterChoice(
+                      label: l10n.source_all_languages,
+                      selected: allLanguages,
+                      onPressed: () => widget.onChanged(
+                        allLanguages
+                            ? ({...filters}..remove(facet))
+                            : {...filters, facet: options.keys.toSet()},
+                      ),
+                    ),
+                  for (final option in visible)
+                    DirectoryFilterChoice(
+                      label: option.value,
+                      selected: selected.contains(option.key),
+                      onPressed: () =>
+                          widget.onChanged(filters.toggle(facet, option.key)),
+                    ),
+                  if (visible.isEmpty) Text(l10n.no_result, style: t.secondary),
+                ],
+              ),
+            ),
           ],
-          NodeLaneGroupSurface(
-            children: [
-              if (language && needle.isEmpty)
-                NodeLaneRow(
-                  title: l10n.source_all_languages,
-                  selected:
-                      options.isNotEmpty &&
-                      options.keys.every(selected.contains),
-                  onTap: () =>
-                      setState(() => draft[facet] = options.keys.toSet()),
-                ),
-              for (final option in visible)
-                NodeLaneRow(
-                  title: option.value,
-                  selected: selected.contains(option.key),
-                  onTap: () => choose(option.key),
-                ),
-              if (visible.isEmpty) NodeLaneRow(title: l10n.no_result),
-            ],
+        ),
+      ),
+    );
+  }
+}
+
+class DirectoryFilterChoice extends StatelessWidget {
+  const DirectoryFilterChoice({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+    this.remove = false,
+  });
+  final String label;
+  final bool selected, remove;
+  final VoidCallback onPressed;
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    return Semantics(
+      checked: remove ? null : selected,
+      child: TextButton(
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(
+            NodeLaneTokens.minTapTarget,
+            NodeLaneTokens.minTapTarget,
           ),
-        ],
+          foregroundColor: selected ? t.accent : t.ink,
+          textStyle: t.label,
+        ),
+        onPressed: onPressed,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: selected ? t.accentSoft : t.soft,
+            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: NodeLaneTokens.space8,
+              vertical: NodeLaneTokens.space4,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: NodeLaneTokens.space4,
+              children: [
+                if (!remove)
+                  Icon(
+                    selected ? icons.selected : icons.unselected,
+                    size: NodeLaneTokens.badgeIconSize,
+                  ),
+                Text(
+                  label,
+                  semanticsLabel: remove
+                      ? '${context.l10n.remove} · $label'
+                      : null,
+                ),
+                if (remove)
+                  Icon(icons.close, size: NodeLaneTokens.badgeIconSize),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

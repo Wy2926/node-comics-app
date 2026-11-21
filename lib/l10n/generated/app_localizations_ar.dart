@@ -10,6 +10,30 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get source_more_filters => 'المزيد من عوامل التصفية';
+
+  @override
+  String get browser_clip_here => 'ضع علامة هنا';
+
+  @override
+  String get browser_clip_saved => 'تم حفظ موضع القراءة';
+
+  @override
+  String get browser_continue => 'متابعة القراءة';
+
+  @override
+  String get browser_focus => 'القراءة دون تشتيت';
+
+  @override
+  String get browser_web_tools => 'إظهار أدوات المتصفح';
+
+  @override
+  String get browser_open_reader => 'فتح في قارئ التطبيق';
+
+  @override
+  String get browser_next_chapter => 'الفصل التالي';
+
+  @override
   String get browser_protection => 'حماية الموقع';
 
   @override
@@ -5890,13 +5914,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'التسعير غير محدد';
-
-  @override
-  String get source_language_filter => 'التصفية حسب اللغة';
-
-  @override
-  String get source_language_filter_hint =>
-      'قم بتصفية هذا الكتالوج فقط. المصادر المثبتة لا تتأثر.';
 
   @override
   String get source_all_languages => 'جميع اللغات';

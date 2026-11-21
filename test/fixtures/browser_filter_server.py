@@ -55,6 +55,22 @@ addEventListener('popstate', render);
 render();
 </script>"""
 
+def reading(chapter):
+    return (f'<!doctype html><meta name="viewport" content="width=device-width">'
+            f'<title>Fixture chapter {chapter}</title><style>*{{margin:0}}img{{width:100%;height:150vh;display:block}}'
+            'output{position:fixed;right:0;top:0;background:white}</style>'
+            + ''.join(f'<img data-page-number="{page}" alt="Panel {page}" src="/panel/{page}.svg">' for page in range(1,5))
+            + ('<a href="/read/2">Next chapter</a>' if chapter == '1' else 'End')
+            + '''<output></output><script>
+function report(){
+  for (const img of document.images){
+    const b=img.getBoundingClientRect(), f=(innerHeight/2-b.top)/b.height;
+    if(f>=0 && f<=1){document.querySelector('output').textContent=img.alt+' @ '+Math.round(100*f)+'%';break;}
+  }
+}
+addEventListener('scroll',report);addEventListener('resize',report);report();
+</script>''').encode()
+
 
 class Fixture(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -63,6 +79,15 @@ class Fixture(BaseHTTPRequestHandler):
             logged = 'audit=1' in self.headers.get('Cookie', '')
             body = f'<!doctype html><meta name="viewport" content="width=device-width"><title>Cookie fixture</title><p>Cookie {"present" if logged else "absent"}</p><a href="/cookie?login">Set test cookie</a>'.encode()
             mime = 'text/html'
+        elif path in ('/read/1','/read/2'):
+            body,mime = reading(path[-1]),'text/html'
+        elif path in [f'/panel/{n}.svg' for n in range(1,5)]:
+            n = int(path[7])
+            body = (f'<svg xmlns="http://www.w3.org/2000/svg" width="320" height="860" viewBox="0 0 320 860">'
+                    f'<rect width="320" height="860" fill="{["#e4ede7","#e4e8fb","#f9e4dd","#ddf3fa"][n-1]}"/>'
+                    + ''.join(f'<text x="24" y="{100+i*170}" font-size="22">Panel {n} / line {i+1}</text>' for i in range(5))
+                    + '</svg>').encode()
+            mime='image/svg+xml'
         elif path in ('/', '/chapter'):
             body, mime = PAGE, 'text/html'
         elif path == '/navigation':

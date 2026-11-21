@@ -10,6 +10,30 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get source_more_filters => 'その他の条件';
+
+  @override
+  String get browser_clip_here => 'ここにしおりを挟む';
+
+  @override
+  String get browser_clip_saved => '読書位置を保存しました';
+
+  @override
+  String get browser_continue => '続きを読む';
+
+  @override
+  String get browser_focus => '集中して読む';
+
+  @override
+  String get browser_web_tools => 'ブラウザのツールに戻る';
+
+  @override
+  String get browser_open_reader => 'アプリのリーダーで開く';
+
+  @override
+  String get browser_next_chapter => '次の話';
+
+  @override
   String get browser_protection => 'サイトの保護';
 
   @override
@@ -5723,13 +5747,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => '価格は指定されていない';
-
-  @override
-  String get source_language_filter => '言語によるフィルタリング';
-
-  @override
-  String get source_language_filter_hint =>
-      'このカタログのみをフィルタリングします。インストールされているソースは影響を受けません。';
 
   @override
   String get source_all_languages => 'すべての言語';

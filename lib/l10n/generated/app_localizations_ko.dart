@@ -10,6 +10,30 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
+  String get source_more_filters => '필터 더 보기';
+
+  @override
+  String get browser_clip_here => '여기에 책갈피 꽂기';
+
+  @override
+  String get browser_clip_saved => '읽던 위치를 저장했습니다';
+
+  @override
+  String get browser_continue => '이어서 읽기';
+
+  @override
+  String get browser_focus => '집중해서 읽기';
+
+  @override
+  String get browser_web_tools => '브라우저 도구로 돌아가기';
+
+  @override
+  String get browser_open_reader => '앱 리더로 열기';
+
+  @override
+  String get browser_next_chapter => '다음 화';
+
+  @override
   String get browser_protection => '사이트 보호';
 
   @override
@@ -5735,13 +5759,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => '가격이 지정되지 않았습니다.';
-
-  @override
-  String get source_language_filter => '언어별로 필터링';
-
-  @override
-  String get source_language_filter_hint =>
-      '이 카탈로그만 필터링하세요. 설치된 소스는 영향을 받지 않습니다.';
 
   @override
   String get source_all_languages => '모든 언어';

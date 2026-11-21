@@ -10,6 +10,30 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get source_more_filters => 'Другие фильтры';
+
+  @override
+  String get browser_clip_here => 'Поставить закладку здесь';
+
+  @override
+  String get browser_clip_saved => 'Место чтения сохранено';
+
+  @override
+  String get browser_continue => 'Продолжить чтение';
+
+  @override
+  String get browser_focus => 'Читать без отвлечений';
+
+  @override
+  String get browser_web_tools => 'Показать инструменты браузера';
+
+  @override
+  String get browser_open_reader => 'Открыть в читалке приложения';
+
+  @override
+  String get browser_next_chapter => 'Следующая глава';
+
+  @override
   String get browser_protection => 'Защита сайта';
 
   @override
@@ -6004,13 +6028,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'Цена не указана';
-
-  @override
-  String get source_language_filter => 'Фильтр по языку';
-
-  @override
-  String get source_language_filter_hint =>
-      'Фильтровать только этот каталог. Установленные источники не затрагиваются.';
 
   @override
   String get source_all_languages => 'Все языки';

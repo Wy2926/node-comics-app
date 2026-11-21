@@ -10,6 +10,30 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
+  String get source_more_filters => 'Інші фільтри';
+
+  @override
+  String get browser_clip_here => 'Додати закладку тут';
+
+  @override
+  String get browser_clip_saved => 'Місце читання збережено';
+
+  @override
+  String get browser_continue => 'Продовжити читання';
+
+  @override
+  String get browser_focus => 'Читати без відволікань';
+
+  @override
+  String get browser_web_tools => 'Показати інструменти браузера';
+
+  @override
+  String get browser_open_reader => 'Відкрити в читачі застосунку';
+
+  @override
+  String get browser_next_chapter => 'Наступний розділ';
+
+  @override
   String get browser_protection => 'Захист сайту';
 
   @override
@@ -5981,13 +6005,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get source_pricing_unknown => 'Ціна не вказана';
-
-  @override
-  String get source_language_filter => 'Фільтрувати за мовою';
-
-  @override
-  String get source_language_filter_hint =>
-      'Відфільтрувати лише цей каталог. Встановлені джерела не впливають.';
 
   @override
   String get source_all_languages => 'Усі мови';

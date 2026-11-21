@@ -37,6 +37,7 @@ import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/repositories/browser_reader_repository.dart';
 
 import 'translation_bridge.dart';
 import 'browser_url.dart';
@@ -67,6 +68,16 @@ class BrowserTab {
   bool _reattached = false;
   bool get isBlank => url.isEmpty;
   bool pageReady = false;
+  bool chapter = false;
+  String? nextChapter, focusOnChapter;
+  bool get focused => pageReady && chapter && focusOnChapter == url;
+  int document = 0;
+  void resetReading() {
+    document++;
+    chapter = pageReady = false;
+    nextChapter = null;
+  }
+
   bool readable = false,
       nativeBack = false,
       nativeForward = false,
@@ -78,9 +89,12 @@ class BrowserTab {
   final translation = TranslationViewController();
   BrowserPageController? controller;
   Future<Map<String, dynamic>?> Function()? captureAnchor;
+  Future<void> Function(Map<String, dynamic>?)? restoreAnchor;
+  ({String url, Map<String, dynamic> anchor})? pendingClip;
   Map<String, dynamic>? anchor;
   void visited(String value) {
     if (!isBrowserUrl(value)) return;
+    if (value != url && focusOnChapter != value) focusOnChapter = null;
     if (url.isNotEmpty && Uri.parse(value).origin != Uri.parse(url).origin) {
       translation.configure(showTranslation: false);
       iconUrl = null;
@@ -181,9 +195,11 @@ class MobileComicBrowser extends ConsumerStatefulWidget {
     required this.url,
     required this.title,
     this.tabId,
+    this.clipAnchor,
   });
   final String url, title;
   final String? tabId;
+  final Map<String, dynamic>? clipAnchor;
   @override
   ConsumerState<MobileComicBrowser> createState() => _MobileComicBrowserState();
 }
@@ -198,7 +214,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   Timer? _saveTimer;
   int _saveEpoch = 0;
   bool _editingTabs = false, _saveFailed = false;
-  bool foreground = true, ready = false;
+  bool foreground = true, ready = false, _inReader = false, _clipping = false;
+  bool get _visible => foreground && !_leaving && !_inReader;
   bool _useGecko = false, _restoreFailed = false;
   bool _leaving = false, _showingTabs = false, _clearingLogins = false;
   bool _savedOnExit = false;
@@ -279,6 +296,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         if (mounted) _tabLimit();
       });
     }
+    final anchor = BrowserPageEntry.readingPosition(widget.clipAnchor);
+    if (!atLimit && tab.url == widget.url && anchor != null) {
+      tab.pendingClip = (url: tab.url, anchor: anchor);
+    }
     active = tab.id;
     _retainView(tab);
     ready = true;
@@ -295,7 +316,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     for (final tab in tabs) {
       tab.translation.attach(service.runtime);
       tab.translation.configure(
-        foreground: foreground && !_leaving && tab.id == active && !tab.isBlank,
+        foreground: _visible && tab.id == active && !tab.isBlank,
       );
     }
   }
@@ -329,13 +350,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   }
 
   void _save() {
-    if (_editingTabs || _leaving || !ready) return;
+    if (_editingTabs || _leaving || _inReader || !ready) return;
     final epoch = ++_saveEpoch;
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 400), () async {
       final tab = current;
       if (tab != null && foreground) await _captureAnchor(tab);
-      if (!mounted || epoch != _saveEpoch) return;
+      if (!mounted || epoch != _saveEpoch || _inReader) return;
       try {
         await browserSessionStore.save(_entries);
         _saveFailed = false;
@@ -524,9 +545,27 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _showTabs();
   }
 
-  void _openAddress(String url) {
+  void _openAddress(String url, {Map<String, dynamic>? clipAnchor}) {
     final tab = current;
     if (tab == null || !isBrowserUrl(url)) return;
+    tab.pendingClip = clipAnchor == null
+        ? null
+        : (url: url, anchor: clipAnchor);
+    if (clipAnchor != null &&
+        tab.url == url &&
+        tab.pageReady &&
+        tab.restoreAnchor != null) {
+      tab.pendingClip = null;
+      tab.restoreAnchor!(clipAnchor).catchError((_) {
+        if (mounted && current == tab && tab.url == url) {
+          showNodeLaneNotice(
+            context.l10n.browser_action_failed,
+            kind: NodeLaneNoticeKind.error,
+          );
+        }
+      });
+      return;
+    }
     if (tab.needsRecreate || tab.controller == null) {
       tab.visited(url);
       tab.anchor = null;
@@ -548,11 +587,72 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     browserWebViewCache.remove(tab.id);
     setState(() {
       tab.viewGeneration++;
+      tab.resetReading();
       tab.loading = true;
-      tab.nativeBack = tab.nativeForward = tab.readable = tab.pageReady =
-          tab.needsRecreate = false;
+      tab.nativeBack = tab.nativeForward = tab.readable = tab.needsRecreate =
+          false;
     });
     _save();
+  }
+
+  Future<void> _clip(BrowserTab tab, {Map<String, dynamic>? position}) async {
+    if (_clipping || !tab.pageReady || current != tab) return;
+    final url = tab.url, document = tab.document, l = context.l10n;
+    bool samePage() =>
+        mounted &&
+        _visible &&
+        current == tab &&
+        tab.url == url &&
+        tab.document == document &&
+        tab.pageReady;
+    setState(() => _clipping = true);
+    try {
+      position ??= BrowserPageEntry.readingPosition(
+        await tab.captureAnchor?.call(),
+      );
+      if (!samePage()) return;
+      if (position == null) throw StateError('Reading position unavailable');
+      await browserLibraryStore.setBookmarked(
+        url,
+        tab.title,
+        true,
+        iconUrl: tab.iconUrl,
+        anchor: position,
+      );
+      if (samePage()) showNodeLaneNotice(l.browser_clip_saved);
+    } catch (_) {
+      if (samePage()) {
+        showNodeLaneNotice(
+          l.browser_save_failed,
+          kind: NodeLaneNoticeKind.error,
+          actionLabel: l.retry,
+          onAction: () {
+            if (samePage()) _clip(tab, position: position);
+          },
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _clipping = false);
+    }
+  }
+
+  Future<void> _toggleFocus(BrowserTab tab) async {
+    final old = tab.focused, document = tab.document;
+    bool currentPage() =>
+        mounted &&
+        _visible &&
+        current == tab &&
+        tab.document == document &&
+        tab.chapter &&
+        tab.pageReady;
+    final anchor = await tab.captureAnchor?.call();
+    if (!currentPage() || tab.focused != old) return;
+    setState(() => tab.focusOnChapter = old ? null : tab.url);
+    // A site may size its panels in vh. Resizing native chrome changes their height.
+    await WidgetsBinding.instance.endOfFrame;
+    if (currentPage() && tab.focused != old && anchor != null) {
+      await tab.restoreAnchor?.call(anchor).catchError((_) {});
+    }
   }
 
   Future<void> _showTabs() async {
@@ -609,9 +709,71 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     ),
   );
 
+  Future<void> _openReader(BrowserTab tab, BrowserReaderTarget target) async {
+    final document = tab.document;
+    await _captureAnchor(tab);
+    if (!mounted || current != tab || document != tab.document) return;
+    ++_saveEpoch;
+    _saveTimer?.cancel();
+    final snapshot = _entries;
+    await browserSessionStore.save(snapshot);
+    if (!mounted || current != tab || document != tab.document) return;
+    // The native reader can open its own browser route. Release these views first.
+    setState(() {
+      _inReader = true;
+      _mountedTabs.clear();
+    });
+    _attach();
+    try {
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) {
+        await context.push(
+          target.chapter ? '/mangaReaderView' : '/manga-reader/detail',
+          extra: target.id,
+        );
+      }
+    } finally {
+      if (mounted) {
+        final latest = browserSessionStore.entries;
+        if (!identical(latest, snapshot)) {
+          for (final t in tabs) {
+            t.translation.dispose();
+          }
+          tabs
+            ..clear()
+            ..addAll(latest.map(BrowserTab.fromJson).nonNulls);
+          active =
+              latest
+                      .where((entry) => entry['active'] == true)
+                      .firstOrNull?['id']
+                  as String? ??
+              tabs.firstOrNull?.id;
+        }
+        if (current case final resumed?) _retainView(resumed);
+        setState(() => _inReader = false);
+        _attach();
+        if (current?.isBlank != false) await _leave(toStart: true);
+      }
+    }
+  }
+
   Future<void> _showMenu(BuildContext anchor, BrowserTab tab) async {
     final l = context.l10n;
-    final pageUrl = tab.url;
+    final pageUrl = tab.url, document = tab.document;
+    bool samePage() =>
+        mounted &&
+        current == tab &&
+        tab.url == pageUrl &&
+        tab.document == document;
+    BrowserReaderTarget? target;
+    try {
+      target = await findBrowserReaderTarget(pageUrl);
+    } catch (_) {}
+    if (!samePage() ||
+        !anchor.mounted ||
+        ModalRoute.of(anchor)?.isCurrent != true) {
+      return;
+    }
     final bookmarked = browserLibraryStore.isBookmarked(tab.url);
     final action = await showBrowserPageMenu(
       anchor,
@@ -619,12 +781,24 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       bookmarked: bookmarked,
       pageReady: tab.readable,
       clearingLogins: _clearingLogins,
+      hasReader: target != null,
+      canClip: tab.pageReady,
     );
-    if (!mounted || action == null || current != tab || tab.url != pageUrl) {
+    if (!mounted || !samePage() || action == null) {
       return;
     }
     try {
       switch (action) {
+        case 'clip':
+          await _clip(tab);
+        case 'reader':
+          if (target == null) return;
+          final checked = await findBrowserReaderTarget(pageUrl);
+          if (!mounted || !samePage()) return;
+          if (checked != target || checked == null) {
+            throw StateError('Reader target changed');
+          }
+          await _openReader(tab, checked);
         case 'requestSource':
           await showSupportRequest(
             context,
@@ -644,14 +818,18 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
           );
         case 'bookmarks':
         case 'history':
-          final url = await showNodeLaneCatalogSheet<String>(
+          final bookmarks = action == 'bookmarks';
+          final entry = await MobileBrowserLibrarySheet.show(
             context,
-            MobileBrowserLibrarySheet(
-              store: browserLibraryStore,
-              bookmarks: action == 'bookmarks',
-            ),
+            store: browserLibraryStore,
+            bookmarks: bookmarks,
           );
-          if (mounted && url != null) _openAddress(url);
+          if (samePage() && entry != null) {
+            _openAddress(
+              entry.url,
+              clipAnchor: bookmarks ? entry.anchor : null,
+            );
+          }
         case 'find':
           setState(() => tab.findOpen = true);
         case 'copy':
@@ -802,7 +980,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     browserLibraryStore.removeListener(_libraryChanged);
     _saveTimer?.cancel();
     _addressFocus.dispose();
-    if (ready && !_savedOnExit) {
+    if (ready && !_savedOnExit && !_inReader) {
       browserSessionStore.save(_entries).catchError((_) {});
     }
     for (final tab in tabs) {
@@ -819,7 +997,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       canPop: _savedOnExit || tab == null,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && !_leaving) {
-          if (tab?.canMove(-1) == true) {
+          if (tab?.focused == true) {
+            _toggleFocus(tab!);
+          } else if (tab?.canMove(-1) == true) {
             _history(-1);
           } else {
             _leave();
@@ -830,7 +1010,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         child: Scaffold(
           body: Column(
             children: [
-              if (tab != null && !tab.isBlank)
+              if (tab != null && !tab.isBlank && !tab.focused)
                 MobileBrowserHeader(
                   key: ValueKey(tab.id),
                   url: tab.url,
@@ -844,7 +1024,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                         .where((t) => t.id == m.tabId)
                         .firstOrNull;
                     if (existing == null) {
-                      _openAddress(m.url);
+                      _openAddress(m.url, clipAnchor: m.bookmark?.anchor);
                     } else {
                       _select(existing);
                     }
@@ -910,19 +1090,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                               ),
                               offstage: item.id != active,
                               child: TickerMode(
-                                enabled:
-                                    foreground &&
-                                    !_leaving &&
-                                    item.id == active,
+                                enabled: _visible && item.id == active,
                                 child: ExcludeFocus(
                                   excluding: item.id != active,
                                   child: _BrowserTabView(
                                     tab: item,
                                     useGecko: _useGecko,
-                                    active:
-                                        foreground &&
-                                        !_leaving &&
-                                        item.id == active,
+                                    active: _visible && item.id == active,
                                     changed: () {
                                       if (mounted && item.id == active) {
                                         setState(() {});
@@ -937,11 +1111,56 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                 ),
                               ),
                             ),
+                          if (tab != null &&
+                              tab.chapter &&
+                              tab.pageReady &&
+                              !tab.findOpen &&
+                              MediaQuery.viewInsetsOf(context).bottom == 0)
+                            PositionedDirectional(
+                              bottom: NodeLaneTokens.space8,
+                              start: NodeLaneTokens.space8,
+                              end: NodeLaneTokens.space8,
+                              child: SafeArea(
+                                top: false,
+                                bottom: tab.focused,
+                                child: Center(
+                                  child: ListenableBuilder(
+                                    listenable: tab.translation,
+                                    builder: (context, _) =>
+                                        BrowserChapterTools(
+                                          focused: tab.focused,
+                                          translated:
+                                              tab.translation.showTranslation,
+                                          onFocus: () => _toggleFocus(tab),
+                                          onClip: _clipping
+                                              ? null
+                                              : () => _clip(tab),
+                                          onDisplay: (value) {
+                                            tab.translation.configure(
+                                              showTranslation: value,
+                                            );
+                                            _save();
+                                          },
+                                          onNext: tab.nextChapter == null
+                                              ? null
+                                              : () {
+                                                  final next = tab.nextChapter;
+                                                  if (next == null) return;
+                                                  tab.focusOnChapter =
+                                                      tab.focused ? next : null;
+                                                  _openAddress(next);
+                                                },
+                                        ),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
               ),
               if (tab != null &&
                   !tab.isBlank &&
+                  !tab.focused &&
                   MediaQuery.viewInsetsOf(context).bottom == 0)
                 ListenableBuilder(
                   listenable: tab.translation,
@@ -1143,7 +1362,9 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     if (identical(widget.tab.controller, page)) {
       widget.tab.controller = null;
       widget.tab.captureAnchor = null;
-      widget.tab.pageReady = widget.tab.readable = false;
+      widget.tab.restoreAnchor = null;
+      widget.tab.resetReading();
+      widget.tab.readable = false;
     }
     browserWebViewCache.release(lease);
     super.dispose();
@@ -1292,6 +1513,15 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       widget.tab.id,
       l10n: context.l10n,
       theme: translationImageTheme(context),
+      onReading: (chapter, next) {
+        if (!mounted ||
+            widget.tab.chapter == chapter && widget.tab.nextChapter == next) {
+          return;
+        }
+        widget.tab.chapter = chapter;
+        widget.tab.nextChapter = next;
+        widget.changed();
+      },
       onImageMenu: (target) async {
         if (!mounted || !widget.active || _imageMenuOpen) return;
         _imageMenuOpen = true;
@@ -1307,6 +1537,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       },
     );
     widget.tab.captureAnchor = bridge!.captureAnchor;
+    widget.tab.restoreAnchor = bridge!.restoreAnchor;
   }
 
   Widget _createGeckoView() {
@@ -1357,10 +1588,10 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
         if (isBrowserUrl(value) && tab.url != value) {
           navigation++;
           bridge?.navigate();
-          tab.visited(value as String);
+          _changeDocument(value as String);
+          tab.visited(value);
           if (tab.findOpen) _find(_clearFind);
           tab.findOpen = false;
-          tab.pageReady = false;
           if (tab.readable) _recordVisit();
           widget.changed();
         }
@@ -1489,6 +1720,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     onLoadStop: (controller, url) async {
       if (url == null || !mounted || loadError) return;
       final epoch = navigation;
+      if (widget.tab.url != url.toString()) _changeDocument(url.toString());
       widget.tab.visited(url.toString());
       final title = await controller.getTitle() ?? '';
       if (!mounted || epoch != navigation) return;
@@ -1512,6 +1744,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
           url.toString() == widget.tab.url) {
         return;
       }
+      _changeDocument(url.toString());
       widget.tab.visited(url.toString());
       if (widget.tab.findOpen) _find(_clearFind);
       widget.tab.findOpen = false;
@@ -1572,26 +1805,48 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     } catch (_) {}
   }
 
-  // A reader failure disables translation only; the native page and finder stay usable.
+  // A bridge failure must leave the original page and browser tools usable.
   Future<bool> _installReader(String url, {bool restore = false}) async {
     final tab = widget.tab, epoch = ++navigation;
     tab.pageReady = false;
     try {
       await bridge!.install(Uri.parse(url));
       if (!mounted || epoch != navigation) return false;
-      if (restore && (tab.anchor != null || restoreX != 0 || restoreY != 0)) {
+      final clip = tab.pendingClip;
+      if (clip != null && clip.url == url) {
+        await bridge!.restoreAnchor(clip.anchor);
+        if (!mounted || epoch != navigation) return false;
+        tab.pendingClip = null;
+      } else if (restore &&
+          (tab.anchor != null || restoreX != 0 || restoreY != 0)) {
+        final anchor =
+            tab.anchor ??
+            (gecko == null ? null : {'x': restoreX, 'y': restoreY});
         if (controller != null) {
           await controller!.scrollTo(x: restoreX, y: restoreY);
         }
         if (!mounted || epoch != navigation) return false;
-        await bridge!.restoreAnchor(
-          tab.anchor ?? (gecko == null ? null : {'x': restoreX, 'y': restoreY}),
-        );
+        await bridge!.restoreAnchor(anchor);
       }
       if (!mounted || epoch != navigation) return false;
       tab.pageReady = true;
     } catch (_) {
       if (!mounted || epoch != navigation) return false;
+      if (widget.active && tab.pendingClip?.url == url) {
+        showNodeLaneNotice(
+          context.l10n.browser_action_failed,
+          kind: NodeLaneNoticeKind.error,
+          actionLabel: context.l10n.retry,
+          onAction: () {
+            if (mounted &&
+                widget.active &&
+                tab.url == url &&
+                epoch == navigation) {
+              _installReader(url);
+            }
+          },
+        );
+      }
     }
     widget.changed();
     return true;
@@ -1609,6 +1864,15 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       loadingUrl = url;
     });
     bridge?.navigate();
+    _changeDocument(url);
+    widget.tab.readable = false;
+    if (url != null) widget.tab.visited(url);
+    widget.changed();
+  }
+
+  void _changeDocument(String? url) {
+    widget.tab.resetReading();
+    if (widget.tab.pendingClip?.url != url) widget.tab.pendingClip = null;
     if (url != widget.tab.url) {
       browserSessionStore.clearPreview(widget.tab.id);
       restoreX = restoreY = 0;
@@ -1616,9 +1880,6 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       widget.tab.x = widget.tab.y = 0;
       widget.tab.title = '';
     }
-    widget.tab.pageReady = widget.tab.readable = false;
-    if (url != null) widget.tab.visited(url);
-    widget.changed();
   }
 
   Future<void> _resumeDocument(InAppWebViewController controller) async {
@@ -1635,6 +1896,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       if (url == null || !isBrowserUrl(url.toString())) {
         throw StateError('Retained page unavailable');
       }
+      if (widget.tab.url != url.toString()) _changeDocument(url.toString());
       widget.tab.visited(url.toString());
       widget.tab.title = title ?? widget.tab.title;
       if (!isLoading) {
@@ -1668,11 +1930,12 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     navigation++;
     bridge?.navigate();
     if (recreate) browserWebViewCache.remove(widget.tab.id);
+    widget.tab.resetReading();
     setState(() {
       if (recreate) widget.tab.needsRecreate = true;
       loadError = lease.loadFailed = true;
       widget.tab.loading = false;
-      widget.tab.pageReady = widget.tab.readable = false;
+      widget.tab.readable = false;
     });
     _revealPage();
     widget.changed();

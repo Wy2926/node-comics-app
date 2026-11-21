@@ -115,6 +115,8 @@ Future<String?> showBrowserPageMenu(
   required bool bookmarked,
   required bool pageReady,
   required bool clearingLogins,
+  bool hasReader = false,
+  bool canClip = false,
 }) {
   final l = anchor.l10n, icons = NodeLaneIcons.of(anchor);
   PopupMenuItem<String> row(
@@ -172,6 +174,8 @@ Future<String?> showBrowserPageMenu(
     ),
     const PopupMenuDivider(),
     row('requestSource', l.feedback_source, icons.chat),
+    if (canClip) row('clip', l.browser_clip_here, icons.bookmarkOutline),
+    if (hasReader) row('reader', l.browser_open_reader, icons.manga),
     const PopupMenuDivider(),
     row('bookmarks', l.browser_bookmarks, icons.bookmarkOutline),
     row('history', l.history, icons.history),

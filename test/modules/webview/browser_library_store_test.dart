@@ -41,6 +41,64 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
+  test(
+    'clips upgrade an old bookmark, survive tab closure and a failed update',
+    () async {
+      const url = 'https://reader.example/chapter';
+      final vault = _FailingStorage({
+        BrowserLibraryStore.storageKey: jsonEncode({
+          'history': [],
+          'bookmarks': [
+            {'url': url, 'title': 'Old bookmark', 'time': '2026-01-01'},
+          ],
+        }),
+      })..fail = false;
+      FlutterSecureStoragePlatform.instance = vault;
+      final library = BrowserLibraryStore(), tabs = BrowserSessionStore();
+      await library.load();
+      expect(library.lastClip, isNull);
+      expect(library.isBookmarked(url), isTrue);
+      const anchor = {
+        'slot': 3,
+        'fraction': 0.72,
+        'x': 0,
+        'y': 2980,
+        'page': 4,
+      };
+      await library.setBookmarked(
+        url,
+        'Chapter four',
+        true,
+        anchor: {...anchor, 'src': 'not retained'},
+      );
+      expect(library.bookmarks.single.anchor, anchor);
+      await tabs.save([
+        {'id': 'clip', 'url': url},
+      ]);
+      await tabs.close('clip');
+      vault.fail = true;
+      await expectLater(
+        library.setBookmarked(url, 'Moved', true, anchor: {'x': 0, 'y': 1}),
+        throwsA(isA<PlatformException>()),
+      );
+      expect(library.lastClip?.anchor, anchor);
+      final reopened = BrowserLibraryStore();
+      await reopened.load();
+      expect(reopened.lastClip?.anchor, anchor);
+      vault.fail = false;
+      await reopened.setBookmarked(
+        url,
+        'Moved',
+        true,
+        anchor: {'x': 0, 'y': 1},
+      );
+      await reopened.setBookmarked('https://other.example', 'Other', true);
+      expect(reopened.lastClip?.anchor, {'x': 0, 'y': 1});
+      await reopened.setBookmarked(url, 'Moved', false);
+      expect(reopened.lastClip, isNull);
+    },
+  );
+
   test('tab snapshots recover read/write failures and round-trip twenty long histories', () async {
     final old = {'id': 'old', 'url': 'https://example.org/old', 'title': 'old'};
     final vault = _FailingStorage({
@@ -208,7 +266,13 @@ void main() {
       'Tomorrow',
       time: day.add(const Duration(days: 1)),
     );
-    await store.setBookmarked('https://example.org/b', 'B', true);
+    const anchor = {'x': 0, 'y': 310};
+    await store.setBookmarked(
+      'https://example.org/b',
+      'B',
+      true,
+      anchor: anchor,
+    );
     await store.setEngine(BrowserSearchEngine.bing);
     final restored = BrowserLibraryStore();
     await restored.load();
@@ -218,12 +282,11 @@ void main() {
       'B',
     ]);
     expect(restored.engine, BrowserSearchEngine.bing);
-    expect(restored.isBookmarked('https://example.org/b'), isTrue);
     final matches = restored.matches('example.org', [
       {'id': 'live', 'url': 'https://example.org/a', 'title': 'Live'},
     ]).toList();
     expect(matches.map((m) => m.tabId), ['live', null]);
-    expect(matches.last.bookmark, isTrue);
+    expect(matches.last.bookmark?.anchor, anchor);
     await restored.removeHistory(restored.history[1]);
     expect(restored.history.map((e) => e.title), ['Tomorrow', 'B']);
     await restored.clearHistory();

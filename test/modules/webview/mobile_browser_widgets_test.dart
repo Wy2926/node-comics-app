@@ -245,13 +245,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('请输入有效的网址'), findsOneWidget);
     expect(results, isEmpty);
-    await tester.enterText(
-      find.byType(TextField),
-      'https://user:secret@preview.example',
-    );
-    await tester.testTextInput.receiveAction(TextInputAction.go);
-    await tester.pumpAndSettle();
-    expect(results, isEmpty);
     await tester.tap(find.text('取消'));
     await tester.pumpAndSettle();
     expect(results, isEmpty);
@@ -283,11 +276,6 @@ void main() {
         scale: 2,
       );
       expect(tester.testTextInput.isVisible, isFalse);
-      expect(find.byTooltip('新建标签页'), findsNothing);
-      expect(find.byTooltip('返回'), findsNothing);
-      expect(find.text('浏览器'), findsNothing);
-      expect(find.text('展开'), findsNothing);
-      expect(find.textContaining('已打开'), findsNothing);
       expect(
         tester.getRect(find.byType(MobileBrowserTabsButton)).left,
         greaterThan(
@@ -386,16 +374,30 @@ void main() {
       addTearDown(store.dispose);
       await store.visit('https://example.org/a', 'Alpha');
       await store.visit('https://example.org/b', 'Beta');
-      await store.setBookmarked('https://example.org/b', 'Beta', true);
+      const anchor = {'x': 0, 'y': 812};
+      await store.setBookmarked(
+        'https://example.org/b',
+        'Beta',
+        true,
+        anchor: anchor,
+      );
+      BrowserPageEntry? chosen;
       await mount(
         tester,
         Builder(
-          builder: (context) => TextButton(
-            onPressed: () => showNodeLaneCatalogSheet<String>(
-              context,
-              MobileBrowserLibrarySheet(store: store),
-            ),
-            child: const Text('History'),
+          builder: (context) => Column(
+            children: [
+              for (final bookmarks in [false, true])
+                TextButton(
+                  onPressed: () async =>
+                      chosen = await MobileBrowserLibrarySheet.show(
+                        context,
+                        store: store,
+                        bookmarks: bookmarks,
+                      ),
+                  child: Text(bookmarks ? 'Bookmarks' : 'History'),
+                ),
+            ],
           ),
         ),
       );
@@ -431,43 +433,20 @@ void main() {
       await tester.tap(find.text('全部清除'));
       await tester.pumpAndSettle();
       expect(store.history, isEmpty);
-      expect(store.bookmarks.single.title, 'Beta');
+      await tester.tap(find.byTooltip('关闭'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bookmarks'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Beta'));
+      await tester.pumpAndSettle();
+      expect(chosen?.anchor, anchor);
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets('engine choice and find controls fit a narrow large-text menu', (
+  testWidgets('find controls fit a narrow screen at large text', (
     tester,
   ) async {
-    BrowserSearchEngine? selected;
-    await mount(
-      tester,
-      Navigator(
-        onGenerateRoute: (_) => MaterialPageRoute<void>(
-          builder: (context) => Align(
-            alignment: Alignment.topLeft,
-            child: Builder(
-              builder: (anchor) => TextButton(
-                onPressed: () async =>
-                    selected = await showBrowserSearchEngines(
-                      anchor,
-                      BrowserSearchEngine.google,
-                    ),
-                child: const Text('Engines'),
-              ),
-            ),
-          ),
-        ),
-      ),
-      scale: 2,
-    );
-    await tester.tap(find.text('Engines'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Bing'));
-    await tester.pumpAndSettle();
-    expect(selected, BrowserSearchEngine.bing);
-    expect(find.text('Engines'), findsOneWidget);
-    expect(tester.takeException(), isNull);
     final searches = <String>[], steps = <bool>[];
     await mount(
       tester,

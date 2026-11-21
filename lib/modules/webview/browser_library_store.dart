@@ -13,7 +13,7 @@ typedef BrowserMatch = ({
   String title,
   String url,
   String? tabId,
-  bool bookmark,
+  BrowserPageEntry? bookmark,
 });
 
 class BrowserPageEntry {
@@ -22,10 +22,37 @@ class BrowserPageEntry {
     required this.title,
     required this.time,
     this.iconUrl,
+    this.anchor,
   });
   final String url, title;
   final DateTime time;
   final String? iconUrl;
+  final Map<String, dynamic>? anchor;
+
+  // Persist only coordinates and the declared page number, never DOM or image URLs.
+  static Map<String, dynamic>? readingPosition(dynamic raw) {
+    if (raw is! Map ||
+        raw['x'] is! num ||
+        raw['y'] is! num ||
+        !(raw['x'] as num).isFinite ||
+        !(raw['y'] as num).isFinite) {
+      return null;
+    }
+    return Map.unmodifiable({
+      'x': raw['x'],
+      'y': raw['y'],
+      if (raw['slot'] is int &&
+          raw['slot'] >= 0 &&
+          raw['fraction'] is num &&
+          (raw['fraction'] as num).isFinite) ...{
+        'slot': raw['slot'],
+        'fraction': (raw['fraction'] as num).clamp(0, 1),
+        if (raw['across'] is num && (raw['across'] as num).isFinite)
+          'across': (raw['across'] as num).clamp(0, 1),
+      },
+      if (raw['page'] is int && raw['page'] > 0) 'page': raw['page'],
+    });
+  }
 
   String get host => Uri.parse(url).host;
   String get displayTitle => title.isEmpty ? host : title;
@@ -38,6 +65,7 @@ class BrowserPageEntry {
     'title': title,
     'time': time.toIso8601String(),
     if (isBrowserUrl(iconUrl)) 'iconUrl': iconUrl,
+    if (anchor != null) 'anchor': anchor,
   };
 
   static BrowserPageEntry? fromJson(dynamic value) {
@@ -48,6 +76,7 @@ class BrowserPageEntry {
       url: value['url'] as String,
       title: value['title'] is String ? value['title'] as String : '',
       time: time,
+      anchor: readingPosition(value['anchor']),
       iconUrl: isBrowserUrl(value['iconUrl'])
           ? value['iconUrl'] as String
           : null,
@@ -68,6 +97,8 @@ class BrowserLibraryStore extends ChangeNotifier {
   List<BrowserPageEntry> get bookmarks => List.unmodifiable(_bookmarks);
   BrowserSearchEngine get engine => _engine;
   bool isBookmarked(String url) => _bookmarks.any((e) => e.url == url);
+  BrowserPageEntry? get lastClip =>
+      _bookmarks.where((e) => e.anchor != null).firstOrNull;
 
   Iterable<BrowserMatch> matches(
     String query,
@@ -87,7 +118,7 @@ class BrowserLibraryStore extends ChangeNotifier {
           url: url,
           title: title,
           tabId: t['id'] as String,
-          bookmark: false,
+          bookmark: null,
         );
       }
     }
@@ -98,7 +129,7 @@ class BrowserLibraryStore extends ChangeNotifier {
             url: e.url,
             title: e.displayTitle,
             tabId: null,
-            bookmark: identical(entries, _bookmarks),
+            bookmark: identical(entries, _bookmarks) ? e : null,
           );
         }
       }
@@ -201,8 +232,13 @@ class BrowserLibraryStore extends ChangeNotifier {
     String title,
     bool saved, {
     String? iconUrl,
+    Map<String, dynamic>? anchor,
   }) {
     if (!isBrowserUrl(url)) return Future.value();
+    final position = BrowserPageEntry.readingPosition(anchor);
+    if (anchor != null && position == null) {
+      throw const FormatException('Invalid reading position');
+    }
     return _change(
       bookmarks: () => [
         if (saved)
@@ -210,6 +246,7 @@ class BrowserLibraryStore extends ChangeNotifier {
             url: url,
             title: title,
             time: DateTime.now(),
+            anchor: position,
             iconUrl: isBrowserUrl(iconUrl) ? iconUrl : null,
           ),
         ..._bookmarks.where((e) => e.url != url),

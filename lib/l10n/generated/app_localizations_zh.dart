@@ -10,6 +10,30 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get source_more_filters => '更多条件';
+
+  @override
+  String get browser_clip_here => '夹在这里';
+
+  @override
+  String get browser_clip_saved => '已夹好，可从「继续读」回来';
+
+  @override
+  String get browser_continue => '继续读';
+
+  @override
+  String get browser_focus => '专注阅读';
+
+  @override
+  String get browser_web_tools => '返回网页工具';
+
+  @override
+  String get browser_open_reader => '用 App 阅读器打开';
+
+  @override
+  String get browser_next_chapter => '下一话';
+
+  @override
   String get browser_protection => '站点保护';
 
   @override
@@ -5553,12 +5577,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source_pricing_unknown => '收费未标注';
 
   @override
-  String get source_language_filter => '语言筛选';
-
-  @override
-  String get source_language_filter_hint => '仅筛选当前目录，不影响已安装来源';
-
-  @override
   String get source_all_languages => '全部语言';
 
   @override
@@ -6108,6 +6126,30 @@ class AppLocalizationsZh extends AppLocalizations {
 /// The translations for Chinese, using the Han script (`zh_Hant`).
 class AppLocalizationsZhHant extends AppLocalizationsZh {
   AppLocalizationsZhHant() : super('zh_Hant');
+
+  @override
+  String get source_more_filters => '更多條件';
+
+  @override
+  String get browser_clip_here => '夾在這裡';
+
+  @override
+  String get browser_clip_saved => '已夾好，可從「繼續讀」回來';
+
+  @override
+  String get browser_continue => '繼續讀';
+
+  @override
+  String get browser_focus => '專注閱讀';
+
+  @override
+  String get browser_web_tools => '返回網頁工具';
+
+  @override
+  String get browser_open_reader => '用 App 閱讀器開啟';
+
+  @override
+  String get browser_next_chapter => '下一話';
 
   @override
   String get browser_protection => '網站防護';
@@ -11653,12 +11695,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get source_pricing_unknown => '收費未標註';
-
-  @override
-  String get source_language_filter => '語言篩選';
-
-  @override
-  String get source_language_filter_hint => '僅篩選當前目錄，不影響已安裝來源';
 
   @override
   String get source_all_languages => '全部語言';

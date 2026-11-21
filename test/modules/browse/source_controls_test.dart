@@ -92,45 +92,6 @@ void main() {
   );
 
   testWidgets(
-    'language reset means all languages and empty selection is explicit',
-    (tester) async {
-      Set<String>? result;
-      await mount(
-        tester,
-        Builder(
-          builder: (context) => TextButton(
-            onPressed: () async {
-              result = await showSourceMultiChoice(
-                context,
-                title: '语言筛选',
-                current: <String>{},
-                allLabel: '全部语言',
-                reset: true,
-                options: const [
-                  SourceOption('en', 'English'),
-                  SourceOption('ja', '日本語'),
-                ],
-              );
-            },
-            child: const Text('打开'),
-          ),
-        ),
-      );
-      await tester.tap(find.text('打开'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('保存'));
-      await tester.pumpAndSettle();
-      expect(result, isEmpty);
-      await tester.tap(find.text('打开'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('重置'));
-      await tester.tap(find.text('保存'));
-      await tester.pumpAndSettle();
-      expect(result, {'en', 'ja'});
-    },
-  );
-
-  testWidgets(
     'text sheet keeps its draft above keyboard and cancel never returns a value',
     (tester) async {
       String? result;
