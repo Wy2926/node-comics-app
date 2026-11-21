@@ -3787,9 +3787,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get increase => 'Увеличить';
 
   @override
-  String get chapter_swipe_actions => 'Действия при свайпе главы';
-
-  @override
   String get chapter_swipe_start => 'Свайп вправо';
 
   @override
@@ -4262,9 +4259,6 @@ class AppLocalizationsRu extends AppLocalizations {
       'Операция не завершилась. Некоторые работы или файлы могли быть обработаны. Закройте это диалоговое окно и проверьте свою книжную полку и загрузки, прежде чем продолжить.';
 
   @override
-  String get bookshelf_processing => 'Обработка…';
-
-  @override
   String get bookshelf_mark_read => 'Отметить как прочитанное';
 
   @override
@@ -4634,10 +4628,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Просмотр избранных работ';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Выберите локальный файл, чтобы добавить его на свою книжную полку.';
 
   @override
   String get bookshelf_import_canceled_hint =>

@@ -3748,9 +3748,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get increase => 'Tambah';
 
   @override
-  String get chapter_swipe_actions => 'Aksi usap bab';
-
-  @override
   String get chapter_swipe_start => 'Usap ke kanan';
 
   @override
@@ -4222,9 +4219,6 @@ class AppLocalizationsId extends AppLocalizations {
       'Operasinya belum selesai. Beberapa karya atau file mungkin telah diproses. Tutup dialog ini dan periksa rak buku dan unduhan Anda sebelum melanjutkan.';
 
   @override
-  String get bookshelf_processing => 'Memproses…';
-
-  @override
   String get bookshelf_mark_read => 'Tandai sudah dibaca';
 
   @override
@@ -4594,10 +4588,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Melihat karya yang dipilih';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Pilih file lokal untuk ditambahkan ke rak buku Anda.';
 
   @override
   String get bookshelf_import_canceled_hint =>

@@ -25,8 +25,13 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+
+import 'edit_code.dart';
+import 'widgets/create_extension.dart';
 
 class ExtensionDetail extends ConsumerStatefulWidget {
   final Source source;
@@ -60,10 +65,15 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
   }
 
   Future<void> _editCode() async {
-    final res = await context.push('/codeEditor', extra: source.id);
+    final res = NodeLaneBubbleFlow.contains(context)
+        ? await NodeLaneBubbleFlow.push<Source>(
+            context,
+            CodeEditorPage(sourceId: source.id),
+          )
+        : await context.push<Source>('/codeEditor', extra: source.id);
     if (res != null && mounted) {
       setState(() {
-        source = res as Source;
+        source = res;
         sourcePreference = getSourcePreference(source: source)
             .map((e) => getSourcePreferenceEntry(e.key!, source.id!))
             .toList();
@@ -72,8 +82,13 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
   }
 
   Future<void> _editMetadata() async {
-    final res = await context.push('/createExtension', extra: source);
-    if (res != null && mounted) setState(() => source = res as Source);
+    final res = NodeLaneBubbleFlow.contains(context)
+        ? await NodeLaneBubbleFlow.push<Source>(
+            context,
+            CreateExtension(editSource: source),
+          )
+        : await context.push<Source>('/createExtension', extra: source);
+    if (res != null && mounted) setState(() => source = res);
   }
 
   bool _busy = false;

@@ -3588,9 +3588,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get increase => '增加';
 
   @override
-  String get chapter_swipe_actions => '章节滑动操作';
-
-  @override
   String get chapter_swipe_start => '向右滑动';
 
   @override
@@ -4018,9 +4015,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '操作未完成，部分作品或文件可能已处理。请关闭后先核对书架和下载记录，再继续操作。';
 
   @override
-  String get bookshelf_processing => '正在处理…';
-
-  @override
   String get bookshelf_mark_read => '标为已读';
 
   @override
@@ -4353,9 +4347,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => '查看所选作品';
-
-  @override
-  String get bookshelf_import_formats => '选择本地文件，将作品加入书架。';
 
   @override
   String get bookshelf_import_canceled_hint => '取消文件选择后，可继续重新选择。';
@@ -9711,9 +9702,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get increase => '增加';
 
   @override
-  String get chapter_swipe_actions => '章節滑動操作';
-
-  @override
   String get chapter_swipe_start => '向右滑動';
 
   @override
@@ -10141,9 +10129,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '操作未完成，部分作品或檔案可能已處理。請關閉後先核對書架和下載記錄，再繼續操作。';
 
   @override
-  String get bookshelf_processing => '正在處理…';
-
-  @override
   String get bookshelf_mark_read => '標為已讀';
 
   @override
@@ -10476,9 +10461,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get bookshelf_view_selection => '檢視所選作品';
-
-  @override
-  String get bookshelf_import_formats => '選擇本地檔案，將作品加入書架。';
 
   @override
   String get bookshelf_import_canceled_hint => '取消檔案選擇後，可繼續重新選擇。';

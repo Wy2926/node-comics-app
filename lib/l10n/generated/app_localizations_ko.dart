@@ -3652,9 +3652,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get increase => '증가';
 
   @override
-  String get chapter_swipe_actions => '화 스와이프 동작';
-
-  @override
   String get chapter_swipe_start => '오른쪽으로 밀기';
 
   @override
@@ -4110,9 +4107,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '작업이 완료되지 않았습니다. 일부 작품이나 파일이 처리되었을 수 있습니다. 계속하기 전에 이 대화 상자를 닫고 책장과 다운로드를 확인하세요.';
 
   @override
-  String get bookshelf_processing => '처리 중…';
-
-  @override
   String get bookshelf_mark_read => '마크 읽기';
 
   @override
@@ -4465,9 +4459,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => '선택한 작품 보기';
-
-  @override
-  String get bookshelf_import_formats => '책장에 추가할 로컬 파일을 선택하세요.';
 
   @override
   String get bookshelf_import_canceled_hint => '파일 선택을 취소한 후 다시 선택할 수 있습니다.';

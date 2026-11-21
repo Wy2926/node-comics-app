@@ -12,17 +12,14 @@ import 'mobile_detail_actions.dart';
 
 /// The range is resolved against the current chapter filter at selection time.
 class DownloadQuickMenu extends StatelessWidget {
-  final ItemType itemType;
   final Manga manga;
   final bool hasChapters;
-  final Future<void> Function(BuildContext context, List<Chapter> chapters)
-  onDownload;
+  final Future<void> Function(List<Chapter>) onDownload;
 
   const DownloadQuickMenu({
     super.key,
-    required this.itemType,
     required this.manga,
-    this.hasChapters = true,
+    required this.hasChapters,
     required this.onDownload,
   });
 
@@ -32,10 +29,10 @@ class DownloadQuickMenu extends StatelessWidget {
     if (isMobile && !isTv) {
       return MobileMangaDownloadActionsButton(
         key: ValueKey(manga.id),
-        episodes: itemType == ItemType.anime,
+        episodes: manga.itemType == ItemType.anime,
         bookTitle: manga.name ?? '',
         hasChapters: hasChapters,
-        onSelected: (value) => _download(context, value),
+        onSelected: _download,
       );
     }
     return PopupMenuButton(
@@ -45,25 +42,25 @@ class DownloadQuickMenu extends StatelessWidget {
       itemBuilder: (_) => [
         for (final (i, label) in downloadRangeLabels(
           l10n,
-          episodes: itemType == ItemType.anime,
+          episodes: manga.itemType == ItemType.anime,
         ).indexed)
           PopupMenuItem<int>(value: i, child: Text(label)),
       ],
-      onSelected: (value) => _download(context, value),
+      onSelected: _download,
     );
   }
 
-  Future<void> _download(BuildContext context, int value) async {
+  Future<void> _download(int value) {
     final chapters = manga.getFilteredChapters();
-    final chaptersToDownload = value <= 3
+    final chaptersToDownload = value < nextDownloadCounts.length
         ? selectNextDownloads(
             chapters,
-            count: [1, 5, 10, 25][value],
+            count: nextDownloadCounts[value],
             downloads: downloadRepository.getAll(),
           )
         : chapters
               .where((chapter) => value == 5 || chapter.isRead != true)
               .toList();
-    await onDownload(context, chaptersToDownload);
+    return onDownload(chaptersToDownload);
   }
 }

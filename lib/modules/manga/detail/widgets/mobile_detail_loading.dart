@@ -28,9 +28,15 @@ class MobileDetailLoadingPage extends StatelessWidget {
                 metadata: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    NodeLaneSkeleton(height: NodeLaneTokens.space12, width: 96),
+                    NodeLaneSkeleton(
+                      height: NodeLaneTokens.space12,
+                      width: NodeLaneTokens.skeletonLabelWidth,
+                    ),
                     SizedBox(height: NodeLaneTokens.space12),
-                    NodeLaneSkeleton(height: NodeLaneTokens.space12, width: 64),
+                    NodeLaneSkeleton(
+                      height: NodeLaneTokens.space12,
+                      width: NodeLaneTokens.skeletonValueWidth,
+                    ),
                   ],
                 ),
               ),
@@ -44,9 +50,8 @@ class MobileDetailLoadingPage extends StatelessWidget {
                   radius: NodeLaneTokens.capsuleRadius,
                 ),
               ),
-              synopsis: MobileDetailSynopsisLoading(),
-              more: NodeLaneSkeleton(height: NodeLaneTokens.minTapTarget),
             ),
+            information: const MobileDetailSynopsisLoading(),
             chapterHeading: Text(
               context.l10n.detail_loading_chapters,
               style: NodeLaneTokens.of(context).detailSectionTitle,
@@ -83,9 +88,15 @@ class MobileDetailSynopsisLoading extends StatelessWidget {
           ],
           const Row(
             children: [
-              NodeLaneSkeleton(height: NodeLaneTokens.space20, width: 64),
+              NodeLaneSkeleton(
+                height: NodeLaneTokens.space20,
+                width: NodeLaneTokens.skeletonValueWidth,
+              ),
               SizedBox(width: NodeLaneTokens.space8),
-              NodeLaneSkeleton(height: NodeLaneTokens.space20, width: 64),
+              NodeLaneSkeleton(
+                height: NodeLaneTokens.space20,
+                width: NodeLaneTokens.skeletonValueWidth,
+              ),
             ],
           ),
         ],

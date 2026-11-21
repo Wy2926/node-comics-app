@@ -6684,12 +6684,6 @@ abstract class AppLocalizations {
   /// **'Increase'**
   String get increase;
 
-  /// No description provided for @chapter_swipe_actions.
-  ///
-  /// In en, this message translates to:
-  /// **'Chapter swipe actions'**
-  String get chapter_swipe_actions;
-
   /// No description provided for @chapter_swipe_start.
   ///
   /// In en, this message translates to:
@@ -7499,12 +7493,6 @@ abstract class AppLocalizations {
   /// **'The operation did not finish. Some works or files may have been processed. Close this dialog and check your bookshelf and downloads before continuing.'**
   String get bookshelf_remove_incomplete;
 
-  /// No description provided for @bookshelf_processing.
-  ///
-  /// In en, this message translates to:
-  /// **'Processing…'**
-  String get bookshelf_processing;
-
   /// No description provided for @bookshelf_mark_read.
   ///
   /// In en, this message translates to:
@@ -8056,12 +8044,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View selected works'**
   String get bookshelf_view_selection;
-
-  /// No description provided for @bookshelf_import_formats.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a local file to add it to your bookshelf.'**
-  String get bookshelf_import_formats;
 
   /// No description provided for @bookshelf_import_canceled_hint.
   ///

@@ -640,28 +640,21 @@ class MangasListState extends _$MangasListState {
   Set<int> build() => {};
 
   void update(Manga value) {
-    var newSet = Set<int>.from(state);
-    if (newSet.contains(value.id)) {
-      newSet.remove(value.id);
-    } else {
-      newSet.add(value.id!);
-    }
-    if (newSet.isEmpty) {
+    invert([value]);
+    if (state.isEmpty) {
       ref.read(isLongPressedStateProvider.notifier).update(false);
     }
-    state = newSet;
   }
 
-  void selectAll(Manga value) => state = {...state, value.id!};
+  void selectAll(Iterable<Manga> visible) =>
+      state = {...state, for (final book in visible) book.id!};
 
-  void selectSome(Manga value) {
-    final newSet = Set<int>.from(state);
-    if (newSet.contains(value.id)) {
-      newSet.remove(value.id);
-    } else {
-      newSet.add(value.id!);
+  void invert(Iterable<Manga> visible) {
+    final selected = {...state};
+    for (final book in visible) {
+      if (!selected.remove(book.id)) selected.add(book.id!);
     }
-    state = newSet;
+    state = selected;
   }
 
   void clear() => state = {};

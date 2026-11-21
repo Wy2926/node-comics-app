@@ -3777,9 +3777,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get increase => 'Aumenta';
 
   @override
-  String get chapter_swipe_actions => 'Azioni di scorrimento capitolo';
-
-  @override
   String get chapter_swipe_start => 'Scorri verso destra';
 
   @override
@@ -4257,9 +4254,6 @@ class AppLocalizationsIt extends AppLocalizations {
       'L\'operazione non è terminata. Alcuni lavori o file potrebbero essere stati elaborati. Chiudi questa finestra di dialogo e controlla la libreria e i download prima di continuare.';
 
   @override
-  String get bookshelf_processing => 'Elaborazione…';
-
-  @override
   String get bookshelf_mark_read => 'Segna letto';
 
   @override
@@ -4632,10 +4626,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Visualizza le opere selezionate';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Scegli un file locale per aggiungerlo alla tua libreria.';
 
   @override
   String get bookshelf_import_canceled_hint =>

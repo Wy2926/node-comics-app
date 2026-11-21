@@ -41,7 +41,7 @@ final class ChaptersListStateProvider
   }
 }
 
-String _$chaptersListStateHash() => r'97d80d2c95bea4bbcce4cbcaccec28dc0bd6ec92';
+String _$chaptersListStateHash() => r'a2c0ad54bce5eae63fc3657af2ecda625d3851db';
 
 abstract class _$ChaptersListState extends $Notifier<List<Chapter>> {
   List<Chapter> build();
@@ -922,59 +922,6 @@ abstract class _$ChapterSetDownloadState extends $Notifier<void> {
               Object?
             >;
     element.handleCreate(ref, () => build(manga: _$args));
-  }
-}
-
-@ProviderFor(ChaptersListttState)
-final chaptersListttStateProvider = ChaptersListttStateProvider._();
-
-final class ChaptersListttStateProvider
-    extends $NotifierProvider<ChaptersListttState, List<Chapter>> {
-  ChaptersListttStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'chaptersListttStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$chaptersListttStateHash();
-
-  @$internal
-  @override
-  ChaptersListttState create() => ChaptersListttState();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<Chapter> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<List<Chapter>>(value),
-    );
-  }
-}
-
-String _$chaptersListttStateHash() =>
-    r'55c0093bb370d4d103129eeca67e652a0241f2c0';
-
-abstract class _$ChaptersListttState extends $Notifier<List<Chapter>> {
-  List<Chapter> build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<List<Chapter>, List<Chapter>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<List<Chapter>, List<Chapter>>,
-              List<Chapter>,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
   }
 }
 

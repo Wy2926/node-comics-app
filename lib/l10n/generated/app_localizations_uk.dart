@@ -3775,9 +3775,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get increase => 'Збільшення';
 
   @override
-  String get chapter_swipe_actions => 'Дії гортання розділу';
-
-  @override
   String get chapter_swipe_start => 'Проведіть праворуч';
 
   @override
@@ -4251,9 +4248,6 @@ class AppLocalizationsUk extends AppLocalizations {
       'Операція не завершена. Деякі роботи чи файли могли бути оброблені. Закрийте це діалогове вікно та перевірте свою книжкову полицю та завантаження, перш ніж продовжити.';
 
   @override
-  String get bookshelf_processing => 'Обробка…';
-
-  @override
   String get bookshelf_mark_read => 'Позначити прочитаним';
 
   @override
@@ -4625,10 +4619,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Переглянути вибрані роботи';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Виберіть локальний файл, щоб додати його на свою книжкову полицю.';
 
   @override
   String get bookshelf_import_canceled_hint =>

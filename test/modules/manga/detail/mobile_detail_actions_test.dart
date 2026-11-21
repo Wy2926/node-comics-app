@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_actions.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 Future<void> _show(WidgetTester tester, Widget button) async {
   tester.view.physicalSize = const Size(360, 740);
@@ -43,7 +46,18 @@ void main() {
           bookTitle: 'Comic A',
           localArchive: false,
           favorite: true,
-          onSelected: (value) async => actions.add(value),
+          onSelected: (origin, value) async {
+            actions.add(value);
+            if ([1, 3, 4, 6].contains(value)) {
+              await pushBrowsePage<void>(
+                origin,
+                MobileBrowsePage(
+                  title: 'Inline $value',
+                  body: const Text('Form'),
+                ),
+              );
+            }
+          },
         ),
       );
       const expected = {
@@ -61,11 +75,20 @@ void main() {
         await tester.ensureVisible(find.text(entry.key));
         await tester.tap(find.text(entry.key));
         await tester.pumpAndSettle();
-        expect(actions.last, entry.value);
         expect(find.text('Detail page'), findsOneWidget);
+        if ([1, 3, 4, 6].contains(entry.value)) {
+          final form = find.text('Form');
+          expect(
+            find.ancestor(of: form, matching: find.byType(NodeLaneBubbleFlow)),
+            findsOneWidget,
+          );
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+          expect(find.text('Comic A').hitTestable(), findsOneWidget);
+          await tester.tap(find.byTooltip('Close'));
+          await tester.pumpAndSettle();
+        }
       }
-      expect(actions, expected.values.toList());
-
       for (final favorite in [true, false]) {
         await _show(
           tester,
@@ -73,7 +96,7 @@ void main() {
             bookTitle: 'Local comic',
             localArchive: true,
             favorite: favorite,
-            onSelected: (value) async => actions.add(value),
+            onSelected: (_, value) async => actions.add(value),
           ),
         );
         await _open(tester, 'Comic actions');
@@ -115,12 +138,23 @@ void main() {
       ];
       for (var index = 0; index < labels.length; index++) {
         await _open(tester, 'Download');
-        await tester.ensureVisible(find.text(labels[index]));
-        await tester.tap(find.text(labels[index]));
+        final choice = index < 4
+            ? find.byTooltip(labels[index])
+            : find.text(labels[index]);
+        await tester.ensureVisible(choice);
+        if (index < 4) {
+          final node = tester.getSemantics(
+            find.widgetWithText(FilledButton, '${nextDownloadCounts[index]}'),
+          );
+          expect(node.label, labels[index]);
+          expect(
+            node.getSemanticsData().hasAction(SemanticsAction.tap),
+            isTrue,
+          );
+        }
+        await tester.tap(choice);
         await tester.pumpAndSettle();
-        expect(actions.last, index);
       }
-      expect(actions, [0, 1, 2, 3, 4, 5]);
 
       await _show(
         tester,
@@ -154,7 +188,7 @@ void main() {
           bookTitle: 'Comic A',
           localArchive: true,
           favorite: true,
-          onSelected: (_) {
+          onSelected: (_, _) {
             calls++;
             return pending.future;
           },
@@ -181,7 +215,7 @@ void main() {
 
       pending = Completer<void>();
       await _open(tester, 'Comic actions');
-      await tester.tap(find.text('Set categories'));
+      await tester.tap(find.text('Export metadata'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(calls, 2);

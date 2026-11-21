@@ -15,6 +15,12 @@ part 'local_archive.g.dart';
 
 const maxMangaCoverImageBytes = 5 * 1024 * 1024;
 
+List<String> localArchiveExtensions(ItemType type) => switch (type) {
+  ItemType.manga => const ['zip', 'cbz'],
+  ItemType.novel => const ['epub'],
+  ItemType.anime => const ['mp4', 'mov', 'avi', 'flv', 'wmv', 'mpeg', 'mkv'],
+};
+
 @riverpod
 Future<int> importArchivesFromFile(
   Ref ref,
@@ -27,11 +33,7 @@ Future<int> importArchivesFromFile(
   try {
     List<PlatformFile> files = await FilePicker.pickFiles(
       type: FileType.custom,
-      allowedExtensions: switch (itemType) {
-        ItemType.manga => ['cbz', 'zip'],
-        ItemType.anime => ['mp4', 'mov', 'avi', 'flv', 'wmv', 'mpeg', 'mkv'],
-        ItemType.novel => ['epub'],
-      },
+      allowedExtensions: localArchiveExtensions(itemType),
       linuxOptions: const LinuxOptions(lockParentWindow: true),
     );
     if (files.isNotEmpty) {

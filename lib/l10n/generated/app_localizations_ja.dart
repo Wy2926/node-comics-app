@@ -3639,9 +3639,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get increase => '増やす';
 
   @override
-  String get chapter_swipe_actions => 'チャプタースワイプ操作';
-
-  @override
   String get chapter_swipe_start => '右にスワイプ';
 
   @override
@@ -4096,9 +4093,6 @@ class AppLocalizationsJa extends AppLocalizations {
       '操作は終了しなかった。一部の作品やファイルは加工されている場合があります。続行する前に、このダイアログを閉じて本棚とダウンロードを確認してください。';
 
   @override
-  String get bookshelf_processing => '処理中…';
-
-  @override
   String get bookshelf_mark_read => '既読マーク';
 
   @override
@@ -4448,9 +4442,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => '選択した作品を見る';
-
-  @override
-  String get bookshelf_import_formats => 'ローカルファイルを選択して、それを本棚に追加します。';
 
   @override
   String get bookshelf_import_canceled_hint =>

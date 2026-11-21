@@ -3753,9 +3753,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get increase => 'Tăng';
 
   @override
-  String get chapter_swipe_actions => 'Thao tác vuốt chương';
-
-  @override
   String get chapter_swipe_start => 'Vuốt sang phải';
 
   @override
@@ -4228,9 +4225,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Thao tác chưa kết thúc. Một số tác phẩm hoặc tập tin có thể đã được xử lý. Đóng hộp thoại này và kiểm tra giá sách cũng như nội dung tải xuống của bạn trước khi tiếp tục.';
 
   @override
-  String get bookshelf_processing => 'Đang xử lý…';
-
-  @override
   String get bookshelf_mark_read => 'Đánh dấu đã đọc';
 
   @override
@@ -4599,10 +4593,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Xem các tác phẩm đã chọn';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Chọn tệp cục bộ để thêm nó vào giá sách của bạn.';
 
   @override
   String get bookshelf_import_canceled_hint =>

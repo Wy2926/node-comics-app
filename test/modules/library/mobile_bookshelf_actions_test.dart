@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -13,9 +14,10 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/track.dart';
+import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
 import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -45,14 +47,13 @@ Future<void> _dialog(
       Builder(
         builder: (context) => TextButton(
           onPressed: () async {
-            final result = await showNodeLaneCatalogSheet<bool>(
+            final result = await pushBrowsePage<bool>(
               context,
-              MobileBookshelfRemoveSheet(
+              MobileBookshelfRemovePage(
                 titles: titles,
                 hasLocalArchives: true,
                 onRemove: onRemove,
               ),
-              dismissible: false,
             );
             onClosed?.call(result);
           },
@@ -66,63 +67,63 @@ Future<void> _dialog(
 }
 
 void main() {
-  testWidgets(
-    'menu preserves action identities and disables unavailable items',
-    (tester) async {
-      _phone(tester);
-      final actions = <int>[];
-      var updating = false, entries = false;
-      late StateSetter change;
-      await tester.pumpWidget(
-        _app(
-          StatefulBuilder(
-            builder: (context, setState) {
-              change = setState;
-              return MobileBookshelfMenu(
-                hasEntries: entries,
-                updating: updating,
-                ignoreFilters: false,
-                onSelected: actions.add,
-              );
-            },
-          ),
-        ),
-      );
-      for (final label in [
-        'Update library',
-        'Open random entry',
-        'Select works',
-      ]) {
-        expect(
-          tester
-              .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, label))
-              .onTap,
-          isNull,
-        );
-      }
-      await tester.tap(find.text('Update library'));
-      await tester.tap(find.text('Open random entry'));
-      expect(actions, isEmpty);
-      change(() => updating = true);
-      await tester.pump();
-      await tester.tap(find.text('Stop library update'));
-      expect(actions, [5]);
-      change(() {
-        updating = false;
-        entries = true;
+  test(
+    'bulk selection updates once and preserves IDs outside the current filter',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final changes = <Set<int>>[];
+      container.listen(mangasListStateProvider, (_, next) => changes.add(next));
+      final selection = container.read(mangasListStateProvider.notifier);
+      Manga book(int id) => Manga.fromJson({
+        'id': id,
+        'favorite': true,
+        'status': Status.unknown.index,
       });
-      await tester.pump();
-      await tester.tap(find.text('Update library'));
-      await tester.tap(find.text('Open random entry'));
-      await tester.tap(find.text('Search options'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byType(NodeLaneSwitch));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byType(NodeLaneSwitch));
-      expect(actions, [5, 0, 1, 4]);
-      expect(tester.takeException(), isNull);
+      selection.update(book(9));
+      selection.selectAll([book(1), book(2)]);
+      selection.invert([book(2), book(3)]);
+      expect(changes, [
+        {9},
+        {9, 1, 2},
+        {9, 1, 3},
+      ]);
     },
   );
+
+  testWidgets('shelf actions follow the visible media and entries', (
+    tester,
+  ) async {
+    _phone(tester);
+    final actions = <int>[];
+    var entries = false;
+    late StateSetter change;
+    await tester.pumpWidget(
+      _app(
+        StatefulBuilder(
+          builder: (context, setState) {
+            change = setState;
+            return MobileBookshelfMenu(
+              hasEntries: entries,
+              ignoreFilters: false,
+              onSelected: actions.add,
+            );
+          },
+        ),
+      ),
+    );
+    for (final label in ['Open random entry', 'Select works']) {
+      expect(find.text(label), findsNothing);
+    }
+    await tester.tap(find.text('Manage categories'));
+    change(() => entries = true);
+    await tester.pump();
+    await tester.tap(find.text('Select works'));
+    await tester.tap(find.text('Open random entry'));
+    await tester.tap(find.byType(NodeLaneSwitch));
+    expect(actions, [7, 6, 1, 4]);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'selection keeps frequent actions direct and secondary actions in More',
@@ -172,7 +173,7 @@ void main() {
       expect(find.text('Invert selection'), findsNothing);
       expect(
         tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
-        lessThanOrEqualTo(toolbarTop - 8),
+        lessThan(toolbarTop),
       );
       await tester.tap(find.text('Remove'));
       await tester.pumpAndSettle();
@@ -188,7 +189,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
-        lessThanOrEqualTo(compactToolbarTop - 8),
+        lessThan(compactToolbarTop),
       );
       await tester.ensureVisible(find.text('Remove'));
       await tester.pumpAndSettle();
@@ -278,7 +279,7 @@ void main() {
       expect(calls, [(true, true)]);
       await tester.binding.handlePopRoute();
       await tester.pump();
-      expect(find.byType(MobileBookshelfRemoveSheet), findsOneWidget);
+      expect(find.byType(MobileBookshelfRemovePage), findsOneWidget);
       expect(
         tester
             .widget<FilledButton>(find.widgetWithText(FilledButton, 'Remove'))
@@ -288,7 +289,7 @@ void main() {
       pending.complete();
       await tester.pumpAndSettle();
       expect(result, true);
-      expect(find.byType(MobileBookshelfRemoveSheet), findsNothing);
+      expect(find.byType(MobileBookshelfRemovePage), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

@@ -1986,7 +1986,7 @@ final class MangasListStateProvider
   }
 }
 
-String _$mangasListStateHash() => r'61c6477ea43c6113caa89ef13984cd4370d303ee';
+String _$mangasListStateHash() => r'968c46a32cf746c136582c71435aee612a09ac71';
 
 abstract class _$MangasListState extends $Notifier<Set<int>> {
   Set<int> build();

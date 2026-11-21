@@ -1,7 +1,7 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/download_quick_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,42 +28,37 @@ import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/modules/widgets/bottom_select_bar.dart';
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
+import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/chapter_recognition.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/utils/riverpod.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_widgets.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_loading.dart';
 
 class MangaDetailView extends ConsumerStatefulWidget {
-  final Function(bool) isExtended;
-  final Widget? titleDescription;
-  final List<Color>? backButtonColors;
-  final Widget? action;
-  final Widget? readingAction;
-  final Manga? manga;
+  final Widget titleDescription, action;
+  final Widget Function(List<Chapter>) readingAction;
+  final Manga manga;
   final bool sourceExist;
   final bool loading;
+  final bool refreshFailed;
   final Future<void> Function() onRefresh;
-  final ItemType itemType;
 
   const MangaDetailView({
     super.key,
-    required this.isExtended,
-    this.titleDescription,
-    this.backButtonColors,
-    this.action,
-    this.readingAction,
+    required this.titleDescription,
+    required this.action,
+    required this.readingAction,
     required this.sourceExist,
     required this.manga,
     required this.onRefresh,
-    required this.itemType,
     this.loading = false,
+    this.refreshFailed = false,
   });
 
   @override
@@ -77,13 +72,19 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     super.initState();
     _scrollController = ScrollController()
       ..addListener(() {
-        ref.read(offetProvider.notifier).state = _scrollController.offset;
+        final offset = _scrollController.offset;
+        _headerPosition.value = offset > 200
+            ? DetailHeaderPosition.pastCover
+            : offset == 0
+            ? DetailHeaderPosition.top
+            : DetailHeaderPosition.scrolled;
       });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _headerPosition.dispose();
     super.dispose();
   }
 
@@ -91,7 +92,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
   /// detectable number — sort/dedup can't place them reliably.
   void _notifyUnrecognizedChapterNumbers() {
     if (_shownUnrecognizedNotice) return;
-    final count = widget.manga!.unrecognizedChapterNumberCount();
+    final count = widget.manga.unrecognizedChapterNumberCount();
     if (count == 0) return;
     _shownUnrecognizedNotice = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -101,39 +102,40 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     });
   }
 
-  final offetProvider = StateProvider(() => 0.0);
+  final _headerPosition = ValueNotifier(DetailHeaderPosition.top);
   bool _shownUnrecognizedNotice = false;
   bool _chapterActionBusy = false;
   late final ScrollController _scrollController;
-  late final isLocalArchive = widget.manga!.isLocalArchive ?? false;
+  bool get isLocalArchive => widget.manga.isLocalArchive ?? false;
 
   /// The detail overflow actions, shared by the popup menu off-TV and the
   /// centred TV menu.
-  Future<void> _onDetailOverflow(int value) => handleDetailOverflowAction(
-    value: value,
-    context: context,
-    ref: ref,
-    manga: widget.manga!,
-    isLocalArchive: isLocalArchive,
-    onRefresh: widget.onRefresh,
-  );
+  Future<void> _onDetailOverflow(BuildContext origin, int value) =>
+      handleDetailOverflowAction(
+        value: value,
+        context: origin,
+        ref: ref,
+        manga: widget.manga,
+        isLocalArchive: isLocalArchive,
+        onRefresh: widget.onRefresh,
+      );
 
   @override
   Widget build(BuildContext context) {
     // On Android TV, anime gets a dedicated d-pad split detail (info left,
     // episodes right). Manga/novel and phones/desktop keep the classic detail.
-    if (isTv && widget.itemType == ItemType.anime) {
-      return TvAnimeDetailView(manga: widget.manga!);
+    if (isTv && widget.manga.itemType == ItemType.anime) {
+      return TvAnimeDetailView(manga: widget.manga);
     }
     // Watch all sort/filter providers so the list rebuilds whenever
     // the user changes the chapter settings.
-    ref.watch(scanlatorsFilterStateProvider(widget.manga!));
-    ref.watch(sortChapterStateProvider(mangaId: widget.manga!.id!));
-    ref.watch(chapterFilterUnreadStateProvider(mangaId: widget.manga!.id!));
-    ref.watch(chapterFilterBookmarkedStateProvider(mangaId: widget.manga!.id!));
-    ref.watch(chapterFilterDownloadedStateProvider(mangaId: widget.manga!.id!));
+    ref.watch(scanlatorsFilterStateProvider(widget.manga));
+    ref.watch(sortChapterStateProvider(mangaId: widget.manga.id!));
+    ref.watch(chapterFilterUnreadStateProvider(mangaId: widget.manga.id!));
+    ref.watch(chapterFilterBookmarkedStateProvider(mangaId: widget.manga.id!));
+    ref.watch(chapterFilterDownloadedStateProvider(mangaId: widget.manga.id!));
     final chapters = ref.watch(
-      getChaptersStreamProvider(mangaId: widget.manga!.id!),
+      getChaptersStreamProvider(mangaId: widget.manga.id!),
     );
     final selecting = ref.watch(isLongPressedStateProvider);
     return PopScope(
@@ -146,29 +148,34 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
       },
       child: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
-          if (!(isMobile && !isTv) &&
-              notification.direction == ScrollDirection.forward) {
-            widget.isExtended(true);
-          }
-          if (!(isMobile && !isTv) &&
-              notification.direction == ScrollDirection.reverse) {
-            widget.isExtended(false);
+          if ((!isMobile || isTv) &&
+              notification.direction != ScrollDirection.idle) {
+            ref
+                .read(isExtendedStateProvider.notifier)
+                .update(notification.direction == ScrollDirection.forward);
           }
           return true;
         },
         child: chapters.when(
           data: (_) {
-            List<Chapter> chapters = widget.manga!.getSortedFilteredChapters();
-            ref.read(chaptersListttStateProvider.notifier).set(chapters);
+            List<Chapter> chapters = widget.manga.getSortedFilteredChapters();
             _notifyUnrecognizedChapterNumbers();
             return _buildWidget(chapters: chapters);
           },
           error: (Object error, StackTrace stackTrace) {
+            if (isMobile && !isTv) {
+              return _buildWidget(
+                chapters: const [],
+                retry: () => ref.invalidate(
+                  getChaptersStreamProvider(mangaId: widget.manga.id!),
+                ),
+              );
+            }
             return ErrorText(error);
           },
           loading: () {
             return _buildWidget(
-              chapters: widget.manga!.chapters.toList(),
+              chapters: widget.manga.chapters.toList(),
               catalogLoading: true,
             );
           },
@@ -177,10 +184,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     );
   }
 
-  Future<void> _downloadChaptersWithDestination(
-    BuildContext context,
-    List<Chapter> chapters,
-  ) async {
+  Future<void> _downloadChapters(List<Chapter> chapters) async {
     final chaptersToDownload = chapters.where((chapter) {
       final entry = downloadRepository.getByChapterId(chapter.id);
       return entry == null || !entry.isDownload!;
@@ -198,73 +202,91 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
   Widget _buildWidget({
     required List<Chapter> chapters,
     bool catalogLoading = false,
+    VoidCallback? retry,
   }) {
     final loading = widget.loading || catalogLoading;
     final chapterList = ref.watch(chaptersListStateProvider);
-    if (isMobile && !isTv) {
+    final mobile = isMobile && !isTv;
+    final appBar = PreferredSize(
+      preferredSize: Size.fromHeight(
+        mobile ? nodeLaneAppBarHeight(context) : kToolbarHeight,
+      ),
+      child: ValueListenableBuilder(
+        valueListenable: _headerPosition,
+        builder: (_, position, _) => DetailAppBar(
+          manga: widget.manga,
+          chapters: chapters,
+          position: position,
+          onDownload: _downloadChapters,
+          onShowFilterMenu: _showChapterSettings,
+          onOverflowAction: _onDetailOverflow,
+        ),
+      ),
+    );
+    Widget chapterTile(BuildContext context, int index) =>
+        ChapterListTileWidget(
+          key: ValueKey(chapters[index].id),
+          chapter: chapters[index],
+          manga: widget.manga,
+          chapterList: chapterList,
+          allChapters: chapters,
+          sourceExist: widget.sourceExist,
+        );
+    if (mobile) {
       return AbsorbPointer(
         absorbing: _chapterActionBusy,
         child: Scaffold(
-          appBar: DetailAppBar(
-            toolbarHeight: nodeLaneAppBarHeight(context),
-            manga: widget.manga!,
-            itemType: widget.itemType,
-            isLocalArchive: isLocalArchive,
-            chapters: chapters,
-            offsetProvider: offetProvider,
-            onDownload: _downloadChaptersWithDestination,
-            onShowFilterMenu: _showChapterSettings,
-            onOverflowAction: _onDetailOverflow,
-          ),
+          appBar: appBar,
           body: SafeArea(
             top: false,
             bottom: true,
-            child: MobileDetailLayout(
-              controller: _scrollController,
-              overview: MangaInfoHeader(
-                loading: loading,
-                manga: widget.manga!,
-                isLocalArchive: isLocalArchive,
-                titleDescription: widget.titleDescription!,
-                action: widget.action!,
-                readingAction: widget.readingAction,
-                chapterLength: chapters.length,
-              ),
-              chapterHeading: MobileChapterHeading(
-                manga: widget.manga!,
-                count: chapters.length,
-                loading: loading,
-                onFilter: _showChapterSettings,
-              ),
-              chapterCount: chapters.length,
-              chapterBuilder: (context, index) => ClipRRect(
-                borderRadius: BorderRadius.vertical(
-                  top: index == 0
-                      ? const Radius.circular(NodeLaneTokens.groupRadius)
-                      : Radius.zero,
-                  bottom: index == chapters.length - 1
-                      ? const Radius.circular(NodeLaneTokens.groupRadius)
-                      : Radius.zero,
+            child: MangaInfoHeader(
+              loading: loading,
+              manga: widget.manga,
+              isLocalArchive: isLocalArchive,
+              titleDescription: widget.titleDescription,
+              action: widget.action,
+              readingAction: widget.readingAction(chapters),
+              chapterLength: chapters.length,
+              mobileLayout: (overview, information) => MobileDetailLayout(
+                controller: _scrollController,
+                overview: overview,
+                information: information,
+                chapterHeading: MobileChapterHeading(
+                  manga: widget.manga,
+                  count: chapters.length,
+                  loading: loading,
+                  onFilter: (anchor) => MobileChapterSettingsPanel(
+                    manga: widget.manga,
+                    localArchive: isLocalArchive,
+                  ).show(anchor),
+                  download: isLocalArchive
+                      ? null
+                      : DownloadQuickMenu(
+                          manga: widget.manga,
+                          hasChapters: chapters.isNotEmpty,
+                          onDownload: _downloadChapters,
+                        ),
                 ),
-                child: ChapterListTileWidget(
-                  key: ValueKey(chapters[index].id),
-                  chapter: chapters[index],
-                  manga: widget.manga!,
-                  chapterList: chapterList,
-                  allChapters: chapters,
-                  sourceExist: widget.sourceExist,
-                ),
-              ),
-              empty: loading
-                  ? const MobileChapterListLoading()
-                  : Padding(
-                      padding: NodeLaneTokens.groupPadding,
-                      child: Text(
-                        context.l10n.no_result,
-                        textAlign: TextAlign.center,
-                        style: NodeLaneTokens.of(context).readerSecondary,
+                chapterCount: chapters.length,
+                chapterBuilder: chapterTile,
+                empty: retry != null || widget.refreshFailed
+                    ? NodeLaneEmptyState.error(
+                        compact: true,
+                        title: context.l10n.reader_loading_failed,
+                        onRetry: retry ?? widget.onRefresh,
+                      )
+                    : loading
+                    ? const MobileChapterListLoading()
+                    : Padding(
+                        padding: NodeLaneTokens.groupPadding,
+                        child: Text(
+                          context.l10n.no_result,
+                          textAlign: TextAlign.center,
+                          style: NodeLaneTokens.of(context).readerSecondary,
+                        ),
                       ),
-                    ),
+              ),
             ),
           ),
           bottomNavigationBar: _selectionBar(chapters),
@@ -273,20 +295,18 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     }
     return Stack(
       children: [
-        DetailBanner(manga: widget.manga!, offsetProvider: offetProvider),
+        ValueListenableBuilder(
+          valueListenable: _headerPosition,
+          child: DetailBanner(manga: widget.manga),
+          builder: (_, position, banner) => position == DetailHeaderPosition.top
+              ? banner!
+              : const SizedBox.shrink(),
+        ),
         Scaffold(
           backgroundColor: Colors.transparent,
           extendBodyBehindAppBar: true,
-          appBar: DetailAppBar(
-            manga: widget.manga!,
-            itemType: widget.itemType,
-            isLocalArchive: isLocalArchive,
-            chapters: chapters,
-            offsetProvider: offetProvider,
-            onDownload: _downloadChaptersWithDestination,
-            onShowFilterMenu: _showChapterSettings,
-            onOverflowAction: _onDetailOverflow,
-          ),
+          floatingActionButton: widget.readingAction(chapters),
+          appBar: appBar,
           body: SafeArea(
             child: Row(
               children: [
@@ -296,10 +316,10 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                     height: context.height(1),
                     child: SingleChildScrollView(
                       child: MangaInfoHeader(
-                        manga: widget.manga!,
+                        manga: widget.manga,
                         isLocalArchive: isLocalArchive,
-                        titleDescription: widget.titleDescription!,
-                        action: widget.action!,
+                        titleDescription: widget.titleDescription,
+                        action: widget.action,
                         chapterLength: chapters.length,
                       ),
                     ),
@@ -318,147 +338,22 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                           sliver: SuperSliverList.builder(
                             itemCount: chapters.length + 1,
                             itemBuilder: (context, index) {
-                              final l10n = l10nLocalizations(context)!;
-                              int finalIndex = index - 1;
                               if (index == 0) {
                                 return context.isTablet
-                                    ? Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Row(
-                                              mainAxisAlignment: isLocalArchive
-                                                  ? MainAxisAlignment
-                                                        .spaceBetween
-                                                  : MainAxisAlignment.start,
-                                              children: [
-                                                Container(
-                                                  height: chapters.isEmpty
-                                                      ? context.height(1)
-                                                      : null,
-                                                  color: Theme.of(context)
-                                                      .scaffoldBackgroundColor,
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                        ),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Text(
-                                                          widget
-                                                                      .manga!
-                                                                      .itemType !=
-                                                                  ItemType.anime
-                                                              ? l10n.n_chapters(
-                                                                  chapters
-                                                                      .length,
-                                                                )
-                                                              : l10n.n_episodes(
-                                                                  chapters
-                                                                      .length,
-                                                                ),
-                                                          style:
-                                                              const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                        ),
-                                                        Builder(
-                                                          builder: (context) {
-                                                            final missing = widget
-                                                                .manga!
-                                                                .missingChapterCount();
-                                                            if (missing <= 0) {
-                                                              return const SizedBox.shrink();
-                                                            }
-                                                            return Text(
-                                                              widget.manga!.itemType !=
-                                                                      ItemType
-                                                                          .anime
-                                                                  ? l10n.missing_chapters(
-                                                                      missing,
-                                                                    )
-                                                                  : l10n.missing_episodes(
-                                                                      missing,
-                                                                    ),
-                                                              style: TextStyle(
-                                                                fontSize: 12,
-                                                                color: Colors
-                                                                    .red[400],
-                                                              ),
-                                                            );
-                                                          },
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                if (isLocalArchive)
-                                                  ElevatedButton.icon(
-                                                    style: ElevatedButton.styleFrom(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                            5,
-                                                          ),
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              5,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    icon: Icon(
-                                                      Icons.add,
-                                                      color: context
-                                                          .secondaryColor,
-                                                    ),
-                                                    label: Text(
-                                                      widget.manga!.itemType !=
-                                                              ItemType.anime
-                                                          ? l10n.add_chapters
-                                                          : l10n.add_episodes,
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: context
-                                                            .secondaryColor,
-                                                      ),
-                                                    ),
-                                                    onPressed: () =>
-                                                        addDetailChapters(
-                                                          context,
-                                                          ref,
-                                                          widget.manga!,
-                                                        ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
+                                    ? DetailChapterHeading(
+                                        manga: widget.manga,
+                                        count: chapters.length,
                                       )
                                     : MangaInfoHeader(
-                                        manga: widget.manga!,
+                                        manga: widget.manga,
                                         isLocalArchive: isLocalArchive,
                                         titleDescription:
-                                            widget.titleDescription!,
-                                        action: widget.action!,
+                                            widget.titleDescription,
+                                        action: widget.action,
                                         chapterLength: chapters.length,
                                       );
                               }
-                              return ChapterListTileWidget(
-                                chapter: chapters[finalIndex],
-                                manga: widget.manga!,
-                                chapterList: chapterList,
-                                allChapters: chapters,
-                                sourceExist: widget.sourceExist,
-                              );
+                              return chapterTile(context, index - 1);
                             },
                           ),
                         ),
@@ -494,7 +389,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     Chapter? highestChapter;
     int highestNum = -1;
     final recognition = ChapterRecognition();
-    final mangaTitle = widget.manga!.name ?? '';
+    final mangaTitle = widget.manga.name ?? '';
     for (var chapter in chapters) {
       chapter.isRead = markAsRead;
       if (!chapter.isRead!) chapter.lastPageRead = "1";
@@ -513,7 +408,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
       }
     }
     highestChapter?.updateTrackChapterRead(ref);
-    await chapterRepository.putAllWithManga(updatedChapters, widget.manga!);
+    await chapterRepository.putAllWithManga(updatedChapters, widget.manga);
   }
 
   Future<void> _markFollowingChapters(
@@ -535,7 +430,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         updatedChapters.add(chapter);
       }
     }
-    await chapterRepository.putAllWithManga(updatedChapters, widget.manga!);
+    await chapterRepository.putAllWithManga(updatedChapters, widget.manga);
   }
 
   Future<void> _runMobileChapterAction(
@@ -547,30 +442,30 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         ModalRoute.of(context)?.isCurrent != true) {
       return;
     }
-    final selected = ref
-        .read(chaptersListStateProvider)
-        .where((chapter) => chapter.mangaId == widget.manga!.id)
-        .toList(growable: false);
-    if (!ref.read(isLongPressedStateProvider) || selected.isEmpty) {
-      return;
-    }
+    if (!ref.read(isLongPressedStateProvider)) return;
     setState(() => _chapterActionBusy = true);
-    var completed = false;
     try {
+      final ids = ref
+          .read(chaptersListStateProvider)
+          .map((c) => c.id)
+          .whereType<int>()
+          .toList();
+      final selected = chapterRepository
+          .getAllByIds(ids)
+          .whereType<Chapter>()
+          .where((c) => c.mangaId == widget.manga.id)
+          .toList();
+      if (selected.isEmpty) return;
       switch (action) {
         case MobileChapterAction.bookmark:
           await _toggleChapterBookmarks(selected);
-          completed = true;
         case MobileChapterAction.read:
           await _markSelectedChapters(selected);
-          completed = true;
         case MobileChapterAction.readFollowing:
           if (selected.length != 1) return;
           await _markFollowingChapters(displayed, selected.single.id!);
-          completed = true;
         case MobileChapterAction.download:
-          await _downloadChaptersWithDestination(context, selected);
-          completed = true;
+          await _downloadChapters(selected);
         case MobileChapterAction.delete:
           final downloadedIds =
               ref.read(downloadedChapterIdsProvider).asData?.value ??
@@ -583,13 +478,13 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
               .toList(growable: false);
           if (targets.isEmpty) return;
           final allChapters = isLocalArchive
-              ? chapterRepository.getAllByMangaIdIndex(widget.manga!.id)
+              ? chapterRepository.getAllByMangaIdIndex(widget.manga.id)
               : const <Chapter>[];
           final targetIds = targets.map((chapter) => chapter.id).toSet();
           final container = ProviderScope.containerOf(context);
           await showMobileChapterDeleteConfirmation(
             context: context,
-            bookTitle: widget.manga!.name ?? '',
+            bookTitle: widget.manga.name ?? '',
             titles: targets
                 .map((chapter) => chapter.name ?? '')
                 .toList(growable: false),
@@ -598,7 +493,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
               (chapter) => targetIds.contains(chapter.id),
             ),
             onDelete: () => deleteMangaChapterSelection(
-              manga: widget.manga!,
+              manga: widget.manga,
               selected: targets,
               downloadedIds: downloadedIds,
             ),
@@ -624,10 +519,11 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
           ),
         );
       }
+      return;
     } finally {
       if (mounted) setState(() => _chapterActionBusy = false);
     }
-    if (!mounted || !completed) return;
+    if (!mounted) return;
     ref.read(isLongPressedStateProvider.notifier).update(false);
     ref.read(chaptersListStateProvider.notifier).clear();
   }
@@ -651,15 +547,16 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         final isDownloaded = chap
             .where((c) => downloadedIds.contains(c.id))
             .toSet();
-        if (mobile && widget.itemType == ItemType.manga) {
-          final index = chap.length == 1
-              ? chapters.indexWhere((chapter) => chapter.id == chap.first.id)
-              : -1;
+        final index = chap.length == 1
+            ? chapters.indexWhere((chapter) => chapter.id == chap.first.id)
+            : -1;
+        final hasFollowing = index >= 0 && index < chapters.length - 1;
+        if (mobile && widget.manga.itemType == ItemType.manga) {
           return MobileChapterSelectionBar(
             selected: chap,
             visible: isLongPressed,
             busy: _chapterActionBusy,
-            hasFollowing: index >= 0 && index < chapters.length - 1,
+            hasFollowing: hasFollowing,
             canDownload: !isLocalArchive && isDownloaded.isEmpty,
             canDelete: isLocalArchive || isDownloaded.isNotEmpty,
             onAction: (action) => _runMobileChapterAction(action, chapters),
@@ -698,9 +595,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                 ref.read(chaptersListStateProvider.notifier).clear();
               },
             ),
-            if (getLength1 &&
-                chapters.contains(chap.first) &&
-                chapters.indexOf(chap.first) < chapters.length - 1)
+            if (hasFollowing)
               BottomSelectButton(
                 icon: Stack(
                   children: [
@@ -728,10 +623,8 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                 tooltip: l10n.download,
                 icon: Icon(Icons.download_outlined, color: color),
                 onPressed: () async {
-                  await _downloadChaptersWithDestination(
-                    context,
-                    ref.read(chaptersListStateProvider),
-                  );
+                  await _downloadChapters(ref.read(chaptersListStateProvider));
+                  if (!mounted) return;
                   ref.read(isLongPressedStateProvider.notifier).update(false);
                   ref.read(chaptersListStateProvider.notifier).clear();
                 },
@@ -743,10 +636,10 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                 icon: Icon(Icons.delete_outline_outlined, color: color),
                 onPressed: () {
                   final selectedChapters = ref.watch(chaptersListStateProvider);
-                  final totalChapters = widget.manga!.chapters.length;
+                  final totalChapters = widget.manga.chapters.length;
                   final isLastChapters =
                       selectedChapters.length == totalChapters;
-                  final isAnime = widget.itemType == ItemType.anime;
+                  final isAnime = widget.manga.itemType == ItemType.anime;
                   final entryType = isAnime ? l10n.episode : l10n.chapter;
                   final pluralEntryType = isAnime
                       ? l10n.episodes
@@ -814,7 +707,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                                 Future.delayed(
                                   const Duration(milliseconds: 350),
                                   () {
-                                    mangaRepository.delete(widget.manga!.id!);
+                                    mangaRepository.delete(widget.manga.id!);
                                   },
                                 );
                               }
@@ -834,17 +727,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
   }
 
   void _showChapterSettings() {
-    if (isMobile && !isTv) {
-      pushBrowsePage<void>(
-        context,
-        MobileChapterSettingsPage(
-          manga: widget.manga!,
-          localArchive: isLocalArchive,
-        ),
-      );
-      return;
-    }
-    final scanlators = ref.read(scanlatorsFilterStateProvider(widget.manga!));
+    final scanlators = ref.read(scanlatorsFilterStateProvider(widget.manga));
     final l10n = l10nLocalizations(context)!;
     final labels = [l10n.filter, l10n.sort, l10n.display];
     final children = <Widget>[
@@ -857,31 +740,31 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                   label: l10n.downloaded,
                   type: ref.watch(
                     chapterFilterDownloadedStateProvider(
-                      mangaId: widget.manga!.id!,
+                      mangaId: widget.manga.id!,
                     ),
                   ),
                   onTap: () {
                     ref
                         .read(
                           chapterFilterDownloadedStateProvider(
-                            mangaId: widget.manga!.id!,
+                            mangaId: widget.manga.id!,
                           ).notifier,
                         )
                         .update();
                   },
                 ),
               ListTileChapterFilter(
-                label: widget.itemType != ItemType.anime
+                label: widget.manga.itemType != ItemType.anime
                     ? l10n.unread
                     : l10n.unwatched,
                 type: ref.watch(
-                  chapterFilterUnreadStateProvider(mangaId: widget.manga!.id!),
+                  chapterFilterUnreadStateProvider(mangaId: widget.manga.id!),
                 ),
                 onTap: () {
                   ref
                       .read(
                         chapterFilterUnreadStateProvider(
-                          mangaId: widget.manga!.id!,
+                          mangaId: widget.manga.id!,
                         ).notifier,
                       )
                       .update();
@@ -891,14 +774,14 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                 label: l10n.bookmarked,
                 type: ref.watch(
                   chapterFilterBookmarkedStateProvider(
-                    mangaId: widget.manga!.id!,
+                    mangaId: widget.manga.id!,
                   ),
                 ),
                 onTap: () {
                   ref
                       .read(
                         chapterFilterBookmarkedStateProvider(
-                          mangaId: widget.manga!.id!,
+                          mangaId: widget.manga.id!,
                         ).notifier,
                       )
                       .update();
@@ -919,7 +802,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                                   builder: (context, ref, child) {
                                     final scanlators = ref.watch(
                                       scanlatorsFilterStateProvider(
-                                        widget.manga!,
+                                        widget.manga,
                                       ),
                                     );
                                     return AlertDialog(
@@ -942,7 +825,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                                                 ref
                                                     .read(
                                                       scanlatorsFilterStateProvider(
-                                                        widget.manga!,
+                                                        widget.manga,
                                                       ).notifier,
                                                     )
                                                     .setFilteredList(
@@ -966,7 +849,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                                                           ref
                                                               .read(
                                                                 scanlatorsFilterStateProvider(
-                                                                  widget.manga!,
+                                                                  widget.manga,
                                                                 ).notifier,
                                                               )
                                                               .set([]);
@@ -1007,7 +890,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                                                         ref
                                                             .read(
                                                               scanlatorsFilterStateProvider(
-                                                                widget.manga!,
+                                                                widget.manga,
                                                               ).notifier,
                                                             )
                                                             .set(scanlators.$3);
@@ -1048,14 +931,14 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         builder: (context, ref, chil) {
           final reverse = ref
               .read(
-                sortChapterStateProvider(mangaId: widget.manga!.id!).notifier,
+                sortChapterStateProvider(mangaId: widget.manga.id!).notifier,
               )
               .isReverse();
           final scanlators = ref.watch(
-            scanlatorsFilterStateProvider(widget.manga!),
+            scanlatorsFilterStateProvider(widget.manga),
           );
           final reverseChapter = ref.watch(
-            sortChapterStateProvider(mangaId: widget.manga!.id!),
+            sortChapterStateProvider(mangaId: widget.manga.id!),
           );
           return Column(
             children: [
@@ -1066,7 +949,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                   onTap: () {
                     ref
                         .read(
-                          sortChapterStateProvider(mangaId: widget.manga!.id!)
+                          sortChapterStateProvider(mangaId: widget.manga.id!)
                               .notifier,
                         )
                         .set(0);
@@ -1080,7 +963,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                   onTap: () {
                     ref
                         .read(
-                          sortChapterStateProvider(mangaId: widget.manga!.id!)
+                          sortChapterStateProvider(mangaId: widget.manga.id!)
                               .notifier,
                         )
                         .set(i);
@@ -1105,7 +988,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
             RadioListTile(
               dense: true,
               title: Text(
-                widget.itemType != ItemType.anime
+                widget.manga.itemType != ItemType.anime
                     ? l10n.chapter_number
                     : l10n.episode_number,
               ),
@@ -1129,7 +1012,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     if (index == 0) {
       return l10n.by_scanlator;
     } else if (index == 1) {
-      return widget.itemType != ItemType.anime
+      return widget.manga.itemType != ItemType.anime
           ? l10n.by_chapter_number
           : l10n.by_episode_number;
     } else if (index == 2) {

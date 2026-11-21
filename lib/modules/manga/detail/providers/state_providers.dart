@@ -18,35 +18,24 @@ class ChaptersListState extends _$ChaptersListState {
   }
 
   void update(Chapter value) {
-    var newList = state.reversed.toList();
-    if (newList.contains(value)) {
-      newList.remove(value);
-    } else {
-      newList.add(value);
-    }
-    if (newList.isEmpty) {
+    invert([value]);
+    if (state.isEmpty) {
       ref.read(isLongPressedStateProvider.notifier).update(false);
     }
-    state = newList;
   }
 
-  void selectAll(Chapter value) {
-    var newList = state.reversed.toList();
-    if (!newList.contains(value)) {
-      newList.add(value);
-    }
-
-    state = newList;
+  void selectAll(Iterable<Chapter> visible) {
+    state = {
+      for (final c in [...state, ...visible]) c.id: c,
+    }.values.toList();
   }
 
-  void selectSome(Chapter value) {
-    var newList = state.reversed.toList();
-    if (newList.contains(value)) {
-      newList.remove(value);
-    } else {
-      newList.add(value);
+  void invert(Iterable<Chapter> visible) {
+    final selected = {for (final c in state) c.id: c};
+    for (final chapter in visible) {
+      if (selected.remove(chapter.id) == null) selected[chapter.id] = chapter;
     }
-    state = newList;
+    state = selected.values.toList();
   }
 
   /// Select all chapters between the last selected and [clicked] in [allChapters].
@@ -56,21 +45,15 @@ class ChaptersListState extends _$ChaptersListState {
       return;
     }
     final lastSelected = state.last;
-    final lastIdx = allChapters.indexOf(lastSelected);
-    final clickedIdx = allChapters.indexOf(clicked);
+    final lastIdx = allChapters.indexWhere((c) => c.id == lastSelected.id);
+    final clickedIdx = allChapters.indexWhere((c) => c.id == clicked.id);
     if (lastIdx == -1 || clickedIdx == -1) {
       update(clicked);
       return;
     }
     final start = lastIdx < clickedIdx ? lastIdx : clickedIdx;
     final end = lastIdx < clickedIdx ? clickedIdx : lastIdx;
-    var newList = List<Chapter>.from(state);
-    for (int i = start; i <= end; i++) {
-      if (!newList.contains(allChapters[i])) {
-        newList.add(allChapters[i]);
-      }
-    }
-    state = newList;
+    selectAll(allChapters.getRange(start, end + 1));
   }
 
   void clear() {
@@ -326,20 +309,6 @@ class ChapterSetDownloadState extends _$ChapterSetDownloadState {
     ref.invalidate(processDownloadsProvider());
     ref.read(processDownloadsProvider());
     ref.read(chaptersListStateProvider.notifier).clear();
-  }
-}
-
-@riverpod
-class ChaptersListttState extends _$ChaptersListttState {
-  @override
-  List<Chapter> build() {
-    return [];
-  }
-
-  void set(List<Chapter> chapters) async {
-    // Yield to the event loop to avoid setState during build
-    await Future(() {});
-    state = chapters;
   }
 }
 

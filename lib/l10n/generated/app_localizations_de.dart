@@ -3771,9 +3771,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get increase => 'Erhöhen';
 
   @override
-  String get chapter_swipe_actions => 'Wischaktionen für Kapitel';
-
-  @override
   String get chapter_swipe_start => 'Nach rechts wischen';
 
   @override
@@ -4249,9 +4246,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Vorgang wurde nicht abgeschlossen. Möglicherweise wurden einige Werke oder Dateien verarbeitet. Schließen Sie dieses Dialogfeld und überprüfen Sie Ihr Bücherregal und Ihre Downloads, bevor Sie fortfahren.';
 
   @override
-  String get bookshelf_processing => 'Verarbeitung…';
-
-  @override
   String get bookshelf_mark_read => 'Als gelesen markieren';
 
   @override
@@ -4623,10 +4617,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Ausgewählte Werke ansehen';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Wählen Sie eine lokale Datei aus, um sie Ihrem Bücherregal hinzuzufügen.';
 
   @override
   String get bookshelf_import_canceled_hint =>

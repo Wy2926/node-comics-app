@@ -8,6 +8,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 import 'browser_library_store.dart';
 import 'browser_url.dart';
@@ -307,8 +308,7 @@ class MobileBrowserStartPage extends StatelessWidget {
           behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
           child: LayoutBuilder(
             builder: (context, box) {
-              final wide =
-                  box.maxWidth >= NodeLaneTokens.tabletPaneBreakpoint * scale;
+              final wide = context.hasPaneWidth(box.maxWidth);
               final pins = (box.maxWidth - 20) * .4;
               return CustomScrollView(
                 key: const PageStorageKey('browser-start'),
@@ -325,7 +325,7 @@ class MobileBrowserStartPage extends StatelessWidget {
                           constraints: BoxConstraints(
                             maxWidth: wide
                                 ? math.min(
-                                    NodeLaneTokens.browserSearchMaxWidth,
+                                    NodeLaneTokens.searchMaxWidth,
                                     box.maxWidth * .6,
                                   )
                                 : box.maxWidth,

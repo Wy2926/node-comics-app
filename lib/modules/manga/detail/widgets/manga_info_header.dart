@@ -1,4 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
@@ -13,6 +12,7 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_import_panel.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/manga_cover_viewer.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/readmore.dart';
@@ -54,6 +54,7 @@ class MangaInfoHeader extends ConsumerStatefulWidget {
   final Widget action;
   final int chapterLength;
   final Widget? readingAction;
+  final Widget Function(Widget overview, Widget information)? mobileLayout;
 
   const MangaInfoHeader({
     super.key,
@@ -63,6 +64,7 @@ class MangaInfoHeader extends ConsumerStatefulWidget {
     required this.action,
     required this.chapterLength,
     this.readingAction,
+    this.mobileLayout,
     this.loading = false,
   });
 
@@ -76,7 +78,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
-    if (isMobile && !isTv) return _mobileHeader(l10n);
+    if (widget.mobileLayout != null) return _mobileHeader(l10n);
     return Stack(
       children: [
         Container(
@@ -174,89 +176,9 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                   _DetailActions(manga: widget.manga),
                   const SizedBox(height: 15),
                   if (!context.isTablet)
-                    Column(
-                      children: [
-                        //Description
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisAlignment: widget.isLocalArchive
-                                ? MainAxisAlignment.spaceBetween
-                                : MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      widget.manga.itemType != ItemType.anime
-                                          ? l10n.n_chapters(
-                                              widget.chapterLength,
-                                            )
-                                          : l10n.n_episodes(
-                                              widget.chapterLength,
-                                            ),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Builder(
-                                      builder: (context) {
-                                        final missing = widget.manga
-                                            .missingChapterCount();
-                                        if (missing <= 0) {
-                                          return const SizedBox.shrink();
-                                        }
-                                        return Text(
-                                          widget.manga.itemType !=
-                                                  ItemType.anime
-                                              ? l10n.missing_chapters(missing)
-                                              : l10n.missing_episodes(missing),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.red[400],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (widget.isLocalArchive)
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.all(5),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                  icon: Icon(
-                                    Icons.add,
-                                    color: context.secondaryColor,
-                                  ),
-                                  label: Text(
-                                    widget.manga.itemType != ItemType.anime
-                                        ? l10n.add_chapters
-                                        : l10n.add_episodes,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: context.secondaryColor,
-                                    ),
-                                  ),
-                                  onPressed: () => addDetailChapters(
-                                    context,
-                                    ref,
-                                    widget.manga,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    DetailChapterHeading(
+                      manga: widget.manga,
+                      count: widget.chapterLength,
                     ),
                 ],
               ),
@@ -276,7 +198,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   Widget _mobileHeader(AppLocalizations l10n) {
     final colors = NodeLaneTokens.of(context);
     final genres = widget.manga.genre ?? const <String>[];
-    return MobileDetailOverview(
+    final overview = MobileDetailOverview(
       heading: MobileDetailHeading(
         cover: _coverCard(),
         title: _titles(includeMetadata: false),
@@ -300,48 +222,47 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
             : null,
         library: widget.action,
       ),
-      synopsis:
-          (widget.manga.description?.trim().isNotEmpty ?? false) ||
-              genres.isNotEmpty
-          ? MobileDetailSynopsis(
-              title: l10n.manga_synopsis,
-              text: widget.manga.description ?? '',
-              expanded: _expanded,
-              onChanged: (value) => setState(() => _expanded = value),
-              genres: [
-                for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
-              ],
-            )
-          : widget.loading
-          ? const MobileDetailSynopsisLoading()
-          : null,
-      more: NodeLaneDisclosure(
-        title: l10n.more,
-        compact: true,
-        child: Builder(
-          builder: (context) => StreamBuilder(
-            stream: trackRepository.watchAllWithSyncId(),
-            builder: (context, snapshot) {
-              final entries = snapshot.data ?? <TrackPreference>[];
-              return _DetailActions(
-                manga: widget.manga,
-                leading: [
-                  if (widget.isLocalArchive)
-                    _headerButton(
-                      icon: NodeLaneIcons.of(context).edit,
-                      label: l10n.edit,
-                      onPressed: _editLocalArchiveInfos,
-                    ),
-                  if (!widget.isLocalArchive) _webviewButton(),
-                  if (entries.isNotEmpty) _trackingAction(entries),
-                  if (!widget.isLocalArchive) _smartUpdateDays(),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
     );
+    final information = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: NodeLaneTokens.space12,
+      children: [
+        if ((widget.manga.description?.trim().isNotEmpty ?? false) ||
+            genres.isNotEmpty)
+          MobileDetailSynopsis(
+            title: l10n.manga_synopsis,
+            text: widget.manga.description ?? '',
+            expanded: _expanded,
+            onChanged: (value) => setState(() => _expanded = value),
+            genres: [
+              for (var i = 0; i < genres.length; i++) _genreChip(i, l10n),
+            ],
+          )
+        else if (widget.loading)
+          const MobileDetailSynopsisLoading(),
+        StreamBuilder(
+          stream: trackRepository.watchAllWithSyncId(),
+          builder: (context, snapshot) {
+            final entries = snapshot.data ?? <TrackPreference>[];
+            return _DetailActions(
+              manga: widget.manga,
+              leading: [
+                if (widget.isLocalArchive)
+                  _headerButton(
+                    icon: NodeLaneIcons.of(context).edit,
+                    label: l10n.edit,
+                    onPressed: _editLocalArchiveInfos,
+                  ),
+                if (!widget.isLocalArchive) _webviewButton(),
+                if (entries.isNotEmpty) _trackingAction(entries),
+                if (!widget.isLocalArchive) _smartUpdateDays(),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+    return widget.mobileLayout!(overview, information);
   }
 
   Widget _genreChip(int index, AppLocalizations l10n) {
@@ -373,8 +294,8 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     }
 
     final source = getSource(
-      widget.manga.lang!,
-      widget.manga.source!,
+      widget.manga.lang ?? '',
+      widget.manga.source ?? '',
       widget.manga.sourceId,
     );
     if (source == null) {
@@ -398,7 +319,10 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                   widget.manga.imageUrl ??
                   "",
             ),
-            headers: widget.manga.isLocalArchive!
+            headers:
+                widget.isLocalArchive ||
+                    widget.manga.source == null ||
+                    widget.manga.lang == null
                 ? null
                 : ref.watch(
                     headersProvider(
@@ -477,7 +401,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         InkWell(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(NodeLaneTokens.space4),
           onTap: () {
             final name = widget.manga.name;
             if (name != null && name.trim().isNotEmpty) {
@@ -501,7 +425,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
             }
           },
           child: Text(
-            widget.manga.name!,
+            widget.manga.name ?? '',
             style: isMobile && !isTv
                 ? NodeLaneTokens.of(context).detailTitle
                 : const TextStyle(fontSize: 20),
@@ -570,8 +494,15 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   Future<void> _openWebview() async {
     final manga = widget.manga;
 
-    final source = getSource(manga.lang!, manga.source!, manga.sourceId);
-    if (source == null) return;
+    final source = getSource(
+      manga.lang ?? '',
+      manga.source ?? '',
+      manga.sourceId,
+    );
+    if (source == null || manga.link == null) {
+      showNodeLaneNotice(context.l10n.source_not_added);
+      return;
+    }
     final String url;
     if (source.sourceCodeLanguage == SourceCodeLanguage.mihon) {
       try {
@@ -602,7 +533,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     final data = {
       'url': url,
       'sourceId': source.id.toString(),
-      'title': manga.name!,
+      'title': manga.name ?? '',
     };
     context.push("/mangawebview", extra: data);
   }
@@ -665,67 +596,64 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   }
 
   Future<void> _editLocalArchiveInfos() async {
-    final l10n = l10nLocalizations(context)!;
-    final name = TextEditingController(text: widget.manga.name ?? '');
-    final description = TextEditingController(
-      text: widget.manga.description ?? '',
-    );
-    final route = ModalBottomSheetRoute<void>(
-      builder: (sheetContext) => NodeLaneCatalogSheet(
-        title: l10n.edit,
-        fitContent: true,
-        heightFactor: .9,
-        bottom: NodeLaneModalActions(
-          actions: [
-            NodeLaneDialogAction(
-              label: l10n.save,
-              onPressed: () {
-                final manga = widget.manga;
-                manga.description = description.text;
-                manga.name = name.text;
-                mangaRepository.save(manga);
-                Navigator.pop(sheetContext);
-              },
-            ),
-          ],
-        ),
-        child: ListView(
-          shrinkWrap: true,
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.symmetric(
-            horizontal: NodeLaneTokens.gutter,
-          ),
+    final l = context.l10n, book = widget.manga;
+    var name = book.name ?? '', description = book.description ?? '';
+    final save = await showDialog<bool>(
+      context: context,
+      builder: (dialog) => NodeLaneAlertDialog(
+        title: Text(l.edit),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: NodeLaneTokens.space16,
-              children: [
-                NodeLaneTextField(
-                  controller: name,
-                  label: l10n.name,
-                  textInputAction: TextInputAction.next,
-                ),
-                NodeLaneTextField(
-                  controller: description,
-                  label: l10n.description,
-                  minLines: 2,
-                  maxLines: 5,
-                ),
-              ],
+            NodeLaneTextField(
+              initialValue: name,
+              onChanged: (v) => name = v,
+              label: l.name,
+              textInputAction: TextInputAction.next,
+            ),
+            NodeLaneTextField(
+              initialValue: description,
+              onChanged: (v) => description = v,
+              label: l.description,
+              minLines: 2,
+              maxLines: 5,
             ),
           ],
         ),
+        actions: [
+          NodeLaneDialogAction(
+            label: l.cancel,
+            secondary: true,
+            onPressed: () => Navigator.pop(dialog, false),
+          ),
+          NodeLaneDialogAction(
+            label: l.save,
+            onPressed: () => Navigator.pop(dialog, true),
+          ),
+        ],
       ),
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: false,
-      backgroundColor: Colors.transparent,
-      shape: NodeLaneTokens.readerSheetShape,
     );
-    await Navigator.of(context).push(route);
-    await route.completed;
-    name.dispose();
-    description.dispose();
+    if (save != true || !mounted) return;
+    try {
+      await mangaRepository.writeTransactionAsync(() async {
+        final current = await mangaRepository.findByIdAsync(book.id!);
+        if (current == null || current.isLocalArchive != true) return;
+        await mangaRepository.putAsync(
+          current
+            ..name = name
+            ..description = description
+            ..updatedAt = DateTime.now().millisecondsSinceEpoch,
+        );
+      });
+    } catch (_) {
+      if (mounted) {
+        showNodeLaneNotice(
+          l.manga_action_incomplete,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    }
   }
 
   void _trackingDraggableMenu(List<TrackPreference>? entries) {
@@ -746,6 +674,10 @@ Future<void> addDetailChapters(
     addTorrent(context, manga: manga);
     return;
   }
+  if (isMobile && !isTv) {
+    await showLocalFileImport(context, manga.itemType, book: manga);
+    return;
+  }
   final splitChapters = manga.itemType == ItemType.novel
       ? await showSplitChaptersDialog(context)
       : true;
@@ -760,6 +692,66 @@ Future<void> addDetailChapters(
   );
 }
 
+/// The classic detail header serves both the narrow and split desktop/TV layouts.
+class DetailChapterHeading extends ConsumerWidget {
+  const DetailChapterHeading({
+    super.key,
+    required this.manga,
+    required this.count,
+  });
+  final Manga manga;
+  final int count;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n, theme = Theme.of(context);
+    final anime = manga.itemType == ItemType.anime;
+    final missing = manga.missingChapterCount();
+    return Padding(
+      padding: const EdgeInsets.all(NodeLaneTokens.space8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Container(
+              height: context.isTablet && count == 0 ? context.height(1) : null,
+              color: theme.scaffoldBackgroundColor,
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.space8,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    anime ? l.n_episodes(count) : l.n_chapters(count),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (missing > 0)
+                    Text(
+                      anime
+                          ? l.missing_episodes(missing)
+                          : l.missing_chapters(missing),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          if (manga.isLocalArchive == true)
+            ElevatedButton.icon(
+              onPressed: () => addDetailChapters(context, ref, manga),
+              icon: const Icon(Icons.add),
+              label: Text(anime ? l.add_episodes : l.add_chapters),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class MobileChapterHeading extends ConsumerWidget {
   const MobileChapterHeading({
     super.key,
@@ -767,11 +759,13 @@ class MobileChapterHeading extends ConsumerWidget {
     required this.count,
     required this.loading,
     required this.onFilter,
+    this.download,
   });
   final Manga manga;
   final int count;
   final bool loading;
-  final VoidCallback onFilter;
+  final ValueChanged<BuildContext> onFilter;
+  final Widget? download;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -782,31 +776,33 @@ class MobileChapterHeading extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                loading && count == 0 ? label : '$label · $count',
-                style: t.detailSectionTitle,
-              ),
-            ),
-            if (manga.isLocalArchive ?? false)
-              NodeLaneIconButton(
-                style: NodeLaneIconButtonStyle.plain,
-                tooltip: anime ? l.add_episodes : l.add_chapters,
-                onPressed: () => addDetailChapters(context, ref, manga),
-                icon: NodeLaneIcons.of(context).add,
-              ),
-            NodeLaneIconButton(
+        MobileChapterTools(
+          title: loading && count == 0 ? label : '$label · $count',
+          primary: (manga.isLocalArchive ?? false)
+              ? Builder(
+                  builder: (anchor) => NodeLaneIconButton(
+                    style: NodeLaneIconButtonStyle.plain,
+                    tooltip: anime ? l.add_episodes : l.add_chapters,
+                    onPressed: () => addDetailChapters(anchor, ref, manga),
+                    icon: NodeLaneIcons.of(context).add,
+                  ),
+                )
+              : download,
+          settings: Builder(
+            builder: (anchor) => NodeLaneIconButton(
               busy: loading,
-              icon: NodeLaneIcons.of(context).filter,
-              tooltip: loading ? l.detail_loading_chapters : l.filter,
-              onPressed: onFilter,
+              icon: NodeLaneIcons.of(context).adjustments,
+              tooltip: loading
+                  ? l.detail_loading_chapters
+                  : anime
+                  ? l.filter
+                  : l.chapter_settings,
+              onPressed: () => onFilter(anchor),
               active: !ref.watch(
                 chapterFilterResultStateProvider(manga: manga),
               ),
             ),
-          ],
+          ),
         ),
         if (missing > 0)
           Text(

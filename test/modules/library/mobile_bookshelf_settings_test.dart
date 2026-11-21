@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -106,15 +107,29 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: MobileBookshelfSettings(
-              itemType: type,
-              settings: settingsRepository.current,
-              entries: entries,
+            body: Align(
+              alignment: Alignment.topRight,
+              child: Builder(
+                builder: (anchor) => TextButton(
+                  onPressed: () => showNodeLaneBubble<void>(
+                    anchor,
+                    label: 'Shelf tools',
+                    width: 440,
+                    child: MobileBookshelfSettings(
+                      itemType: type,
+                      settings: settingsRepository.current,
+                      entries: entries,
+                    ),
+                  ),
+                  child: const Text('Shelf tools'),
+                ),
+              ),
             ),
           ),
         ),
       ),
     );
+    await tester.tap(find.text('Shelf tools'));
     await settle(tester);
   }
 

@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -23,79 +24,116 @@ List<String> _groups(Iterable<Chapter> chapters) => chapters
     .toSet()
     .toList();
 
-class MobileChapterSettingsPage extends StatelessWidget {
-  const MobileChapterSettingsPage({
+class MobileChapterSettingsPanel extends StatelessWidget {
+  const MobileChapterSettingsPanel({
     super.key,
     required this.manga,
     required this.localArchive,
   });
   final Manga manga;
   final bool localArchive;
+  String _title(BuildContext context) => manga.itemType == ItemType.anime
+      ? context.l10n.filter
+      : context.l10n.chapter_settings;
+  Future<void> show(BuildContext anchor) => showNodeLaneBubble<void>(
+    anchor,
+    label: _title(anchor),
+    width: NodeLaneTokens.bubbleSettingsWidth,
+    child: NodeLaneBubbleFlow(home: this),
+  );
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final l10n = context.l10n, t = NodeLaneTokens.of(context);
     final comic = manga.itemType == ItemType.manga;
     final tabs = [l10n.filter, l10n.sort, if (comic) l10n.settings];
-    return MobileBrowsePage.form(
-      title: manga.itemType == ItemType.anime
-          ? l10n.filter
-          : l10n.chapter_settings,
-      body: DefaultTabController(
-        animationDuration: NodeLaneMotion.time(context),
-        length: tabs.length,
-        child: Builder(
-          builder: (context) {
-            final controller = DefaultTabController.of(context);
-            return ListenableBuilder(
-              listenable: controller,
-              builder: (context, _) => Column(
-                children: [
-                  NodeLaneTabSegments(labels: tabs, scrollable: true),
-                  Expanded(
-                    child: NodeLaneContentMotion(
-                      value: controller.index,
-                      child: SingleChildScrollView(
-                        key: PageStorageKey(
-                          'chapter-settings-${controller.index}',
-                        ),
-                        padding: const EdgeInsets.only(
-                          top: NodeLaneTokens.space16,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: NodeLaneTokens.groupPadding,
-                              child: Text(
-                                [
-                                  if (manga.name?.isNotEmpty == true)
-                                    manga.name!,
-                                  if (comic && controller.index != 2)
-                                    l10n.chapter_settings_live,
-                                ].join('\n'),
-                                style: NodeLaneTokens.of(context)
-                                    .readerSecondary,
+    return DefaultTabController(
+      animationDuration: NodeLaneMotion.time(context),
+      length: tabs.length,
+      child: Builder(
+        builder: (context) {
+          final controller = DefaultTabController.of(context);
+          return ListenableBuilder(
+            listenable: controller,
+            builder: (context, _) => CustomScrollView(
+              shrinkWrap: true,
+              key: PageStorageKey('chapter-settings-${controller.index}'),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: NodeLaneBubbleHeading(
+                    _title(context),
+                    subtitle: manga.name,
+                  ),
+                ),
+                PinnedHeaderSliver(
+                  child: ColoredBox(
+                    color: t.surface,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: NodeLaneTokens.space12,
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, box) => TabBar(
+                          controller: controller,
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          labelPadding: EdgeInsets.zero,
+                          labelColor: t.accent,
+                          labelStyle: t.label,
+                          unselectedLabelColor: t.muted,
+                          indicatorColor: t.accent,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          dividerColor: t.line,
+                          tabs: [
+                            for (final tab in tabs)
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minWidth: box.maxWidth / tabs.length,
+                                  minHeight: NodeLaneTokens.minTapTarget,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: NodeLaneTokens.space12,
+                                    vertical: NodeLaneTokens.space8,
+                                  ),
+                                  child: Center(child: Text(tab)),
+                                ),
                               ),
-                            ),
-                            controller.index == 0
-                                ? _ChapterFilters(
-                                    manga: manga,
-                                    localArchive: localArchive,
-                                  )
-                                : controller.index == 1
-                                ? _ChapterSort(manga: manga)
-                                : const _ChapterHabits(),
                           ],
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: NodeLaneTokens.bubbleContentPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      spacing: NodeLaneTokens.space12,
+                      children: [
+                        switch (controller.index) {
+                          0 => _ChapterFilters(
+                            manga: manga,
+                            localArchive: localArchive,
+                          ),
+                          1 => _ChapterSort(manga: manga),
+                          _ => const _ChapterHabits(),
+                        },
+                        Text(
+                          controller.index == 2
+                              ? l10n.comic_chapter_habits_hint
+                              : l10n.chapter_settings_live,
+                          style: t.readerSecondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -136,78 +174,55 @@ class _ChapterFilters extends ConsumerWidget {
         (value) => ref.read(bookmarked.notifier).setType(value),
       ),
     ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          MobileSettingsGroup(
-            spacing: 12,
-            children: [
-              for (final filter in filters)
-                NodeLaneChoiceRow<int>(
-                  compact: true,
-                  key: ValueKey('chapter-filter-${filter.$1}'),
-                  title: filter.$1,
-                  value: filter.$2,
-                  segments: [
-                    for (final option in [
-                      (0, l10n.bookshelf_filter_any),
-                      (1, l10n.bookshelf_filter_include),
-                      (2, l10n.bookshelf_filter_exclude),
-                    ])
-                      ButtonSegment(
-                        value: option.$1,
-                        label: Text(
-                          option.$2,
-                          semanticsLabel: '${filter.$1}, ${option.$2}',
-                        ),
-                      ),
-                  ],
-                  onChanged: filter.$3,
-                ),
-            ],
+    final options = [
+      (0, l10n.bookshelf_filter_any),
+      (1, l10n.bookshelf_filter_include),
+      (2, l10n.bookshelf_filter_exclude),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: NodeLaneTokens.space12,
+      children: [
+        NodeLaneGroupSurface(
+          outlined: true,
+          children: [
+            for (final (title, value, change) in filters)
+              NodeLaneOptionSwitch<int>(
+                title: title,
+                value: value,
+                options: options,
+                onChanged: change,
+              ),
+          ],
+        ),
+        if (names.isNotEmpty || excluded.isNotEmpty)
+          NodeLaneRow.card(
+            title: l10n.filter_scanlator_groups,
+            icon: NodeLaneIcons.of(context).groups,
+            onTap: () async {
+              final chosen = await pushBrowsePage<List<String>>(
+                context,
+                _ScanlatorDraft(names: names, excluded: excluded),
+              );
+              if (!context.mounted || chosen == null) return;
+              // A covered route's stream may be paused. Recheck the
+              // existing repository once at confirmation, not its cache.
+              final available = _groups(
+                chapterRepository.getAllByMangaIdIndex(manga.id),
+              );
+              final next = chosen.where(available.contains).toSet().toList();
+              final current = ref.read(scanlatorProvider).$2;
+              if (next.length == current.length &&
+                  next.every(current.contains)) {
+                return;
+              }
+              ref.read(scanlatorProvider.notifier).set(next);
+            },
+            value: excluded.isEmpty
+                ? l10n.chapter_scanlators_all
+                : l10n.chapter_scanlators_hidden(excluded.length),
           ),
-          if (names.isNotEmpty || excluded.isNotEmpty)
-            MobileSettingsGroup(
-              spacing: 0,
-              children: [
-                NodeLaneRow(
-                  title: l10n.filter_scanlator_groups,
-                  icon: NodeLaneIcons.of(context).groups,
-                  onTap: () async {
-                    final chosen = await pushBrowsePage<List<String>>(
-                      context,
-                      MobileScanlatorFilterPage(
-                        names: names,
-                        excluded: excluded,
-                      ),
-                    );
-                    if (!context.mounted || chosen == null) return;
-                    // A covered route's stream may be paused. Recheck the
-                    // existing repository once at confirmation, not its cache.
-                    final available = _groups(
-                      chapterRepository.getAllByMangaIdIndex(manga.id),
-                    );
-                    final next = chosen
-                        .where(available.contains)
-                        .toSet()
-                        .toList();
-                    final current = ref.read(scanlatorProvider).$2;
-                    if (next.length == current.length &&
-                        next.every(current.contains)) {
-                      return;
-                    }
-                    ref.read(scanlatorProvider.notifier).set(next);
-                  },
-                  value: excluded.isEmpty
-                      ? l10n.chapter_scanlators_all
-                      : l10n.chapter_scanlators_hidden(excluded.length),
-                ),
-              ],
-            ),
-        ],
-      ),
+      ],
     );
   }
 }
@@ -240,72 +255,48 @@ class _ChapterSort extends ConsumerWidget {
       (3, l10n.by_name),
     ];
     // The existing chapter comparator uses reverse=true for ascending order.
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          NodeLaneSegments<bool>(
-            segments: [
-              ButtonSegment(
-                value: true,
-                label: Text(l10n.bookshelf_sort_ascending),
-                icon: Icon(NodeLaneIcons.of(context).ascending),
-              ),
-              ButtonSegment(
-                value: false,
-                label: Text(l10n.bookshelf_sort_descending),
-                icon: Icon(NodeLaneIcons.of(context).descending),
-              ),
-            ],
-            value: sort.reverse ?? false,
-            onChanged: (value) {
-              final current = ref.read(provider);
-              if (value != current.reverse) {
-                ref.read(provider.notifier).set(current.index!);
-              }
-            },
-          ),
-          const SizedBox(height: 16),
-          MobileSettingsGroup(
-            children: [
-              for (final choice in choices)
-                NodeLaneRow(
-                  title: choice.$2,
-                  selected: sort.index == choice.$1,
-                  onTap: () {
-                    if (choice.$1 != ref.read(provider).index) {
-                      ref.read(provider.notifier).set(choice.$1);
-                    }
-                  },
-                ),
-            ],
-          ),
-        ],
-      ),
+    return NodeLaneGroupSurface(
+      outlined: true,
+      children: [
+        NodeLaneOptionSwitch<int>(
+          value: sort.index ?? 1,
+          options: choices,
+          onChanged: (index) {
+            if (index != ref.read(provider).index) {
+              ref.read(provider.notifier).set(index);
+            }
+          },
+        ),
+        NodeLaneOptionSwitch<bool>(
+          options: [
+            (true, l10n.bookshelf_sort_ascending),
+            (false, l10n.bookshelf_sort_descending),
+          ],
+          value: sort.reverse ?? false,
+          onChanged: (value) {
+            final current = ref.read(provider);
+            if (value != (current.reverse ?? false)) {
+              ref.read(provider.notifier).set(current.index ?? 1);
+            }
+          },
+        ),
+      ],
     );
   }
 }
 
-/// Checkbox means hidden. This page never touches the persisted filter or the
-/// legacy provider draft, so both back and Cancel discard changes.
-class MobileScanlatorFilterPage extends StatefulWidget {
-  const MobileScanlatorFilterPage({
-    super.key,
-    required this.names,
-    required this.excluded,
-  });
+/// A checked group is hidden. Only confirmation returns the draft to the filter.
+class _ScanlatorDraft extends StatefulWidget {
+  const _ScanlatorDraft({required this.names, required this.excluded});
   final List<String> names, excluded;
 
   @override
-  State<MobileScanlatorFilterPage> createState() =>
-      _MobileScanlatorFilterPageState();
+  State<_ScanlatorDraft> createState() => _ScanlatorDraftState();
 }
 
-class _MobileScanlatorFilterPageState extends State<MobileScanlatorFilterPage> {
+class _ScanlatorDraftState extends State<_ScanlatorDraft> {
   late final _excluded = widget.excluded.toSet();
   final _search = TextEditingController();
-  String _query = '';
   bool _leaving = false;
 
   void _close({bool save = false}) {
@@ -326,105 +317,87 @@ class _MobileScanlatorFilterPageState extends State<MobileScanlatorFilterPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final query = _search.text.trim().toLowerCase();
     final visible = widget.names
-        .where(
-          (name) => name.toLowerCase().contains(_query.trim().toLowerCase()),
-        )
+        .where((name) => name.toLowerCase().contains(query))
         .toList();
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: l10n.filter_scanlator_groups),
-        body: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                      sliver: SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            NodeLaneTextField.search(
-                              controller: _search,
-                              hint: l10n.search,
-                              onChanged: (value) =>
-                                  setState(() => _query = value),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(l10n.chapter_scanlators_hint),
-                            const SizedBox(height: 8),
-                            Text(
-                              _excluded.isEmpty
-                                  ? l10n.chapter_scanlators_all
-                                  : l10n.chapter_scanlators_hidden(
-                                      _excluded.length,
-                                    ),
-                            ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton(
-                                onPressed: _excluded.isEmpty
-                                    ? null
-                                    : () => setState(_excluded.clear),
-                                child: Text(l10n.reset),
-                              ),
-                            ),
-                            if (visible.isEmpty) Text(l10n.no_result),
-                          ],
-                        ),
-                      ),
+    return MobileBrowsePage.form(
+      title: l10n.filter_scanlator_groups,
+      body: CustomScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              NodeLaneTokens.gutter,
+              NodeLaneTokens.space8,
+              NodeLaneTokens.gutter,
+              NodeLaneTokens.space12,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  NodeLaneTextField.search(
+                    controller: _search,
+                    hint: l10n.search,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: NodeLaneTokens.space16),
+                  Text(l10n.chapter_scanlators_hint),
+                  const SizedBox(height: NodeLaneTokens.space8),
+                  Text(
+                    _excluded.isEmpty
+                        ? l10n.chapter_scanlators_all
+                        : l10n.chapter_scanlators_hidden(_excluded.length),
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      onPressed: _excluded.isEmpty
+                          ? null
+                          : () => setState(_excluded.clear),
+                      child: Text(l10n.reset),
                     ),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: NodeLaneTokens.gutter,
-                      ),
-                      sliver: SliverList.builder(
-                        itemCount: visible.length,
-                        itemBuilder: (_, index) => NodeLaneRow.card(
-                          title: visible[index],
-                          checkable: true,
-                          selected: _excluded.contains(visible[index]),
-                          first: index == 0,
-                          last: index == visible.length - 1,
-                          onTap: () => setState(() {
-                            _excluded.contains(visible[index])
-                                ? _excluded.remove(visible[index])
-                                : _excluded.add(visible[index]);
-                          }),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  if (visible.isEmpty) Text(l10n.no_result),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _close,
-                        child: Text(l10n.cancel),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () => _close(save: true),
-                        child: Text(l10n.filter),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: NodeLaneTokens.gutter,
+            ),
+            sliver: SliverList.builder(
+              itemCount: visible.length,
+              itemBuilder: (_, index) => NodeLaneRow.card(
+                title: visible[index],
+                checkable: true,
+                selected: _excluded.contains(visible[index]),
+                first: index == 0,
+                last: index == visible.length - 1,
+                onTap: () => setState(() {
+                  if (!_excluded.add(visible[index])) {
+                    _excluded.remove(visible[index]);
+                  }
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomAction: NodeLaneModalActions(
+        actions: [
+          NodeLaneDialogAction(
+            label: l10n.cancel,
+            secondary: true,
+            onPressed: _close,
+          ),
+          NodeLaneDialogAction(
+            label: l10n.filter,
+            onPressed: () => _close(save: true),
+          ),
+        ],
       ),
     );
   }
@@ -439,27 +412,18 @@ class _ChapterHabits extends ConsumerWidget {
       String title,
       ChapterSwipeAction value,
       ValueChanged<ChapterSwipeAction> onChanged,
-    ) => NodeLaneChoiceRow<ChapterSwipeAction>(
+    ) => NodeLaneOptionSwitch<ChapterSwipeAction>(
       title: title,
       value: value,
-      segments: [
+      options: [
         for (final action in ChapterSwipeAction.values)
-          ButtonSegment(
-            value: action,
-            label: Text(getChapterSwipeActionName(action, context)),
-          ),
+          (action, getChapterSwipeActionName(action, context)),
       ],
       onChanged: onChanged,
     );
-    return Column(
+    return NodeLaneGroupSurface(
+      outlined: true,
       children: [
-        Padding(
-          padding: NodeLaneTokens.groupPadding,
-          child: Text(
-            l.comic_chapter_habits_hint,
-            style: NodeLaneTokens.of(context).readerSecondary,
-          ),
-        ),
         choices(
           l.chapter_swipe_start,
           ref.watch(chapterSwipeStartActionStateProvider),

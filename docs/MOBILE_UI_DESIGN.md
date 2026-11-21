@@ -41,9 +41,9 @@ Flutter 图标集中在 [`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)，�
 | 输入 | `NodeLaneTextField`，搜索使用 `.search` 配置 |
 | 操作 | `NodeLaneIconButton`、`NodeLaneMenuButton`、`NodeLaneCloseButton`、`NodeLaneToolbarAction`、`NodeLaneSecondaryButton`；主按钮沿用共享主题的 Flutter 按钮 |
 | 设置 | `NodeLaneRow`／`.card`、`NodeLaneSwitchRow`、`NodeLaneDisclosure`、`MobileSettingsChoice` |
-| 选择与数值 | `NodeLaneSegments`、`NodeLaneTabSegments`、`NodeLaneChoiceRow`、`NodeLaneSwitch`、`NodeLaneSliderRow`、`NodeLaneNumberRow`／`NodeLaneNumberPicker` |
+| 选择与数值 | `NodeLaneOptionSwitch`（按选项文字宽度分列）、`NodeLaneSegments`、`NodeLaneTabSegments`、`NodeLaneChoiceRow`、`NodeLaneSwitch`、`NodeLaneSliderRow`、`NodeLaneNumberRow`／`NodeLaneNumberPicker` |
 | 卡片与标记 | `NodeLaneChoiceCard`、`NodeLaneCoverBadge`；业务卡片组合这些控件 |
-| 模态 | `showNodeLaneBubble`（锚定气泡）、`NodeLaneCatalogSheet`、`NodeLaneSheetSurface`、`NodeLaneDialog`、`NodeLaneAlertDialog`、`NodeLaneModalActions`、`NodeLaneDialogAction` |
+| 模态 | `showNodeLaneBubble`（锚定气泡）、`NodeLaneBubbleFlow`（气泡内逐级返回）、`NodeLaneCatalogSheet`、`NodeLaneSheetSurface`、`NodeLaneDialog`、`NodeLaneAlertDialog`、`NodeLaneModalActions`、`NodeLaneDialogAction` |
 | 状态 | `NodeLaneNotice`／`showNodeLaneNotice`、`NodeLaneEmptyState`、`NodeLaneSkeleton`、`NodeLaneProgress` |
 | 批量选择 | `nodeLaneSelectionAppBar`、`NodeLaneSelectionBar` |
 
@@ -80,14 +80,15 @@ Flutter 图标集中在 [`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)，�
 
 书架、更新、来源根页从媒体菜单与操作开始，浏览器从书签、标签、更多和搜索框开始，更多从账号摘要与搜索开始。二级页复用居中紧凑顶栏，阅读器与网页不显示应用根底栏。隐藏媒体、导航顺序和角标沿用偏好；阅读历史用于恢复、统计和备份，没有独立入口，网页历史见浏览器一节。
 
-- 书架使用 `NodeLanePageHeading.toolbar`、共享搜索与筛选；分类为可横滑胶囊，计数、全选与可见作品使用同一筛选快照。
+- 书架顶栏放媒体切换、更新／停止、导入、筛选和更多，下方是居中的搜索框。导入、筛选／排序／显示与更多操作使用浏览器同款锚定气泡；种子、选择来源、设置分类和移除确认使用可返回的独立页面。批量栏保留常用操作，「更多」从按钮上方展开。
+- 只展示有作品的可见分类，分类是否出现按搜索前的书架判断，管理页仍可编辑空分类。窄屏横滑切换，宽屏左栏独立滚动、右栏展示作品；唯一的「全部」不占分类栏。计数和随机打开使用当前筛选结果；全选、反选只改变当前分类和筛选范围内的作品，保留范围外的选择。
 - 四种显示模式由 `MobileBookshelfCard` 绘制。常规手机舒适两列、紧凑／仅封面三列，随屏宽与字体缩放调整；手机不读取每行列数，桌面／电视和来源保留各自偏好。
 - 网格封面比例 1:1.08、圆角 10，书名最多两行，身份单行；列表缩略图 64×92。未读与下载标记分列封面顶部，零值隐藏，超过 999 显示 999+，读屏保留真实数量。
 - 本地作品只显示一次本地身份，在线作品按偏好显示来源／语言。续读使用共享圆形按钮，独立于卡片命中；多选隐藏徽章与续读，显示选择圈。
-- 未读完恢复原进度，全部已读仍可从阅读顺序中的首章首屏打开，不清空阅读记录。长按或选择作品进入多选，全选／反选只作用于当前可见结果。
+- 未读完恢复原进度，全部已读仍可从阅读顺序中的首章首屏打开，不清空阅读记录。长按作品或在「更多」中点「选择作品」进入多选。
 - 筛选、排序、显示分区即时保存且各自保持位置；排序条件与方向分开。来源筛选使用可搜索草稿，确认时过滤失效来源；仓库按最新记录只修改目标字段。
 - 空库引导浏览对应媒体来源或本地导入；无搜索结果提供清空与调整筛选，不能把分类无结果显示为空库。
-- 本地导入使用系统选择器：漫画 ZIP／CBZ、小说 EPUB、动画原视频格式。取消可重选，处理中防重复，未知写入结果提示先核对。
+- 书架导入、空书架的导入按钮及本地详情的添加章节使用同一个导入气泡。点「选择文件」进入系统选择器；漫画 ZIP／CBZ、小说 EPUB、动画原视频格式。取消选择后仍可在原气泡重选，保留 EPUB 拆章选项；处理中防重复，未知写入结果提示先核对。
 - 批量分类取原对象分类并集，保存前重读记录、过滤失效分类；已收藏单本保留隐藏分类。移除书架记录和下载文件独立选择、默认不选，取消保留选择，失败提示核对部分结果。
 
 ### Android 平板
@@ -96,9 +97,9 @@ Flutter 图标集中在 [`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)，�
 
 | 页面 | 宽屏用法 |
 | --- | --- |
-| 书架、更新、追踪 | 书架将搜索和操作合并为一行；有多个分类时，分类与计数在封面旁常驻。更新让媒体选择与时间线并排；追踪将服务与搜索放在结果旁。 |
+| 书架、更新、追踪 | 书架分类与作品分栏，搜索框居中收窄。更新让媒体选择与时间线并排；追踪将服务与搜索放在结果旁。 |
 | 来源与搜索 | 目录独占整页，筛选在顶部。打开网站后展开「目录｜站内作品」，再选作品可展开「目录｜站内作品｜作品详情」。宽度不足时优先显示最近的一至两层。每栏的操作菜单贴近本栏按钮，表单使用独立页面。 |
-| 作品与阅读 | 封面、简介、阅读入口与章节目录独立滚动；目录筛选固定在目录上方。漫画阅读器将进度与操作并排放在底部，不改变画面尺寸。 |
+| 作品与阅读 | 详情按实际可用宽度显示一至三栏，目录工具固定在章节上方。漫画阅读器将进度与操作并排放在底部，不改变画面尺寸。 |
 | 浏览器 | 宽屏首页左栏是全部常用网站，右栏从续读开始、下接最近访问。网页工具可排进地址栏，窗口收窄后移到底栏；两种布局使用相同按钮、气泡和网页实例。 |
 | 更多与工具 | 账号、搜索与常用入口在设置分组旁；日历和当日作品并排。设置表单、分类管理和下载队列限制行宽；欢迎页将介绍与当前步骤并排。 |
 
@@ -118,7 +119,7 @@ Flutter 图标集中在 [`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)，�
 
 ## 来源与搜索
 
-平板运行截图：[目录筛选与管理菜单](images/android-tablet-source-filters.webp) → [站内工具](images/android-tablet-source-website.webp) → [作品操作](images/android-tablet-source-book.webp)；[新增来源表单](images/android-tablet-source-request.webp)。安装、同步频率、来源身份和宿主执行边界见[来源插件](SOURCE_PLUGINS.md)。
+平板运行截图：[目录筛选与管理菜单](images/android-tablet-source-filters.webp) → [站内工具](images/android-tablet-source-website.webp)；[新增来源表单](images/android-tablet-source-request.webp)。安装、同步频率、来源身份和宿主执行边界见[来源插件](SOURCE_PLUGINS.md)。
 
 - 官方／第三方分区共用 `SourceWebsiteCard`；常用位于首个可见分组，其余目录不重复列出。长按网站在手指旁选固定、最新内容、原网页、说明或设置。点分类数量直接看完整资料。
 - 网站卡片显示名称、语言、分类、收费底带及独立 18+ 切角。标准字号高 136，随窄屏／大字号统一增高；操作位承载安装、更新、重试和常用管理。缺资料保持未标注，成人标记只读取 `isNsfw`。
@@ -147,10 +148,13 @@ Flutter 图标集中在 [`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)，�
 
 ## 漫画详情与阅读
 
-- 详情按封面与书名、阅读／收藏、简介与题材、次要操作、目录排列。封面 132×188，点封面查看、点标题搜索、长按复制；空简介不占位，长文及窄屏可换行。
-- `MobileDetailOverview`、`MobileDetailPrimaryActions` 和 `MobileDetailShortcuts` 组合共享控件。更多区域按展开创建查询，收起释放；原网页、追踪、日历、迁移、分享及本地编辑条件继续来自业务。
+- 窄屏将作品卡、资料与章节放在同一滚动页。双栏左侧是作品与资料，右侧是章节；三栏从左到右是作品与阅读／收藏、章节、简介／题材与快捷操作。按详情本身的可用宽度和字号排布，嵌入来源目录时不按整块屏幕计算。切换栏数保持可见章节。
+- 点封面查看、点书名搜索、长按复制。没有简介或题材时不显示空区；网页、追踪、日历、推荐、关联作品或本地编辑按实际能力直接排列，不再藏在折叠区。
 - 刷新保留已有详情与章节，只为缺失区域显示骨架；等待目录时不显示零章节或无结果，收藏仍可用。阅读入口由 `MobileReaderEntryState` 保留封面、书名和章节，失败重试共用原请求。
-- 详情右上角的下载范围和作品操作各自就地展开；菜单标明书名，下载范围按当前目录筛选确定。章节区的筛选按钮进入独立设置页，三态筛选和排序方向即时应用；翻译组用可搜索排除草稿，确认前核对仍存在的组。章节列表按需构建，书签、已读、进度与下载各自独立。
+- [作品更多](images/android-detail-tool-more.webp)上排是刷新、分享、导出，下方是该作品可用的管理项。分类与分类管理、迁移与批量迁移各步骤、扩展设置均在同一气泡内逐级返回。分享和导出目录使用系统选择器。
+- 固定目录栏在章节数量旁放[下载](images/android-detail-tool-download.webp)或本地添加，另一端放[章节设置](images/android-detail-tool-settings.webp)，两个触控区域至少相隔 24 dp。下载可取接下来的 1／5／10／25 章、未读或全部，范围取当前筛选结果。
+- 章节设置按「筛选／排序／设置」切换。不限／包含／排除、排序字段和方向、左右滑动动作共用带勾的单选卡。滑动方向标题独占一行，四个动作最多两列，气泡变窄或字号增大时按最长标签减少列数。筛选和排序只影响当前作品，滑动习惯对所有书籍即时生效。翻译组在气泡内搜索，确认时核对仍存在的组。
+- 章节卡按需构建，正文、下载与长按选择保留独立命中区域，按章节 ID 保持选择。
 - 书架与章节共用批量栏，取消、数量、全选／反选和底部常用动作明确可达。下载／删除按原条件提供；本地删除章节保留原包，在线删除只清理下载，本地目录确实为空才移除漫画。
 - 删除确认固定对象范围，完整名单可滚动；处理中防重入和返回，取消保留选择，失败提示核对。写入按最新记录合并，不能重建已删除记录或覆盖期间更新的进度。
 - 工具栏叠放而不挤压阅读画面；底部为章节、原图／译图、阅读，上方为返回、书名／章节、书签和更多。隐藏工具栏释放焦点，短屏和大字号可滚动，页码与自动滚动按钮避让安全区。
@@ -325,7 +329,9 @@ Simkl 续期共用一次在途请求；401 先重读新令牌，必要时续期�
 | 分栏切换性能基线（`38e60dd3`） | MuMu API 32 x86_64，1920×1080、密度 260。24 个网站的目录收起筛选，预热一次，再打开 FEEL web 并返回 6 次。记录 `Flutter.Frame`，以构建或光栅化任一阶段超过 16.7 ms 计：Debug 从 69/181 帧降至 30/266 帧；Profile 为 13/324 帧，构建／光栅化 P95 为 3.57／16.51 ms。Profile 完成后 `dumpsys meminfo` 主进程 PSS 约 290 MiB，为单次观察值。 | ARM 真机、iOS、长时间切换和 120 Hz |
 | Android 平板 | MuMu API 32 x86_64 Debug：横竖往返及返回详情仍为本地 CBZ 第 7/12 页；Gecko 本地夹具保持加载计数和草稿。[与系统设置并排](images/android-tablet-system-split.webp)时拖动系统分隔条，表单调整列数，输入仍在；退出系统分屏恢复全屏目录。 | ARM 真机、其他系统及折叠屏铰链、真实来源与翻译服务 |
 | 共享组件 | 单元／widget 覆盖草稿、重复提交、迟到结果、字段合并、释放、窄屏大字号、RTL、深浅色；iOS 模拟器检查输入、选择、滚轮、通知及键盘避让 | Android 各细项运行、完整读屏、原生 Reduce Transparency 联动 |
-| 书架与阅读 | iOS 模拟器检查常规书架／详情、本地阅读、设置、双向跨章、前插／变高后的锚点和故障重试；设置细项见[阅读验证](design/reader-settings-redesign/design.md#验证与边界) | Android 阅读设置交互、全模式／格式、长章节、真实分类／书签／删除／导出及恢复 |
+| 书架与阅读 | MuMu 横屏实测搜索框宽 560 dp，[排序气泡](images/android-bookshelf-sort-bubble.webp)转到 430 dp 竖屏保留标签；全选三本、打开分类和移除确认后取消仍选中三本。既有 iOS 阅读器验收见[阅读验证](design/reader-settings-redesign/design.md#验证与边界)。 | 新书架的 iOS 和 Android 真机；真实删除、迁移及恢复 |
+| 本地导入与漫画详情 | MuMu Debug：从[导入气泡](images/android-local-file-import-bubble.webp)取消系统选择、再选 ZIP 导入；在详情追加第二章、打开阅读器并返回。样书在 [1182 dp 三栏](images/android-comic-detail-three.webp)、[874 dp 双栏](images/android-comic-detail-two.webp)、[430 dp 单列](images/android-comic-detail-one.webp)重排，转屏保留选章。FEEL web 嵌入详情按右栏宽度排成单列；关闭下载范围和筛选气泡回到原目录位置，退出详情回到原作品卡。Widget 用 100 章验证限宽往返后的目录锚点。 | 新详情的 iOS／Android 真机、系统选择器实际导入 EPUB 和视频 |
+| 详情气泡工具 | MuMu：从书架作品打开分类管理并逐级取消；FEEL web 实测迁移搜索、批量迁移到目标来源选择、扩展设置、取消系统分享与目录选择。转 430 dp 竖屏保留排序标签及目录位置。滑动动作在 390 dp 中文界面呈两列、[320 dp／200% 系统字号](images/android-detail-swipe-large.webp)呈单列；更改一个方向后重开仍选中，另一个方向未改变。Widget 验证迁移写入时拦截返回和点外侧，失败不会重复提交。 | iOS、Android 真机；实际迁移写入、向其他应用分享及写出元数据 |
 | 来源与网页 | iOS 模拟器检查开始页、原位输入、标签及部分恢复；DOM 夹具覆盖桥接；Android 真实翻译与归档范围见[翻译验证](TRANSLATION_ARCHITECTURE.md#验证与待办)，站点验收见[来源文档](SOURCE_PLUGINS.md#代码与验证入口) | 动态站点登录、清除登录、系统回收恢复、iOS 归档与真实送译 |
 | 来源目录与操作分栏 | MuMu 横屏筛日语后由 24 站变为 7 站；FEEL web 可逐级展开三栏、转屏和逐级返回。实测卡片长按、站内切换列表／封面、选择 FEEL YOUNG 并应用、作品与下载菜单、章节设置返回原作品；430 dp 竖屏可从管理菜单进仓库。Widget 另覆盖中间宽度、切站、滚动锚点和减少动画。 | iOS、Android 实体平板和折叠屏 |
 | 浏览器首页与标签 | MuMu API 32 x86_64 Debug：同批章节在 [1920×1080 分栏](images/android-tablet-browser-home.webp)显示四张，加高后六个示例都可见，[430 dp 竖屏](images/android-phone-browser-clip.webp)显示三张；站名已遮挡。六个引擎均返回真实[联想提示](images/android-browser-search-suggestions.webp)，转屏后仍可点选回填。Widget 用 42 站验证左栏滑动、右栏及地址框不移位。另已验[全部续读](images/android-browser-reading-bubble.webp)搜索重开、与书签独立移除、夹页冷启动恢复、标签关闭／撤销、后台网页草稿与加载计数及 FEEL web 专注阅读往返。 | 新版 iOS、ARM 真机、外接键盘与不同输入法、系统分享、渲染进程回收和 Release 性能 |

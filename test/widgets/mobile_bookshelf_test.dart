@@ -7,6 +7,8 @@ import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_card.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/category.dart';
+import 'package:mangayomi/modules/library/library_screen.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_header.dart';
 import 'package:mangayomi/modules/main_view/widgets/nodelane_mobile_navigation.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -33,6 +35,35 @@ Widget app(Widget child, {double scale = 1, bool dark = false}) => MaterialApp(
 );
 
 void main() {
+  test(
+    'only populated, visible shelf categories occupy space, in user order',
+    () {
+      final categories = [
+        for (var id = 1; id <= 4; id++)
+          Category(
+            id: id,
+            name: 'Category $id',
+            forItemType: ItemType.manga,
+            pos: 4 - id,
+            hide: id == 3,
+          ),
+      ];
+      final book = Manga.fromJson({
+        'favorite': true,
+        'status': Status.unknown.index,
+        'categories': [1, 2, 3],
+      });
+      expect(
+        visibleShelfCategories(
+          categories,
+          populatedBy: [book],
+        ).map((c) => c.id),
+        [2, 1],
+      );
+      expect(visibleShelfCategories(categories, populatedBy: []), isEmpty);
+      expect(categories.map((c) => c.id), [1, 2, 3, 4]);
+    },
+  );
   testWidgets(
     'Android rail reflows to phone tabs without losing the active library or page',
     (tester) async {
@@ -616,8 +647,8 @@ void main() {
                   filterLabel: '筛选',
                   controller: controller,
                   onSearchChanged: () => changes++,
-                  onImport: () => imports++,
-                  onFilter: () => filters++,
+                  onImport: (_) => imports++,
+                  onFilter: (_) => filters++,
                   mediaMenu: MobileMediaMenu(
                     value: ItemType.manga,
                     availableTypes: ItemType.values,

@@ -2,6 +2,8 @@ import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -198,6 +200,9 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
         heightFactor: NodeLaneTokens.readerSheetFraction,
         child: body,
       );
+    }
+    if (NodeLaneBubbleFlow.contains(context)) {
+      return MobileBrowsePage(title: widget.title, body: body);
     }
     return NodeLaneSurface(
       child: Scaffold(

@@ -5,6 +5,7 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/manga/detail/chapter_bulk_actions.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_selection_bar.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -185,62 +186,55 @@ class _MobileChapterDeleteDialogState extends State<MobileChapterDeleteDialog> {
     return PopScope(
       canPop: !_busy,
       child: NodeLaneAlertDialog(
-        scrollable: true,
         title: Text(
           widget.localArchive
               ? l10n.chapter_delete_records
               : l10n.bookshelf_remove_downloads,
         ),
-        content: SizedBox(
-          width: 420,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(widget.bookTitle, style: NodeLaneTokens.of(context).label),
+            const SizedBox(height: NodeLaneTokens.space12),
+            Text(
+              widget.localArchive
+                  ? l10n.chapter_delete_local_hint
+                  : l10n.bookshelf_remove_downloads_hint,
+            ),
+            if (widget.localArchive && widget.lastChapters) ...[
+              const SizedBox(height: NodeLaneTokens.space12),
               Text(
-                widget.bookTitle,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                l10n.chapter_delete_last_hint,
+                style: TextStyle(color: error),
               ),
-              const SizedBox(height: 12),
-              Text(
-                widget.localArchive
-                    ? l10n.chapter_delete_local_hint
-                    : l10n.bookshelf_remove_downloads_hint,
-              ),
-              if (widget.localArchive && widget.lastChapters) ...[
-                const SizedBox(height: 12),
-                Text(
-                  l10n.chapter_delete_last_hint,
-                  style: TextStyle(color: error),
-                ),
-              ],
-              const SizedBox(height: 8),
-              NodeLaneDisclosure(
-                title: l10n.chapter_selected_count(widget.titles.length),
-                icon: NodeLaneIcons.of(context).chapters,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxHeight: NodeLaneTokens.rowHeight * 3,
-                  ),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    key: const ValueKey('chapter-delete-titles'),
-                    itemCount: widget.titles.length,
-                    itemBuilder: (_, index) =>
-                        NodeLaneRow(title: widget.titles[index]),
-                  ),
-                ),
-              ),
-              if (_failed) ...[
-                const SizedBox(height: NodeLaneTokens.space16),
-                NodeLaneNotice(
-                  message: l10n.chapter_action_incomplete,
-                  kind: NodeLaneNoticeKind.error,
-                  contained: false,
-                ),
-              ],
             ],
-          ),
+            const SizedBox(height: NodeLaneTokens.space8),
+            NodeLaneDisclosure(
+              title: l10n.chapter_selected_count(widget.titles.length),
+              icon: NodeLaneIcons.of(context).chapters,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxHeight: NodeLaneTokens.rowHeight * 3,
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  key: const ValueKey('chapter-delete-titles'),
+                  itemCount: widget.titles.length,
+                  itemBuilder: (_, index) =>
+                      NodeLaneRow(title: widget.titles[index]),
+                ),
+              ),
+            ),
+            if (_failed) ...[
+              const SizedBox(height: NodeLaneTokens.space16),
+              NodeLaneNotice(
+                message: l10n.chapter_action_incomplete,
+                kind: NodeLaneNoticeKind.error,
+                contained: false,
+              ),
+            ],
+          ],
         ),
         actions: [
           NodeLaneDialogAction(

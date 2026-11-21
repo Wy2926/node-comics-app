@@ -3749,9 +3749,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get increase => 'Artır';
 
   @override
-  String get chapter_swipe_actions => 'Bölüm kaydırma eylemleri';
-
-  @override
   String get chapter_swipe_start => 'Sağa kaydır';
 
   @override
@@ -4226,9 +4223,6 @@ class AppLocalizationsTr extends AppLocalizations {
       'İşlem tamamlanmadı. Bazı çalışmalar veya dosyalar işlenmiş olabilir. Devam etmeden önce bu iletişim kutusunu kapatın ve kitaplığınızı ve indirilenleri kontrol edin.';
 
   @override
-  String get bookshelf_processing => 'İşleniyor…';
-
-  @override
   String get bookshelf_mark_read => 'Okumayı işaretle';
 
   @override
@@ -4599,10 +4593,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Seçilen çalışmaları görüntüle';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Kitap rafınıza eklemek için yerel bir dosya seçin.';
 
   @override
   String get bookshelf_import_canceled_hint =>

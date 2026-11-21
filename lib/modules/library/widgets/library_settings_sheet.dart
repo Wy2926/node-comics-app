@@ -1,4 +1,4 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +11,7 @@ import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_sort_list_tile_widget.dart';
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -26,9 +27,11 @@ void showLibrarySettingsSheet({
   required List<Manga> entries,
 }) {
   if (isMobile && !isTv) {
-    showNodeLaneCatalogSheet<void>(
+    showNodeLaneBubble<void>(
       context,
-      MobileBookshelfSettings(
+      label: context.l10n.bookshelf_settings,
+      width: NodeLaneTokens.bubbleSettingsWidth,
+      child: MobileBookshelfSettings(
         settings: settings,
         entries: entries,
         itemType: itemType,

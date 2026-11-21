@@ -1,24 +1,24 @@
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Collects either an address or a file choice; importing stays with the caller.
-class MobileBookshelfTorrentSheet extends StatefulWidget {
-  const MobileBookshelfTorrentSheet({super.key, required this.onAdd});
+class MobileBookshelfTorrentPage extends StatefulWidget {
+  const MobileBookshelfTorrentPage({super.key, required this.onAdd});
   final Future<void> Function(String? url) onAdd;
 
   @override
-  State<MobileBookshelfTorrentSheet> createState() =>
-      _MobileBookshelfTorrentSheetState();
+  State<MobileBookshelfTorrentPage> createState() =>
+      _MobileBookshelfTorrentPageState();
 }
 
-class _MobileBookshelfTorrentSheetState
-    extends State<MobileBookshelfTorrentSheet> {
+class _MobileBookshelfTorrentPageState
+    extends State<MobileBookshelfTorrentPage> {
   final _url = TextEditingController();
   bool _busy = false, _failed = false, _leaving = false;
 
@@ -54,12 +54,13 @@ class _MobileBookshelfTorrentSheetState
     final l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
-      child: NodeLaneCatalogSheet(
+      child: MobileBrowsePage.form(
         title: l10n.add_torrent,
-        canClose: !_busy,
-        heightFactor: .9,
-        fitContent: true,
-        bottom: _failed
+        leading: NodeLaneCloseButton(
+          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          onPressed: _busy ? null : () => Navigator.maybePop(context),
+        ),
+        bottomAction: _failed
             ? null
             : NodeLaneModalActions(
                 actions: [
@@ -70,8 +71,7 @@ class _MobileBookshelfTorrentSheetState
                   ),
                 ],
               ),
-        child: ListView(
-          shrinkWrap: true,
+        body: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.all(NodeLaneTokens.gutter),
           children: [

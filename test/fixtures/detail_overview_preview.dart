@@ -51,17 +51,11 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                 title: '',
                 onBack: () {},
                 actions: [
-                  MobileMangaDownloadActionsButton(
-                    bookTitle: '海岸来信',
-                    hasChapters: true,
-                    onSelected: (_) async {},
-                  ),
-                  const SizedBox(width: NodeLaneTokens.space8),
                   MobileMangaDetailActionsButton(
                     bookTitle: '海岸来信',
                     localArchive: false,
                     favorite: true,
-                    onSelected: (_) async {},
+                    onSelected: (_, _) async {},
                   ),
                 ],
               ),
@@ -81,7 +75,7 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                         ),
                         child: Icon(
                           icons.manga,
-                          size: 48,
+                          size: NodeLaneTokens.emptyStateIconSize,
                           color: colors.accent,
                         ),
                       ),
@@ -103,26 +97,28 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                         child: const Text('已在书架'),
                       ),
                     ),
-                    synopsis: MobileDetailSynopsis(
-                      title: '简介',
-                      text: '一封寄错地址的信，让少女回到久别的海边小镇。在潮汐与旧日回忆之间，她逐渐找到了自己的答案。',
-                      expanded: _expanded,
-                      onChanged: (value) => setState(() => _expanded = value),
-                      genres: [
-                        for (final genre in ['日常', '治愈', '成长'])
-                          DetailGenreChip(
-                            label: genre,
-                            mobile: true,
-                            libraryLabel: '书架搜索',
-                            sourceLabel: '来源搜索',
-                            onSelected: (_) {},
-                          ),
-                      ],
-                    ),
-                    more: NodeLaneDisclosure(
-                      title: '更多',
-                      compact: true,
-                      child: MobileDetailShortcuts(
+                  ),
+                  information: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: NodeLaneTokens.space12,
+                    children: [
+                      MobileDetailSynopsis(
+                        title: '简介',
+                        text: '一封寄错地址的信，让少女回到久别的海边小镇。在潮汐与旧日回忆之间，她逐渐找到了自己的答案。',
+                        expanded: _expanded,
+                        onChanged: (value) => setState(() => _expanded = value),
+                        genres: [
+                          for (final genre in ['日常', '治愈', '成长'])
+                            DetailGenreChip(
+                              label: genre,
+                              mobile: true,
+                              libraryLabel: '书架搜索',
+                              sourceLabel: '来源搜索',
+                              onSelected: (_) {},
+                            ),
+                        ],
+                      ),
+                      MobileDetailShortcuts(
                         children: [
                           NodeLaneToolbarAction(
                             label: '网页',
@@ -141,23 +137,21 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  chapterHeading: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.loading ? '章节' : '章节 · 12',
-                          style: colors.detailSectionTitle,
-                        ),
-                      ),
-                      NodeLaneIconButton(
-                        busy: widget.loading,
-                        icon: icons.filter,
-                        tooltip: '筛选',
-                        onPressed: () {},
-                      ),
                     ],
+                  ),
+                  chapterHeading: MobileChapterTools(
+                    title: widget.loading ? '章节' : '章节 · 12',
+                    primary: MobileMangaDownloadActionsButton(
+                      bookTitle: '海岸来信',
+                      hasChapters: !widget.loading,
+                      onSelected: (_) async {},
+                    ),
+                    settings: NodeLaneIconButton(
+                      busy: widget.loading,
+                      icon: icons.adjustments,
+                      tooltip: '章节设置',
+                      onPressed: () {},
+                    ),
                   ),
                   empty: const MobileChapterListLoading(),
                   chapterCount: widget.loading ? 0 : 12,
@@ -176,9 +170,8 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
                     selected: false,
                     onTap: () {},
                     onLongPress: () {},
-                    trailing: SizedBox(
-                      width: 44,
-                      height: 44,
+                    trailing: SizedBox.square(
+                      dimension: NodeLaneTokens.minTapTarget,
                       child: Icon(icons.download, color: colors.accent),
                     ),
                   ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -15,28 +15,30 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
-import 'mobile_bookshelf_category_sheet.dart';
+import 'mobile_bookshelf_category_page.dart';
+import 'nodelane_bubble.dart';
 
-void showCategorySelectionDialog({
+import 'package:mangayomi/modules/more/categories/categories_screen.dart';
+
+Future<void> showCategorySelectionDialog({
   required BuildContext context,
   required WidgetRef ref,
   required ItemType itemType,
   Manga? singleManga,
   List<Manga>? bulkMangas,
-}) {
+}) async {
   assert(
     (singleManga != null) ^ (bulkMangas != null),
     "Provide either singleManga or bulkMangas, not both.",
   );
   if (isMobile && !isTv) {
-    _showMobileLibraryCategories(
+    return _showMobileLibraryCategories(
       context,
       ref,
       itemType,
       singleManga,
       bulkMangas,
     );
-    return;
   }
   final l10n = l10nLocalizations(context)!;
   final bool isBulk = bulkMangas != null;
@@ -45,7 +47,7 @@ void showCategorySelectionDialog({
   if (!isBulk && isFavorite) {
     categoryIds = List<int>.from(singleManga.categories ?? []);
   }
-  showDialog(
+  await showDialog<void>(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => _categoryDialogSurface(
@@ -349,39 +351,44 @@ Future<void> _showMobileLibraryCategories(
       for (final manga in targets) ...?manga.categories,
   };
   var editRequested = false;
-  final saved = await showNodeLaneCatalogSheet<bool>(
+  final saved = await pushBrowsePage<bool>(
     context,
-    Builder(
-      builder: (dialogContext) => Consumer(
-        builder: (_, sheetRef, _) {
-          final provider = getMangaCategorieStreamProvider(itemType: itemType);
-          final categories = sheetRef.watch(provider);
-          return MobileBookshelfCategorySheet(
-            categories: categories.asData?.value,
-            initialIds: initialIds,
-            bookCount: targets.length,
-            bookTitle: isBulk ? null : singleManga!.name,
+    Consumer(
+      builder: (page, pageRef, _) {
+        final provider = getMangaCategorieStreamProvider(itemType: itemType);
+        final categories = pageRef.watch(provider);
+        return MobileBookshelfCategoryPage(
+          categories: categories.asData?.value,
+          initialIds: initialIds,
+          bookCount: targets.length,
+          bookTitle: isBulk ? null : singleManga!.name,
+          isBulk: isBulk,
+          showHidden: !isBulk && !isFavorite,
+          loading: categories.isLoading,
+          readFailed: categories.hasError,
+          onRetry: () => pageRef.invalidate(provider),
+          onEdit: () {
+            if (ModalRoute.isCurrentOf(page) != true) return;
+            if (NodeLaneBubbleFlow.contains(page)) {
+              NodeLaneBubbleFlow.push<void>(
+                page,
+                CategoriesScreen(data: (true, itemType.index)),
+              );
+              return;
+            }
+            editRequested = true;
+            Navigator.pop(page, false);
+          },
+          onSave: (ids) => saveMobileLibraryCategories(
+            targets: targets,
+            itemType: itemType,
+            categoryIds: ids,
             isBulk: isBulk,
-            showHidden: !isBulk && !isFavorite,
-            loading: categories.isLoading,
-            readFailed: categories.hasError,
-            onRetry: () => sheetRef.invalidate(provider),
-            onEdit: () {
-              editRequested = true;
-              Navigator.pop(dialogContext, false);
-            },
-            onSave: (ids) => saveMobileLibraryCategories(
-              targets: targets,
-              itemType: itemType,
-              categoryIds: ids,
-              isBulk: isBulk,
-              isFavorite: isFavorite,
-            ),
-          );
-        },
-      ),
+            isFavorite: isFavorite,
+          ),
+        );
+      },
     ),
-    dismissible: false,
   );
   if (!context.mounted) return;
   if (saved == true && isBulk) {

@@ -17,6 +17,8 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/migrate_screen.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_migration.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_actions.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/source_fetch_gate.dart';
 
@@ -206,41 +208,48 @@ void main() {
   );
 
   testWidgets(
-    'confirmation submits once, blocks back while busy and does not retry a possibly partial write',
+    'inline confirmation submits once, guards system back and outside taps, and returns a partial failure to the same menu',
     (tester) async {
       final pending = Completer<void>();
       var writes = 0;
       MigrationPreviewOutcome? result;
       await mount(
         tester,
-        Builder(
-          builder: (context) => Scaffold(
-            body: TextButton(
-              onPressed: () async {
-                result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => preview(
-                      load: () async => MManga(
-                        chapters: List.generate(
-                          60,
-                          (i) => MChapter(name: 'Chapter $i'),
+        Scaffold(
+          appBar: AppBar(
+            actions: [
+              MobileMangaDetailActionsButton(
+                bookTitle: 'Seed',
+                localArchive: false,
+                favorite: true,
+                onSelected: (context, value) async {
+                  expect(value, 3);
+                  result =
+                      await NodeLaneBubbleFlow.push<MigrationPreviewOutcome>(
+                        context,
+                        preview(
+                          load: () async => MManga(
+                            chapters: List.generate(
+                              60,
+                              (i) => MChapter(name: 'Chapter $i'),
+                            ),
+                          ),
+                          confirm: (_, _) {
+                            writes++;
+                            return pending.future;
+                          },
                         ),
-                      ),
-                      confirm: (_, _) {
-                        writes++;
-                        return pending.future;
-                      },
-                    ),
-                  ),
-                );
-              },
-              child: const Text('Open preview'),
-            ),
+                      );
+                },
+              ),
+            ],
           ),
+          body: const Text('Original detail'),
         ),
       );
-      await tester.tap(find.text('Open preview'));
+      await tester.tap(find.byTooltip('Comic actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Migrate'));
       await tester.pumpAndSettle();
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -1200));
       await tester.pumpAndSettle();
@@ -250,6 +259,8 @@ void main() {
       await tester.pump();
       expect(writes, 1);
       await tester.binding.handlePopRoute();
+      await tester.pump();
+      await tester.tapAt(const Offset(2, 720));
       await tester.pump();
       expect(find.byType(MobileMigrationPreviewPage), findsOneWidget);
       pending.completeError(StateError('Write interrupted'));
@@ -264,6 +275,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(result, MigrationPreviewOutcome.failed);
       expect(writes, 1);
+      expect(find.text('Seed').hitTestable(), findsOneWidget);
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
+      expect(find.text('Original detail'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

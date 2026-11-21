@@ -9,47 +9,74 @@ import '../../../fixtures/detail_overview_preview.dart';
 
 void main() {
   testWidgets(
-    'a wide detail keeps its book in place and its visible chapter on resize',
+    'book, chapters and information reflow across three widths without losing the visible chapter',
     (tester) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(1120, 700);
       addTearDown(tester.view.reset);
       final scroll = ScrollController();
       addTearDown(scroll.dispose);
+      final available = ValueNotifier<double>(1120);
+      addTearDown(available.dispose);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: MobileDetailLayout(
-              controller: scroll,
-              overview: const SizedBox(height: 320, child: Text('Book')),
-              chapterHeading: const SizedBox(
-                height: 50,
-                child: Text('Chapters'),
+            body: ValueListenableBuilder<double>(
+              valueListenable: available,
+              builder: (_, width, child) => Align(
+                alignment: Alignment.topLeft,
+                child: SizedBox(width: width, child: child),
               ),
-              chapterCount: 100,
-              chapterBuilder: (_, i) =>
-                  SizedBox(height: 76, child: Text('Chapter $i')),
+              child: MobileDetailLayout(
+                controller: scroll,
+                overview: const SizedBox(height: 320, child: Text('Book')),
+                information: const SizedBox(
+                  height: 100,
+                  child: Text('Synopsis'),
+                ),
+                chapterHeading: const SizedBox(
+                  height: 50,
+                  child: Text('Chapters'),
+                ),
+                chapterCount: 100,
+                chapterBuilder: (_, i) =>
+                    SizedBox(height: 76, child: Text('Chapter $i')),
+              ),
             ),
           ),
         ),
       );
       final book = tester.getTopLeft(find.text('Book'));
       expect(book.dx, lessThan(tester.getTopLeft(find.text('Chapters')).dx));
+      expect(
+        tester.getTopLeft(find.text('Synopsis')).dx,
+        greaterThan(tester.getTopLeft(find.text('Chapters')).dx),
+      );
       scroll.jumpTo(76 * 30);
       await tester.pumpAndSettle();
       expect(tester.getTopLeft(find.text('Book')), book);
       expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
-      tester.view.physicalSize = const Size(580, 850);
+      available.value = 860;
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(find.text('Synopsis')).dx,
+        tester.getTopLeft(find.text('Book')).dx,
+      );
+      expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
+      available.value = 430;
       await tester.pumpAndSettle();
       expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
       expect(find.text('Book').hitTestable(), findsNothing);
-      tester.view.physicalSize = const Size(1120, 700);
+      available.value = 1120;
       await tester.pumpAndSettle();
       expect(find.text('Book').hitTestable(), findsOneWidget);
       expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
-    variant: TargetPlatformVariant.only(TargetPlatform.android),
+    variant: TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
   );
 
   testWidgets(
@@ -114,8 +141,18 @@ void main() {
     final library = tester.getRect(find.widgetWithText(FilledButton, '已在书架'));
     expect(read.width, library.width);
     expect(read.top, library.top);
-    expect(library.right, 370);
+    expect(
+      library.right,
+      lessThanOrEqualTo(
+        tester.getRect(find.byType(MobileDetailOverview)).right,
+      ),
+    );
     expect(tester.getTopLeft(find.text('第12话  海风的回信')).dy, lessThan(720));
+    final download = tester.getRect(find.byTooltip('下载'));
+    final settings = tester.getRect(find.byTooltip('章节设置'));
+    expect(settings.left - download.right, greaterThanOrEqualTo(24));
+    expect(download.width, greaterThanOrEqualTo(44));
+    expect(settings.width, greaterThanOrEqualTo(44));
     await tester.tap(find.text('继续阅读'));
     await tester.tap(find.text('已在书架'));
     expect((readCalls, libraryCalls), (1, 1));

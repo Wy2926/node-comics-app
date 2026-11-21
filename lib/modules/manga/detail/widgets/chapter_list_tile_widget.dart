@@ -85,7 +85,7 @@ class ChapterListTileWidget extends ConsumerWidget {
       child: isMobile && !isTv
           ? _mobileTile(context, ref, isLongPressed)
           : Material(
-              color: chapterList.contains(chapter)
+              color: chapterList.any((c) => c.id == chapter.id)
                   ? context.primaryColor.withValues(alpha: 0.4)
                   : (chapter.isFiller ?? false)
                   ? context.primaryColor.withValues(alpha: 0.15)
@@ -294,22 +294,28 @@ class ChapterListTileWidget extends ConsumerWidget {
       if (chapter.scanlator?.isNotEmpty ?? false) chapter.scanlator!,
       if (chapter.downloadSize?.isNotEmpty ?? false) chapter.downloadSize!,
     ];
-    return MobileChapterTile(
-      title: chapter.name ?? '',
-      metadata: metadata.join(' · '),
-      description: chapter.description,
-      read: chapter.isRead ?? false,
-      bookmarked: chapter.isBookmarked ?? false,
-      selecting: selecting,
-      selected: chapterList.contains(chapter),
-      thumbnail: chapter.thumbnailUrl == null
-          ? null
-          : _thumbnailPreview(context, chapter.thumbnailUrl),
-      trailing: !selecting && sourceExist && !(manga.isLocalArchive ?? false)
-          ? ChapterPageDownload(chapter: chapter, mobile: true)
-          : null,
-      onTap: () => _handleInteraction(ref, context),
-      onLongPress: () => _handleInteraction(ref),
+    return Semantics(
+      value: [
+        if (chapter.isRead != true) l10n.unread,
+        if (chapter.isBookmarked == true) l10n.bookmarked,
+      ].join(' · '),
+      child: MobileChapterTile(
+        title: chapter.name ?? '',
+        metadata: metadata.join(' · '),
+        description: chapter.description,
+        read: chapter.isRead ?? false,
+        bookmarked: chapter.isBookmarked ?? false,
+        selecting: selecting,
+        selected: selecting && chapterList.any((c) => c.id == chapter.id),
+        thumbnail: chapter.thumbnailUrl == null
+            ? null
+            : _thumbnailPreview(context, chapter.thumbnailUrl),
+        trailing: !selecting && sourceExist && !(manga.isLocalArchive ?? false)
+            ? ChapterPageDownload(chapter: chapter, mobile: true)
+            : null,
+        onTap: () => _handleInteraction(ref, context),
+        onLongPress: () => _handleInteraction(ref),
+      ),
     );
   }
 

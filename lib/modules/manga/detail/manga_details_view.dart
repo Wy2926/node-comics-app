@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/custom_floating_action_btn.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/mass_migration/services/mass_migration_service.dart';
 import 'package:mangayomi/modules/widgets/category_selection_dialog.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -30,6 +31,7 @@ class MangaDetailsView extends ConsumerStatefulWidget {
   final Manga manga;
   final bool sourceExist;
   final bool loading;
+  final bool refreshFailed;
   final Future<void> Function() onRefresh;
   const MangaDetailsView({
     super.key,
@@ -37,6 +39,7 @@ class MangaDetailsView extends ConsumerStatefulWidget {
     required this.manga,
     required this.onRefresh,
     this.loading = false,
+    this.refreshFailed = false,
   });
 
   @override
@@ -165,181 +168,152 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
-    bool? isLocalArchive = widget.manga.isLocalArchive ?? false;
+    final isLocalArchive = widget.manga.isLocalArchive ?? false;
     final mobile = isMobile && !isTv;
-    final page = Scaffold(
-      floatingActionButton: mobile ? null : _readingAction(false),
-      body: MangaDetailView(
-        loading: widget.loading,
-        readingAction: mobile ? _readingAction(true) : null,
-        titleDescription: mobile
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.loading &&
-                      !(widget.manga.author?.trim().isNotEmpty ?? false))
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: NodeLaneTokens.space4,
-                      ),
-                      child: NodeLaneSkeleton(
-                        height: NodeLaneTokens.space12,
-                        width: 96,
-                      ),
-                    )
-                  else
-                    Text(
-                      l10n.manga_author(
-                        (widget.manga.author?.trim().isNotEmpty ?? false)
-                            ? widget.manga.author!
-                            : l10n.unknown,
-                      ),
+    final favorite = widget.manga.favorite == true;
+    final libraryLabel = favorite ? l10n.in_library : l10n.add_to_library;
+    final page = MangaDetailView(
+      loading: widget.loading,
+      refreshFailed: widget.refreshFailed,
+      readingAction: (chapters) => _readingAction(mobile, chapters),
+      titleDescription: mobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.loading &&
+                    !(widget.manga.author?.trim().isNotEmpty ?? false))
+                  const Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: NodeLaneTokens.space4,
                     ),
-                  if (widget.loading && widget.manga.status == Status.unknown)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: NodeLaneTokens.space4,
-                      ),
-                      child: NodeLaneSkeleton(
-                        height: NodeLaneTokens.space12,
-                        width: 64,
-                      ),
-                    )
-                  else
-                    Text(getMangaStatusName(widget.manga.status, context)),
-                  if (!isLocalArchive)
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          '${widget.manga.source} · ${widget.manga.lang!.toUpperCase()}',
-                        ),
-                        if (!widget.sourceExist)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                              start: NodeLaneTokens.space4,
-                            ),
-                            child: Icon(
-                              NodeLaneIcons.of(context).error,
-                              semanticLabel: l10n.source_not_added,
-                              color: Theme.of(context).colorScheme.error,
-                              size: NodeLaneTokens.badgeIconSize,
-                            ),
-                          ),
-                      ],
+                    child: NodeLaneSkeleton(
+                      height: NodeLaneTokens.space12,
+                      width: NodeLaneTokens.skeletonLabelWidth,
                     ),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Icon(
-                        mobile
-                            ? NodeLaneIcons.of(context).account
-                            : Icons.person_outline,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        (widget.manga.author?.isEmpty ?? false)
-                            ? l10n.unknown
-                            : widget.manga.author!,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ],
+                  )
+                else if (widget.manga.author?.trim().isNotEmpty ?? false)
+                  Text(l10n.manga_author(widget.manga.author!)),
+                if (widget.loading && widget.manga.status == Status.unknown)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: NodeLaneTokens.space4,
+                    ),
+                    child: NodeLaneSkeleton(
+                      height: NodeLaneTokens.space12,
+                      width: NodeLaneTokens.skeletonValueWidth,
+                    ),
                   ),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Icon(getMangaStatusIcon(widget.manga.status), size: 14),
-                      const SizedBox(width: 4),
-                      Text(getMangaStatusName(widget.manga.status, context)),
-                      if (!isLocalArchive) const Text(' • '),
-                      if (!isLocalArchive) Text(widget.manga.source!),
-                      if (!isLocalArchive)
-                        Text(' (${widget.manga.lang!.toUpperCase()})'),
-                      if (!isLocalArchive && !widget.sourceExist)
-                        const Padding(
-                          padding: EdgeInsets.all(3),
-                          child: Icon(
-                            Icons.warning_amber,
-                            color: Colors.deepOrangeAccent,
-                            size: 14,
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-        action: mobile
-            ? NodeLaneSecondaryButton(
-                icon: widget.manga.favorite!
-                    ? NodeLaneIcons.of(context).check
-                    : NodeLaneIcons.of(context).add,
-                onPressed: _onFavoritePressed,
-                child: Text(
-                  widget.manga.favorite!
-                      ? l10n.in_library
-                      : l10n.add_to_library,
-                ),
-              )
-            : widget.manga.favorite!
-            ? SizedBox(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    elevation: 0,
-                  ),
-                  onPressed: _onFavoritePressed,
-                  child: Column(
-                    children: [
-                      const Icon(Icons.favorite, size: 20),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.in_library,
-                        style: const TextStyle(fontSize: 11),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  elevation: 0,
-                ),
-                onPressed: _onFavoritePressed,
-                child: Column(
+                Wrap(
+                  spacing: NodeLaneTokens.space4,
+                  runSpacing: NodeLaneTokens.space4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Icon(
-                      Icons.favorite_border_rounded,
-                      size: 20,
-                      color: context.secondaryColor,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.add_to_library,
-                      style: TextStyle(
-                        color: context.secondaryColor,
-                        fontSize: 11,
+                    if (widget.manga.status != Status.unknown)
+                      NodeLaneCoverBadge(
+                        getMangaStatusName(widget.manga.status, context),
+                        tone: NodeLaneBadgeTone.softAccent,
                       ),
-                      textAlign: TextAlign.center,
+                    if (isLocalArchive)
+                      NodeLaneCoverBadge(
+                        l10n.local,
+                        tone: NodeLaneBadgeTone.soft,
+                      )
+                    else if (widget.manga.source?.isNotEmpty ?? false)
+                      Text(
+                        [
+                          widget.manga.source!,
+                          if (widget.manga.lang?.isNotEmpty ?? false)
+                            widget.manga.lang!.toUpperCase(),
+                        ].join(' · '),
+                      ),
+                    if (!isLocalArchive && !widget.sourceExist)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          start: NodeLaneTokens.space4,
+                        ),
+                        child: Icon(
+                          NodeLaneIcons.of(context).error,
+                          semanticLabel: l10n.source_not_added,
+                          color: Theme.of(context).colorScheme.error,
+                          size: NodeLaneTokens.badgeIconSize,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const Icon(Icons.person_outline, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      (widget.manga.author?.isNotEmpty ?? false)
+                          ? widget.manga.author!
+                          : l10n.unknown,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Icon(getMangaStatusIcon(widget.manga.status), size: 14),
+                    const SizedBox(width: 4),
+                    Text(getMangaStatusName(widget.manga.status, context)),
+                    if (!isLocalArchive) const Text(' • '),
+                    if (!isLocalArchive) Text(widget.manga.source!),
+                    if (!isLocalArchive)
+                      Text(' (${widget.manga.lang!.toUpperCase()})'),
+                    if (!isLocalArchive && !widget.sourceExist)
+                      const Padding(
+                        padding: EdgeInsets.all(3),
+                        child: Icon(
+                          Icons.warning_amber,
+                          color: Colors.deepOrangeAccent,
+                          size: 14,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+      action: mobile
+          ? NodeLaneSecondaryButton(
+              icon: favorite
+                  ? NodeLaneIcons.of(context).check
+                  : NodeLaneIcons.of(context).add,
+              onPressed: _onFavoritePressed,
+              child: Text(libraryLabel),
+            )
+          : ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                foregroundColor: favorite ? null : context.secondaryColor,
+                elevation: 0,
               ),
-        manga: widget.manga,
-        isExtended: (value) {
-          ref.read(isExtendedStateProvider.notifier).update(value);
-        },
-        sourceExist: widget.sourceExist,
-        onRefresh: widget.onRefresh,
-        itemType: widget.manga.itemType,
-      ),
+              onPressed: _onFavoritePressed,
+              child: Column(
+                children: [
+                  Icon(
+                    favorite ? Icons.favorite : Icons.favorite_border_rounded,
+                    size: NodeLaneTokens.smallIconSize,
+                  ),
+                  const SizedBox(height: NodeLaneTokens.space4),
+                  Text(
+                    libraryLabel,
+                    style: const TextStyle(fontSize: 11),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+      manga: widget.manga,
+      sourceExist: widget.sourceExist,
+      onRefresh: widget.onRefresh,
     );
     return mobile ? NodeLaneSurface(child: page) : page;
   }
@@ -355,11 +329,10 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     }
   }
 
-  Widget _readingAction(bool mobile) {
+  Widget _readingAction(bool mobile, List<Chapter> chapters) {
     final l10n = context.l10n;
     return Consumer(
       builder: (context, ref, child) {
-        final chapters = ref.watch(chaptersListttStateProvider);
         final selecting = ref.watch(isLongPressedStateProvider);
         if (selecting || chapters.isEmpty) return const SizedBox.shrink();
         final isExtended = mobile ? false : ref.watch(isExtendedStateProvider);

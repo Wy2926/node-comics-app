@@ -69,7 +69,7 @@ final class ImportArchivesFromFileProvider
 }
 
 String _$importArchivesFromFileHash() =>
-    r'6b3b9670e3a145e5a006f0bf671796fcb79b78be';
+    r'60c541255187118ff95b518214f293e71e52c7df';
 
 final class ImportArchivesFromFileFamily extends $Family
     with

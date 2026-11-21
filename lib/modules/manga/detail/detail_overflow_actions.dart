@@ -1,11 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-
-// The detail screen's overflow menu actions (update check, categories,
-// share link, migrate, view source, export metadata, mass migration),
-// shared by the popup menu off-TV and the centred TV menu. Split out of
-// _MangaDetailViewState so this dispatch logic - which has nothing to do
-// with rendering - can be read and changed without touching the 800+ line
-// build method it used to sit next to.
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -13,6 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/modules/browse/extension/extension_detail.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/migrate_screen.dart';
+import 'package:mangayomi/modules/mass_migration/mass_migration_source_selection_screen.dart';
 import 'package:mangayomi/modules/manga/detail/providers/export_metadata.dart';
 import 'package:mangayomi/modules/widgets/category_selection_dialog.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -36,7 +33,7 @@ Future<void> handleDetailOverflowAction({
       await onRefresh();
       break;
     case 1:
-      showCategorySelectionDialog(
+      await showCategorySelectionDialog(
         context: context,
         ref: ref,
         itemType: manga.itemType,
@@ -53,7 +50,7 @@ Future<void> handleDetailOverflowAction({
       if (source == null) return;
       final url = "${source.baseUrl}${manga.link!.getUrlWithoutDomain}";
       final box = context.findRenderObject() as RenderBox?;
-      shareOrCopy(
+      await shareOrCopy(
         ShareParams(
           text: url,
           sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
@@ -61,6 +58,13 @@ Future<void> handleDetailOverflowAction({
       );
       break;
     case 3:
+      if (NodeLaneBubbleFlow.contains(context)) {
+        await NodeLaneBubbleFlow.push<void>(
+          context,
+          MigrationScreen(manga: manga),
+        );
+        return;
+      }
       context.push("/migrate", extra: manga);
       break;
     case 4:
@@ -70,7 +74,14 @@ Future<void> handleDetailOverflowAction({
         manga.sourceId,
         installedOnly: true,
       );
-      if (source == null) return;
+      if (source == null) {
+        showNodeLaneNotice(l10n.source_not_added);
+        return;
+      }
+      if (NodeLaneBubbleFlow.contains(context)) {
+        await NodeLaneBubbleFlow.push(context, ExtensionDetail(source: source));
+        return;
+      }
       context.push('/extension_detail', extra: source);
       break;
     case 5:
@@ -78,7 +89,7 @@ Future<void> handleDetailOverflowAction({
         final result = await FilePicker.getDirectoryPath(
           linuxOptions: const LinuxOptions(lockParentWindow: true),
         );
-        if (result != null) {
+        if (result != null && context.mounted) {
           final headers = isLocalArchive
               ? null
               : ref.read(
@@ -103,6 +114,16 @@ Future<void> handleDetailOverflowAction({
       }
       break;
     case 6:
+      if (NodeLaneBubbleFlow.contains(context)) {
+        await NodeLaneBubbleFlow.push<void>(
+          context,
+          MassMigrationSourceSelectionScreen(
+            itemType: manga.itemType,
+            prioritizedManga: manga,
+          ),
+        );
+        return;
+      }
       context.push("/massMigration", extra: (manga.itemType, manga));
       break;
   }

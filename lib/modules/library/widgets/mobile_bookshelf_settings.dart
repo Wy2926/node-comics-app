@@ -7,7 +7,10 @@ import 'package:mangayomi/modules/library/providers/isar_providers.dart';
 import 'package:mangayomi/modules/library/providers/library_source_badge_provider.dart';
 import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -36,38 +39,37 @@ class MobileBookshelfSettings extends ConsumerWidget {
             ?.value ??
         entries;
     final l10n = context.l10n;
-    return NodeLaneCatalogSheet(
-      title: l10n.bookshelf_settings,
-      subtitle: l10n.bookshelf_settings_live,
-      heightFactor: .9,
-      child: DefaultTabController(
-        animationDuration: NodeLaneMotion.time(context),
-        length: 3,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: NodeLaneTokens.gutter,
-              ),
-              child: NodeLaneTabSegments(
-                labels: [l10n.filter, l10n.sort, l10n.display],
-              ),
+    return DefaultTabController(
+      animationDuration: NodeLaneMotion.time(context),
+      length: 3,
+      child: Column(
+        children: [
+          Semantics(
+            hint: l10n.bookshelf_settings_live,
+            child: NodeLaneBubbleHeading(l10n.bookshelf_settings),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: NodeLaneTokens.gutter,
             ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _Filters(
-                    settings: current,
-                    entries: currentEntries,
-                    itemType: itemType,
-                  ),
-                  _Sort(settings: current, itemType: itemType),
-                  _Display(settings: current, itemType: itemType),
-                ],
-              ),
+            child: NodeLaneTabSegments(
+              labels: [l10n.filter, l10n.sort, l10n.display],
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _Filters(
+                  settings: current,
+                  entries: currentEntries,
+                  itemType: itemType,
+                ),
+                _Sort(settings: current, itemType: itemType),
+                _Display(settings: current, itemType: itemType),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -192,7 +194,7 @@ class _Filters extends ConsumerWidget {
                   ? l10n.bookshelf_all_sources
                   : l10n.bookshelf_sources_selected(sources.$2.length),
               onTap: () async {
-                final selected = await showNodeLaneCatalogSheet<List<String>>(
+                final selected = await pushBrowsePage<List<String>>(
                   context,
                   MobileBookshelfSourceFilter(
                     sources: sources.$1,
@@ -408,7 +410,8 @@ class _DisplayState extends ConsumerState<_Display> {
               subtitle: l10n.bookshelf_more_display_hint,
               trailing: AnimatedRotation(
                 turns: _expanded ? .5 : 0,
-                duration: const Duration(milliseconds: 150),
+                duration: NodeLaneMotion.time(context),
+                curve: NodeLaneMotion.curve,
                 child: Icon(
                   icons.down,
                   size: NodeLaneTokens.smallIconSize,
@@ -502,10 +505,15 @@ class _LayoutPreview extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  SizedBox(width: 12, child: block()),
+                  SizedBox(width: NodeLaneTokens.space12, child: block()),
                   const SizedBox(width: NodeLaneTokens.space4),
                   Expanded(
-                    child: Center(child: SizedBox(height: 4, child: block())),
+                    child: Center(
+                      child: SizedBox(
+                        height: NodeLaneTokens.space4,
+                        child: block(),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -530,8 +538,8 @@ class _LayoutPreview extends StatelessWidget {
                   children: [
                     Expanded(child: block()),
                     if (type != DisplayType.coverOnlyGrid) ...[
-                      const SizedBox(height: 4),
-                      SizedBox(height: 4, child: block()),
+                      const SizedBox(height: NodeLaneTokens.space4),
+                      SizedBox(height: NodeLaneTokens.space4, child: block()),
                     ],
                   ],
                 ),
@@ -574,88 +582,87 @@ class _MobileBookshelfSourceFilterState
     final visible = widget.sources
         .where((s) => s.toLowerCase().contains(query))
         .toList();
-    return NodeLaneCatalogSheet(
+    return MobileBrowsePage.form(
       title: l10n.sources,
-      subtitle: l10n.bookshelf_sources_hint,
-      heightFactor: .86,
-      bottom: Row(
-        children: [
-          Expanded(
-            child: NodeLaneSecondaryButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.cancel),
-            ),
+      bottomAction: NodeLaneModalActions(
+        actions: [
+          NodeLaneDialogAction(
+            label: l10n.cancel,
+            secondary: true,
+            onPressed: () => Navigator.pop(context),
           ),
-          const SizedBox(width: NodeLaneTokens.space12),
-          Expanded(
-            child: FilledButton(
-              onPressed: () => Navigator.pop(
-                context,
-                _selected.where(widget.sources.contains).toList(),
-              ),
-              child: Text(l10n.filter),
+          NodeLaneDialogAction(
+            label: l10n.filter,
+            onPressed: () => Navigator.pop(
+              context,
+              _selected.where(widget.sources.contains).toList(),
             ),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Padding(
+      body: CustomScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        slivers: [
+          SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: NodeLaneTokens.gutter,
             ),
-            child: Column(
-              children: [
-                NodeLaneTextField.search(
-                  controller: _query,
-                  hint: l10n.search,
-                  onChanged: (_) => setState(() {}),
-                ),
-                NodeLaneCatalogHeading(
-                  _selected.isEmpty
-                      ? l10n.bookshelf_all_sources
-                      : l10n.bookshelf_sources_selected(_selected.length),
-                  action: l10n.reset,
-                  onAction: _selected.isEmpty
-                      ? null
-                      : () => setState(_selected.clear),
-                ),
-              ],
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  NodeLaneTextField.search(
+                    controller: _query,
+                    hint: l10n.search,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      l10n.bookshelf_sources_hint,
+                      style: NodeLaneTokens.of(context).secondary,
+                    ),
+                  ),
+                  NodeLaneCatalogHeading(
+                    _selected.isEmpty
+                        ? l10n.bookshelf_all_sources
+                        : l10n.bookshelf_sources_selected(_selected.length),
+                    action: l10n.reset,
+                    onAction: _selected.isEmpty
+                        ? null
+                        : () => setState(_selected.clear),
+                  ),
+                ],
+              ),
             ),
           ),
-          Expanded(
-            child: visible.isEmpty
-                ? Center(child: Text(l10n.no_result))
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NodeLaneTokens.gutter,
-                    ),
-                    itemCount: visible.length,
-                    itemBuilder: (_, i) {
-                      final name = visible[i];
-                      return NodeLaneGroupSurface(
-                        first: i == 0,
-                        last: i == visible.length - 1,
-                        child: Column(
-                          children: [
-                            NodeLaneRow(
-                              title: name,
-                              checkable: true,
-                              selected: _selected.contains(name),
-                              onTap: () => setState(() {
-                                if (!_selected.add(name)) {
-                                  _selected.remove(name);
-                                }
-                              }),
-                            ),
-                            if (i < visible.length - 1)
-                              const NodeLaneGroupDivider(),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-          ),
+          if (visible.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: Text(l10n.no_result)),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.gutter,
+              ),
+              sliver: SliverList.builder(
+                itemCount: visible.length,
+                itemBuilder: (_, i) {
+                  final name = visible[i];
+                  return NodeLaneRow.card(
+                    title: name,
+                    checkable: true,
+                    selected: _selected.contains(name),
+                    first: i == 0,
+                    last: i == visible.length - 1,
+                    minHeight: NodeLaneTokens.rowHeight,
+                    onTap: () => setState(() {
+                      if (!_selected.add(name)) _selected.remove(name);
+                    }),
+                  );
+                },
+              ),
+            ),
         ],
       ),
     );

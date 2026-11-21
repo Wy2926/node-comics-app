@@ -1,5 +1,3 @@
-import 'dart:ui' show SemanticsRole;
-
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_progress.dart';
 import 'package:flutter/cupertino.dart' show CupertinoPicker, CupertinoSwitch;
@@ -1287,122 +1285,6 @@ AppBar nodeLaneSelectionAppBar(
   ),
 );
 
-/// Shared shelf/detail selection surface: frequent actions and one More menu.
-class NodeLaneSelectionBar<T> extends StatelessWidget {
-  const NodeLaneSelectionBar({
-    super.key,
-    required this.actions,
-    required this.moreLabel,
-    required this.moreItems,
-    required this.onMore,
-    this.busy = false,
-  });
-  final List<Widget> actions;
-  final String moreLabel;
-  final List<PopupMenuEntry<T>> moreItems;
-  final ValueChanged<T> onMore;
-  final bool busy;
-
-  Future<void> _showMore(BuildContext context) async {
-    final navigator = Navigator.of(context, rootNavigator: true);
-    final overlay = navigator.overlay!.context.findRenderObject()! as RenderBox;
-    final toolbar = context.findRenderObject()! as RenderBox;
-    final anchorTop = toolbar.localToGlobal(Offset.zero, ancestor: overlay).dy;
-    final themes = InheritedTheme.capture(from: context, to: navigator.context);
-    final menuTheme = PopupMenuTheme.of(context);
-    final result = await showDialog<T>(
-      context: context,
-      useSafeArea: false,
-      barrierColor: Colors.transparent,
-      builder: (context) => themes.wrap(
-        LayoutBuilder(
-          builder: (context, constraints) => Padding(
-            // Reserve the whole toolbar below the menu, regardless of item height.
-            padding: EdgeInsets.fromLTRB(
-              NodeLaneTokens.space16,
-              MediaQuery.paddingOf(context).top + NodeLaneTokens.space8,
-              NodeLaneTokens.space16,
-              (constraints.maxHeight - anchorTop + NodeLaneTokens.space8).clamp(
-                0,
-                constraints.maxHeight,
-              ),
-            ),
-            child: Align(
-              alignment: AlignmentDirectional.bottomEnd,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: NodeLaneTokens.menuMaxWidth,
-                ),
-                child: IntrinsicWidth(
-                  child: Material(
-                    color: menuTheme.color,
-                    surfaceTintColor: menuTheme.surfaceTintColor,
-                    elevation: menuTheme.elevation ?? 6,
-                    shadowColor: menuTheme.shadowColor,
-                    shape: menuTheme.shape,
-                    clipBehavior: Clip.antiAlias,
-                    child: Semantics(
-                      container: true,
-                      role: SemanticsRole.menu,
-                      scopesRoute: true,
-                      namesRoute: true,
-                      explicitChildNodes: true,
-                      label: moreLabel,
-                      child: SingleChildScrollView(
-                        padding: menuTheme.menuPadding,
-                        child: ListBody(children: moreItems),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    if (result != null && context.mounted) onMore(result);
-  }
-
-  @override
-  Widget build(BuildContext context) => SafeArea(
-    top: false,
-    maintainBottomViewPadding: true,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: NodeLaneTokens.space16,
-        vertical: NodeLaneTokens.space8,
-      ),
-      child: NodeLaneGlassSurface(
-        elevated: true,
-        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
-        child: Builder(
-          builder: (barContext) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (busy && ModalRoute.of(context)?.isCurrent == true)
-                const NodeLaneProgress(),
-              Row(
-                children: [
-                  for (final action in actions) Expanded(child: action),
-                  Expanded(
-                    child: NodeLaneToolbarAction(
-                      label: moreLabel,
-                      icon: NodeLaneIcons.of(context).more,
-                      enabled: !busy && moreItems.isNotEmpty,
-                      onPressed: () => _showMore(barContext),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 /// Menu item geometry and semantic colors shared by contextual action bars.
 PopupMenuItem<T> nodeLaneSelectionMenuItem<T>(
   BuildContext context, {
@@ -1927,7 +1809,129 @@ class _NodeLaneTextFieldState extends State<NodeLaneTextField> {
       widget._build(context, widget.focusNode ?? (_localFocus ??= FocusNode()));
 }
 
-/// One visual and selection contract for page sections and filter choices.
+/// A single-choice grid. Size the columns for the longest translated option,
+/// including the indicator, rather than dividing a fixed row between labels.
+class NodeLaneOptionSwitch<T> extends StatelessWidget {
+  const NodeLaneOptionSwitch({
+    super.key,
+    this.title,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  }) : assert(options.length > 0);
+
+  final String? title;
+  final T value;
+  final List<(T, String)> options;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    const gap = NodeLaneTokens.space8;
+    const inset = NodeLaneTokens.space12, mark = NodeLaneTokens.smallIconSize;
+    final style = DefaultTextStyle.of(context).style
+        .merge(t.label)
+        .copyWith(
+          fontWeight: MediaQuery.boldTextOf(context) ? FontWeight.bold : null,
+          letterSpacing: MediaQuery.maybeLetterSpacingOverrideOf(context),
+          wordSpacing: MediaQuery.maybeWordSpacingOverrideOf(context),
+        );
+    Widget option(T id, String label, double width) {
+      final selected = id == value;
+      return Semantics(
+        container: true,
+        button: true,
+        selected: selected,
+        inMutuallyExclusiveGroup: true,
+        child: Material(
+          color: selected ? t.accentSoft : t.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+            side: BorderSide(
+              color: selected ? t.accent : t.line,
+              width: NodeLaneTokens.glassStroke,
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              if (!selected) onChanged(id);
+            },
+            child: Container(
+              width: width,
+              constraints: const BoxConstraints(
+                minHeight: NodeLaneTokens.minTapTarget,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: inset,
+                vertical: gap,
+              ),
+              child: Row(
+                spacing: gap,
+                children: [
+                  Icon(
+                    selected ? icons.selected : icons.unselected,
+                    size: mark,
+                    color: selected ? t.accent : t.muted,
+                  ),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: style.copyWith(color: selected ? t.accent : t.ink),
+                      semanticsLabel: title == null ? label : '$title, $label',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(inset),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: gap,
+        children: [
+          if (title != null)
+            Semantics(header: true, child: Text(title!, style: t.readerLabel)),
+          LayoutBuilder(
+            builder: (context, box) {
+              final labels = TextPainter(
+                text: TextSpan(
+                  text: options.map((o) => o.$2).join('\n'),
+                  style: style,
+                ),
+                textDirection: Directionality.of(context),
+                locale: Localizations.maybeLocaleOf(context),
+                textScaler: MediaQuery.textScalerOf(context),
+              )..layout();
+              final needed =
+                  labels.width.ceilToDouble() + 2 * inset + mark + gap;
+              labels.dispose();
+              final columns = ((box.maxWidth + gap) / (needed + gap))
+                  .floor()
+                  .clamp(1, options.length > 3 ? 2 : options.length);
+              final width = (box.maxWidth - (columns - 1) * gap) / columns;
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [
+                  for (final (id, label) in options) option(id, label, width),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Connected, equal-width segments for short section or filter labels.
 class NodeLaneSegments<T> extends StatelessWidget {
   const NodeLaneSegments({
     super.key,

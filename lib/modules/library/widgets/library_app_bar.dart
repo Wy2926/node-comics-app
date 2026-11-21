@@ -6,19 +6,16 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
-import 'package:mangayomi/modules/library/providers/isar_providers.dart';
 import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
 import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/library/widgets/library_settings_sheet.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
@@ -39,10 +36,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final bool isNotFiltering;
   final bool showNumbersOfItems;
   final int numberOfItems;
-  final List<Manga> entries;
-  final List<Manga>? selectionEntries;
-  final bool isCategory;
-  final int? categoryId;
+  final List<Manga> entries, categoryEntries, selectionEntries;
   final Settings settings;
   final bool isSearch;
   final bool ignoreFiltersOnSearch;
@@ -60,9 +54,8 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.showNumbersOfItems,
     required this.numberOfItems,
     required this.entries,
-    this.selectionEntries,
-    required this.isCategory,
-    required this.categoryId,
+    required this.selectionEntries,
+    required this.categoryEntries,
     required this.settings,
     required this.isSearch,
     required this.ignoreFiltersOnSearch,
@@ -81,37 +74,27 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   /// The library menu actions, shared by the popup off-TV and the centred TV
   /// menu.
-  void _onLibraryMenu(
-    BuildContext context,
-    WidgetRef ref,
-    int value,
-    AsyncValue<List<Manga>> manga,
-  ) {
+  void _onLibraryMenu(BuildContext context, WidgetRef ref, int value) {
     if (value == 0) {
-      manga.whenData((value) {
-        updateLibrary(
-          ref: ref,
-          context: context,
-          mangaList: value,
-          itemType: itemType,
-        );
-      });
+      updateLibrary(
+        ref: ref,
+        context: context,
+        mangaList: categoryEntries,
+        itemType: itemType,
+      );
     } else if (value == 1) {
-      manga.whenData((value) {
-        if (value.isEmpty) return;
-        final randomManga = value[Random().nextInt(value.length)];
-        pushToMangaReaderDetail(
-          ref: ref,
-          archiveId: randomManga.isLocalArchive ?? false
-              ? randomManga.id
-              : null,
-          context: context,
-          lang: randomManga.lang ?? '',
-          mangaM: randomManga,
-          source: randomManga.source ?? '',
-          sourceId: randomManga.sourceId,
-        );
-      });
+      final books = isMobile && !isTv ? selectionEntries : categoryEntries;
+      if (books.isEmpty) return;
+      final randomManga = books[Random().nextInt(books.length)];
+      pushToMangaReaderDetail(
+        ref: ref,
+        archiveId: randomManga.isLocalArchive ?? false ? randomManga.id : null,
+        context: context,
+        lang: randomManga.lang ?? '',
+        mangaM: randomManga,
+        source: randomManga.source ?? '',
+        sourceId: randomManga.sourceId,
+      );
     } else if (value == 2) {
       showImportLocalDialog(context, itemType);
     } else if (value == 3 && itemType == ItemType.anime) {
@@ -123,33 +106,12 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLongPressed = ref.watch(isLongPressedStateProvider);
     final mangaIdsList = ref.watch(mangasListStateProvider);
-    final allMangaStream = ref.watch(
-      getAllMangaStreamProvider(categoryId: null, itemType: itemType),
-    );
-    final manga = allMangaStream.whenData((allMangas) {
-      if (categoryId == null && !isCategory) {
-        return allMangas;
-      }
-      if (categoryId == null) {
-        return allMangas
-            .where((m) => m.categories == null || m.categories!.isEmpty)
-            .toList();
-      }
-      return allMangas
-          .where((m) => m.categories?.contains(categoryId) ?? false)
-          .toList();
-    });
     final l10n = l10nLocalizations(context)!;
 
     if (isLongPressed) {
-      return manga.when(
-        data: (data) => _SelectionAppBar(
-          itemType: itemType,
-          mangaIdsList: mangaIdsList,
-          data: selectionEntries ?? data,
-        ),
-        error: (error, _) => ErrorText(error),
-        loading: () => const NodeLaneEmptyState.loading(),
+      return _SelectionAppBar(
+        mangaIdsList: mangaIdsList,
+        data: selectionEntries,
       );
     }
 
@@ -160,6 +122,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ItemType.anime: '/AnimeLibrary',
         ItemType.novel: '/NovelLibrary',
       };
+      final updating = ref.watch(libraryUpdateProvider).running;
       return MobileBookshelfHeader(
         searchLabel: l10n.bookshelf_search,
         importLabel: l10n.import,
@@ -167,9 +130,9 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         controller: textEditingController,
         onSearchChanged: onSearchClear,
         filtered: !isNotFiltering,
-        onImport: () => showImportLocalDialog(context, itemType),
-        onFilter: () => showLibrarySettingsSheet(
-          context: context,
+        onImport: (anchor) => showImportLocalDialog(anchor, itemType),
+        onFilter: (anchor) => showLibrarySettingsSheet(
+          context: anchor,
           vsync: vsync,
           settings: settings,
           itemType: itemType,
@@ -182,46 +145,51 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
           onChanged: (type) => context.go(routes[type]!),
         ),
-        updateControl: ref.watch(libraryUpdateProvider).running
+        updateControl: updating || categoryEntries.isNotEmpty
             ? NodeLaneIconButton(
-                tooltip: l10n.cancel,
-                icon: NodeLaneIcons.of(context).stop,
-                onPressed: () =>
-                    ref.read(libraryUpdateProvider.notifier).requestCancel(),
+                tooltip: updating
+                    ? l10n.bookshelf_stop_update
+                    : l10n.update_library,
+                icon: updating
+                    ? NodeLaneIcons.of(context).stop
+                    : NodeLaneIcons.of(context).refresh,
+                onPressed: updating
+                    ? () => ref
+                          .read(libraryUpdateProvider.notifier)
+                          .requestCancel()
+                    : () => _onLibraryMenu(context, ref, 0),
               )
             : null,
-        menu: NodeLaneIconButton(
-          tooltip: l10n.bookshelf_actions,
-          icon: NodeLaneIcons.of(context).more,
-          onPressed: () async {
-            final action = await showNodeLaneCatalogSheet<int>(
-              context,
-              Builder(
-                builder: (sheetContext) => Consumer(
-                  builder: (_, sheetRef, _) => MobileBookshelfMenu(
-                    hasEntries: manga.asData?.value.isNotEmpty == true,
-                    updating: sheetRef.watch(libraryUpdateProvider).running,
+        menu: Builder(
+          builder: (anchor) => NodeLaneIconButton(
+            tooltip: l10n.bookshelf_actions,
+            icon: NodeLaneIcons.of(context).more,
+            onPressed: () async {
+              final action = await showNodeLaneBubble<int>(
+                anchor,
+                label: l10n.bookshelf_actions,
+                child: Builder(
+                  builder: (panel) => MobileBookshelfMenu(
+                    hasEntries: selectionEntries.isNotEmpty,
                     ignoreFilters: ignoreFiltersOnSearch,
                     anime: itemType == ItemType.anime,
-                    onSelected: (value) => Navigator.pop(sheetContext, value),
+                    onSelected: (value) => Navigator.pop(panel, value),
                   ),
                 ),
-              ),
-            );
-            if (!context.mounted || action == null) return;
-            if (action == 4) {
-              onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
-            } else if (action == 5) {
-              ref.read(libraryUpdateProvider.notifier).requestCancel();
-            } else if (action == 6) {
-              ref.read(mangasListStateProvider.notifier).clear();
-              ref.read(isLongPressedStateProvider.notifier).update(true);
-            } else if (action == 7) {
-              context.push('/categories', extra: (false, itemType.index));
-            } else {
-              _onLibraryMenu(context, ref, action, manga);
-            }
-          },
+              );
+              if (!context.mounted || action == null) return;
+              if (action == 4) {
+                onIgnoreFiltersChanged(!ignoreFiltersOnSearch);
+              } else if (action == 6) {
+                ref.read(mangasListStateProvider.notifier).clear();
+                ref.read(isLongPressedStateProvider.notifier).update(true);
+              } else if (action == 7) {
+                context.push('/categories', extra: (false, itemType.index));
+              } else {
+                _onLibraryMenu(context, ref, action);
+              }
+            },
+          ),
         ),
       );
     }
@@ -339,7 +307,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     options: [for (final e in entries) TvMenuOption(e.$1)],
                   );
                   if (picked != null && context.mounted) {
-                    _onLibraryMenu(context, ref, entries[picked].$2, manga);
+                    _onLibraryMenu(context, ref, entries[picked].$2);
                   }
                 },
               );
@@ -366,7 +334,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ),
               ];
             },
-            onSelected: (value) => _onLibraryMenu(context, ref, value, manga),
+            onSelected: (value) => _onLibraryMenu(context, ref, value),
           ),
       ],
     );
@@ -375,20 +343,30 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
 /// AppBar shown when items are long-pressed for bulk selection.
 class _SelectionAppBar extends ConsumerWidget {
-  final ItemType itemType;
   final Set<int> mangaIdsList;
   final List<Manga> data;
 
-  const _SelectionAppBar({
-    required this.itemType,
-    required this.mangaIdsList,
-    required this.data,
-  });
+  const _SelectionAppBar({required this.mangaIdsList, required this.data});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLongPressed = ref.watch(isLongPressedStateProvider);
-    if (isMobile && !isTv) {
+    final mobile = isMobile && !isTv;
+    void cancel() {
+      ref.read(mangasListStateProvider.notifier).clear();
+      ref.read(isLongPressedStateProvider.notifier).update(false);
+    }
+
+    void selectAll() =>
+        ref.read(mangasListStateProvider.notifier).selectAll(data);
+
+    void invert() {
+      ref.read(mangasListStateProvider.notifier).invert(data);
+      if (!mobile && ref.read(mangasListStateProvider).isEmpty) {
+        ref.read(isLongPressedStateProvider.notifier).update(false);
+      }
+    }
+
+    if (mobile) {
       final l10n = context.l10n;
       return nodeLaneSelectionAppBar(
         context,
@@ -396,24 +374,9 @@ class _SelectionAppBar extends ConsumerWidget {
         cancelLabel: l10n.cancel,
         selectAllLabel: l10n.bookshelf_select_all,
         invertLabel: l10n.bookshelf_invert_selection,
-        onCancel: () {
-          ref.read(mangasListStateProvider.notifier).clear();
-          ref.read(isLongPressedStateProvider.notifier).update(false);
-        },
-        onSelectAll: data.isEmpty
-            ? null
-            : () {
-                for (final entry in data) {
-                  ref.read(mangasListStateProvider.notifier).selectAll(entry);
-                }
-              },
-        onInvert: data.isEmpty
-            ? null
-            : () {
-                for (final entry in data) {
-                  ref.read(mangasListStateProvider.notifier).selectSome(entry);
-                }
-              },
+        onCancel: cancel,
+        onSelectAll: data.isEmpty ? null : selectAll,
+        onInvert: data.isEmpty ? null : invert,
       );
     }
 
@@ -424,38 +387,18 @@ class _SelectionAppBar extends ConsumerWidget {
         backgroundColor: context.primaryColor.withValues(alpha: 0.2),
         leading: IconButton(
           tooltip: context.l10n.cancel,
-          onPressed: () {
-            ref.read(mangasListStateProvider.notifier).clear();
-            ref
-                .read(isLongPressedStateProvider.notifier)
-                .update(!isLongPressed);
-          },
+          onPressed: cancel,
           icon: const Icon(Icons.clear),
         ),
         actions: [
           IconButton(
             tooltip: context.l10n.bookshelf_select_all,
-            onPressed: () {
-              for (var manga in data) {
-                ref.read(mangasListStateProvider.notifier).selectAll(manga);
-              }
-            },
+            onPressed: selectAll,
             icon: const Icon(Icons.select_all),
           ),
           IconButton(
             tooltip: context.l10n.bookshelf_invert_selection,
-            onPressed: () {
-              if (data.length == mangaIdsList.length) {
-                for (var manga in data) {
-                  ref.read(mangasListStateProvider.notifier).selectSome(manga);
-                }
-                ref.read(isLongPressedStateProvider.notifier).update(false);
-              } else {
-                for (var manga in data) {
-                  ref.read(mangasListStateProvider.notifier).selectSome(manga);
-                }
-              }
-            },
+            onPressed: invert,
             icon: const Icon(Icons.flip_to_back_rounded),
           ),
         ],

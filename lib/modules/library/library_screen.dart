@@ -3,7 +3,8 @@
 import 'dart:async';
 
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart';
-import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_sheet.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_page.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
@@ -13,6 +14,7 @@ import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/tv_home/tv_anime_home_view.dart';
@@ -46,6 +48,20 @@ bool _inShelfTab(Manga entry, _ShelfTab tab) => tab.uncategorized
     : tab.categoryId == null ||
           (entry.categories?.contains(tab.categoryId) ?? false);
 
+/// Count membership before searching so a search cannot switch categories.
+List<Category> visibleShelfCategories(
+  List<Category> categories, {
+  List<Manga>? populatedBy,
+}) {
+  final used = populatedBy == null
+      ? null
+      : {for (final book in populatedBy) ...?book.categories};
+  return categories
+      .where((c) => !(c.hide ?? false) && (used == null || used.contains(c.id)))
+      .toList()
+    ..sort((a, b) => (a.pos ?? 0).compareTo(b.pos ?? 0));
+}
+
 /// Coordinates the existing library state, category tabs and media-specific actions.
 class LibraryScreen extends ConsumerStatefulWidget {
   final ItemType itemType;
@@ -66,6 +82,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   bool _ignoreFiltersOnSearch = false;
   final _textEditingController = TextEditingController();
   TabController? tabBarController;
+  List<_ShelfTab> _lastTabs = const [];
   int _tabIndex = 0;
   Timer? _searchDebounce;
 
@@ -168,8 +185,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     final showCategoryTabs = watchWithSettings(
       libraryShowCategoryTabsStateProvider.call,
     );
-    final reverse =
-        watchWithSettings(sortLibraryMangaStateProvider.call).reverse ?? false;
+    final sort = watchWithSettings(sortLibraryMangaStateProvider.call);
     final continueReaderBtn = watchWithSettings(
       libraryShowContinueReadingButtonStateProvider.call,
     );
@@ -200,9 +216,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     final trackingFilterType = watchWithSettingsAndManga(
       mangaFilterTrackingStateProvider.call,
     );
-    final sortType =
-        watchWithSettings(sortLibraryMangaStateProvider.call).index ?? 0;
-
     final searchQuery = _textEditingController.text;
 
     final content = Scaffold(
@@ -247,7 +260,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   bookmarkedFilterType: bookmarkedFilterType,
                   completedFilterType: completedFilterType,
                   trackingFilterType: trackingFilterType,
-                  reverse: reverse,
+                  reverse: sort.reverse ?? false,
                   downloadedChapter: downloadedChapter,
                   continueReaderBtn: continueReaderBtn,
                   localSource: localSource,
@@ -262,8 +275,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                     _searchDebounce?.cancel();
                     setState(_textEditingController.clear);
                   },
-                  onAdjustFilters: () => showLibrarySettingsSheet(
-                    context: context,
+                  onAdjustFilters: (anchor) => showLibrarySettingsSheet(
+                    context: anchor,
                     vsync: this,
                     settings: settings,
                     itemType: widget.itemType,
@@ -272,9 +285,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                 );
               }
 
-              final withoutCategory = man
-                  .where((m) => m.categories == null || m.categories!.isEmpty)
-                  .toList();
               // Get the number of items for the app bar
               final numberOfItemsList = ref.watch(
                 filteredLibraryMangaProvider(
@@ -285,7 +295,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   bookmarkedFilterType: bookmarkedFilterType,
                   completedFilterType: completedFilterType,
                   trackingFilterType: trackingFilterType,
-                  sortType: sortType,
+                  sortType: sort.index ?? 0,
                   downloadedOnly: downloadedOnly,
                   searchQuery: searchQuery,
                   ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
@@ -295,10 +305,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               );
 
               final mobile = isMobile && !isTv;
-              final visibleCategories = [...data]
-                ..sort((a, b) => (a.pos ?? 0).compareTo(b.pos ?? 0));
-              visibleCategories.removeWhere(
-                (category) => category.hide ?? false,
+              final visibleCategories = visibleShelfCategories(
+                data,
+                populatedBy: mobile ? man : null,
               );
               final tabs = <_ShelfTab>[
                 if (mobile)
@@ -307,8 +316,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                     categoryId: null,
                     uncategorized: false,
                   ),
-                if (showCategoryTabs && data.isNotEmpty) ...[
-                  if (withoutCategory.isNotEmpty)
+                if (showCategoryTabs &&
+                    (mobile
+                        ? visibleCategories.isNotEmpty
+                        : data.isNotEmpty)) ...[
+                  if (man.any((m) => m.categories?.isEmpty ?? true))
                     (
                       label: context.l10n.default0,
                       categoryId: null,
@@ -322,12 +334,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                     ),
                 ],
               ];
-              final currentTab = showCategoryTabs && tabs.isNotEmpty
-                  ? tabs[_tabIndex.clamp(0, tabs.length - 1)]
-                  : null;
-              final selectionEntries = currentTab == null
-                  ? numberOfItemsList
-                  : numberOfItemsList
+              final grouped = showCategoryTabs && tabs.isNotEmpty;
+              if (grouped) _syncTabs(tabs);
+              final currentTab = grouped ? tabs[_tabIndex] : null;
+              List<Manga> inCategory(List<Manga> books) =>
+                  currentTab == null ||
+                      (!currentTab.uncategorized &&
+                          currentTab.categoryId == null)
+                  ? books
+                  : books
                         .where((entry) => _inShelfTab(entry, currentTab))
                         .toList();
               final appBar = LibraryAppBar(
@@ -339,11 +354,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                 showNumbersOfItems: showNumbersOfItems,
                 numberOfItems: numberOfItemsList.length,
                 entries: man,
-                selectionEntries: selectionEntries,
-                isCategory:
-                    currentTab != null &&
-                    (currentTab.uncategorized || currentTab.categoryId != null),
-                categoryId: currentTab?.categoryId,
+                selectionEntries: inCategory(numberOfItemsList),
+                categoryEntries: inCategory(man),
                 settings: settings,
                 isSearch: _isSearch,
                 ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
@@ -362,7 +374,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                     setState(() => _ignoreFiltersOnSearch = val),
                 vsync: this,
               );
-              if (showCategoryTabs && tabs.isNotEmpty) {
+              if (grouped) {
                 return _buildWithCategories(
                   tabs: tabs,
                   appBar: appBar,
@@ -396,6 +408,33 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     return isMobile && !isTv ? NodeLaneSurface(child: content) : content;
   }
 
+  void _syncTabs(List<_ShelfTab> tabs) {
+    final previous = _lastTabs.elementAtOrNull(_tabIndex);
+    _lastTabs = tabs;
+    final index = previous == null
+        ? 0
+        : tabs
+              .indexWhere(
+                (t) =>
+                    t.categoryId == previous.categoryId &&
+                    t.uncategorized == previous.uncategorized,
+              )
+              .clamp(0, tabs.length - 1);
+    if (tabBarController?.length == tabs.length && index == _tabIndex) return;
+    _retireTabController(tabBarController);
+    final controller = tabBarController = NodeLaneMotion.tabs(
+      length: tabs.length,
+      vsync: this,
+      initialIndex: index,
+    );
+    _tabIndex = index;
+    controller.addListener(() {
+      if (controller == tabBarController && _tabIndex != controller.index) {
+        setState(() => _tabIndex = controller.index);
+      }
+    });
+  }
+
   Widget _buildWithCategories({
     required List<_ShelfTab> tabs,
     required PreferredSizeWidget appBar,
@@ -404,22 +443,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     required List<int>? counts,
   }) {
     final tabCount = tabs.length;
-    if (tabBarController == null || tabBarController!.length != tabCount) {
-      final index = _tabIndex.clamp(0, tabCount - 1);
-      // Old TabBar/TabBarView may still paint this frame; release afterwards.
-      _retireTabController(tabBarController);
-      tabBarController = NodeLaneMotion.tabs(
-        length: tabCount,
-        vsync: this,
-        initialIndex: index,
-      );
-      _tabIndex = index;
-      tabBarController!.addListener(() {
-        if (_tabIndex != tabBarController!.index) {
-          setState(() => _tabIndex = tabBarController!.index);
-        }
-      });
-    }
     final mobile = isMobile && !isTv;
     Widget body(_ShelfTab tab) => bodyForCategory(
       categoryId: tab.categoryId,
@@ -428,16 +451,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     return Scaffold(
       appBar: appBar,
       body: NodeLanePaneLayout(
+        useAvailableWidth: mobile,
         paneWidth: NodeLaneTokens.tabletCategoryWidth,
         pane: mobile && tabCount > 1
-            ? (context) => ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: NodeLaneTokens.space12,
-                ),
-                children: [
-                  NodeLaneCatalogHeading(context.l10n.categories),
-                  for (var i = 0; i < tabs.length; i++)
-                    NodeLaneRow.card(
+            ? (context) => ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context)
+                    .copyWith(scrollbars: false),
+                child: ListView.builder(
+                  key: PageStorageKey((
+                    'bookshelf-categories',
+                    widget.itemType,
+                  )),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: NodeLaneTokens.space12,
+                  ),
+                  itemCount: tabs.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return NodeLaneCatalogHeading(context.l10n.categories);
+                    }
+                    final i = index - 1;
+                    return NodeLaneRow.card(
                       title: tabs[i].label,
                       value: counts == null ? null : '${counts[i]}',
                       first: i == 0,
@@ -445,14 +479,24 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                       selected: _tabIndex == i,
                       accented: _tabIndex == i,
                       onTap: () => tabBarController!.animateTo(i),
-                    ),
-                ],
+                    );
+                  },
+                ),
               )
             : null,
         body: (_, split) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (mobile && !split)
+            if (mobile && tabCount == 1 && counts != null && counts.single > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NodeLaneTokens.gutter,
+                ),
+                child: NodeLaneCatalogHeading(
+                  '${tabs.single.label} · ${counts.single}',
+                ),
+              )
+            else if (mobile && tabCount > 1 && !split)
               NodeLaneTabSegments(
                 controller: tabBarController,
                 scrollable: true,
@@ -638,9 +682,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
 void addTorrent(BuildContext context, {Manga? manga}) {
   if (isMobile && !isTv) {
     final container = ProviderScope.containerOf(context, listen: false);
-    showNodeLaneCatalogSheet<void>(
+    pushBrowsePage<void>(
       context,
-      MobileBookshelfTorrentSheet(
+      MobileBookshelfTorrentPage(
         onAdd: (url) async {
           await container.refresh(
             addTorrentFromUrlOrFromFileProvider(
@@ -651,7 +695,6 @@ void addTorrent(BuildContext context, {Manga? manga}) {
           );
         },
       ),
-      dismissible: false,
     );
     return;
   }

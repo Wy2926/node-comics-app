@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/browse/extension/extension_detail.dart';
 import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,7 +61,7 @@ class _ExtensionListTileWidgetState
   void _onMainTap(BuildContext context) {
     if (_isLoading) return;
     if (_sourceNotEmpty) {
-      context.push('/extension_detail', extra: widget.source);
+      _openDetail(context);
     } else {
       _handleSourceFetch();
     }
@@ -70,9 +72,17 @@ class _ExtensionListTileWidgetState
   void _onActionTap(BuildContext context) {
     if (_isLoading) return;
     if (!_updateAvailable && _sourceNotEmpty) {
-      context.push('/extension_detail', extra: widget.source);
+      _openDetail(context);
     } else {
       _handleSourceFetch();
+    }
+  }
+
+  void _openDetail(BuildContext context) {
+    if (NodeLaneBubbleFlow.contains(context)) {
+      NodeLaneBubbleFlow.push(context, ExtensionDetail(source: widget.source));
+    } else {
+      context.push('/extension_detail', extra: widget.source);
     }
   }
 

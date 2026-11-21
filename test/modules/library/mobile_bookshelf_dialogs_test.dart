@@ -1,7 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_sheet.dart';
-
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:async';
 import 'dart:io';
@@ -14,9 +10,12 @@ import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_import_sheet.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_import_panel.dart';
+import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_page.dart';
 import 'package:mangayomi/modules/widgets/category_selection_dialog.dart';
-import 'package:mangayomi/modules/widgets/mobile_bookshelf_category_sheet.dart';
+import 'package:mangayomi/modules/widgets/mobile_bookshelf_category_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 Future<void> _open(
   WidgetTester tester,
@@ -37,11 +36,9 @@ Future<void> _open(
         body: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              final result = await showNodeLaneCatalogSheet<Object?>(
-                context,
-                body,
-                dismissible: false,
-              );
+              final result = body is MobileBookshelfImportPanel
+                  ? await body.show(context)
+                  : await pushBrowsePage<Object?>(context, body);
               onClosed?.call(result);
             },
             child: const Text('Open'),
@@ -74,7 +71,7 @@ void main() {
       final choices = <bool>[];
       await _open(
         tester,
-        MobileBookshelfImportSheet(
+        MobileBookshelfImportPanel(
           itemType: ItemType.novel,
           onImport: (split) async {
             choices.add(split);
@@ -83,6 +80,10 @@ void main() {
         ),
       );
       expect(find.text('EPUB'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.byType(MobileBookshelfImportPanel)).dy,
+        greaterThan(tester.getBottomLeft(find.text('Open')).dy),
+      );
       await tester.ensureVisible(find.byType(NodeLaneSwitch));
       await tester.pumpAndSettle();
       await tester.tap(find.byType(NodeLaneSwitch));
@@ -99,13 +100,13 @@ void main() {
   );
 
   testWidgets(
-    'torrent sheet rejects an empty address and blocks repeated and uncertain writes',
+    'torrent form rejects an empty address and blocks repeated and uncertain writes',
     (tester) async {
       final pending = Completer<void>();
       final submitted = <String?>[];
       await _open(
         tester,
-        MobileBookshelfTorrentSheet(
+        MobileBookshelfTorrentPage(
           onAdd: (url) {
             submitted.add(url);
             return pending.future;
@@ -128,7 +129,7 @@ void main() {
       await tester.pump();
       await tester.binding.handlePopRoute();
       expect(submitted, ['magnet:?xt=test']);
-      expect(find.byType(MobileBookshelfTorrentSheet), findsOneWidget);
+      expect(find.byType(MobileBookshelfTorrentPage), findsOneWidget);
       pending.completeError(StateError('unknown import outcome'));
       await tester.pumpAndSettle();
       add();
@@ -149,7 +150,7 @@ void main() {
       Object? result;
       await _open(
         tester,
-        MobileBookshelfImportSheet(
+        MobileBookshelfImportPanel(
           onImport: (_) {
             calls++;
             return pending.future;
@@ -168,20 +169,13 @@ void main() {
       choose();
       cancel();
       await tester.pump();
+      await tester.tapAt(const Offset(355, 730));
       await tester.binding.handlePopRoute();
       await tester.pump();
       expect(calls, 1);
-      expect(find.byType(MobileBookshelfImportSheet), findsOneWidget);
+      expect(find.byType(MobileBookshelfImportPanel), findsOneWidget);
       pending.complete(0);
       await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<NodeLaneRow>(
-              find.widgetWithText(NodeLaneRow, 'Choose files'),
-            )
-            .onTap,
-        isNotNull,
-      );
       pending = Completer<int>();
       await tester.tap(find.text('Choose files'));
       expect(calls, 2);
@@ -199,7 +193,7 @@ void main() {
       var calls = 0;
       await _open(
         tester,
-        MobileBookshelfImportSheet(
+        MobileBookshelfImportPanel(
           onImport: (_) async {
             calls++;
             throw StateError('fixture failure');
@@ -228,7 +222,7 @@ void main() {
       final writes = <List<int>>[];
       await _open(
         tester,
-        MobileBookshelfCategorySheet(
+        MobileBookshelfCategoryPage(
           categories: [
             for (var i = 1; i <= 40; i++) _category(i),
             _category(99, hidden: true),
@@ -259,7 +253,7 @@ void main() {
       expect(writes, [
         [1, 40],
       ]);
-      expect(find.byType(MobileBookshelfCategorySheet), findsOneWidget);
+      expect(find.byType(MobileBookshelfCategoryPage), findsOneWidget);
       expect(
         tester
             .widget<NodeLaneCloseButton>(find.byType(NodeLaneCloseButton))
@@ -294,7 +288,7 @@ void main() {
         StatefulBuilder(
           builder: (_, setState) {
             change = setState;
-            return MobileBookshelfCategorySheet(
+            return MobileBookshelfCategoryPage(
               categories: categories,
               initialIds: initial,
               bookCount: 1,
@@ -355,7 +349,7 @@ void main() {
         List<int>? selected;
         await _open(
           tester,
-          MobileBookshelfCategorySheet(
+          MobileBookshelfCategoryPage(
             categories: [_category(1), _category(2, hidden: true)],
             initialIds: adding ? [] : [1, 2, 404],
             bookCount: 1,

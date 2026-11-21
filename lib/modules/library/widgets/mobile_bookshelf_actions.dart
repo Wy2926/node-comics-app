@@ -1,7 +1,9 @@
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_selection_bar.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -12,79 +14,50 @@ class MobileBookshelfMenu extends StatelessWidget {
   const MobileBookshelfMenu({
     super.key,
     required this.hasEntries,
-    required this.updating,
     required this.ignoreFilters,
     required this.onSelected,
     this.anime = false,
   });
-  final bool hasEntries, updating, ignoreFilters, anime;
+  final bool hasEntries, ignoreFilters, anime;
   final ValueChanged<int> onSelected;
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n, icons = NodeLaneIcons.of(context);
-    return NodeLaneCatalogSheet(
-      title: l10n.bookshelf_actions,
-      heightFactor: .9,
-      fitContent: true,
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
-        children: [
-          NodeLaneGroupSurface(
-            children: [
-              NodeLaneRow(
-                enabled: updating || hasEntries,
-                title: updating
-                    ? l10n.bookshelf_stop_update
-                    : l10n.update_library,
-                icon: updating ? icons.stop : icons.refresh,
-                onTap: updating || hasEntries
-                    ? () => onSelected(updating ? 5 : 0)
-                    : null,
-              ),
-              NodeLaneRow(
-                title: l10n.bookshelf_select_entries,
-                enabled: hasEntries,
-                icon: icons.selected,
-                onTap: hasEntries ? () => onSelected(6) : null,
-              ),
-            ],
+    return ListView(
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      children: [
+        NodeLaneBubbleHeading(l10n.bookshelf_actions),
+        if (hasEntries) ...[
+          NodeLaneRow(
+            title: l10n.bookshelf_select_entries,
+            icon: icons.selected,
+            onTap: () => onSelected(6),
           ),
-          const SizedBox(height: NodeLaneTokens.space16),
-          NodeLaneGroupSurface(
-            children: [
-              NodeLaneRow(
-                title: l10n.open_random_entry,
-                enabled: hasEntries,
-                icon: icons.shuffle,
-                onTap: hasEntries ? () => onSelected(1) : null,
-              ),
-              NodeLaneRow(
-                title: l10n.bookshelf_manage_categories,
-                icon: icons.categories,
-                onTap: () => onSelected(7),
-              ),
-              if (anime)
-                NodeLaneRow(
-                  title: l10n.torrent_stream,
-                  icon: icons.webLink,
-                  onTap: () => onSelected(3),
-                ),
-            ],
-          ),
-          const SizedBox(height: NodeLaneTokens.space16),
-          NodeLaneDisclosure(
-            title: l10n.bookshelf_search_options,
-            icon: icons.search,
-            child: NodeLaneSwitchRow(
-              title: l10n.bookshelf_ignore_filters,
-              subtitle: l10n.bookshelf_ignore_filters_hint,
-              value: ignoreFilters,
-              onChanged: (_) => onSelected(4),
-            ),
+          NodeLaneRow(
+            title: l10n.open_random_entry,
+            icon: icons.shuffle,
+            onTap: () => onSelected(1),
           ),
         ],
-      ),
+        NodeLaneRow(
+          title: l10n.bookshelf_manage_categories,
+          icon: icons.categories,
+          onTap: () => onSelected(7),
+        ),
+        if (anime)
+          NodeLaneRow(
+            title: l10n.torrent_stream,
+            icon: icons.webLink,
+            onTap: () => onSelected(3),
+          ),
+        NodeLaneSwitchRow(
+          title: l10n.bookshelf_ignore_filters,
+          subtitle: l10n.bookshelf_ignore_filters_hint,
+          value: ignoreFilters,
+          onChanged: (_) => onSelected(4),
+        ),
+      ],
     );
   }
 }
@@ -156,8 +129,8 @@ class MobileBookshelfSelectionBar extends StatelessWidget {
 /// Only collects removal choices and presents the existing operation's state.
 /// A failed operation may have partially written, so it cannot be resubmitted
 /// from this confirmation. Cancelling keeps the owner's selection intact.
-class MobileBookshelfRemoveSheet extends StatefulWidget {
-  const MobileBookshelfRemoveSheet({
+class MobileBookshelfRemovePage extends StatefulWidget {
+  const MobileBookshelfRemovePage({
     super.key,
     required this.titles,
     required this.hasLocalArchives,
@@ -168,12 +141,11 @@ class MobileBookshelfRemoveSheet extends StatefulWidget {
   final Future<void> Function(bool fromLibrary, bool downloads) onRemove;
 
   @override
-  State<MobileBookshelfRemoveSheet> createState() =>
-      _MobileBookshelfRemoveSheetState();
+  State<MobileBookshelfRemovePage> createState() =>
+      _MobileBookshelfRemovePageState();
 }
 
-class _MobileBookshelfRemoveSheetState
-    extends State<MobileBookshelfRemoveSheet> {
+class _MobileBookshelfRemovePageState extends State<MobileBookshelfRemovePage> {
   bool _fromLibrary = false, _downloads = false, _busy = false, _failed = false;
 
   Future<void> _submit() async {
@@ -202,14 +174,13 @@ class _MobileBookshelfRemoveSheetState
     final t = NodeLaneTokens.of(context), l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
-      child: NodeLaneCatalogSheet(
+      child: MobileBrowsePage.form(
         title: l10n.remove,
-        subtitle: l10n.bookshelf_selected_count(widget.titles.length),
-        heightFactor: .9,
-        fitContent: true,
-        canClose: !_busy,
-        onClose: () => Navigator.pop(context, false),
-        bottom: _failed
+        leading: NodeLaneCloseButton(
+          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          onPressed: _busy ? null : () => Navigator.pop(context, false),
+        ),
+        bottomAction: _failed
             ? null
             : NodeLaneModalActions(
                 actions: [
@@ -224,12 +195,14 @@ class _MobileBookshelfRemoveSheetState
                   ),
                 ],
               ),
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(
-            horizontal: NodeLaneTokens.gutter,
-          ),
+        body: ListView(
+          padding: const EdgeInsets.all(NodeLaneTokens.gutter),
           children: [
+            Text(
+              l10n.bookshelf_selected_count(widget.titles.length),
+              style: t.readerLabel,
+            ),
+            const SizedBox(height: NodeLaneTokens.space8),
             NodeLaneDisclosure(
               title: l10n.bookshelf_view_selection,
               icon: NodeLaneIcons.of(context).chapters,

@@ -8,7 +8,7 @@ import 'package:mangayomi/modules/library/providers/library_state_provider.dart'
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
@@ -20,7 +20,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as p;
 
 import 'mobile_bookshelf_actions.dart';
-import 'mobile_bookshelf_import_sheet.dart';
+import 'mobile_bookshelf_import_panel.dart';
 
 /// Shows a dialog for deleting selected manga from library and/or device.
 void showDeleteMangaDialog({
@@ -37,9 +37,9 @@ void showDeleteMangaDialog({
         .whereType<Manga>()
         .where((manga) => manga.itemType == itemType)
         .toList(growable: false);
-    showNodeLaneCatalogSheet<bool>(
+    pushBrowsePage<bool>(
       context,
-      MobileBookshelfRemoveSheet(
+      MobileBookshelfRemovePage(
         titles: [for (final manga in mangas) manga.name ?? ''],
         hasLocalArchives: mangas.any((manga) => manga.isLocalArchive ?? false),
         onRemove: (fromLibrary, downloads) async {
@@ -55,7 +55,6 @@ void showDeleteMangaDialog({
           ref.read(isLongPressedStateProvider.notifier).update(false);
         },
       ),
-      dismissible: false,
     );
     return;
   }
@@ -259,23 +258,7 @@ Future<String> _deleteDownload(Manga manga, String mangaDirectory) async {
 /// Shows a dialog for importing local files (zip, cbz, epub, video).
 void showImportLocalDialog(BuildContext context, ItemType itemType) {
   if (isMobile && !isTv) {
-    showNodeLaneCatalogSheet<int>(
-      context,
-      Consumer(
-        builder: (_, sheetRef, _) => MobileBookshelfImportSheet(
-          itemType: itemType,
-          onImport: (splitChapters) => sheetRef.refresh(
-            importArchivesFromFileProvider(
-              null,
-              itemType: itemType,
-              init: true,
-              splitChapters: splitChapters,
-            ).future,
-          ),
-        ),
-      ),
-      dismissible: false,
-    );
+    showLocalFileImport(context, itemType);
     return;
   }
   final l10n = l10nLocalizations(context)!;

@@ -33,7 +33,7 @@ class BrowserLibraryPanel extends StatefulWidget {
   }) => showNodeLaneBubble<BrowserPageEntry>(
     context,
     label: collection.title(context),
-    width: 420,
+    width: NodeLaneTokens.bubbleFormWidth,
     child: BrowserLibraryPanel._(store: store, collection: collection),
   );
   final BrowserLibraryStore store;

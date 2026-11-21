@@ -19,13 +19,16 @@ extension BuildContextExtensions on BuildContext {
       sizeWantsNavRail(MediaQuery.sizeOf(this));
 
   /// Measure the space *after* the rail, safe areas and any outer pane.
-  bool tabletPanesFit(double width) =>
-      isAndroidTablet &&
-      width >= NodeLaneTokens.tabletPaneBreakpoint &&
-      width >=
-          NodeLaneTokens.tabletPaneBreakpoint *
-              MediaQuery.textScalerOf(this).scale(16) /
-              16;
+  bool hasPaneWidth(double width) =>
+      width >= NodeLaneTokens.tabletPaneBreakpoint * paneTextScale;
+
+  double get paneTextScale {
+    final base = NodeLaneTokens.of(this).body.fontSize!;
+    final scale = MediaQuery.textScalerOf(this).scale(base) / base;
+    return scale < 1 ? 1 : scale;
+  }
+
+  bool tabletPanesFit(double width) => isAndroidTablet && hasPaneWidth(width);
 
   bool get isLight {
     return Theme.of(this).brightness == Brightness.light;

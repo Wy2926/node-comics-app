@@ -3784,10 +3784,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get increase => 'Wzrost';
 
   @override
-  String get chapter_swipe_actions =>
-      'Działania polegające na przesuwaniu rozdziału';
-
-  @override
   String get chapter_swipe_start => 'Przesuń w prawo';
 
   @override
@@ -4262,9 +4258,6 @@ class AppLocalizationsPl extends AppLocalizations {
       'Operacja nie została zakończona. Niektóre prace lub pliki mogły zostać przetworzone. Zamknij to okno dialogowe i zanim przejdziesz dalej, sprawdź swoją półkę z książkami i pobrane pliki.';
 
   @override
-  String get bookshelf_processing => 'Przetwarzanie…';
-
-  @override
   String get bookshelf_mark_read => 'Zaznacz jako przeczytane';
 
   @override
@@ -4634,10 +4627,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'Zobacz wybrane prace';
-
-  @override
-  String get bookshelf_import_formats =>
-      'Wybierz plik lokalny, aby dodać go do swojej półki z książkami.';
 
   @override
   String get bookshelf_import_canceled_hint =>

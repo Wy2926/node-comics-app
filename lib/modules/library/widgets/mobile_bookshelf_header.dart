@@ -24,9 +24,9 @@ class MobileBookshelfHeader extends StatelessWidget {
           .ceilToDouble(),
     );
     return NodeLaneTokens.headerPadding.vertical +
-        (NodeLanePageHeading.inlineSearch(context)
-            ? math.max(tools, search)
-            : tools + NodeLaneTokens.space16 + search);
+        tools +
+        NodeLaneTokens.space8 +
+        search;
   }
 
   const MobileBookshelfHeader({
@@ -46,7 +46,8 @@ class MobileBookshelfHeader extends StatelessWidget {
 
   final String searchLabel, importLabel, filterLabel;
   final TextEditingController controller;
-  final VoidCallback onSearchChanged, onImport, onFilter;
+  final VoidCallback onSearchChanged;
+  final ValueChanged<BuildContext> onFilter, onImport;
   final Widget mediaMenu, menu;
   final Widget? updateControl;
   final bool filtered;
@@ -69,33 +70,37 @@ class MobileBookshelfHeader extends StatelessWidget {
                 actions: [
                   if (updateControl != null) ...[
                     updateControl!,
-                    const SizedBox(width: NodeLaneTokens.space8),
+                    const SizedBox(width: NodeLaneTokens.space4),
                   ],
-                  NodeLaneIconButton(
-                    tooltip: importLabel,
-                    onPressed: onImport,
-                    icon: icons.add,
-                  ),
-                  const SizedBox(width: NodeLaneTokens.space8),
-                  menu,
-                ],
-                search: Row(
-                  children: [
-                    Expanded(
-                      child: NodeLaneTextField.search(
-                        controller: controller,
-                        onChanged: (_) => onSearchChanged(),
-                        hint: searchLabel,
-                      ),
+                  Builder(
+                    builder: (anchor) => NodeLaneIconButton(
+                      tooltip: importLabel,
+                      onPressed: () => onImport(anchor),
+                      icon: icons.add,
                     ),
-                    const SizedBox(width: NodeLaneTokens.space8),
-                    NodeLaneIconButton(
+                  ),
+                  const SizedBox(width: NodeLaneTokens.space4),
+                  Builder(
+                    builder: (anchor) => NodeLaneIconButton(
                       tooltip: filterLabel,
-                      onPressed: onFilter,
+                      onPressed: () => onFilter(anchor),
                       icon: icons.adjustments,
                       active: filtered,
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: NodeLaneTokens.space4),
+                  menu,
+                ],
+              ),
+              const SizedBox(height: NodeLaneTokens.space8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: NodeLaneTokens.searchMaxWidth,
+                ),
+                child: NodeLaneTextField.search(
+                  controller: controller,
+                  onChanged: (_) => onSearchChanged(),
+                  hint: searchLabel,
                 ),
               ),
             ],

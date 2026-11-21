@@ -1,10 +1,12 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -102,8 +104,9 @@ void main() {
   }
 
   Future<(ProviderContainer, StreamController<List<Chapter>>)> start(
-    WidgetTester tester,
-  ) async {
+    WidgetTester tester, {
+    Locale locale = const Locale('en'),
+  }) async {
     tester.view.physicalSize = const Size(360, 740);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -126,16 +129,16 @@ void main() {
         container: container,
         child: MaterialApp(
           theme: ThemeData(platform: TargetPlatform.iOS),
-          locale: const Locale('en'),
+          locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () => pushBrowsePage<void>(
-                  context,
-                  MobileChapterSettingsPage(manga: manga, localArchive: false),
-                ),
+                onPressed: () => MobileChapterSettingsPanel(
+                  manga: manga,
+                  localArchive: false,
+                ).show(context),
                 child: const Text('Open settings'),
               ),
             ),
@@ -146,6 +149,15 @@ void main() {
     await tester.tap(find.text('Open settings'));
     await tester.pumpAndSettle();
     return (container, events);
+  }
+
+  Finder option<T>(String group, String label) => find.descendant(
+    of: find.widgetWithText(NodeLaneOptionSwitch<T>, group),
+    matching: find.widgetWithText(InkWell, label),
+  );
+  Future<void> reveal(WidgetTester tester, Finder target) async {
+    await Scrollable.ensureVisible(tester.element(target), alignment: .6);
+    await tester.pumpAndSettle();
   }
 
   test('queued chapter preferences preserve other fields and books', () async {
@@ -226,15 +238,15 @@ void main() {
     'chapter controls select explicit states and keep sort direction independent',
     (tester) async {
       final (container, _) = await start(tester);
-      expect(find.text('Display'), findsNothing);
-      Finder option(String name, String value) => find.descendant(
-        of: find.byKey(ValueKey('chapter-filter-$name')),
-        matching: find.text(value),
-      );
-      await tester.tap(option('Downloaded', 'Include'));
-      await tester.tap(option('Unread', 'Exclude'));
-      await tester.ensureVisible(option('Bookmarked', 'Include'));
-      await tester.tap(option('Bookmarked', 'Include'));
+      for (final (filter, state) in [
+        ('Downloaded', 'Include'),
+        ('Unread', 'Exclude'),
+        ('Bookmarked', 'Include'),
+      ]) {
+        final button = option<int>(filter, state);
+        await reveal(tester, button);
+        await tester.tap(button);
+      }
       await flush(tester);
       expect(
         container.read(chapterFilterDownloadedStateProvider(mangaId: 1)),
@@ -246,20 +258,17 @@ void main() {
         1,
       );
       await tester.tap(
-        find.descendant(
-          of: find.byType(NodeLaneTabSegments),
-          matching: find.text('Sort'),
-        ),
+        find.descendant(of: find.byType(TabBar), matching: find.text('Sort')),
       );
       await tester.pumpAndSettle();
       final chooseDirection = tester
-          .widget<NodeLaneSegments<bool>>(find.byType(NodeLaneSegments<bool>))
-          .onChanged!;
-      final chooseSort = tester
-          .widget<NodeLaneRow>(find.widgetWithText(NodeLaneRow, 'By name'))
+          .widget<InkWell>(find.widgetWithText(InkWell, 'Ascending'))
           .onTap!;
-      chooseDirection(true);
-      chooseDirection(true);
+      final chooseSort = tester
+          .widget<InkWell>(find.widgetWithText(InkWell, 'By name'))
+          .onTap!;
+      chooseDirection();
+      chooseDirection();
       chooseSort();
       chooseSort();
       await flush(tester);
@@ -279,28 +288,101 @@ void main() {
         saved.sortChapterList!.firstWhere((value) => value.mangaId == 2).index,
         2,
       );
+      tester.view.physicalSize = const Size(320, 700);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       await tester.tap(
-        find.descendant(
-          of: find.byType(NodeLaneTabSegments),
-          matching: find.text('Filter'),
-        ),
+        find.descendant(of: find.byType(TabBar), matching: find.text('Filter')),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(option('Bookmarked', 'Include'));
+      final include = option<int>('Bookmarked', 'Include');
+      await reveal(tester, include);
       expect(
-        tester
-            .widget<NodeLaneSegments<int>>(
-              find.descendant(
-                of: find.byKey(const ValueKey('chapter-filter-Bookmarked')),
-                matching: find.byType(NodeLaneSegments<int>),
-              ),
-            )
-            .value,
-        1,
+        tester.getSemantics(include).flagsCollection.isSelected,
+        Tristate.isTrue,
       );
-      await tester.tap(find.byTooltip('Back'));
+      final unread = option<int>('Unread', 'Include');
+      await reveal(tester, unread);
+      await tester.tap(unread);
+      await flush(tester);
+      expect(container.read(chapterFilterUnreadStateProvider(mangaId: 1)), 1);
+      expect(container.read(chapterFilterUnreadStateProvider(mangaId: 2)), 2);
+      await reveal(tester, find.byTooltip('Close'));
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(find.text('Open settings'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Chinese swipe labels stay whole at phone width and reflow at 200% without losing the selection',
+    (tester) async {
+      await start(tester, locale: const Locale('zh'));
+      tester.view.physicalSize = const Size(390, 844);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('设置'));
+      await tester.pumpAndSettle();
+      const right = '向右滑动', left = '向左滑动', read = '切换已读状态', bookmark = '切换书签';
+      final first = option<ChapterSwipeAction>(right, bookmark);
+      final second = option<ChapterSwipeAction>(right, read);
+      void checkLabel(Finder button, String label) {
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.descendant(
+            of: find.descendant(of: button, matching: find.text(label)),
+            matching: find.byType(RichText),
+          ),
+        );
+        final lines = paragraph
+            .getBoxesForSelection(
+              TextSelection(baseOffset: 0, extentOffset: label.length),
+            )
+            .map((box) => box.top)
+            .toSet();
+        expect(lines, hasLength(1), reason: label);
+        expect(tester.getSize(button).height, greaterThanOrEqualTo(44));
+      }
+
+      expect(
+        tester.getBottomLeft(find.text(right)).dy,
+        lessThan(tester.getTopLeft(first).dy),
+      );
+      expect(tester.getTopLeft(first).dy, tester.getTopLeft(second).dy);
+      checkLabel(second, read);
+      await tester.tap(second);
+      final disabled = option<ChapterSwipeAction>(left, '已禁用');
+      await reveal(tester, disabled);
+      await tester.tap(disabled);
+      await flush(tester);
+      expect(
+        settingsRepository.current.chapterSwipeStartAction,
+        ChapterSwipeAction.toggleRead.index,
+      );
+      expect(
+        settingsRepository.current.chapterSwipeEndAction,
+        ChapterSwipeAction.disabled.index,
+      );
+
+      tester.view.physicalSize = const Size(320, 700);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpAndSettle();
+      await reveal(tester, second);
+      expect(
+        tester.getTopLeft(second).dy,
+        greaterThan(tester.getBottomLeft(first).dy),
+      );
+      checkLabel(second, read);
+      expect(tester.getSemantics(second).label, '$right, $read');
+      expect(
+        tester.getSemantics(second).flagsCollection.isSelected,
+        Tristate.isTrue,
+      );
+      await reveal(tester, disabled);
+      expect(
+        tester.getSemantics(disabled).flagsCollection.isSelected,
+        Tristate.isTrue,
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -313,7 +395,7 @@ void main() {
       container.read(provider.notifier).set(['Team 00']);
       await flush(tester);
       Future<void> openGroups() async {
-        await tester.ensureVisible(find.text('Filter scanlator groups'));
+        await reveal(tester, find.text('Filter scanlator groups'));
         await tester.tap(find.text('Filter scanlator groups'));
         await tester.pumpAndSettle();
       }
@@ -324,6 +406,13 @@ void main() {
       }
 
       await openGroups();
+      expect(
+        find.ancestor(
+          of: find.byType(TextField),
+          matching: find.byType(NodeLaneBubbleFlow),
+        ),
+        findsOneWidget,
+      );
       await search('39');
       await tester.tap(find.text('Team 39'));
       await tester.tap(find.text('Cancel'));

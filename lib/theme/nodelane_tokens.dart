@@ -50,6 +50,8 @@ class NodeLaneTokens {
   static const tagHeight = 32.0;
   static const choicePreviewHeight = 40.0;
   static const detailCoverWidth = 132.0, detailCoverHeight = 188.0;
+  static const detailHeadingTextWidth = 150.0, detailToolMinWidth = 76.0;
+  static const skeletonLabelWidth = 96.0, skeletonValueWidth = 64.0;
   static const readerEntryCoverWidth = 96.0, readerEntryCoverHeight = 136.0;
   static const chapterRowHeight = 72.0;
   static const defaultMobileAccent = Color(0xff006eff);
@@ -94,10 +96,21 @@ class NodeLaneTokens {
   );
   static const modalRadius = 24.0;
   static const buttonHeight = 48.0;
+  static const actionPairWidth = 280.0;
   static const closeSurfaceSize = 32.0;
   static const sheetHandleSize = Size(44, 4);
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const menuMaxWidth = 280.0;
+  static const bubbleToolWidth = 360.0, bubbleTabsWidth = 380.0;
+  static const bubbleFormWidth = 420.0, bubbleSettingsWidth = 440.0;
+  static const bubbleMaxHeight = 560.0, bubbleTipHeight = 7.0;
+  static const bubbleBarrier = Color(0x0A000000);
+  static const bubbleContentPadding = EdgeInsets.fromLTRB(
+    space12,
+    space8,
+    space12,
+    space12,
+  );
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
   static const catalogTabsWidth = 176.0;
   // Source cards share geometry across directories, metadata and action states.
@@ -113,11 +126,12 @@ class NodeLaneTokens {
   static const navigationRailWidth = 96.0;
   // Tablet changes layout geometry only; controls keep the mobile visual roles.
   static const tabletPaneBreakpoint = 720.0, tabletSupportingWidth = 320.0;
+  static const paneMaxFraction = .43, detailSideFraction = .28;
   static const tabletCategoryWidth = 216.0, tabletOverviewWidth = 440.0;
   static const tabletColumnWidth = 640.0, tabletFormWidth = 840.0;
   static const tabletDashboardWidth = 1120.0, sourceCardMinWidth = 272.0;
   static const browserInlineActionsWidth = 352.0;
-  static const browserSearchMaxWidth = 560.0;
+  static const searchMaxWidth = 560.0;
   static const browserAddressHeight = 44.0, browserBackWidth = 64.0;
   static const browserDisplayWidth = 176.0;
   static const dialogMaxWidth = 480.0;

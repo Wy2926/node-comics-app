@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
@@ -18,7 +19,7 @@ Future<T?> showSourceChoice<T>(
   String? hint,
 }) async {
   if (options.isEmpty) return null;
-  if (options.length <= 8) {
+  if (options.length <= 8 && !NodeLaneBubbleFlow.contains(context)) {
     final row = context.findRenderObject()! as RenderBox;
     final overlay =
         Navigator.of(
@@ -56,7 +57,7 @@ Future<T?> showSourceChoice<T>(
     title: title,
     current: current,
     options: options,
-    searchable: true,
+    searchable: options.length > 8,
     description: [
       ?subtitle,
       hint ?? context.l10n.settings_immediate_choice,
@@ -182,6 +183,7 @@ Future<String?> showSourceTextEditor(
   bool allowEmpty = true,
 }) => showDialog<String>(
   context: context,
+  useRootNavigator: !NodeLaneBubbleFlow.contains(context),
   builder: (_) => MobileSettingsTextDialog(
     title: title,
     initialValue: initialValue,

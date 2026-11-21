@@ -60,23 +60,31 @@ class NodeLanePaneLayout extends StatelessWidget {
     required this.pane,
     required this.body,
     this.paneWidth = NodeLaneTokens.tabletSupportingWidth,
+    this.useAvailableWidth = false,
   });
 
   final WidgetBuilder? pane;
   final Widget Function(BuildContext, bool split) body;
   final double paneWidth;
+  final bool useAvailableWidth;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final split =
-          pane != null && context.tabletPanesFit(constraints.maxWidth);
+          pane != null &&
+          (useAvailableWidth
+              ? context.hasPaneWidth(constraints.maxWidth)
+              : context.tabletPanesFit(constraints.maxWidth));
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (split) ...[
             SizedBox(
-              width: math.min(paneWidth, constraints.maxWidth * .43),
+              width: math.min(
+                paneWidth,
+                constraints.maxWidth * NodeLaneTokens.paneMaxFraction,
+              ),
               child: PrimaryScrollController.none(child: pane!(context)),
             ),
             VerticalDivider(

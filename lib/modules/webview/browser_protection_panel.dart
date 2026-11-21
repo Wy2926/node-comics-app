@@ -95,7 +95,7 @@ class _BrowserProtectionButtonState extends State<BrowserProtectionButton> {
       final result = await showNodeLaneBubble<SiteProtectionAction>(
         context,
         label: context.l10n.browser_protection,
-        width: 360,
+        width: NodeLaneTokens.bubbleToolWidth,
         child: BrowserProtectionPanel(
           protection: widget.protection,
           url: widget.url,

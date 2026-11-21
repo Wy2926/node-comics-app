@@ -48,7 +48,8 @@ class LibraryBody extends ConsumerWidget {
   final String searchQuery;
   final bool ignoreFiltersOnSearch;
   final List<String> sourceIds;
-  final VoidCallback? onAdjustFilters, onClearSearch;
+  final ValueChanged<BuildContext>? onAdjustFilters;
+  final VoidCallback? onClearSearch;
 
   const LibraryBody({
     super.key,
@@ -147,39 +148,45 @@ class LibraryBody extends ConsumerWidget {
               action: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  FilledButton(
-                    onPressed: filtered
-                        ? (searching
-                              ? onClearSearch ?? () {}
-                              : onAdjustFilters ?? () {})
-                        : () {
-                            ref
-                                .read(browseInitialTabProvider.notifier)
-                                .request(
-                                  BrowseTab(itemType, BrowseTabKind.sources),
-                                );
-                            context.go('/browse');
-                          },
-                    child: Text(
-                      filtered
+                  Builder(
+                    builder: (anchor) => FilledButton(
+                      onPressed: filtered
                           ? (searching
-                                ? l10n.bookshelf_clear_query
-                                : l10n.filter)
-                          : l10n.bookshelf_browse_sources,
+                                ? onClearSearch
+                                : () => onAdjustFilters?.call(anchor))
+                          : () {
+                              ref
+                                  .read(browseInitialTabProvider.notifier)
+                                  .request(
+                                    BrowseTab(itemType, BrowseTabKind.sources),
+                                  );
+                              context.go('/browse');
+                            },
+                      child: Text(
+                        filtered
+                            ? (searching
+                                  ? l10n.bookshelf_clear_query
+                                  : l10n.filter)
+                            : l10n.bookshelf_browse_sources,
+                      ),
                     ),
                   ),
                   if (!filtered || (searching && onAdjustFilters != null)) ...[
                     const SizedBox(height: NodeLaneTokens.space8),
                     if (filtered)
-                      TextButton(
-                        onPressed: onAdjustFilters,
-                        child: Text(l10n.filter),
+                      Builder(
+                        builder: (anchor) => TextButton(
+                          onPressed: () => onAdjustFilters!(anchor),
+                          child: Text(l10n.filter),
+                        ),
                       )
                     else
-                      NodeLaneSecondaryButton(
-                        onPressed: () =>
-                            showImportLocalDialog(context, itemType),
-                        child: Text(l10n.import_local_file),
+                      Builder(
+                        builder: (anchor) => NodeLaneSecondaryButton(
+                          onPressed: () =>
+                              showImportLocalDialog(anchor, itemType),
+                          child: Text(l10n.import_local_file),
+                        ),
                       ),
                   ],
                 ],

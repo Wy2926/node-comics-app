@@ -66,7 +66,7 @@ class NodeLaneAlertDialog extends StatelessWidget {
           ),
           if (actions?.isNotEmpty == true)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              padding: NodeLaneTokens.modalContentPadding,
               child: NodeLaneModalActions(actions: actions!),
             ),
         ],
@@ -107,7 +107,7 @@ class NodeLaneModalActions extends StatelessWidget {
     builder: (context, constraints) {
       final stacked =
           actions.length != 2 ||
-          constraints.maxWidth < 280 ||
+          constraints.maxWidth < NodeLaneTokens.actionPairWidth ||
           MediaQuery.textScalerOf(context).scale(15) > 20;
       Widget sized(Widget action) => ConstrainedBox(
         constraints: const BoxConstraints(

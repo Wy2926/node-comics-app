@@ -38,6 +38,7 @@ import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/repositories/browser_reader_repository.dart';
 
 import 'translation_bridge.dart';
@@ -746,7 +747,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       final action = await showNodeLaneBubble<String>(
         anchor,
         label: context.l10n.tabs,
-        width: 380,
+        width: NodeLaneTokens.bubbleTabsWidth,
         child: BrowserTabsPanel(
           entries: _entries,
           onClose: _editTabs,
@@ -1075,12 +1076,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     final width =
         MediaQuery.sizeOf(context).width -
         MediaQuery.paddingOf(context).horizontal;
-    final inline =
-        width >= NodeLaneTokens.tabletPaneBreakpoint &&
-        width >=
-            NodeLaneTokens.tabletPaneBreakpoint *
-                MediaQuery.textScalerOf(context).scale(16) /
-                16;
+    final inline = context.hasPaneWidth(width);
     final toolbar =
         tab == null ||
             tab.isBlank ||

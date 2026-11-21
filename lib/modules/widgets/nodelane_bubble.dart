@@ -26,7 +26,7 @@ Future<T?> showNodeLaneBubble<T>(
   return navigator.push<T>(
     RawDialogRoute<T>(
       barrierLabel: MaterialLocalizations.of(anchor).menuDismissLabel,
-      barrierColor: const Color(0x0A000000),
+      barrierColor: NodeLaneTokens.bubbleBarrier,
       requestFocus: requestFocus,
       transitionDuration: NodeLaneMotion.time(anchor),
       transitionBuilder: (_, _, _, page) => page,
@@ -34,13 +34,13 @@ Future<T?> showNodeLaneBubble<T>(
         LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.biggest, media = MediaQuery.of(context);
-            final safe = Offset.zero & size;
-            final bounds = EdgeInsets.fromLTRB(
-              math.max(media.viewPadding.left, media.viewInsets.left) + 8,
-              math.max(media.viewPadding.top, media.viewInsets.top) + 8,
-              math.max(media.viewPadding.right, media.viewInsets.right) + 8,
-              math.max(media.viewPadding.bottom, media.viewInsets.bottom) + 8,
-            ).deflateRect(safe);
+            final safe = EdgeInsets.fromLTRB(
+              math.max(media.viewPadding.left, media.viewInsets.left),
+              math.max(media.viewPadding.top, media.viewInsets.top),
+              math.max(media.viewPadding.right, media.viewInsets.right),
+              math.max(media.viewPadding.bottom, media.viewInsets.bottom),
+            ).deflateRect(Offset.zero & size);
+            final bounds = safe.deflate(NodeLaneTokens.space8);
             if (bounds.isEmpty) return const SizedBox.shrink();
             if (box.attached && box.hasSize) lastRect = measure();
             var rect = lastRect;
@@ -74,7 +74,10 @@ Future<T?> showNodeLaneBubble<T>(
                   bottom: down ? null : size.height - above,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: math.min(560, height),
+                      maxHeight: math.min(
+                        NodeLaneTokens.bubbleMaxHeight,
+                        height,
+                      ),
                     ),
                     child: FadeTransition(
                       opacity: animation.drive(
@@ -95,8 +98,8 @@ Future<T?> showNodeLaneBubble<T>(
                           clipBehavior: Clip.antiAlias,
                           child: Padding(
                             padding: EdgeInsets.only(
-                              top: down ? 7 : 0,
-                              bottom: down ? 0 : 7,
+                              top: down ? NodeLaneTokens.bubbleTipHeight : 0,
+                              bottom: down ? 0 : NodeLaneTokens.bubbleTipHeight,
                             ),
                             child: Semantics(
                               namesRoute: true,
@@ -120,6 +123,80 @@ Future<T?> showNodeLaneBubble<T>(
   );
 }
 
+/// A compact home with a local history for multi-step tools. The outer route
+/// keeps the original anchor; Back and barrier taps must honor the active form.
+class NodeLaneBubbleFlow extends StatefulWidget {
+  const NodeLaneBubbleFlow({super.key, required this.home});
+  final Widget home;
+
+  static bool contains(BuildContext context) =>
+      context.findAncestorStateOfType<_NodeLaneBubbleFlowState>() != null;
+
+  static Future<T?> push<T>(BuildContext context, Widget step) => context
+      .findAncestorStateOfType<_NodeLaneBubbleFlowState>()!
+      ._push<T>(context, step);
+
+  @override
+  State<NodeLaneBubbleFlow> createState() => _NodeLaneBubbleFlowState();
+}
+
+class _NodeLaneBubbleFlowState extends State<NodeLaneBubbleFlow> {
+  final _navigator = GlobalKey<NavigatorState>();
+  Route<dynamic>? _first;
+
+  Future<T?> _push<T>(BuildContext origin, Widget step) async {
+    final navigator = _navigator.currentState;
+    if (ModalRoute.isCurrentOf(origin) != true ||
+        (navigator != null && Navigator.of(origin) != navigator)) {
+      return null;
+    }
+    final route = MaterialPageRoute<T>(builder: (_) => step);
+    if (navigator != null) return navigator.push(route);
+    if (_first != null) return null;
+    setState(() => _first = route);
+    try {
+      return await route.popped;
+    } finally {
+      if (mounted) setState(() => _first = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      Visibility(
+        visible: _first == null,
+        maintainState: true,
+        child: widget.home,
+      ),
+      if (_first != null)
+        NavigatorPopHandler<Object?>(
+          onPopWithResult: (_) => _navigator.currentState?.maybePop(),
+          child: LayoutBuilder(
+            builder: (context, box) => MediaQuery(
+              // The outer bubble already avoids the keyboard and system bars.
+              data: MediaQuery.of(context).copyWith(
+                size: box.biggest,
+                padding: EdgeInsets.zero,
+                viewPadding: EdgeInsets.zero,
+                viewInsets: EdgeInsets.zero,
+              ),
+              child: Navigator(
+                key: _navigator,
+                onGenerateInitialRoutes: (_, _) => [
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SizedBox.shrink(),
+                  ),
+                  _first!,
+                ],
+              ),
+            ),
+          ),
+        ),
+    ],
+  );
+}
+
 class _BubbleOutline extends ShapeBorder {
   const _BubbleOutline(this.down, this.tip, this.line);
   final bool down;
@@ -132,16 +209,17 @@ class _BubbleOutline extends ShapeBorder {
   @override
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
     final body = EdgeInsets.only(
-      top: down ? 7 : 0,
-      bottom: down ? 0 : 7,
+      top: down ? NodeLaneTokens.bubbleTipHeight : 0,
+      bottom: down ? 0 : NodeLaneTokens.bubbleTipHeight,
     ).deflateRect(rect);
     final x = rect.left + tip,
         y = down ? body.top : body.bottom,
         sign = down ? -1.0 : 1.0;
+    final tipY = y + sign * NodeLaneTokens.bubbleTipHeight;
     final pointer = Path()
       ..moveTo(x - 10, y - sign)
-      ..cubicTo(x - 5, y, x - 2, y + sign * 7, x, y + sign * 7)
-      ..cubicTo(x + 2, y + sign * 7, x + 5, y, x + 10, y - sign)
+      ..cubicTo(x - 5, y, x - 2, tipY, x, tipY)
+      ..cubicTo(x + 2, tipY, x + 5, y, x + 10, y - sign)
       ..close();
     return Path.combine(
       PathOperation.union,
@@ -170,30 +248,56 @@ class _BubbleOutline extends ShapeBorder {
 }
 
 class NodeLaneBubbleHeading extends StatelessWidget {
-  const NodeLaneBubbleHeading(this.title, {super.key, this.actions = const []});
+  const NodeLaneBubbleHeading(
+    this.title, {
+    super.key,
+    this.actions = const [],
+    this.closeButton,
+    this.subtitle,
+  });
   final String title;
+  final String? subtitle;
   final List<Widget> actions;
+  final Widget? closeButton;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 6, 2),
+    padding: const EdgeInsetsDirectional.fromSTEB(
+      NodeLaneTokens.space16,
+      NodeLaneTokens.space4,
+      NodeLaneTokens.space8,
+      NodeLaneTokens.space4,
+    ),
     child: Row(
       children: [
         Expanded(
-          child: Semantics(
-            header: true,
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: NodeLaneTokens.of(context).readerLabel,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Semantics(
+                header: true,
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: NodeLaneTokens.of(context).readerLabel,
+                ),
+              ),
+              if (subtitle?.isNotEmpty == true)
+                Text(
+                  subtitle!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: NodeLaneTokens.of(context).readerSecondary,
+                ),
+            ],
           ),
         ),
         ...actions,
-        NodeLaneCloseButton(
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: () => Navigator.maybePop(context),
-        ),
+        closeButton ??
+            NodeLaneCloseButton(
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.maybePop(context),
+            ),
       ],
     ),
   );

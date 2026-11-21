@@ -94,7 +94,7 @@ class MobileBrowserHeader extends StatelessWidget {
                   child: Align(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
-                        maxWidth: NodeLaneTokens.browserSearchMaxWidth,
+                        maxWidth: NodeLaneTokens.searchMaxWidth,
                       ),
                       child: MobileBrowserAddressField(
                         url: url,

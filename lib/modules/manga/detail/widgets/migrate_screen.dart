@@ -7,6 +7,12 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
+import 'package:mangayomi/modules/browse/extension/extension_screen.dart';
+import 'package:mangayomi/modules/browse/mobile_repositories.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
@@ -70,17 +76,39 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
   }
 
   Future<void> _openSources(bool installed) async {
-    if (!installed) {
+    if (!installed && NodeLaneBubbleFlow.contains(context)) {
+      final type = widget.manga.itemType;
+      await pushBrowsePage<void>(
+        context,
+        Builder(
+          builder: (step) => MobileBrowsePage(
+            title: step.l10n.extensions,
+            body: ExtensionScreen(query: '', itemType: type),
+            actions: [
+              NodeLaneIconButton(
+                tooltip: step.l10n.source_manage_repositories,
+                icon: NodeLaneIcons.of(step).repository,
+                onPressed: () => pushBrowsePage<void>(
+                  step,
+                  MobileRepositoryManager(itemType: type),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (!installed) {
       ref
           .read(browseInitialTabProvider.notifier)
           .request(BrowseTab(widget.manga.itemType, BrowseTabKind.extensions));
       context.go('/browse');
       return;
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const BrowseSScreen()),
+      );
     }
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const BrowseSScreen()),
-    );
     if (!mounted) return;
     setState(() {
       _readSources();
@@ -101,10 +129,23 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
       message: installed.isEmpty
           ? l10n.global_search_no_sources_hint
           : l10n.global_search_only_pinned_hint,
-      action: FilledButton(
-        onPressed: () => _openSources(installed.isNotEmpty),
-        child: Text(installed.isEmpty ? l10n.show_extensions : l10n.settings),
-      ),
+      action: installed.isNotEmpty && NodeLaneBubbleFlow.contains(context)
+          ? NodeLaneSwitchRow(
+              title: l10n.only_include_pinned_sources,
+              value: ref.watch(onlyIncludePinnedSourceStateProvider),
+              onChanged: (value) {
+                ref
+                    .read(onlyIncludePinnedSourceStateProvider.notifier)
+                    .set(value);
+                setState(_readSources);
+              },
+            )
+          : FilledButton(
+              onPressed: () => _openSources(installed.isNotEmpty),
+              child: Text(
+                installed.isEmpty ? l10n.show_extensions : l10n.settings,
+              ),
+            ),
     );
   }
 

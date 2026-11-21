@@ -3732,9 +3732,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get increase => 'زيادة';
 
   @override
-  String get chapter_swipe_actions => 'إجراءات سحب الفصل';
-
-  @override
   String get chapter_swipe_start => 'السحب لليمين';
 
   @override
@@ -4204,9 +4201,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'لم تنتهي العملية. ربما تمت معالجة بعض الأعمال أو الملفات. أغلق مربع الحوار هذا وتحقق من رف الكتب والتنزيلات قبل المتابعة.';
 
   @override
-  String get bookshelf_processing => 'المعالجة…';
-
-  @override
   String get bookshelf_mark_read => 'ضع علامة للقراءة';
 
   @override
@@ -4576,10 +4570,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get bookshelf_view_selection => 'عرض الأعمال المختارة';
-
-  @override
-  String get bookshelf_import_formats =>
-      'اختر ملفًا محليًا لإضافته إلى رف الكتب الخاص بك.';
 
   @override
   String get bookshelf_import_canceled_hint =>

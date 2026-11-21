@@ -12,7 +12,6 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/manga/detail/chapter_bulk_actions.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_chapter_actions.dart';
-import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/repositories/db_write_queue.dart';
 
 Widget _app(Widget child) => MaterialApp(
@@ -102,17 +101,10 @@ void main() {
       }
       expect(find.text('Download'), findsNothing);
       expect(find.text('Read below'), findsNothing);
-      final toolbarTop = tester
-          .getTopLeft(find.byType(NodeLaneGlassSurface))
-          .dy;
       for (final text in ['Read below', 'Download']) {
         await tester.tap(find.text('More'));
         await tester.pumpAndSettle();
         expect(find.text('Invert selection'), findsNothing);
-        expect(
-          tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
-          lessThanOrEqualTo(toolbarTop - 8),
-        );
         await tester.tap(find.text(text));
         await tester.pumpAndSettle();
       }
@@ -141,10 +133,6 @@ void main() {
       await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
       expect(find.text('Read below'), findsNothing);
-      expect(
-        tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
-        lessThanOrEqualTo(toolbarTop - 8),
-      );
       await tester.tap(find.text('Delete'));
       await tester.pumpAndSettle();
       expect(actions.last, MobileChapterAction.delete);

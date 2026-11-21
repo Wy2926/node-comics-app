@@ -6,6 +6,9 @@ import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_pro
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_detail_loading.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -33,20 +36,44 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
 
   Future<void> _updateDetail({bool isInit = false}) async {
     if (!mounted || (_isLoading && !isInit)) return;
-    if (!isInit) setState(() => _isLoading = true);
+    if (!isInit) {
+      setState(() {
+        _isLoading = true;
+        _refreshFailed = false;
+      });
+    }
     try {
       await ref.read(
         updateMangaDetailProvider(
           mangaId: widget.mangaId,
           isInit: isInit,
+          showToast: !isMobile || isTv,
         ).future,
       );
+    } catch (_) {
+      if (mounted) {
+        _refreshFailed = true;
+        showNodeLaneNotice(
+          context.l10n.reader_loading_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  bool _isLoading = true;
+  bool _isLoading = true, _refreshFailed = false;
+  Widget _unavailable({bool missing = false}) => Scaffold(
+    appBar: nodeLaneAppBar(context, title: ''),
+    body: NodeLaneEmptyState.error(
+      title: missing
+          ? context.l10n.no_result
+          : context.l10n.reader_loading_failed,
+      onRetry: () =>
+          ref.invalidate(getMangaDetailStreamProvider(mangaId: widget.mangaId)),
+    ),
+  );
   @override
   Widget build(BuildContext context) {
     final manga = ref.watch(
@@ -56,7 +83,9 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
       body: manga.when(
         data: (manga) {
           if (manga == null) {
-            return _loadingPage();
+            return isMobile && !isTv
+                ? _unavailable(missing: true)
+                : _loadingPage();
           }
           final hasSourceInfo = manga.lang != null && manga.source != null;
           return StreamBuilder<List<Source>>(
@@ -85,6 +114,7 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
                 child: MangaDetailsView(
                   manga: manga,
                   loading: _isLoading,
+                  refreshFailed: _refreshFailed,
                   sourceExist: sourceExist,
                   onRefresh: refreshDetail,
                 ),
@@ -93,7 +123,7 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
           );
         },
         error: (Object error, StackTrace stackTrace) {
-          return ErrorText(error);
+          return isMobile && !isTv ? _unavailable() : ErrorText(error);
         },
         loading: () {
           return _loadingPage();
