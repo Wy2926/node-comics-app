@@ -22,6 +22,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get browser_continue => 'Continuar lendo';
 
   @override
+  String get browser_continue_hint =>
+      'Sua posição no capítulo é salva durante a leitura. Não é preciso adicionar aos favoritos.';
+
+  @override
+  String get browser_insert_suggestion => 'Inserir sugestão de pesquisa';
+
+  @override
   String get browser_focus => 'Leitura sem distrações';
 
   @override
@@ -137,7 +144,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Excluir todo o histórico deste dispositivo? Os favoritos e as sessões dos sites serão mantidos.';
+      'Excluir todo o histórico deste dispositivo? O progresso de leitura, os favoritos e as sessões dos sites serão mantidos.';
 
   @override
   String get browser_library_empty => 'Ainda não há nada aqui';
@@ -152,10 +159,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get browser_recent => 'Visitas recentes';
-
-  @override
-  String get browser_pinned_hint =>
-      'Fixe seus sites favoritos em Fontes para acessá-los rapidamente.';
 
   @override
   String get browser_start_page => 'Página inicial';

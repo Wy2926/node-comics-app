@@ -87,6 +87,11 @@ class MainActivity: FlutterFragmentActivity() {
             }
         }
 
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "nodelane/browser/charset")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "gb18030") result.success((call.arguments as? ByteArray)?.toString(charset("GB18030")))
+                else result.notImplemented()
+            }
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.kodjodevf.mangayomi.device",

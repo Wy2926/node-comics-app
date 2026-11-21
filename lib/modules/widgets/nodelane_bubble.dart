@@ -1,0 +1,200 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+/// The route owns focus and dismissal. Only the bubble animates; the native
+/// page underneath stays in its original layer.
+Future<T?> showNodeLaneBubble<T>(
+  BuildContext anchor, {
+  required String label,
+  required Widget child,
+  double width = NodeLaneTokens.menuMaxWidth,
+  Offset? localPoint,
+  bool requestFocus = true,
+}) {
+  final navigator = Navigator.of(anchor, rootNavigator: true);
+  final overlay = navigator.overlay!.context.findRenderObject()! as RenderBox;
+  final themes = InheritedTheme.capture(from: anchor, to: navigator.context);
+  final box = anchor.findRenderObject()! as RenderBox;
+  Rect measure() => localPoint == null
+      ? box.localToGlobal(Offset.zero, ancestor: overlay) & box.size
+      : box.localToGlobal(localPoint, ancestor: overlay) & Size.zero;
+  var lastRect = measure();
+  return navigator.push<T>(
+    RawDialogRoute<T>(
+      barrierLabel: MaterialLocalizations.of(anchor).menuDismissLabel,
+      barrierColor: const Color(0x0A000000),
+      requestFocus: requestFocus,
+      transitionDuration: NodeLaneMotion.time(anchor),
+      transitionBuilder: (_, _, _, page) => page,
+      pageBuilder: (context, animation, _) => themes.wrap(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final size = constraints.biggest, media = MediaQuery.of(context);
+            final safe = Offset.zero & size;
+            final bounds = EdgeInsets.fromLTRB(
+              math.max(media.viewPadding.left, media.viewInsets.left) + 8,
+              math.max(media.viewPadding.top, media.viewInsets.top) + 8,
+              math.max(media.viewPadding.right, media.viewInsets.right) + 8,
+              math.max(media.viewPadding.bottom, media.viewInsets.bottom) + 8,
+            ).deflateRect(safe);
+            if (bounds.isEmpty) return const SizedBox.shrink();
+            if (box.attached && box.hasSize) lastRect = measure();
+            var rect = lastRect;
+            // A keyboard-invoked action can originate in the document rather than a button.
+            if (rect.height > bounds.height * .6) {
+              rect = rect.center & Size.zero;
+            }
+            final w = math.min(width, bounds.width);
+            final left = (rect.center.dx - w / 2).clamp(
+              bounds.left,
+              bounds.right - w,
+            );
+            final tip = (rect.center.dx - left)
+                .clamp(math.min(22, w / 2), math.max(w - 22, w / 2))
+                .toDouble();
+            final above = (rect.top - 3).clamp(bounds.top, bounds.bottom);
+            final below = (rect.bottom + 3).clamp(bounds.top, bounds.bottom);
+            final down = bounds.bottom - below >= above - bounds.top;
+            final height = down ? bounds.bottom - below : above - bounds.top;
+            final pivot = Alignment(tip / w * 2 - 1, down ? -1 : 1);
+            final motion = animation.drive(
+              CurveTween(curve: NodeLaneMotion.curve),
+            );
+            final colors = NodeLaneTokens.of(context);
+            return Stack(
+              children: [
+                Positioned(
+                  left: left,
+                  width: w,
+                  top: down ? below : null,
+                  bottom: down ? null : size.height - above,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: math.min(560, height),
+                    ),
+                    child: FadeTransition(
+                      opacity: animation.drive(
+                        CurveTween(
+                          curve: const Interval(0, .72, curve: Curves.easeOut),
+                        ),
+                      ),
+                      child: ScaleTransition(
+                        alignment: pivot,
+                        scale: motion.drive(Tween(begin: .93, end: 1.0)),
+                        child: Material(
+                          color: colors.surface,
+                          surfaceTintColor: Colors.transparent,
+                          elevation: 7,
+                          shadowColor: Colors.black26,
+                          animationDuration: Duration.zero,
+                          shape: _BubbleOutline(down, tip, colors.line),
+                          clipBehavior: Clip.antiAlias,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              top: down ? 7 : 0,
+                              bottom: down ? 0 : 7,
+                            ),
+                            child: Semantics(
+                              namesRoute: true,
+                              scopesRoute: true,
+                              explicitChildNodes: true,
+                              label: label,
+                              child: child,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+class _BubbleOutline extends ShapeBorder {
+  const _BubbleOutline(this.down, this.tip, this.line);
+  final bool down;
+  final double tip;
+  final Color line;
+  @override
+  EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
+  @override
+  ShapeBorder scale(double t) => this;
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
+    final body = EdgeInsets.only(
+      top: down ? 7 : 0,
+      bottom: down ? 0 : 7,
+    ).deflateRect(rect);
+    final x = rect.left + tip,
+        y = down ? body.top : body.bottom,
+        sign = down ? -1.0 : 1.0;
+    final pointer = Path()
+      ..moveTo(x - 10, y - sign)
+      ..cubicTo(x - 5, y, x - 2, y + sign * 7, x, y + sign * 7)
+      ..cubicTo(x + 2, y + sign * 7, x + 5, y, x + 10, y - sign)
+      ..close();
+    return Path.combine(
+      PathOperation.union,
+      Path()..addRRect(
+        RRect.fromRectAndRadius(
+          body,
+          const Radius.circular(NodeLaneTokens.groupRadius),
+        ),
+      ),
+      pointer,
+    );
+  }
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
+      getOuterPath(rect);
+  @override
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) =>
+      canvas.drawPath(
+        getOuterPath(rect),
+        Paint()
+          ..color = line
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = NodeLaneTokens.glassStroke,
+      );
+}
+
+class NodeLaneBubbleHeading extends StatelessWidget {
+  const NodeLaneBubbleHeading(this.title, {super.key, this.actions = const []});
+  final String title;
+  final List<Widget> actions;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 6, 2),
+    child: Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: NodeLaneTokens.of(context).readerLabel,
+            ),
+          ),
+        ),
+        ...actions,
+        NodeLaneCloseButton(
+          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          onPressed: () => Navigator.maybePop(context),
+        ),
+      ],
+    ),
+  );
+}

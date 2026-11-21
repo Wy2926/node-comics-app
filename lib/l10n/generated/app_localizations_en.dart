@@ -22,6 +22,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get browser_continue => 'Continue reading';
 
   @override
+  String get browser_continue_hint =>
+      'Your place in a chapter is saved as you read. No bookmark needed.';
+
+  @override
+  String get browser_insert_suggestion => 'Insert search suggestion';
+
+  @override
   String get browser_focus => 'Focus reading';
 
   @override
@@ -136,7 +143,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Delete all browsing history on this device? Bookmarks and website sign-ins are kept.';
+      'Delete all browsing history on this device? Reading progress, bookmarks and website sign-ins are kept.';
 
   @override
   String get browser_library_empty => 'Nothing here yet';
@@ -151,10 +158,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get browser_recent => 'Recently visited';
-
-  @override
-  String get browser_pinned_hint =>
-      'Pin favorite websites from Sources for quick access.';
 
   @override
   String get browser_start_page => 'Start page';

@@ -1,20 +1,25 @@
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangayomi/modules/webview/browser_navigation.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_widgets.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/webview/mobile_browser_tabs_sheet.dart';
+import 'package:mangayomi/modules/webview/browser_tabs_panel.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mangayomi/modules/webview/browser_library_store.dart';
 import 'package:mangayomi/modules/webview/browser_url.dart';
-import 'package:mangayomi/modules/webview/mobile_browser_library_sheet.dart';
+import 'package:mangayomi/modules/webview/browser_search_suggestions.dart';
+import 'package:mangayomi/modules/webview/browser_library_panel.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_menu.dart';
 
 void main() {
@@ -97,7 +102,11 @@ void main() {
             onSubmitted: (_) {},
             addressFocus: focus,
             onClose: () => closes++,
-            protection: (name: '站点保护', open: () => protection++),
+            protection: IconButton(
+              tooltip: '站点保护',
+              icon: const Icon(Icons.shield),
+              onPressed: () => protection++,
+            ),
             menu: IconButton(
               onPressed: () {},
               icon: const Icon(Icons.more_horiz),
@@ -113,10 +122,10 @@ void main() {
           ),
           MobileBrowserToolbar(
             tabCount: 12,
-            onTabs: () => tabs++,
+            onTabs: (_) => tabs++,
             onNew: () => newTabs++,
             onDisplayChanged: displays.add,
-            onControls: () => controls++,
+            onControls: (_) => controls++,
           ),
         ],
       ),
@@ -174,9 +183,9 @@ void main() {
     );
     await tester.tap(find.byTooltip('关闭标签页'));
     expect([selects, closes], [0, 1]);
-    await tester.tap(find.text('preview.example'));
+    await tester.tap(find.textContaining('preview.example'));
     expect([selects, closes], [1, 1]);
-    expect(find.text('当前'), findsOneWidget);
+    expect(find.textContaining('当前'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -189,9 +198,10 @@ void main() {
         tester,
         Builder(
           builder: (context) => TextButton(
-            onPressed: () => showNodeLaneCatalogSheet<void>(
+            onPressed: () => showNodeLaneBubble<void>(
               context,
-              MobileBrowserTabsSheet(
+              label: 'Tabs',
+              child: BrowserTabsPanel(
                 onUndo: () async => [],
                 entries: const [
                   {'id': 'a', 'title': 'Chapter', 'url': 'https://example.org'},
@@ -223,7 +233,7 @@ void main() {
       expect(attempts, 2);
       expect(find.text('标签页 · 1'), findsOneWidget);
       expect(find.text('新标签页'), findsOneWidget);
-      expect(find.text('尚未打开网页'), findsOneWidget);
+      expect(find.textContaining('尚未打开网页'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -257,52 +267,157 @@ void main() {
   });
 
   testWidgets(
-    'start page keeps tabs beside the address and opens shared website rows',
+    'bookmarks and history open beside their sections and clips keep their own position',
     (tester) async {
+      final clip = BrowserPageEntry(
+        url: 'https://reader.example/chapter',
+        title: 'Chapter four',
+        time: DateTime.now().subtract(const Duration(minutes: 19)),
+        anchor: const {'x': 0, 'y': 540, 'slot': 1, 'page': 4, 'fraction': .75},
+      );
       final opened = <String>[];
       await mount(
         tester,
         MobileBrowserStartPage(
-          sources: [
-            for (var i = 0; i < 6; i++)
-              Source(name: 'Site $i', baseUrl: 'https://example.org/$i'),
+          sources: [Source(name: 'Reader', baseUrl: 'https://reader.example')],
+          history: [
+            BrowserPageEntry(
+              url: 'https://visited.example',
+              title: 'Last visit',
+              time: clip.time,
+            ),
           ],
-          tabCount: 2,
-          onOpen: (url, _) => opened.add(url),
+          tabCount: 1,
+          onOpen: (_, _) {},
           onRequestSource: () {},
-          onManage: () {},
-          onTabs: () {},
+          reading: [
+            clip,
+            BrowserPageEntry(
+              url: 'https://reader.example/long',
+              title: 'A long chapter title ' * 10,
+              time: clip.time,
+              anchor: const {'x': 0, 'y': 10},
+            ),
+          ],
+          onBookmarks: (_) => opened.add('bookmarks'),
+          onHistory: (_) => opened.add('history'),
+          onResume: (entry) => opened.add(entry.url),
         ),
-        scale: 2,
       );
-      expect(tester.testTextInput.isVisible, isFalse);
+      final bookmarks = find.byTooltip('书签'), history = find.text('历史');
       expect(
-        tester.getRect(find.byType(MobileBrowserTabsButton)).left,
-        greaterThan(
-          tester.getRect(find.byType(MobileBrowserAddressField)).right,
-        ),
+        tester.getCenter(bookmarks).dy,
+        lessThan(tester.getTopLeft(find.byType(MobileBrowserAddressField)).dy),
       );
-      await tester.scrollUntilVisible(
-        find.text('Site 4'),
-        160,
-        scrollable: find.byType(Scrollable).first,
+      expect(
+        tester.getCenter(history).dy,
+        closeTo(tester.getCenter(find.text('最近访问')).dy, 3),
       );
+      await tester.tap(bookmarks);
+      await tester.ensureVisible(history);
+      await tester.tap(history);
+      tester.view.physicalSize = const Size(1100, 700);
       await tester.pumpAndSettle();
-      expect(find.text('Site 4'), findsOneWidget);
-      await tester.tap(find.text('Site 4'));
-      expect(opened, ['https://example.org/4']);
-      await tester.scrollUntilVisible(
-        find.byType(MobileBrowserAddressField),
-        -160,
-        scrollable: find.byType(Scrollable).first,
+      final tile = find.widgetWithText(BrowserReadingCard, 'Chapter four');
+      final cards = find.byType(BrowserReadingCard);
+      expect(
+        tester.getSize(cards.first).height,
+        tester.getSize(cards.last).height,
       );
-      await tester.enterText(find.byType(TextField), 'example.org/typed');
-      await tester.testTextInput.receiveAction(TextInputAction.go);
-      await tester.pumpAndSettle();
-      expect(opened.last, 'https://example.org/typed');
+      expect(tester.widget<Text>(find.text('Chapter four')).maxLines, 2);
+      expect(
+        tester.getCenter(tile).dx,
+        greaterThan(tester.getCenter(find.text('常用网站')).dx),
+      );
+      expect(
+        tester.getBottomLeft(tile).dy,
+        lessThan(tester.getCenter(find.text('最近访问')).dy),
+      );
+      expect(
+        tester.getSize(find.byType(MobileBrowserAddressField)).width,
+        lessThan(700),
+      );
+      expect(find.textContaining('75%'), findsNothing);
+      expect(find.text('19分钟前'), findsNWidgets(2));
+      await tester.tap(tile);
+      expect(opened, ['bookmarks', 'history', clip.url]);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'the pin pane scrolls past eight sites without moving the address or the reading column',
+    (tester) async {
+      await mount(
+        tester,
+        MobileBrowserStartPage(
+          sources: [
+            for (int i = 0; i < 42; i++)
+              Source(name: 'Website $i', baseUrl: 'https://$i.example'),
+          ],
+          history: [
+            BrowserPageEntry(
+              url: 'https://visited.example',
+              title: 'Last visit',
+              time: DateTime.now(),
+            ),
+          ],
+          tabCount: 0,
+          onOpen: (_, _) {},
+          onRequestSource: () {},
+        ),
+      );
+      tester.view.physicalSize = const Size(1100, 700);
+      await tester.pumpAndSettle();
+      final address = tester.getRect(find.byType(MobileBrowserAddressField));
+      final history = tester.getRect(find.text('最近访问'));
+      expect(find.text('继续读'), findsNothing);
+      final list = find.descendant(
+        of: find.byKey(const PageStorageKey('browser-pins')),
+        matching: find.byType(Scrollable),
+      );
+      expect(find.text('Website 41'), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('Website 41'),
+        320,
+        scrollable: list,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getRect(find.byType(MobileBrowserAddressField)), address);
+      expect(tester.getRect(find.text('最近访问')), history);
+      expect(find.byType(Scrollbar), findsNothing);
+    },
+  );
+
+  testWidgets('a pins-only start page opens website tiles at large text', (
+    tester,
+  ) async {
+    final opened = <String>[];
+    await mount(
+      tester,
+      MobileBrowserStartPage(
+        sources: [
+          for (var i = 0; i < 6; i++)
+            Source(name: 'Site $i', baseUrl: 'https://example.org/$i'),
+        ],
+        tabCount: 2,
+        onOpen: (url, _) => opened.add(url),
+        onRequestSource: () {},
+        onManage: () {},
+        onTabs: (_) {},
+      ),
+      scale: 2,
+    );
+    expect(find.text('最近访问'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('Site 4'),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Site 4'));
+    expect(opened, ['https://example.org/4']);
+  });
 
   testWidgets('website login clearing requires an explicit confirmation', (
     tester,
@@ -367,6 +482,128 @@ void main() {
   );
 
   testWidgets(
+    'engine hints debounce, ignore late replies and insert editable text without navigating',
+    (tester) async {
+      final sent = <Uri>[], opened = <String>[];
+      final first = Completer<http.Response>();
+      final client = MockClient((request) async {
+        sent.add(request.url);
+        final q = request.url.queryParameters['q'];
+        return q == 'ma'
+            ? first.future
+            : http.Response(
+                jsonEncode([
+                  q,
+                  ['$q reader', '$q books'],
+                ]),
+                200,
+              );
+      });
+      await http.runWithClient(() async {
+        await mount(
+          tester,
+          MobileBrowserAddressField(
+            onSubmitted: opened.add,
+            onMatch: (_) {},
+            openTabs: const [
+              {
+                'id': 'local',
+                'url': 'https://reader.example',
+                'title': 'manga saved',
+              },
+            ],
+          ),
+        );
+        final field = find.byType(TextField);
+        await tester.enterText(field, 'ma');
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.enterText(field, 'mang');
+        await tester.pump(const Duration(milliseconds: 70));
+        await tester.enterText(field, 'manga');
+        expect(find.text('manga saved'), findsOneWidget);
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump();
+        first.complete(http.Response('["ma",["late reply"]]', 200));
+        await tester.pump();
+        expect(sent.map((u) => u.queryParameters['q']), ['ma', 'manga']);
+        expect(find.text('late reply'), findsNothing);
+        await tester.tap(find.text('manga reader'));
+        await tester.pump();
+        final input = tester.widget<TextField>(field).controller!;
+        expect(input.text, 'manga reader');
+        expect(
+          input.selection,
+          TextSelection.collapsed(offset: 'manga reader'.length),
+        );
+        expect(opened, isEmpty);
+        expect(tester.testTextInput.isVisible, isTrue);
+        await tester.testTextInput.receiveAction(TextInputAction.go);
+        await tester.pump();
+        expect(Uri.parse(opened.single).queryParameters['q'], 'manga reader');
+        await tester.enterText(field, 'https://reader.example/?private=1');
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(sent, hasLength(2));
+        await tester.pumpWidget(const SizedBox());
+      }, () => client);
+    },
+  );
+
+  test(
+    'JSON, Bing groups and Sogou callback yield plain matching terms only',
+    () {
+      expect(
+        parseBrowserSuggestions(
+          BrowserSearchEngine.baidu,
+          '漫画',
+          '["漫画",["漫画"," 漫画书 ","漫画书",false]]',
+        ),
+        ['漫画书'],
+      );
+      expect(
+        parseBrowserSuggestions(
+          BrowserSearchEngine.bing,
+          'comic',
+          '{"AS":{"Query":"comic","Results":[{"Suggests":[{"Txt":"comic books"}]}]}}',
+        ),
+        ['comic books'],
+      );
+      expect(
+        parseBrowserSuggestions(
+          BrowserSearchEngine.sogou,
+          '漫画',
+          'window.sogou.sug(["漫画",["漫画书"]],-1);',
+        ),
+        ['漫画书'],
+      );
+      expect(
+        parseBrowserSuggestions(
+          BrowserSearchEngine.sogou,
+          '漫画',
+          'other(["漫画",["wrong"]],-1);',
+        ),
+        isEmpty,
+      );
+      expect(
+        parseBrowserSuggestions(
+          BrowserSearchEngine.yahoo,
+          'new',
+          '["earlier",["unrelated"]]',
+        ),
+        isEmpty,
+      );
+      for (final input in [
+        'https://example.com/a?secret=1',
+        'user:pw@example.com',
+        '/private',
+        'see site.example/page',
+        'localhost:8000',
+        'access_token=abc',
+      ]) {
+        expect(isSuggestionQuery(input), isFalse, reason: input);
+      }
+    },
+  );
+  testWidgets(
     'history search, deletion, confirmation and bookmarks are independent',
     (tester) async {
       FlutterSecureStorage.setMockInitialValues({});
@@ -374,13 +611,7 @@ void main() {
       addTearDown(store.dispose);
       await store.visit('https://example.org/a', 'Alpha');
       await store.visit('https://example.org/b', 'Beta');
-      const anchor = {'x': 0, 'y': 812};
-      await store.setBookmarked(
-        'https://example.org/b',
-        'Beta',
-        true,
-        anchor: anchor,
-      );
+      await store.setBookmarked('https://example.org/b', 'Beta', true);
       BrowserPageEntry? chosen;
       await mount(
         tester,
@@ -390,10 +621,12 @@ void main() {
               for (final bookmarks in [false, true])
                 TextButton(
                   onPressed: () async =>
-                      chosen = await MobileBrowserLibrarySheet.show(
+                      chosen = await BrowserLibraryPanel.show(
                         context,
                         store: store,
-                        bookmarks: bookmarks,
+                        collection: bookmarks
+                            ? BrowserCollection.bookmarks
+                            : BrowserCollection.history,
                       ),
                   child: Text(bookmarks ? 'Bookmarks' : 'History'),
                 ),
@@ -423,12 +656,12 @@ void main() {
       await tester.enterText(find.byType(TextField), '');
       tester.testTextInput.hide();
       await tester.pumpAndSettle();
-      await tester.tap(find.text('清除浏览历史'));
+      await tester.tap(find.byTooltip('清除浏览历史'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('取消'));
       await tester.pumpAndSettle();
       expect(store.history, hasLength(1));
-      await tester.tap(find.text('清除浏览历史'));
+      await tester.tap(find.byTooltip('清除浏览历史'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('全部清除'));
       await tester.pumpAndSettle();
@@ -439,7 +672,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Beta'));
       await tester.pumpAndSettle();
-      expect(chosen?.anchor, anchor);
+      expect(chosen?.url, 'https://example.org/b');
+      expect(chosen?.anchor, isNull);
       expect(tester.takeException(), isNull);
     },
   );
@@ -503,7 +737,7 @@ void main() {
       await tester.tap(find.byTooltip('搜索引擎 · Google'));
       await tester.pumpAndSettle();
       expect(find.byType(BottomSheet), findsNothing);
-      expect(find.byType(PopupMenuItem<BrowserSearchEngine>), findsNWidgets(6));
+      expect(find.text('DuckDuckGo'), findsOneWidget);
       final menu = find.ancestor(
         of: find.text('DuckDuckGo'),
         matching: find.byType(SingleChildScrollView),

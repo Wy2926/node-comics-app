@@ -2,6 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/translation/languages.dart';
@@ -11,50 +12,63 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 Future<String?> showTranslationLanguagePicker(
   BuildContext context,
-  String current,
-) {
+  String current, {
+  bool anchored = false,
+}) {
   var leaving = false;
   final l = context.l10n;
-  return showNodeLaneCatalogSheet<String>(
-    context,
-    Builder(
-      builder: (context) => NodeLaneCatalogSheet(
-        title: l.settings_translation_language,
-        subtitle:
-            '${l.settings_translation_scope}\n${l.settings_immediate_choice}',
-        fitContent: true,
-        heightFactor: .9,
-        child: ListView(
-          shrinkWrap: true,
-          padding: NodeLaneTokens.pagePadding,
+  final hint =
+      '${l.settings_translation_scope}\n${l.settings_immediate_choice}';
+  final list = Builder(
+    builder: (context) => ListView(
+      shrinkWrap: true,
+      padding: NodeLaneTokens.pagePadding,
+      children: [
+        if (anchored) ...[
+          NodeLaneBubbleHeading(l.settings_translation_language),
+          Text(hint, style: NodeLaneTokens.of(context).secondary),
+        ],
+        NodeLaneGroupSurface(
           children: [
-            NodeLaneGroupSurface(
-              children: [
-                for (final language in translationLanguageNames.entries)
-                  NodeLaneRow(
-                    title: language.value,
-                    selected: language.key == current,
-                    onTap: () {
-                      if (leaving ||
-                          ModalRoute.of(context)?.isCurrent != true) {
-                        return;
-                      }
-                      leaving = true;
-                      Navigator.pop(context, language.key);
-                    },
-                  ),
-              ],
-            ),
+            for (final language in translationLanguageNames.entries)
+              NodeLaneRow(
+                title: language.value,
+                selected: language.key == current,
+                onTap: () {
+                  if (leaving || ModalRoute.of(context)?.isCurrent != true) {
+                    return;
+                  }
+                  leaving = true;
+                  Navigator.pop(context, language.key);
+                },
+              ),
           ],
         ),
-      ),
+      ],
     ),
   );
+  return anchored
+      ? showNodeLaneBubble<String>(
+          context,
+          label: l.settings_translation_language,
+          child: list,
+        )
+      : showNodeLaneCatalogSheet<String>(
+          context,
+          NodeLaneCatalogSheet(
+            title: l.settings_translation_language,
+            subtitle: hint,
+            fitContent: true,
+            heightFactor: .9,
+            child: list,
+          ),
+        );
 }
 
 /// The sole language row, shared by More, reader and web translation controls.
 class TranslationLanguageRow extends ConsumerStatefulWidget {
-  const TranslationLanguageRow({super.key});
+  const TranslationLanguageRow({super.key, this.anchored = false});
+  final bool anchored;
   @override
   ConsumerState<TranslationLanguageRow> createState() =>
       _TranslationLanguageRowState();
@@ -85,6 +99,7 @@ class _TranslationLanguageRowState
     final value = await showTranslationLanguagePicker(
       context,
       service.language,
+      anchored: widget.anchored,
     );
     if (!mounted) return;
     _choosing = false;

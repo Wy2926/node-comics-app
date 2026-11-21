@@ -13,10 +13,12 @@ import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/modules/webview/browser_pinned_sources_provider.dart';
 import 'package:mangayomi/modules/webview/browser_page_controller.dart';
 import 'package:mangayomi/modules/webview/browser_library_store.dart';
+import 'package:mangayomi/modules/webview/browser_library_panel.dart';
 import 'package:mangayomi/modules/webview/browser_session_store.dart';
 import 'package:mangayomi/modules/webview/browser_webview_cache.dart';
 import 'package:mangayomi/modules/webview/mobile_browser.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_widgets.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 
 class _Service extends TranslationService {
@@ -300,6 +302,55 @@ void main() {
     expect(find.text('专注阅读'), findsNothing);
     expect(browserLibraryStore.isBookmarked(oldUrl), isFalse);
     expect(browserLibraryStore.isBookmarked(tab.url), isFalse);
+    expect(
+      browserLibraryStore.reading.any(
+        (e) => e.url == oldUrl || e.url == tab.url,
+      ),
+      isFalse,
+    );
+    // A confirmed anchor can outlast the view, but a frame from its replacement cannot.
+    final marked = tab.url, frame = _SlowScreenshot();
+    const confirmed = {'x': 0, 'y': 518, 'slot': 2, 'fraction': .63};
+    tab
+      ..pageReady = tab.chapter = tab.readable = true
+      ..loading = false
+      ..controller = frame
+      ..captureAnchor = () async => confirmed;
+    events.onTitleChanged!(web, 'Two');
+    await tester.pump();
+    await tester.tap(find.text('夹在这里'));
+    await tester.pump();
+    events.onLoadStart!(web, WebUri('https://fixed.example/last'));
+    frame.result.complete(Uint8List.fromList([1, 2, 3]));
+    await tester.pump();
+    expect(browserLibraryStore.reading.first.url, marked);
+    expect(browserLibraryStore.reading.first.anchor, confirmed);
+    expect(browserLibraryStore.reading.first.thumbnail, isNull);
+    expect(browserLibraryStore.isBookmarked(marked), isFalse);
+    // An ordinary foreground chapter is recorded without either user action.
+    final ordinary = tab.url;
+    tab
+      ..loading = false
+      ..readable = tab.pageReady = true
+      ..chapter = false
+      ..controller = (_SlowScreenshot()..result.complete(null))
+      ..captureAnchor = () async => {'x': 0, 'y': 0};
+    events.onTitleChanged!(web, 'Ordinary page');
+    await tester.pump(const Duration(milliseconds: 450));
+    expect(browserLibraryStore.reading.any((e) => e.url == ordinary), isFalse);
+    tab
+      ..chapter = true
+      ..captureAnchor = () async => {
+        'x': 0,
+        'y': 0,
+        'slot': 0,
+        'fraction': .67,
+      };
+    events.onTitleChanged!(web, 'Chapter without bookmark');
+    await tester.pump(const Duration(milliseconds: 450));
+    expect(browserLibraryStore.reading.first.url, ordinary);
+    expect(browserLibraryStore.reading.first.anchor?['fraction'], .67);
+    expect(browserLibraryStore.isBookmarked(ordinary), isFalse);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
@@ -307,6 +358,66 @@ void main() {
       browserWebViewCache.remove(id);
     }
     await browserSessionStore.save([]);
+  }
+
+  Future<void> verifyReadingShelf(WidgetTester tester) async {
+    for (var i = 1; i <= 16; i++) {
+      await browserLibraryStore.saveReading(
+        'https://reader.example/$i',
+        'Chapter $i',
+        anchor: {'x': 0, 'y': 125 * i},
+      );
+    }
+    await browserLibraryStore.setBookmarked(
+      'https://reading.example/library',
+      'Bookmark only',
+      true,
+    );
+    await browserLibraryStore.visit(
+      'https://site.example/older',
+      'Older visit',
+    );
+    await browserLibraryStore.visit(
+      'https://site.example/last',
+      'Latest visit',
+    );
+    await browserLibraryStore.visit('https://reader.example/16', 'Chapter 16');
+    await mount(tester);
+    tester.view.physicalSize = const Size(1100, 850);
+    await tester.pumpAndSettle();
+    final tallCount = find.byType(BrowserReadingCard).evaluate().length;
+    expect(tallCount, greaterThan(4));
+    expect(find.text('Chapter 16'), findsOneWidget);
+    expect(find.text('Chapter 1'), findsNothing);
+    tester.view.physicalSize = const Size(1100, 550);
+    await tester.pumpAndSettle();
+    expect(
+      find.byType(BrowserReadingCard).evaluate().length,
+      lessThan(tallCount),
+    );
+    expect(find.text('Latest visit'), findsOneWidget);
+    await tester.tap(find.text('查看全部'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bookmark only'), findsNothing);
+    // Reflow an open panel; select a chapter outside the home preview by URL.
+    tester.view.physicalSize = const Size(390, 844);
+    await tester.pumpAndSettle();
+    final search = find.descendant(
+      of: find.byType(BrowserLibraryPanel),
+      matching: find.byType(TextField),
+    );
+    await tester.enterText(search, 'reader.example/2');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Chapter 2'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final web = tester.widget<MobileComicBrowser>(
+      find.byType(MobileComicBrowser),
+    );
+    expect(web.url, 'https://reader.example/2');
+    expect(web.clipAnchor, {'x': 0, 'y': 250});
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
   }
 
   testWidgets(
@@ -322,8 +433,9 @@ void main() {
       expect(find.byType(MobileBrowserStartPage), findsOneWidget);
       expect(find.byType(InAppWebView), findsNothing);
       expect(tester.testTextInput.isVisible, isFalse);
-      expect(find.byTooltip('新建标签页'), findsNothing);
-      expect(find.byTooltip('返回'), findsNothing);
+      for (final label in ['常用网站', '继续读', '最近访问', '浏览器', 'NodeLane Comics']) {
+        expect(find.text(label), findsNothing);
+      }
       await tap(find.byTooltip('标签页 · 0'));
       await tap(find.text('新建标签页'));
       final firstId = browserSessionStore.entries.single['id'];
@@ -449,6 +561,7 @@ void main() {
       }
       // Singleton storage queues must stay on the same fake clock.
       await verifyMountedTabs(tester);
+      await verifyReadingShelf(tester);
     },
   );
 }

@@ -22,6 +22,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get browser_continue => 'Czytaj dalej';
 
   @override
+  String get browser_continue_hint =>
+      'Pozycja w rozdziale zapisuje się podczas czytania. Nie musisz dodawać zakładki.';
+
+  @override
+  String get browser_insert_suggestion => 'Wstaw podpowiedź wyszukiwania';
+
+  @override
   String get browser_focus => 'Czytaj bez rozpraszania';
 
   @override
@@ -136,7 +143,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Usunąć całą historię na tym urządzeniu? Zakładki i logowania do witryn zostaną zachowane.';
+      'Usunąć całą historię na tym urządzeniu? Postępy w czytaniu, zakładki i logowania do witryn zostaną zachowane.';
 
   @override
   String get browser_library_empty => 'Jeszcze nic tu nie ma';
@@ -151,10 +158,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get browser_recent => 'Ostatnio odwiedzone';
-
-  @override
-  String get browser_pinned_hint =>
-      'Przypnij ulubione witryny w Źródłach, aby mieć do nich szybki dostęp.';
 
   @override
   String get browser_start_page => 'Strona startowa';

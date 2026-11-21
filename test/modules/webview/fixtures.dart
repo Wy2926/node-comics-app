@@ -26,6 +26,8 @@ class _Paths extends PathProviderPlatform {
   final String path;
   @override
   Future<String?> getTemporaryPath() async => path;
+  @override
+  Future<String?> getApplicationSupportPath() async => '$path/support';
 }
 
 String archiveFixture(Map<String, List<int>> images) =>

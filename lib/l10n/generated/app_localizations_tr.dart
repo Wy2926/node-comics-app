@@ -22,6 +22,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get browser_continue => 'Okumaya devam et';
 
   @override
+  String get browser_continue_hint =>
+      'Bölümde kaldığınız yer okurken kaydedilir. Yer imi eklemeniz gerekmez.';
+
+  @override
+  String get browser_insert_suggestion => 'Arama önerisini ekle';
+
+  @override
   String get browser_focus => 'Odaklanarak oku';
 
   @override
@@ -137,7 +144,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Bu cihazdaki tüm geçmiş silinsin mi? Yer imleri ve site oturumları korunur.';
+      'Bu cihazdaki tüm geçmiş silinsin mi? Okuma ilerlemesi, yer imleri ve site oturumları korunur.';
 
   @override
   String get browser_library_empty => 'Henüz bir şey yok';
@@ -152,10 +159,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get browser_recent => 'Son ziyaretler';
-
-  @override
-  String get browser_pinned_hint =>
-      'Hızlı erişim için favori sitelerinizi Kaynaklar bölümünde sabitleyin.';
 
   @override
   String get browser_start_page => 'Başlangıç sayfası';

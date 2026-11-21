@@ -27,6 +27,5 @@ final browserPinnedSourcesProvider = Provider<List<Source>>((ref) {
             isBrowserUrl(source.baseUrl) &&
             seen.add(source.baseUrl!),
       )
-      .take(8)
       .toList();
 });

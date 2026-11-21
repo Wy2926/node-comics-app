@@ -18,6 +18,11 @@ class GeckoBrowserPage extends BrowserPageController
   GeckoBrowserPage(int id, Future<void> Function(MethodCall) onEvent)
     : _channel = MethodChannel('$_host/$id') {
     _channel.setMethodCallHandler((event) async {
+      if (event.method == 'blockerBadge') {
+        _badge.value = event.arguments as String?;
+        return null;
+      }
+      if (event.method == 'start') _badge.value = null;
       if (event.method == 'images') {
         final data = jsonDecode(event.arguments as String);
         if (data is! Map || !isBrowserUrl(data['url'])) return false;
@@ -34,6 +39,9 @@ class GeckoBrowserPage extends BrowserPageController
     });
   }
   final MethodChannel _channel;
+  final _badge = ValueNotifier<String?>(null);
+  @override
+  Listenable get changes => _badge;
   ReaderMessage? _receive;
   static Widget view(String lease, ValueChanged<int> created) => AndroidView(
     viewType: _host,
@@ -169,5 +177,8 @@ class GeckoBrowserPage extends BrowserPageController
     return jsonDecode(reply!) as Map<String, dynamic>;
   }
 
-  void detach() => _channel.setMethodCallHandler(null);
+  void detach() {
+    _channel.setMethodCallHandler(null);
+    _badge.dispose();
+  }
 }

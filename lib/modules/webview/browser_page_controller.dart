@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show Listenable;
+
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 typedef SiteProtectionState = ({bool enabled, int blocked, int total});
@@ -8,6 +10,7 @@ enum SiteProtectionAction { reload, tools, dashboard, clearSite }
 
 abstract interface class BrowserProtection {
   String get name;
+  Listenable get changes;
   Future<SiteProtectionState> site(String url, {bool? enabled});
   Future<void> perform(String url, SiteProtectionAction action);
 }

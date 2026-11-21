@@ -171,6 +171,8 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
     override fun onBrowserAction(extension: WebExtension, session: GeckoSession?, action: WebExtension.Action) {
         if (extension.id != UBLOCK) return
         if (session == null) this.action = action
+        if (session != null && session === active && action.badgeText != null)
+            activeEvents?.invokeMethod("blockerBadge", action.badgeText)
         // The pinned uBO emits a per-tab toolbar title only after its filter lists are ready.
         if (!filtersReady && session != null && action.title?.startsWith("uBlock Origin (") == true) {
             filtersReady = true

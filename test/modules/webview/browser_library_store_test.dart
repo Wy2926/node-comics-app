@@ -14,6 +14,8 @@ import 'package:mangayomi/modules/webview/browser_url.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
 import 'package:image/image.dart' as image;
 
+import 'fixtures.dart';
+
 class _FailingStorage extends TestFlutterSecureStoragePlatform {
   _FailingStorage([Map<String, String>? seed]) : super(seed ?? {});
   bool fail = true, failRead = false;
@@ -41,64 +43,139 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
-  test(
-    'clips upgrade an old bookmark, survive tab closure and a failed update',
-    () async {
-      const url = 'https://reader.example/chapter';
-      final vault = _FailingStorage({
-        BrowserLibraryStore.storageKey: jsonEncode({
-          'history': [],
-          'bookmarks': [
-            {'url': url, 'title': 'Old bookmark', 'time': '2026-01-01'},
-          ],
-        }),
-      })..fail = false;
-      FlutterSecureStoragePlatform.instance = vault;
-      final library = BrowserLibraryStore(), tabs = BrowserSessionStore();
-      await library.load();
-      expect(library.lastClip, isNull);
-      expect(library.isBookmarked(url), isTrue);
-      const anchor = {
-        'slot': 3,
-        'fraction': 0.72,
-        'x': 0,
-        'y': 2980,
-        'page': 4,
-      };
-      await library.setBookmarked(
-        url,
-        'Chapter four',
-        true,
-        anchor: {...anchor, 'src': 'not retained'},
-      );
-      expect(library.bookmarks.single.anchor, anchor);
-      await tabs.save([
-        {'id': 'clip', 'url': url},
-      ]);
-      await tabs.close('clip');
-      vault.fail = true;
-      await expectLater(
-        library.setBookmarked(url, 'Moved', true, anchor: {'x': 0, 'y': 1}),
-        throwsA(isA<PlatformException>()),
-      );
-      expect(library.lastClip?.anchor, anchor);
-      final reopened = BrowserLibraryStore();
-      await reopened.load();
-      expect(reopened.lastClip?.anchor, anchor);
-      vault.fail = false;
-      await reopened.setBookmarked(
+  test('clip and captured frame survive tab closure, restart and a failed replacement', () async {
+    final files = WebImageTestDirectory();
+    await files.setUp();
+    addTearDown(files.tearDown);
+    final jpeg = image.encodeJpg(image.Image(width: 8, height: 6));
+    const url = 'https://reader.example/chapter';
+    final vault = _FailingStorage({
+      BrowserLibraryStore.storageKey: jsonEncode({
+        'history': [],
+        'bookmarks': [
+          {'url': url, 'title': 'Old bookmark', 'time': '2026-01-01'},
+        ],
+      }),
+    })..fail = false;
+    FlutterSecureStoragePlatform.instance = vault;
+    final library = BrowserLibraryStore(), tabs = BrowserSessionStore();
+    await library.load();
+    expect(library.reading, isEmpty);
+    expect(library.isBookmarked(url), isTrue);
+    const anchor = {'slot': 3, 'fraction': 0.72, 'x': 0, 'y': 2980, 'page': 4};
+    await library.saveReading(
+      url,
+      'Chapter four',
+      anchor: {...anchor, 'src': 'not retained'},
+      thumbnail: jpeg,
+    );
+    expect(library.bookmarks.single.anchor, isNull);
+    expect(library.reading.single.anchor, anchor);
+    final original = (await library.reading.single.thumbnail)!;
+    expect(await original.readAsBytes(), jpeg);
+    await tabs.save([
+      {'id': 'clip', 'url': url},
+    ]);
+    await tabs.close('clip');
+    vault.fail = true;
+    await expectLater(
+      library.saveReading(
         url,
         'Moved',
-        true,
         anchor: {'x': 0, 'y': 1},
-      );
-      await reopened.setBookmarked('https://other.example', 'Other', true);
-      expect(reopened.lastClip?.anchor, {'x': 0, 'y': 1});
-      await reopened.setBookmarked(url, 'Moved', false);
-      expect(reopened.lastClip, isNull);
-    },
-  );
+        thumbnail: jpeg,
+      ),
+      throwsA(isA<PlatformException>()),
+    );
+    expect(library.reading.single.anchor, anchor);
+    final reopened = BrowserLibraryStore();
+    await reopened.load();
+    expect(reopened.reading.single.anchor, anchor);
+    expect((await reopened.reading.single.thumbnail)!.path, original.path);
+    expect(await original.parent.list().map((f) => f.uri).toList(), [
+      original.uri,
+    ]);
+    expect(
+      BrowserPageEntry.fromJson({
+        ...reopened.reading.single.toJson(),
+        'thumbnail': '../other-file',
+      })?.thumbnail,
+      isNull,
+    );
+    vault.fail = false;
+    final newer = image.encodeJpg(image.Image(width: 6, height: 8));
+    await reopened.saveReading(
+      url,
+      'Moved',
+      anchor: {'x': 0, 'y': 1},
+      thumbnail: Future.value(newer),
+    );
+    await reopened.setBookmarked('https://other.example', 'Other', true);
+    expect(reopened.reading.single.anchor, {'x': 0, 'y': 1});
+    final replacement = (await reopened.reading.single.thumbnail)!;
+    expect(await replacement.readAsBytes(), newer);
+    expect(await original.exists(), isFalse);
+    await reopened.clearHistory();
+    expect(await replacement.exists(), isTrue);
+    await reopened.setBookmarked(url, 'Moved', false);
+    expect(await replacement.exists(), isTrue);
+    expect(reopened.reading.single.url, url);
+    await reopened.removeReading(url);
+    expect(reopened.reading, isEmpty);
+    expect(await replacement.exists(), isFalse);
+    await reopened.saveReading(
+      url,
+      'No capture',
+      anchor: anchor,
+      thumbnail: Future<Uint8List?>.value(null),
+    );
+    expect(reopened.reading.single.anchor, anchor);
+    expect(reopened.reading.single.thumbnail, isNull);
+    expect(reopened.isBookmarked(url), isFalse);
+  });
 
+  test('legacy positions start both lists without linking later progress, removal or thumbnail ownership', () async {
+    final files = WebImageTestDirectory();
+    await files.setUp();
+    addTearDown(files.tearDown);
+    const url = 'https://reader.example/legacy',
+        id = '12345678-1234-1234-1234-123456789abc';
+    const saved = {'x': 0, 'y': 17};
+    final legacy = {
+      'url': url,
+      'title': 'Marked chapter',
+      'time': '2026-01-01',
+      'anchor': saved,
+      'thumbnail': id,
+    };
+    FlutterSecureStorage.setMockInitialValues({
+      BrowserLibraryStore.storageKey: jsonEncode({
+        'history': [],
+        'bookmarks': [legacy],
+      }),
+    });
+    final first = BrowserLibraryStore();
+    await first.load();
+    final photo = (await first.reading.single.thumbnail)!;
+    await photo.parent.create(recursive: true);
+    await photo.writeAsBytes(image.encodeJpg(image.Image(width: 5, height: 5)));
+    // Removing a legacy bookmark as the very first write still keeps its reading position.
+    await first.setBookmarked(url, '', false);
+    final reopened = BrowserLibraryStore();
+    await reopened.load();
+    expect(reopened.bookmarks, isEmpty);
+    expect(reopened.reading.single.anchor, saved);
+    expect(await photo.exists(), isTrue);
+    await reopened.saveReading(url, 'Further on', anchor: {'x': 0, 'y': 610});
+    expect(reopened.reading.single.thumbnailId, id);
+    await reopened.setBookmarked(url, 'Favorite', true);
+    await reopened.removeReading(url);
+    final restored = BrowserLibraryStore();
+    await restored.load();
+    expect(restored.reading, isEmpty);
+    expect(restored.bookmarks.single.title, 'Favorite');
+    expect(await photo.exists(), isFalse);
+  });
   test('tab snapshots recover read/write failures and round-trip twenty long histories', () async {
     final old = {'id': 'old', 'url': 'https://example.org/old', 'title': 'old'};
     final vault = _FailingStorage({
@@ -267,12 +344,8 @@ void main() {
       time: day.add(const Duration(days: 1)),
     );
     const anchor = {'x': 0, 'y': 310};
-    await store.setBookmarked(
-      'https://example.org/b',
-      'B',
-      true,
-      anchor: anchor,
-    );
+    await store.setBookmarked('https://example.org/b', 'B', true);
+    await store.saveReading('https://example.org/b', 'B', anchor: anchor);
     await store.setEngine(BrowserSearchEngine.bing);
     final restored = BrowserLibraryStore();
     await restored.load();
@@ -286,7 +359,9 @@ void main() {
       {'id': 'live', 'url': 'https://example.org/a', 'title': 'Live'},
     ]).toList();
     expect(matches.map((m) => m.tabId), ['live', null]);
-    expect(matches.last.bookmark?.anchor, anchor);
+    expect(matches.last.bookmark?.url, 'https://example.org/b');
+    expect(matches.last.bookmark?.anchor, isNull);
+    expect(restored.reading.single.anchor, anchor);
     await restored.removeHistory(restored.history[1]);
     expect(restored.history.map((e) => e.title), ['Tomorrow', 'B']);
     await restored.clearHistory();

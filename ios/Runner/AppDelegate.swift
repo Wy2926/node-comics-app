@@ -41,6 +41,14 @@ import UniformTypeIdentifiers
       NodeLaneTabBarFactory(messenger: messenger), withId: "nodelane/native_tab_bar"
     )
 
+    FlutterMethodChannel(name: "nodelane/browser/charset", binaryMessenger: messenger)
+      .setMethodCallHandler { call, result in
+        guard call.method == "gb18030" else { result(FlutterMethodNotImplemented); return }
+        let encoding = CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.GB_18030_2000.rawValue))
+        let bytes = call.arguments as? FlutterStandardTypedData
+        result(bytes.flatMap { String(data: $0.data, encoding: String.Encoding(rawValue: encoding)) })
+      }
+
     let privateStorageChannel = FlutterMethodChannel(
       name: "nodelane/private_storage", binaryMessenger: messenger
     )

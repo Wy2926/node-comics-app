@@ -22,6 +22,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_continue => 'Đọc tiếp';
 
   @override
+  String get browser_continue_hint =>
+      'Vị trí trong chương được lưu khi bạn đọc, không cần thêm dấu trang.';
+
+  @override
+  String get browser_insert_suggestion => 'Chèn gợi ý tìm kiếm';
+
+  @override
   String get browser_focus => 'Đọc tập trung';
 
   @override
@@ -136,7 +143,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Xóa toàn bộ lịch sử trên thiết bị này? Dấu trang và phiên đăng nhập trang web sẽ được giữ lại.';
+      'Xóa toàn bộ lịch sử trên thiết bị này? Tiến độ đọc, dấu trang và phiên đăng nhập trang web sẽ được giữ lại.';
 
   @override
   String get browser_library_empty => 'Chưa có mục nào';
@@ -151,10 +158,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get browser_recent => 'Truy cập gần đây';
-
-  @override
-  String get browser_pinned_hint =>
-      'Ghim trang web yêu thích trong Nguồn để truy cập nhanh.';
 
   @override
   String get browser_start_page => 'Trang bắt đầu';

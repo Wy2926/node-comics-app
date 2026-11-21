@@ -22,6 +22,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser_continue => 'متابعة القراءة';
 
   @override
+  String get browser_continue_hint =>
+      'يُحفظ موضعك في الفصل أثناء القراءة دون الحاجة إلى إضافة إشارة مرجعية.';
+
+  @override
+  String get browser_insert_suggestion => 'إدراج اقتراح البحث';
+
+  @override
   String get browser_focus => 'القراءة دون تشتيت';
 
   @override
@@ -135,7 +142,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'هل تريد حذف سجل التصفح بالكامل على هذا الجهاز؟ ستبقى الإشارات المرجعية وجلسات تسجيل الدخول.';
+      'هل تريد حذف سجل التصفح بالكامل على هذا الجهاز؟ سيُحتفظ بتقدّم القراءة والإشارات المرجعية وجلسات تسجيل الدخول.';
 
   @override
   String get browser_library_empty => 'لا توجد عناصر بعد';
@@ -150,10 +157,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get browser_recent => 'الزيارات الأخيرة';
-
-  @override
-  String get browser_pinned_hint =>
-      'ثبّت مواقعك المفضلة في المصادر للوصول السريع إليها.';
 
   @override
   String get browser_start_page => 'صفحة البداية';

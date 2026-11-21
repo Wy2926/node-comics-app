@@ -22,6 +22,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get browser_continue => 'Weiterlesen';
 
   @override
+  String get browser_continue_hint =>
+      'Deine Leseposition im Kapitel wird automatisch gespeichert. Ein Lesezeichen ist nicht nötig.';
+
+  @override
+  String get browser_insert_suggestion => 'Suchvorschlag einfügen';
+
+  @override
   String get browser_focus => 'Ungestört lesen';
 
   @override
@@ -137,7 +144,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Den gesamten Verlauf auf diesem Gerät löschen? Lesezeichen und Website-Anmeldungen bleiben erhalten.';
+      'Den gesamten Verlauf auf diesem Gerät löschen? Lesefortschritt, Lesezeichen und Website-Anmeldungen bleiben erhalten.';
 
   @override
   String get browser_library_empty => 'Noch keine Einträge';
@@ -152,10 +159,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get browser_recent => 'Zuletzt besucht';
-
-  @override
-  String get browser_pinned_hint =>
-      'Hefte häufig besuchte Websites unter Quellen für den Schnellzugriff an.';
 
   @override
   String get browser_start_page => 'Startseite';

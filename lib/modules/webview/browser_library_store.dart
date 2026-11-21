@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart' show FileImage;
 import 'package:mangayomi/repositories/db_write_queue.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
+import 'package:mangayomi/services/translation/identity.dart';
 
 import 'browser_url.dart';
 
@@ -17,17 +21,23 @@ typedef BrowserMatch = ({
 });
 
 class BrowserPageEntry {
-  const BrowserPageEntry({
+  BrowserPageEntry({
     required this.url,
     required this.title,
     required this.time,
     this.iconUrl,
     this.anchor,
+    this.thumbnailId,
   });
   final String url, title;
   final DateTime time;
   final String? iconUrl;
   final Map<String, dynamic>? anchor;
+  final String? thumbnailId;
+  // A fresh filename per clip keeps an old frame out of Flutter's image cache key.
+  late final Future<File>? thumbnail = thumbnailId == null
+      ? null
+      : _clipFile(thumbnailId!);
 
   // Persist only coordinates and the declared page number, never DOM or image URLs.
   static Map<String, dynamic>? readingPosition(dynamic raw) {
@@ -66,17 +76,22 @@ class BrowserPageEntry {
     'time': time.toIso8601String(),
     if (isBrowserUrl(iconUrl)) 'iconUrl': iconUrl,
     if (anchor != null) 'anchor': anchor,
+    if (thumbnailId != null) 'thumbnail': thumbnailId,
   };
 
   static BrowserPageEntry? fromJson(dynamic value) {
     if (value is! Map || !isBrowserUrl(value['url'])) return null;
     final time = DateTime.tryParse(value['time']?.toString() ?? '');
     if (time == null) return null;
+    final anchor = readingPosition(value['anchor']), id = value['thumbnail'];
     return BrowserPageEntry(
       url: value['url'] as String,
       title: value['title'] is String ? value['title'] as String : '',
       time: time,
-      anchor: readingPosition(value['anchor']),
+      anchor: anchor,
+      thumbnailId: anchor != null && id is String && _clipId.hasMatch(id)
+          ? id
+          : null,
       iconUrl: isBrowserUrl(value['iconUrl'])
           ? value['iconUrl'] as String
           : null,
@@ -84,21 +99,40 @@ class BrowserPageEntry {
   }
 }
 
+final _clipId = RegExp(r'^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$');
+Future<Directory> _clipDirectory() async =>
+    Directory('${(await nodeLanePrivateDirectory()).path}/browser-clips');
+Future<File> _clipFile(String id) async =>
+    File('${(await _clipDirectory()).path}/$id.jpg');
+
+Future<void> _discardClipFile(FutureOr<File?> reference) async {
+  try {
+    final file = await reference;
+    if (file == null) return;
+    await FileImage(file).evict();
+    await file.delete();
+  } catch (_) {
+    // The next capture can reclaim a missing or busy file without affecting the bookmark.
+  }
+}
+
 /// Independent of open tabs; private storage never exports browsing metadata.
 class BrowserLibraryStore extends ChangeNotifier {
   static const storageKey = 'nodelane.browser.library.v1';
+  static const _readingKey = 'nodelane.browser.reading.v1';
   static const maxHistory = 500;
-  List<BrowserPageEntry> _history = [], _bookmarks = [];
+  List<BrowserPageEntry> _history = [], _bookmarks = [], _reading = [];
   BrowserSearchEngine _engine = BrowserSearchEngine.google;
   Future<void>? _loading;
   final _writes = DbWriteQueue();
+  bool _checkedClipFiles = false;
+  bool _inheritedReading = false;
 
-  List<BrowserPageEntry> get history => List.unmodifiable(_history);
-  List<BrowserPageEntry> get bookmarks => List.unmodifiable(_bookmarks);
+  List<BrowserPageEntry> get history => UnmodifiableListView(_history);
+  List<BrowserPageEntry> get bookmarks => UnmodifiableListView(_bookmarks);
   BrowserSearchEngine get engine => _engine;
   bool isBookmarked(String url) => _bookmarks.any((e) => e.url == url);
-  BrowserPageEntry? get lastClip =>
-      _bookmarks.where((e) => e.anchor != null).firstOrNull;
+  List<BrowserPageEntry> get reading => UnmodifiableListView(_reading);
 
   Iterable<BrowserMatch> matches(
     String query,
@@ -167,32 +201,96 @@ class BrowserLibraryStore extends ChangeNotifier {
               .firstOrNull ??
           BrowserSearchEngine.google;
     }
+    final rawReading = await nodeLanePrivateVault.read(key: _readingKey);
+    if (rawReading == null) {
+      // Older versions kept marked positions inside bookmarks; leave the originals intact.
+      _reading = _bookmarks.where((e) => e.anchor != null).toList();
+      _inheritedReading = _reading.isNotEmpty;
+    } else {
+      final data = jsonDecode(rawReading);
+      if (data is! List) throw const FormatException('Invalid reading list');
+      final seen = <String>{};
+      _reading = data
+          .map(BrowserPageEntry.fromJson)
+          .nonNulls
+          .where((e) => e.anchor != null && seen.add(e.url))
+          .toList();
+    }
     notifyListeners();
+  }
+
+  // Recover interrupted replacements on the first capture, off the home page's read path.
+  Future<void> _prepareClips(Directory directory) async {
+    await directory.create(recursive: true);
+    if (_checkedClipFiles) return;
+    final keep = {
+      for (final b in _bookmarks.followedBy(_reading))
+        if (b.thumbnailId != null) '${b.thumbnailId}.jpg',
+    };
+    await for (final file in directory.list(followLinks: false)) {
+      final name = file.uri.pathSegments.last;
+      if (file is File &&
+          name.endsWith('.jpg') &&
+          _clipId.hasMatch(name.substring(0, name.length - 4)) &&
+          !keep.contains(name)) {
+        await _discardClipFile(file);
+      }
+    }
+    _checkedClipFiles = true;
   }
 
   // Apply mutations inside the queue, publishing only after a successful write.
   Future<void> _change({
     FutureOr<List<BrowserPageEntry>> Function()? history,
     List<BrowserPageEntry> Function()? bookmarks,
+    FutureOr<List<BrowserPageEntry>> Function()? reading,
     BrowserSearchEngine? engine,
   }) => _writes.run(() async {
     await load();
     final nextHistory = history == null ? _history : await history();
     final nextBookmarks = bookmarks?.call() ?? _bookmarks;
+    final nextReading = reading == null ? _reading : await reading();
     final nextEngine = engine ?? _engine;
-    if (history == null && bookmarks == null && nextEngine == _engine) return;
-    await nodeLanePrivateVault.write(
-      key: storageKey,
-      value: jsonEncode({
-        'history': nextHistory.map((e) => e.toJson()).toList(),
-        'bookmarks': nextBookmarks.map((e) => e.toJson()).toList(),
-        'engine': nextEngine.name,
-      }),
-    );
+    final libraryChanged =
+        nextHistory != _history ||
+        nextBookmarks != _bookmarks ||
+        nextEngine != _engine;
+    if (!libraryChanged && nextReading == _reading) return;
+    if (nextReading != _reading ||
+        (_inheritedReading && nextBookmarks != _bookmarks)) {
+      await nodeLanePrivateVault.write(
+        key: _readingKey,
+        value: jsonEncode(nextReading.map((e) => e.toJson()).toList()),
+      );
+      _inheritedReading = false;
+    }
+    if (libraryChanged) {
+      await nodeLanePrivateVault.write(
+        key: storageKey,
+        value: jsonEncode({
+          'history': nextHistory.map((e) => e.toJson()).toList(),
+          'bookmarks': nextBookmarks.map((e) => e.toJson()).toList(),
+          'engine': nextEngine.name,
+        }),
+      );
+    }
+    final old = _bookmarks.followedBy(_reading);
+    final thumbnailsChanged =
+        nextReading != _reading || nextBookmarks != _bookmarks;
     _history = nextHistory;
     _bookmarks = nextBookmarks;
+    _reading = nextReading;
     _engine = nextEngine;
     notifyListeners();
+    if (thumbnailsChanged) {
+      final keep = {
+        for (final e in _bookmarks.followedBy(_reading)) ?e.thumbnailId,
+      };
+      for (final id
+          in old.map((e) => e.thumbnailId).nonNulls.toSet().difference(keep)) {
+        await _discardClipFile(_clipFile(id));
+      }
+    }
   });
 
   Future<void> visit(
@@ -232,13 +330,8 @@ class BrowserLibraryStore extends ChangeNotifier {
     String title,
     bool saved, {
     String? iconUrl,
-    Map<String, dynamic>? anchor,
   }) {
     if (!isBrowserUrl(url)) return Future.value();
-    final position = BrowserPageEntry.readingPosition(anchor);
-    if (anchor != null && position == null) {
-      throw const FormatException('Invalid reading position');
-    }
     return _change(
       bookmarks: () => [
         if (saved)
@@ -246,12 +339,74 @@ class BrowserLibraryStore extends ChangeNotifier {
             url: url,
             title: title,
             time: DateTime.now(),
-            anchor: position,
             iconUrl: isBrowserUrl(iconUrl) ? iconUrl : null,
           ),
         ..._bookmarks.where((e) => e.url != url),
       ],
     );
+  }
+
+  Future<void> removeReading(String url) =>
+      _change(reading: () => _reading.where((e) => e.url != url).toList());
+
+  Future<void> saveReading(
+    String url,
+    String title, {
+    required Map<String, dynamic> anchor,
+    String? iconUrl,
+    FutureOr<Uint8List?> thumbnail,
+    Future<Uint8List?> Function()? firstPreview,
+  }) async {
+    if (!isBrowserUrl(url)) return;
+    final position = BrowserPageEntry.readingPosition(anchor);
+    if (position == null) {
+      throw const FormatException('Invalid reading position');
+    }
+    File? staged;
+    final when = DateTime.now();
+    try {
+      await _change(
+        reading: () async {
+          final old = _reading.where((e) => e.url == url).firstOrNull;
+          if (thumbnail == null &&
+              old != null &&
+              old == _reading.first &&
+              (title.isEmpty || old.title == title) &&
+              mapEquals(position, old.anchor)) {
+            return _reading;
+          }
+          var id = thumbnail == null ? old?.thumbnailId : null;
+          if (thumbnail != null || (old == null && firstPreview != null)) {
+            try {
+              final bytes = await (thumbnail ?? firstPreview?.call());
+              if (bytes != null && bytes.isNotEmpty) {
+                final next = translationUuid();
+                staged = await _clipFile(next);
+                await _prepareClips(staged!.parent);
+                await staged!.writeAsBytes(bytes, flush: true);
+                id = next;
+              }
+            } catch (_) {
+              await _discardClipFile(staged);
+            }
+          }
+          return [
+            BrowserPageEntry(
+              url: url,
+              title: title.isEmpty ? old?.title ?? '' : title,
+              time: when,
+              anchor: position,
+              thumbnailId: id,
+              iconUrl: isBrowserUrl(iconUrl) ? iconUrl : old?.iconUrl,
+            ),
+            ..._reading.where((e) => e.url != url),
+          ];
+        },
+      );
+    } catch (_) {
+      await _discardClipFile(staged);
+      rethrow;
+    }
   }
 
   Future<void> setEngine(BrowserSearchEngine value) => _change(engine: value);

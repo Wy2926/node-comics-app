@@ -22,6 +22,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_continue => '继续读';
 
   @override
+  String get browser_continue_hint => '读过的章节会自动记住进度，无需添加书签。';
+
+  @override
+  String get browser_insert_suggestion => '填入搜索建议';
+
+  @override
   String get browser_focus => '专注阅读';
 
   @override
@@ -129,7 +135,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_clear_history => '清除浏览历史';
 
   @override
-  String get browser_clear_history_hint => '删除此设备上的全部浏览历史？书签和网站登录状态将保留。';
+  String get browser_clear_history_hint => '删除此设备上的全部浏览历史？续读进度、书签和网站登录状态将保留。';
 
   @override
   String get browser_library_empty => '这里还是空的';
@@ -142,9 +148,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get browser_recent => '最近访问';
-
-  @override
-  String get browser_pinned_hint => '在来源中固定常用网站，即可快捷访问。';
 
   @override
   String get browser_start_page => '开始页';
@@ -6140,6 +6143,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_continue => '繼續讀';
 
   @override
+  String get browser_continue_hint => '讀過的章節會自動記住進度，不必加入書籤。';
+
+  @override
+  String get browser_insert_suggestion => '填入搜尋建議';
+
+  @override
   String get browser_focus => '專注閱讀';
 
   @override
@@ -6247,7 +6256,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_clear_history => '清除瀏覽記錄';
 
   @override
-  String get browser_clear_history_hint => '刪除此裝置上的全部瀏覽記錄？書籤和網站登入狀態將保留。';
+  String get browser_clear_history_hint => '刪除此裝置上的全部瀏覽記錄？閱讀進度、書籤和網站登入狀態將保留。';
 
   @override
   String get browser_library_empty => '這裡還是空的';
@@ -6260,9 +6269,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get browser_recent => '最近造訪';
-
-  @override
-  String get browser_pinned_hint => '在來源中釘選常用網站，即可快速造訪。';
 
   @override
   String get browser_start_page => '起始頁';

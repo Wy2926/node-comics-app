@@ -14,23 +14,22 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/utils/share.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 
 import 'browser_session_store.dart';
 import 'browser_webview_cache.dart';
 import 'browser_page_controller.dart';
-import 'browser_protection_sheet.dart';
+import 'browser_protection_panel.dart';
 import 'gecko_browser_page.dart';
 import 'reader_transport.dart';
-import 'mobile_browser_tabs_sheet.dart';
+import 'browser_tabs_panel.dart';
 
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
@@ -46,7 +45,7 @@ import 'browser_url.dart';
 import 'browser_navigation.dart';
 import 'mobile_browser_widgets.dart';
 import 'browser_library_store.dart';
-import 'mobile_browser_library_sheet.dart';
+import 'browser_library_panel.dart';
 import 'mobile_browser_menu.dart';
 
 class BrowserTab {
@@ -212,10 +211,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   final _mountedTabs = <String>[];
   final _previewing = <String>{};
   final _addressFocus = FocusNode();
+  final _tabsButton = GlobalKey();
+  final _translationButton = GlobalKey();
   String? active;
   Timer? _saveTimer;
   int _saveEpoch = 0;
   bool _editingTabs = false, _saveFailed = false;
+  bool _readingSaveFailed = false;
   bool foreground = true, ready = false, _inReader = false, _clipping = false;
   bool get _visible => foreground && !_leaving && !_inReader;
   bool _useGecko = false, _restoreFailed = false;
@@ -357,9 +359,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 400), () async {
       final tab = current;
-      if (tab != null && foreground) await _captureAnchor(tab);
-      if (!mounted || epoch != _saveEpoch || _inReader) return;
       try {
+        if (tab != null && foreground) await _captureAnchor(tab);
+        if (!mounted || epoch != _saveEpoch || _inReader) return;
+        unawaited(_rememberReading(tab));
         await browserSessionStore.save(_entries);
         _saveFailed = false;
       } catch (_) {
@@ -379,8 +382,58 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     });
   }
 
+  Future<void> _rememberReading(
+    BrowserTab? tab, {
+    Future<Uint8List?>? frame,
+  }) async {
+    if (!mounted ||
+        tab == null ||
+        !tab.chapter ||
+        !tab.pageReady ||
+        tab.pendingClip != null ||
+        _clipping) {
+      return;
+    }
+    final position =
+        tab.anchor ??
+        (tab.x == 0 && tab.y == 0 ? null : {'x': tab.x, 'y': tab.y});
+    if (position == null) return;
+    final doc = tab.document, x = tab.x, y = tab.y;
+    try {
+      await browserLibraryStore.saveReading(
+        tab.url,
+        tab.title,
+        anchor: position,
+        iconUrl: tab.iconUrl,
+        firstPreview: () async =>
+            frame ??
+            (mounted &&
+                    _visible &&
+                    current == tab &&
+                    doc == tab.document &&
+                    x == tab.x &&
+                    y == tab.y
+                ? _capturePreview(tab)
+                : null),
+      );
+      _readingSaveFailed = false;
+    } catch (_) {
+      if (mounted && !_readingSaveFailed) {
+        _readingSaveFailed = true;
+        showNodeLaneNotice(
+          context.l10n.browser_data_failed,
+          kind: NodeLaneNoticeKind.error,
+          actionLabel: context.l10n.retry,
+          onAction: () {
+            if (mounted && current == tab && doc == tab.document) _save();
+          },
+        );
+      }
+    }
+  }
+
   Future<void> _captureAnchor(BrowserTab tab) async {
-    final x = tab.x, y = tab.y, url = tab.url;
+    final x = tab.x, y = tab.y, url = tab.url, doc = tab.document;
     try {
       final anchor = await tab.captureAnchor?.call().timeout(
         const Duration(seconds: 2),
@@ -390,20 +443,23 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       if (anchor != null &&
           tabs.contains(tab) &&
           tab.url == url &&
+          tab.document == doc &&
           tab.x == x &&
           tab.y == y &&
           anchor['x'] is num &&
           anchor['y'] is num &&
-          ((anchor['x'] as num) - x).abs() < 2 &&
-          ((anchor['y'] as num) - y).abs() < 2) {
+          ((_visible && current == tab) ||
+              (((anchor['x'] as num) - x).abs() < 2 &&
+                  ((anchor['y'] as num) - y).abs() < 2))) {
         tab.anchor = anchor;
       }
     } catch (_) {}
   }
 
-  Future<void> _capturePreview(BrowserTab tab) async {
-    if (tab.isBlank || !tab.pageReady || !_previewing.add(tab.id)) return;
+  Future<Uint8List?> _capturePreview(BrowserTab tab) async {
+    if (tab.isBlank || !tab.pageReady || !_previewing.add(tab.id)) return null;
     final controller = tab.controller, url = tab.url, x = tab.x, y = tab.y;
+    final document = tab.document;
     try {
       final bytes = await controller?.preview().timeout(
         const Duration(seconds: 2),
@@ -412,15 +468,18 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
           tabs.contains(tab) &&
           identical(tab.controller, controller) &&
           tab.url == url &&
+          tab.document == document &&
           tab.x == x &&
           tab.y == y &&
           bytes != null) {
         browserSessionStore.setPreview(tab.id, bytes);
+        return bytes;
       }
     } catch (_) {
     } finally {
       _previewing.remove(tab.id);
     }
+    return null;
   }
 
   Future<void> _leave({bool toStart = false, BrowserTab? previous}) async {
@@ -430,8 +489,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _saveTimer?.cancel();
     final tab = previous ?? current;
     if (tab != null) {
-      unawaited(_capturePreview(tab));
+      final frame = _capturePreview(tab);
       await _captureAnchor(tab);
+      unawaited(_rememberReading(tab, frame: frame));
     }
     if (!mounted) return;
     try {
@@ -475,6 +535,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       return;
     }
     if (previous != null) {
+      unawaited(_rememberReading(previous));
       unawaited(_captureAnchor(previous));
     }
     active = tab.id;
@@ -511,7 +572,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         await browserSessionStore.undoClose(snapshot: _entries);
       } else {
         final target = current;
-        if (target?.id == closeId) await _captureAnchor(target!);
+        if (target?.id == closeId) {
+          await _captureAnchor(target!);
+          unawaited(_rememberReading(target));
+        }
         await browserSessionStore.close(closeId, snapshot: _entries);
       }
       final entries = browserSessionStore.entries;
@@ -544,7 +608,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     showNodeLaneNotice(
       context.l10n.browser_tab_limit(BrowserSessionStore.maxTabs),
     );
-    _showTabs();
+    _showTabs(_tabsButton.currentContext ?? context);
   }
 
   void _openAddress(String url, {Map<String, dynamic>? clipAnchor}) {
@@ -597,7 +661,11 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     _save();
   }
 
-  Future<void> _clip(BrowserTab tab, {Map<String, dynamic>? position}) async {
+  Future<void> _clip(
+    BrowserTab tab, {
+    Map<String, dynamic>? position,
+    Future<Uint8List?>? thumbnail,
+  }) async {
     if (_clipping || !tab.pageReady || current != tab) return;
     final url = tab.url, document = tab.document, l = context.l10n;
     bool samePage() =>
@@ -609,27 +677,35 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         tab.pageReady;
     setState(() => _clipping = true);
     try {
-      position ??= BrowserPageEntry.readingPosition(
-        await tab.captureAnchor?.call(),
-      );
+      if (position == null) {
+        // Capture both against the tap's viewport; a retry keeps this original pair.
+        final x = tab.x, y = tab.y;
+        thumbnail = _capturePreview(tab);
+        position = BrowserPageEntry.readingPosition(
+          await tab.captureAnchor?.call(),
+        );
+        if (tab.x != x || tab.y != y) thumbnail = null;
+      }
       if (!samePage()) return;
       if (position == null) throw StateError('Reading position unavailable');
-      await browserLibraryStore.setBookmarked(
+      await browserLibraryStore.saveReading(
         url,
         tab.title,
-        true,
         iconUrl: tab.iconUrl,
         anchor: position,
+        thumbnail: thumbnail ?? Future<Uint8List?>.value(),
       );
       if (samePage()) showNodeLaneNotice(l.browser_clip_saved);
     } catch (_) {
       if (samePage()) {
         showNodeLaneNotice(
-          l.browser_save_failed,
+          l.browser_data_failed,
           kind: NodeLaneNoticeKind.error,
           actionLabel: l.retry,
           onAction: () {
-            if (samePage()) _clip(tab, position: position);
+            if (samePage()) {
+              _clip(tab, position: position, thumbnail: thumbnail);
+            }
           },
         );
       }
@@ -657,7 +733,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
   }
 
-  Future<void> _showTabs() async {
+  Future<void> _showTabs(BuildContext anchor) async {
     if (_showingTabs) return;
     _showingTabs = true;
     try {
@@ -667,9 +743,11 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         unawaited(_captureAnchor(selected));
       }
       if (!mounted) return;
-      final action = await showNodeLaneCatalogSheet<String>(
-        context,
-        MobileBrowserTabsSheet(
+      final action = await showNodeLaneBubble<String>(
+        anchor,
+        label: context.l10n.tabs,
+        width: 380,
+        child: BrowserTabsPanel(
           entries: _entries,
           onClose: _editTabs,
           onUndo: _editTabs,
@@ -688,9 +766,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
   }
 
-  Future<void> _translationControls(BrowserTab tab) async {
+  Future<void> _translationControls(BuildContext anchor, BrowserTab tab) async {
     await showTranslationControls(
-      context,
+      anchor,
       tab.translation,
       title: context.l10n.browser_translation,
       subtitle: [
@@ -715,6 +793,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     final document = tab.document;
     await _captureAnchor(tab);
     if (!mounted || current != tab || document != tab.document) return;
+    unawaited(_rememberReading(tab));
     ++_saveEpoch;
     _saveTimer?.cancel();
     final snapshot = _entries;
@@ -821,10 +900,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         case 'bookmarks':
         case 'history':
           final bookmarks = action == 'bookmarks';
-          final entry = await MobileBrowserLibrarySheet.show(
-            context,
+          if (!anchor.mounted) return;
+          final entry = await BrowserLibraryPanel.show(
+            anchor,
             store: browserLibraryStore,
-            bookmarks: bookmarks,
+            collection: bookmarks
+                ? BrowserCollection.bookmarks
+                : BrowserCollection.history,
           );
           if (samePage() && entry != null) {
             _openAddress(
@@ -916,22 +998,17 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
   }
 
-  Future<void> _showProtection(
+  Future<void> _protectionAction(
     BrowserTab tab,
     BrowserProtection protection,
+    SiteProtectionAction action,
   ) async {
-    final page = tab.controller, url = tab.url;
-    final action = await showNodeLaneCatalogSheet<SiteProtectionAction>(
-      context,
-      BrowserProtectionSheet(protection: protection, url: url),
-    );
     if (!mounted ||
         current != tab ||
-        tab.controller != page ||
-        tab.url != url ||
-        action == null) {
+        tab.controller?.protection != protection) {
       return;
     }
+    final url = tab.url;
     try {
       if (action == SiteProtectionAction.clearSite) {
         await _clearLogins(tab);
@@ -995,10 +1072,15 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   @override
   Widget build(BuildContext context) {
     final tab = current;
-    final inline = context.tabletPanesFit(
-      MediaQuery.sizeOf(context).width -
-          MediaQuery.paddingOf(context).horizontal,
-    );
+    final width =
+        MediaQuery.sizeOf(context).width -
+        MediaQuery.paddingOf(context).horizontal;
+    final inline =
+        width >= NodeLaneTokens.tabletPaneBreakpoint &&
+        width >=
+            NodeLaneTokens.tabletPaneBreakpoint *
+                MediaQuery.textScalerOf(context).scale(16) /
+                16;
     final toolbar =
         tab == null ||
             tab.isBlank ||
@@ -1021,8 +1103,10 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                   : null,
               onControls: !tab.pageReady
                   ? null
-                  : () => _translationControls(tab),
+                  : (anchor) => _translationControls(anchor, tab),
               onTabs: _showTabs,
+              tabsKey: _tabsButton,
+              controlsKey: _translationButton,
             ),
           );
     return PopScope(
@@ -1093,9 +1177,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                     toolbar: inline ? toolbar : null,
                     protection: switch (tab.controller?.protection) {
                       null => null,
-                      final protection => (
-                        name: context.l10n.browser_protection,
-                        open: () => _showProtection(tab, protection),
+                      final protection => BrowserProtectionButton(
+                        key: ValueKey((tab.id, tab.document)),
+                        protection: protection,
+                        ready: tab.readable && !tab.loading,
+                        url: tab.url,
+                        onAction: (action) =>
+                            _protectionAction(tab, protection, action),
                       ),
                     },
                   ),
@@ -1144,6 +1232,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                           _save();
                                         },
                                         save: _save,
+                                        leavingDocument: () =>
+                                            _rememberReading(item),
                                         newTab: _new,
                                         editAddress: _addressFocus.requestFocus,
                                         recreate: () => _recreate(item),
@@ -1220,6 +1310,7 @@ class _BrowserTabView extends StatefulWidget {
     required this.active,
     required this.changed,
     required this.save,
+    required this.leavingDocument,
     required this.newTab,
     required this.editAddress,
     required this.recreate,
@@ -1229,6 +1320,7 @@ class _BrowserTabView extends StatefulWidget {
   final bool active;
   final VoidCallback changed;
   final VoidCallback save;
+  final VoidCallback leavingDocument;
   final void Function(String, {bool background}) newTab;
   final VoidCallback editAddress;
   final VoidCallback recreate;
@@ -1252,6 +1344,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   bool extensionsFailed = false;
   bool get loading => widget.tab.loading;
   bool _imageMenuOpen = false;
+  Offset? _pressPoint;
   double progress = 0;
   String? loadingUrl;
   int navigation = 0;
@@ -1407,27 +1500,44 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     if (!mounted || !widget.active || !isBrowserUrl(url) || _imageMenuOpen) {
       return;
     }
-    final doc = widget.tab.url;
+    final doc = widget.tab.document;
     if (image && await bridge?.imageMenuClaimed() == true) return;
-    if (!mounted || !widget.active || widget.tab.url != doc || _imageMenuOpen) {
+    if (!mounted ||
+        !widget.active ||
+        widget.tab.document != doc ||
+        _imageMenuOpen) {
       return;
     }
-    final confirmed = await showNodeLaneCatalogSheet<bool>(
-      context,
-      NodeLaneCatalogSheet(
-        title: Uri.parse(url).host,
-        fitContent: true,
-        child: NodeLaneRow(
-          title: context.l10n.browser_background_tab,
-          icon: NodeLaneIcons.of(context).add,
-          onTap: () => Navigator.of(context, rootNavigator: true).pop(true),
+    _imageMenuOpen = true;
+    final bool? confirmed;
+    try {
+      confirmed = await showNodeLaneBubble<bool>(
+        context,
+        label: Uri.parse(url).host,
+        localPoint: _pressPoint,
+        child: Builder(
+          builder: (panel) => SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                NodeLaneBubbleHeading(Uri.parse(url).host),
+                NodeLaneRow(
+                  title: context.l10n.browser_background_tab,
+                  icon: NodeLaneIcons.of(context).add,
+                  onTap: () => Navigator.pop(panel, true),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
-    );
+      );
+    } finally {
+      _imageMenuOpen = false;
+    }
     if (confirmed == true &&
         mounted &&
         widget.active &&
-        widget.tab.url == doc) {
+        widget.tab.document == doc) {
       widget.newTab(url, background: true);
     }
   }
@@ -1455,27 +1565,32 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      if (widget.tab.findOpen && widget.active)
-        MobileBrowserFindBar(
-          current: activeMatch,
-          total: matches,
-          onFind: (text) {
-            setState(() {
-              activeMatch = 0;
-              matches = 0;
-            });
-            _find(() => text.isEmpty ? _clearFind() : _searchText(text, true));
-          },
-          onNext: (forward) => _find(() => _searchText(null, forward)),
-          onClose: () {
-            setState(() => widget.tab.findOpen = false);
-            _find(_clearFind);
-          },
-        ),
-      Expanded(child: _buildPage(context)),
-    ],
+  Widget build(BuildContext context) => Listener(
+    onPointerDown: (e) => _pressPoint = e.localPosition,
+    child: Column(
+      children: [
+        if (widget.tab.findOpen && widget.active)
+          MobileBrowserFindBar(
+            current: activeMatch,
+            total: matches,
+            onFind: (text) {
+              setState(() {
+                activeMatch = 0;
+                matches = 0;
+              });
+              _find(
+                () => text.isEmpty ? _clearFind() : _searchText(text, true),
+              );
+            },
+            onNext: (forward) => _find(() => _searchText(null, forward)),
+            onClose: () {
+              setState(() => widget.tab.findOpen = false);
+              _find(_clearFind);
+            },
+          ),
+        Expanded(child: _buildPage(context)),
+      ],
+    ),
   );
 
   Widget _buildPage(BuildContext context) => Stack(
@@ -1552,6 +1667,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
             context,
             widget.tab.translation,
             target,
+            localPoint: _pressPoint,
           );
         } finally {
           _imageMenuOpen = false;
@@ -1893,6 +2009,8 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   }
 
   void _changeDocument(String? url) {
+    if (widget.active) widget.leavingDocument();
+    _pressPoint = null;
     widget.tab.resetReading();
     if (widget.tab.pendingClip?.url != url) widget.tab.pendingClip = null;
     if (url != widget.tab.url) {

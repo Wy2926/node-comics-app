@@ -151,6 +151,18 @@ abstract class AppLocalizations {
   /// **'Continue reading'**
   String get browser_continue;
 
+  /// No description provided for @browser_continue_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your place in a chapter is saved as you read. No bookmark needed.'**
+  String get browser_continue_hint;
+
+  /// No description provided for @browser_insert_suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert search suggestion'**
+  String get browser_insert_suggestion;
+
   /// No description provided for @browser_focus.
   ///
   /// In en, this message translates to:
@@ -364,7 +376,7 @@ abstract class AppLocalizations {
   /// No description provided for @browser_clear_history_hint.
   ///
   /// In en, this message translates to:
-  /// **'Delete all browsing history on this device? Bookmarks and website sign-ins are kept.'**
+  /// **'Delete all browsing history on this device? Reading progress, bookmarks and website sign-ins are kept.'**
   String get browser_clear_history_hint;
 
   /// No description provided for @browser_library_empty.
@@ -390,12 +402,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recently visited'**
   String get browser_recent;
-
-  /// No description provided for @browser_pinned_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Pin favorite websites from Sources for quick access.'**
-  String get browser_pinned_hint;
 
   /// No description provided for @browser_start_page.
   ///

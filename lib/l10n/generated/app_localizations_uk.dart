@@ -22,6 +22,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get browser_continue => 'Продовжити читання';
 
   @override
+  String get browser_continue_hint =>
+      'Місце в розділі зберігається під час читання. Додавати закладку не потрібно.';
+
+  @override
+  String get browser_insert_suggestion => 'Вставити пошукову підказку';
+
+  @override
   String get browser_focus => 'Читати без відволікань';
 
   @override
@@ -136,7 +143,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Видалити всю історію на цьому пристрої? Закладки та входи на сайти буде збережено.';
+      'Видалити всю історію на цьому пристрої? Поступ читання, закладки та входи на сайти буде збережено.';
 
   @override
   String get browser_library_empty => 'Тут поки порожньо';
@@ -151,10 +158,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get browser_recent => 'Нещодавно відвідані';
-
-  @override
-  String get browser_pinned_hint =>
-      'Закріпіть улюблені сайти в Джерелах для швидкого доступу.';
 
   @override
   String get browser_start_page => 'Початкова сторінка';

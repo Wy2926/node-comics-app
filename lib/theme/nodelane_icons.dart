@@ -20,6 +20,7 @@ class NodeLaneIcons {
   IconData get more => CupertinoIcons.ellipsis;
   IconData get filter => CupertinoIcons.line_horizontal_3_decrease;
   IconData get search => CupertinoIcons.search;
+  IconData get insertSuggestion => CupertinoIcons.arrow_up_left;
   IconData get clear => CupertinoIcons.clear_circled_solid;
   IconData get down => CupertinoIcons.chevron_down;
   IconData get up => CupertinoIcons.chevron_up;

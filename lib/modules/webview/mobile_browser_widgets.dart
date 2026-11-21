@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -12,6 +15,7 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'browser_url.dart';
 import 'browser_library_store.dart';
 import 'browser_session_store.dart';
+import 'browser_search_suggestions.dart';
 import 'mobile_browser_menu.dart';
 
 import 'package:mangayomi/modules/translation/translation_display_switch.dart';
@@ -55,7 +59,7 @@ class MobileBrowserHeader extends StatelessWidget {
   final Widget? toolbar;
   final ValueChanged<BrowserMatch>? onMatch;
   final Iterable<Map<String, dynamic>>? openTabs;
-  final ({String name, VoidCallback open})? protection;
+  final Widget? protection;
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
@@ -87,27 +91,28 @@ class MobileBrowserHeader extends StatelessWidget {
                 ],
                 Expanded(
                   key: const ValueKey('address'),
-                  child: MobileBrowserAddressField(
-                    url: url,
-                    compact: true,
-                    focusNode: addressFocus,
-                    onSubmitted: onSubmitted,
-                    onReload: onReload,
-                    engine: engine,
-                    onEngine: onEngine,
-                    loading: loading,
-                    onMatch: onMatch,
-                    openTabs: openTabs,
+                  child: Align(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: NodeLaneTokens.browserSearchMaxWidth,
+                      ),
+                      child: MobileBrowserAddressField(
+                        url: url,
+                        compact: true,
+                        focusNode: addressFocus,
+                        onSubmitted: onSubmitted,
+                        onReload: onReload,
+                        engine: engine,
+                        onEngine: onEngine,
+                        loading: loading,
+                        onMatch: onMatch,
+                        openTabs: openTabs,
+                      ),
+                    ),
                   ),
                 ),
                 if (!addressFocus.hasFocus) ...[
-                  if (protection case final action?)
-                    IconButton(
-                      tooltip: action.name,
-                      icon: Icon(icons.shield),
-                      style: _barIconStyle(t.ink),
-                      onPressed: action.open,
-                    ),
+                  ?protection,
                   const SizedBox(width: NodeLaneTokens.space8),
                   SizedBox.square(
                     dimension: NodeLaneTokens.minTapTarget,
@@ -142,12 +147,17 @@ class MobileBrowserToolbar extends StatelessWidget {
     this.onDisplayChanged,
     this.onControls,
     this.inline = false,
+    this.tabsKey,
+    this.controlsKey,
   });
   final int tabCount;
   final bool showTranslation;
   final bool inline;
-  final VoidCallback onTabs, onNew;
-  final VoidCallback? onBack, onControls;
+  final ValueChanged<BuildContext> onTabs;
+  final VoidCallback onNew;
+  final Key? tabsKey, controlsKey;
+  final VoidCallback? onBack;
+  final ValueChanged<BuildContext>? onControls;
   final ValueChanged<bool>? onDisplayChanged;
   @override
   Widget build(BuildContext context) {
@@ -188,13 +198,18 @@ class MobileBrowserToolbar extends StatelessWidget {
                               onChanged: onDisplayChanged,
                             ),
                           ),
-                          IconButton(
-                            tooltip: context.l10n.browser_translation,
-                            onPressed: onControls,
-                            style: _barIconStyle(t.ink),
-                            icon: Icon(
-                              icons.adjustments,
-                              size: NodeLaneTokens.smallIconSize,
+                          Builder(
+                            key: controlsKey,
+                            builder: (anchor) => IconButton(
+                              tooltip: context.l10n.browser_translation,
+                              onPressed: onControls == null
+                                  ? null
+                                  : () => onControls!(anchor),
+                              style: _barIconStyle(t.ink),
+                              icon: Icon(
+                                icons.adjustments,
+                                size: NodeLaneTokens.smallIconSize,
+                              ),
                             ),
                           ),
                         ],
@@ -213,7 +228,11 @@ class MobileBrowserToolbar extends StatelessWidget {
                       ? NodeLaneTokens.space8
                       : NodeLaneTokens.space20,
                 ),
-                MobileBrowserTabsButton(count: tabCount, onPressed: onTabs),
+                MobileBrowserTabsButton(
+                  key: tabsKey,
+                  count: tabCount,
+                  onPressed: onTabs,
+                ),
               ],
             );
           },
@@ -305,6 +324,145 @@ class BrowserChapterTools extends StatelessWidget {
   }
 }
 
+/// A saved reading position, shared by the home shelf and the full reading list.
+class BrowserReadingCard extends StatelessWidget {
+  const BrowserReadingCard(
+    this.entry, {
+    super.key,
+    required this.onTap,
+    this.trailing,
+  });
+  final BrowserPageEntry entry;
+  final VoidCallback? onTap;
+  final Widget? trailing;
+
+  // All visible cards share a minute tick; the timer pauses with its last listener.
+  static final _minutes = Stream<int>.periodic(
+    const Duration(minutes: 1),
+    (i) => i,
+  ).asBroadcastStream(onListen: (s) => s.resume(), onCancel: (s) => s.pause());
+  static double lineHeight(BuildContext context, TextStyle style) =>
+      (MediaQuery.textScalerOf(context).scale(style.fontSize!) *
+              (MediaQuery.maybeLineHeightScaleFactorOverrideOf(context) ??
+                  style.height!))
+          .ceilToDouble();
+  static double extent(BuildContext context) {
+    final t = NodeLaneTokens.of(context);
+    return math.max(
+      88,
+      24 +
+          2 * lineHeight(context, t.readerLabel) +
+          2 * lineHeight(context, t.secondary),
+    );
+  }
+
+  String _elapsed(BuildContext context) {
+    final age = DateTime.now().difference(entry.time), l = context.l10n;
+    if (age.inMinutes < 1) return l.now;
+    if (age.inMinutes < 60) {
+      return age.inMinutes == 1
+          ? l.n_minute_ago(1)
+          : l.n_minutes_ago(age.inMinutes);
+    }
+    if (age.inHours < 24) {
+      return age.inHours == 1 ? l.n_hour_ago(1) : l.n_hours_ago(age.inHours);
+    }
+    return age.inDays == 1 ? l.n_day_ago(1) : l.n_days_ago(age.inDays);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n, t = NodeLaneTokens.of(context);
+    final height = extent(context),
+        titleHeight = 2 * lineHeight(context, t.readerLabel);
+    final fallback = ColoredBox(
+      color: t.soft,
+      child: Center(
+        child: Icon(NodeLaneIcons.of(context).library, color: t.muted),
+      ),
+    );
+    final image = entry.thumbnail;
+    final cover = ClipRRect(
+      borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
+      child: SizedBox(
+        width: 62,
+        height: height - 16,
+        child: image == null
+            ? fallback
+            : FutureBuilder(
+                key: ValueKey(entry.thumbnailId),
+                future: image,
+                builder: (_, snapshot) => snapshot.hasData
+                    ? Image.file(
+                        snapshot.data!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => fallback,
+                      )
+                    : fallback,
+              ),
+      ),
+    );
+    return SizedBox(
+      height: height,
+      child: NodeLaneGroupSurface(
+        outlined: true,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: [
+                ExcludeSemantics(child: cover),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: titleHeight,
+                        child: Text(
+                          entry.displayTitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: t.readerLabel,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        [
+                          if (entry.host != entry.displayTitle) entry.host,
+                          if (entry.anchor?['page'] case final int page)
+                            l.page(page),
+                        ].join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: t.secondary,
+                      ),
+                      StreamBuilder<int>(
+                        stream: TickerMode.valuesOf(context).enabled
+                            ? _minutes
+                            : null,
+                        builder: (_, _) => Text(
+                          _elapsed(context),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: t.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ?trailing,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class MobileBrowserTabCard extends StatelessWidget {
   const MobileBrowserTabCard({
     super.key,
@@ -317,98 +475,61 @@ class MobileBrowserTabCard extends StatelessWidget {
   });
   final String title, url;
   final bool selected;
-  final VoidCallback onSelect, onClose;
+  final VoidCallback onSelect;
+  final VoidCallback? onClose;
   final Uint8List? preview;
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    return NodeLaneGroupSurface(
-      selected: selected,
-      outlined: true,
-      child: InkWell(
+    final l = context.l10n, host = Uri.tryParse(url)?.host ?? '';
+    final fallback = ColoredBox(
+      color: t.soft,
+      child: Center(
+        child: Icon(
+          url.isEmpty ? icons.browserStart : icons.web,
+          color: t.muted,
+        ),
+      ),
+    );
+    return ColoredBox(
+      color: selected ? t.accentSoft : t.surface,
+      child: NodeLaneRow(
+        title: url.isEmpty
+            ? l.browser_new_tab
+            : title.isEmpty
+            ? host
+            : title,
+        titleMaxLines: 1,
+        subtitleMaxLines: 1,
+        subtitle: [
+          if (selected) l.browser_current_tab,
+          url.isEmpty
+              ? l.browser_unopened
+              : (title.isEmpty || title == host ? l.browser_page : host),
+        ].join(' · '),
+        selected: selected,
+        accented: selected,
         onTap: onSelect,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (preview != null)
-                    ExcludeSemantics(
-                      child: Image.memory(
-                        preview!,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.topCenter,
-                        cacheWidth: 360,
-                        errorBuilder: (_, _, _) => ColoredBox(
-                          color: t.soft,
-                          child: Icon(
-                            icons.web,
-                            size: NodeLaneTokens.websiteIconSize,
-                            color: t.muted,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    ColoredBox(
-                      color: t.soft,
-                      child: Center(
-                        child: Icon(
-                          url.isEmpty ? icons.browserStart : icons.web,
-                          size: NodeLaneTokens.websiteIconSize,
-                          color: t.muted,
-                        ),
-                      ),
-                    ),
-                  if (selected)
-                    Positioned(
-                      top: NodeLaneTokens.space8,
-                      left: NodeLaneTokens.space8,
-                      child: NodeLaneCoverBadge(
-                        context.l10n.browser_current_tab,
-                        tone: NodeLaneBadgeTone.accent,
-                      ),
-                    ),
-                  Positioned(
-                    top: 2,
-                    right: 2,
-                    child: NodeLaneCloseButton(
-                      tooltip: context.l10n.browser_close_tab,
-                      backgroundColor: t.surface,
-                      onPressed: onClose,
-                    ),
+        leadingSize: const Size(60, 48),
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+          child: SizedBox.expand(
+            child: preview == null
+                ? fallback
+                : Image.memory(
+                    preview!,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    cacheWidth: 144,
+                    errorBuilder: (_, _, _) => fallback,
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(NodeLaneTokens.space12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    url.isEmpty
-                        ? context.l10n.browser_new_tab
-                        : (title.isEmpty ? context.l10n.browser_page : title),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: t.readerLabel,
-                  ),
-                  const SizedBox(height: NodeLaneTokens.space4),
-                  Text(
-                    url.isEmpty
-                        ? context.l10n.browser_unopened
-                        : Uri.tryParse(url)?.host ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: t.secondary,
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
+        ),
+        trailing: NodeLaneIconButton(
+          style: NodeLaneIconButtonStyle.plain,
+          tooltip: l.browser_close_tab,
+          icon: icons.close,
+          onPressed: onClose,
         ),
       ),
     );
@@ -446,11 +567,20 @@ class MobileBrowserAddressField extends StatefulWidget {
       _MobileBrowserAddressFieldState();
 }
 
+typedef _AddressOption = ({String text, BrowserMatch? match});
+
 class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   late final focus = widget.focusNode ?? FocusNode();
   late final input = TextEditingController(text: _displayUrl);
   bool invalid = false;
   bool choosingEngine = false;
+  final hints = BrowserSearchSuggestions();
+  final popup = OverlayPortalController();
+  final selectedRow = GlobalKey();
+  Timer? debounce;
+  (BrowserSearchEngine, String)? pending;
+  List<_AddressOption> options = const [];
+  int highlighted = -1;
   String get _displayUrl =>
       widget.compact ? Uri.tryParse(widget.url)?.host ?? '' : widget.url;
 
@@ -458,10 +588,12 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   void initState() {
     super.initState();
     focus.addListener(_focusChanged);
+    input.addListener(_edited);
   }
 
   void _focusChanged() {
     if (choosingEngine) return;
+    if (!focus.hasFocus) hints.close();
     if (widget.compact) {
       input.text = focus.hasFocus ? widget.url : _displayUrl;
       if (focus.hasFocus) {
@@ -471,7 +603,95 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
         );
       }
     }
+    _edited();
     setState(() => invalid = false);
+  }
+
+  void _dismiss() {
+    pending = null;
+    debounce?.cancel();
+    hints.cancel();
+    highlighted = -1;
+    options = const [];
+    if (popup.isShowing) {
+      popup.hide();
+      setState(() {});
+    }
+  }
+
+  void _edited() {
+    final value = input.value, query = value.text.trim();
+    if (!focus.hasFocus ||
+        choosingEngine ||
+        query.isEmpty ||
+        value.text == widget.url ||
+        (value.composing.isValid && !value.composing.isCollapsed)) {
+      _dismiss();
+      return;
+    }
+    final key = (widget.engine, query);
+    if (pending == key) return;
+    _dismiss();
+    pending = key;
+    final local = [
+      if (widget.onMatch != null)
+        for (final m
+            in browserLibraryStore
+                .matches(query, widget.openTabs ?? browserSessionStore.entries)
+                .take(5))
+          (text: m.title.isEmpty ? Uri.parse(m.url).host : m.title, match: m),
+    ];
+    _publish(local);
+    if (!isSuggestionQuery(value.text)) return;
+    debounce = Timer(const Duration(milliseconds: 260), () async {
+      final matches = await hints.find(key.$1, query);
+      if (!mounted ||
+          pending != key ||
+          !focus.hasFocus ||
+          choosingEngine ||
+          matches.isEmpty) {
+        return;
+      }
+      _publish([
+        ...local.take(2),
+        for (final term in matches) (text: term, match: null),
+        ...local.skip(2),
+      ]);
+    });
+  }
+
+  void _publish(List<_AddressOption> next) {
+    if (next.isEmpty) return;
+    setState(() => options = next);
+    if (!popup.isShowing) popup.show();
+  }
+
+  void _choose(_AddressOption option) {
+    _dismiss();
+    if (option.match case final match?) {
+      focus.unfocus();
+      widget.onMatch?.call(match);
+    } else {
+      pending = (widget.engine, option.text);
+      input.value = TextEditingValue(
+        text: option.text,
+        selection: TextSelection.collapsed(offset: option.text.length),
+      );
+      focus.requestFocus();
+    }
+    setState(() {});
+  }
+
+  void _move(int step) {
+    if (options.isEmpty) return;
+    setState(
+      () => highlighted = (highlighted + step).clamp(0, options.length - 1),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (selectedRow.currentContext case final row?) {
+        Scrollable.ensureVisible(row, alignment: .5);
+      }
+    });
   }
 
   @override
@@ -480,9 +700,18 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
     if (oldWidget.url != widget.url && !focus.hasFocus && !choosingEngine) {
       input.text = _displayUrl;
     }
+    if (oldWidget.engine != widget.engine || oldWidget.url != widget.url) {
+      scheduleMicrotask(() {
+        if (mounted && !choosingEngine) _edited();
+      });
+    }
   }
 
   void _submit() {
+    if (popup.isShowing && highlighted >= 0) {
+      _choose(options[highlighted]);
+      return;
+    }
     final url = resolveBrowserInput(input.text, engine: widget.engine);
     if (url == null) {
       setState(() => invalid = true);
@@ -495,6 +724,7 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   Future<void> _chooseEngine(BuildContext anchor) async {
     if (choosingEngine) return;
     choosingEngine = true;
+    _dismiss();
     final draft = input.value, hadFocus = focus.hasFocus, url = widget.url;
     try {
       final selected = await showBrowserSearchEngines(anchor, widget.engine);
@@ -516,12 +746,16 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
         }
         await WidgetsBinding.instance.endOfFrame;
         choosingEngine = false;
+        if (mounted) _edited();
       }
     }
   }
 
   @override
   void dispose() {
+    debounce?.cancel();
+    hints.close();
+    input.removeListener(_edited);
     focus.removeListener(_focusChanged);
     if (widget.focusNode == null) focus.dispose();
     input.dispose();
@@ -529,53 +763,109 @@ class _MobileBrowserAddressFieldState extends State<MobileBrowserAddressField> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (widget.onMatch == null) return _field(context);
-    return RawAutocomplete<BrowserMatch>(
-      textEditingController: input,
-      focusNode: focus,
-      displayStringForOption: (m) => m.url,
-      optionsBuilder: (v) => v.text == widget.url || choosingEngine
-          ? const []
-          : browserLibraryStore
-                .matches(v.text, widget.openTabs ?? browserSessionStore.entries)
-                .take(5),
-      fieldViewBuilder: (context, _, _, _) => _field(context),
-      onSelected: (m) {
-        focus.unfocus();
-        widget.onMatch!(m);
+  Widget build(BuildContext context) => OverlayPortal.overlayChildLayoutBuilder(
+    controller: popup,
+    overlayChildBuilder: _suggestions,
+    child: CallbackShortcuts(
+      bindings: {
+        if (popup.isShowing) ...{
+          const SingleActivator(LogicalKeyboardKey.arrowDown): () => _move(1),
+          const SingleActivator(LogicalKeyboardKey.arrowUp): () => _move(-1),
+          const SingleActivator(LogicalKeyboardKey.escape): _dismiss,
+        },
       },
-      optionsViewBuilder: (context, select, options) => Align(
-        alignment: AlignmentDirectional.topStart,
-        child: Material(
-          elevation: 4,
-          color: NodeLaneTokens.of(context).surface,
-          borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 240),
-            child: ListView(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              children: [
-                for (final m in options)
-                  NodeLaneRow(
-                    title: m.title.isEmpty ? Uri.parse(m.url).host : m.title,
-                    titleMaxLines: 1,
-                    subtitleMaxLines: 1,
-                    compact: true,
-                    subtitle:
-                        '${m.tabId != null
-                            ? context.l10n.tabs
-                            : m.bookmark != null
-                            ? context.l10n.browser_bookmarks
-                            : context.l10n.history} · ${Uri.parse(m.url).host}',
-                    onTap: () => select(m),
+      child: _field(context),
+    ),
+  );
+
+  Widget _suggestions(BuildContext context, OverlayChildLayoutInfo layout) {
+    if (options.isEmpty || layout.childPaintTransform.determinant() == 0) {
+      return const SizedBox.shrink();
+    }
+    final field = MatrixUtils.transformRect(
+      layout.childPaintTransform,
+      Offset.zero & layout.childSize,
+    );
+    final media = MediaQuery.of(context);
+    final visible = media.padding.deflateRect(
+      media.viewInsets.deflateRect(Offset.zero & layout.overlaySize),
+    );
+    final below = visible.bottom - field.bottom - 4,
+        above = field.top - visible.top - 4;
+    final down = below >= above,
+        t = NodeLaneTokens.of(context),
+        icons = NodeLaneIcons.of(context),
+        l = context.l10n;
+    final maxHeight = math.min(300.0, down ? below : above);
+    if (maxHeight <= 0 || !visible.overlaps(field)) {
+      return const SizedBox.shrink();
+    }
+    Widget row(_AddressOption option, int index) {
+      final m = option.match;
+      return ColoredBox(
+        key: index == highlighted ? selectedRow : null,
+        color: index == highlighted ? t.accentSoft : t.surface,
+        child: Semantics(
+          hint: m == null ? l.browser_insert_suggestion : null,
+          child: NodeLaneRow(
+            title: option.text,
+            titleMaxLines: 1,
+            subtitleMaxLines: 1,
+            compact: true,
+            icon: m == null ? icons.search : null,
+            subtitle: m == null
+                ? widget.engine.label
+                : '${m.tabId != null
+                      ? l.tabs
+                      : m.bookmark != null
+                      ? l.browser_bookmarks
+                      : l.history} · ${Uri.parse(m.url).host}',
+            trailing: m == null
+                ? Icon(
+                    icons.insertSuggestion,
+                    size: NodeLaneTokens.smallIconSize,
+                  )
+                : null,
+            onTap: () => _choose(option),
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        Positioned(
+          left: field.left,
+          width: field.width,
+          top: down ? field.bottom + 4 : null,
+          bottom: down ? null : layout.overlaySize.height - field.top + 4,
+          child: TextFieldTapRegion(
+            child: ExcludeFocus(
+              child: Material(
+                elevation: 4,
+                color: t.surface,
+                borderRadius: BorderRadius.circular(
+                  NodeLaneTokens.controlRadius,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: maxHeight),
+                  child: SingleChildScrollView(
+                    primary: false,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final (i, option) in options.indexed)
+                          row(option, i),
+                      ],
+                    ),
                   ),
-              ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -693,7 +983,7 @@ class MobileBrowserTabsButton extends StatelessWidget {
     this.tonal = false,
   });
   final int count;
-  final VoidCallback? onPressed;
+  final ValueChanged<BuildContext>? onPressed;
   final bool tonal;
 
   @override
@@ -701,7 +991,7 @@ class MobileBrowserTabsButton extends StatelessWidget {
     final t = NodeLaneTokens.of(context);
     return NodeLaneIconButton(
       tooltip: context.l10n.browser_tab_count(count),
-      onPressed: onPressed,
+      onPressed: onPressed == null ? null : () => onPressed!(context),
       style: tonal
           ? NodeLaneIconButtonStyle.glass
           : NodeLaneIconButtonStyle.plain,

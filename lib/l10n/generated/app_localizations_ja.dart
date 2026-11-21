@@ -22,6 +22,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get browser_continue => '続きを読む';
 
   @override
+  String get browser_continue_hint => '章の読書位置は自動で保存されます。ブックマークへの追加は不要です。';
+
+  @override
+  String get browser_insert_suggestion => '検索候補を入力';
+
+  @override
   String get browser_focus => '集中して読む';
 
   @override
@@ -130,7 +136,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'この端末の閲覧履歴をすべて削除しますか？ブックマークとサイトのログイン状態は保持されます。';
+      'この端末の閲覧履歴をすべて削除しますか？読書の進捗、ブックマーク、サイトのログイン状態は保持されます。';
 
   @override
   String get browser_library_empty => 'まだ何もありません';
@@ -143,9 +149,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get browser_recent => '最近訪問したページ';
-
-  @override
-  String get browser_pinned_hint => 'ソースでよく使うサイトを固定すると、すぐにアクセスできます。';
 
   @override
   String get browser_start_page => 'スタートページ';

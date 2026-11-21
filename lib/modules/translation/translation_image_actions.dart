@@ -1,10 +1,9 @@
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'translation_view_controller.dart';
 
@@ -65,15 +64,19 @@ class TranslationImageActions extends StatelessWidget {
 Future<void> showTranslationImageMenu(
   BuildContext context,
   TranslationViewController controller,
-  TranslationTarget target,
-) => showNodeLaneCatalogSheet<void>(
+  TranslationTarget target, {
+  Offset? localPoint,
+}) => showNodeLaneBubble<void>(
   context,
-  NodeLaneCatalogSheet(
-    title: context.l10n.translation_image_actions,
-    fitContent: true,
-    child: SingleChildScrollView(
-      padding: NodeLaneTokens.modalContentPadding,
-      child: TranslationImageActions(controller: controller, target: target),
+  localPoint: localPoint,
+  label: context.l10n.translation_image_actions,
+  child: SingleChildScrollView(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        NodeLaneBubbleHeading(context.l10n.translation_image_actions),
+        TranslationImageActions(controller: controller, target: target),
+      ],
     ),
   ),
 );

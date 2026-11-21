@@ -22,6 +22,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get browser_continue => 'Lanjutkan membaca';
 
   @override
+  String get browser_continue_hint =>
+      'Posisi baca di bab disimpan otomatis tanpa perlu menambahkan markah.';
+
+  @override
+  String get browser_insert_suggestion => 'Masukkan saran pencarian';
+
+  @override
   String get browser_focus => 'Baca tanpa gangguan';
 
   @override
@@ -136,7 +143,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Hapus semua riwayat di perangkat ini? Bookmark dan sesi masuk situs akan tetap tersimpan.';
+      'Hapus semua riwayat di perangkat ini? Progres membaca, bookmark, dan sesi masuk situs akan tetap tersimpan.';
 
   @override
   String get browser_library_empty => 'Belum ada apa pun';
@@ -151,10 +158,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get browser_recent => 'Kunjungan terbaru';
-
-  @override
-  String get browser_pinned_hint =>
-      'Sematkan situs favorit di Sumber untuk akses cepat.';
 
   @override
   String get browser_start_page => 'Halaman awal';

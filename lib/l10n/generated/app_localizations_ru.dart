@@ -22,6 +22,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get browser_continue => 'Продолжить чтение';
 
   @override
+  String get browser_continue_hint =>
+      'Место в главе сохраняется во время чтения. Добавлять закладку не нужно.';
+
+  @override
+  String get browser_insert_suggestion => 'Вставить поисковую подсказку';
+
+  @override
   String get browser_focus => 'Читать без отвлечений';
 
   @override
@@ -136,7 +143,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      'Удалить всю историю на этом устройстве? Закладки и входы на сайты сохранятся.';
+      'Удалить всю историю на этом устройстве? Прогресс чтения, закладки и входы на сайты сохранятся.';
 
   @override
   String get browser_library_empty => 'Здесь пока пусто';
@@ -151,10 +158,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get browser_recent => 'Недавно посещённые';
-
-  @override
-  String get browser_pinned_hint =>
-      'Закрепите любимые сайты в разделе источников для быстрого доступа.';
 
   @override
   String get browser_start_page => 'Начальная страница';

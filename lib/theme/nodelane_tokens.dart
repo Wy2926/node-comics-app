@@ -106,8 +106,7 @@ class NodeLaneTokens {
   static const sourceCardFooterHeight = minTapTarget;
   static const sourceAdultCornerWidth = 52.0, sourceAdultCornerHeight = 32.0;
   static const sourceCornerCut = 20.0;
-  static const browserToolbarHeight = 56.0, browserTabHeight = 244.0;
-  static const browserTabGap = 12.0;
+  static const browserToolbarHeight = 56.0;
   static const navigationHeight = 64.0, navigationRadius = 32.0;
   static const navigationInset = 6.0, navigationLabelSize = 12.0;
   static const navigationLabelHeight = 1.3;
@@ -118,6 +117,7 @@ class NodeLaneTokens {
   static const tabletColumnWidth = 640.0, tabletFormWidth = 840.0;
   static const tabletDashboardWidth = 1120.0, sourceCardMinWidth = 272.0;
   static const browserInlineActionsWidth = 352.0;
+  static const browserSearchMaxWidth = 560.0;
   static const browserAddressHeight = 44.0, browserBackWidth = 64.0;
   static const browserDisplayWidth = 176.0;
   static const dialogMaxWidth = 480.0;

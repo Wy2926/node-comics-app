@@ -22,6 +22,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get browser_continue => '이어서 읽기';
 
   @override
+  String get browser_continue_hint => '읽던 위치는 자동으로 저장됩니다. 북마크를 추가할 필요가 없습니다.';
+
+  @override
+  String get browser_insert_suggestion => '검색 제안 입력';
+
+  @override
   String get browser_focus => '집중해서 읽기';
 
   @override
@@ -131,7 +137,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get browser_clear_history_hint =>
-      '이 기기의 방문 기록을 모두 삭제할까요? 북마크와 웹사이트 로그인은 유지됩니다.';
+      '이 기기의 방문 기록을 모두 삭제할까요? 읽던 위치, 북마크, 웹사이트 로그인은 유지됩니다.';
 
   @override
   String get browser_library_empty => '아직 항목이 없습니다';
@@ -144,9 +150,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get browser_recent => '최근 방문';
-
-  @override
-  String get browser_pinned_hint => '소스에서 자주 방문하는 사이트를 고정하여 빠르게 열 수 있습니다.';
 
   @override
   String get browser_start_page => '시작 페이지';

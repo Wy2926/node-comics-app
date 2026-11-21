@@ -79,7 +79,7 @@ class Fixture(BaseHTTPRequestHandler):
             logged = 'audit=1' in self.headers.get('Cookie', '')
             body = f'<!doctype html><meta name="viewport" content="width=device-width"><title>Cookie fixture</title><p>Cookie {"present" if logged else "absent"}</p><a href="/cookie?login">Set test cookie</a>'.encode()
             mime = 'text/html'
-        elif path in ('/read/1','/read/2'):
+        elif path in [f'/read/{n}' for n in range(1,7)]:
             body,mime = reading(path[-1]),'text/html'
         elif path in [f'/panel/{n}.svg' for n in range(1,5)]:
             n = int(path[7])
