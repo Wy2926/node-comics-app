@@ -11,6 +11,45 @@ import 'package:mangayomi/services/source_images/tile_shuffle.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 
 void main() {
+  test('aligned grid transposes off-diagonal tiles without rotating pixels or moving remainder strips', () {
+    final spec = SourceImageProcessing.fromJson({
+      'type': 'tile-transpose-v1',
+      'grid': 4,
+      'alignment': 8,
+    });
+    final image = img.Image(width: 71, height: 39, numChannels: 4);
+    for (final p in image) {
+      p.setRgba(p.x, p.y, 0, 127);
+    }
+    final restored = img.decodePng(
+      restoreSourceImage(img.encodePng(image), {}, spec),
+    )!;
+    for (final p in restored) {
+      final x = p.x, y = p.y, inside = x < 64 && y < 32;
+      expect(p.toList(), [
+        inside ? (y ~/ 8) * 16 + x % 16 : x,
+        inside ? (x ~/ 16) * 8 + y % 8 : y,
+        0,
+        127,
+      ]);
+    }
+    final json = spec.toJson();
+    expect(SourceImageProcessing.fromJson(json).toJson(), json);
+    expect(
+      SourceImageProcessing.fromJson({...json, 'alignment': 1}).cacheKey('u'),
+      isNot(spec.cacheKey('u')),
+    );
+    for (final change in [
+      {'grid': 0},
+      {'grid': 17},
+      {'alignment': 0},
+    ]) {
+      expect(
+        () => SourceImageProcessing.fromJson({...json, ...change}),
+        throwsStateError,
+      );
+    }
+  });
   test(
     'static WebP with no animation frame table works in both image operations',
     () {

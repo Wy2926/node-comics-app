@@ -7,6 +7,7 @@ const nodeLaneCatalogUrl = String.fromEnvironment(
 
 const nodeLaneHostCapabilities = <String>{
   'image.tile-shuffle.v1',
+  'image.tile-transpose.v1',
   'image.strip-reverse.v1',
   'crypto.md5.v1',
   'crypto.aes-ecb.v1',

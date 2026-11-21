@@ -7,9 +7,29 @@ class SourceImageProcessing {
   final Map<String, int> seedMasks;
   final int? rows;
   final bool skipGif;
-  SourceImageProcessing._(this.seedMasks, {this.rows, this.skipGif = false});
+  final ({int grid, int alignment})? transpose;
+  SourceImageProcessing._(
+    this.seedMasks, {
+    this.rows,
+    this.skipGif = false,
+    this.transpose,
+  });
 
   factory SourceImageProcessing.fromJson(Map<String, dynamic> value) {
+    if (value['type'] == 'tile-transpose-v1') {
+      final grid = value['grid'], alignment = value['alignment'];
+      if (grid is! int ||
+          grid < 1 ||
+          grid > 16 ||
+          alignment is! int ||
+          alignment < 1) {
+        throw StateError('图片处理参数无效');
+      }
+      return SourceImageProcessing._(
+        const {},
+        transpose: (grid: grid, alignment: alignment),
+      );
+    }
     if (value['type'] == 'strip-reverse-v1') {
       final rows = value['rows'];
       if (rows is! int || rows < 1 || rows > 256 || value['skipGif'] is! bool) {
@@ -41,16 +61,25 @@ class SourceImageProcessing {
     return SourceImageProcessing._(Map.unmodifiable(masks));
   }
 
-  Map<String, dynamic> toJson() => rows != null
-      ? {'type': 'strip-reverse-v1', 'rows': rows, 'skipGif': skipGif}
-      : {
-          'type': 'tile-shuffle-v1',
-          'algorithm': 3,
-          'seedMasks': {
-            for (final key in seedMasks.keys.toList()..sort())
-              key: seedMasks[key],
-          },
-        };
+  Map<String, dynamic> toJson() {
+    if (transpose case final t?) {
+      return {
+        'type': 'tile-transpose-v1',
+        'grid': t.grid,
+        'alignment': t.alignment,
+      };
+    }
+    if (rows != null) {
+      return {'type': 'strip-reverse-v1', 'rows': rows, 'skipGif': skipGif};
+    }
+    return {
+      'type': 'tile-shuffle-v1',
+      'algorithm': 3,
+      'seedMasks': {
+        for (final key in seedMasks.keys.toList()..sort()) key: seedMasks[key],
+      },
+    };
+  }
 
   String cacheKey(String url) =>
       md5.convert(utf8.encode('$url|${jsonEncode(toJson())}')).toString();

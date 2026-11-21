@@ -64,24 +64,38 @@ Uint8List restoreSourceImage(
     }
     return Uint8List.fromList(img.encodePng(output, level: 1));
   }
-  final h = {for (final e in headers.entries) e.key.toLowerCase(): e.value};
-  final grid = RegExp(r'^(\d+)x(\d+)$').firstMatch(h['x-scramble-grid'] ?? '');
-  final seedText = h['x-scramble-seed'] ?? '';
-  final seed = int.tryParse(seedText);
-  if (h['x-scramble-algo'] != '3' ||
-      grid == null ||
-      !RegExp(r'^\d+$').hasMatch(seedText) ||
-      seed == null ||
-      seed > 0xffffffff) {
-    throw StateError('图片还原响应协议已变化，请更新来源');
+  final int cols, rows, alignment;
+  final List<int> order;
+  if (spec.transpose case final t?) {
+    cols = rows = t.grid;
+    alignment = t.alignment;
+    order = List.generate(cols * rows, (i) => (i % cols) * rows + i ~/ cols);
+  } else {
+    final h = {for (final e in headers.entries) e.key.toLowerCase(): e.value};
+    final grid = RegExp(r'^(\d+)x(\d+)$')
+        .firstMatch(h['x-scramble-grid'] ?? '');
+    final seedText = h['x-scramble-seed'] ?? '';
+    final seed = int.tryParse(seedText);
+    if (h['x-scramble-algo'] != '3' ||
+        grid == null ||
+        !RegExp(r'^\d+$').hasMatch(seedText) ||
+        seed == null ||
+        seed > 0xffffffff) {
+      throw StateError('图片还原响应协议已变化，请更新来源');
+    }
+    cols = int.parse(grid[1]!);
+    rows = int.parse(grid[2]!);
+    if (cols < 1 || rows < 1 || cols * rows > 256) throw StateError('图片还原网格无效');
+    alignment = 1;
+    order = sourceTileOrder(
+      seed ^ (spec.seedMasks[h['x-scramble-hash']] ?? 0),
+      cols * rows,
+    );
   }
-  final cols = int.parse(grid[1]!), rows = int.parse(grid[2]!);
-  if (cols < 1 || rows < 1 || cols * rows > 256) throw StateError('图片还原网格无效');
   final decoder = img.findDecoderForData(bytes);
   final info = decoder?.startDecode(bytes);
   if (info == null ||
-      info.width < cols ||
-      info.height < rows ||
+      (spec.transpose == null && (info.width < cols || info.height < rows)) ||
       info.width * info.height > sourceImageMaxPixels ||
       info.numFrames > 1) {
     throw StateError('图片格式、尺寸或动画不在还原范围内');
@@ -89,10 +103,13 @@ Uint8List restoreSourceImage(
   final input = decoder!.decodeFrame(0);
   if (input == null) throw StateError('图片无法解码');
   final output = img.Image.from(input, noAnimation: true);
-  final tileWidth = input.width ~/ cols, tileHeight = input.height ~/ rows;
-  final mask = spec.seedMasks[h['x-scramble-hash']] ?? 0;
-  final order = sourceTileOrder(seed ^ mask, cols * rows);
-  for (var from = 0; from < order.length; from++) {
+  final tileWidth = input.width ~/ cols ~/ alignment * alignment;
+  final tileHeight = input.height ~/ rows ~/ alignment * alignment;
+  for (
+    var from = 0;
+    tileWidth > 0 && tileHeight > 0 && from < order.length;
+    from++
+  ) {
     final to = order[from];
     img.compositeImage(
       output,
