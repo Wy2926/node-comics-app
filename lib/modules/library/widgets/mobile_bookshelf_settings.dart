@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -40,6 +41,7 @@ class MobileBookshelfSettings extends ConsumerWidget {
       subtitle: l10n.bookshelf_settings_live,
       heightFactor: .9,
       child: DefaultTabController(
+        animationDuration: NodeLaneMotion.time(context),
         length: 3,
         child: Column(
           children: [

@@ -170,8 +170,8 @@ void main() {
         await pumpActivity(tester);
         expect(find.textContaining('搜索失败'), findsNothing);
         expect(find.textContaining('正在搜索'), findsNothing);
-        await tester.tap(find.byTooltip('关闭'));
-        await pumpActivity(tester);
+        await tester.tap(find.byTooltip('返回'));
+        await tester.pumpAndSettle();
         expect(find.text('Website 3'), findsOneWidget);
         expect(find.text('Website 2'), findsNothing);
         expect(find.text('Website 4'), findsNothing);

@@ -10,7 +10,7 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get source_more_filters => 'その他の条件';
+  String get feedback_submit_source => 'リクエストを送信';
 
   @override
   String get browser_clip_here => 'ここにしおりを挟む';

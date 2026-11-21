@@ -35,6 +35,7 @@ class MobileBrowserHeader extends StatelessWidget {
     required this.onClose,
     required this.menu,
     this.protection,
+    this.toolbar,
     this.onMatch,
     this.openTabs,
     this.onReload,
@@ -51,6 +52,7 @@ class MobileBrowserHeader extends StatelessWidget {
   final Future<void> Function(BrowserSearchEngine)? onEngine;
   final bool loading;
   final Widget menu;
+  final Widget? toolbar;
   final ValueChanged<BrowserMatch>? onMatch;
   final Iterable<Map<String, dynamic>>? openTabs;
   final ({String name, VoidCallback open})? protection;
@@ -114,6 +116,11 @@ class MobileBrowserHeader extends StatelessWidget {
                       child: menu,
                     ),
                   ),
+                  if (toolbar != null)
+                    SizedBox(
+                      width: NodeLaneTokens.browserInlineActionsWidth,
+                      child: toolbar,
+                    ),
                 ],
               ],
             ),
@@ -134,93 +141,95 @@ class MobileBrowserToolbar extends StatelessWidget {
     this.showTranslation = false,
     this.onDisplayChanged,
     this.onControls,
+    this.inline = false,
   });
   final int tabCount;
   final bool showTranslation;
+  final bool inline;
   final VoidCallback onTabs, onNew;
   final VoidCallback? onBack, onControls;
   final ValueChanged<bool>? onDisplayChanged;
   @override
-  Widget build(BuildContext context) =>
-      NodeLaneNoticeAvoidance(child: _buildToolbar(context));
-
-  Widget _buildToolbar(BuildContext context) {
+  Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: t.surface,
-        border: Border(top: BorderSide(color: t.line, width: .5)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: NodeLaneTokens.browserToolbarHeight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: NodeLaneTokens.space16,
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final narrow = constraints.maxWidth < 328;
-                return Row(
-                  children: [
-                    IconButton(
-                      tooltip: context.l10n.browser_back,
-                      onPressed: onBack,
-                      style: _barIconStyle(t.ink),
-                      icon: Icon(icons.back),
-                    ),
-                    SizedBox(
-                      width: narrow
-                          ? NodeLaneTokens.space8
-                          : NodeLaneTokens.space24,
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: NodeLaneTokens.browserDisplayWidth,
+    final controls = SizedBox(
+      height: inline
+          ? NodeLaneTokens.browserAddressHeight
+          : NodeLaneTokens.browserToolbarHeight,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space16),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final narrow = constraints.maxWidth < 328;
+            return Row(
+              children: [
+                IconButton(
+                  tooltip: context.l10n.browser_back,
+                  onPressed: onBack,
+                  style: _barIconStyle(t.ink),
+                  icon: Icon(icons.back),
+                ),
+                SizedBox(
+                  width: narrow
+                      ? NodeLaneTokens.space8
+                      : NodeLaneTokens.space24,
+                ),
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: NodeLaneTokens.browserDisplayWidth,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TranslationDisplaySwitch(
+                              translated: showTranslation,
+                              onChanged: onDisplayChanged,
+                            ),
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TranslationDisplaySwitch(
-                                  translated: showTranslation,
-                                  onChanged: onDisplayChanged,
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: context.l10n.browser_translation,
-                                onPressed: onControls,
-                                style: _barIconStyle(t.ink),
-                                icon: Icon(
-                                  icons.adjustments,
-                                  size: NodeLaneTokens.smallIconSize,
-                                ),
-                              ),
-                            ],
+                          IconButton(
+                            tooltip: context.l10n.browser_translation,
+                            onPressed: onControls,
+                            style: _barIconStyle(t.ink),
+                            icon: Icon(
+                              icons.adjustments,
+                              size: NodeLaneTokens.smallIconSize,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                    IconButton(
-                      tooltip: context.l10n.browser_new_tab_action,
-                      onPressed: onNew,
-                      style: _barIconStyle(t.ink),
-                      icon: Icon(icons.add, size: NodeLaneTokens.iconSize),
-                    ),
-                    SizedBox(
-                      width: narrow
-                          ? NodeLaneTokens.space8
-                          : NodeLaneTokens.space20,
-                    ),
-                    MobileBrowserTabsButton(count: tabCount, onPressed: onTabs),
-                  ],
-                );
-              },
-            ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: context.l10n.browser_new_tab_action,
+                  onPressed: onNew,
+                  style: _barIconStyle(t.ink),
+                  icon: Icon(icons.add, size: NodeLaneTokens.iconSize),
+                ),
+                SizedBox(
+                  width: narrow
+                      ? NodeLaneTokens.space8
+                      : NodeLaneTokens.space20,
+                ),
+                MobileBrowserTabsButton(count: tabCount, onPressed: onTabs),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+    if (inline) return controls;
+    return NodeLaneNoticeAvoidance(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: t.surface,
+          border: Border(
+            top: BorderSide(color: t.line, width: NodeLaneTokens.glassStroke),
           ),
         ),
+        child: SafeArea(top: false, child: controls),
       ),
     );
   }

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/webview/browser_url.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -125,8 +125,8 @@ class _SearchSpinner extends StatelessWidget {
 }
 
 /// Opened explicitly, so unavailable websites never occupy the results feed.
-class SearchActivitySheet extends StatelessWidget {
-  const SearchActivitySheet({
+class SearchActivityPage extends StatelessWidget {
+  const SearchActivityPage({
     super.key,
     required this.query,
     required this.sources,
@@ -139,11 +139,9 @@ class SearchActivitySheet extends StatelessWidget {
   final ValueChanged<Source> onOpen;
 
   @override
-  Widget build(BuildContext context) => NodeLaneCatalogSheet(
+  Widget build(BuildContext context) => MobileBrowsePage.form(
     title: context.l10n.search_details,
-    subtitle: context.l10n.search_query_websites(query, sources.length),
-    heightFactor: NodeLaneTokens.readerSheetFraction,
-    child: ValueListenableBuilder(
+    body: ValueListenableBuilder(
       valueListenable: activity,
       builder: (context, values, _) => ListView.builder(
         padding: NodeLaneTokens.pagePadding,
@@ -157,7 +155,7 @@ class SearchActivitySheet extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
               child: Text(
-                context.l10n.search_completed_count(completed, sources.length),
+                '${context.l10n.search_query_websites(query, sources.length)}\n${context.l10n.search_completed_count(completed, sources.length)}',
                 style: t.readerSecondary,
               ),
             );

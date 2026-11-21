@@ -63,7 +63,7 @@ void main() {
                       onChanged: (value) => setState(() => translated = value),
                     ),
                     Expanded(
-                      child: SourceSearchScopeSheet(
+                      child: SourceSearchScopePage(
                         sources: [
                           Source(id: 1, name: 'Example', lang: 'en'),
                           Source(id: 2, name: 'Second', lang: 'en'),

@@ -22,7 +22,7 @@ import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/services/get_popular.dart';
 import 'package:mangayomi/services/get_latest_updates.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -196,9 +196,9 @@ void main() {
             body: Center(
               child: TextButton(
                 onPressed: () async {
-                  applied = await showNodeLaneCatalogSheet<List<dynamic>>(
+                  applied = await pushBrowsePage<List<dynamic>>(
                     context,
-                    MobileSourceFilterSheet(
+                    MobileSourceFilterPage(
                       filters: initial,
                       defaults: () => [
                         TextFilter(
@@ -228,7 +228,7 @@ void main() {
         ((initial[1] as GroupFilter).state[0] as CheckBoxFilter).state,
         false,
       );
-      await tester.tap(find.byTooltip('Close'));
+      await tester.pageBack();
       await tester.pumpAndSettle();
       expect(applied, isNull);
       await tester.tap(find.text('Open filters'));
@@ -457,7 +457,7 @@ void main() {
                       throw StateError('Page two failed');
                     }
                     return MPages(
-                      list: args.page == 1 ? [_book('Popular')] : [],
+                      list: args.page == 1 ? [_book('Retained title')] : [],
                       hasNextPage: true,
                     );
                   }),
@@ -483,7 +483,7 @@ void main() {
           );
           await tester.pumpAndSettle();
           expect(find.text('Old late result'), findsNothing);
-          expect(find.text('Popular'), findsWidgets);
+          expect(find.text('Retained title'), findsOneWidget);
           await tester.tap(find.widgetWithText(FilledButton, 'Load More'));
           await tester.pumpAndSettle();
           expect(
@@ -492,7 +492,7 @@ void main() {
           );
           expect(find.text('暂时无法加载'), findsNothing);
           expect(find.textContaining('Page two failed'), findsNothing);
-          expect(find.byType(MangaHomeImageCardListTile), findsOneWidget);
+          expect(find.text('Retained title'), findsOneWidget);
           await tester.tap(find.text('Retry'));
           await tester.pumpAndSettle();
           expect(calls, [
@@ -503,7 +503,7 @@ void main() {
             'popular:2',
           ]);
           expect(find.widgetWithText(FilledButton, 'Load More'), findsNothing);
-          expect(find.byType(MangaHomeImageCardListTile), findsOneWidget);
+          expect(find.text('Retained title'), findsOneWidget);
           expect(tester.takeException(), isNull);
           await tester.runAsync(() => database.mangas.count());
           await tester.pump();

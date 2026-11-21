@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -192,14 +193,6 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     if (!_busy && _step != _firstStep) _back();
     return true;
   }
-
-  /// How long a step change takes, or nothing at all when the platform has
-  /// been asked to keep still.
-  /// A single frame rather than [Duration.zero], because the implicit
-  /// animations assert on a zero-length controller.
-  Duration get _motion => MediaQuery.disableAnimationsOf(context)
-      ? const Duration(milliseconds: 1)
-      : const Duration(milliseconds: 260);
 
   bool get _urlLooksValid {
     final text = _controller.text.trim();
@@ -561,32 +554,39 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         onBack: first ? null : _back,
         onNext: first ? _next : null,
         error: _actionError,
-        child: first
-            ? MobileOnboardingLibraries(
-                selected: _libraries,
-                busy: _busy,
-                onToggle: _toggleLibrary,
-                onRestore: _restore,
-              )
-            : MobileOnboardingSources(
-                libraries: _chosen,
-                repoType: _repoType,
-                onRepoType: (type) => setState(() => _repoType = type),
-                urlController: _controller,
-                onUrlChanged: () => setState(() => _error = null),
-                canAdd: _urlLooksValid,
-                onAdd: _addRepo,
-                busy: _busy,
-                repoError: _error,
-                addedName: _added == null
-                    ? null
-                    : _added!.name ?? _added!.jsonUrl ?? '',
-                onBrowse: () => _finish(
-                  browseTarget: BrowseTab(_chosen.first, BrowseTabKind.sources),
+        child: NodeLaneContentMotion(
+          value: _step,
+          reverse: !_forward,
+          child: first
+              ? MobileOnboardingLibraries(
+                  selected: _libraries,
+                  busy: _busy,
+                  onToggle: _toggleLibrary,
+                  onRestore: _restore,
+                )
+              : MobileOnboardingSources(
+                  libraries: _chosen,
+                  repoType: _repoType,
+                  onRepoType: (type) => setState(() => _repoType = type),
+                  urlController: _controller,
+                  onUrlChanged: () => setState(() => _error = null),
+                  canAdd: _urlLooksValid,
+                  onAdd: _addRepo,
+                  busy: _busy,
+                  repoError: _error,
+                  addedName: _added == null
+                      ? null
+                      : _added!.name ?? _added!.jsonUrl ?? '',
+                  onBrowse: () => _finish(
+                    browseTarget: BrowseTab(
+                      _chosen.first,
+                      BrowseTabKind.sources,
+                    ),
+                  ),
+                  onAddFolder: _addLocalFolder,
+                  folderStatus: _mobileFolderStatus(l10n),
                 ),
-                onAddFolder: _addLocalFolder,
-                folderStatus: _mobileFolderStatus(l10n),
-              ),
+        ),
       );
     }
 
@@ -641,7 +641,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
               OnboardingStepDots(
                 steps: _visibleSteps.length,
                 current: _visibleSteps.indexOf(_step),
-                duration: _motion,
+                duration: NodeLaneMotion.time(context),
               ),
               const SizedBox(height: 16),
               // Only the words and the controls change between steps. The mark
@@ -649,31 +649,11 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
               // rewritten rather than three screens flipped through. The height
               // eases as well, or the buttons below would jump between steps
               // that say more and steps that say less.
-              AnimatedSize(
-                duration: _motion,
-                curve: Curves.easeOutCubic,
-                alignment: Alignment.topCenter,
-                child: AnimatedSwitcher(
-                  duration: _motion,
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeIn,
-                  transitionBuilder: (child, animation) {
-                    // Forward arrives from below and leaves upward; back does
-                    // the reverse, so the movement matches the direction of
-                    // travel instead of always looking like a step forward.
-                    final entering = child.key == ValueKey(_step);
-                    final from = _forward ? 0.05 : -0.05;
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: Offset(0, entering ? from : -from),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
+              NodeLaneMotion.resize(
+                context,
+                NodeLaneContentMotion(
+                  value: _step,
+                  reverse: !_forward,
                   child: Column(
                     key: ValueKey(_step),
                     crossAxisAlignment: CrossAxisAlignment.stretch,

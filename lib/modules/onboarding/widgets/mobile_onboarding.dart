@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -36,6 +37,35 @@ class MobileOnboardingFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n, t = NodeLaneTokens.of(context);
     final welcome = step == 1;
+    final heading = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (welcome) ...[
+          const Center(child: NodeLaneBrandMark()),
+          const SizedBox(height: NodeLaneTokens.space16),
+          Text(
+            l.onboarding_welcome,
+            textAlign: TextAlign.center,
+            style: t.readerSecondary,
+          ),
+          const SizedBox(height: NodeLaneTokens.space8),
+        ],
+        Semantics(
+          header: true,
+          child: Text(
+            title,
+            textAlign: welcome ? TextAlign.center : TextAlign.start,
+            style: t.detailTitle,
+          ),
+        ),
+        const SizedBox(height: NodeLaneTokens.space8),
+        Text(
+          description,
+          textAlign: welcome ? TextAlign.center : TextAlign.start,
+          style: t.readerSecondary,
+        ),
+      ],
+    );
     return NodeLaneSurface(
       child: Scaffold(
         appBar: nodeLaneAppBar(
@@ -48,13 +78,52 @@ class MobileOnboardingFrame extends StatelessWidget {
         ),
         body: SafeArea(
           top: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  key: PageStorageKey('mobile-onboarding-$step'),
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
+          child: NodeLanePaneLayout(
+            paneWidth: NodeLaneTokens.tabletOverviewWidth,
+            pane: (_) => Center(
+              child: SingleChildScrollView(
+                padding: NodeLaneTokens.pagePadding,
+                child: heading,
+              ),
+            ),
+            body: (_, split) => Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    key: PageStorageKey('mobile-onboarding-$step'),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.fromLTRB(
+                      NodeLaneTokens.gutter,
+                      NodeLaneTokens.space8,
+                      NodeLaneTokens.gutter,
+                      NodeLaneTokens.space8,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!split) ...[
+                          heading,
+                          const SizedBox(height: NodeLaneTokens.space24),
+                        ],
+                        child,
+                        if (error != null) ...[
+                          const SizedBox(height: NodeLaneTokens.space12),
+                          Semantics(
+                            liveRegion: true,
+                            child: Text(
+                              error!,
+                              style: t.readerSecondary.copyWith(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
                   padding: const EdgeInsets.fromLTRB(
                     NodeLaneTokens.gutter,
                     NodeLaneTokens.space8,
@@ -64,77 +133,24 @@ class MobileOnboardingFrame extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (welcome) ...[
-                        const Center(child: NodeLaneBrandMark()),
-                        const SizedBox(height: NodeLaneTokens.space16),
-                        Text(
-                          l.onboarding_welcome,
-                          textAlign: TextAlign.center,
-                          style: t.readerSecondary,
-                        ),
-                        const SizedBox(height: NodeLaneTokens.space8),
-                      ],
-                      Semantics(
-                        header: true,
+                      FilledButton(
+                        onPressed: busy ? null : onNext ?? onLeave,
                         child: Text(
-                          title,
-                          textAlign: welcome
-                              ? TextAlign.center
-                              : TextAlign.start,
-                          style: t.detailTitle,
+                          onNext == null ? leaveLabel : l.onboarding_continue,
                         ),
                       ),
-                      const SizedBox(height: NodeLaneTokens.space8),
-                      Text(
-                        description,
-                        textAlign: welcome ? TextAlign.center : TextAlign.start,
-                        style: t.readerSecondary,
-                      ),
-                      const SizedBox(height: NodeLaneTokens.space24),
-                      child,
-                      if (error != null) ...[
-                        const SizedBox(height: NodeLaneTokens.space12),
-                        Semantics(
-                          liveRegion: true,
-                          child: Text(
-                            error!,
-                            style: t.readerSecondary.copyWith(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
+                      if (onNext != null) ...[
+                        const SizedBox(height: NodeLaneTokens.space4),
+                        TextButton(
+                          onPressed: busy ? null : onLeave,
+                          child: Text(leaveLabel),
                         ),
                       ],
                     ],
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space8,
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space8,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    FilledButton(
-                      onPressed: busy ? null : onNext ?? onLeave,
-                      child: Text(
-                        onNext == null ? leaveLabel : l.onboarding_continue,
-                      ),
-                    ),
-                    if (onNext != null) ...[
-                      const SizedBox(height: NodeLaneTokens.space4),
-                      TextButton(
-                        onPressed: busy ? null : onLeave,
-                        child: Text(leaveLabel),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -165,9 +181,6 @@ class MobileOnboardingLibraries extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n, t = NodeLaneTokens.of(context);
     final icons = NodeLaneIcons.of(context);
-    final testingColor = Theme.of(context).brightness == Brightness.dark
-        ? const Color(0xffffcb70)
-        : const Color(0xff956315);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -188,39 +201,10 @@ class MobileOnboardingLibraries extends StatelessWidget {
                 title: _label(context, type),
                 valueLeading: type == ItemType.manga
                     ? null
-                    : Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: testingColor.withValues(alpha: .1),
-                          border: Border.all(
-                            color: testingColor.withValues(alpha: .3),
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.science_outlined,
-                              size: 13,
-                              color: testingColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                context.l10n.onboarding_untested,
-                                style: t.caption.copyWith(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: testingColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                    : NodeLaneCoverBadge(
+                        l.onboarding_untested,
+                        icon: icons.info,
+                        tone: NodeLaneBadgeTone.soft,
                       ),
                 icon: switch (type) {
                   ItemType.manga => icons.manga,

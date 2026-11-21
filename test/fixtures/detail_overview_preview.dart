@@ -35,7 +35,6 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     theme: ThemeData(
-      platform: TargetPlatform.iOS,
       colorScheme: const ColorScheme.light(
         primary: NodeLaneTokens.defaultMobileAccent,
       ),
@@ -68,141 +67,121 @@ class _DetailOverviewPreviewState extends State<DetailOverviewPreview> {
               ),
               body: SafeArea(
                 top: false,
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: MobileDetailOverview(
-                        heading: MobileDetailHeading(
-                          cover: Container(
-                            width: NodeLaneTokens.detailCoverWidth,
-                            height: NodeLaneTokens.detailCoverHeight,
-                            decoration: BoxDecoration(
-                              color: colors.accentSoft,
-                              borderRadius: BorderRadius.circular(
-                                NodeLaneTokens.coverRadius,
-                              ),
-                            ),
-                            child: Icon(
-                              icons.manga,
-                              size: 48,
-                              color: colors.accent,
-                            ),
-                          ),
-                          title: Text('海岸来信', style: colors.detailTitle),
-                          metadata: Text(
-                            '作者：海野\n连载中\n示例来源 · 中文',
-                            style: colors.detailMetadata,
+                child: MobileDetailLayout(
+                  overview: MobileDetailOverview(
+                    heading: MobileDetailHeading(
+                      cover: Container(
+                        width: NodeLaneTokens.detailCoverWidth,
+                        height: NodeLaneTokens.detailCoverHeight,
+                        decoration: BoxDecoration(
+                          color: colors.accentSoft,
+                          borderRadius: BorderRadius.circular(
+                            NodeLaneTokens.coverRadius,
                           ),
                         ),
-                        actions: MobileDetailPrimaryActions(
-                          reading: FilledButton.icon(
-                            label: Text(widget.loading ? '加载章节…' : '继续阅读'),
-                            icon: Icon(
-                              icons.manga,
-                              size: NodeLaneTokens.iconSize,
-                            ),
-                            onPressed: widget.loading ? null : widget.onRead,
-                          ),
-                          library: NodeLaneSecondaryButton(
-                            icon: icons.check,
-                            onPressed: widget.onLibrary,
-                            child: const Text('已在书架'),
-                          ),
+                        child: Icon(
+                          icons.manga,
+                          size: 48,
+                          color: colors.accent,
                         ),
-                        synopsis: MobileDetailSynopsis(
-                          title: '简介',
-                          text: '一封寄错地址的信，让少女回到久别的海边小镇。在潮汐与旧日回忆之间，她逐渐找到了自己的答案。',
-                          expanded: _expanded,
-                          onChanged: (value) =>
-                              setState(() => _expanded = value),
-                          genres: [
-                            for (final genre in ['日常', '治愈', '成长'])
-                              DetailGenreChip(
-                                label: genre,
-                                mobile: true,
-                                libraryLabel: '书架搜索',
-                                sourceLabel: '来源搜索',
-                                onSelected: (_) {},
-                              ),
-                          ],
-                        ),
-                        more: NodeLaneDisclosure(
-                          title: '更多',
-                          compact: true,
-                          child: MobileDetailShortcuts(
-                            children: [
-                              NodeLaneToolbarAction(
-                                label: '网页',
-                                icon: icons.webLink,
-                                onPressed: () {},
-                              ),
-                              NodeLaneToolbarAction(
-                                label: '推荐',
-                                icon: icons.recommend,
-                                onPressed: () {},
-                              ),
-                              NodeLaneToolbarAction(
-                                label: '相关作品',
-                                icon: icons.related,
-                                onPressed: () {},
-                              ),
-                            ],
-                          ),
-                        ),
-                        chapters: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                widget.loading ? '章节' : '章节 · 12',
-                                style: colors.detailSectionTitle,
-                              ),
-                            ),
-                            NodeLaneIconButton(
-                              busy: widget.loading,
-                              icon: icons.filter,
-                              tooltip: '筛选',
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
+                      ),
+                      title: Text('海岸来信', style: colors.detailTitle),
+                      metadata: Text(
+                        '作者：海野\n连载中\n示例来源 · 中文',
+                        style: colors.detailMetadata,
                       ),
                     ),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: NodeLaneTokens.gutter,
+                    actions: MobileDetailPrimaryActions(
+                      reading: FilledButton.icon(
+                        label: Text(widget.loading ? '加载章节…' : '继续阅读'),
+                        icon: Icon(icons.manga, size: NodeLaneTokens.iconSize),
+                        onPressed: widget.loading ? null : widget.onRead,
                       ),
-                      sliver: SliverList.list(
+                      library: NodeLaneSecondaryButton(
+                        icon: icons.check,
+                        onPressed: widget.onLibrary,
+                        child: const Text('已在书架'),
+                      ),
+                    ),
+                    synopsis: MobileDetailSynopsis(
+                      title: '简介',
+                      text: '一封寄错地址的信，让少女回到久别的海边小镇。在潮汐与旧日回忆之间，她逐渐找到了自己的答案。',
+                      expanded: _expanded,
+                      onChanged: (value) => setState(() => _expanded = value),
+                      genres: [
+                        for (final genre in ['日常', '治愈', '成长'])
+                          DetailGenreChip(
+                            label: genre,
+                            mobile: true,
+                            libraryLabel: '书架搜索',
+                            sourceLabel: '来源搜索',
+                            onSelected: (_) {},
+                          ),
+                      ],
+                    ),
+                    more: NodeLaneDisclosure(
+                      title: '更多',
+                      compact: true,
+                      child: MobileDetailShortcuts(
                         children: [
-                          if (widget.loading)
-                            const MobileChapterListLoading()
-                          else
-                            for (final title in [
-                              '第12话  海风的回信',
-                              '第11话  潮汐之间',
-                              '第10话  夏末的灯塔',
-                            ])
-                              MobileChapterTile(
-                                title: title,
-                                metadata: '10月28日 · 海岸汉化组',
-                                read: false,
-                                bookmarked: false,
-                                selecting: false,
-                                selected: false,
-                                onTap: () {},
-                                onLongPress: () {},
-                                trailing: SizedBox(
-                                  width: 44,
-                                  height: 44,
-                                  child: Icon(
-                                    icons.download,
-                                    color: colors.accent,
-                                  ),
-                                ),
-                              ),
+                          NodeLaneToolbarAction(
+                            label: '网页',
+                            icon: icons.webLink,
+                            onPressed: () {},
+                          ),
+                          NodeLaneToolbarAction(
+                            label: '推荐',
+                            icon: icons.recommend,
+                            onPressed: () {},
+                          ),
+                          NodeLaneToolbarAction(
+                            label: '相关作品',
+                            icon: icons.related,
+                            onPressed: () {},
+                          ),
                         ],
                       ),
                     ),
-                  ],
+                  ),
+                  chapterHeading: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.loading ? '章节' : '章节 · 12',
+                          style: colors.detailSectionTitle,
+                        ),
+                      ),
+                      NodeLaneIconButton(
+                        busy: widget.loading,
+                        icon: icons.filter,
+                        tooltip: '筛选',
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                  empty: const MobileChapterListLoading(),
+                  chapterCount: widget.loading ? 0 : 12,
+                  chapterBuilder: (_, index) => MobileChapterTile(
+                    title: index < 3
+                        ? const [
+                            '第12话  海风的回信',
+                            '第11话  潮汐之间',
+                            '第10话  夏末的灯塔',
+                          ][index]
+                        : '第${12 - index}话',
+                    metadata: '10月28日 · 海岸汉化组',
+                    read: false,
+                    bookmarked: false,
+                    selecting: false,
+                    selected: false,
+                    onTap: () {},
+                    onLongPress: () {},
+                    trailing: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: Icon(icons.download, color: colors.accent),
+                    ),
+                  ),
                 ),
               ),
             ),

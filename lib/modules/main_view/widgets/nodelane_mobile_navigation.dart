@@ -1,10 +1,16 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:flutter/services.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'ios_native_tab_bar.dart';
 import 'mobile_navigation_destinations.dart';
@@ -19,6 +25,7 @@ class NodeLaneMobileNavigation extends StatefulWidget {
     required this.visible,
     required this.nativeIos,
     required this.onSelected,
+    required this.child,
     this.badges = const {},
     this.maintainSpace = false,
   });
@@ -28,6 +35,7 @@ class NodeLaneMobileNavigation extends StatefulWidget {
   final bool maintainSpace;
   final ValueChanged<String> onSelected;
   final Map<String, int> badges;
+  final Widget child;
 
   @override
   State<NodeLaneMobileNavigation> createState() =>
@@ -54,6 +62,46 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
     if (mobileLibraryRoutes.contains(widget.location)) {
       _libraryRoute = widget.location;
     }
+    final rail = !widget.nativeIos && context.isAndroidTablet;
+    final navigation = _navigation(context, rail);
+    final shell = FloatingNavigationScope(
+      enabled: !rail,
+      child: Scaffold(
+        backgroundColor: NodeLaneTokens.of(context).canvas,
+        extendBody: !rail,
+        body: Row(
+          children: [
+            if (rail) navigation,
+            Expanded(
+              child: SafeArea(
+                top: false,
+                left: false,
+                right: false,
+                bottom: rail,
+                child: widget.child,
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: rail
+            ? null
+            : NodeLaneNoticeAvoidance(child: navigation),
+      ),
+    );
+    if (widget.nativeIos) return shell;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemStatusBarContrastEnforced: false,
+        statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
+      child: shell,
+    );
+  }
+
+  Widget _navigation(BuildContext context, bool rail) {
     if (widget.routes.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -68,13 +116,21 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
     if (!widget.visible) {
       // Pushed pages cover the shell. Keep its layout stable while offstage so
       // retained library scroll positions are not clamped to a shorter extent.
+      if (rail) {
+        // Also keep the grid under the user's finger when a long press starts selection.
+        return const SafeArea(
+          top: false,
+          bottom: false,
+          child: SizedBox(width: NodeLaneTokens.navigationRailWidth),
+        );
+      }
       return SizedBox(height: widget.maintainSpace ? height : 0);
     }
     final l10n = context.l10n;
     final colors = NodeLaneTokens.of(context);
     final icons = NodeLaneIcons.of(context);
     final grouped = groupedMobileRoutes(widget.routes);
-    final visible = visibleMobileTabs(grouped);
+    final visible = rail ? grouped : visibleMobileTabs(grouped);
     final selected = selectedMobileTab(visible, widget.location);
     MobileTabItem item(String route) {
       final (
@@ -192,6 +248,7 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
       );
     }
     return NodeLaneFlutterTabBar(
+      rail: rail,
       items: items,
       selectedIndex: selected,
       onSelected: onSelected,
@@ -229,10 +286,12 @@ class NodeLaneFlutterTabBar extends StatelessWidget {
     required this.items,
     required this.selectedIndex,
     required this.onSelected,
+    this.rail = false,
   });
   final List<MobileTabItem> items;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final bool rail;
 
   static double barHeight(TextScaler scaler) =>
       (NodeLaneTokens.iconSize +
@@ -244,107 +303,130 @@ class NodeLaneFlutterTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    return SafeArea(
-      top: false,
-      maintainBottomViewPadding: true,
+    final height = barHeight(MediaQuery.textScalerOf(context));
+    final tabs = [
+      for (var index = 0; index < items.length; index++) _tab(context, index),
+    ];
+    final glass = NodeLaneGlassSurface(
+      elevated: true,
+      borderRadius: BorderRadius.circular(NodeLaneTokens.navigationRadius),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: NodeLaneTokens.space16,
-          vertical: NodeLaneTokens.space8,
-        ),
-        child: NodeLaneGlassSurface(
-          elevated: true,
-          borderRadius: BorderRadius.circular(NodeLaneTokens.navigationRadius),
-          child: SizedBox(
-            height: barHeight(MediaQuery.textScalerOf(context)),
-            child: Padding(
-              padding: const EdgeInsets.all(NodeLaneTokens.navigationInset),
-              child: Row(
-                children: [
-                  for (var index = 0; index < items.length; index++)
-                    Expanded(
-                      child: Semantics(
-                        selected: index == selectedIndex,
-                        button: true,
-                        label: items[index].label,
-                        value: items[index].badge > 0
-                            ? '${items[index].badge}'
-                            : null,
-                        child: Tooltip(
-                          message: items[index].label,
-                          excludeFromSemantics: true,
-                          child: AnimatedContainer(
-                            duration: MediaQuery.disableAnimationsOf(context)
-                                ? Duration.zero
-                                : NodeLaneTokens.disclosureDuration,
-                            curve: Curves.easeOutCubic,
-                            decoration: ShapeDecoration(
-                              color: index == selectedIndex
-                                  ? colors.accentSoft
-                                  : Colors.transparent,
-                              shape: const StadiumBorder(),
-                            ),
-                            child: InkWell(
-                              customBorder: const StadiumBorder(),
-                              onTap: () => onSelected(index),
-                              child: ExcludeSemantics(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Badge(
-                                      isLabelVisible: items[index].badge > 0,
-                                      backgroundColor: colors.accent,
-                                      textColor: colors.onAccent,
-                                      textStyle: colors.caption,
-                                      label: Text(
-                                        items[index].badge > 99
-                                            ? '99+'
-                                            : '${items[index].badge}',
-                                      ),
-                                      child: Icon(
-                                        index == selectedIndex
-                                            ? items[index].selectedIcon
-                                            : items[index].icon,
-                                        size: NodeLaneTokens.iconSize,
-                                        color: index == selectedIndex
-                                            ? colors.accent
-                                            : colors.ink,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: NodeLaneTokens.space4,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: NodeLaneTokens.space4,
-                                      ),
-                                      child: Text(
-                                        items[index].label,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: colors.caption.copyWith(
-                                          fontSize: NodeLaneTokens
-                                              .navigationLabelSize,
-                                          height: NodeLaneTokens
-                                              .navigationLabelHeight,
-                                          fontWeight: index == selectedIndex
-                                              ? FontWeight.w600
-                                              : FontWeight.w500,
-                                          color: index == selectedIndex
-                                              ? colors.accent
-                                              : colors.ink,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+        padding: const EdgeInsets.all(NodeLaneTokens.navigationInset),
+        child: rail
+            ? SingleChildScrollView(
+                primary: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: NodeLaneTokens.space12,
+                      ),
+                      child: Center(
+                        child: NodeLaneBrandMark(
+                          size: NodeLaneTokens.brandCompactMarkSize,
                         ),
                       ),
                     ),
+                    for (final tab in tabs)
+                      ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: height),
+                        child: tab,
+                      ),
+                  ],
+                ),
+              )
+            : SizedBox(
+                height: height - NodeLaneTokens.navigationInset * 2,
+                child: Row(
+                  children: [for (final tab in tabs) Expanded(child: tab)],
+                ),
+              ),
+      ),
+    );
+    return SafeArea(
+      top: rail,
+      maintainBottomViewPadding: true,
+      child: SizedBox(
+        width: rail ? NodeLaneTokens.navigationRailWidth : null,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: rail ? NodeLaneTokens.space8 : NodeLaneTokens.space16,
+            vertical: rail ? NodeLaneTokens.space16 : NodeLaneTokens.space8,
+          ),
+          child: rail ? Center(child: glass) : glass,
+        ),
+      ),
+    );
+  }
+
+  Widget _tab(BuildContext context, int index) {
+    final colors = NodeLaneTokens.of(context);
+    return Semantics(
+      selected: index == selectedIndex,
+      button: true,
+      label: items[index].label,
+      value: items[index].badge > 0 ? '${items[index].badge}' : null,
+      child: Tooltip(
+        message: items[index].label,
+        excludeFromSemantics: true,
+        child: AnimatedContainer(
+          duration: NodeLaneMotion.time(context),
+          curve: NodeLaneMotion.curve,
+          decoration: ShapeDecoration(
+            color: index == selectedIndex
+                ? colors.accentSoft
+                : Colors.transparent,
+            shape: const StadiumBorder(),
+          ),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onTap: () => onSelected(index),
+            child: ExcludeSemantics(
+              child: Column(
+                mainAxisSize: rail ? MainAxisSize.min : MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Badge(
+                    isLabelVisible: items[index].badge > 0,
+                    backgroundColor: colors.accent,
+                    textColor: colors.onAccent,
+                    textStyle: colors.caption,
+                    label: Text(
+                      items[index].badge > 99 ? '99+' : '${items[index].badge}',
+                    ),
+                    child: Icon(
+                      index == selectedIndex
+                          ? items[index].selectedIcon
+                          : items[index].icon,
+                      size: NodeLaneTokens.iconSize,
+                      color: index == selectedIndex
+                          ? colors.accent
+                          : colors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: NodeLaneTokens.space4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NodeLaneTokens.space4,
+                    ),
+                    child: Text(
+                      items[index].label,
+                      maxLines: rail ? 2 : 1,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: colors.caption.copyWith(
+                        fontSize: NodeLaneTokens.navigationLabelSize,
+                        height: NodeLaneTokens.navigationLabelHeight,
+                        fontWeight: index == selectedIndex
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: index == selectedIndex
+                            ? colors.accent
+                            : colors.ink,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

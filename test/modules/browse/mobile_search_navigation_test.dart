@@ -15,6 +15,7 @@ import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/repositories/browser_reader_repository.dart';
+import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -22,15 +23,20 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
 import 'package:mangayomi/modules/browse/global_search/search_activity.dart';
 import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
-import 'package:mangayomi/modules/browse/widgets/source_directory_filters.dart';
+import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
+import 'package:mangayomi/modules/manga/detail/manga_detail_main.dart';
+import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
+import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/services/get_popular.dart';
+import 'package:mangayomi/services/get_source_baseurl.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
 import 'package:mangayomi/services/search.dart';
+import 'package:mangayomi/services/supports_latest.dart';
 import 'package:mangayomi/utils/headers.dart';
 
 const _cover =
@@ -150,6 +156,37 @@ void main() {
     },
   );
 
+  test(
+    'opening a source only dirties changed last-used records of its media',
+    () async {
+      final rows = [
+        for (var i = 0; i < 4; i++)
+          Source(
+            id: 900 + i,
+            itemType: i == 3 ? ItemType.novel : ItemType.anime,
+            lastUsed: i == 0 || i == 3,
+            updatedAt: 7,
+          ),
+      ];
+      await database.writeTxn(() => database.sources.putAll(rows));
+      await sourceRepository.markLastUsed(ItemType.anime, 901);
+      Source row(int i) => database.sources.getSync(900 + i)!;
+      expect(
+        [for (var i = 0; i < 4; i++) row(i).lastUsed],
+        [false, true, false, true],
+      );
+      expect([row(2).updatedAt, row(3).updatedAt], [7, 7]);
+      final timestamps = [row(0).updatedAt, row(1).updatedAt];
+      await sourceRepository.markLastUsed(ItemType.anime, 901);
+      expect([row(0).updatedAt, row(1).updatedAt], timestamps);
+      await sourceRepository.markLastUsed(ItemType.anime, null);
+      expect(row(1).lastUsed, isFalse);
+      await database.writeTxn(
+        () => database.sources.deleteAll([900, 901, 902, 903]),
+      );
+    },
+  );
+
   testWidgets('batch actions persist and release the shared selection mode', (
     tester,
   ) async {
@@ -203,7 +240,7 @@ void main() {
 
       await tap(find.text('第三方'));
       for (final action in ['设为常用', '取消常用', '卸载']) {
-        await tap(find.byTooltip('来源操作'));
+        await tap(find.text('管理'));
         await tap(find.text('批量管理'));
         await tap(find.text('全选'));
         if (action == '取消常用') await tap(find.text('更多'));
@@ -307,10 +344,10 @@ void main() {
         )!;
         await tester.tap(find.byTooltip(l10n.filter));
         await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(TextButton, l10n.source_format));
+        await tester.tap(find.widgetWithText(Tab, l10n.source_format));
         await tester.pumpAndSettle();
         final pageChoice = find.widgetWithText(
-          DirectoryFilterChoice,
+          FilterChip,
           l10n.source_format_page,
         );
         if (pageChoice.hitTestable().evaluate().isEmpty) {
@@ -333,7 +370,7 @@ void main() {
         expect(summary.hitTestable(), findsOneWidget);
         expect(
           find.byTooltip(l10n.feedback_source).hitTestable(),
-          findsOneWidget,
+          findsNothing,
         );
         await tester.drag(catalog, const Offset(0, 180));
         await tester.pumpAndSettle();
@@ -360,6 +397,204 @@ void main() {
         await database.sources.count();
         await tester.pumpWidget(const SizedBox());
         expect(tester.takeException(), isNull);
+      });
+    },
+  );
+
+  testWidgets(
+    'tablet opens site and book progressively, and back restores the filtered grid anchor',
+    (tester) async {
+      final reads = <String>[];
+      final container = ProviderContainer(
+        overrides: [
+          nodeLaneCatalogRepositoryProvider(ItemType.manga)
+              .overrideWithValue(repo),
+          nodeLaneCatalogLoadProvider(ItemType.manga)
+              .overrideWith((_) async {}),
+          fetchItemSourcesListProvider(
+            reFresh: false,
+            itemType: ItemType.manga,
+          ).overrideWith((_) async {}),
+          mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
+            (_) => Stream.value([
+              for (var i = 0; i < 64; i++)
+                Source.fromJson(source.toJson())
+                  ..id = 1000 + i
+                  ..name = 'Pane $i'
+                  ..lang = 'en',
+            ]),
+          ),
+          sourceBaseUrlProvider.overrideWith((_, _) => ''),
+          supportsLatestProvider.overrideWith((_, _) => true),
+          getPopularProvider.overrideWith((_, args) async {
+            final name = args.source.name!;
+            reads.add(name);
+            return MPages(
+              list: [MManga(name: 'Book $name', link: '/book')],
+            );
+          }),
+          getMangaDetailStreamProvider.overrideWith(
+            (_, _) => Stream.value(null),
+          ),
+          updateMangaDetailProvider.overrideWith((_, _) async {}),
+        ],
+      );
+      addTearDown(container.dispose);
+      final router = GoRouter(
+        initialLocation: '/browse',
+        routes: [
+          GoRoute(
+            path: '/browse',
+            builder: (_, _) => const MobileSourcesScreen(),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      tester.view.physicalSize = const Size(1180, 720);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              locale: const Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              theme: ThemeData(platform: TargetPlatform.android),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final directory = find.byKey(
+          const PageStorageKey('catalog-manga-false'),
+        );
+        final site = find.byType(MangaHomeScreen),
+            book = find.byType(MangaReaderDetail);
+        expect(site, findsNothing);
+        await tester.enterText(find.byType(TextField), 'Pane');
+        await tester.tap(find.widgetWithText(FilterChip, 'English'));
+        await tester.tap(find.byTooltip('Filter'));
+        await tester.pumpAndSettle();
+        await tester.drag(directory, const Offset(0, -820));
+        await tester.pumpAndSettle();
+        final card = find.byType(SourceWebsiteCard).hitTestable().first;
+        final name = tester.widget<SourceWebsiteCard>(card).source.name!;
+        final row = find.widgetWithText(SourceWebsiteCard, name);
+        final original = tester.getRect(row);
+        final width = tester.getSize(directory).width;
+        final scroll = tester.widget<CustomScrollView>(directory).controller!;
+        final offset = scroll.offset;
+        expect(offset, greaterThan(300));
+        await tester.tap(card);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 60));
+        final during = tester.getRect(site).left;
+        expect(
+          tester.getSize(directory).width,
+          width,
+          reason: 'the grid is clipped, not laid out on each tick',
+        );
+        await tester.pumpAndSettle();
+        expect(
+          during,
+          inExclusiveRange(tester.getSize(directory).width, width),
+        );
+        expect(
+          tester.getRect(directory).right,
+          closeTo(tester.getRect(site).left, 1),
+        );
+        expect(row.hitTestable(), findsOneWidget);
+        final cells = find.byType(SourceWebsiteCard, skipOffstage: false);
+        final beforePressure = cells.evaluate().length;
+        tester.binding.handleMemoryPressure();
+        await tester.pumpAndSettle();
+        expect(cells.evaluate().length, lessThan(beforePressure));
+        expect(row.hitTestable(), findsOneWidget);
+        final siteState = tester.state(site);
+        final draft = find.descendant(
+          of: site,
+          matching: find.byType(TextField),
+        );
+        await tester.enterText(draft, 'unfinished search');
+        await tester.tap(find.text('Book $name'));
+        // The Isar ID is resolved before the detail opens; its remote contents
+        // are independent of the pane navigation exercised here.
+        final deadline = DateTime.now().add(const Duration(seconds: 5));
+        while (book.evaluate().isEmpty && DateTime.now().isBefore(deadline)) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          await tester.pump();
+        }
+        expect(book, findsOneWidget);
+        Future<void> settleLayout() async {
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 250));
+          await tester.pump();
+        }
+
+        await settleLayout();
+        final bookId = tester.widget<MangaReaderDetail>(book).mangaId;
+        expect(database.mangas.getSync(bookId)?.name, 'Book $name');
+        expect(
+          tester.getRect(directory).right,
+          closeTo(tester.getRect(site).left, 1),
+        );
+        expect(
+          tester.getRect(site).right,
+          closeTo(tester.getRect(book).left, 1),
+        );
+        tester.view.physicalSize = const Size(900, 720);
+        await settleLayout();
+        expect(directory, findsNothing);
+        expect(
+          tester.getRect(site).right,
+          closeTo(tester.getRect(book).left, 1),
+        );
+        tester.view.physicalSize = const Size(540, 800);
+        await settleLayout();
+        expect(tester.getRect(book).width, 540);
+        expect(find.text('Book $name').hitTestable(), findsNothing);
+        expect(await router.routerDelegate.popRoute(), isTrue);
+        await tester.pumpAndSettle();
+        expect(book, findsNothing);
+        expect(tester.state(site), same(siteState));
+        expect(draft.hitTestable(), findsOneWidget);
+        expect(find.text('unfinished search'), findsOneWidget);
+        tester.view.physicalSize = const Size(1180, 720);
+        await tester.pumpAndSettle();
+        final other = tester
+            .widgetList<SourceWebsiteCard>(
+              find.byType(SourceWebsiteCard).hitTestable(),
+            )
+            .firstWhere((card) => card.source.name != name)
+            .source
+            .name!;
+        await tester.tap(find.widgetWithText(SourceWebsiteCard, other));
+        await tester.pumpAndSettle();
+        expect(find.text('Book $other'), findsOneWidget);
+        expect(reads, [name, other]);
+        await tester.tap(find.byTooltip('Back'));
+        await tester.pumpAndSettle();
+        expect(site, findsNothing);
+        expect(scroll.offset, closeTo(offset, 1));
+        expect(tester.getRect(row), original);
+        final summary = find.byType(PinnedHeaderSliver);
+        expect(
+          find.descendant(
+            of: summary,
+            matching: find.textContaining(' · Pane'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: summary, matching: find.text('English')),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await database.sources.count();
       });
     },
   );
@@ -598,7 +833,7 @@ void main() {
           if (entry == 'keyboard') {
             await tester.testTextInput.receiveAction(TextInputAction.search);
           } else if (entry == 'menu') {
-            await tester.tap(find.byTooltip('Source actions'));
+            await tester.tap(find.text('Manage'));
             await tester.pumpAndSettle();
             await tester.tap(find.text('Search titles'));
           } else {
@@ -620,7 +855,7 @@ void main() {
             await tester.pumpAndSettle();
             await tester.tap(
               find.descendant(
-                of: find.byType(SearchActivitySheet),
+                of: find.byType(SearchActivityPage),
                 matching: find.text('local'),
               ),
             );

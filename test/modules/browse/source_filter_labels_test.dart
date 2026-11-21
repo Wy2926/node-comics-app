@@ -5,7 +5,7 @@ import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
 import 'package:mangayomi/modules/manga/home/widget/source_filter_labels.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 
 void main() {
   test('known whole labels localize and unknown plugin text stays exact', () {
@@ -61,9 +61,9 @@ void main() {
                 builder: (context) => TextButton(
                   child: const Text('Open'),
                   onPressed: () async {
-                    applied = await showNodeLaneCatalogSheet<List<dynamic>>(
+                    applied = await pushBrowsePage<List<dynamic>>(
                       context,
-                      MobileSourceFilterSheet(
+                      MobileSourceFilterPage(
                         filters: filters,
                         defaults: () => filters,
                       ),
@@ -147,9 +147,9 @@ void main() {
             body: Builder(
               builder: (context) => TextButton(
                 onPressed: () async {
-                  applied = await showNodeLaneCatalogSheet<List<dynamic>>(
+                  applied = await pushBrowsePage<List<dynamic>>(
                     context,
-                    MobileSourceFilterSheet(
+                    MobileSourceFilterPage(
                       filters: original,
                       defaults: defaults,
                     ),
@@ -195,7 +195,7 @@ void main() {
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
       expect(applied, isNull);
-      expect(find.byType(MobileSourceFilterSheet), findsOneWidget);
+      expect(find.byType(MobileSourceFilterPage), findsOneWidget);
       await tester.tap(find.text('重置'));
       await tester.pumpAndSettle();
       expect(

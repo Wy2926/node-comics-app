@@ -1,16 +1,11 @@
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/widgets/floating_nav_bar.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:mangayomi/utils/platform_utils.dart';
-
-import 'nav_badges.dart';
-import 'nodelane_mobile_navigation.dart';
 
 class MainMobileBottomNavigation extends StatelessWidget {
   const MainMobileBottomNavigation({
@@ -26,7 +21,6 @@ class MainMobileBottomNavigation extends StatelessWidget {
     required this.useFloatingNav,
     this.shrink = 0,
     this.onWake,
-    this.mobileRoutes,
   });
 
   final bool isLongPressed;
@@ -41,7 +35,6 @@ class MainMobileBottomNavigation extends StatelessWidget {
   final bool useFloatingNav;
   final double shrink;
   final VoidCallback? onWake;
-  final List<String>? mobileRoutes;
 
   @override
   Widget build(BuildContext context) =>
@@ -53,20 +46,6 @@ class MainMobileBottomNavigation extends StatelessWidget {
   }
 
   Widget _buildNavigation(BuildContext context) {
-    if (isMobile && !isTv && mobileRoutes != null) {
-      return NavigationBadgeCounts(
-        routes: mobileRoutes!,
-        builder: (badges) => NodeLaneMobileNavigation(
-          routes: mobileRoutes!,
-          location: location,
-          visible: _getBottomNavigationHeight(isLongPressed, location) != 0,
-          maintainSpace: !isLongPressed,
-          nativeIos: Platform.isIOS,
-          badges: badges,
-          onSelected: _selectDestination,
-        ),
-      );
-    }
     if (useFloatingNav) {
       return SizedBox(
         width: context.width(1),
@@ -100,7 +79,7 @@ class MainMobileBottomNavigation extends StatelessWidget {
           ),
         ),
         child: NavigationBar(
-          animationDuration: const Duration(milliseconds: 500),
+          animationDuration: NodeLaneMotion.time(context),
           selectedIndex: currentIndex,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: buildNavigationWidgetsMobile(ref, dest, context),

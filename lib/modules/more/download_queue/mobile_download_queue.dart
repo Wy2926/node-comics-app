@@ -3,6 +3,7 @@ import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/models/download.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -117,114 +118,107 @@ class _MobileDownloadQueueState extends State<MobileDownloadQueue> {
         body: SafeArea(
           top: false,
           bottom: widget.entries.isEmpty,
-          child: widget.entries.isEmpty
-              ? LayoutBuilder(
-                  builder: (context, constraints) => SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                        minWidth: constraints.maxWidth,
+          child: NodeLaneFormColumn(
+            child: widget.entries.isEmpty
+                ? NodeLaneEmptyState(
+                    scrollable: true,
+                    icon: icons.downloadQueue,
+                    title: l10n.download_queue_empty,
+                    message: l10n.download_queue_empty_hint,
+                  )
+                : ReorderableListView.builder(
+                    key: const PageStorageKey('mobile-download-queue'),
+                    padding: NodeLaneTokens.pagePadding,
+                    buildDefaultDragHandles: false,
+                    header: Padding(
+                      padding: const EdgeInsets.only(
+                        top: NodeLaneTokens.space16,
+                        bottom: NodeLaneTokens.space16,
                       ),
-                      child: Center(
-                        child: NodeLaneEmptyState(
-                          icon: icons.downloadQueue,
-                          title: l10n.download_queue_empty,
-                          message: l10n.download_queue_empty_hint,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              : ReorderableListView.builder(
-                  key: const PageStorageKey('mobile-download-queue'),
-                  padding: NodeLaneTokens.pagePadding,
-                  buildDefaultDragHandles: false,
-                  header: Padding(
-                    padding: const EdgeInsets.only(
-                      top: NodeLaneTokens.space16,
-                      bottom: NodeLaneTokens.space16,
-                    ),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final count = Text(
-                          l10n.download_queue_count(widget.entries.length),
-                          style: t.body.copyWith(fontWeight: FontWeight.w600),
-                        );
-                        final hint = Text(
-                          l10n.download_queue_order_hint,
-                          style: t.secondary,
-                        );
-                        if (MediaQuery.textScalerOf(context).scale(16) > 20 ||
-                            constraints.maxWidth < 320) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final count = Text(
+                            l10n.download_queue_count(widget.entries.length),
+                            style: t.body.copyWith(fontWeight: FontWeight.w600),
+                          );
+                          final hint = Text(
+                            l10n.download_queue_order_hint,
+                            style: t.secondary,
+                          );
+                          if (MediaQuery.textScalerOf(context).scale(16) > 20 ||
+                              constraints.maxWidth < 320) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                count,
+                                const SizedBox(height: NodeLaneTokens.space4),
+                                hint,
+                              ],
+                            );
+                          }
+                          return Row(
                             children: [
-                              count,
-                              const SizedBox(height: NodeLaneTokens.space4),
-                              hint,
+                              Expanded(child: count),
+                              const SizedBox(width: NodeLaneTokens.space12),
+                              Expanded(
+                                child: Text(
+                                  l10n.download_queue_order_hint,
+                                  textAlign: TextAlign.end,
+                                  style: t.secondary,
+                                ),
+                              ),
                             ],
                           );
-                        }
-                        return Row(
-                          children: [
-                            Expanded(child: count),
-                            const SizedBox(width: NodeLaneTokens.space12),
-                            Expanded(
-                              child: Text(
-                                l10n.download_queue_order_hint,
-                                textAlign: TextAlign.end,
-                                style: t.secondary,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+                        },
+                      ),
                     ),
+                    itemCount: widget.entries.length,
+                    onReorderItem: (from, to) {
+                      if (!widget.isStarting) widget.onReorder(from, to);
+                    },
+                    itemBuilder: (context, index) {
+                      final entry = widget.entries[index];
+                      return Padding(
+                        key: ValueKey(entry.id),
+                        padding: const EdgeInsets.only(
+                          bottom: NodeLaneTokens.space12,
+                        ),
+                        child: _DownloadChapterCard(
+                          entry: entry,
+                          index: index,
+                          canReorder: !widget.isStarting,
+                          onActions: widget.isStarting || _actionsOpen
+                              ? null
+                              : () => _showActions(entry),
+                        ),
+                      );
+                    },
                   ),
-                  itemCount: widget.entries.length,
-                  onReorderItem: (from, to) {
-                    if (!widget.isStarting) widget.onReorder(from, to);
-                  },
-                  itemBuilder: (context, index) {
-                    final entry = widget.entries[index];
-                    return Padding(
-                      key: ValueKey(entry.id),
-                      padding: const EdgeInsets.only(
-                        bottom: NodeLaneTokens.space12,
-                      ),
-                      child: _DownloadChapterCard(
-                        entry: entry,
-                        index: index,
-                        canReorder: !widget.isStarting,
-                        onActions: widget.isStarting || _actionsOpen
-                            ? null
-                            : () => _showActions(entry),
-                      ),
-                    );
-                  },
-                ),
+          ),
         ),
         bottomNavigationBar: widget.entries.isEmpty
             ? null
-            : SafeArea(
-                top: false,
-                minimum: const EdgeInsets.fromLTRB(
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space8,
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space12,
-                ),
-                child: FilledButton.icon(
-                  onPressed: widget.isStarting ? null : widget.onStart,
-                  icon: Icon(
-                    retry ? icons.refresh : icons.downloadQueue,
-                    size: NodeLaneTokens.smallIconSize,
+            : NodeLaneFormColumn(
+                child: SafeArea(
+                  top: false,
+                  minimum: const EdgeInsets.fromLTRB(
+                    NodeLaneTokens.gutter,
+                    NodeLaneTokens.space8,
+                    NodeLaneTokens.gutter,
+                    NodeLaneTokens.space12,
                   ),
-                  label: Text(
-                    retry
-                        ? l10n.download_queue_retry
-                        : l10n.download_queue_start,
-                    textAlign: TextAlign.center,
+                  child: FilledButton.icon(
+                    onPressed: widget.isStarting ? null : widget.onStart,
+                    icon: Icon(
+                      retry ? icons.refresh : icons.downloadQueue,
+                      size: NodeLaneTokens.smallIconSize,
+                    ),
+                    label: Text(
+                      retry
+                          ? l10n.download_queue_retry
+                          : l10n.download_queue_start,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ),

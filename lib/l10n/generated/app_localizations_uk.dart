@@ -10,7 +10,7 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
-  String get source_more_filters => 'Інші фільтри';
+  String get feedback_submit_source => 'Надіслати запит';
 
   @override
   String get browser_clip_here => 'Додати закладку тут';

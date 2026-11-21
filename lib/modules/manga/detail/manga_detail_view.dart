@@ -7,9 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/library/library_screen.dart';
 import 'package:mangayomi/modules/library/providers/library_filter_provider.dart';
-import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/modules/manga/detail/chapter_bulk_actions.dart';
 import 'package:mangayomi/modules/manga/detail/detail_overflow_actions.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
@@ -19,7 +17,6 @@ import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_
 import 'package:mangayomi/modules/manga/detail/widgets/detail_app_bar.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/detail_banner.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/manga_info_header.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/split_chapters_dialog.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_list_tile_widget.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_sort_list_tile_widget.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/mobile_chapter_settings.dart';
@@ -209,9 +206,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         absorbing: _chapterActionBusy,
         child: Scaffold(
           appBar: DetailAppBar(
-            toolbarHeight: widget.itemType == ItemType.manga
-                ? nodeLaneAppBarHeight(context)
-                : kToolbarHeight,
+            toolbarHeight: nodeLaneAppBarHeight(context),
             manga: widget.manga!,
             itemType: widget.itemType,
             isLocalArchive: isLocalArchive,
@@ -224,72 +219,52 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
           body: SafeArea(
             top: false,
             bottom: true,
-            child: CustomScrollView(
+            child: MobileDetailLayout(
               controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: MangaInfoHeader(
-                    loading: loading,
-                    manga: widget.manga!,
-                    isLocalArchive: isLocalArchive,
-                    titleDescription: widget.titleDescription!,
-                    action: widget.action!,
-                    readingAction: widget.readingAction,
-                    chapterLength: chapters.length,
-                    onShowFilterMenu: _showDraggableMenu,
-                  ),
+              overview: MangaInfoHeader(
+                loading: loading,
+                manga: widget.manga!,
+                isLocalArchive: isLocalArchive,
+                titleDescription: widget.titleDescription!,
+                action: widget.action!,
+                readingAction: widget.readingAction,
+                chapterLength: chapters.length,
+              ),
+              chapterHeading: MobileChapterHeading(
+                manga: widget.manga!,
+                count: chapters.length,
+                loading: loading,
+                onFilter: _showDraggableMenu,
+              ),
+              chapterCount: chapters.length,
+              chapterBuilder: (context, index) => ClipRRect(
+                borderRadius: BorderRadius.vertical(
+                  top: index == 0
+                      ? const Radius.circular(NodeLaneTokens.groupRadius)
+                      : Radius.zero,
+                  bottom: index == chapters.length - 1
+                      ? const Radius.circular(NodeLaneTokens.groupRadius)
+                      : Radius.zero,
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: NodeLaneTokens.gutter,
-                  ),
-                  sliver: SuperSliverList.builder(
-                    itemCount: chapters.length,
-                    itemBuilder: (context, index) => ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: index == 0
-                            ? const Radius.circular(NodeLaneTokens.groupRadius)
-                            : Radius.zero,
-                        bottom: index == chapters.length - 1
-                            ? const Radius.circular(NodeLaneTokens.groupRadius)
-                            : Radius.zero,
-                      ),
-                      child: ChapterListTileWidget(
-                        key: ValueKey(chapters[index].id),
-                        chapter: chapters[index],
-                        manga: widget.manga!,
-                        chapterList: chapterList,
-                        allChapters: chapters,
-                        sourceExist: widget.sourceExist,
-                      ),
-                    ),
-                  ),
+                child: ChapterListTileWidget(
+                  key: ValueKey(chapters[index].id),
+                  chapter: chapters[index],
+                  manga: widget.manga!,
+                  chapterList: chapterList,
+                  allChapters: chapters,
+                  sourceExist: widget.sourceExist,
                 ),
-                if (chapters.isEmpty && loading)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: NodeLaneTokens.gutter,
-                      ),
-                      child: MobileChapterListLoading(),
-                    ),
-                  )
-                else if (chapters.isEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
+              ),
+              empty: loading
+                  ? const MobileChapterListLoading()
+                  : Padding(
+                      padding: NodeLaneTokens.groupPadding,
                       child: Text(
                         context.l10n.no_result,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: NodeLaneTokens.of(context).muted,
-                        ),
+                        style: NodeLaneTokens.of(context).readerSecondary,
                       ),
                     ),
-                  ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              ],
             ),
           ),
           bottomNavigationBar: _selectionBar(chapters),
@@ -456,38 +431,12 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                                                             .secondaryColor,
                                                       ),
                                                     ),
-                                                    onPressed: () async {
-                                                      final manga =
-                                                          widget.manga;
-                                                      if (manga!.source ==
-                                                          "torrent") {
-                                                        addTorrent(
+                                                    onPressed: () =>
+                                                        addDetailChapters(
                                                           context,
-                                                          manga: manga,
-                                                        );
-                                                      } else {
-                                                        final splitChapters =
-                                                            manga.itemType ==
-                                                                ItemType.novel
-                                                            ? await showSplitChaptersDialog(
-                                                                context,
-                                                              )
-                                                            : true;
-                                                        if (!context.mounted) {
-                                                          return;
-                                                        }
-                                                        await ref.watch(
-                                                          importArchivesFromFileProvider(
-                                                            itemType:
-                                                                manga.itemType,
-                                                            manga,
-                                                            init: false,
-                                                            splitChapters:
-                                                                splitChapters,
-                                                          ).future,
-                                                        );
-                                                      }
-                                                    },
+                                                          ref,
+                                                          widget.manga!,
+                                                        ),
                                                   ),
                                               ],
                                             ),

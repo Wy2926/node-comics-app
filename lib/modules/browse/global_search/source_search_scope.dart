@@ -2,7 +2,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -41,8 +41,8 @@ class SourceSearchScope {
 }
 
 /// Selection is a local draft; leaving without applying changes nothing.
-class SourceSearchScopeSheet extends StatefulWidget {
-  const SourceSearchScopeSheet({
+class SourceSearchScopePage extends StatefulWidget {
+  const SourceSearchScopePage({
     super.key,
     required this.sources,
     required this.current,
@@ -50,10 +50,10 @@ class SourceSearchScopeSheet extends StatefulWidget {
   final List<Source> sources;
   final SourceSearchScope current;
   @override
-  State<SourceSearchScopeSheet> createState() => _SourceSearchScopeSheetState();
+  State<SourceSearchScopePage> createState() => _SourceSearchScopePageState();
 }
 
-class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
+class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
   final search = TextEditingController();
   late final selected = widget.sources
       .where(widget.current.includes)
@@ -98,12 +98,9 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
     final count = widget.sources.where(draft.includes).length;
     final allMatchesSelected =
         matches.isNotEmpty && matches.every(draft.includes);
-    return NodeLaneCatalogSheet(
+    return MobileBrowsePage.form(
       title: context.l10n.search_scope,
-      subtitle: context.l10n.search_scope_hint,
-      fitContent: true,
-      heightFactor: NodeLaneTokens.readerDisplayFraction,
-      bottom: FilledButton(
+      bottomAction: FilledButton(
         onPressed: count == 0
             ? null
             : () {
@@ -119,8 +116,7 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
           textAlign: TextAlign.center,
         ),
       ),
-      child: CustomScrollView(
-        shrinkWrap: true,
+      body: CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
           SliverPadding(
@@ -134,6 +130,8 @@ class _SourceSearchScopeSheetState extends State<SourceSearchScopeSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Text(context.l10n.search_scope_hint, style: t.secondary),
+                  const SizedBox(height: NodeLaneTokens.space12),
                   NodeLaneSegments<SourceSearchScopeMode>(
                     value: mode,
                     pill: true,

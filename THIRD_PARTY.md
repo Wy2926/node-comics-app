@@ -10,6 +10,8 @@ Android 浏览器通过 [Mozilla Maven](https://maven.mozilla.org/maven2/org/moz
 
 没有引入同级仓库的运行时路径依赖。图片解码继续使用项目已有的 `image`、Flutter 平台编解码器与 AVIF 支持。
 
+来源目录截图中的标识来自各网站，[站内作品与详情截图](docs/MOBILE_UI_DESIGN.md#来源与搜索)中的封面和简介来自 FEEL web。第三方作品和商标归各自权利人所有，不随本项目代码许可再授权。
+
 Android 原版 APK 运行使用锁定的 [`m_extension_server` 源码](https://github.com/kodjodevf/m_extension_server/tree/6c48ad82116b64384a977a179334570d0986c498)。`android/mihon/` 是 NodeLane 的构建适配，调整宿主与扩展请求头的优先级；上游代码及各网站 APK 的原有声明保留。
 
 `assets/browser/` 的搜索引擎 Logo 从各家官方站点 favicon 转为 PNG，仅用于识别对应搜索服务；品牌及商标权归各自权利人所有，不属于本项目 Apache-2.0／GPL 代码许可。来源：[Google](https://www.google.com/favicon.ico)、[Bing](https://www.bing.com/sa/simg/favicon-2x.ico)、[百度](https://www.baidu.com/favicon.ico)、[DuckDuckGo](https://duckduckgo.com/favicon.ico)、[Yahoo](https://s.yimg.com/rz/l/favicon.ico)、[搜狗](https://www.sogou.com/favicon.ico)。

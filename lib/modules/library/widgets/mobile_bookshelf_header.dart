@@ -11,20 +11,22 @@ class MobileBookshelfHeader extends StatelessWidget {
     final t = NodeLaneTokens.of(context);
     final scaler = MediaQuery.textScalerOf(context);
     final lineHeight = MediaQuery.maybeLineHeightScaleFactorOverrideOf(context);
+    final tools = math.max(
+      NodeLaneTokens.minTapTarget,
+      (scaler.scale(t.label.fontSize!) * (lineHeight ?? t.label.height!) +
+              NodeLaneTokens.space16)
+          .ceilToDouble(),
+    );
+    final search = math.max(
+      NodeLaneTokens.searchHeight,
+      (scaler.scale(t.body.fontSize!) * (lineHeight ?? t.body.height!) +
+              NodeLaneTokens.space24)
+          .ceilToDouble(),
+    );
     return NodeLaneTokens.headerPadding.vertical +
-        math.max(
-          NodeLaneTokens.minTapTarget,
-          (scaler.scale(t.label.fontSize!) * (lineHeight ?? t.label.height!) +
-                  NodeLaneTokens.space16)
-              .ceilToDouble(),
-        ) +
-        NodeLaneTokens.space16 +
-        math.max(
-          NodeLaneTokens.searchHeight,
-          (scaler.scale(t.body.fontSize!) * (lineHeight ?? t.body.height!) +
-                  NodeLaneTokens.space24)
-              .ceilToDouble(),
-        );
+        (NodeLanePageHeading.inlineSearch(context)
+            ? math.max(tools, search)
+            : tools + NodeLaneTokens.space16 + search);
   }
 
   const MobileBookshelfHeader({
@@ -77,25 +79,24 @@ class MobileBookshelfHeader extends StatelessWidget {
                   const SizedBox(width: NodeLaneTokens.space8),
                   menu,
                 ],
-              ),
-              const SizedBox(height: NodeLaneTokens.space16),
-              Row(
-                children: [
-                  Expanded(
-                    child: NodeLaneTextField.search(
-                      controller: controller,
-                      onChanged: (_) => onSearchChanged(),
-                      hint: searchLabel,
+                search: Row(
+                  children: [
+                    Expanded(
+                      child: NodeLaneTextField.search(
+                        controller: controller,
+                        onChanged: (_) => onSearchChanged(),
+                        hint: searchLabel,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: NodeLaneTokens.space8),
-                  NodeLaneIconButton(
-                    tooltip: filterLabel,
-                    onPressed: onFilter,
-                    icon: icons.adjustments,
-                    active: filtered,
-                  ),
-                ],
+                    const SizedBox(width: NodeLaneTokens.space8),
+                    NodeLaneIconButton(
+                      tooltip: filterLabel,
+                      onPressed: onFilter,
+                      icon: icons.adjustments,
+                      active: filtered,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

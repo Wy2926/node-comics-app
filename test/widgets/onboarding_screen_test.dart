@@ -299,35 +299,31 @@ void main() {
   });
 
   group('motion', () {
-    Future<int> framesToChangeStep(
+    Future<double> stepTravel(
       WidgetTester tester, {
       required bool disableAnimations,
     }) async {
       await pump(tester, disableAnimations: disableAnimations);
       await tester.tap(find.widgetWithText(FilledButton, 'Next'));
-      final frames = await tester.pumpAndSettle();
-      expect(find.text('Your libraries'), findsOneWidget);
-      return frames;
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      final title = find.text('Your libraries');
+      final mid = tester.getCenter(title).dx;
+      await tester.pumpAndSettle();
+      return (mid - tester.getCenter(title).dx).abs();
     }
 
-    // Settling takes 5 frames animated and 3 with animations off. The numbers
-    // matter less than the gap: the step has to change either way, and it must
-    // not spend a quarter of a second doing it when the platform asked for
-    // stillness.
     testWidgets('a step change is animated', (tester) async {
       expect(
-        await framesToChangeStep(tester, disableAnimations: false),
-        greaterThanOrEqualTo(5),
+        await stepTravel(tester, disableAnimations: false),
+        greaterThan(1),
       );
     });
 
     testWidgets('and is not when the platform asks for stillness', (
       tester,
     ) async {
-      expect(
-        await framesToChangeStep(tester, disableAnimations: true),
-        lessThan(5),
-      );
+      expect(await stepTravel(tester, disableAnimations: true), 0);
     });
   });
 

@@ -3,7 +3,7 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 
 import 'dart:async';
 
@@ -117,9 +117,9 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
       : getFilterList(source: source!);
 
   Future<void> _chooseFilters() async {
-    final selected = await showNodeLaneCatalogSheet<List<dynamic>>(
+    final selected = await pushBrowsePage<List<dynamic>>(
       context,
-      MobileSourceFilterSheet(
+      MobileSourceFilterPage(
         filters: filters,
         sourceName: source?.name,
         defaults: () => getFilterList(source: source!),

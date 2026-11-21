@@ -23,7 +23,7 @@ class MobileMediaMenu extends StatelessWidget {
   /// Optional menu-row counts; the toolbar trigger stays identical on all pages.
   final Widget? Function(ItemType)? badgeBuilder;
 
-  static IconData _icon(BuildContext context, ItemType type) {
+  static IconData iconFor(BuildContext context, ItemType type) {
     final icons = NodeLaneIcons.of(context);
     return switch (type) {
       ItemType.manga => icons.manga,
@@ -60,7 +60,7 @@ class MobileMediaMenu extends StatelessWidget {
                 selected: type == value,
                 child: NodeLaneRow(
                   title: type.localized(l10n),
-                  icon: _icon(context, type),
+                  icon: iconFor(context, type),
                   selected: type == value,
                   accented: type == value,
                   trailing: badgeBuilder == null
@@ -104,7 +104,7 @@ class MobileMediaMenu extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  _icon(context, value),
+                  iconFor(context, value),
                   color: colors.accent,
                   size: NodeLaneTokens.smallIconSize,
                 ),

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -133,126 +136,127 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
             top: false,
             child: AbsorbPointer(
               absorbing: _busy,
-              child: ReorderableListView.builder(
-                key: PageStorageKey('mobile-categories-$type'),
-                padding: const EdgeInsets.fromLTRB(
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space8,
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space24,
-                ),
-                buildDefaultDragHandles: false,
-                header: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (widget.types.length > 1) ...[
-                      NodeLaneSegments<ItemType>(
-                        value: type ?? widget.types.first,
-                        segments: [
-                          for (final value in widget.types)
-                            ButtonSegment(
-                              value: value,
-                              label: Text(value.localized(l10n)),
-                            ),
+              child: NodeLaneFormColumn(
+                child: NodeLaneContentMotion(
+                  value: type,
+                  child: ReorderableListView.builder(
+                    key: PageStorageKey('mobile-categories-$type'),
+                    padding: NodeLaneTokens.pagePadding,
+                    buildDefaultDragHandles: false,
+                    header: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (widget.types.length > 1) ...[
+                          NodeLaneSegments<ItemType>(
+                            value: type ?? widget.types.first,
+                            segments: [
+                              for (final value in widget.types)
+                                ButtonSegment(
+                                  value: value,
+                                  label: Text(value.localized(l10n)),
+                                ),
+                            ],
+                            onChanged: (value) {
+                              if (_busy) return;
+                              setState(() {
+                                _type = value;
+                                _failed = false;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: NodeLaneTokens.space20),
                         ],
-                        onChanged: (value) {
-                          if (_busy) return;
-                          setState(() {
-                            _type = value;
-                            _failed = false;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: NodeLaneTokens.space20),
-                    ],
-                    if (_failed || categories?.hasError == true) ...[
-                      Text(l10n.failed),
-                      TextButton(
-                        onPressed: _busy ? null : _refresh,
-                        child: Text(l10n.retry),
-                      ),
-                    ] else if (categories?.isLoading == true)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    else if (type == null)
-                      Text(l10n.no_result)
-                    else if (entries.isEmpty)
-                      Text(l10n.edit_categories_description)
-                    else
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Text(
-                          l10n.mobile_categories_hint,
-                          style: t.readerSecondary,
+                        if (_failed || categories?.hasError == true) ...[
+                          Text(l10n.failed),
+                          TextButton(
+                            onPressed: _busy ? null : _refresh,
+                            child: Text(l10n.retry),
+                          ),
+                        ] else if (categories?.isLoading == true)
+                          const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else if (type == null)
+                          Text(l10n.no_result)
+                        else if (entries.isEmpty)
+                          Text(l10n.edit_categories_description)
+                        else
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: Text(
+                              l10n.mobile_categories_hint,
+                              style: t.readerSecondary,
+                            ),
+                          ),
+                      ],
+                    ),
+                    itemCount: entries.length,
+                    itemBuilder: (context, index) {
+                      final category = entries[index];
+                      return Padding(
+                        key: ValueKey('category-${category.id}'),
+                        padding: const EdgeInsets.only(
+                          bottom: NodeLaneTokens.space8,
                         ),
-                      ),
-                  ],
-                ),
-                itemCount: entries.length,
-                itemBuilder: (context, index) {
-                  final category = entries[index];
-                  return Padding(
-                    key: ValueKey('category-${category.id}'),
-                    padding: const EdgeInsets.only(
-                      bottom: NodeLaneTokens.space8,
-                    ),
-                    child: NodeLaneGroupSurface(
-                      child: Row(
-                        children: [
-                          ReorderableDragStartListener(
-                            index: index,
-                            enabled: ready,
-                            child: SizedBox(
-                              width: NodeLaneTokens.minTapTarget,
-                              height: NodeLaneTokens.catalogRowHeight,
-                              child: Icon(
-                                icons.reorder,
-                                color: t.muted,
-                                size: NodeLaneTokens.iconSize,
+                        child: NodeLaneGroupSurface(
+                          child: Row(
+                            children: [
+                              ReorderableDragStartListener(
+                                index: index,
+                                enabled: ready,
+                                child: SizedBox(
+                                  width: NodeLaneTokens.minTapTarget,
+                                  height: NodeLaneTokens.catalogRowHeight,
+                                  child: Icon(
+                                    icons.reorder,
+                                    color: t.muted,
+                                    size: NodeLaneTokens.iconSize,
+                                  ),
+                                ),
                               ),
-                            ),
+                              Expanded(
+                                child: NodeLaneRow(
+                                  title: category.name ?? '',
+                                  subtitle: (category.hide ?? false)
+                                      ? l10n.mobile_category_hidden
+                                      : l10n.mobile_category_visible,
+                                  onTap: !ready
+                                      ? null
+                                      : () => _run(() async {
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  MobileCategoryDetails(
+                                                    category: category,
+                                                    onSave: widget.onSave,
+                                                    onRemove: widget.onRemove,
+                                                  ),
+                                            ),
+                                          );
+                                        }),
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: NodeLaneRow(
-                              title: category.name ?? '',
-                              subtitle: (category.hide ?? false)
-                                  ? l10n.mobile_category_hidden
-                                  : l10n.mobile_category_visible,
-                              onTap: !ready
-                                  ? null
-                                  : () => _run(() async {
-                                      await Navigator.push<void>(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => MobileCategoryDetails(
-                                            category: category,
-                                            onSave: widget.onSave,
-                                            onRemove: widget.onRemove,
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                onReorderItem: (oldIndex, newIndex) {
-                  if (!ready || oldIndex == newIndex) return;
-                  final next = entries.map(_copyCategory).toList();
-                  next.insert(newIndex, next.removeAt(oldIndex));
-                  final now = DateTime.now().millisecondsSinceEpoch;
-                  for (var i = 0; i < next.length; i++) {
-                    next[i].pos = i;
-                    next[i].updatedAt = now;
-                  }
-                  _pendingOrder = next;
-                  _run(() => widget.onReorder(next));
-                },
+                        ),
+                      );
+                    },
+                    onReorderItem: (oldIndex, newIndex) {
+                      if (!ready || oldIndex == newIndex) return;
+                      final next = entries.map(_copyCategory).toList();
+                      next.insert(newIndex, next.removeAt(oldIndex));
+                      final now = DateTime.now().millisecondsSinceEpoch;
+                      for (var i = 0; i < next.length; i++) {
+                        next[i].pos = i;
+                        next[i].updatedAt = now;
+                      }
+                      _pendingOrder = next;
+                      _run(() => widget.onReorder(next));
+                    },
+                  ),
+                ),
               ),
             ),
           ),
@@ -316,13 +320,7 @@ class _MobileCategoryDetailsState extends ConsumerState<MobileCategoryDetails> {
             top: false,
             child: AbsorbPointer(
               absorbing: _busy,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space8,
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space24,
-                ),
+              child: MobileSettingsList(
                 children: [
                   if (_failed || state.hasError) ...[
                     Text(l10n.failed),

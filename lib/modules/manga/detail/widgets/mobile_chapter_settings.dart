@@ -2,6 +2,7 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -36,6 +37,7 @@ class MobileMangaChapterSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return DefaultTabController(
+      animationDuration: NodeLaneMotion.time(context),
       length: 3,
       child: Builder(
         builder: (context) {
@@ -59,21 +61,24 @@ class MobileMangaChapterSettings extends StatelessWidget {
                     ),
                   ),
                   Flexible(
-                    child: SingleChildScrollView(
-                      key: PageStorageKey(
-                        'chapter-settings-${controller.index}',
+                    child: NodeLaneContentMotion(
+                      value: controller.index,
+                      child: SingleChildScrollView(
+                        key: PageStorageKey(
+                          'chapter-settings-${controller.index}',
+                        ),
+                        padding: const EdgeInsets.only(
+                          top: NodeLaneTokens.space16,
+                        ),
+                        child: controller.index == 0
+                            ? _ChapterFilters(
+                                manga: manga,
+                                localArchive: localArchive,
+                              )
+                            : controller.index == 1
+                            ? _ChapterSort(manga: manga)
+                            : const _ChapterHabits(),
                       ),
-                      padding: const EdgeInsets.only(
-                        top: NodeLaneTokens.space16,
-                      ),
-                      child: controller.index == 0
-                          ? _ChapterFilters(
-                              manga: manga,
-                              localArchive: localArchive,
-                            )
-                          : controller.index == 1
-                          ? _ChapterSort(manga: manga)
-                          : const _ChapterHabits(),
                     ),
                   ),
                 ],

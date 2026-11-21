@@ -5,7 +5,7 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 
 class _Saved extends SavedSearchesNotifier {
   @override
@@ -48,7 +48,7 @@ void main() {
       Builder(
         builder: (context) => TextButton(
           onPressed: () async {
-            result = await showNodeLaneCatalogSheet<Object>(
+            result = await pushBrowsePage<Object>(
               context,
               const MobileSourceActions(
                 title: '来源',
@@ -94,7 +94,7 @@ void main() {
         Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              query = await showNodeLaneCatalogSheet<String>(
+              query = await pushBrowsePage<String>(
                 context,
                 const MobileSavedSearches(sourceId: 1, title: '来源 A'),
               );

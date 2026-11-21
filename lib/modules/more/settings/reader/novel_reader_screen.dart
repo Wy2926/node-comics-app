@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/novel/tts/novel_tts_service.dart';
@@ -22,6 +23,7 @@ class NovelReaderScreen extends ConsumerWidget {
       );
     }
     return DefaultTabController(
+      animationDuration: NodeLaneMotion.time(context),
       length: ttsSupported ? 3 : 2,
       child: Scaffold(
         appBar: AppBar(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -20,17 +21,17 @@ Future<void> showSupportRequest(
   _showing = true;
   FocusScope.of(context).unfocus();
   try {
-    await showNodeLaneCatalogSheet<void>(
+    await pushBrowsePage<void>(
       context,
-      SupportRequestSheet(kind: kind, website: website),
+      SupportRequestPage(kind: kind, website: website),
     );
   } finally {
     _showing = false;
   }
 }
 
-class SupportRequestSheet extends StatefulWidget {
-  const SupportRequestSheet({
+class SupportRequestPage extends StatefulWidget {
+  const SupportRequestPage({
     super.key,
     required this.kind,
     this.website,
@@ -41,10 +42,10 @@ class SupportRequestSheet extends StatefulWidget {
   final SupportRequests? requests;
 
   @override
-  State<SupportRequestSheet> createState() => _SupportRequestSheetState();
+  State<SupportRequestPage> createState() => _SupportRequestPageState();
 }
 
-class _SupportRequestSheetState extends State<SupportRequestSheet> {
+class _SupportRequestPageState extends State<SupportRequestPage> {
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _url = TextEditingController();
@@ -175,11 +176,9 @@ class _SupportRequestSheetState extends State<SupportRequestSheet> {
     final l = context.l10n;
     final received = _draft?.receipt;
     final locked = _busy || _draft != null;
-    return NodeLaneCatalogSheet(
+    return MobileBrowsePage.form(
       title: _website ? l.feedback_source : l.feedback_app,
-      heightFactor: .92,
-      fitContent: true,
-      bottom: _loading || _loadFailed
+      bottomAction: _loading || _loadFailed
           ? null
           : received != null
           ? NodeLaneSecondaryButton(
@@ -190,19 +189,20 @@ class _SupportRequestSheetState extends State<SupportRequestSheet> {
               onPressed: _busy ? null : _submit,
               icon: Icon(
                 _draft == null
-                    ? NodeLaneIcons.of(context).chat
+                    ? (_website
+                          ? NodeLaneIcons.of(context).web
+                          : NodeLaneIcons.of(context).chat)
                     : NodeLaneIcons.of(context).refresh,
               ),
               label: Text(
                 _busy
                     ? l.translation_submitting
                     : _draft == null
-                    ? l.feedback_submit
+                    ? (_website ? l.feedback_submit_source : l.feedback_submit)
                     : l.feedback_retry,
               ),
             ),
-      child: ListView(
-        shrinkWrap: true,
+      body: ListView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: NodeLaneTokens.pagePadding,
         children: [
@@ -230,27 +230,31 @@ class _SupportRequestSheetState extends State<SupportRequestSheet> {
             const SizedBox(height: NodeLaneTokens.space16),
             Form(
               key: _form,
+              autovalidateMode: AutovalidateMode.onUserInteractionIfError,
               child: Column(
                 children: [
                   if (_website) ...[
-                    NodeLaneTextField(
-                      controller: _name,
-                      label: l.feedback_site_name,
-                      enabled: !locked,
-                      validator: (v) => _validate(v, 100, required: true),
-                    ),
-                    const SizedBox(height: NodeLaneTokens.space16),
-                    NodeLaneTextField(
-                      controller: _url,
-                      label: l.url,
-                      hint: 'https://example.com/',
-                      keyboardType: TextInputType.url,
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      enabled: !locked,
-                      validator: (v) => supportWebsiteUrl(v ?? '') == null
-                          ? l.invalid_url_format
-                          : _validate(supportWebsiteUrl(v!)!, 2048),
+                    NodeLaneToolbarPair(
+                      alignment: WrapCrossAlignment.start,
+                      first: NodeLaneTextField(
+                        controller: _name,
+                        label: l.feedback_site_name,
+                        textInputAction: TextInputAction.next,
+                        enabled: !locked,
+                        validator: (v) => _validate(v, 100, required: true),
+                      ),
+                      second: NodeLaneTextField(
+                        controller: _url,
+                        label: l.url,
+                        hint: 'https://example.com/',
+                        keyboardType: TextInputType.url,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        enabled: !locked,
+                        validator: (v) => supportWebsiteUrl(v ?? '') == null
+                            ? l.invalid_url_format
+                            : _validate(supportWebsiteUrl(v!)!, 2048),
+                      ),
                     ),
                     const SizedBox(height: NodeLaneTokens.space16),
                   ],
@@ -259,7 +263,7 @@ class _SupportRequestSheetState extends State<SupportRequestSheet> {
                     label: _website
                         ? l.feedback_optional_comment
                         : l.feedback_comment,
-                    minLines: 4,
+                    minLines: _website ? 2 : 4,
                     maxLines: 8,
                     keyboardType: TextInputType.multiline,
                     enabled: !locked,

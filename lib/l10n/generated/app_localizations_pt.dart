@@ -10,7 +10,7 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get source_more_filters => 'Mais filtros';
+  String get feedback_submit_source => 'Enviar solicitação';
 
   @override
   String get browser_clip_here => 'Marcar este ponto';

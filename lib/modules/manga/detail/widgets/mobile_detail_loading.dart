@@ -16,57 +16,42 @@ class MobileDetailLoadingPage extends StatelessWidget {
         appBar: nodeLaneAppBar(context, title: ''),
         body: SafeArea(
           top: false,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                MobileDetailOverview(
-                  heading: const MobileDetailHeading(
-                    cover: NodeLaneSkeleton(
-                      width: NodeLaneTokens.detailCoverWidth,
-                      height: NodeLaneTokens.detailCoverHeight,
-                      radius: NodeLaneTokens.coverRadius,
-                    ),
-                    title: NodeLaneSkeleton(height: NodeLaneTokens.space24),
-                    metadata: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        NodeLaneSkeleton(
-                          height: NodeLaneTokens.space12,
-                          width: 96,
-                        ),
-                        SizedBox(height: NodeLaneTokens.space12),
-                        NodeLaneSkeleton(
-                          height: NodeLaneTokens.space12,
-                          width: 64,
-                        ),
-                      ],
-                    ),
-                  ),
-                  actions: const MobileDetailPrimaryActions(
-                    reading: NodeLaneSkeleton(
-                      height: NodeLaneTokens.rowHeight,
-                      radius: NodeLaneTokens.capsuleRadius,
-                    ),
-                    library: NodeLaneSkeleton(
-                      height: NodeLaneTokens.rowHeight,
-                      radius: NodeLaneTokens.capsuleRadius,
-                    ),
-                  ),
-                  synopsis: const MobileDetailSynopsisLoading(),
-                  more: const NodeLaneSkeleton(
-                    height: NodeLaneTokens.minTapTarget,
-                  ),
-                  chapters: Text(
-                    context.l10n.detail_loading_chapters,
-                    style: NodeLaneTokens.of(context).detailSectionTitle,
-                  ),
+          child: MobileDetailLayout(
+            overview: const MobileDetailOverview(
+              heading: MobileDetailHeading(
+                cover: NodeLaneSkeleton(
+                  width: NodeLaneTokens.detailCoverWidth,
+                  height: NodeLaneTokens.detailCoverHeight,
+                  radius: NodeLaneTokens.coverRadius,
                 ),
-                const Padding(
-                  padding: EdgeInsets.all(NodeLaneTokens.gutter),
-                  child: MobileChapterListLoading(),
+                title: NodeLaneSkeleton(height: NodeLaneTokens.space24),
+                metadata: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    NodeLaneSkeleton(height: NodeLaneTokens.space12, width: 96),
+                    SizedBox(height: NodeLaneTokens.space12),
+                    NodeLaneSkeleton(height: NodeLaneTokens.space12, width: 64),
+                  ],
                 ),
-              ],
+              ),
+              actions: MobileDetailPrimaryActions(
+                reading: NodeLaneSkeleton(
+                  height: NodeLaneTokens.rowHeight,
+                  radius: NodeLaneTokens.capsuleRadius,
+                ),
+                library: NodeLaneSkeleton(
+                  height: NodeLaneTokens.rowHeight,
+                  radius: NodeLaneTokens.capsuleRadius,
+                ),
+              ),
+              synopsis: MobileDetailSynopsisLoading(),
+              more: NodeLaneSkeleton(height: NodeLaneTokens.minTapTarget),
             ),
+            chapterHeading: Text(
+              context.l10n.detail_loading_chapters,
+              style: NodeLaneTokens.of(context).detailSectionTitle,
+            ),
+            empty: const MobileChapterListLoading(),
           ),
         ),
       ),

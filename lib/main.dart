@@ -51,6 +51,7 @@ import 'package:mangayomi/utils/log/logger.dart';
 import 'package:mangayomi/utils/client_id.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/url_protocol/import_links.dart';
 import 'package:mangayomi/utils/url_protocol/windows_protocol.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/theme_provider.dart';
@@ -357,18 +358,9 @@ class _MyAppState extends ConsumerState<MyApp>
         Widget content = child ?? const SizedBox.shrink();
         // First-run setup uses the same UI scale, shortcuts and toast host as
         // the app. The router retains the destination chosen during setup.
-        // Fading rather than swapping. The first run used to vanish in a
-        // single frame onto whatever the router had underneath it, which is
-        // also the frame the browse branch is still building in, so the end of
-        // the flow was the roughest part of it.
         final onboarding = !ref.watch(onboardingCompletedStateProvider);
-        content = AnimatedSwitcher(
-          duration: const Duration(milliseconds: 380),
-          // The app fades up over most of the window while the first run
-          // holds, then leaves. Crossing them evenly showed both at half
-          // strength through the middle, which reads as a flicker.
-          switchInCurve: const Interval(0.35, 1, curve: Curves.easeOut),
-          switchOutCurve: const Interval(0, 0.5, curve: Curves.easeIn),
+        content = NodeLaneContentMotion(
+          value: onboarding,
           child: onboarding
               ? const OnboardingScreen()
               : KeyedSubtree(key: const ValueKey('app'), child: content),

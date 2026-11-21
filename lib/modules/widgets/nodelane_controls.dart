@@ -7,6 +7,7 @@ import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 /// Shared presentation only. Controllers, navigation and writes stay outside.
 class NodeLaneSkeleton extends StatelessWidget {
@@ -41,30 +42,47 @@ class NodeLanePageHeading extends StatelessWidget {
     required this.title,
     this.mediaMenu,
     this.actions = const [],
-  });
+  }) : search = null;
   const NodeLanePageHeading.toolbar({
     super.key,
     required this.mediaMenu,
     this.actions = const [],
+    this.search,
   }) : title = null;
 
   final String? title;
   final Widget? mediaMenu;
+  final Widget? search;
   final List<Widget> actions;
+
+  static bool inlineSearch(BuildContext context) =>
+      context.isAndroidTablet &&
+      MediaQuery.textScalerOf(context).scale(16) <= 24;
 
   @override
   Widget build(BuildContext context) => title == null
-      ? Row(
+      ? Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: mediaMenu,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: mediaMenu,
+                  ),
+                ),
+                if (search != null && inlineSearch(context))
+                  Flexible(flex: 2, child: search!),
+                if (actions.isNotEmpty)
+                  const SizedBox(width: NodeLaneTokens.space8),
+                ...actions,
+              ],
             ),
-            if (actions.isNotEmpty)
-              const SizedBox(width: NodeLaneTokens.space8),
-            ...actions,
+            if (search != null && !inlineSearch(context)) ...[
+              const SizedBox(height: NodeLaneTokens.space16),
+              search!,
+            ],
           ],
         )
       : Column(
@@ -515,11 +533,13 @@ class NodeLaneCoverBadge extends StatelessWidget {
                 const SizedBox(width: NodeLaneTokens.space4),
             ],
             if (label.isNotEmpty)
-              Text(
-                label,
-                style: t.caption.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  label,
+                  style: t.caption.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
           ],

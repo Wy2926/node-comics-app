@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:draggable_menu/draggable_menu.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
@@ -80,7 +81,7 @@ Future<void> customDraggableTabBar({
 }) async {
   final controller = DraggableMenuController();
   late TabController tabBarController;
-  tabBarController = TabController(length: tabs.length, vsync: vsync);
+  tabBarController = NodeLaneMotion.tabs(length: tabs.length, vsync: vsync);
   final maxHeight = context.height(0.8);
 
   int index = 0;
@@ -167,68 +168,64 @@ Future<void> customDraggableTabBar({
                       topRight: Radius.circular(20),
                     ),
                   ),
-                  child: DefaultTabController(
-                    length: tabs.length,
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
+                  child: Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Flexible(
+                            flex: 9,
+                            child: TabBar(
+                              unselectedLabelStyle: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                              labelStyle: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              dividerColor: Theme.of(context).dividerColor,
+                              dividerHeight: 0.4,
+                              controller: tabBarController,
+                              tabs: tabs,
+                            ),
+                          ),
+                          if (moreWidget != null)
                             Flexible(
-                              flex: 9,
-                              child: TabBar(
-                                unselectedLabelStyle: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                labelStyle: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                dividerColor: Theme.of(context).dividerColor,
-                                dividerHeight: 0.4,
-                                controller: tabBarController,
-                                tabs: tabs,
+                              flex: 1,
+                              child: Column(
+                                children: [
+                                  moreWidget,
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Container(
+                                          color: Theme.of(context).dividerColor,
+                                          height: 0.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            if (moreWidget != null)
-                              Flexible(
-                                flex: 1,
-                                child: Column(
-                                  children: [
-                                    moreWidget,
-                                    const SizedBox(height: 2),
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Container(
-                                            color: Theme.of(context)
-                                                .dividerColor,
-                                            height: 0.4,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                        Flexible(
-                          child: TabBarView(
-                            controller: tabBarController,
-                            children: _padded(context, children)
-                                .map(
-                                  (e) => SingleChildScrollView(
-                                    child: MeasureWidgetSize(
-                                      onCalculateSize: (_) => refresh(),
-                                      child: e,
-                                    ),
+                        ],
+                      ),
+                      Flexible(
+                        child: TabBarView(
+                          controller: tabBarController,
+                          children: _padded(context, children)
+                              .map(
+                                (e) => SingleChildScrollView(
+                                  child: MeasureWidgetSize(
+                                    onCalculateSize: (_) => refresh(),
+                                    child: e,
                                   ),
-                                )
-                                .toList(),
-                          ),
+                                ),
+                              )
+                              .toList(),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),

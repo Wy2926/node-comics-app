@@ -9,6 +9,50 @@ import '../../../fixtures/detail_overview_preview.dart';
 
 void main() {
   testWidgets(
+    'a wide detail keeps its book in place and its visible chapter on resize',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1120, 700);
+      addTearDown(tester.view.reset);
+      final scroll = ScrollController();
+      addTearDown(scroll.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MobileDetailLayout(
+              controller: scroll,
+              overview: const SizedBox(height: 320, child: Text('Book')),
+              chapterHeading: const SizedBox(
+                height: 50,
+                child: Text('Chapters'),
+              ),
+              chapterCount: 100,
+              chapterBuilder: (_, i) =>
+                  SizedBox(height: 76, child: Text('Chapter $i')),
+            ),
+          ),
+        ),
+      );
+      final book = tester.getTopLeft(find.text('Book'));
+      expect(book.dx, lessThan(tester.getTopLeft(find.text('Chapters')).dx));
+      scroll.jumpTo(76 * 30);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(find.text('Book')), book);
+      expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
+      tester.view.physicalSize = const Size(580, 850);
+      await tester.pumpAndSettle();
+      expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
+      expect(find.text('Book').hitTestable(), findsNothing);
+      tester.view.physicalSize = const Size(1120, 700);
+      await tester.pumpAndSettle();
+      expect(find.text('Book').hitTestable(), findsOneWidget);
+      expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
     'initial detail skeleton stays scrollable and allows back at large text',
     (tester) async {
       tester.view.physicalSize = const Size(320, 700);
@@ -41,7 +85,10 @@ void main() {
       await tester.tap(find.text('Open detail'));
       await tester.pumpAndSettle();
       expect(find.byType(MobileDetailSynopsisLoading), findsOneWidget);
-      await tester.ensureVisible(find.byType(MobileChapterListLoading));
+      await tester.scrollUntilVisible(
+        find.byType(MobileChapterListLoading),
+        200,
+      );
       expect(find.text('无结果'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.tap(find.byTooltip('返回'));

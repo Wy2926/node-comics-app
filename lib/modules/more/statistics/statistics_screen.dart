@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -34,7 +35,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     _visibleTabTypes = ref.read(animeOnlyTvModeProvider)
         ? const [ItemType.anime]
         : hiddenItemTypes(ref.read(hideItemsStateProvider));
-    _tabController = TabController(
+    _tabController = NodeLaneMotion.tabs(
       length: _visibleTabTypes.length,
       vsync: this,
     );

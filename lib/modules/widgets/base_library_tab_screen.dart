@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -11,6 +12,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
@@ -47,8 +49,10 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
       ref.read(hideItemsStateProvider),
       ref.read(animeOnlyTvModeProvider),
     );
-    tabController = TabController(length: visibleTabTypes.length, vsync: this)
-      ..addListener(_onTabChanged);
+    tabController = NodeLaneMotion.tabs(
+      length: visibleTabTypes.length,
+      vsync: this,
+    )..addListener(_onTabChanged);
   }
 
   List<ItemType> _visibleTypes(List<String> hidden, bool animeOnly) =>
@@ -79,7 +83,7 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
     visibleTabTypes = types;
     final index = types.indexOf(previousType);
     _selectedIndex = index < 0 ? 0 : index;
-    tabController = TabController(
+    tabController = NodeLaneMotion.tabs(
       length: types.length,
       initialIndex: _selectedIndex,
       vsync: this,
@@ -217,64 +221,89 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
   Widget _mobileView(BuildContext context) {
     final l10n = context.l10n;
     final selectedType = getCurrentItemType();
+    void select(ItemType type) {
+      FocusScope.of(context).unfocus();
+      tabController.animateTo(
+        visibleTabTypes.indexOf(type),
+        duration: NodeLaneMotion.time(context),
+      );
+    }
+
+    final search = NodeLaneTextField.search(
+      controller: textEditingController,
+      hint: searchLabel,
+      clearLabel: l10n.reset,
+      onChanged: (_) => setState(() {}),
+    );
+    final actions = visibleTabTypes.isEmpty
+        ? <Widget>[]
+        : buildExtraActions(context);
     return NodeLaneSurface(
       child: Scaffold(
         body: SafeArea(
           bottom: false,
-          child: LayoutBuilder(
-            builder: (context, constraints) => Column(
+          child: NodeLanePaneLayout(
+            pane: (context) => ListView(
+              padding: NodeLaneTokens.pagePadding,
               children: [
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: constraints.maxHeight * .65,
-                  ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: NodeLaneTokens.headerPadding,
-                      child: Column(
-                        children: [
-                          NodeLanePageHeading.toolbar(
+                NodeLanePageHeading(title: title, actions: actions),
+                const SizedBox(height: NodeLaneTokens.space16),
+                search,
+                const SizedBox(height: NodeLaneTokens.space24),
+                NodeLaneGroupSurface(
+                  children: [
+                    for (final type in visibleTabTypes)
+                      NodeLaneRow(
+                        title: type.localized(l10n),
+                        icon: MobileMediaMenu.iconFor(context, type),
+                        selected: type == selectedType,
+                        accented: type == selectedType,
+                        trailing: buildMobileMediaBadge(type),
+                        onTap: () => select(type),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            body: (_, split) => LayoutBuilder(
+              builder: (context, constraints) => Column(
+                children: [
+                  if (!split)
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: constraints.maxHeight * .65,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: NodeLaneTokens.headerPadding,
+                          child: NodeLanePageHeading.toolbar(
                             mediaMenu: MobileMediaMenu(
                               value: selectedType,
                               availableTypes: visibleTabTypes,
                               badgeBuilder: buildMobileMediaBadge,
-                              onChanged: (type) {
-                                FocusScope.of(context).unfocus();
-                                tabController.index = visibleTabTypes.indexOf(
-                                  type,
-                                );
-                              },
+                              onChanged: select,
                             ),
-                            actions: visibleTabTypes.isEmpty
-                                ? const []
-                                : buildExtraActions(context),
+                            actions: actions,
+                            search: search,
                           ),
-                          const SizedBox(height: NodeLaneTokens.space16),
-                          NodeLaneTextField.search(
-                            controller: textEditingController,
-                            hint: searchLabel,
-                            clearLabel: l10n.reset,
-                            onChanged: (_) => setState(() {}),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
+                  Expanded(
+                    child: TabBarView(
+                      controller: tabController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        for (final type in visibleTabTypes)
+                          KeyedSubtree(
+                            key: ValueKey(type),
+                            child: buildTab(type),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: TabBarView(
-                    controller: tabController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      for (final type in visibleTabTypes)
-                        KeyedSubtree(
-                          key: ValueKey(type),
-                          child: buildTab(type),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

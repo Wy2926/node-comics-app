@@ -34,6 +34,70 @@ Widget app(Widget child, {double scale = 1, bool dark = false}) => MaterialApp(
 
 void main() {
   testWidgets(
+    'Android rail reflows to phone tabs without losing the active library or page',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1180, 720);
+      addTearDown(tester.view.reset);
+      var location = '/NovelLibrary';
+      await tester.pumpWidget(
+        app(
+          StatefulBuilder(
+            builder: (context, setState) {
+              return NodeLaneMobileNavigation(
+                routes: const [
+                  '/MangaLibrary',
+                  '/NovelLibrary',
+                  '/updates',
+                  '/browse',
+                  '/browser',
+                  '/more',
+                  '/trackerLibrary',
+                ],
+                badges: const {'/updates': 107},
+                location: location,
+                visible: true,
+                nativeIos: false,
+                onSelected: (route) => setState(() => location = route),
+                child: const Center(child: TextField()),
+              );
+            },
+          ),
+          dark: true,
+        ),
+      );
+      final glass = find.byType(NodeLaneGlassSurface);
+      final rail = tester.getRect(glass);
+      expect(rail.height, greaterThan(rail.width));
+      expect(
+        rail.right,
+        lessThanOrEqualTo(tester.getTopLeft(find.byType(TextField)).dx),
+      );
+      expect(find.text('追踪'), findsOneWidget);
+      expect(tester.getSemantics(find.bySemanticsLabel('更新')).value, '107');
+      await tester.tap(find.text('浏览器'));
+      await tester.enterText(find.byType(TextField), 'keep my place');
+      tester.view.physicalSize = const Size(820, 390);
+      await tester.pumpAndSettle();
+      final bar = tester.getRect(glass);
+      expect(bar.width, greaterThan(bar.height));
+      expect(find.text('追踪'), findsNothing);
+      expect(find.text('keep my place'), findsOneWidget);
+      await tester.tap(find.text('书架'));
+      expect(location, '/NovelLibrary');
+      tester.view.physicalSize = const Size(600, 900);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getRect(glass).width,
+        lessThan(tester.getRect(glass).height),
+      );
+      expect(find.text('keep my place'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
     'floating tabs keep safe area, RTL targets and accessible badges',
     (tester) async {
       tester.view.physicalSize = const Size(320, 700);
@@ -67,6 +131,7 @@ void main() {
                 nativeIos: false,
                 badges: const {'/updates': 120},
                 onSelected: (value) => selected = value,
+                child: const SizedBox.expand(),
               ),
             ),
           ),
@@ -478,17 +543,14 @@ void main() {
       await tester.pumpWidget(
         app(
           StatefulBuilder(
-            builder: (context, setState) => Scaffold(
-              extendBody: true,
-              bottomNavigationBar: NodeLaneMobileNavigation(
-                routes: const ['/MangaLibrary', '/browse', '/more'],
-                location: covered ? '/mangaDetail' : '/MangaLibrary',
-                visible: !covered,
-                maintainSpace: true,
-                nativeIos: false,
-                onSelected: (_) {},
-              ),
-              body: Scaffold(
+            builder: (context, setState) => NodeLaneMobileNavigation(
+              routes: const ['/MangaLibrary', '/browse', '/more'],
+              location: covered ? '/mangaDetail' : '/MangaLibrary',
+              visible: !covered,
+              maintainSpace: true,
+              nativeIos: false,
+              onSelected: (_) {},
+              child: Scaffold(
                 body: Builder(
                   builder: (bodyContext) => ListView.builder(
                     controller: controller,
@@ -749,6 +811,7 @@ void main() {
               visible: true,
               nativeIos: false,
               onSelected: (value) => location = value,
+              child: const SizedBox.expand(),
             ),
           ),
           scale: 2,

@@ -154,13 +154,13 @@ void main() {
         await reveal(tester, find.text(value));
         expect(find.text(value), findsOneWidget);
       }
-      await tap(tester, find.widgetWithText(ChoiceChip, 'Novel'), delta: -250);
+      await tap(tester, find.text('Novel'), delta: -250);
       await tester.pumpAndSettle();
       expect(find.textContaining('NaN'), findsNothing);
       await reveal(tester, find.text('0m').last);
       expect(find.text('0m'), findsNWidgets(2));
       expect(requests, [ItemType.manga, ItemType.manga, ItemType.novel]);
-      expect(find.widgetWithText(ChoiceChip, 'Anime'), findsNothing);
+      expect(find.text('Anime'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -556,7 +556,7 @@ void main() {
       expect(opened.single, same(books[19]));
       await tester.pageBack();
       await tester.pumpAndSettle();
-      await tap(tester, find.widgetWithText(ChoiceChip, 'Week'), delta: -250);
+      await tap(tester, find.text('Week'), delta: -250);
       var table = tester.widget<TableCalendar>(
         find.byWidgetPredicate((widget) => widget is TableCalendar),
       );
@@ -579,11 +579,7 @@ void main() {
         find.byWidgetPredicate((widget) => widget is TableCalendar),
       );
       expect(table.selectedDayPredicate!(selected), isFalse);
-      await tap(
-        tester,
-        find.widgetWithText(ChoiceChip, '2 weeks'),
-        delta: -250,
-      );
+      await tap(tester, find.text('2 weeks'), delta: -250);
       expect(
         tester
             .widget<TableCalendar>(
@@ -592,7 +588,7 @@ void main() {
             .calendarFormat,
         CalendarFormat.twoWeeks,
       );
-      await tap(tester, find.widgetWithText(ChoiceChip, 'Month'));
+      await tap(tester, find.text('Month'));
       expect(
         tester
             .widget<TableCalendar>(

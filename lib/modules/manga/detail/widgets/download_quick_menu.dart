@@ -31,8 +31,9 @@ class DownloadQuickMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
-    if (isMobile && !isTv && itemType == ItemType.manga) {
+    if (isMobile && !isTv) {
       return MobileMangaDownloadActionsButton(
+        episodes: itemType == ItemType.anime,
         bookTitle: manga.name ?? '',
         hasChapters: hasChapters,
         onSelected: (value) => _download(context, value),

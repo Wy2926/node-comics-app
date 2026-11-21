@@ -1,6 +1,7 @@
 import 'package:mangayomi/services/app_update_manifest.dart';
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:mangayomi/modules/more/settings/appearance/providers/floating_na
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/loading_icon.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/modules/main_view/nav_shrink.dart';
 import 'package:mangayomi/modules/main_view/providers/migration.dart';
@@ -29,6 +31,7 @@ import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/main_view/widgets/tablet_layout.dart';
 import 'package:mangayomi/modules/main_view/widgets/mobile_bottom_navigation.dart';
 import 'package:mangayomi/modules/main_view/widgets/nav_badges.dart';
+import 'package:mangayomi/modules/main_view/widgets/nodelane_mobile_navigation.dart';
 
 final libLocationRegex = RegExp(r"^/(Manga|Anime|Novel)Library$");
 
@@ -315,6 +318,26 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     if (_navShrink.reset()) setState(() {});
   }
 
+  void _selectRoute(String destination) {
+    final now = DateTime.now();
+    final isDoubleTap = isNavDoubleTap(
+      destination,
+      _lastMobileNavDest,
+      _lastMobileNavTapTime,
+      now,
+    );
+    final itemType = itemTypeForNavDest(destination);
+    if (isDoubleTap && itemType != null) {
+      _lastMobileNavDest = null;
+      _lastMobileNavTapTime = null;
+      context.push('/globalSearch', extra: (null, itemType));
+      return;
+    }
+    _lastMobileNavDest = destination;
+    _lastMobileNavTapTime = now;
+    context.go(destination);
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<Locale>(l10nLocaleStateProvider, (previous, next) {
@@ -350,7 +373,33 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               final prefersNavRail = context.prefersNavRail(
                 useFloatingNav: useFloatingNav,
               );
-              final useMobileUi = isMobile && !isTv && !prefersNavRail;
+              final visibleRoutes = navigationOrder
+                  .where((nav) => !hideItems.contains(nav))
+                  .toList();
+              final isLongPressed = ref.watch(isLongPressedStateProvider);
+              if (isMobile &&
+                  !isTv &&
+                  (Platform.isAndroid || !prefersNavRail)) {
+                return NavigationBadgeCounts(
+                  routes: visibleRoutes,
+                  builder: (badges) => NodeLaneMobileNavigation(
+                    routes: visibleRoutes,
+                    location: location,
+                    visible:
+                        !isLongPressed &&
+                        (location == null ||
+                            navigationOrder.contains(location)),
+                    maintainSpace: !isLongPressed,
+                    nativeIos: Platform.isIOS,
+                    badges: badges,
+                    onSelected: (destination) {
+                      if (destination != location) dismissNodeLaneNotice();
+                      _selectRoute(destination);
+                    },
+                    child: widget.child,
+                  ),
+                );
+              }
               bool uniqueSwitch = false;
               List<String> dest = !prefersNavRail && isLibSwitch
                   ? [
@@ -359,9 +408,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         (nav) => libLocationRegex.hasMatch(nav),
                       ),
                     ].where((nav) => !hideItems.contains(nav)).toList()
-                  : navigationOrder
-                        .where((nav) => !hideItems.contains(nav))
-                        .toList();
+                  : visibleRoutes;
 
               // Anime-only TV layout: drop the manga & novel library tabs.
               if (ref.watch(animeOnlyTvModeProvider)) {
@@ -406,16 +453,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 }
               }
 
-              final isLongPressed = ref.watch(isLongPressedStateProvider);
-
               return FloatingNavigationScope(
-                enabled: useMobileUi || useFloatingNav,
+                enabled: useFloatingNav,
                 child: Scaffold(
-                  extendBody: useMobileUi || useFloatingNav,
+                  extendBody: useFloatingNav,
                   body: NotificationListener<ScrollNotification>(
                     onNotification: (notification) => _onPageScroll(
                       notification,
-                      useFloatingNav: !useMobileUi && useFloatingNav,
+                      useFloatingNav: useFloatingNav,
                     ),
                     child: prefersNavRail
                         ? MainTabletLayout(
@@ -438,9 +483,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           location: location,
                           currentIndex: currentIndex,
                           dest: dest,
-                          mobileRoutes: navigationOrder
-                              .where((nav) => !hideItems.contains(nav))
-                              .toList(),
                           route: route,
                           ref: ref,
                           useFloatingNav: useFloatingNav,
@@ -462,26 +504,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                 isLibSwitch = false;
                               });
                             } else {
-                              final now = DateTime.now();
-                              final isDoubleTap = isNavDoubleTap(
-                                destination,
-                                _lastMobileNavDest,
-                                _lastMobileNavTapTime,
-                                now,
-                              );
-                              final itemType = itemTypeForNavDest(destination);
-                              if (isDoubleTap && itemType != null) {
-                                _lastMobileNavDest = null;
-                                _lastMobileNavTapTime = null;
-                                context.push(
-                                  '/globalSearch',
-                                  extra: (null, itemType),
-                                );
-                                return;
-                              }
-                              _lastMobileNavDest = destination;
-                              _lastMobileNavTapTime = now;
-                              route.go(destination);
+                              _selectRoute(destination);
                             }
                           },
                         ),

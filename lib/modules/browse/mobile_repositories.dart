@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
@@ -40,25 +40,12 @@ String repositoryKey(String value) {
       .toString();
 }
 
-Future<void> showMobileRepositories(BuildContext context, ItemType type) =>
-    showNodeLaneCatalogSheet<void>(
-      context,
-      MobileRepositoryManager(itemType: type),
-    );
 Future<void> showMobileAddRepository(BuildContext context, ItemType type) =>
-    showNodeLaneCatalogSheet<void>(
-      context,
-      MobileAddRepository(itemType: type),
-    );
+    pushBrowsePage<void>(context, MobileAddRepository(itemType: type));
 
 class MobileRepositoryManager extends ConsumerStatefulWidget {
-  const MobileRepositoryManager({
-    super.key,
-    required this.itemType,
-    this.asPage = false,
-  });
+  const MobileRepositoryManager({super.key, required this.itemType});
   final ItemType itemType;
-  final bool asPage;
   @override
   ConsumerState<MobileRepositoryManager> createState() =>
       _MobileRepositoryManagerState();
@@ -91,116 +78,88 @@ class _MobileRepositoryManagerState
     }
   }
 
-  void _details(
-    Repo repo, {
-    bool builtIn = false,
-  }) => showNodeLaneCatalogSheet<void>(
-    context,
-    Consumer(
-      builder: (sheetContext, sheetRef, _) {
-        final current =
-            sheetRef
-                .watch(extensionsRepoStateProvider(widget.itemType))
-                .where((r) => r.jsonUrl == repo.jsonUrl)
-                .firstOrNull ??
-            repo;
-        final icons = NodeLaneIcons.of(sheetContext);
-        return NodeLaneCatalogSheet(
-          title: repositoryName(context, current),
-          subtitle: current.jsonUrl,
-          heightFactor: .58,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            children: [
-              if (!builtIn)
-                NodeLaneGroupSurface(
-                  child: NodeLaneSwitchRow(
-                    title: context.l10n.repository_show_sources,
-                    value: current.hidden != true,
-                    onChanged: (value) => sheetRef
-                        .read(
-                          extensionsRepoStateProvider(widget.itemType).notifier,
-                        )
-                        .setVisibility(current, !value),
-                  ),
-                ),
-              const SizedBox(height: 12),
-              NodeLaneRow.card(
-                title: context.l10n.repository_copy_catalog,
-                leading: Icon(icons.webLink),
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: current.jsonUrl ?? ''));
-                  Navigator.pop(sheetContext);
-                },
-              ),
-              if (isBrowserUrl(current.website)) ...[
-                const SizedBox(height: 12),
-                NodeLaneRow.card(
-                  title: context.l10n.source_repository_website,
-                  leading: Icon(icons.web),
-                  onTap: () => launchUrl(
-                    Uri.parse(current.website!),
-                    mode: LaunchMode.externalApplication,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              if (!builtIn)
-                NodeLaneRow.card(
-                  title: context.l10n.repository_remove,
-                  leading: Icon(icons.delete),
-                  onTap: () async {
-                    final yes = await showDialog<bool>(
-                      context: sheetContext,
-                      builder: (dialogContext) => NodeLaneAlertDialog(
-                        title: Text(context.l10n.repository_remove),
-                        content: Text(context.l10n.repository_remove_hint),
-                        actions: [
-                          NodeLaneDialogAction(
-                            label: context.l10n.cancel,
-                            secondary: true,
-                            onPressed: () =>
-                                Navigator.pop(dialogContext, false),
-                          ),
-                          NodeLaneDialogAction(
-                            label: context.l10n.remove,
-                            destructive: true,
-                            onPressed: () => Navigator.pop(dialogContext, true),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (yes != true || !mounted || !sheetContext.mounted) {
-                      return;
-                    }
-                    final notifier = ref.read(
-                      extensionsRepoStateProvider(widget.itemType).notifier,
-                    );
-                    final repos = ref.read(
-                      extensionsRepoStateProvider(widget.itemType),
-                    );
-                    await notifier.set(
-                      repos.where((r) => r.jsonUrl != current.jsonUrl).toList(),
-                    );
-                    final ids = sourceRepository
-                        .getByItemType(widget.itemType)
-                        .where(
-                          (s) =>
-                              s.repo?.jsonUrl == current.jsonUrl &&
-                              (s.sourceCode?.isEmpty ?? true),
-                        )
-                        .map((s) => s.id!)
-                        .toList();
-                    if (ids.isNotEmpty) await sourceRepository.deleteAll(ids);
-                    if (sheetContext.mounted) Navigator.pop(sheetContext);
-                  },
-                ),
-            ],
-          ),
+  Future<void> _remove(Repo repo) async {
+    final l = context.l10n, type = widget.itemType;
+    if (!await showNodeLaneConfirmation(
+          context,
+          title: l.repository_remove,
+          message: l.repository_remove_hint,
+          confirmLabel: l.remove,
+          destructive: true,
+        ) ||
+        !mounted) {
+      return;
+    }
+    final provider = extensionsRepoStateProvider(type);
+    await ref
+        .read(provider.notifier)
+        .set(
+          ref.read(provider).where((r) => r.jsonUrl != repo.jsonUrl).toList(),
         );
-      },
-    ),
-  );
+    final ids = sourceRepository
+        .getByItemType(type)
+        .where(
+          (s) =>
+              s.repo?.jsonUrl == repo.jsonUrl &&
+              (s.sourceCode?.isEmpty ?? true),
+        )
+        .map((s) => s.id!)
+        .toList();
+    if (ids.isNotEmpty) await sourceRepository.deleteAll(ids);
+  }
+
+  Widget _repository(Repo repo, bool builtIn) {
+    final l = context.l10n, icons = NodeLaneIcons.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NodeLaneTokens.space8),
+      child: NodeLaneDisclosure(
+        key: ValueKey(repo.jsonUrl),
+        title: repositoryName(context, repo),
+        icon: icons.repository,
+        subtitle: [
+          if (builtIn) l.repository_built_in,
+          Uri.tryParse(repo.jsonUrl ?? '')?.host ?? '',
+          if (repo.hidden == true) l.repository_hidden,
+        ].join(' · '),
+        child: Column(
+          children: [
+            if (!builtIn)
+              NodeLaneSwitchRow(
+                title: l.repository_show_sources,
+                value: repo.hidden != true,
+                onChanged: (value) => ref
+                    .read(extensionsRepoStateProvider(widget.itemType).notifier)
+                    .setVisibility(repo, !value),
+              ),
+            NodeLaneRow(
+              title: l.repository_copy_catalog,
+              subtitle: repo.jsonUrl,
+              icon: icons.webLink,
+              onTap: () =>
+                  Clipboard.setData(ClipboardData(text: repo.jsonUrl ?? '')),
+            ),
+            if (isBrowserUrl(repo.website))
+              NodeLaneRow(
+                title: l.source_repository_website,
+                icon: icons.web,
+                onTap: () => launchUrl(
+                  Uri.parse(repo.website!),
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+            if (!builtIn)
+              NodeLaneRow(
+                title: l.repository_remove,
+                icon: icons.delete,
+                destructive: true,
+                onTap: () => _remove(repo),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final configured = ref.watch(extensionsRepoStateProvider(widget.itemType));
@@ -213,8 +172,10 @@ class _MobileRepositoryManagerState
     final repos = [if (builtIn) official, ...configured];
     final icons = NodeLaneIcons.of(context), t = NodeLaneTokens.of(context);
     final list = ListView(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+      padding: NodeLaneTokens.pagePadding,
       children: [
+        Text(context.l10n.repository_manage_hint, style: t.readerSecondary),
+        const SizedBox(height: NodeLaneTokens.space16),
         if (repos.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
@@ -224,18 +185,7 @@ class _MobileRepositoryManagerState
             ),
           ),
         for (var i = 0; i < repos.length; i++)
-          NodeLaneRow.card(
-            title: repositoryName(context, repos[i]),
-            subtitle: [
-              if (builtIn && i == 0) context.l10n.repository_built_in,
-              Uri.tryParse(repos[i].jsonUrl ?? '')?.host ?? '',
-              if (repos[i].hidden == true) context.l10n.repository_hidden,
-            ].join(' · '),
-            first: i == 0,
-            last: i == repos.length - 1,
-            leading: Icon(icons.repository),
-            onTap: () => _details(repos[i], builtIn: builtIn && i == 0),
-          ),
+          _repository(repos[i], builtIn && i == 0),
         const SizedBox(height: 20),
         NodeLaneRow.card(
           title: context.l10n.onboarding_add,
@@ -262,22 +212,10 @@ class _MobileRepositoryManagerState
           ),
       ],
     );
-    return widget.asPage
-        ? NodeLaneSurface(
-            child: Scaffold(
-              appBar: nodeLaneAppBar(
-                context,
-                title: context.l10n.repository_third_party,
-              ),
-              body: list,
-            ),
-          )
-        : NodeLaneCatalogSheet(
-            title: context.l10n.repository_third_party,
-            subtitle: context.l10n.repository_manage_hint,
-            heightFactor: .58,
-            child: list,
-          );
+    return MobileBrowsePage.form(
+      title: context.l10n.repository_third_party,
+      body: list,
+    );
   }
 }
 
@@ -383,26 +321,18 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     return PopScope(
       canPop: !saving,
-      child: NodeLaneCatalogSheet(
+      child: MobileBrowsePage.form(
         title: context.l10n.onboarding_add,
-        subtitle: context.l10n.repository_paste_hint,
-        heightFactor: .9,
-        fitContent: true,
-        canClose: !saving,
-        bottom: NodeLaneModalActions(
-          actions: [
-            NodeLaneDialogAction(
-              label: context.l10n.onboarding_add,
-              busy: saving,
-              onPressed: preview == null || saving ? null : _save,
-            ),
-          ],
+        bottomAction: FilledButton(
+          onPressed: preview == null || saving ? null : _save,
+          child: Text(context.l10n.onboarding_add),
         ),
-        child: ListView(
-          shrinkWrap: true,
+        body: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
+            Text(context.l10n.repository_paste_hint, style: t.readerSecondary),
+            const SizedBox(height: NodeLaneTokens.space16),
             NodeLaneTextField(
               controller: input,
               label: context.l10n.repository_address,

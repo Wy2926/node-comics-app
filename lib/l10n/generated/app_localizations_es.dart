@@ -10,7 +10,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get source_more_filters => 'Más filtros';
+  String get feedback_submit_source => 'Enviar solicitud';
 
   @override
   String get browser_clip_here => 'Marcar este punto';

@@ -2,6 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 /// Chrome is an overlay: opening it never changes the page viewport. Hidden
 /// controls yield pointer/keyboard input and semantics to the reader beneath them.
@@ -19,11 +20,16 @@ class MobileReaderPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
+    final inset = !top && context.isAndroidTablet
+        ? ((MediaQuery.sizeOf(context).width - NodeLaneTokens.tabletFormWidth) /
+                  2)
+              .clamp(0.0, double.infinity)
+        : 0.0;
     return Positioned(
       top: top ? 0 : null,
       bottom: top ? null : 0,
-      left: 0,
-      right: 0,
+      left: inset,
+      right: inset,
       child: ExcludeFocus(
         excluding: !visible,
         child: IgnorePointer(

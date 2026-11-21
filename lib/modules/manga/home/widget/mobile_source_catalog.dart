@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 
 /// Source requests, saved queries and navigation belong to the owning screen.
 class MobileSourceCatalog extends StatelessWidget {
@@ -52,8 +54,8 @@ class MobileSourceCatalog extends StatelessWidget {
           const SizedBox(width: NodeLaneTokens.space8),
         ],
         NodeLaneIconButton(
-          icon: icons.more,
-          tooltip: l10n.more,
+          icon: icons.settings,
+          tooltip: l10n.source_actions,
           onPressed: onOptions,
           active: filtering,
         ),
@@ -72,67 +74,65 @@ class MobileSourceCatalog extends StatelessWidget {
                   NodeLaneTokens.gutter,
                   NodeLaneTokens.space16,
                 ),
-                child: Column(
-                  children: [
-                    NodeLaneTextField.search(
-                      controller: search,
-                      onSubmitted: (_) => onSubmit(),
-                      onClear: onClear,
-                      hint: context.l10n.source_search_here,
-                      clearLabel: l10n.reset,
-                    ),
-                    const SizedBox(height: NodeLaneTokens.space16),
-                    if (selected == 2)
-                      Row(
-                        children: [
-                          Expanded(
+                child: NodeLaneToolbarPair(
+                  first: NodeLaneTextField.search(
+                    controller: search,
+                    onSubmitted: (_) => onSubmit(),
+                    onClear: onClear,
+                    hint: context.l10n.source_search_here,
+                    clearLabel: l10n.reset,
+                  ),
+                  second: selected == 2
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                filtering
+                                    ? context.l10n.source_filter_results
+                                    : context.l10n.source_search_results,
+                                style: t.readerLabel,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => onSelect(0),
+                              child: Text(context.l10n.source_return_popular),
+                            ),
+                          ],
+                        )
+                      : supportsLatest
+                      ? NodeLaneSegments<int>(
+                          value: selected,
+                          labelStyle: t.readerLabel,
+                          segments: [
+                            ButtonSegment(
+                              value: 0,
+                              label: Text(context.l10n.popular),
+                            ),
+                            ButtonSegment(
+                              value: 1,
+                              label: Text(context.l10n.latest),
+                            ),
+                          ],
+                          onChanged: onSelect,
+                        )
+                      : ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minHeight: NodeLaneTokens.minTapTarget,
+                          ),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
                             child: Text(
-                              filtering
-                                  ? context.l10n.source_filter_results
-                                  : context.l10n.source_search_results,
+                              context.l10n.source_popular_titles,
                               style: t.readerLabel,
                             ),
                           ),
-                          TextButton(
-                            onPressed: () => onSelect(0),
-                            child: Text(context.l10n.source_return_popular),
-                          ),
-                        ],
-                      )
-                    else if (supportsLatest)
-                      NodeLaneSegments<int>(
-                        value: selected,
-                        labelStyle: t.readerLabel,
-                        segments: [
-                          ButtonSegment(
-                            value: 0,
-                            label: Text(context.l10n.popular),
-                          ),
-                          ButtonSegment(
-                            value: 1,
-                            label: Text(context.l10n.latest),
-                          ),
-                        ],
-                        onChanged: onSelect,
-                      )
-                    else
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minHeight: NodeLaneTokens.minTapTarget,
                         ),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            context.l10n.source_popular_titles,
-                            style: t.readerLabel,
-                          ),
-                        ),
-                      ),
-                  ],
                 ),
               ),
             ),
-            Expanded(child: results),
+            Expanded(
+              child: NodeLaneContentMotion(value: selected, child: results),
+            ),
           ],
         ),
       ),
@@ -227,6 +227,7 @@ class MobileSourceMangaCard extends StatelessWidget {
     required this.onOpen,
     required this.onQuickAdd,
     required this.inLibrary,
+    this.current = false,
     this.author,
     this.list = false,
     this.compact = false,
@@ -235,7 +236,7 @@ class MobileSourceMangaCard extends StatelessWidget {
   final String? author;
   final Widget cover;
   final VoidCallback onOpen, onQuickAdd;
-  final bool inLibrary, list, compact;
+  final bool inLibrary, list, compact, current;
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +246,10 @@ class MobileSourceMangaCard extends StatelessWidget {
       title,
       maxLines: hasAuthor ? 1 : 2,
       overflow: TextOverflow.ellipsis,
-      style: colors.label.copyWith(height: 1.3),
+      style: colors.label.copyWith(
+        height: 1.3,
+        color: current ? colors.accent : null,
+      ),
     );
     final caption = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,8 +268,14 @@ class MobileSourceMangaCard extends StatelessWidget {
     );
     final image = ClipRRect(
       borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
-      child: ColoredBox(
+      child: Container(
         color: colors.soft,
+        foregroundDecoration: current
+            ? BoxDecoration(
+                border: Border.all(color: colors.accent, width: 2),
+                borderRadius: BorderRadius.circular(NodeLaneTokens.coverRadius),
+              )
+            : null,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -282,6 +292,7 @@ class MobileSourceMangaCard extends StatelessWidget {
     );
     return Semantics(
       label: title,
+      selected: current ? true : null,
       button: true,
       child: Material(
         color: Colors.transparent,

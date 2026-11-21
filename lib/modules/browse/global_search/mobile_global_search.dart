@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -28,26 +29,6 @@ class MobileGlobalSearchPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MobileBrowsePage(
     title: context.l10n.search_titles,
-    actions: [
-      NodeLaneMenuButton<String>(
-        icon: NodeLaneIcons.of(context).more,
-        tooltip: context.l10n.search_actions,
-        itemBuilder: (_) => [
-          PopupMenuItem(
-            value: 'scope',
-            enabled: onScope != null,
-            child: Text(context.l10n.search_scope),
-          ),
-          PopupMenuItem(
-            value: 'details',
-            enabled: onDetails != null,
-            child: Text(context.l10n.search_details),
-          ),
-        ],
-        onSelected: (action) =>
-            action == 'scope' ? onScope?.call() : onDetails?.call(),
-      ),
-    ],
     body: LayoutBuilder(
       builder: (context, constraints) => Column(
         children: [
@@ -63,50 +44,57 @@ class MobileGlobalSearchPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  NodeLaneTextField.search(
-                    controller: controller,
-                    hint: context.l10n.search_title_hint,
-                    clearLabel: context.l10n.reset,
-                    onSubmitted: (_) => onSubmit(),
-                    onClear: onClear,
-                    autofocus: controller.text.isEmpty,
-                  ),
-                  const SizedBox(height: NodeLaneTokens.space8),
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: NodeLaneTokens.space8,
-                    children: [
-                      TextButton(
-                        onPressed: onScope,
-                        style: TextButton.styleFrom(
-                          foregroundColor: NodeLaneTokens.of(context).ink,
-                          padding: EdgeInsets.zero,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              NodeLaneIcons.of(context).web,
-                              size: NodeLaneTokens.iconSize,
+                  NodeLaneToolbarPair(
+                    gap: NodeLaneTokens.space8,
+                    first: NodeLaneTextField.search(
+                      controller: controller,
+                      hint: context.l10n.search_title_hint,
+                      clearLabel: context.l10n.reset,
+                      onSubmitted: (_) => onSubmit(),
+                      onClear: onClear,
+                      autofocus: controller.text.isEmpty,
+                    ),
+                    second: Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: NodeLaneTokens.space8,
+                      children: [
+                        Tooltip(
+                          message: context.l10n.search_scope,
+                          child: TextButton(
+                            onPressed: onScope,
+                            style: TextButton.styleFrom(
+                              foregroundColor: NodeLaneTokens.of(context).ink,
+                              padding: EdgeInsets.zero,
                             ),
-                            const SizedBox(width: NodeLaneTokens.space8),
-                            Flexible(child: Text(scope)),
-                            const SizedBox(width: NodeLaneTokens.space4),
-                            Icon(
-                              NodeLaneIcons.of(context).down,
-                              size: NodeLaneTokens.smallIconSize,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  NodeLaneIcons.of(context).web,
+                                  size: NodeLaneTokens.iconSize,
+                                ),
+                                const SizedBox(width: NodeLaneTokens.space8),
+                                Flexible(child: Text(scope)),
+                                const SizedBox(width: NodeLaneTokens.space4),
+                                Icon(
+                                  NodeLaneIcons.of(context).down,
+                                  size: NodeLaneTokens.smallIconSize,
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                      if (onDetails != null)
-                        TextButton(
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                          onPressed: onDetails,
-                          child: Text(context.l10n.search_details),
-                        ),
-                    ],
+                        if (onDetails != null)
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                            ),
+                            onPressed: onDetails,
+                            child: Text(context.l10n.search_details),
+                          ),
+                      ],
+                    ),
                   ),
                   Divider(height: 1, color: NodeLaneTokens.of(context).line),
                 ],

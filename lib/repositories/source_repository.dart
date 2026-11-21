@@ -192,13 +192,24 @@ class SourceRepository {
               .filter()
               .idIsNotNull()
               .itemTypeEqualTo(itemType)
+              .group(
+                (q) => q
+                    .lastUsedEqualTo(true)
+                    .or()
+                    .lastUsedIsNull()
+                    .or()
+                    .idEqualTo(sourceId),
+              )
               .findAll();
-          final updated = sources.map((src) {
-            return src
-              ..lastUsed = src.id == sourceId
-              ..updatedAt = DateTime.now().millisecondsSinceEpoch;
-          }).toList();
-          await isar.sources.putAll(updated);
+          final now = DateTime.now().millisecondsSinceEpoch;
+          final updated = sources
+              .where((src) => src.lastUsed != (src.id == sourceId))
+              .toList();
+          for (final src in updated) {
+            src.lastUsed = src.id == sourceId;
+            src.updatedAt = now;
+          }
+          if (updated.isNotEmpty) await isar.sources.putAll(updated);
         }),
       );
 

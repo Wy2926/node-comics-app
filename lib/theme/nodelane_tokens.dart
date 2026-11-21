@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter/cupertino.dart';
 
 /// Presentation tokens shared by mobile screens and Android navigation.
@@ -21,7 +22,7 @@ class NodeLaneTokens {
   final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
   final Color searchSurface, searchLine;
   final TextStyle typeface;
-  static const disclosureDuration = Duration(milliseconds: 200);
+  static const disclosureDuration = NodeLaneMotion.duration;
   static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
   static const space16 = 16.0, space20 = 20.0, space24 = 24.0;
   static const gutter = space20, coverRadius = 10.0, controlRadius = 12.0;
@@ -98,7 +99,7 @@ class NodeLaneTokens {
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const menuMaxWidth = 280.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
-  static const catalogTabsWidth = 200.0;
+  static const catalogTabsWidth = 264.0;
   // Source cards share geometry across directories, metadata and action states.
   static const sourceCardTopInset = space8;
   static const sourceCardClassificationHeight = minTapTarget;
@@ -110,6 +111,13 @@ class NodeLaneTokens {
   static const navigationHeight = 64.0, navigationRadius = 32.0;
   static const navigationInset = 6.0, navigationLabelSize = 12.0;
   static const navigationLabelHeight = 1.3;
+  static const navigationRailWidth = 96.0;
+  // Tablet changes layout geometry only; controls keep the mobile visual roles.
+  static const tabletPaneBreakpoint = 720.0, tabletSupportingWidth = 320.0;
+  static const tabletCategoryWidth = 216.0, tabletOverviewWidth = 440.0;
+  static const tabletColumnWidth = 640.0, tabletFormWidth = 840.0;
+  static const tabletDashboardWidth = 1120.0, sourceCardMinWidth = 272.0;
+  static const browserInlineActionsWidth = 352.0;
   static const browserAddressHeight = 44.0, browserBackWidth = 64.0;
   static const browserDisplayWidth = 176.0;
   static const dialogMaxWidth = 480.0;
@@ -131,7 +139,11 @@ class NodeLaneTokens {
   static NodeLaneTokens of(BuildContext context) =>
       fromTheme(Theme.of(context));
 
-  static NodeLaneTokens fromTheme(ThemeData theme) {
+  static final _tokens = Expando<NodeLaneTokens>();
+  static NodeLaneTokens fromTheme(ThemeData theme) =>
+      _tokens[theme] ??= _fromTheme(theme);
+
+  static NodeLaneTokens _fromTheme(ThemeData theme) {
     final dark = theme.brightness == Brightness.dark;
     final pureBlack = dark && theme.scaffoldBackgroundColor == Colors.black;
     return NodeLaneTokens(
@@ -294,7 +306,13 @@ SliderThemeData nodeLaneSliderTheme(ThemeData theme) {
 
 /// Applied at the mobile app root so overlays on any navigator share tokens.
 /// Route ownership, dismissal, scrolling and save semantics stay with callers.
-ThemeData nodeLaneModalTheme(ThemeData base) {
+ThemeData nodeLaneModalTheme(ThemeData base) =>
+    _modalThemes[base] ??= _buildModalTheme(base);
+
+// ThemeData is immutable. Fresh state-property closures otherwise invalidate
+// every themed descendant on an unrelated navigation or list update.
+final _modalThemes = Expando<ThemeData>();
+ThemeData _buildModalTheme(ThemeData base) {
   final colors = NodeLaneTokens.fromTheme(base);
   final dialogShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(NodeLaneTokens.modalRadius),
@@ -431,49 +449,51 @@ ThemeData nodeLaneModalTheme(ThemeData base) {
 class NodeLaneSurface extends StatelessWidget {
   const NodeLaneSurface({super.key, required this.child});
   final Widget child;
+  static final _themes = Expando<ThemeData>();
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     final base = Theme.of(context);
+    return Theme(data: _themes[base] ??= _surfaceTheme(base), child: child);
+  }
+
+  static ThemeData _surfaceTheme(ThemeData base) {
+    final colors = NodeLaneTokens.fromTheme(base);
     final theme = nodeLaneModalTheme(base);
-    return Theme(
-      data: theme.copyWith(
-        scaffoldBackgroundColor: colors.canvas,
-        dividerColor: colors.line,
-        listTileTheme: theme.listTileTheme.copyWith(
-          minLeadingWidth: 28,
-          horizontalTitleGap: NodeLaneTokens.space12,
-          selectedColor: colors.accent,
-          selectedTileColor: colors.accentSoft,
-          textColor: colors.ink,
-        ),
-        badgeTheme: base.badgeTheme.copyWith(
-          backgroundColor: colors.accent,
-          textColor: colors.onAccent,
-          textStyle: colors.caption,
-          largeSize: 22,
-        ),
-        chipTheme: base.chipTheme.copyWith(
-          selectedColor: colors.accentSoft,
-          backgroundColor: colors.soft,
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-          ),
-          labelStyle: colors.label,
-        ),
-        appBarTheme: base.appBarTheme.copyWith(
-          centerTitle: true,
-          titleTextStyle: colors.readerTitle,
-          scrolledUnderElevation: 0,
-          backgroundColor: colors.canvas,
-          foregroundColor: colors.ink,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-        ),
+    return theme.copyWith(
+      scaffoldBackgroundColor: colors.canvas,
+      dividerColor: colors.line,
+      listTileTheme: theme.listTileTheme.copyWith(
+        minLeadingWidth: 28,
+        horizontalTitleGap: NodeLaneTokens.space12,
+        selectedColor: colors.accent,
+        selectedTileColor: colors.accentSoft,
+        textColor: colors.ink,
       ),
-      child: child,
+      badgeTheme: base.badgeTheme.copyWith(
+        backgroundColor: colors.accent,
+        textColor: colors.onAccent,
+        textStyle: colors.caption,
+        largeSize: 22,
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        selectedColor: colors.accentSoft,
+        backgroundColor: colors.soft,
+        side: BorderSide.none,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+        ),
+        labelStyle: colors.label,
+      ),
+      appBarTheme: base.appBarTheme.copyWith(
+        centerTitle: true,
+        titleTextStyle: colors.readerTitle,
+        scrolledUnderElevation: 0,
+        backgroundColor: colors.canvas,
+        foregroundColor: colors.ink,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+      ),
     );
   }
 }

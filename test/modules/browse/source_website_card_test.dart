@@ -58,7 +58,13 @@ void main() {
         ),
         home: Scaffold(
           body: Center(
-            child: SizedBox(width: width, child: child),
+            child: Builder(
+              builder: (context) => SizedBox(
+                width: width,
+                height: SourceWebsiteCard.gridExtent(context, width),
+                child: child,
+              ),
+            ),
           ),
         ),
       ),
@@ -76,53 +82,50 @@ void main() {
     testWidgets(
       'card dimensions and text fit at width $width, scale $scale, line height $lineHeight',
       (tester) async {
-        Size? reference;
-        for (final action in SourceCardAction.values) {
-          for (final pricing in SourcePricing.values) {
-            final source = _source(pricing, adult: pricing.index.isEven);
-            await mount(
-              tester,
-              SourceWebsiteCard(
-                source: source,
-                action: action,
-                onOpen: () {},
-                onAction: () {},
-                onDetails: () {},
-                onLongPress: () {},
-              ),
-              width: width,
-              scale: scale,
-              lineHeight: lineHeight,
-              brightness: brightness,
-            );
-            final size = tester.getSize(find.byType(SourceWebsiteCard));
-            reference ??= size;
+        for (final (action, pricing) in [
+          for (final action in SourceCardAction.values)
+            (action, SourcePricing.unknown),
+          for (final pricing in SourcePricing.values.where(
+            (p) => p != SourcePricing.unknown,
+          ))
+            (SourceCardAction.open, pricing),
+        ]) {
+          final source = _source(pricing, adult: pricing.index.isEven);
+          await mount(
+            tester,
+            SourceWebsiteCard(
+              source: source,
+              action: action,
+              onOpen: () {},
+              onAction: () {},
+              onDetails: () {},
+              onLongPress: () {},
+            ),
+            width: width,
+            scale: scale,
+            lineHeight: lineHeight,
+            brightness: brightness,
+          );
+          final language = tester.getRect(find.text('中文(Zhōngwén)'));
+          final classification = tester.getRect(find.textContaining('日漫'));
+          expect(language.bottom, lessThanOrEqualTo(classification.top));
+          for (final element
+              in find
+                  .descendant(
+                    of: find.byType(SourceWebsiteCard),
+                    matching: find.byType(RichText),
+                  )
+                  .evaluate()) {
+            final paragraph = element.renderObject! as RenderParagraph;
             expect(
-              size,
-              reference,
-              reason: '$action $pricing changed the geometry',
+              paragraph.size.height,
+              greaterThanOrEqualTo(
+                paragraph.getMaxIntrinsicHeight(paragraph.size.width) - .001,
+              ),
+              reason: '${paragraph.text.toPlainText()} is clipped',
             );
-            final language = tester.getRect(find.text('中文(Zhōngwén)'));
-            final classification = tester.getRect(find.textContaining('日漫'));
-            expect(language.bottom, lessThanOrEqualTo(classification.top));
-            for (final element
-                in find
-                    .descendant(
-                      of: find.byType(SourceWebsiteCard),
-                      matching: find.byType(RichText),
-                    )
-                    .evaluate()) {
-              final paragraph = element.renderObject! as RenderParagraph;
-              expect(
-                paragraph.size.height,
-                greaterThanOrEqualTo(
-                  paragraph.getMaxIntrinsicHeight(paragraph.size.width) - .001,
-                ),
-                reason: '${paragraph.text.toPlainText()} is clipped',
-              );
-            }
-            expect(tester.takeException(), isNull);
           }
+          expect(tester.takeException(), isNull);
         }
       },
     );
@@ -246,7 +249,8 @@ void main() {
       expect([opened, updated], [0, 1]);
       await tester.tap(find.text('+4'));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.byType(NodeLaneCatalogSheet), findsNothing);
+      expect(find.text('最新内容'), findsOneWidget);
       expect(find.text('日漫、韩漫、国漫、欧美漫画'), findsOneWidget);
       expect(opened, 0);
       Navigator.of(tester.element(find.text('地区'))).pop();

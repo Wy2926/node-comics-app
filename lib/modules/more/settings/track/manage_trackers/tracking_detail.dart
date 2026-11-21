@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -30,7 +31,10 @@ class _TrackingDetailState extends State<TrackingDetail>
   @override
   void initState() {
     super.initState();
-    _tabBarController = TabController(length: isMovies ? 1 : 2, vsync: this);
+    _tabBarController = NodeLaneMotion.tabs(
+      length: isMovies ? 1 : 2,
+      vsync: this,
+    );
   }
 
   @override
@@ -50,41 +54,37 @@ class _TrackingDetailState extends State<TrackingDetail>
     }
     final l10n = l10nLocalizations(context)!;
 
-    return DefaultTabController(
-      animationDuration: Duration.zero,
-      length: isMovies ? 1 : 2,
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          title: Text(
-            widget.trackerPref.syncId == -1
-                ? 'Local'
-                : trackInfos(widget.trackerPref.syncId!).$2,
-          ),
-          bottom: TabBar(
-            indicatorSize: TabBarIndicatorSize.tab,
-            controller: _tabBarController,
-            tabs: [
-              if (!isMovies) Tab(text: l10n.manga),
-              Tab(text: l10n.anime),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          widget.trackerPref.syncId == -1
+              ? 'Local'
+              : trackInfos(widget.trackerPref.syncId!).$2,
         ),
-        body: TabBarView(
+        bottom: TabBar(
+          indicatorSize: TabBarIndicatorSize.tab,
           controller: _tabBarController,
-          children: [
-            if (!isMovies)
-              TrackingTab(
-                itemType: ItemType.manga,
-                syncId: widget.trackerPref.syncId!,
-              ),
-            TrackingTab(
-              itemType: ItemType.anime,
-              syncId: widget.trackerPref.syncId!,
-            ),
+          tabs: [
+            if (!isMovies) Tab(text: l10n.manga),
+            Tab(text: l10n.anime),
           ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabBarController,
+        children: [
+          if (!isMovies)
+            TrackingTab(
+              itemType: ItemType.manga,
+              syncId: widget.trackerPref.syncId!,
+            ),
+          TrackingTab(
+            itemType: ItemType.anime,
+            syncId: widget.trackerPref.syncId!,
+          ),
+        ],
       ),
     );
   }

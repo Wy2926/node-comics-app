@@ -3,16 +3,18 @@ import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
 import 'dart:async';
 
-import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/modules/feedback/support_request_page.dart';
 import 'package:mangayomi/services/support_requests.dart';
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/utils/share.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/translation/translation_image_actions.dart';
@@ -993,6 +995,36 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   @override
   Widget build(BuildContext context) {
     final tab = current;
+    final inline = context.tabletPanesFit(
+      MediaQuery.sizeOf(context).width -
+          MediaQuery.paddingOf(context).horizontal,
+    );
+    final toolbar =
+        tab == null ||
+            tab.isBlank ||
+            tab.focused ||
+            MediaQuery.viewInsetsOf(context).bottom != 0
+        ? null
+        : ListenableBuilder(
+            listenable: tab.translation,
+            builder: (context, _) => MobileBrowserToolbar(
+              inline: inline,
+              tabCount: tabs.length,
+              onBack: tab.canMove(-1) ? () => _history(-1) : null,
+              onNew: () => _new(''),
+              showTranslation: tab.translation.showTranslation,
+              onDisplayChanged: tab.pageReady
+                  ? (value) {
+                      tab.translation.configure(showTranslation: value);
+                      _save();
+                    }
+                  : null,
+              onControls: !tab.pageReady
+                  ? null
+                  : () => _translationControls(tab),
+              onTabs: _showTabs,
+            ),
+          );
     return PopScope(
       canPop: _savedOnExit || tab == null,
       onPopInvokedWithResult: (didPop, _) {
@@ -1008,180 +1040,172 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       },
       child: NodeLaneSurface(
         child: Scaffold(
-          body: Column(
-            children: [
-              if (tab != null && !tab.isBlank && !tab.focused)
-                MobileBrowserHeader(
-                  key: ValueKey(tab.id),
-                  url: tab.url,
-                  addressFocus: _addressFocus,
-                  onSubmitted: _openAddress,
-                  openTabs: tabs.map(
-                    (t) => {'id': t.id, 'url': t.url, 'title': t.title},
-                  ),
-                  onMatch: (m) {
-                    final existing = tabs
-                        .where((t) => t.id == m.tabId)
-                        .firstOrNull;
-                    if (existing == null) {
-                      _openAddress(m.url, clipAnchor: m.bookmark?.anchor);
-                    } else {
-                      _select(existing);
-                    }
-                  },
-                  onClose: _leave,
-                  onReload: () async {
-                    try {
-                      if (tab.needsRecreate) {
-                        _recreate(tab);
-                      } else if (tab.loading) {
-                        await tab.controller?.stop();
-                        if (mounted) setState(() => tab.loading = false);
-                      } else {
-                        await tab.controller?.reload();
-                      }
-                    } catch (_) {
-                      if (context.mounted) {
-                        showNodeLaneNotice(
-                          context.l10n.browser_action_failed,
-                          kind: NodeLaneNoticeKind.error,
-                        );
-                      }
-                    }
-                  },
-                  loading: tab.loading,
-                  engine: browserLibraryStore.engine,
-                  onEngine: browserLibraryStore.setEngine,
-                  menu: _menu(tab),
-                  protection: switch (tab.controller?.protection) {
-                    null => null,
-                    final protection => (
-                      name: context.l10n.browser_protection,
-                      open: () => _showProtection(tab, protection),
+          body: SafeArea(
+            top: false,
+            left: false,
+            right: false,
+            bottom: inline && toolbar != null,
+            child: Column(
+              children: [
+                if (tab != null && !tab.isBlank && !tab.focused)
+                  MobileBrowserHeader(
+                    key: ValueKey(tab.id),
+                    url: tab.url,
+                    addressFocus: _addressFocus,
+                    onSubmitted: _openAddress,
+                    openTabs: tabs.map(
+                      (t) => {'id': t.id, 'url': t.url, 'title': t.title},
                     ),
-                  },
-                ),
-              Expanded(
-                key: const ValueKey('browser-content'),
-                child: _restoreFailed || (tab?.isBlank == true && _saveFailed)
-                    ? NodeLaneEmptyState.error(
-                        title: context.l10n.browser_data_failed,
-                        message: context.l10n.operation_retry,
-                        onRetry: () {
-                          if (!ready) {
-                            setState(() => _restoreFailed = false);
-                            _restore();
-                          } else {
-                            _leave(toStart: true);
-                          }
-                        },
-                      )
-                    : !ready || tab?.isBlank == true
-                    ? const NodeLaneEmptyState.loading()
-                    : Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          for (final item in tabs.where(
-                            (item) => _mountedTabs.contains(item.id),
-                          ))
-                            Offstage(
-                              key: ValueKey(
-                                '${item.id}:${item.viewGeneration}',
-                              ),
-                              offstage: item.id != active,
-                              child: TickerMode(
-                                enabled: _visible && item.id == active,
-                                child: ExcludeFocus(
-                                  excluding: item.id != active,
-                                  child: _BrowserTabView(
-                                    tab: item,
-                                    useGecko: _useGecko,
-                                    active: _visible && item.id == active,
-                                    changed: () {
-                                      if (mounted && item.id == active) {
-                                        setState(() {});
-                                      }
-                                      _save();
-                                    },
-                                    save: _save,
-                                    newTab: _new,
-                                    editAddress: _addressFocus.requestFocus,
-                                    recreate: () => _recreate(item),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (tab != null &&
-                              tab.chapter &&
-                              tab.pageReady &&
-                              !tab.findOpen &&
-                              MediaQuery.viewInsetsOf(context).bottom == 0)
-                            PositionedDirectional(
-                              bottom: NodeLaneTokens.space8,
-                              start: NodeLaneTokens.space8,
-                              end: NodeLaneTokens.space8,
-                              child: SafeArea(
-                                top: false,
-                                bottom: tab.focused,
-                                child: Center(
-                                  child: ListenableBuilder(
-                                    listenable: tab.translation,
-                                    builder: (context, _) =>
-                                        BrowserChapterTools(
-                                          focused: tab.focused,
-                                          translated:
-                                              tab.translation.showTranslation,
-                                          onFocus: () => _toggleFocus(tab),
-                                          onClip: _clipping
-                                              ? null
-                                              : () => _clip(tab),
-                                          onDisplay: (value) {
-                                            tab.translation.configure(
-                                              showTranslation: value,
-                                            );
-                                            _save();
-                                          },
-                                          onNext: tab.nextChapter == null
-                                              ? null
-                                              : () {
-                                                  final next = tab.nextChapter;
-                                                  if (next == null) return;
-                                                  tab.focusOnChapter =
-                                                      tab.focused ? next : null;
-                                                  _openAddress(next);
-                                                },
-                                        ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
+                    onMatch: (m) {
+                      final existing = tabs
+                          .where((t) => t.id == m.tabId)
+                          .firstOrNull;
+                      if (existing == null) {
+                        _openAddress(m.url, clipAnchor: m.bookmark?.anchor);
+                      } else {
+                        _select(existing);
+                      }
+                    },
+                    onClose: _leave,
+                    onReload: () async {
+                      try {
+                        if (tab.needsRecreate) {
+                          _recreate(tab);
+                        } else if (tab.loading) {
+                          await tab.controller?.stop();
+                          if (mounted) setState(() => tab.loading = false);
+                        } else {
+                          await tab.controller?.reload();
+                        }
+                      } catch (_) {
+                        if (context.mounted) {
+                          showNodeLaneNotice(
+                            context.l10n.browser_action_failed,
+                            kind: NodeLaneNoticeKind.error,
+                          );
+                        }
+                      }
+                    },
+                    loading: tab.loading,
+                    engine: browserLibraryStore.engine,
+                    onEngine: browserLibraryStore.setEngine,
+                    menu: _menu(tab),
+                    toolbar: inline ? toolbar : null,
+                    protection: switch (tab.controller?.protection) {
+                      null => null,
+                      final protection => (
+                        name: context.l10n.browser_protection,
+                        open: () => _showProtection(tab, protection),
                       ),
-              ),
-              if (tab != null &&
-                  !tab.isBlank &&
-                  !tab.focused &&
-                  MediaQuery.viewInsetsOf(context).bottom == 0)
-                ListenableBuilder(
-                  listenable: tab.translation,
-                  builder: (context, _) => MobileBrowserToolbar(
-                    tabCount: tabs.length,
-                    onBack: tab.canMove(-1) ? () => _history(-1) : null,
-                    onNew: () => _new(''),
-                    showTranslation: tab.translation.showTranslation,
-                    onDisplayChanged: tab.pageReady
-                        ? (value) {
-                            tab.translation.configure(showTranslation: value);
-                            _save();
-                          }
-                        : null,
-                    onControls: !tab.pageReady
-                        ? null
-                        : () => _translationControls(tab),
-                    onTabs: _showTabs,
+                    },
                   ),
+                Expanded(
+                  key: const ValueKey('browser-content'),
+                  child: _restoreFailed || (tab?.isBlank == true && _saveFailed)
+                      ? NodeLaneEmptyState.error(
+                          title: context.l10n.browser_data_failed,
+                          message: context.l10n.operation_retry,
+                          onRetry: () {
+                            if (!ready) {
+                              setState(() => _restoreFailed = false);
+                              _restore();
+                            } else {
+                              _leave(toStart: true);
+                            }
+                          },
+                        )
+                      : !ready || tab?.isBlank == true
+                      ? const NodeLaneEmptyState.loading()
+                      : NodeLaneContentMotion(
+                          value: active,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              for (final item in tabs.where(
+                                (item) => _mountedTabs.contains(item.id),
+                              ))
+                                Offstage(
+                                  key: ValueKey(
+                                    '${item.id}:${item.viewGeneration}',
+                                  ),
+                                  offstage: item.id != active,
+                                  child: TickerMode(
+                                    enabled: _visible && item.id == active,
+                                    child: ExcludeFocus(
+                                      excluding: item.id != active,
+                                      child: _BrowserTabView(
+                                        tab: item,
+                                        useGecko: _useGecko,
+                                        active: _visible && item.id == active,
+                                        changed: () {
+                                          if (mounted && item.id == active) {
+                                            setState(() {});
+                                          }
+                                          _save();
+                                        },
+                                        save: _save,
+                                        newTab: _new,
+                                        editAddress: _addressFocus.requestFocus,
+                                        recreate: () => _recreate(item),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              if (tab != null &&
+                                  tab.chapter &&
+                                  tab.pageReady &&
+                                  !tab.findOpen &&
+                                  MediaQuery.viewInsetsOf(context).bottom == 0)
+                                PositionedDirectional(
+                                  bottom: NodeLaneTokens.space8,
+                                  start: NodeLaneTokens.space8,
+                                  end: NodeLaneTokens.space8,
+                                  child: SafeArea(
+                                    top: false,
+                                    bottom: tab.focused,
+                                    child: Center(
+                                      child: ListenableBuilder(
+                                        listenable: tab.translation,
+                                        builder: (context, _) =>
+                                            BrowserChapterTools(
+                                              focused: tab.focused,
+                                              translated: tab
+                                                  .translation
+                                                  .showTranslation,
+                                              onFocus: () => _toggleFocus(tab),
+                                              onClip: _clipping
+                                                  ? null
+                                                  : () => _clip(tab),
+                                              onDisplay: (value) {
+                                                tab.translation.configure(
+                                                  showTranslation: value,
+                                                );
+                                                _save();
+                                              },
+                                              onNext: tab.nextChapter == null
+                                                  ? null
+                                                  : () {
+                                                      final next =
+                                                          tab.nextChapter;
+                                                      if (next == null) return;
+                                                      tab.focusOnChapter =
+                                                          tab.focused
+                                                          ? next
+                                                          : null;
+                                                      _openAddress(next);
+                                                    },
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                 ),
-            ],
+                if (!inline && toolbar != null) toolbar,
+              ],
+            ),
           ),
         ),
       ),
@@ -1462,9 +1486,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
           child: IgnorePointer(
             child: ExcludeSemantics(
               child: AnimatedSwitcher(
-                duration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : const Duration(milliseconds: 120),
+                duration: NodeLaneMotion.time(context),
                 child: _revealed
                     ? const SizedBox.expand()
                     : SizedBox.expand(

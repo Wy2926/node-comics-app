@@ -4,6 +4,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 
 /// Search destinations lay out the finite settings page so a row below the
 /// fold can be revealed immediately. Ordinary navigation keeps lazy layout.
@@ -17,15 +18,17 @@ class MobileSettingsList extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) => NodeLaneRevealScope.activeOf(context)
-      ? SingleChildScrollView(
-          padding: padding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          ),
-        )
-      : ListView(padding: padding, children: children);
+  Widget build(BuildContext context) => NodeLaneFormColumn(
+    child: NodeLaneRevealScope.activeOf(context)
+        ? SingleChildScrollView(
+            padding: padding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          )
+        : ListView(padding: padding, children: children),
+  );
 }
 
 /// Choice presentation and cancellation only; preference writes stay with callers.

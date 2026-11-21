@@ -1,5 +1,8 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/statistics/statistics_provider.dart';
@@ -31,38 +34,41 @@ class _MobileStatisticsState extends ConsumerState<MobileStatistics> {
         appBar: nodeLaneAppBar(context, title: l10n.statistics),
         body: SafeArea(
           top: false,
-          child: ListView(
-            key: PageStorageKey('mobile-statistics-$type'),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            children: [
-              MobileMediaSelector(
-                types: widget.types,
-                selected: type,
-                onChanged: (value) => setState(() => _type = value),
-              ),
-              if (type == null)
-                Text(l10n.no_result)
-              else
-                stats!.when(
-                  skipLoadingOnRefresh: false,
-                  loading: () => const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  error: (_, _) => Column(
-                    children: [
-                      Text(l10n.failed),
-                      TextButton(
-                        onPressed: () => ref.invalidate(
-                          getStatisticsProvider(itemType: type),
-                        ),
-                        child: Text(l10n.retry),
-                      ),
-                    ],
-                  ),
-                  data: (value) => _StatisticsValues(type: type, stats: value),
+          child: NodeLaneContentMotion(
+            value: type,
+            child: MobileSettingsList(
+              key: PageStorageKey('mobile-statistics-$type'),
+              children: [
+                MobileMediaSelector(
+                  types: widget.types,
+                  selected: type,
+                  onChanged: (value) => setState(() => _type = value),
                 ),
-            ],
+                if (type == null)
+                  Text(l10n.no_result)
+                else
+                  stats!.when(
+                    skipLoadingOnRefresh: false,
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (_, _) => Column(
+                      children: [
+                        Text(l10n.failed),
+                        TextButton(
+                          onPressed: () => ref.invalidate(
+                            getStatisticsProvider(itemType: type),
+                          ),
+                          child: Text(l10n.retry),
+                        ),
+                      ],
+                    ),
+                    data: (value) =>
+                        _StatisticsValues(type: type, stats: value),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -177,7 +183,7 @@ class _Section extends StatelessWidget {
     padding: const EdgeInsets.only(top: 12, bottom: 12),
     child: Semantics(
       header: true,
-      child: Text(text, style: Theme.of(context).textTheme.titleMedium),
+      child: Text(text, style: NodeLaneTokens.of(context).detailSectionTitle),
     ),
   );
 }
@@ -189,15 +195,17 @@ class _MetricGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final columns =
-          constraints.maxWidth >= 320 &&
-              MediaQuery.textScalerOf(context).scale(16) <= 24
+      final columns = context.tabletPanesFit(constraints.maxWidth)
+          ? values.length
+          : constraints.maxWidth >= 320 &&
+                MediaQuery.textScalerOf(context).scale(16) <= 24
           ? 2
           : 1;
-      final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+      const gap = NodeLaneTokens.space12;
+      final width = (constraints.maxWidth - (columns - 1) * gap) / columns;
       return Wrap(
-        spacing: 12,
-        runSpacing: 12,
+        spacing: gap,
+        runSpacing: gap,
         children: [
           for (final (label, value) in values)
             SizedBox(
@@ -218,29 +226,19 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.line),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(color: colors.muted)),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w600,
-              color: colors.ink,
-            ),
-          ),
-          ?footer,
-        ],
+    return NodeLaneGroupSurface(
+      outlined: true,
+      child: Padding(
+        padding: NodeLaneTokens.groupPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: colors.readerSecondary),
+            const SizedBox(height: NodeLaneTokens.space8),
+            Text(value, style: colors.detailTitle),
+            ?footer,
+          ],
+        ),
       ),
     );
   }

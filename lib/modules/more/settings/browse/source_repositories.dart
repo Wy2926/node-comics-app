@@ -1,5 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-import 'package:mangayomi/modules/browse/mobile_repository_sheets.dart';
+import 'package:mangayomi/modules/browse/mobile_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
@@ -77,7 +77,7 @@ class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
   @override
   Widget build(BuildContext context) {
     if (isMobile && !isTv) {
-      return MobileRepositoryManager(itemType: widget.itemType, asPage: true);
+      return MobileRepositoryManager(itemType: widget.itemType);
     }
     final l10n = context.l10n;
     final repositories = ref.watch(

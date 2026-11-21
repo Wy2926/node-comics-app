@@ -10,7 +10,7 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get source_more_filters => 'Weitere Filter';
+  String get feedback_submit_source => 'Anfrage senden';
 
   @override
   String get browser_clip_here => 'Diese Stelle merken';

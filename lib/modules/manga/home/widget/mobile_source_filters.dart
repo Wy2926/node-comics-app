@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -9,8 +10,8 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 
 import 'source_filter_labels.dart';
 
-class MobileSourceFilterSheet extends StatefulWidget {
-  const MobileSourceFilterSheet({
+class MobileSourceFilterPage extends StatefulWidget {
+  const MobileSourceFilterPage({
     super.key,
     required this.filters,
     required this.defaults,
@@ -21,22 +22,19 @@ class MobileSourceFilterSheet extends StatefulWidget {
   final List<dynamic> Function() defaults;
 
   @override
-  State<MobileSourceFilterSheet> createState() =>
-      _MobileSourceFilterSheetState();
+  State<MobileSourceFilterPage> createState() => _MobileSourceFilterPageState();
 }
 
-class _MobileSourceFilterSheetState extends State<MobileSourceFilterSheet> {
+class _MobileSourceFilterPageState extends State<MobileSourceFilterPage> {
   late List<dynamic> _draft = copySourceFilters(widget.filters);
   int _resetVersion = 0;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return NodeLaneCatalogSheet(
+    return MobileBrowsePage.form(
       title: l10n.filter,
-      subtitle: widget.sourceName,
-      heightFactor: .82,
-      bottom: Row(
+      bottomAction: Row(
         children: [
           NodeLaneSecondaryButton(
             onPressed: () => setState(() {
@@ -54,10 +52,12 @@ class _MobileSourceFilterSheetState extends State<MobileSourceFilterSheet> {
           ),
         ],
       ),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
+      body: ListView(
+        padding: NodeLaneTokens.pagePadding,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: [
+          if (widget.sourceName != null)
+            NodeLaneSectionHeading(widget.sourceName!),
           Text(
             l10n.source_filter_scope,
             style: NodeLaneTokens.of(context).readerSecondary,
@@ -233,8 +233,11 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                             if (!expanded.remove(i)) expanded.add(i);
                           }),
                         ),
-                        if (expanded.contains(i))
+                        NodeLaneMotion.disclosure(
+                          context,
+                          expanded.contains(i),
                           SourceFilterFields(filters: f.state, nested: true),
+                        ),
                       ],
                     );
                   }

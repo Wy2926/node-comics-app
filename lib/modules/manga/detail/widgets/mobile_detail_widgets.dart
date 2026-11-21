@@ -1,7 +1,130 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
+
+/// A single chapter viewport; the overview moves beside it when both fit.
+class MobileDetailLayout extends StatefulWidget {
+  const MobileDetailLayout({
+    super.key,
+    required this.overview,
+    required this.chapterHeading,
+    this.chapterCount = 0,
+    this.chapterBuilder,
+    this.empty,
+    this.controller,
+  }) : assert(chapterCount == 0 || chapterBuilder != null);
+
+  final Widget overview, chapterHeading;
+  final int chapterCount;
+  final IndexedWidgetBuilder? chapterBuilder;
+  final Widget? empty;
+  final ScrollController? controller;
+
+  @override
+  State<MobileDetailLayout> createState() => _MobileDetailLayoutState();
+}
+
+class _MobileDetailLayoutState extends State<MobileDetailLayout> {
+  final _chapters = ListController();
+  final _overview = GlobalKey();
+  final _scroll = ScrollController();
+  bool? _split;
+
+  void _retainChapter(bool split, ScrollController scroll) {
+    final changed = _split != null && _split != split;
+    _split = split;
+    if (!changed ||
+        !_chapters.isAttached ||
+        !scroll.hasClients ||
+        scroll.offset <= 0) {
+      return;
+    }
+    final first = _chapters.unobstructedVisibleRange?.$1;
+    if (first == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          _split != split ||
+          !_chapters.isAttached ||
+          first >= widget.chapterCount ||
+          !scroll.hasClients) {
+        return;
+      }
+      _chapters.jumpToItem(
+        index: first,
+        scrollController: scroll,
+        alignment: 0,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    _chapters.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final overview = KeyedSubtree(key: _overview, child: widget.overview);
+    final scroll = widget.controller ?? _scroll;
+    return NodeLanePaneLayout(
+      paneWidth: NodeLaneTokens.tabletOverviewWidth,
+      pane: (_) => SingleChildScrollView(
+        key: const PageStorageKey('book-overview'),
+        padding: const EdgeInsets.only(bottom: NodeLaneTokens.space24),
+        child: overview,
+      ),
+      body: (context, split) {
+        _retainChapter(split, scroll);
+        final heading = Padding(
+          padding: const EdgeInsets.fromLTRB(
+            NodeLaneTokens.gutter,
+            NodeLaneTokens.space8,
+            NodeLaneTokens.gutter,
+            0,
+          ),
+          child: widget.chapterHeading,
+        );
+        return CustomScrollView(
+          controller: scroll,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            if (!split) SliverToBoxAdapter(child: overview),
+            if (split)
+              PinnedHeaderSliver(
+                child: ColoredBox(
+                  color: NodeLaneTokens.of(context).canvas,
+                  child: heading,
+                ),
+              )
+            else
+              SliverToBoxAdapter(child: heading),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.gutter,
+              ),
+              sliver: widget.chapterCount == 0
+                  ? SliverToBoxAdapter(child: widget.empty)
+                  : SuperSliverList.builder(
+                      listController: _chapters,
+                      itemCount: widget.chapterCount,
+                      itemBuilder: widget.chapterBuilder!,
+                    ),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: NodeLaneTokens.space16),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
 /// Shared geometry for the overview. Slots retain their existing state and actions.
 class MobileDetailOverview extends StatelessWidget {
@@ -11,9 +134,8 @@ class MobileDetailOverview extends StatelessWidget {
     required this.actions,
     this.synopsis,
     required this.more,
-    required this.chapters,
   });
-  final Widget heading, actions, more, chapters;
+  final Widget heading, actions, more;
   final Widget? synopsis;
   @override
   Widget build(BuildContext context) => Padding(
@@ -32,8 +154,6 @@ class MobileDetailOverview extends StatelessWidget {
         if (synopsis != null) ...[const SizedBox(height: 16), synopsis!],
         const SizedBox(height: 12),
         more,
-        const SizedBox(height: 8),
-        chapters,
       ],
     ),
   );
@@ -129,13 +249,9 @@ class MobileChapterFilterSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
-    final tabHeight = (MediaQuery.textScalerOf(context).scale(14) + 24).clamp(
-      48.0,
-      double.infinity,
-    );
     return NodeLaneSurface(
       child: DefaultTabController(
+        animationDuration: NodeLaneMotion.time(context),
         length: labels.length,
         child: Builder(
           builder: (context) {
@@ -150,35 +266,31 @@ class MobileChapterFilterSheet extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: TabBar(
-                            isScrollable: true,
-                            tabAlignment: TabAlignment.start,
-                            labelStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            unselectedLabelColor: colors.muted,
-                            dividerColor: Colors.transparent,
-                            tabs: [
-                              for (final label in labels)
-                                Tab(text: label, height: tabHeight),
-                            ],
+                          child: NodeLaneTabSegments(
+                            controller: controller,
+                            labels: labels,
+                            scrollable: true,
                           ),
                         ),
-                        IconButton(
+                        NodeLaneIconButton(
                           tooltip: closeLabel,
                           onPressed: onClose,
-                          icon: const Icon(Icons.close),
+                          icon: NodeLaneIcons.of(context).close,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: NodeLaneTokens.space4),
                       ],
                     ),
-                    Divider(height: 1, color: colors.line),
+                    const NodeLaneGroupDivider(),
                     Flexible(
-                      child: SingleChildScrollView(
-                        key: PageStorageKey(controller.index),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: children[controller.index],
+                      child: NodeLaneContentMotion(
+                        value: controller.index,
+                        child: SingleChildScrollView(
+                          key: PageStorageKey(controller.index),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: NodeLaneTokens.space8,
+                          ),
+                          child: children[controller.index],
+                        ),
                       ),
                     ),
                   ],

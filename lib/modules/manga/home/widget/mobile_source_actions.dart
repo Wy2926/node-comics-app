@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -35,13 +36,10 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
   @override
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    final l10n = context.l10n;
     void choose(Object value) => Navigator.pop(context, value);
-    return NodeLaneCatalogSheet(
+    return MobileBrowsePage.form(
       title: widget.title,
-      subtitle: widget.host,
-      heightFactor: widget.notes?.trim().isNotEmpty == true ? .70 : .58,
-      child: ListView(
+      body: ListView(
         padding: const EdgeInsets.fromLTRB(
           NodeLaneTokens.gutter,
           0,
@@ -49,6 +47,7 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
           NodeLaneTokens.space20,
         ),
         children: [
+          if (widget.host != null) Text(widget.host!, style: t.secondary),
           NodeLaneCatalogHeading(context.l10n.source_display),
           NodeLaneSegments<DisplayType>(
             value: widget.display,
@@ -69,6 +68,17 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
             ],
             onChanged: choose,
           ),
+          if (widget.hasFilters) ...[
+            const SizedBox(height: NodeLaneTokens.space16),
+            NodeLaneRow.card(
+              title: context.l10n.filter,
+              icon: icons.adjustments,
+              value: widget.filtering
+                  ? context.l10n.source_filter_active
+                  : null,
+              onTap: () => choose(SourceCatalogAction.filter),
+            ),
+          ],
           const SizedBox(height: 20),
           NodeLaneGroupSurface(
             children: [
@@ -89,13 +99,6 @@ class _MobileSourceActionsState extends State<MobileSourceActions> {
             const SizedBox(height: 20),
             NodeLaneGroupSurface(
               children: [
-                if (widget.hasFilters)
-                  NodeLaneRow(
-                    title: l10n.filter,
-                    icon: icons.filter,
-                    value: widget.filtering ? l10n.source_filter_active : null,
-                    onTap: () => choose(SourceCatalogAction.filter),
-                  ),
                 NodeLaneRow(
                   title: context.l10n.sources_settings,
                   icon: icons.settings,
@@ -156,13 +159,15 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
     final entries =
         ref.watch(savedSearchesProvider)[widget.sourceId] ??
         const <SavedSearch>[];
-    return NodeLaneCatalogSheet(
+    return MobileBrowsePage.form(
       title: context.l10n.source_saved_searches,
-      subtitle: context.l10n.source_saved_search_title(widget.title),
-      heightFactor: entries.isEmpty ? .38 : .58,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+      body: ListView(
+        padding: NodeLaneTokens.pagePadding,
         children: [
+          Text(
+            context.l10n.source_saved_search_title(widget.title),
+            style: t.secondary,
+          ),
           if (entries.isNotEmpty)
             Align(
               alignment: Alignment.centerRight,

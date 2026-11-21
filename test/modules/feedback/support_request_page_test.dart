@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/feedback/support_request_page.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/services/support_requests.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -53,9 +53,9 @@ void main() {
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
-              onPressed: () => showNodeLaneCatalogSheet<void>(
+              onPressed: () => pushBrowsePage<void>(
                 context,
-                SupportRequestSheet(
+                SupportRequestPage(
                   kind: kind,
                   website: 'https://comics.example/private?token=secret#page',
                   requests: requests(),
@@ -142,7 +142,7 @@ void main() {
         tester.widget<TextField>(find.byType(TextField).first).enabled,
         isFalse,
       );
-      await tester.tap(find.byTooltip('关闭'));
+      await tester.tap(find.byTooltip('返回'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
@@ -204,7 +204,7 @@ void main() {
       final labels = lookupAppLocalizations(const Locale('ar'));
       expect(find.textContaining('secret'), findsNothing);
       expect(find.text('comics.example'), findsOneWidget);
-      await tap(tester, labels.feedback_submit);
+      await tap(tester, labels.feedback_submit_source);
       expect(jsonDecode(sent!.body), {
         'kind': 'website',
         'site_name': 'comics.example',

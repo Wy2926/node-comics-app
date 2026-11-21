@@ -72,7 +72,7 @@ import 'package:mangayomi/modules/more/settings/settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/security/security_screen.dart';
 import 'package:mangayomi/services/crash_route_observer.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/modules/more/settings/reader/mobile_tts_settings_screen.dart';
 part 'router.g.dart';
@@ -148,14 +148,9 @@ class RouterNotifier extends ChangeNotifier {
     // around 300 MB free with most of its swap already spent. Off TV the
     // trade is the other way round and IndexedStack stays.
     StatefulShellRoute(
-      builder: (context, state, navigationShell) =>
-          MainScreen(child: navigationShell),
-      navigatorContainerBuilder: (context, navigationShell, children) => isTv
-          ? children[navigationShell.currentIndex]
-          : IndexedStack(
-              index: navigationShell.currentIndex,
-              children: children,
-            ),
+      pageBuilder: (_, state, shell) => _page(state, MainScreen(child: shell)),
+      navigatorContainerBuilder: (_, shell, children) =>
+          NodeLaneBranchStack(index: shell.currentIndex, children: children),
       branches: [
         _branch(
           _genericRoute<String?>(
@@ -394,25 +389,51 @@ class RouterNotifier extends ChangeNotifier {
     return GoRoute(
       path: path ?? (name != null ? "/$name" : "/"),
       name: name,
-      builder: (context, state) => pageChild(state),
-      pageBuilder: isApple
-          ? (context, state) {
-              return transitionPage(
-                key: state.pageKey,
-                child: pageChild(state),
-              );
-            }
-          : null,
+      pageBuilder: (_, state) => _page(state, pageChild(state)),
     );
   }
 }
 
-Page transitionPage({required LocalKey key, required child}) {
-  return CupertinoPage(key: key, child: child);
-}
+MaterialPage<Object?> _page(GoRouterState state, Widget child) =>
+    MaterialPage<Object?>(
+      key: state.pageKey,
+      name: state.name ?? state.path,
+      arguments: <String, String>{
+        ...state.pathParameters,
+        ...state.uri.queryParameters,
+      },
+      restorationId: state.pageKey.value,
+      child: child,
+    );
 
-Route createRoute({required Widget page}) {
-  return isApple
-      ? CupertinoPageRoute(builder: (context) => page)
-      : MaterialPageRoute(builder: (context) => page);
+Route<T> createRoute<T>({required Widget page}) =>
+    MaterialPageRoute<T>(builder: (_) => page);
+
+class NodeLaneBranchStack extends StatelessWidget {
+  const NodeLaneBranchStack({
+    super.key,
+    required this.index,
+    required this.children,
+  });
+  final int index;
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => NodeLaneContentMotion(
+    value: index,
+    child: isTv
+        ? children[index]
+        : IndexedStack(
+            index: index,
+            children: [
+              for (var i = 0; i < children.length; i++)
+                TickerMode(
+                  enabled: i == index,
+                  child: ExcludeFocus(
+                    excluding: i != index,
+                    child: children[i],
+                  ),
+                ),
+            ],
+          ),
+  );
 }

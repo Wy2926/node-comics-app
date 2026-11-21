@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/modules/feedback/support_request_page.dart';
 import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/settings_search.dart';
@@ -12,6 +12,7 @@ import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/translation/translation_language_picker.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -191,105 +192,130 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
         matchingTools.isEmpty &&
         settingMatches.isEmpty &&
         !showAbout;
+    final search = NodeLaneTextField.search(
+      key: const ValueKey('more-settings-search'),
+      controller: _search,
+      hint: l.settings_search_hint,
+      onChanged: (v) => setState(() => _query = v),
+      onClear: _clear,
+      clearLabel: l.reset,
+      onSubmitted: (_) => FocusScope.of(context).unfocus(),
+    );
 
     return NodeLaneSurface(
       child: Scaffold(
         body: SafeArea(
           bottom: false,
-          child: CustomScrollView(
-            key: const PageStorageKey('mobile-more'),
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            slivers: [
-              const SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 8, 20, 8),
-                sliver: SliverToBoxAdapter(
-                  child: MobileNodeLaneAccountSummary(),
-                ),
+          child: NodeLanePaneLayout(
+            pane: (context) => ListView(
+              key: const PageStorageKey('more-shortcuts'),
+              padding: NodeLaneTokens.pagePadding,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              children: [
+                const MobileNodeLaneAccountSummary(),
+                const SizedBox(height: NodeLaneTokens.space16),
+                search,
+                if (query.isEmpty) ...[
+                  const SizedBox(height: NodeLaneTokens.space24),
+                  MobileSettingsGroup(
+                    title: filtered.first.title,
+                    children: filtered.first.children,
+                  ),
+                ],
+              ],
+            ),
+            body: (_, split) => CustomScrollView(
+              key: PageStorageKey(
+                split && query.isNotEmpty
+                    ? 'more-search-results'
+                    : 'mobile-more',
               ),
-              NodeLanePinnedHeader(
-                child: NodeLaneTextField.search(
-                  key: const ValueKey('more-settings-search'),
-                  controller: _search,
-                  hint: l.settings_search_hint,
-                  onChanged: (v) => setState(() => _query = v),
-                  onClear: _clear,
-                  clearLabel: l.reset,
-                  onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                ),
-              ),
-              if (empty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Padding(
-                    padding: pageBottomInsets(context),
-                    child: Center(
-                      child: NodeLaneEmptyState(
-                        icon: icons.search,
-                        title: l.settings_search_empty,
-                        message: l.search_empty_hint,
-                        action: NodeLaneSecondaryButton(
-                          onPressed: _clear,
-                          child: Text(l.search_clear),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: [
+                if (!split)
+                  const SliverPadding(
+                    padding: EdgeInsets.fromLTRB(20, 8, 20, 8),
+                    sliver: SliverToBoxAdapter(
+                      child: MobileNodeLaneAccountSummary(),
+                    ),
+                  ),
+                if (!split) NodeLanePinnedHeader(child: search),
+                if (empty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: pageBottomInsets(context),
+                      child: Center(
+                        child: NodeLaneEmptyState(
+                          icon: icons.search,
+                          title: l.settings_search_empty,
+                          message: l.search_empty_hint,
+                          action: NodeLaneSecondaryButton(
+                            onPressed: _clear,
+                            child: Text(l.search_clear),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: NodeLaneTokens.pagePadding.add(
-                    pageBottomInsets(context),
-                  ),
-                  sliver: SliverList.list(
-                    children: [
-                      if (settingMatches.isNotEmpty)
-                        MobileSettingsGroup(
-                          children: [
-                            for (final entry in settingMatches)
-                              NodeLaneRow(
-                                key: ValueKey(
-                                  'settings-search:${entry.title}:${entry.location}',
+                  )
+                else
+                  SliverPadding(
+                    padding: NodeLaneTokens.pagePadding.add(
+                      pageBottomInsets(context),
+                    ),
+                    sliver: SliverList.list(
+                      children: [
+                        if (settingMatches.isNotEmpty)
+                          MobileSettingsGroup(
+                            children: [
+                              for (final entry in settingMatches)
+                                NodeLaneRow(
+                                  key: ValueKey(
+                                    'settings-search:${entry.title}:${entry.location}',
+                                  ),
+                                  title: entry.title,
+                                  subtitle: entry.breadcrumb,
+                                  icon: entry.icon,
+                                  onTap: () =>
+                                      _open(entry.location, extra: entry.extra),
                                 ),
-                                title: entry.title,
-                                subtitle: entry.breadcrumb,
-                                icon: entry.icon,
-                                onTap: () =>
-                                    _open(entry.location, extra: entry.extra),
+                            ],
+                          ),
+                        for (final section in filtered.skip(
+                          split && query.isEmpty ? 1 : 0,
+                        ))
+                          MobileSettingsGroup(
+                            title: section.title,
+                            children: section.children,
+                          ),
+                        if (query.isEmpty) ...[
+                          NodeLaneDisclosure(
+                            title: l.settings_more_tools,
+                            subtitle: l.settings_more_tools_hint,
+                            icon: icons.folderOutline,
+                            child: Column(children: matchingTools),
+                          ),
+                          const SizedBox(height: NodeLaneTokens.space24),
+                        ] else if (matchingTools.isNotEmpty)
+                          MobileSettingsGroup(
+                            title: l.settings_more_tools,
+                            children: matchingTools,
+                          ),
+                        if (showAbout)
+                          NodeLaneGroupSurface(
+                            children: [
+                              NodeLaneRow(
+                                title: l.settings_about_help,
+                                icon: icons.info,
+                                onTap: () => _open('/about'),
                               ),
-                          ],
-                        ),
-                      for (final section in filtered)
-                        MobileSettingsGroup(
-                          title: section.title,
-                          children: section.children,
-                        ),
-                      if (query.isEmpty) ...[
-                        NodeLaneDisclosure(
-                          title: l.settings_more_tools,
-                          subtitle: l.settings_more_tools_hint,
-                          icon: icons.folderOutline,
-                          child: Column(children: matchingTools),
-                        ),
-                        const SizedBox(height: NodeLaneTokens.space24),
-                      ] else if (matchingTools.isNotEmpty)
-                        MobileSettingsGroup(
-                          title: l.settings_more_tools,
-                          children: matchingTools,
-                        ),
-                      if (showAbout)
-                        NodeLaneGroupSurface(
-                          children: [
-                            NodeLaneRow(
-                              title: l.settings_about_help,
-                              icon: icons.info,
-                              onTap: () => _open('/about'),
-                            ),
-                          ],
-                        ),
-                    ],
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

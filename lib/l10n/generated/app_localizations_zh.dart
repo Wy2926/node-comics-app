@@ -10,7 +10,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get source_more_filters => '更多条件';
+  String get feedback_submit_source => '提交申请';
 
   @override
   String get browser_clip_here => '夹在这里';
@@ -6128,7 +6128,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   AppLocalizationsZhHant() : super('zh_Hant');
 
   @override
-  String get source_more_filters => '更多條件';
+  String get feedback_submit_source => '提交申請';
 
   @override
   String get browser_clip_here => '夾在這裡';

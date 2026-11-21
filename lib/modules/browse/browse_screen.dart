@@ -1,5 +1,6 @@
 import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -64,7 +65,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
       ref.read(animeOnlyTvModeProvider),
       ref.read(hideItemsStateProvider),
     );
-    _tabBarController = TabController(
+    _tabBarController = NodeLaneMotion.tabs(
       length: _tabList.length,
       initialIndex: _takeRequestedTabIndex(),
       vsync: this,
@@ -236,64 +237,60 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
             ? tab.type.localizedExtensions(l10n)
             : tab.type.localizedSources(l10n),
     ];
-    return DefaultTabController(
-      animationDuration: Duration.zero,
-      length: _tabList.length,
-      child: Scaffold(
-        // bottom: false so the inset reaches the tab views instead of being
-        // consumed here. Each applies it to its own scroll padding, which lets
-        // content pass under the translucent bar rather than stopping short of
-        // it, and keeps the last row reachable either way.
-        body: SafeArea(
-          bottom: !FloatingNavigationScope.enabledOf(context),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: horizontalInsets.add(
-                  const EdgeInsets.only(top: 6, bottom: 2),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      l10n.browse,
-                      style: TextStyle(
-                        color: Theme.of(context).hintColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
+    return Scaffold(
+      // bottom: false so the inset reaches the tab views instead of being
+      // consumed here. Each applies it to its own scroll padding, which lets
+      // content pass under the translucent bar rather than stopping short of
+      // it, and keeps the last row reachable either way.
+      body: SafeArea(
+        bottom: !FloatingNavigationScope.enabledOf(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: horizontalInsets.add(
+                const EdgeInsets.only(top: 6, bottom: 2),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    l10n.browse,
+                    style: TextStyle(
+                      color: Theme.of(context).hintColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const Spacer(),
-                    ..._actions(context, isExtensionTab, currentTab.type),
-                  ],
-                ),
-              ),
-              // Centred when they fit, horizontally scrollable when long
-              // translations or a compact TV viewport need more room.
-              Padding(
-                padding: horizontalInsets.add(
-                  const EdgeInsets.symmetric(vertical: 6),
-                ),
-                child: TvBrowseTabStrip(
-                  labels: tabLabels,
-                  selectedIndex: _tabBarController.index,
-                  onSelected: (index) {
-                    _tabBarController.animateTo(index);
-                    setState(() {});
-                  },
-                ),
-              ),
-              Expanded(
-                child: TvRowFocusScope(
-                  notifier: _tvActiveRow,
-                  child: TabBarView(
-                    controller: _tabBarController,
-                    children: _tabViews(),
                   ),
+                  const Spacer(),
+                  ..._actions(context, isExtensionTab, currentTab.type),
+                ],
+              ),
+            ),
+            // Centred when they fit, horizontally scrollable when long
+            // translations or a compact TV viewport need more room.
+            Padding(
+              padding: horizontalInsets.add(
+                const EdgeInsets.symmetric(vertical: 6),
+              ),
+              child: TvBrowseTabStrip(
+                labels: tabLabels,
+                selectedIndex: _tabBarController.index,
+                onSelected: (index) {
+                  _tabBarController.animateTo(index);
+                  setState(() {});
+                },
+              ),
+            ),
+            Expanded(
+              child: TvRowFocusScope(
+                notifier: _tvActiveRow,
+                child: TabBarView(
+                  controller: _tabBarController,
+                  children: _tabViews(),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -325,7 +322,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
       if (_retiredTabControllers.remove(retired)) retired.dispose();
     });
     _selectedIndex = index < 0 ? 0 : index;
-    _tabBarController = TabController(
+    _tabBarController = NodeLaneMotion.tabs(
       length: newTabs.length,
       initialIndex: _selectedIndex,
       vsync: this,
@@ -366,46 +363,42 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen>
     if (isTv) {
       return _buildTvLayout(context, currentTab, isExtensionTab, l10n);
     }
-    return DefaultTabController(
-      animationDuration: Duration.zero,
-      length: _tabList.length,
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          title: Text(
-            l10n.browse,
-            style: TextStyle(color: Theme.of(context).hintColor),
-          ),
-          actions: _actions(context, isExtensionTab, currentTab.type),
-          bottom: TabBar(
-            indicatorSize: TabBarIndicatorSize.label,
-            isScrollable: true,
-            controller: _tabBarController,
-            tabs: _tabList.map((tab) {
-              final type = tab.type;
-              final isExt = tab.kind == BrowseTabKind.extensions;
-
-              return Tab(
-                child: Row(
-                  children: [
-                    Text(
-                      isExt
-                          ? type.localizedExtensions(l10n)
-                          : type.localizedSources(l10n),
-                    ),
-                    if (isExt) ...[
-                      const SizedBox(width: 8),
-                      ExtensionUpdateNumbersBadge(itemType: type),
-                    ],
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          l10n.browse,
+          style: TextStyle(color: Theme.of(context).hintColor),
         ),
-        body: TabBarView(controller: _tabBarController, children: _tabViews()),
+        actions: _actions(context, isExtensionTab, currentTab.type),
+        bottom: TabBar(
+          indicatorSize: TabBarIndicatorSize.label,
+          isScrollable: true,
+          controller: _tabBarController,
+          tabs: _tabList.map((tab) {
+            final type = tab.type;
+            final isExt = tab.kind == BrowseTabKind.extensions;
+
+            return Tab(
+              child: Row(
+                children: [
+                  Text(
+                    isExt
+                        ? type.localizedExtensions(l10n)
+                        : type.localizedSources(l10n),
+                  ),
+                  if (isExt) ...[
+                    const SizedBox(width: 8),
+                    ExtensionUpdateNumbersBadge(itemType: type),
+                  ],
+                ],
+              ),
+            );
+          }).toList(),
+        ),
       ),
+      body: TabBarView(controller: _tabBarController, children: _tabViews()),
     );
   }
 }

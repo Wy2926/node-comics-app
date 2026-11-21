@@ -12,7 +12,6 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 /// The detail page's app bar: the normal title/actions bar, or - while a
@@ -81,11 +80,21 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
       }
     }
 
-    if (mobileManga) {
+    final checkCategoryList =
+        !mobileManga &&
+        (ref
+                .watch(getMangaCategorieStreamProvider(itemType: itemType))
+                .asData
+                ?.value
+                .isNotEmpty ??
+            false);
+    if (mobile) {
       if (isLongPressed) {
         return nodeLaneSelectionAppBar(
           context,
-          title: l10n.chapter_selected_count(chapterList.length),
+          title: itemType == ItemType.anime
+              ? l10n.bookshelf_selected_count(chapterList.length)
+              : l10n.chapter_selected_count(chapterList.length),
           cancelLabel: l10n.cancel,
           selectAllLabel: l10n.bookshelf_select_all,
           invertLabel: l10n.bookshelf_invert_selection,
@@ -111,22 +120,17 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
             const SizedBox(width: NodeLaneTokens.space8),
           ],
           MobileMangaDetailActionsButton(
+            title: mobileManga ? null : l10n.more,
             bookTitle: manga.name ?? '',
             localArchive: isLocalArchive,
-            favorite: manga.favorite ?? false,
+            favorite:
+                manga.favorite == true && (mobileManga || checkCategoryList),
             onSelected: onOverflowAction,
           ),
         ],
       );
     }
 
-    final checkCategoryList =
-        (ref
-            .watch(getMangaCategorieStreamProvider(itemType: itemType))
-            .asData
-            ?.value
-            .isNotEmpty ??
-        false);
     final isNotFiltering = ref.watch(
       chapterFilterResultStateProvider(manga: manga),
     );
@@ -140,9 +144,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
               leading: IconButton(
                 tooltip: l10n.cancel,
                 onPressed: cancelSelection,
-                icon: Icon(
-                  mobile ? NodeLaneIcons.of(context).close : Icons.clear,
-                ),
+                icon: const Icon(Icons.clear),
               ),
               actions: [
                 IconButton(
@@ -171,9 +173,8 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     style: const TextStyle(fontSize: 17),
                   )
                 : null,
-            backgroundColor: mobile
-                ? NodeLaneTokens.of(context).canvas
-                : ref.watch(offsetProvider.select((val) => val == 0.0))
+            backgroundColor:
+                ref.watch(offsetProvider.select((val) => val == 0.0))
                 ? Colors.transparent
                 : Theme.of(context).scaffoldBackgroundColor,
             actions: [
@@ -186,16 +187,15 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   onDownload: onDownload,
                 ),
               ],
-              if (!mobile)
-                IconButton(
-                  tooltip: l10n.filter,
-                  splashRadius: 20,
-                  onPressed: onShowFilterMenu,
-                  icon: Icon(
-                    Icons.filter_list_sharp,
-                    color: isNotFiltering ? null : Colors.yellow,
-                  ),
+              IconButton(
+                tooltip: l10n.filter,
+                splashRadius: 20,
+                onPressed: onShowFilterMenu,
+                icon: Icon(
+                  Icons.filter_list_sharp,
+                  color: isNotFiltering ? null : Colors.yellow,
                 ),
+              ),
               // The menu's items are conditional, so its values
               // are not its indices: keep label and value paired so
               // the centred TV menu cannot fire the wrong action.
@@ -232,9 +232,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
               else
                 PopupMenuButton(
                   tooltip: l10n.more,
-                  icon: Icon(
-                    mobile && isApple ? Icons.more_horiz : Icons.more_vert,
-                  ),
+                  icon: const Icon(Icons.more_vert),
                   popUpAnimationStyle: popupAnimationStyle,
                   itemBuilder: (context) {
                     return [

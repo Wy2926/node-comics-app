@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/calendar/widgets/calendar_indicator.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -187,69 +189,70 @@ class _UpcomingCalendarState extends State<UpcomingCalendar> {
       CalendarFormat.twoWeeks: l10n.calendar_two_weeks,
       CalendarFormat.week: l10n.calendar_week,
     };
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.line),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              IconButton(
-                tooltip: MaterialLocalizations.of(context).previousPageTooltip,
-                onPressed: () => _pageController?.previousPage(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeInOut,
-                ),
-                icon: const Icon(Icons.chevron_left_rounded),
-              ),
-              Expanded(
-                child: Text(
-                  DateFormat.yMMMM(locale.toLanguageTag()).format(_focusedDay),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              IconButton(
-                tooltip: MaterialLocalizations.of(context).nextPageTooltip,
-                onPressed: () => _pageController?.nextPage(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeInOut,
-                ),
-                icon: const Icon(Icons.chevron_right_rounded),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
+    return NodeLaneGroupSurface(
+      outlined: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          NodeLaneTokens.space8,
+          NodeLaneTokens.space8,
+          NodeLaneTokens.space8,
+          NodeLaneTokens.space12,
+        ),
+        child: Column(
+          children: [
+            Row(
               children: [
-                for (final entry in formats.entries)
-                  ChoiceChip(
-                    label: Text(entry.value),
-                    selected: _calendarFormat == entry.key,
-                    showCheckmark: false,
-                    onSelected: (_) =>
-                        setState(() => _calendarFormat = entry.key),
+                NodeLaneIconButton(
+                  style: NodeLaneIconButtonStyle.plain,
+                  tooltip: MaterialLocalizations.of(context)
+                      .previousPageTooltip,
+                  onPressed: () => _pageController?.previousPage(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
                   ),
+                  icon: NodeLaneIcons.of(context).back,
+                ),
+                Expanded(
+                  child: Text(
+                    DateFormat.yMMMM(locale.toLanguageTag())
+                        .format(_focusedDay),
+                    textAlign: TextAlign.center,
+                    style: colors.detailSectionTitle,
+                  ),
+                ),
+                NodeLaneIconButton(
+                  style: NodeLaneIconButtonStyle.plain,
+                  tooltip: MaterialLocalizations.of(context).nextPageTooltip,
+                  onPressed: () => _pageController?.nextPage(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                  ),
+                  icon: NodeLaneIcons.of(context).forward,
+                ),
               ],
             ),
-          ),
-          // Seven fixed columns need a bounded scale for two-digit days. The
-          // heading, controls, selected date and agenda retain the system scale.
-          MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: MediaQuery.textScalerOf(context)
-                  .clamp(maxScaleFactor: 1.25),
+            Padding(
+              padding: const EdgeInsets.all(NodeLaneTokens.space8),
+              child: NodeLaneSegments<CalendarFormat>(
+                value: _calendarFormat,
+                segments: [
+                  for (final entry in formats.entries)
+                    ButtonSegment(value: entry.key, label: Text(entry.value)),
+                ],
+                onChanged: (value) => setState(() => _calendarFormat = value),
+              ),
             ),
-            child: table,
-          ),
-        ],
+            // Seven fixed columns need a bounded scale for two-digit days. The
+            // heading, controls, selected date and agenda retain the system scale.
+            MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.textScalerOf(context)
+                    .clamp(maxScaleFactor: 1.25),
+              ),
+              child: table,
+            ),
+          ],
+        ),
       ),
     );
   }

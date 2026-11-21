@@ -10,7 +10,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get source_more_filters => 'Diğer filtreler';
+  String get feedback_submit_source => 'Talebi gönder';
 
   @override
   String get browser_clip_here => 'Burayı işaretle';

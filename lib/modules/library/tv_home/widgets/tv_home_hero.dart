@@ -3,6 +3,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -79,8 +80,8 @@ class _TvHomeHeroState extends State<TvHomeHero>
       onFocusChange: _setPaused,
       child: Stack(
         children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
+          NodeLaneContentMotion(
+            value: manga.id,
             child: _HeroContent(key: ValueKey(manga.id), manga: manga),
           ),
           if (widget.items.length > 1)

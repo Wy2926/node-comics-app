@@ -1,6 +1,7 @@
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -53,7 +54,6 @@ class MangaInfoHeader extends ConsumerStatefulWidget {
   final Widget action;
   final int chapterLength;
   final Widget? readingAction;
-  final VoidCallback? onShowFilterMenu;
 
   const MangaInfoHeader({
     super.key,
@@ -63,7 +63,6 @@ class MangaInfoHeader extends ConsumerStatefulWidget {
     required this.action,
     required this.chapterLength,
     this.readingAction,
-    this.onShowFilterMenu,
     this.loading = false,
   });
 
@@ -248,7 +247,11 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
                                       color: context.secondaryColor,
                                     ),
                                   ),
-                                  onPressed: _addChapters,
+                                  onPressed: () => addDetailChapters(
+                                    context,
+                                    ref,
+                                    widget.manga,
+                                  ),
                                 ),
                             ],
                           ),
@@ -272,10 +275,6 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
 
   Widget _mobileHeader(AppLocalizations l10n) {
     final colors = NodeLaneTokens.of(context);
-    final missing = widget.manga.missingChapterCount();
-    final filtering = !ref.watch(
-      chapterFilterResultStateProvider(manga: widget.manga),
-    );
     final genres = widget.manga.genre ?? const <String>[];
     return MobileDetailOverview(
       heading: MobileDetailHeading(
@@ -342,55 +341,6 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
           ),
         ),
       ),
-      chapters: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  widget.loading && widget.chapterLength == 0
-                      ? widget.manga.itemType == ItemType.anime
-                            ? l10n.episodes
-                            : l10n.chapters
-                      : widget.manga.itemType != ItemType.anime
-                      ? '${l10n.chapters} · ${widget.chapterLength}'
-                      : '${l10n.episodes} · ${widget.chapterLength}',
-                  style: colors.detailSectionTitle,
-                ),
-              ),
-              if (widget.isLocalArchive)
-                NodeLaneIconButton(
-                  style: NodeLaneIconButtonStyle.plain,
-                  tooltip: widget.manga.itemType != ItemType.anime
-                      ? l10n.add_chapters
-                      : l10n.add_episodes,
-                  onPressed: _addChapters,
-                  icon: NodeLaneIcons.of(context).add,
-                ),
-              NodeLaneIconButton(
-                busy: widget.loading,
-                icon: NodeLaneIcons.of(context).filter,
-                tooltip: widget.loading
-                    ? l10n.detail_loading_chapters
-                    : l10n.filter,
-                onPressed: widget.onShowFilterMenu,
-                active: filtering,
-              ),
-            ],
-          ),
-          if (missing > 0)
-            Text(
-              widget.manga.itemType != ItemType.anime
-                  ? l10n.missing_chapters(missing)
-                  : l10n.missing_episodes(missing),
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-        ],
-      ),
     );
   }
 
@@ -405,18 +355,19 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   }
 
   void _selectGenre(int index, int value, AppLocalizations l10n) {
+    final inPane =
+        context.findAncestorWidgetOfExactType<SourceBrowsePanes>() != null;
     if (value == 0) {
       final genre = widget.manga.genre![index];
-      switch (widget.manga.itemType) {
-        case ItemType.manga:
-          context.pushReplacement('/MangaLibrary', extra: genre);
-          break;
-        case ItemType.anime:
-          context.pushReplacement('/AnimeLibrary', extra: genre);
-          break;
-        case ItemType.novel:
-          context.pushReplacement('/NovelLibrary', extra: genre);
-          break;
+      final path = switch (widget.manga.itemType) {
+        ItemType.manga => '/MangaLibrary',
+        ItemType.anime => '/AnimeLibrary',
+        ItemType.novel => '/NovelLibrary',
+      };
+      if (inPane) {
+        context.push(path, extra: genre);
+      } else {
+        context.pushReplacement(path, extra: genre);
       }
       return;
     }
@@ -430,7 +381,11 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
       showNodeLaneNotice(l10n.source_not_added);
       return;
     }
-    context.pushReplacement('/mangaHome', extra: (source, false));
+    if (inPane) {
+      Navigator.maybePop(context);
+    } else {
+      context.pushReplacement('/mangaHome', extra: (source, false));
+    }
   }
 
   Widget _coverCard() {
@@ -652,26 +607,6 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
     context.push("/mangawebview", extra: data);
   }
 
-  Future<void> _addChapters() async {
-    final manga = widget.manga;
-    if (manga.source == "torrent") {
-      addTorrent(context, manga: manga);
-    } else {
-      final splitChapters = manga.itemType == ItemType.novel
-          ? await showSplitChaptersDialog(context)
-          : true;
-      if (!context.mounted) return;
-      await ref.watch(
-        importArchivesFromFileProvider(
-          itemType: manga.itemType,
-          manga,
-          init: false,
-          splitChapters: splitChapters,
-        ).future,
-      );
-    }
-  }
-
   Widget _smartUpdateDays() => _headerButton(
     icon: isMobile && !isTv
         ? NodeLaneIcons.of(context).calendar
@@ -798,6 +733,89 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
       context: context,
       manga: widget.manga,
       entries: entries ?? const [],
+    );
+  }
+}
+
+Future<void> addDetailChapters(
+  BuildContext context,
+  WidgetRef ref,
+  Manga manga,
+) async {
+  if (manga.source == "torrent") {
+    addTorrent(context, manga: manga);
+    return;
+  }
+  final splitChapters = manga.itemType == ItemType.novel
+      ? await showSplitChaptersDialog(context)
+      : true;
+  if (!context.mounted) return;
+  await ref.read(
+    importArchivesFromFileProvider(
+      itemType: manga.itemType,
+      manga,
+      init: false,
+      splitChapters: splitChapters,
+    ).future,
+  );
+}
+
+class MobileChapterHeading extends ConsumerWidget {
+  const MobileChapterHeading({
+    super.key,
+    required this.manga,
+    required this.count,
+    required this.loading,
+    required this.onFilter,
+  });
+  final Manga manga;
+  final int count;
+  final bool loading;
+  final VoidCallback onFilter;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n, t = NodeLaneTokens.of(context);
+    final anime = manga.itemType == ItemType.anime;
+    final label = anime ? l.episodes : l.chapters;
+    final missing = manga.missingChapterCount();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                loading && count == 0 ? label : '$label · $count',
+                style: t.detailSectionTitle,
+              ),
+            ),
+            if (manga.isLocalArchive ?? false)
+              NodeLaneIconButton(
+                style: NodeLaneIconButtonStyle.plain,
+                tooltip: anime ? l.add_episodes : l.add_chapters,
+                onPressed: () => addDetailChapters(context, ref, manga),
+                icon: NodeLaneIcons.of(context).add,
+              ),
+            NodeLaneIconButton(
+              busy: loading,
+              icon: NodeLaneIcons.of(context).filter,
+              tooltip: loading ? l.detail_loading_chapters : l.filter,
+              onPressed: onFilter,
+              active: !ref.watch(
+                chapterFilterResultStateProvider(manga: manga),
+              ),
+            ),
+          ],
+        ),
+        if (missing > 0)
+          Text(
+            anime ? l.missing_episodes(missing) : l.missing_chapters(missing),
+            style: t.caption.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+      ],
     );
   }
 }

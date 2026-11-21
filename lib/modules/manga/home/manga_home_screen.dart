@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
 import 'package:mangayomi/eval/model/filter.dart';
@@ -51,10 +51,14 @@ class MangaHomeScreen extends ConsumerStatefulWidget {
   final Source source;
   final bool isLatest;
   final String query;
+  final ValueChanged<int>? onOpenDetail;
+  final int? activeBookId;
   const MangaHomeScreen({
     required this.source,
     this.query = "",
     this.isLatest = false,
+    this.onOpenDetail,
+    this.activeBookId,
     super.key,
   });
 
@@ -254,6 +258,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           !identical(results, _results) ||
           revision != results.revision ||
           identical(results.notifiedError, error) ||
+          !TickerMode.of(context) ||
           ModalRoute.of(context)?.isCurrent == false) {
         return;
       }
@@ -361,7 +366,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.extentAfter < 240 &&
+    if (TickerMode.of(context) &&
+        _scrollController.position.extentAfter < 240 &&
         _results.items.isNotEmpty &&
         _results.pageError == null) {
       _loadMore();
@@ -401,7 +407,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
 
   Future<void> _showSavedSearches() async {
     if (isMobile && !isTv) {
-      final query = await showNodeLaneCatalogSheet<String>(
+      final query = await pushBrowsePage<String>(
         context,
         MobileSavedSearches(sourceId: source.id!, title: source.name ?? ''),
       );
@@ -489,7 +495,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   }
 
   Future<void> _mobileOptions(DisplayType display) async {
-    final choice = await showNodeLaneCatalogSheet<Object>(
+    final choice = await pushBrowsePage<Object>(
       context,
       MobileSourceActions(
         title: source.name ?? '',
@@ -525,9 +531,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
 
   Future<void> _mobileFilters() async {
     FocusScope.of(context).unfocus();
-    final selected = await showNodeLaneCatalogSheet<List<dynamic>>(
+    final selected = await pushBrowsePage<List<dynamic>>(
       context,
-      MobileSourceFilterSheet(
+      MobileSourceFilterPage(
         filters: filters,
         defaults: () => _defaultFilters,
         sourceName: source.name,
@@ -579,20 +585,22 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
             libraryGridSizeStateProvider(itemType: source.itemType),
           ),
           count: count,
-          itemBuilder: (context, index) => display == DisplayType.list
-              ? MangaHomeImageCardListTile(
-                  itemType: source.itemType,
-                  manga: _results.items[index],
-                  source: source,
-                  libraryManga: _libraryIndex[_results.items[index].name],
-                )
-              : MangaHomeImageCard(
-                  itemType: source.itemType,
-                  manga: _results.items[index],
-                  source: source,
-                  isComfortableGrid: display == DisplayType.comfortableGrid,
-                  libraryManga: _libraryIndex[_results.items[index].name],
-                ),
+          itemBuilder: (context, index) {
+            final manga = _results.items[index];
+            final saved = _libraryIndex[manga.name];
+            return MobileSourceImageCard(
+              itemType: source.itemType,
+              manga: manga,
+              source: source,
+              list: display == DisplayType.list,
+              compact: display == DisplayType.compactGrid,
+              libraryManga: saved,
+              current:
+                  widget.activeBookId != null &&
+                  saved?.id == widget.activeBookId,
+              onOpenDetail: widget.onOpenDetail,
+            );
+          },
           footer: MobileSourceStatus(
             loading: (loading && count == 0) || _results.loadingNext,
             message: !loading && error == null && count == 0 && !_usesSearch
@@ -651,7 +659,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     }
     final l10n = context.l10n;
     final displayType = ref.watch(mangaHomeDisplayTypeStateProvider);
-    if (isMobile && !isTv) return _buildMobile(displayType);
+    if (widget.onOpenDetail != null || (isMobile && !isTv)) {
+      return _buildMobile(displayType);
+    }
     final displayTypeIcon = switch (displayType) {
       DisplayType.comfortableGrid ||
       DisplayType.compactGrid => Icons.view_module,
@@ -1008,9 +1018,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                                   if (index == length) {
                                     return buildProgressIndicator();
                                   }
-                                  return MangaHomeImageCardListTile(
+                                  return MangaImageCardListTileWidget(
                                     itemType: source.itemType,
-                                    manga: _results.items[index],
+                                    getMangaDetail: _results.items[index],
                                     source: source,
                                     libraryManga:
                                         _libraryIndex[_results
@@ -1038,13 +1048,13 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                                       if (index == length) {
                                         return buildProgressIndicator();
                                       }
-                                      return MangaHomeImageCard(
+                                      return MangaImageCardWidget(
                                         autofocus:
                                             isTv &&
                                             index == 0 &&
                                             !_showSearchField,
                                         itemType: source.itemType,
-                                        manga: _results.items[index],
+                                        getMangaDetail: _results.items[index],
                                         source: source,
                                         isComfortableGrid: isComfortableGrid,
                                         libraryManga:
@@ -1127,72 +1137,6 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
             ),
-    );
-  }
-}
-
-class MangaHomeImageCard extends ConsumerStatefulWidget {
-  final MManga manga;
-  final ItemType itemType;
-  final Source source;
-  final bool isComfortableGrid;
-  final Manga? libraryManga;
-  final bool autofocus;
-  const MangaHomeImageCard({
-    super.key,
-    required this.manga,
-    required this.source,
-    required this.itemType,
-    required this.isComfortableGrid,
-    this.libraryManga,
-    this.autofocus = false,
-  });
-
-  @override
-  ConsumerState<MangaHomeImageCard> createState() => _MangaHomeImageCardState();
-}
-
-class _MangaHomeImageCardState extends ConsumerState<MangaHomeImageCard> {
-  @override
-  Widget build(BuildContext context) {
-    return MangaImageCardWidget(
-      getMangaDetail: widget.manga,
-      source: widget.source,
-      itemType: widget.itemType,
-      isComfortableGrid: widget.isComfortableGrid,
-      libraryManga: widget.libraryManga,
-      autofocus: widget.autofocus,
-    );
-  }
-}
-
-class MangaHomeImageCardListTile extends ConsumerStatefulWidget {
-  final MManga manga;
-  final ItemType itemType;
-  final Source source;
-  final Manga? libraryManga;
-  const MangaHomeImageCardListTile({
-    super.key,
-    required this.manga,
-    required this.source,
-    required this.itemType,
-    this.libraryManga,
-  });
-
-  @override
-  ConsumerState<MangaHomeImageCardListTile> createState() =>
-      _MangaHomeImageCardListTileState();
-}
-
-class _MangaHomeImageCardListTileState
-    extends ConsumerState<MangaHomeImageCardListTile> {
-  @override
-  Widget build(BuildContext context) {
-    return MangaImageCardListTileWidget(
-      getMangaDetail: widget.manga,
-      source: widget.source,
-      itemType: widget.itemType,
-      libraryManga: widget.libraryManga,
     );
   }
 }

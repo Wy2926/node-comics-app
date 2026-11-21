@@ -7,7 +7,7 @@ import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/feedback/support_request_sheet.dart';
+import 'package:mangayomi/modules/feedback/support_request_page.dart';
 import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';

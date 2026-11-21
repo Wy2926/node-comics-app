@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/anime/widgets/mobile_player_settings_sheet.dart';
 import 'package:mangayomi/modules/anime/widgets/player_settings_navigation.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -607,32 +608,6 @@ class _SettingsHomeRow extends StatelessWidget {
   }
 }
 
-/// Fast exit curve: old page fades out cleanly between t = 1.0 and 0.45,
-/// ensuring text never overlaps or creates double-exposure artifacts.
-class _FastExitFadeCurve extends Curve {
-  const _FastExitFadeCurve();
-
-  @override
-  double transformInternal(double t) {
-    if (t <= 0.45) return 0.0;
-    final p = (t - 0.45) / 0.55;
-    return Curves.easeInQuad.transform(p);
-  }
-}
-
-/// Smooth entrance curve: new page begins fading in at t = 0.15 with easeOutCubic
-/// to crystallize gracefully as it finishes sliding into place.
-class _SmoothEnterFadeCurve extends Curve {
-  const _SmoothEnterFadeCurve();
-
-  @override
-  double transformInternal(double t) {
-    if (t <= 0.15) return 0.0;
-    final p = (t - 0.15) / 0.85;
-    return Curves.easeOutCubic.transform(p);
-  }
-}
-
 class _DrilldownHeader extends StatelessWidget {
   final String title;
   final bool showBack;
@@ -659,28 +634,9 @@ class _DrilldownHeader extends StatelessWidget {
         height: 44,
         child: Row(
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeOutCubic,
-              transitionBuilder: (child, animation) {
-                return SizeTransition(
-                  axis: Axis.horizontal,
-                  alignment: Alignment.centerLeft,
-                  sizeFactor: animation,
-                  child: FadeTransition(
-                    opacity: animation,
-                    child: ScaleTransition(
-                      scale: Tween<double>(
-                        begin: 0.8,
-                        end: 1.0,
-                      ).animate(animation),
-                      child: child,
-                    ),
-                  ),
-                );
-              },
-              child: showBack
+            NodeLaneMotion.resize(
+              context,
+              showBack
                   ? IconButton(
                       key: const ValueKey('back-button'),
                       onPressed: onBack,
@@ -696,54 +652,9 @@ class _DrilldownHeader extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeOutCubic,
-                layoutBuilder: (currentChild, previousChildren) {
-                  return Stack(
-                    alignment: Alignment.centerLeft,
-                    children: [...previousChildren, ?currentChild],
-                  );
-                },
-                transitionBuilder: (child, animation) {
-                  final isIncoming = child.key == ValueKey(title);
-                  final offsetTween = isIncoming
-                      ? (forward
-                            ? Tween<Offset>(
-                                begin: const Offset(0.16, 0.0),
-                                end: Offset.zero,
-                              )
-                            : Tween<Offset>(
-                                begin: const Offset(-0.16, 0.0),
-                                end: Offset.zero,
-                              ))
-                      : (forward
-                            ? Tween<Offset>(
-                                begin: const Offset(-0.16, 0.0),
-                                end: Offset.zero,
-                              )
-                            : Tween<Offset>(
-                                begin: const Offset(0.16, 0.0),
-                                end: Offset.zero,
-                              ));
-
-                  final opacity = isIncoming
-                      ? CurvedAnimation(
-                          parent: animation,
-                          curve: const _SmoothEnterFadeCurve(),
-                        )
-                      : CurvedAnimation(
-                          parent: animation,
-                          curve: const _FastExitFadeCurve(),
-                          reverseCurve: const _FastExitFadeCurve(),
-                        );
-
-                  return SlideTransition(
-                    position: offsetTween.animate(animation),
-                    child: FadeTransition(opacity: opacity, child: child),
-                  );
-                },
+              child: NodeLaneContentMotion(
+                value: title,
+                reverse: !forward,
                 child: Text(
                   title,
                   key: ValueKey(title),
@@ -868,65 +779,11 @@ class _SettingsDrilldownState extends State<SettingsDrilldown> {
             color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
           ),
           ClipRect(
-            child: AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeOutCubic,
-                layoutBuilder: (currentChild, previousChildren) {
-                  return Stack(
-                    alignment: Alignment.topCenter,
-                    clipBehavior: Clip.hardEdge,
-                    children: <Widget>[
-                      ...previousChildren.map(
-                        (child) =>
-                            Positioned(top: 0, left: 0, right: 0, child: child),
-                      ),
-                      ?currentChild,
-                    ],
-                  );
-                },
-                transitionBuilder: (child, animation) {
-                  final isIncoming = child.key == currentKey;
-                  final offsetTween = isIncoming
-                      ? (_forward
-                            ? Tween<Offset>(
-                                begin: const Offset(0.20, 0.0),
-                                end: Offset.zero,
-                              )
-                            : Tween<Offset>(
-                                begin: const Offset(-0.20, 0.0),
-                                end: Offset.zero,
-                              ))
-                      : (_forward
-                            ? Tween<Offset>(
-                                begin: const Offset(-0.20, 0.0),
-                                end: Offset.zero,
-                              )
-                            : Tween<Offset>(
-                                begin: const Offset(0.20, 0.0),
-                                end: Offset.zero,
-                              ));
-
-                  final opacity = isIncoming
-                      ? CurvedAnimation(
-                          parent: animation,
-                          curve: const _SmoothEnterFadeCurve(),
-                        )
-                      : CurvedAnimation(
-                          parent: animation,
-                          curve: const _FastExitFadeCurve(),
-                          reverseCurve: const _FastExitFadeCurve(),
-                        );
-
-                  return SlideTransition(
-                    position: offsetTween.animate(animation),
-                    child: FadeTransition(opacity: opacity, child: child),
-                  );
-                },
+            child: NodeLaneMotion.resize(
+              context,
+              NodeLaneContentMotion(
+                value: currentKey,
+                reverse: !_forward,
                 child: ConstrainedBox(
                   key: currentKey,
                   constraints: BoxConstraints(maxHeight: maxBodyHeight),

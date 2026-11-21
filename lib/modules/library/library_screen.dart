@@ -6,8 +6,10 @@ import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart'
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_sheet.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -231,6 +233,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                 bool withoutCategories = false,
               }) {
                 return LibraryBody(
+                  key: PageStorageKey((
+                    widget.itemType,
+                    categoryId,
+                    withoutCategories,
+                  )),
                   itemType: widget.itemType,
                   categoryId: categoryId,
                   withoutCategories: withoutCategories,
@@ -401,7 +408,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       final index = _tabIndex.clamp(0, tabCount - 1);
       // Old TabBar/TabBarView may still paint this frame; release afterwards.
       _retireTabController(tabBarController);
-      tabBarController = TabController(
+      tabBarController = NodeLaneMotion.tabs(
         length: tabCount,
         vsync: this,
         initialIndex: index,
@@ -420,47 +427,70 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     );
     return Scaffold(
       appBar: appBar,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (mobile)
-            NodeLaneTabSegments(
-              controller: tabBarController,
-              scrollable: true,
-              labels: [
-                for (var i = 0; i < tabs.length; i++)
-                  counts == null
-                      ? tabs[i].label
-                      : '${tabs[i].label} ${counts[i]}',
-              ],
-            )
-          else if (tabCount > 1)
-            TabBar(
-              controller: tabBarController,
-              isScrollable: true,
-              tabs: [
-                for (var i = 0; i < tabs.length; i++)
-                  Row(
-                    children: [
-                      Tab(text: tabs[i].label),
-                      if (counts != null) ...[
-                        const SizedBox(width: NodeLaneTokens.space4),
-                        CategoryBadge(count: counts[i]),
+      body: NodeLanePaneLayout(
+        paneWidth: NodeLaneTokens.tabletCategoryWidth,
+        pane: mobile && tabCount > 1
+            ? (context) => ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NodeLaneTokens.space12,
+                ),
+                children: [
+                  NodeLaneCatalogHeading(context.l10n.categories),
+                  for (var i = 0; i < tabs.length; i++)
+                    NodeLaneRow.card(
+                      title: tabs[i].label,
+                      value: counts == null ? null : '${counts[i]}',
+                      first: i == 0,
+                      last: i == tabs.length - 1,
+                      selected: _tabIndex == i,
+                      accented: _tabIndex == i,
+                      onTap: () => tabBarController!.animateTo(i),
+                    ),
+                ],
+              )
+            : null,
+        body: (_, split) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (mobile && !split)
+              NodeLaneTabSegments(
+                controller: tabBarController,
+                scrollable: true,
+                labels: [
+                  for (var i = 0; i < tabs.length; i++)
+                    counts == null
+                        ? tabs[i].label
+                        : '${tabs[i].label} ${counts[i]}',
+                ],
+              )
+            else if (!mobile && tabCount > 1)
+              TabBar(
+                controller: tabBarController,
+                isScrollable: true,
+                tabs: [
+                  for (var i = 0; i < tabs.length; i++)
+                    Row(
+                      children: [
+                        Tab(text: tabs[i].label),
+                        if (counts != null) ...[
+                          const SizedBox(width: NodeLaneTokens.space4),
+                          CategoryBadge(count: counts[i]),
+                        ],
                       ],
-                    ],
-                  ),
-              ],
+                    ),
+                ],
+              ),
+            Expanded(
+              // A single tab stays a direct grid for TV directional focus.
+              child: tabCount == 1
+                  ? body(tabs.single)
+                  : TabBarView(
+                      controller: tabBarController,
+                      children: [for (final tab in tabs) body(tab)],
+                    ),
             ),
-          Expanded(
-            // A single tab stays a direct grid for TV directional focus.
-            child: tabCount == 1
-                ? body(tabs.single)
-                : TabBarView(
-                    controller: tabBarController,
-                    children: [for (final tab in tabs) body(tab)],
-                  ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

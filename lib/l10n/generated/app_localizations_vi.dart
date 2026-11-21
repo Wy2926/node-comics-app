@@ -10,7 +10,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get source_more_filters => 'Bộ lọc khác';
+  String get feedback_submit_source => 'Gửi yêu cầu';
 
   @override
   String get browser_clip_here => 'Đánh dấu chỗ này';

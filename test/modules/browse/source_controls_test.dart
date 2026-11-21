@@ -8,7 +8,7 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/source_preference_widget.dart';
 import 'package:mangayomi/modules/browse/global_search/source_search_scope.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
@@ -72,7 +72,7 @@ void main() {
       await tester.tap(find.text('打开'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('日本語'));
-      await tester.tap(find.byTooltip('关闭'));
+      await tester.tap(find.byTooltip('返回'));
       await tester.pumpAndSettle();
       expect(result, isNull);
       expect(original, {'en'});
@@ -92,7 +92,7 @@ void main() {
   );
 
   testWidgets(
-    'text sheet keeps its draft above keyboard and cancel never returns a value',
+    'text dialog keeps its draft above keyboard and cancel never returns a value',
     (tester) async {
       String? result;
       await mount(
@@ -116,8 +116,8 @@ void main() {
       await tester.enterText(find.byType(TextField), 'draft');
       tester.view.viewInsets = const FakeViewPadding(bottom: 330);
       await tester.pumpAndSettle();
-      expect(find.text('保存').hitTestable(), findsOneWidget);
-      await tester.tap(find.byTooltip('关闭'));
+      expect(find.text('确认').hitTestable(), findsOneWidget);
+      await tester.tap(find.text('取消'));
       await tester.pumpAndSettle();
       expect(result, isNull);
       tester.view.viewInsets = FakeViewPadding.zero;
@@ -128,7 +128,7 @@ void main() {
         'https://example.org',
       );
       await tester.enterText(find.byType(TextField), '');
-      await tester.tap(find.text('保存'));
+      await tester.tap(find.text('确认'));
       await tester.pumpAndSettle();
       expect(result, '');
       expect(tester.takeException(), isNull);
@@ -193,9 +193,9 @@ void main() {
         Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              result = await showNodeLaneCatalogSheet<SourceSearchScope>(
+              result = await pushBrowsePage<SourceSearchScope>(
                 context,
-                SourceSearchScopeSheet(sources: sources, current: initial),
+                SourceSearchScopePage(sources: sources, current: initial),
               );
             },
             child: const Text('范围'),
@@ -205,7 +205,7 @@ void main() {
       await tester.tap(find.text('范围'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Beta').last);
-      await tester.tap(find.byTooltip('关闭'));
+      await tester.tap(find.byTooltip('返回'));
       await tester.pumpAndSettle();
       expect(result, isNull);
       expect(initial.mode, SourceSearchScopeMode.all);
@@ -233,9 +233,9 @@ void main() {
         tester,
         Builder(
           builder: (context) => TextButton(
-            onPressed: () => showNodeLaneCatalogSheet(
+            onPressed: () => pushBrowsePage(
               context,
-              SourceSearchScopeSheet(
+              SourceSearchScopePage(
                 sources: [
                   Source(id: 1, name: 'Alpha', lang: 'en', isPinned: true),
                   Source(id: 2, name: 'Beta', lang: 'zh'),

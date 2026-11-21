@@ -10,7 +10,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get source_more_filters => 'المزيد من عوامل التصفية';
+  String get feedback_submit_source => 'إرسال الطلب';
 
   @override
   String get browser_clip_here => 'ضع علامة هنا';

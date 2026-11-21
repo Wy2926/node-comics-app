@@ -10,7 +10,7 @@ class AppLocalizationsId extends AppLocalizations {
   AppLocalizationsId([String locale = 'id']) : super(locale);
 
   @override
-  String get source_more_filters => 'Filter lainnya';
+  String get feedback_submit_source => 'Kirim permintaan';
 
   @override
   String get browser_clip_here => 'Tandai posisi ini';

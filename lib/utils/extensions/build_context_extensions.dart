@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 /// Whether a viewport of this size is rail-shaped.
 ///
@@ -11,6 +13,20 @@ import 'package:flutter/material.dart';
 bool sizeWantsNavRail(Size size) => size.shortestSide >= 600;
 
 extension BuildContextExtensions on BuildContext {
+  bool get isAndroidTablet =>
+      Theme.of(this).platform == TargetPlatform.android &&
+      !isTv &&
+      sizeWantsNavRail(MediaQuery.sizeOf(this));
+
+  /// Measure the space *after* the rail, safe areas and any outer pane.
+  bool tabletPanesFit(double width) =>
+      isAndroidTablet &&
+      width >= NodeLaneTokens.tabletPaneBreakpoint &&
+      width >=
+          NodeLaneTokens.tabletPaneBreakpoint *
+              MediaQuery.textScalerOf(this).scale(16) /
+              16;
+
   bool get isLight {
     return Theme.of(this).brightness == Brightness.light;
   }

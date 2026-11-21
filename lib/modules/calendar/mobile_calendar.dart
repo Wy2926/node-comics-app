@@ -1,4 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,6 +41,7 @@ class _MobileCalendarState extends State<MobileCalendar> {
     DateTime.now().month,
   );
   DateTime? _selectedDate;
+  final _calendarKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +67,26 @@ class _MobileCalendarState extends State<MobileCalendar> {
     String dateLabel(DateTime date) =>
         DateFormat.yMMMd(Localizations.localeOf(context).toString())
             .format(date);
+    final calendar = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        MobileMediaSelector(
+          types: widget.types,
+          selected: widget.itemType,
+          onChanged: widget.onTypeChanged,
+        ),
+        if (widget.itemType != null)
+          UpcomingCalendar(
+            key: _calendarKey,
+            mobile: true,
+            selectedYearMonth: _focusedDay,
+            selectedDay: date,
+            events: events,
+            setSelectedYearMonth: (day) => _focusedDay = day,
+            onClickDay: (day) => setState(() => _selectedDate = day),
+          ),
+      ],
+    );
     return NodeLaneSurface(
       child: Scaffold(
         appBar: nodeLaneAppBar(
@@ -93,97 +115,89 @@ class _MobileCalendarState extends State<MobileCalendar> {
         ),
         body: SafeArea(
           top: false,
-          child: CustomScrollView(
-            key: const PageStorageKey('mobile-calendar'),
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      MobileMediaSelector(
-                        types: widget.types,
-                        selected: widget.itemType,
-                        onChanged: widget.onTypeChanged,
-                      ),
-                      if (widget.itemType != null) ...[
-                        UpcomingCalendar(
-                          mobile: true,
-                          selectedYearMonth: _focusedDay,
-                          selectedDay: date,
-                          events: events,
-                          setSelectedYearMonth: (day) => _focusedDay = day,
-                          onClickDay: (day) =>
-                              setState(() => _selectedDate = day),
-                        ),
-                        const SizedBox(height: 20),
-                        if (date != null) ...[
+          child: NodeLanePaneLayout(
+            paneWidth: NodeLaneTokens.tabletOverviewWidth,
+            pane: (_) => SingleChildScrollView(
+              padding: NodeLaneTokens.pagePadding,
+              child: calendar,
+            ),
+            body: (_, split) => CustomScrollView(
+              key: const PageStorageKey('mobile-calendar'),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!split) ...[
+                          calendar,
+                          const SizedBox(height: NodeLaneTokens.space20),
+                        ],
+                        if (widget.itemType != null && date != null) ...[
                           Text(
                             dateLabel(date),
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: colors.detailSectionTitle,
                           ),
                           Align(
                             alignment: AlignmentDirectional.centerStart,
                             child: TextButton.icon(
                               onPressed: () =>
                                   setState(() => _selectedDate = null),
-                              icon: const Icon(Icons.clear_rounded),
+                              icon: Icon(NodeLaneIcons.of(context).clear),
                               label: Text(l10n.calendar_show_all_dates),
                             ),
                           ),
                         ],
+                        if (widget.data.isLoading)
+                          const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else if (widget.data.hasError) ...[
+                          Text(l10n.failed),
+                          TextButton(
+                            onPressed: widget.onRetry,
+                            child: Text(l10n.retry),
+                          ),
+                        ] else if (items.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Text(l10n.calendar_no_data),
+                          ),
                       ],
-                      if (widget.data.isLoading)
-                        const Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else if (widget.data.hasError) ...[
-                        Text(l10n.failed),
-                        TextButton(
-                          onPressed: widget.onRetry,
-                          child: Text(l10n.retry),
-                        ),
-                      ] else if (items.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          child: Text(l10n.calendar_no_data),
-                        ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              if (!widget.data.isLoading && !widget.data.hasError)
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverList.builder(
-                    itemCount: items.length,
-                    itemBuilder: (context, index) => switch (items[index]) {
-                      UpcomingHeader(:final date, :final mangaCount) => Padding(
-                        padding: const EdgeInsets.only(top: 12, bottom: 12),
-                        child: Semantics(
-                          header: true,
-                          child: Text(
-                            '${dateLabel(date)} · $mangaCount',
-                            style: TextStyle(
-                              color: colors.muted,
-                              fontWeight: FontWeight.w600,
+                if (!widget.data.isLoading && !widget.data.hasError)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, index) => switch (items[index]) {
+                        UpcomingHeader(:final date, :final mangaCount) =>
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12, bottom: 12),
+                            child: Semantics(
+                              header: true,
+                              child: Text(
+                                '${dateLabel(date)} · $mangaCount',
+                                style: colors.sectionTitle,
+                              ),
                             ),
                           ),
+                        UpcomingItem(:final manga) => widgets.UpcomingItem(
+                          key: ValueKey('calendar-${manga.id}'),
+                          manga: manga,
+                          mobile: true,
+                          onTap: () => widget.onOpen(manga),
                         ),
-                      ),
-                      UpcomingItem(:final manga) => widgets.UpcomingItem(
-                        key: ValueKey('calendar-${manga.id}'),
-                        manga: manga,
-                        mobile: true,
-                        onTap: () => widget.onOpen(manga),
-                      ),
-                    },
+                      },
+                    ),
                   ),
-                ),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            ],
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
+            ),
           ),
         ),
       ),

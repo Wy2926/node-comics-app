@@ -3,10 +3,10 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/source_catalog_metadata.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/browse/widgets/source_catalog_labels.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 typedef DirectoryFilters = Map<DirectoryFacet, Set<String>>;
@@ -92,8 +92,8 @@ class SourceDirectoryFilterPanel extends StatefulWidget {
 }
 
 class _DirectoryFilterState extends State<SourceDirectoryFilterPanel> {
-  DirectoryFacet facet = DirectoryFacet.language;
-  bool more = false, searching = false;
+  late DirectoryFacet facet =
+      widget.filters.keys.lastOrNull ?? DirectoryFacet.language;
   final search = TextEditingController();
 
   @override
@@ -104,197 +104,156 @@ class _DirectoryFilterState extends State<SourceDirectoryFilterPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final catalog = widget.catalog, filters = widget.filters;
-    final language = facet == DirectoryFacet.language;
-    final options = facet.options(
-      l10n,
+    final l = context.l10n, t = NodeLaneTokens.of(context);
+    final group = facet, filters = widget.filters;
+    final language = group == DirectoryFacet.language;
+    final selected = filters[group] ?? const <String>{};
+    final options = group.options(
+      l,
       widget.type,
       language
           ? ({
-              ...?filters[facet],
-              for (final s in catalog) (s.lang ?? '').toLowerCase(),
+              ...selected,
+              for (final s in widget.catalog) (s.lang ?? '').toLowerCase(),
             }.toList()..sort())
           : const [],
     );
-    final selected = filters[facet] ?? const <String>{};
     final allLanguages =
-        language && options.isNotEmpty && options.keys.every(selected.contains);
+        options.isNotEmpty && options.keys.every(selected.contains);
     final needle = search.text.trim().toLowerCase();
     final visible = options.entries.where(
-      (o) => o.value.toLowerCase().contains(needle),
+      (o) => o.value.toLowerCase().contains(needle) || o.key.contains(needle),
     );
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final height =
+        (MediaQuery.textScalerOf(context).scale(t.label.fontSize!) *
+                    t.label.height! +
+                NodeLaneTokens.space16)
+            .clamp(NodeLaneTokens.minTapTarget, double.infinity);
+    Widget choice(String label, bool checked, VoidCallback toggle) =>
+        FilterChip(
+          label: Text(label),
+          selected: checked,
+          checkmarkColor: t.accent,
+          labelStyle: t.label.copyWith(color: checked ? t.accent : t.ink),
+          onSelected: (_) => toggle(),
+        );
+    final choices = Wrap(
+      spacing: NodeLaneTokens.space8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (needle.isEmpty)
+          choice(
+            l.default0,
+            selected.isEmpty,
+            () => widget.onChanged({...filters}..remove(group)),
+          ),
+        if (language && needle.isEmpty && options.isNotEmpty)
+          choice(
+            l.source_all_languages,
+            allLanguages,
+            () => widget.onChanged(
+              allLanguages
+                  ? ({...filters}..remove(group))
+                  : {...filters, group: options.keys.toSet()},
+            ),
+          ),
+        for (final o in visible)
+          choice(
+            o.value,
+            selected.contains(o.key),
+            () => widget.onChanged(filters.toggle(group, o.key)),
+          ),
+        if (visible.isEmpty && needle.isNotEmpty)
+          Text(l.no_result, style: t.secondary),
+      ],
+    );
     return NodeLaneGroupSurface(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: NodeLaneTokens.space12,
-          vertical: NodeLaneTokens.space4,
-        ),
+      outlined: true,
+      child: DefaultTabController(
+        length: DirectoryFacet.values.length,
+        initialIndex: facet.index,
+        animationDuration: NodeLaneMotion.time(context),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Wrap(
-              children: [
-                for (final group in [
-                  DirectoryFacet.language,
-                  DirectoryFacet.format,
-                  DirectoryFacet.pricing,
-                  if (more) ...[DirectoryFacet.region, DirectoryFacet.creation],
-                ])
-                  Semantics(
-                    selected: group == facet,
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: group == facet ? t.accent : t.muted,
-                        textStyle: t.label,
-                      ),
-                      onPressed: () => setState(() {
-                        facet = group;
-                        searching = false;
-                        search.clear();
-                      }),
-                      child: Text(group.label(l10n)),
+            TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              labelColor: t.accent,
+              unselectedLabelColor: t.muted,
+              labelStyle: t.label,
+              indicatorColor: t.accent,
+              dividerColor: t.line,
+              onTap: (i) {
+                if (facet == DirectoryFacet.values[i]) return;
+                FocusScope.of(context).unfocus();
+                setState(() {
+                  facet = DirectoryFacet.values[i];
+                  search.clear();
+                });
+              },
+              tabs: [
+                for (final f in DirectoryFacet.values)
+                  Tab(
+                    height: height,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(f.label(l)),
+                        if (filters[f] case final values?) ...[
+                          const SizedBox(width: NodeLaneTokens.space4),
+                          Semantics(
+                            label: l.source_selected_count(values.length),
+                            excludeSemantics: true,
+                            child: Badge.count(
+                              count: values.length,
+                              backgroundColor: t.accentSoft,
+                              textColor: t.accent,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                Semantics(
-                  expanded: more,
-                  child: TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: t.muted,
-                      textStyle: t.label,
-                    ),
-                    icon: Icon(
-                      more ? icons.up : icons.down,
-                      size: NodeLaneTokens.badgeIconSize,
-                    ),
-                    label: Text(l10n.source_more_filters),
-                    onPressed: () => setState(() {
-                      more = !more;
-                      if (!more &&
-                          (facet == DirectoryFacet.region ||
-                              facet == DirectoryFacet.creation)) {
-                        facet = DirectoryFacet.language;
-                      }
-                    }),
-                  ),
-                ),
               ],
             ),
-            if (language && searching)
-              NodeLaneTextField.search(
-                controller: search,
-                hint: l10n.search_languages,
-                onChanged: (_) => setState(() {}),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.space16,
+                vertical: NodeLaneTokens.space8,
               ),
-            SingleChildScrollView(
-              key: ValueKey(facet),
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                spacing: NodeLaneTokens.space4,
-                children: [
-                  if (needle.isEmpty)
-                    DirectoryFilterChoice(
-                      label: l10n.default0,
-                      selected: !filters.containsKey(facet),
-                      onPressed: () =>
-                          widget.onChanged({...filters}..remove(facet)),
-                    ),
-                  if (language)
-                    NodeLaneIconButton(
-                      icon: icons.search,
-                      tooltip: l10n.search_languages,
-                      style: NodeLaneIconButtonStyle.plain,
-                      onPressed: () => setState(() {
-                        searching = !searching;
-                        search.clear();
-                      }),
-                    ),
-                  if (language && needle.isEmpty && options.isNotEmpty)
-                    DirectoryFilterChoice(
-                      label: l10n.source_all_languages,
-                      selected: allLanguages,
-                      onPressed: () => widget.onChanged(
-                        allLanguages
-                            ? ({...filters}..remove(facet))
-                            : {...filters, facet: options.keys.toSet()},
+              child: NodeLaneMotion.resize(
+                context,
+                NodeLaneContentMotion(
+                  value: group,
+                  child: Column(
+                    key: ValueKey(group),
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (language &&
+                          (options.length > 8 || needle.isNotEmpty)) ...[
+                        NodeLaneTextField.search(
+                          controller: search,
+                          hint: l.search_languages,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                        const SizedBox(height: NodeLaneTokens.space4),
+                      ],
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.sizeOf(context).height * .24,
+                        ),
+                        child: SingleChildScrollView(
+                          primary: false,
+                          child: choices,
+                        ),
                       ),
-                    ),
-                  for (final option in visible)
-                    DirectoryFilterChoice(
-                      label: option.value,
-                      selected: selected.contains(option.key),
-                      onPressed: () =>
-                          widget.onChanged(filters.toggle(facet, option.key)),
-                    ),
-                  if (visible.isEmpty) Text(l10n.no_result, style: t.secondary),
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class DirectoryFilterChoice extends StatelessWidget {
-  const DirectoryFilterChoice({
-    super.key,
-    required this.label,
-    required this.selected,
-    required this.onPressed,
-    this.remove = false,
-  });
-  final String label;
-  final bool selected, remove;
-  final VoidCallback onPressed;
-  @override
-  Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    return Semantics(
-      checked: remove ? null : selected,
-      child: TextButton(
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: const Size(
-            NodeLaneTokens.minTapTarget,
-            NodeLaneTokens.minTapTarget,
-          ),
-          foregroundColor: selected ? t.accent : t.ink,
-          textStyle: t.label,
-        ),
-        onPressed: onPressed,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: selected ? t.accentSoft : t.soft,
-            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: NodeLaneTokens.space8,
-              vertical: NodeLaneTokens.space4,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: NodeLaneTokens.space4,
-              children: [
-                if (!remove)
-                  Icon(
-                    selected ? icons.selected : icons.unselected,
-                    size: NodeLaneTokens.badgeIconSize,
-                  ),
-                Text(
-                  label,
-                  semanticsLabel: remove
-                      ? '${context.l10n.remove} · $label'
-                      : null,
-                ),
-                if (remove)
-                  Icon(icons.close, size: NodeLaneTokens.badgeIconSize),
-              ],
-            ),
-          ),
         ),
       ),
     );

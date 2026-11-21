@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
@@ -45,59 +46,70 @@ class ReaderBottomBar extends ConsumerWidget {
   final Color Function(BuildContext) backgroundColor;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final progress = ValueListenableBuilder<int>(
+      valueListenable: currentPageListenable,
+      builder: (context, index, _) => MobileReaderProgress(
+        currentIndex: index,
+        totalPages: totalPages,
+        label: currentIndexLabel(index),
+        reverse: isReverseHorizontal,
+        previousLabel: context.l10n.previous(context.l10n.chapter),
+        nextLabel: context.l10n.next_chapter,
+        onPrevious: hasPreviousChapter ? onPreviousChapter : null,
+        onNext: hasNextChapter ? onNextChapter : null,
+        onChanged: (value) => onSliderChanged(value, ref),
+        onChangeEnd: onSliderChangeEnd,
+      ),
+    );
+    final actions = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: btnToShowChapterListDialog(
+            context,
+            context.l10n.chapters,
+            chapter,
+            labeled: true,
+            onChanged: (closed) {
+              if (closed) {
+                onChaptersClosed?.call();
+              } else {
+                onChaptersOpened?.call();
+              }
+            },
+          ),
+        ),
+        Expanded(child: ReaderTranslationHost.button(context, labeled: true)),
+        Expanded(
+          child: NodeLaneToolbarAction(
+            label: context.l10n.comic_reading,
+            icon: NodeLaneIcons.of(context).adjustments,
+            onPressed: () => onSettingsPressed(context),
+          ),
+        ),
+      ],
+    );
     return MobileReaderPanel(
       visible: isVisible,
       top: false,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ValueListenableBuilder<int>(
-            valueListenable: currentPageListenable,
-            builder: (context, index, _) => MobileReaderProgress(
-              currentIndex: index,
-              totalPages: totalPages,
-              label: currentIndexLabel(index),
-              reverse: isReverseHorizontal,
-              previousLabel: context.l10n.previous(context.l10n.chapter),
-              nextLabel: context.l10n.next_chapter,
-              onPrevious: hasPreviousChapter ? onPreviousChapter : null,
-              onNext: hasNextChapter ? onNextChapter : null,
-              onChanged: (value) => onSliderChanged(value, ref),
-              onChangeEnd: onSliderChangeEnd,
-            ),
-          ),
-          Divider(height: 1, color: NodeLaneTokens.of(context).line),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: btnToShowChapterListDialog(
-                  context,
-                  context.l10n.chapters,
-                  chapter,
-                  labeled: true,
-                  onChanged: (closed) {
-                    if (closed) {
-                      onChaptersClosed?.call();
-                    } else {
-                      onChaptersOpened?.call();
-                    }
-                  },
-                ),
+      child: LayoutBuilder(
+        builder: (context, constraints) =>
+            context.tabletPanesFit(constraints.maxWidth)
+            ? Row(
+                spacing: NodeLaneTokens.space24,
+                children: [
+                  Expanded(child: progress),
+                  Expanded(child: actions),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  progress,
+                  Divider(height: 1, color: NodeLaneTokens.of(context).line),
+                  actions,
+                ],
               ),
-              Expanded(
-                child: ReaderTranslationHost.button(context, labeled: true),
-              ),
-              Expanded(
-                child: NodeLaneToolbarAction(
-                  label: context.l10n.comic_reading,
-                  icon: NodeLaneIcons.of(context).adjustments,
-                  onPressed: () => onSettingsPressed(context),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

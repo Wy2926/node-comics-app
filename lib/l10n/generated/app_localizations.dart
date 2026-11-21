@@ -127,11 +127,11 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
-  /// No description provided for @source_more_filters.
+  /// No description provided for @feedback_submit_source.
   ///
   /// In en, this message translates to:
-  /// **'More filters'**
-  String get source_more_filters;
+  /// **'Submit request'**
+  String get feedback_submit_source;
 
   /// No description provided for @browser_clip_here.
   ///

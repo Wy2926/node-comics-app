@@ -9,13 +9,15 @@ import 'app_font_family.dart';
 
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 
 /// Material draws a focused InkWell's highlight from the ambient
 /// [ThemeData.focusColor], and the default is nearly invisible on a TV
 /// across a room. Tinting it with the scheme's primary makes every focusable
 /// built on an InkResponse legible with a remote: popup menu buttons and
-/// their items, list tiles, icon buttons. Off-TV the theme is untouched.
-ThemeData _tvFocus(ThemeData theme) {
+/// their items, list tiles, icon buttons.
+ThemeData _navigationTheme(ThemeData theme) {
+  theme = theme.copyWith(pageTransitionsTheme: NodeLaneMotion.pageTransitions);
   if (!isTv) return theme;
   // A focused button drew only a faint focusColor overlay, which is invisible on
   // a filled button (e.g. a dialog's Add/OK) — you can't tell it is focused.
@@ -72,7 +74,7 @@ final lightThemeProvider = Provider<ThemeData>((ref) {
   final blendLevel = ref.watch(blendLevelStateProvider).toInt();
   final fontFamily = ref.watch(appFontFamilyProvider.select((t) => t.$2));
 
-  return _tvFocus(
+  return _navigationTheme(
     _mobileAccent(
       FlexThemeData.light(
         colors: colors,
@@ -107,7 +109,7 @@ final darkThemeProvider = Provider<ThemeData>((ref) {
   final fontFamily = ref.watch(appFontFamilyProvider.select((t) => t.$2));
   final pureBlack = ref.watch(pureBlackDarkModeStateProvider);
 
-  return _tvFocus(
+  return _navigationTheme(
     FlexThemeData.dark(
       colors: colors,
       surfaceMode: FlexSurfaceMode.level,

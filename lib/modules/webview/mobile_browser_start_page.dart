@@ -7,6 +7,7 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/utils/nodelane_brand.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 import 'browser_library_store.dart';
 import 'browser_url.dart';
@@ -48,16 +49,9 @@ class MobileBrowserStartPage extends StatelessWidget {
   final VoidCallback? onHistory, onBookmarks;
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    bottom: false,
-    child: ListView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsets.fromLTRB(
-        NodeLaneTokens.gutter,
-        NodeLaneTokens.space8,
-        NodeLaneTokens.gutter,
-        bottomInset + NodeLaneTokens.space24,
-      ),
+  Widget build(BuildContext context) {
+    final launch = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: NodeLaneTokens.space24),
         const Center(child: NodeLaneBrandMark()),
@@ -127,75 +121,133 @@ class MobileBrowserStartPage extends StatelessWidget {
             ),
           ],
         ),
-        if (clip case final entry?) ...[
-          const SizedBox(height: NodeLaneTokens.space16),
-          NodeLaneCatalogHeading(context.l10n.browser_continue),
-          NodeLaneRow.card(
-            title: entry.displayTitle,
-            titleMaxLines: 2,
-            subtitle: [
-              entry.host,
-              if (entry.anchor?['page'] case final int page)
-                context.l10n.page(page),
-              MaterialLocalizations.of(context)
-                  .formatShortDate(entry.time.toLocal()),
-            ].join(' · '),
-            icon: NodeLaneIcons.of(context).bookmark,
-            trailing: Icon(
-              NodeLaneIcons.of(context).forward,
-              size: NodeLaneTokens.smallIconSize,
-            ),
-            onTap: onResume == null ? null : () => onResume!(entry),
-          ),
-        ],
-        if (recent.isNotEmpty) ...[
-          const SizedBox(height: NodeLaneTokens.space16),
-          NodeLaneCatalogHeading(
-            context.l10n.browser_recent,
-            action: context.l10n.manage,
-            onAction: onHistory,
-          ),
-          for (var i = 0; i < recent.length; i++)
-            NodeLaneRow.card(
-              title: recent[i].displayTitle,
-              titleMaxLines: 1,
-              subtitle: recent[i].host,
-              subtitleMaxLines: 1,
-              leading: NodeLaneWebsiteIcon(url: recent[i].faviconUrl),
-              first: i == 0,
-              last: i == recent.length - 1,
-              onTap: () => onOpen(recent[i].url, recent[i].title),
-            ),
-        ],
-        if (sources.isNotEmpty) ...[
-          const SizedBox(height: NodeLaneTokens.space16),
-          NodeLaneCatalogHeading(
-            context.l10n.source_pinned_websites,
-            action: onManage == null ? null : context.l10n.manage,
-            onAction: onManage,
-          ),
-          for (var i = 0; i < sources.length; i++)
-            NodeLaneRow.card(
-              title: sources[i].name?.isNotEmpty == true
-                  ? sources[i].name!
-                  : Uri.parse(sources[i].baseUrl!).host,
-              titleMaxLines: 1,
-              metadata: Uri.parse(sources[i].baseUrl!).host,
-              leading: NodeLaneWebsiteIcon(url: sources[i].iconUrl),
-              first: i == 0,
-              last: i == sources.length - 1,
-              onTap: () => onOpen(sources[i].baseUrl!, sources[i].name ?? ''),
-            ),
-        ] else if (onManage != null) ...[
-          const SizedBox(height: NodeLaneTokens.space16),
-          NodeLaneRow.card(
-            title: context.l10n.source_pinned_websites,
-            subtitle: context.l10n.browser_pinned_hint,
-            icon: NodeLaneIcons.of(context).pin,
-            onTap: onManage,
-          ),
-        ],
       ],
-    ),
-  );
+    );
+    final activity = <Widget>[
+      if (clip case final entry?) ...[
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneCatalogHeading(context.l10n.browser_continue),
+        NodeLaneRow.card(
+          title: entry.displayTitle,
+          titleMaxLines: 2,
+          subtitle: [
+            entry.host,
+            if (entry.anchor?['page'] case final int page)
+              context.l10n.page(page),
+            MaterialLocalizations.of(context)
+                .formatShortDate(entry.time.toLocal()),
+          ].join(' · '),
+          icon: NodeLaneIcons.of(context).bookmark,
+          trailing: Icon(
+            NodeLaneIcons.of(context).forward,
+            size: NodeLaneTokens.smallIconSize,
+          ),
+          onTap: onResume == null ? null : () => onResume!(entry),
+        ),
+      ],
+      if (recent.isNotEmpty) ...[
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneCatalogHeading(
+          context.l10n.browser_recent,
+          action: context.l10n.manage,
+          onAction: onHistory,
+        ),
+        for (var i = 0; i < recent.length; i++)
+          NodeLaneRow.card(
+            title: recent[i].displayTitle,
+            titleMaxLines: 1,
+            subtitle: recent[i].host,
+            subtitleMaxLines: 1,
+            leading: NodeLaneWebsiteIcon(url: recent[i].faviconUrl),
+            first: i == 0,
+            last: i == recent.length - 1,
+            onTap: () => onOpen(recent[i].url, recent[i].title),
+          ),
+      ],
+    ];
+    final pinned = <Widget>[
+      if (sources.isNotEmpty) ...[
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneCatalogHeading(
+          context.l10n.source_pinned_websites,
+          action: onManage == null ? null : context.l10n.manage,
+          onAction: onManage,
+        ),
+        for (var i = 0; i < sources.length; i++)
+          NodeLaneRow.card(
+            title: sources[i].name?.isNotEmpty == true
+                ? sources[i].name!
+                : Uri.parse(sources[i].baseUrl!).host,
+            titleMaxLines: 1,
+            metadata: Uri.parse(sources[i].baseUrl!).host,
+            leading: NodeLaneWebsiteIcon(url: sources[i].iconUrl),
+            first: i == 0,
+            last: i == sources.length - 1,
+            onTap: () => onOpen(sources[i].baseUrl!, sources[i].name ?? ''),
+          ),
+      ] else if (onManage != null) ...[
+        const SizedBox(height: NodeLaneTokens.space16),
+        NodeLaneRow.card(
+          title: context.l10n.source_pinned_websites,
+          subtitle: context.l10n.browser_pinned_hint,
+          icon: NodeLaneIcons.of(context).pin,
+          onTap: onManage,
+        ),
+      ],
+    ];
+    return SafeArea(
+      bottom: false,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tablet = context.isAndroidTablet;
+          final split =
+              context.tabletPanesFit(constraints.maxWidth) &&
+              pinned.isNotEmpty &&
+              activity.isNotEmpty;
+          return ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(
+              NodeLaneTokens.gutter,
+              NodeLaneTokens.space8,
+              NodeLaneTokens.gutter,
+              bottomInset + NodeLaneTokens.space24,
+            ),
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: tablet
+                        ? NodeLaneTokens.tabletColumnWidth
+                        : double.infinity,
+                  ),
+                  child: launch,
+                ),
+              ),
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: split
+                        ? NodeLaneTokens.tabletDashboardWidth
+                        : tablet
+                        ? NodeLaneTokens.tabletColumnWidth
+                        : double.infinity,
+                  ),
+                  child: split
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: NodeLaneTokens.space24,
+                          children: [
+                            Expanded(child: Column(children: activity)),
+                            Expanded(child: Column(children: pinned)),
+                          ],
+                        )
+                      : Column(children: [...activity, ...pinned]),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 }

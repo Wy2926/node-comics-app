@@ -6,12 +6,25 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/source_catalog_metadata.dart';
 import 'package:mangayomi/modules/browse/widgets/source_catalog_labels.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 enum SourceCardAction { open, install, update, retry, loading, pin, unpin }
+
+/// Selecting a site changes only the old and new cards, not the whole grid.
+class CurrentWebsite extends InheritedModel<int> {
+  const CurrentWebsite({super.key, required this.id, required super.child});
+  final int? id;
+  @override
+  bool updateShouldNotify(CurrentWebsite old) => old.id != id;
+  @override
+  bool updateShouldNotifyDependent(CurrentWebsite old, Set<int> dependencies) =>
+      dependencies.contains(id) || dependencies.contains(old.id);
+}
 
 /// One directory card for official and third-party sources. Request lifecycle,
 /// installation policy and navigation belong to the caller, not this widget.
@@ -33,8 +46,54 @@ class SourceWebsiteCard extends StatelessWidget {
   final VoidCallback? onDetails, onLongPress;
   final bool? selected;
 
+  static ({double heading, double labels, double footer, bool stacked})
+  _metrics(BuildContext context, double width) {
+    final t = NodeLaneTokens.of(context),
+        scaler = MediaQuery.textScalerOf(context);
+    final lineHeight = MediaQuery.maybeLineHeightScaleFactorOverrideOf(context);
+    double line(TextStyle style) =>
+        scaler.scale(style.fontSize!) * (lineHeight ?? style.height!);
+    return (
+      heading: math.max(
+        NodeLaneTokens.websiteIconSize,
+        line(t.sourceTitle).roundToDouble() +
+            NodeLaneTokens.space4 +
+            line(t.sourceMetadata).roundToDouble(),
+      ),
+      labels: math.max(
+        NodeLaneTokens.sourceCardClassificationHeight,
+        line(t.sourceMetadata).ceilToDouble() + NodeLaneTokens.space16,
+      ),
+      footer: math.max(
+        NodeLaneTokens.sourceCardFooterHeight,
+        line(t.sourceFooter).ceilToDouble() + NodeLaneTokens.space16,
+      ),
+      stacked:
+          width <
+          scaler.scale(t.sourceFooter.fontSize!) * 7 +
+              NodeLaneTokens.smallIconSize * 2 +
+              NodeLaneTokens.space8 * 3 +
+              NodeLaneTokens.space16 * 2,
+    );
+  }
+
+  static double gridExtent(BuildContext context, double width) {
+    final m = _metrics(context, width);
+    return NodeLaneTokens.sourceCardTopInset +
+        m.heading +
+        m.labels +
+        m.footer * (m.stacked ? 2 : 1);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final current =
+        source.id != null &&
+        InheritedModel.inheritFrom<CurrentWebsite>(
+              context,
+              aspect: source.id,
+            )?.id ==
+            source.id;
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final metadata = source.catalogMetadata;
     final free = metadata.pricing == SourcePricing.free;
@@ -43,20 +102,16 @@ class SourceWebsiteCard extends StatelessWidget {
     final labels = metadata.classificationLabels(context.l10n);
     final scaler = MediaQuery.textScalerOf(context);
     final lineHeight = MediaQuery.maybeLineHeightScaleFactorOverrideOf(context);
-    double textHeight(TextStyle style) =>
-        (scaler.scale(style.fontSize!) * (lineHeight ?? style.height!))
-            .ceilToDouble();
-    final classificationHeight = math.max(
-      NodeLaneTokens.sourceCardClassificationHeight,
-      textHeight(t.sourceMetadata) + NodeLaneTokens.space16,
-    );
     final cornerWidth = math.max(
       NodeLaneTokens.sourceAdultCornerWidth,
       scaler.scale(t.sourceFooter.fontSize!) * 3 + NodeLaneTokens.space8,
     );
     final cornerHeight = math.max(
       NodeLaneTokens.sourceAdultCornerHeight,
-      textHeight(t.sourceFooter) + NodeLaneTokens.space8,
+      (scaler.scale(t.sourceFooter.fontSize!) *
+                  (lineHeight ?? t.sourceFooter.height!))
+              .ceilToDouble() +
+          NodeLaneTokens.space8,
     );
     final band = free
         ? t.accentSoft
@@ -79,16 +134,7 @@ class SourceWebsiteCard extends StatelessWidget {
       builder: (context, constraints) {
         // Geometry depends on available width and font scale, never on the
         // source's fee/NSFW flag/action. Accessibility grows every card equally.
-        final stackedFooter =
-            constraints.maxWidth <
-            scaler.scale(t.sourceFooter.fontSize!) * 7 +
-                NodeLaneTokens.smallIconSize * 2 +
-                NodeLaneTokens.space8 * 3 +
-                NodeLaneTokens.space16 * 2;
-        final footerRowHeight = math.max(
-          NodeLaneTokens.sourceCardFooterHeight,
-          textHeight(t.sourceFooter) + NodeLaneTokens.space16,
-        );
+        final metrics = _metrics(context, constraints.maxWidth);
         final pricing = Row(
           children: [
             ExcludeSemantics(
@@ -128,12 +174,12 @@ class SourceWebsiteCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(NodeLaneTokens.groupRadius),
             side: BorderSide(
-              color: selected == true
+              color: selected == true || current
                   ? t.accent
                   : free
                   ? t.sourceFreeOutline
                   : t.line,
-              width: NodeLaneTokens.glassStroke,
+              width: current ? 2 : NodeLaneTokens.glassStroke,
             ),
           ),
           clipBehavior: Clip.antiAlias,
@@ -175,7 +221,11 @@ class SourceWebsiteCard extends StatelessWidget {
                                         source.name ?? '',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: t.sourceTitle,
+                                        style: current
+                                            ? t.sourceTitle.copyWith(
+                                                color: t.accent,
+                                              )
+                                            : t.sourceTitle,
                                       ),
                                       const SizedBox(
                                         height: NodeLaneTokens.space4,
@@ -197,7 +247,7 @@ class SourceWebsiteCard extends StatelessWidget {
                           ),
                           ConstrainedBox(
                             constraints: BoxConstraints(
-                              minHeight: classificationHeight,
+                              minHeight: metrics.labels,
                             ),
                             child: _SourceClassifications(
                               labels: labels,
@@ -257,18 +307,18 @@ class SourceWebsiteCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                           horizontal: NodeLaneTokens.space16,
                         ),
-                        child: stackedFooter
+                        child: metrics.stacked
                             ? Column(
                                 children: [
                                   ConstrainedBox(
                                     constraints: BoxConstraints(
-                                      minHeight: footerRowHeight,
+                                      minHeight: metrics.footer,
                                     ),
                                     child: pricing,
                                   ),
                                   ConstrainedBox(
                                     constraints: BoxConstraints(
-                                      minHeight: footerRowHeight,
+                                      minHeight: metrics.footer,
                                     ),
                                     child: Align(
                                       heightFactor: 1,
@@ -280,7 +330,7 @@ class SourceWebsiteCard extends StatelessWidget {
                               )
                             : ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  minHeight: footerRowHeight,
+                                  minHeight: metrics.footer,
                                 ),
                                 child: Row(
                                   children: [
@@ -300,7 +350,10 @@ class SourceWebsiteCard extends StatelessWidget {
             ),
           ),
         );
-        return Semantics(selected: selected, child: card);
+        return Semantics(
+          selected: selected ?? (current ? true : null),
+          child: card,
+        );
       },
     );
   }
@@ -375,15 +428,8 @@ class _SourceClassifications extends StatelessWidget {
                 const SizedBox(width: NodeLaneTokens.space8),
               SizedBox(
                 width: math.min(counterWidth, constraints.maxWidth),
-                child: TextButton(
+                child: _CardLink(
                   onPressed: onDetails,
-                  style: TextButton.styleFrom(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NodeLaneTokens.space4,
-                    ),
-                  ),
                   child: Semantics(
                     label: context.l10n.source_more_classifications(remaining),
                     child: ExcludeSemantics(
@@ -403,6 +449,35 @@ class _SourceClassifications extends StatelessWidget {
       },
     );
   }
+}
+
+/// Shares the card's Material and ink surface instead of painting another
+/// themed Material button for every visible footer and overflow count.
+class _CardLink extends StatelessWidget {
+  const _CardLink({required this.onPressed, required this.child});
+  final VoidCallback? onPressed;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    enabled: onPressed != null,
+    child: InkWell(
+      onTap: onPressed,
+      customBorder: const StadiumBorder(),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minWidth: NodeLaneTokens.minTapTarget,
+          minHeight: NodeLaneTokens.minTapTarget,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: NodeLaneTokens.space4,
+          ),
+          child: Center(widthFactor: 1, heightFactor: 1, child: child),
+        ),
+      ),
+    ),
+  );
 }
 
 class _SourceAction extends StatelessWidget {
@@ -440,25 +515,27 @@ class _SourceAction extends StatelessWidget {
       SourceCardAction.retry => context.l10n.retry,
       _ => '',
     };
-    return TextButton(
+    return _CardLink(
       onPressed: onPressed,
-      style: TextButton.styleFrom(
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
-        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space4),
-        foregroundColor: t.accent,
-      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (action == SourceCardAction.retry) ...[
-            Icon(icons.refresh, size: NodeLaneTokens.smallIconSize),
+            Icon(
+              icons.refresh,
+              size: NodeLaneTokens.smallIconSize,
+              color: t.accent,
+            ),
             const SizedBox(width: NodeLaneTokens.space4),
           ],
           Text(label, style: t.sourceFooter.copyWith(color: t.accent)),
           if (action == SourceCardAction.open) ...[
             const SizedBox(width: NodeLaneTokens.space4),
-            Icon(icons.forward, size: NodeLaneTokens.smallIconSize),
+            Icon(
+              icons.forward,
+              size: NodeLaneTokens.smallIconSize,
+              color: t.accent,
+            ),
           ],
         ],
       ),
@@ -510,53 +587,114 @@ class _UnknownPricingDivider extends CustomPainter {
       oldDelegate.color != color;
 }
 
-Future<void> showSourceWebsiteInfo(BuildContext context, Source source) {
+enum SourceWebsiteAction { pin, latest, browser, settings }
+
+Future<SourceWebsiteAction?> showSourceWebsiteInfo(
+  BuildContext context,
+  Source source,
+) {
   final metadata = source.catalogMetadata;
-  return showNodeLaneCatalogSheet<void>(
+  return pushBrowsePage<SourceWebsiteAction>(
     context,
-    NodeLaneCatalogSheet(
-      title: source.name ?? '',
-      subtitle: context.l10n.source_metadata_hint,
-      fitContent: true,
-      heightFactor: .85,
-      child: ListView(
-        shrinkWrap: true,
-        padding: NodeLaneTokens.pagePadding,
-        children: [
-          NodeLaneGroupSurface(
+    Builder(
+      builder: (context) {
+        final l = context.l10n, icons = NodeLaneIcons.of(context);
+        return MobileBrowsePage.form(
+          title: source.name ?? '',
+          body: ListView(
+            padding: NodeLaneTokens.pagePadding,
             children: [
-              for (final entry in [
-                (
-                  context.l10n.source_region,
-                  metadata.regionLabels(context.l10n),
+              NodeLaneToolbarPair(
+                alignment: WrapCrossAlignment.start,
+                first: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    NodeLaneCatalogHeading(l.source_information),
+                    Text(
+                      l.source_metadata_hint,
+                      style: NodeLaneTokens.of(context).secondary,
+                    ),
+                    const SizedBox(height: NodeLaneTokens.space8),
+                    NodeLaneGroupSurface(
+                      children: [
+                        for (final entry in [
+                          (
+                            context.l10n.source_region,
+                            metadata.regionLabels(context.l10n),
+                          ),
+                          (
+                            context.l10n.source_format,
+                            metadata.formatLabels(context.l10n),
+                          ),
+                          (
+                            context.l10n.source_creation,
+                            metadata.creationLabels(context.l10n),
+                          ),
+                        ])
+                          NodeLaneRow(
+                            title: entry.$1,
+                            subtitle: entry.$2.isEmpty
+                                ? context.l10n.source_unspecified
+                                : entry.$2.join(context.l10n.list_separator),
+                          ),
+                        NodeLaneRow(
+                          title: context.l10n.source_pricing,
+                          subtitle: sourcePricingLabel(
+                            metadata.pricing,
+                            source.itemType,
+                            context.l10n,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                (
-                  context.l10n.source_format,
-                  metadata.formatLabels(context.l10n),
-                ),
-                (
-                  context.l10n.source_creation,
-                  metadata.creationLabels(context.l10n),
-                ),
-              ])
-                NodeLaneRow(
-                  title: entry.$1,
-                  subtitle: entry.$2.isEmpty
-                      ? context.l10n.source_unspecified
-                      : entry.$2.join(context.l10n.list_separator),
-                ),
-              NodeLaneRow(
-                title: context.l10n.source_pricing,
-                subtitle: sourcePricingLabel(
-                  metadata.pricing,
-                  source.itemType,
-                  context.l10n,
+                second: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    NodeLaneCatalogHeading(l.source_actions),
+                    NodeLaneGroupSurface(
+                      children: [
+                        for (final (action, label, icon) in [
+                          (
+                            SourceWebsiteAction.pin,
+                            source.isPinned == true
+                                ? l.source_unpin
+                                : l.source_pin,
+                            icons.pin,
+                          ),
+                          (
+                            SourceWebsiteAction.latest,
+                            l.source_latest_content,
+                            icons.latest,
+                          ),
+                          if ((source.baseUrl ?? '').isNotEmpty)
+                            (
+                              SourceWebsiteAction.browser,
+                              l.open_in_browser,
+                              icons.browser,
+                            ),
+                          if (source.isAdded == true)
+                            (
+                              SourceWebsiteAction.settings,
+                              l.sources_settings,
+                              icons.settings,
+                            ),
+                        ])
+                          NodeLaneRow(
+                            title: label,
+                            icon: icon,
+                            onTap: () => Navigator.pop(context, action),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     ),
   );
 }

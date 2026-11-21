@@ -132,7 +132,14 @@ class NodeLaneEmptyState extends StatelessWidget {
               minHeight: constraints.maxHeight,
               minWidth: constraints.maxWidth,
             ),
-            child: Center(child: content),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: NodeLaneTokens.dialogMaxWidth,
+                ),
+                child: content,
+              ),
+            ),
           ),
         ),
       );

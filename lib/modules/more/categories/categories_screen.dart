@@ -1,5 +1,6 @@
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/models/category.dart';
@@ -38,7 +39,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
       types = types.where((t) => t == ItemType.anime).toList();
     }
     _visibleTabTypes = types;
-    _tabBarController = TabController(
+    _tabBarController = NodeLaneMotion.tabs(
       length: _visibleTabTypes.length,
       vsync: this,
     );
@@ -82,31 +83,27 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
       );
     }
     final l10n = l10nLocalizations(context)!;
-    return DefaultTabController(
-      animationDuration: Duration.zero,
-      length: _visibleTabTypes.length,
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          title: Text(
-            widget.data.$1 ? l10n.edit_categories : l10n.categories,
-            style: TextStyle(color: Theme.of(context).hintColor),
-          ),
-          bottom: TabBar(
-            indicatorSize: TabBarIndicatorSize.label,
-            controller: _tabBarController,
-            tabs: _visibleTabTypes.map((type) {
-              return Tab(text: type.localized(l10n));
-            }).toList(),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          widget.data.$1 ? l10n.edit_categories : l10n.categories,
+          style: TextStyle(color: Theme.of(context).hintColor),
         ),
-        body: TabBarView(
+        bottom: TabBar(
+          indicatorSize: TabBarIndicatorSize.label,
           controller: _tabBarController,
-          children: _visibleTabTypes.map((type) {
-            return CategoriesTab(itemType: type);
+          tabs: _visibleTabTypes.map((type) {
+            return Tab(text: type.localized(l10n));
           }).toList(),
         ),
+      ),
+      body: TabBarView(
+        controller: _tabBarController,
+        children: _visibleTabTypes.map((type) {
+          return CategoriesTab(itemType: type);
+        }).toList(),
       ),
     );
   }

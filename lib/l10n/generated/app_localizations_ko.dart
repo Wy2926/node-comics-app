@@ -10,7 +10,7 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get source_more_filters => '필터 더 보기';
+  String get feedback_submit_source => '요청 제출';
 
   @override
   String get browser_clip_here => '여기에 책갈피 꽂기';

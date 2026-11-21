@@ -1,5 +1,6 @@
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 // ignore_for_file: use_build_context_synchronously
 
@@ -93,6 +94,45 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
     }
 
     final icons = NodeLaneIcons.of(context);
+    final heading = Padding(
+      padding: NodeLaneTokens.headerPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NodeLanePageHeading(
+            title: l10n.tracking,
+            actions: [
+              NodeLaneIconButton(
+                icon: icons.tracking,
+                tooltip: l10n.track_library_switch,
+                onPressed: () => _switchTracker(l10n),
+              ),
+            ],
+          ),
+          const SizedBox(height: NodeLaneTokens.space12),
+          _TrackerLibraryTitle(
+            text:
+                (trackerProvider == TrackerProviders.simkl ||
+                    trackerProvider == TrackerProviders.trakt)
+                ? trackerProvider.name
+                : '${trackerProvider.name} · ${itemType.localized(l10n)}',
+            syncId: trackerProvider.syncId,
+          ),
+        ],
+      ),
+    );
+    final search = NodeLaneTextField.search(
+      controller: _textEditingController,
+      hint: l10n.search,
+      onSubmitted: (value) => setState(() => _query = value.trim()),
+      onChanged: (value) {
+        if (value.isEmpty && _query.isNotEmpty) setState(() => _query = '');
+      },
+      onClear: () {
+        _textEditingController.clear();
+        setState(() => _query = '');
+      },
+    );
     return NodeLaneSurface(
       child: Scaffold(
         body: SafeArea(
@@ -104,92 +144,59 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
               final connected = _preferences.any(
                 (p) => p.syncId == trackerProvider.syncId,
               );
-              return RefreshIndicator(
-                onRefresh: () => _resetData(trackerProvider, itemType),
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: NodeLaneTokens.headerPadding,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            NodeLanePageHeading(
-                              title: l10n.tracking,
-                              actions: [
-                                NodeLaneIconButton(
-                                  icon: icons.tracking,
-                                  tooltip: l10n.track_library_switch,
-                                  onPressed: () => _switchTracker(l10n),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: NodeLaneTokens.space12),
-                            _TrackerLibraryTitle(
-                              text:
-                                  (trackerProvider.syncId ==
-                                          TrackerProviders.simkl.syncId ||
-                                      trackerProvider.syncId ==
-                                          TrackerProviders.trakt.syncId)
-                                  ? trackerProvider.name
-                                  : '${trackerProvider.name} · ${itemType.localized(l10n)}',
-                              syncId: trackerProvider.syncId,
-                            ),
-                          ],
-                        ),
-                      ),
+              return NodeLanePaneLayout(
+                pane: (_) => ListView(
+                  children: [
+                    heading,
+                    Padding(
+                      padding: NodeLaneTokens.headerPadding,
+                      child: search,
                     ),
-                    NodeLanePinnedHeader(
-                      child: NodeLaneTextField.search(
-                        controller: _textEditingController,
-                        hint: l10n.search,
-                        onSubmitted: (value) =>
-                            setState(() => _query = value.trim()),
-                        onChanged: (value) {
-                          if (value.isEmpty && _query.isNotEmpty) {
-                            setState(() => _query = '');
-                          }
-                        },
-                        onClear: () {
-                          _textEditingController.clear();
-                          setState(() => _query = '');
-                        },
-                      ),
-                    ),
-                    if (connected)
-                      SliverPadding(
-                        padding: NodeLaneTokens.pagePadding,
-                        sliver: SliverList.builder(
-                          itemCount: sections.length,
-                          itemBuilder: (context, index) {
-                            final section = sections[index];
-                            return TrackerSectionScreen(
-                              key: ValueKey((
-                                trackerProvider.syncId,
-                                section.itemType,
-                                section.name,
-                                section.isSearch ? _query : '',
-                                _refreshGeneration,
-                              )),
-                              section: section,
-                            );
-                          },
-                        ),
-                      )
-                    else
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: NodeLaneEmptyState(
-                            icon: icons.tracking,
-                            title: l10n.track_library_not_logged,
+                  ],
+                ),
+                body: (_, split) => RefreshIndicator(
+                  onRefresh: () => _resetData(trackerProvider, itemType),
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    slivers: [
+                      if (!split) ...[
+                        SliverToBoxAdapter(child: heading),
+                        NodeLanePinnedHeader(child: search),
+                      ],
+                      if (connected)
+                        SliverPadding(
+                          padding: NodeLaneTokens.pagePadding,
+                          sliver: SliverList.builder(
+                            itemCount: sections.length,
+                            itemBuilder: (context, index) {
+                              final section = sections[index];
+                              return TrackerSectionScreen(
+                                key: ValueKey((
+                                  trackerProvider.syncId,
+                                  section.itemType,
+                                  section.name,
+                                  section.isSearch ? _query : '',
+                                  _refreshGeneration,
+                                )),
+                                section: section,
+                              );
+                            },
+                          ),
+                        )
+                      else
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: NodeLaneEmptyState(
+                              icon: icons.tracking,
+                              title: l10n.track_library_not_logged,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

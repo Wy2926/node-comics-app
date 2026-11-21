@@ -17,7 +17,8 @@ import 'package:mangayomi/modules/browse/mobile_sources_screen.dart';
 import 'package:mangayomi/modules/browse/widgets/source_directory_filters.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
-import 'package:mangayomi/modules/browse/mobile_repository_sheets.dart';
+import 'package:mangayomi/modules/browse/mobile_repositories.dart';
+import 'package:mangayomi/modules/feedback/support_request_page.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
@@ -60,8 +61,12 @@ void main() {
     Widget child,
     ProviderContainer container, {
     double scale = 1,
+    bool tablet = false,
+    bool reduceMotion = false,
   }) async {
-    tester.view.physicalSize = const Size(390, 844);
+    tester.view.physicalSize = tablet
+        ? const Size(1180, 720)
+        : const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -74,14 +79,16 @@ void main() {
           builder: (context, child) => BotToastInit()(
             context,
             MediaQuery(
-              data: MediaQuery.of(context)
-                  .copyWith(textScaler: TextScaler.linear(scale)),
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(scale),
+                disableAnimations: reduceMotion,
+              ),
               child: child!,
             ),
           ),
           navigatorObservers: [BotToastNavigatorObserver()],
           theme: ThemeData(
-            platform: TargetPlatform.iOS,
+            platform: tablet ? TargetPlatform.android : TargetPlatform.iOS,
             colorSchemeSeed: NodeLaneTokens.defaultMobileAccent,
           ),
           home: Scaffold(body: child),
@@ -96,6 +103,8 @@ void main() {
     Stream<List<Source>> entries, {
     double scale = 1,
     Future<void>? loading,
+    bool tablet = false,
+    bool reduceMotion = false,
   }) async {
     final container = ProviderContainer(
       retry: (_, _) => null,
@@ -117,9 +126,222 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-    await mount(tester, const MobileSourcesScreen(), container, scale: scale);
+    await mount(
+      tester,
+      const MobileSourcesScreen(),
+      container,
+      scale: scale,
+      tablet: tablet,
+      reduceMotion: reduceMotion,
+    );
     return container;
   }
+
+  testWidgets(
+    'directory filters sit above the full grid and survive a narrow resize',
+    (tester) async {
+      await mountCatalog(
+        tester,
+        Stream.value([
+          for (var i = 0; i < 45; i++)
+            Source(
+              id: i + 1,
+              name: 'Site ${i.toString().padLeft(2, '0')}',
+              lang: i.isEven ? 'en' : 'ja',
+              repo: repo,
+            ),
+        ]),
+        tablet: true,
+      );
+      Rect card(String name) =>
+          tester.getRect(find.widgetWithText(SourceWebsiteCard, name));
+      final before = card('Site 00');
+      expect(before.top, card('Site 01').top);
+      final panel = find.byType(SourceDirectoryFilterPanel);
+      expect(tester.getRect(panel).bottom, lessThan(before.top));
+      expect(tester.getRect(panel).width, greaterThan(before.width * 2));
+      final chips = find.widgetWithText(FilterChip, '日本語');
+      final results = find.byKey(const PageStorageKey('catalog-manga-false'));
+      await tester.drag(results, const Offset(0, -580));
+      await tester.pumpAndSettle();
+      expect(chips.hitTestable(), findsNothing);
+      final pos = tester
+          .state<ScrollableState>(
+            find
+                .descendant(of: results, matching: find.byType(Scrollable))
+                .first,
+          )
+          .position;
+      expect(pos.pixels, greaterThan(0));
+      pos.jumpTo(0);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('筛选'));
+      await tester.pumpAndSettle();
+      expect(panel, findsNothing);
+      expect(card('Site 00').top, lessThan(before.top));
+      expect(card('Site 00').width, before.width);
+      final closedTop = card('Site 00').top;
+      await tester.tap(find.byTooltip('筛选'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      final movingTop = card('Site 00').top;
+      await tester.pumpAndSettle();
+      expect(movingTop, inExclusiveRange(closedTop, before.top));
+      expect(card('Site 00'), before);
+      expect(card('Site 01').top, card('Site 00').top);
+      await tester.tap(find.descendant(of: panel, matching: find.text('日本語')));
+      await tester.pumpAndSettle();
+      expect(find.text('Site 00'), findsNothing);
+      expect(find.text('Site 01'), findsOneWidget);
+      await tester.tap(find.descendant(of: panel, matching: find.text('形式')));
+      await tester.pumpAndSettle();
+      tester.view.physicalSize = const Size(540, 800);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getRect(panel).bottom,
+        lessThanOrEqualTo(card('Site 01').top),
+      );
+      expect(find.text('Site 00'), findsNothing);
+      expect(
+        find.descendant(of: panel, matching: find.text('条漫')),
+        findsOneWidget,
+      );
+      tester.view.physicalSize = const Size(1180, 720);
+      await tester.pumpAndSettle();
+      expect(tester.getRect(panel).bottom, lessThan(card('Site 01').top));
+      expect(
+        find.descendant(of: panel, matching: find.text('条漫')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byTooltip('筛选'));
+      await tester.pumpAndSettle();
+      expect(panel, findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'management leads to the website form and back restores directory search',
+    (tester) async {
+      FlutterSecureStorage.setMockInitialValues({});
+      await mountCatalog(
+        tester,
+        Stream.value([Source(id: 1, name: 'Catalog', lang: 'en', repo: repo)]),
+        tablet: true,
+      );
+      await tester.enterText(find.byType(TextField), 'Cat');
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('申请新增来源'), findsNothing);
+      expect(find.byTooltip('来源操作'), findsNothing);
+      await tester.tap(find.text('管理'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getRect(find.text('申请新增来源')).right,
+        lessThan(tester.getRect(find.byType(MobileRepositoryManager)).left),
+      );
+      await tester.tap(find.text(repo.name!));
+      await tester.pumpAndSettle();
+      tester.view.physicalSize = const Size(580, 665);
+      await tester.pumpAndSettle();
+      expect(find.text('复制目录链接').hitTestable(), findsOneWidget);
+      expect(find.text('申请新增来源'), findsNothing);
+      tester.view.physicalSize = const Size(1180, 720);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('申请新增来源'));
+      await tester.pumpAndSettle();
+      expect(
+        ModalRoute.of(tester.element(find.byType(SupportRequestPage))),
+        isA<PageRoute>(),
+      );
+      expect(find.byType(BottomSheet), findsNothing);
+      final name = find.byType(TextField).first,
+          url = find.byType(TextField).at(1);
+      expect(tester.getTopLeft(name).dy, tester.getTopLeft(url).dy);
+      await tester.enterText(url, 'https://example.org/');
+      await tester.tap(find.text('管理仓库'));
+      await tester.pumpAndSettle();
+      expect(find.text('https://example.org/'), findsNothing);
+      await tester.tap(find.text('申请新增来源'));
+      await tester.pumpAndSettle();
+      expect(find.text('https://example.org/'), findsOneWidget);
+      tester.view.physicalSize = const Size(540, 800);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(url).dy,
+        greaterThan(tester.getTopLeft(name).dy),
+      );
+      expect(find.text('https://example.org/'), findsOneWidget);
+      await tester.tap(find.byTooltip('返回'));
+      await tester.pumpAndSettle();
+      expect(find.text('管理仓库'), findsOneWidget);
+      await tester.tap(find.byTooltip('返回'));
+      await tester.pumpAndSettle();
+      expect(find.text('Cat'), findsOneWidget);
+      expect(find.text('Catalog'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'long language lists search by code; reduced motion opens and closes without intermediate layout',
+    (tester) async {
+      final codes = [
+        'en',
+        'de',
+        'fr',
+        'es',
+        'it',
+        'ko',
+        'ar',
+        'ja',
+        'tr',
+        'pl',
+        'ru',
+        'vi',
+      ];
+      await mountCatalog(
+        tester,
+        Stream.value([
+          for (final (i, code) in codes.indexed)
+            Source(id: i + 1, name: 'Website $code', lang: code, repo: repo),
+        ]),
+        tablet: true,
+        reduceMotion: true,
+      );
+      final panel = find.byType(SourceDirectoryFilterPanel);
+      final trigger = find.byTooltip('筛选');
+      double y() => tester.getTopLeft(find.text('Website ar')).dy;
+      final before = y();
+      await tester.tap(trigger);
+      await tester.pump();
+      expect(panel, findsNothing);
+      final closed = y();
+      expect(closed, lessThan(before));
+      await tester.tap(trigger);
+      await tester.pump();
+      final open = tester.getSize(panel);
+      await tester.pump(const Duration(milliseconds: 80));
+      expect(tester.getSize(panel), open);
+      expect(y(), before);
+      await tester.enterText(
+        find.descendant(of: panel, matching: find.byType(TextField)),
+        'JA',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilterChip, '日本語'));
+      await tester.pumpAndSettle();
+      expect(find.text('Website ja'), findsOneWidget);
+      expect(find.text('1 个结果'), findsOneWidget);
+      await tester.tap(find.text('清空'));
+      await tester.pumpAndSettle();
+      await tester.tap(trigger);
+      await tester.pump();
+      expect(y(), closed);
+      await tester.pumpAndSettle();
+      expect(panel, findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   for (final scale in [1.0, 2.0]) {
     testWidgets(
@@ -160,8 +382,7 @@ void main() {
           scale: scale,
         );
         expect(find.text('MangaDex'), findsOneWidget);
-        expect(find.text('管理'), findsOneWidget);
-        await tester.tap(find.text('管理'));
+        await tester.tap(find.text('编辑'));
         await tester.pumpAndSettle();
         expect(find.byTooltip('取消常用'), findsOneWidget);
         expect(find.byTooltip('固定到常用'), findsOneWidget);
@@ -193,8 +414,9 @@ void main() {
         expect(find.text('来源设置'), findsOneWidget);
         Navigator.of(tester.element(find.text('来源设置'))).pop();
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('来源操作'));
+        await tester.tap(find.text('管理'));
         await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('批量管理'));
         await tester.tap(find.text('批量管理'));
         await tester.pumpAndSettle();
         expect(container.read(isLongPressedStateProvider), isTrue);
@@ -279,14 +501,14 @@ void main() {
       );
       await tester.tap(find.byTooltip('筛选'));
       await tester.pumpAndSettle();
-      final all = find.widgetWithText(DirectoryFilterChoice, '全部语言');
+      final all = find.widgetWithText(FilterChip, '全部语言');
       await tester.tap(all);
       await tester.pumpAndSettle();
       expect(find.text('2 个结果'), findsOneWidget);
       await tester.tap(all);
       await tester.pumpAndSettle();
       expect(find.text('Japanese site'), findsNothing);
-      final japaneseChoice = find.widgetWithText(DirectoryFilterChoice, '日本語');
+      final japaneseChoice = find.widgetWithText(FilterChip, '日本語');
       await tester.ensureVisible(japaneseChoice);
       await tester.tap(japaneseChoice);
       await tester.pumpAndSettle();
@@ -313,7 +535,7 @@ void main() {
     },
   );
   testWidgets(
-    'inline facets immediately update filtered rows, counts and removable choices',
+    'inline facets intersect groups, combine choices and clear without losing the query',
     (tester) async {
       final entries = StreamController<List<Source>>();
       addTearDown(entries.close);
@@ -354,7 +576,7 @@ void main() {
       }
 
       await tap(find.byTooltip('筛选'));
-      expect(inside('地区'), findsNothing);
+      expect(inside('地区'), findsOneWidget);
       expect(find.byType(NodeLaneCatalogSheet), findsNothing);
       await tap(inside('收费'));
       expect(find.text('3 个结果 · Site'), findsOneWidget);
@@ -362,7 +584,6 @@ void main() {
       expect(find.text('1 个结果 · Site'), findsOneWidget);
       await tap(inside('付费阅读'));
       expect(find.text('2 个结果 · Site'), findsOneWidget);
-      await tap(inside('更多条件'));
       await tap(inside('地区'));
       await tap(inside('日漫'));
       expect(find.text('1 个结果 · Site'), findsOneWidget);
@@ -373,12 +594,12 @@ void main() {
       expect(find.text('Site 1'), findsOneWidget);
       expect(find.text('Site 2'), findsNothing);
       expect(find.text('Site 3'), findsNothing);
-      await tap(find.widgetWithText(DirectoryFilterChoice, '免费阅读'));
+      await tap(find.byTooltip('筛选'));
+      await tap(inside('收费'));
+      await tap(inside('免费阅读'));
       expect(find.text('1 个结果 · Site'), findsOneWidget);
       await tap(find.text('清空'));
       expect(find.text('4 个结果 · Site'), findsOneWidget);
-      await tap(find.byTooltip('筛选'));
-      await tap(inside('更多条件'));
       await tap(inside('地区'));
       await tap(inside('国漫'));
       expect(find.text('0 个结果 · Site'), findsOneWidget);
@@ -386,7 +607,7 @@ void main() {
       expect(find.text('没有匹配的网站'), findsOneWidget);
       await tap(find.byTooltip('清除搜索'));
       expect(find.text('清空').hitTestable(), findsOneWidget);
-      await tap(find.widgetWithText(DirectoryFilterChoice, '国漫'));
+      await tap(find.text('清空'));
       expect(find.text('5 个结果'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

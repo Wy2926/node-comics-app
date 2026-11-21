@@ -13,7 +13,7 @@ import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/widgets/global_search_result_card.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -70,9 +70,9 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
         .getAddedByItemType(widget.itemType)
         .where(_isVisible)
         .toList();
-    final result = await showNodeLaneCatalogSheet<SourceSearchScope>(
+    final result = await pushBrowsePage<SourceSearchScope>(
       context,
-      SourceSearchScopeSheet(sources: candidates, current: _scope),
+      SourceSearchScopePage(sources: candidates, current: _scope),
     );
     if (!mounted || result == null) return;
     setState(() {
@@ -89,9 +89,9 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
 
   void _showActivity() {
     FocusScope.of(context).unfocus();
-    showNodeLaneCatalogSheet<void>(
+    pushBrowsePage<void>(
       context,
-      SearchActivitySheet(
+      SearchActivityPage(
         query: _query,
         sources: sourceList,
         activity: _activity,

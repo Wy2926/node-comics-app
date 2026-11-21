@@ -14,9 +14,11 @@ class MobileMangaDetailActionsButton extends StatelessWidget {
     required this.localArchive,
     required this.favorite,
     required this.onSelected,
+    this.title,
   });
 
   final String bookTitle;
+  final String? title;
   final bool localArchive, favorite;
   final Future<void> Function(int) onSelected;
 
@@ -24,11 +26,11 @@ class MobileMangaDetailActionsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return _MangaMenuButton(
-      tooltip: l10n.manga_actions,
+      tooltip: title ?? l10n.manga_actions,
       icon: NodeLaneIcons.of(context).more,
       onSelected: onSelected,
       menu: _MangaActionSheet(
-        title: l10n.manga_actions,
+        title: title ?? l10n.manga_actions,
         bookTitle: bookTitle,
         actions: (choose) => [
           [
@@ -93,31 +95,34 @@ class MobileMangaDownloadActionsButton extends StatelessWidget {
     required this.bookTitle,
     required this.hasChapters,
     required this.onSelected,
+    this.episodes = false,
   });
 
   final String bookTitle;
-  final bool hasChapters;
+  final bool hasChapters, episodes;
   final Future<void> Function(int) onSelected;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final labels = [
-      l10n.next_chapter,
-      l10n.next_5_chapters,
-      l10n.next_10_chapters,
-      l10n.next_25_chapters,
-      l10n.unread,
-      l10n.all_chapters,
+      episodes ? l10n.next_episode : l10n.next_chapter,
+      episodes ? l10n.next_5_episodes : l10n.next_5_chapters,
+      episodes ? l10n.next_10_episodes : l10n.next_10_chapters,
+      episodes ? l10n.next_25_episodes : l10n.next_25_chapters,
+      episodes ? l10n.unwatched : l10n.unread,
+      episodes ? l10n.all_episodes : l10n.all_chapters,
     ];
     return _MangaMenuButton(
       tooltip: l10n.download,
       icon: NodeLaneIcons.of(context).download,
       onSelected: onSelected,
       menu: _MangaActionSheet(
-        title: l10n.manga_download_scope,
+        title: episodes ? l10n.download : l10n.manga_download_scope,
         bookTitle: bookTitle,
-        hint: hasChapters
+        hint: episodes
+            ? (hasChapters ? null : l10n.no_result)
+            : hasChapters
             ? l10n.manga_download_scope_hint
             : l10n.manga_download_scope_empty,
         actions: (choose) => [

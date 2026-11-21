@@ -10,7 +10,7 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get source_more_filters => 'Другие фильтры';
+  String get feedback_submit_source => 'Отправить заявку';
 
   @override
   String get browser_clip_here => 'Поставить закладку здесь';

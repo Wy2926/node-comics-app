@@ -215,12 +215,15 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
                           '${widget.manga.source} · ${widget.manga.lang!.toUpperCase()}',
                         ),
                         if (!widget.sourceExist)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 4),
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              start: NodeLaneTokens.space4,
+                            ),
                             child: Icon(
-                              Icons.warning_amber,
-                              color: Colors.deepOrangeAccent,
-                              size: 14,
+                              NodeLaneIcons.of(context).error,
+                              semanticLabel: l10n.source_not_added,
+                              color: Theme.of(context).colorScheme.error,
+                              size: NodeLaneTokens.badgeIconSize,
                             ),
                           ),
                       ],

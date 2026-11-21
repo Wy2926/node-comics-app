@@ -43,7 +43,7 @@ class MangaImageCardWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (isMobile && !isTv) {
-      return _MobileSourceImageCard(
+      return MobileSourceImageCard(
         source: source,
         itemType: itemType,
         manga: getMangaDetail!,
@@ -151,7 +151,7 @@ class MangaImageCardListTileWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (isMobile && !isTv) {
-      return _MobileSourceImageCard(
+      return MobileSourceImageCard(
         source: source,
         itemType: itemType,
         manga: getMangaDetail!,
@@ -283,12 +283,15 @@ class MangaImageCardListTileWidget extends ConsumerWidget {
   }
 }
 
-class _MobileSourceImageCard extends ConsumerWidget {
-  const _MobileSourceImageCard({
+class MobileSourceImageCard extends ConsumerWidget {
+  const MobileSourceImageCard({
+    super.key,
     required this.source,
     required this.itemType,
     required this.manga,
     required this.libraryManga,
+    this.onOpenDetail,
+    this.current = false,
     this.list = false,
     this.compact = false,
   });
@@ -296,7 +299,8 @@ class _MobileSourceImageCard extends ConsumerWidget {
   final ItemType itemType;
   final MManga manga;
   final Manga? libraryManga;
-  final bool list, compact;
+  final ValueChanged<int>? onOpenDetail;
+  final bool list, compact, current;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => LayoutBuilder(
@@ -352,12 +356,14 @@ class _MobileSourceImageCard extends ConsumerWidget {
         itemType: itemType,
         addToFavourite: favorite,
         sourceId: source.id,
+        onOpenDetail: onOpenDetail,
       );
       return MobileSourceMangaCard(
         title: manga.name ?? '',
         author: manga.author,
         cover: cover,
         inLibrary: libraryManga?.favorite ?? false,
+        current: current,
         list: list,
         compact: compact,
         onOpen: () => open(false),
@@ -379,6 +385,7 @@ Future<void> pushToMangaReaderDetail({
   ItemType? itemType,
   bool useMaterialRoute = false,
   bool addToFavourite = false,
+  ValueChanged<int>? onOpenDetail,
 }) async {
   int? mangaId;
   if (archiveId != null) {
@@ -466,7 +473,9 @@ Future<void> pushToMangaReaderDetail({
   }
   if (!addToFavourite) {
     if (context.mounted) {
-      if (useMaterialRoute) {
+      if (onOpenDetail != null) {
+        onOpenDetail(mangaId);
+      } else if (useMaterialRoute) {
         await Navigator.push(
           context,
           createRoute(page: MangaReaderDetail(mangaId: mangaId)),

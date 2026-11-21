@@ -138,16 +138,7 @@ class TvSourceRow extends StatelessWidget {
   bool get isLocal => source.name == "local" && source.lang == "";
 
   void _openPopular(BuildContext context) {
-    if (!isLocal) {
-      final sources = sourceRepository.getByItemType(itemType);
-      final now = DateTime.now().millisecondsSinceEpoch;
-      for (var src in sources) {
-        src
-          ..lastUsed = src.id == source.id
-          ..updatedAt = now;
-      }
-      sourceRepository.putAll(sources);
-    }
+    if (!isLocal) sourceRepository.markLastUsed(itemType, source.id);
     context.push('/mangaHome', extra: (source, false));
   }
 
