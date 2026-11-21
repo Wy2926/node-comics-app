@@ -4,6 +4,7 @@ import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 typedef SourceOption<T> = MobileSettingOption<T>;
@@ -16,12 +17,46 @@ Future<T?> showSourceChoice<T>(
   required List<SourceOption<T>> options,
   String? hint,
 }) async {
+  if (options.isEmpty) return null;
+  if (options.length <= 8) {
+    final row = context.findRenderObject()! as RenderBox;
+    final overlay =
+        Navigator.of(
+              context,
+              rootNavigator: true,
+            ).overlay!.context.findRenderObject()!
+            as RenderBox;
+    final end = AlignmentDirectional.bottomEnd.resolve(
+      Directionality.of(context),
+    );
+    RelativeRect position() => RelativeRect.fromRect(
+      row.localToGlobal(end.alongSize(row.size), ancestor: overlay) & Size.zero,
+      Offset.zero & overlay.size,
+    );
+    final initial = position();
+    final value = await showMenu<T>(
+      context: context,
+      useRootNavigator: true,
+      positionBuilder: (_, _) => row.attached ? position() : initial,
+      semanticLabel: title,
+      popUpAnimationStyle: NodeLaneMotion.menu(context),
+      items: [
+        for (final o in options)
+          CheckedPopupMenuItem<T>(
+            value: o.value,
+            checked: o.value == current,
+            child: Text(o.label),
+          ),
+      ],
+    );
+    return value == current ? null : value;
+  }
   final option = await showMobileSettingsPicker<T?>(
     context,
     title: title,
     current: current,
     options: options,
-    searchable: options.length > 8,
+    searchable: true,
     description: [
       ?subtitle,
       hint ?? context.l10n.settings_immediate_choice,

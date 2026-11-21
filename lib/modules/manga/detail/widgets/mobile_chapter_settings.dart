@@ -4,7 +4,7 @@ import 'package:mangayomi/modules/more/settings/reader/reader_settings_labels.da
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
@@ -23,9 +23,8 @@ List<String> _groups(Iterable<Chapter> chapters) => chapters
     .toSet()
     .toList();
 
-/// Manga-only presentation of the existing per-book preferences.
-class MobileMangaChapterSettings extends StatelessWidget {
-  const MobileMangaChapterSettings({
+class MobileChapterSettingsPage extends StatelessWidget {
+  const MobileChapterSettingsPage({
     super.key,
     required this.manga,
     required this.localArchive,
@@ -36,31 +35,24 @@ class MobileMangaChapterSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return DefaultTabController(
-      animationDuration: NodeLaneMotion.time(context),
-      length: 3,
-      child: Builder(
-        builder: (context) {
-          final controller = DefaultTabController.of(context);
-          return ListenableBuilder(
-            listenable: controller,
-            builder: (context, _) => NodeLaneCatalogSheet(
-              title: l10n.chapter_settings,
-              subtitle: '${manga.name ?? ''}\n${l10n.chapter_settings_live}',
-              heightFactor: .75,
-              fitContent: true,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+    final comic = manga.itemType == ItemType.manga;
+    final tabs = [l10n.filter, l10n.sort, if (comic) l10n.settings];
+    return MobileBrowsePage.form(
+      title: manga.itemType == ItemType.anime
+          ? l10n.filter
+          : l10n.chapter_settings,
+      body: DefaultTabController(
+        animationDuration: NodeLaneMotion.time(context),
+        length: tabs.length,
+        child: Builder(
+          builder: (context) {
+            final controller = DefaultTabController.of(context);
+            return ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NodeLaneTokens.gutter,
-                    ),
-                    child: NodeLaneTabSegments(
-                      labels: [l10n.filter, l10n.sort, l10n.settings],
-                    ),
-                  ),
-                  Flexible(
+                  NodeLaneTabSegments(labels: tabs, scrollable: true),
+                  Expanded(
                     child: NodeLaneContentMotion(
                       value: controller.index,
                       child: SingleChildScrollView(
@@ -70,22 +62,40 @@ class MobileMangaChapterSettings extends StatelessWidget {
                         padding: const EdgeInsets.only(
                           top: NodeLaneTokens.space16,
                         ),
-                        child: controller.index == 0
-                            ? _ChapterFilters(
-                                manga: manga,
-                                localArchive: localArchive,
-                              )
-                            : controller.index == 1
-                            ? _ChapterSort(manga: manga)
-                            : const _ChapterHabits(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: NodeLaneTokens.groupPadding,
+                              child: Text(
+                                [
+                                  if (manga.name?.isNotEmpty == true)
+                                    manga.name!,
+                                  if (comic && controller.index != 2)
+                                    l10n.chapter_settings_live,
+                                ].join('\n'),
+                                style: NodeLaneTokens.of(context)
+                                    .readerSecondary,
+                              ),
+                            ),
+                            controller.index == 0
+                                ? _ChapterFilters(
+                                    manga: manga,
+                                    localArchive: localArchive,
+                                  )
+                                : controller.index == 1
+                                ? _ChapterSort(manga: manga)
+                                : const _ChapterHabits(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -116,7 +126,7 @@ class _ChapterFilters extends ConsumerWidget {
           (value) => ref.read(downloaded.notifier).setType(value),
         ),
       (
-        l10n.unread,
+        manga.itemType == ItemType.anime ? l10n.unwatched : l10n.unread,
         ref.watch(unread),
         (value) => ref.read(unread.notifier).setType(value),
       ),
@@ -166,18 +176,13 @@ class _ChapterFilters extends ConsumerWidget {
                   title: l10n.filter_scanlator_groups,
                   icon: NodeLaneIcons.of(context).groups,
                   onTap: () async {
-                    final chosen =
-                        await Navigator.of(
-                          context,
-                          rootNavigator: true,
-                        ).push<List<String>>(
-                          MaterialPageRoute(
-                            builder: (_) => MobileScanlatorFilterPage(
-                              names: names,
-                              excluded: excluded,
-                            ),
-                          ),
-                        );
+                    final chosen = await pushBrowsePage<List<String>>(
+                      context,
+                      MobileScanlatorFilterPage(
+                        names: names,
+                        excluded: excluded,
+                      ),
+                    );
                     if (!context.mounted || chosen == null) return;
                     // A covered route's stream may be paused. Recheck the
                     // existing repository once at confirmation, not its cache.
@@ -225,7 +230,12 @@ class _ChapterSort extends ConsumerWidget {
     final choices = [
       if (_groups(chapters).isNotEmpty || sort.index == 0)
         (0, l10n.by_scanlator),
-      (1, l10n.by_chapter_number),
+      (
+        1,
+        manga.itemType == ItemType.anime
+            ? l10n.by_episode_number
+            : l10n.by_chapter_number,
+      ),
       (2, l10n.by_upload_date),
       (3, l10n.by_name),
     ];

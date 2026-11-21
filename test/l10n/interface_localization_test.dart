@@ -137,7 +137,7 @@ void main() {
                   onAction: () {},
                   onOpen: () {},
                   onDetails: () {},
-                  onLongPress: () {},
+                  onLongPress: (_) {},
                 ),
               ],
             ),

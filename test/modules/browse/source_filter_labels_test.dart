@@ -95,7 +95,12 @@ void main() {
       await tester.ensureVisible(find.text('Status'));
       await tester.tap(find.text('Status'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ongoing'));
+      final option = find.widgetWithText(CheckedPopupMenuItem<int>, 'Ongoing');
+      expect(ModalRoute.of(tester.element(option)), isA<PopupRoute>());
+      tester.view.physicalSize = const Size(700, 390);
+      await tester.pumpAndSettle();
+      expect(option.hitTestable(), findsOneWidget);
+      await tester.tap(option);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Apply filters'));
       await tester.pumpAndSettle();

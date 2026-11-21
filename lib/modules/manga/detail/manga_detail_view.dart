@@ -1,7 +1,7 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,7 +126,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
       return TvAnimeDetailView(manga: widget.manga!);
     }
     // Watch all sort/filter providers so the list rebuilds whenever
-    // the user changes settings in _showDraggableMenu().
+    // the user changes the chapter settings.
     ref.watch(scanlatorsFilterStateProvider(widget.manga!));
     ref.watch(sortChapterStateProvider(mangaId: widget.manga!.id!));
     ref.watch(chapterFilterUnreadStateProvider(mangaId: widget.manga!.id!));
@@ -213,7 +213,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
             chapters: chapters,
             offsetProvider: offetProvider,
             onDownload: _downloadChaptersWithDestination,
-            onShowFilterMenu: _showDraggableMenu,
+            onShowFilterMenu: _showChapterSettings,
             onOverflowAction: _onDetailOverflow,
           ),
           body: SafeArea(
@@ -234,7 +234,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                 manga: widget.manga!,
                 count: chapters.length,
                 loading: loading,
-                onFilter: _showDraggableMenu,
+                onFilter: _showChapterSettings,
               ),
               chapterCount: chapters.length,
               chapterBuilder: (context, index) => ClipRRect(
@@ -284,7 +284,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
             chapters: chapters,
             offsetProvider: offetProvider,
             onDownload: _downloadChaptersWithDestination,
-            onShowFilterMenu: _showDraggableMenu,
+            onShowFilterMenu: _showChapterSettings,
             onOverflowAction: _onDetailOverflow,
           ),
           body: SafeArea(
@@ -833,11 +833,11 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
     );
   }
 
-  void _showDraggableMenu() {
-    if (isMobile && !isTv && widget.itemType == ItemType.manga) {
-      showNodeLaneCatalogSheet<void>(
+  void _showChapterSettings() {
+    if (isMobile && !isTv) {
+      pushBrowsePage<void>(
         context,
-        MobileMangaChapterSettings(
+        MobileChapterSettingsPage(
           manga: widget.manga!,
           localArchive: isLocalArchive,
         ),
@@ -1116,34 +1116,12 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
         ),
       ),
     ];
-    if (isMobile && !isTv) {
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        showDragHandle: true,
-        backgroundColor: NodeLaneTokens.of(context).surface,
-        builder: (sheetContext) => ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(sheetContext).height * .7,
-          ),
-          child: MobileChapterFilterSheet(
-            labels: labels,
-            closeLabel: MaterialLocalizations.of(sheetContext)
-                .closeButtonTooltip,
-            onClose: () => Navigator.pop(sheetContext),
-            children: children,
-          ),
-        ),
-      );
-    } else {
-      customDraggableTabBar(
-        tabs: [for (final label in labels) Tab(text: label)],
-        children: children,
-        context: context,
-        vsync: this,
-      );
-    }
+    customDraggableTabBar(
+      tabs: [for (final label in labels) Tab(text: label)],
+      children: children,
+      context: context,
+      vsync: this,
+    );
   }
 
   String _getSortNameByIndex(int index, BuildContext context) {

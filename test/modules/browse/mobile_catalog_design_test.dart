@@ -221,7 +221,7 @@ void main() {
   );
 
   testWidgets(
-    'management leads to the website form and back restores directory search',
+    'anchored management menu opens one task and preserves form edits and directory search',
     (tester) async {
       FlutterSecureStorage.setMockInitialValues({});
       await mountCatalog(
@@ -235,18 +235,11 @@ void main() {
       expect(find.byTooltip('来源操作'), findsNothing);
       await tester.tap(find.text('管理'));
       await tester.pumpAndSettle();
-      expect(
-        tester.getRect(find.text('申请新增来源')).right,
-        lessThan(tester.getRect(find.byType(MobileRepositoryManager)).left),
-      );
-      await tester.tap(find.text(repo.name!));
-      await tester.pumpAndSettle();
-      tester.view.physicalSize = const Size(580, 665);
-      await tester.pumpAndSettle();
-      expect(find.text('复制目录链接').hitTestable(), findsOneWidget);
-      expect(find.text('申请新增来源'), findsNothing);
-      tester.view.physicalSize = const Size(1180, 720);
-      await tester.pumpAndSettle();
+      final trigger = tester.getRect(find.text('管理'));
+      final first = tester.getRect(find.text('搜作品'));
+      expect(first.top, greaterThanOrEqualTo(trigger.bottom));
+      expect(first.right, greaterThan(trigger.left - 200));
+      expect(find.byType(MobileRepositoryManager), findsNothing);
       await tester.tap(find.text('申请新增来源'));
       await tester.pumpAndSettle();
       expect(
@@ -258,9 +251,22 @@ void main() {
           url = find.byType(TextField).at(1);
       expect(tester.getTopLeft(name).dy, tester.getTopLeft(url).dy);
       await tester.enterText(url, 'https://example.org/');
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Cat'), findsOneWidget);
+      await tester.tap(find.text('管理'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('管理仓库'));
       await tester.pumpAndSettle();
-      expect(find.text('https://example.org/'), findsNothing);
+      await tester.tap(find.text(repo.name!));
+      await tester.pumpAndSettle();
+      tester.view.physicalSize = const Size(580, 665);
+      await tester.pumpAndSettle();
+      expect(find.text('复制目录链接').hitTestable(), findsOneWidget);
+      await tester.tap(find.byTooltip('返回'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('管理'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('申请新增来源'));
       await tester.pumpAndSettle();
       expect(find.text('https://example.org/'), findsOneWidget);
@@ -271,9 +277,6 @@ void main() {
         greaterThan(tester.getTopLeft(name).dy),
       );
       expect(find.text('https://example.org/'), findsOneWidget);
-      await tester.tap(find.byTooltip('返回'));
-      await tester.pumpAndSettle();
-      expect(find.text('管理仓库'), findsOneWidget);
       await tester.tap(find.byTooltip('返回'));
       await tester.pumpAndSettle();
       expect(find.text('Cat'), findsOneWidget);

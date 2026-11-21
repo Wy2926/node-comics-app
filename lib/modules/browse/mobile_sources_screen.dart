@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderSliverGrid;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/browse/mobile_repositories.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/widgets/source_directory_filters.dart';
+import 'package:mangayomi/modules/browse/widgets/source_directory_menu.dart';
 import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
+import 'package:mangayomi/modules/feedback/support_request_page.dart';
+import 'package:mangayomi/modules/webview/browser_url.dart';
 import 'package:mangayomi/modules/browse/providers/browse_initial_tab_provider.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/manga_detail_main.dart';
@@ -28,6 +32,7 @@ import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
+import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
@@ -35,7 +40,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
-import 'mobile_source_management.dart';
+enum _WebsiteAction { pin, latest, browser, settings, info }
 
 class MobileSourcesScreen extends ConsumerStatefulWidget {
   const MobileSourcesScreen({super.key});
@@ -47,6 +52,7 @@ class MobileSourcesScreen extends ConsumerStatefulWidget {
 class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     with WidgetsBindingObserver {
   final query = TextEditingController();
+  final _requestEdits = PageStorageBucket();
   final _scroll = ScrollController();
   final _grids = List.generate(3, (_) => GlobalKey());
   final _returnTiles = ValueNotifier<Map<int, (int, int)>>(const {});
@@ -472,24 +478,64 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     );
   }
 
-  Future<void> _sourceActions(Source source) async {
-    final action = await showSourceWebsiteInfo(context, source);
+  Future<void> _sourceActions(Source source, Offset point) async {
+    _openIntent++;
+    final l = context.l10n, icons = NodeLaneIcons.of(context);
+    final overlay =
+        Navigator.of(
+              context,
+              rootNavigator: true,
+            ).overlay!.context.findRenderObject()!
+            as RenderBox;
+    final action = await showMenu<_WebsiteAction>(
+      context: context,
+      useRootNavigator: true,
+      semanticLabel: source.name ?? l.source_actions,
+      position: RelativeRect.fromRect(
+        overlay.globalToLocal(point) & Size.zero,
+        Offset.zero & overlay.size,
+      ),
+      popUpAnimationStyle: NodeLaneMotion.menu(context),
+      items: [
+        for (final (value, label, icon) in [
+          (
+            _WebsiteAction.pin,
+            source.isPinned == true ? l.source_unpin : l.source_pin,
+            icons.pin,
+          ),
+          (_WebsiteAction.latest, l.source_latest_content, icons.latest),
+          if (isBrowserUrl(source.baseUrl))
+            (_WebsiteAction.browser, l.open_in_browser, icons.browser),
+          (_WebsiteAction.info, l.source_website_info, icons.info),
+          if (source.isAdded == true)
+            (_WebsiteAction.settings, l.sources_settings, icons.settings),
+        ])
+          nodeLaneSelectionMenuItem(
+            context,
+            value: value,
+            label: label,
+            icon: icon,
+          ),
+      ],
+    );
     if (!mounted || action == null) return;
     switch (action) {
-      case SourceWebsiteAction.pin:
+      case _WebsiteAction.info:
+        await showSourceWebsiteInfo(context, source);
+      case _WebsiteAction.pin:
         await _pin(source);
-      case SourceWebsiteAction.latest:
+      case _WebsiteAction.latest:
         if (source.isAdded == true && source.sourceCode?.isNotEmpty == true) {
           _open(source, latest: true);
         } else {
           await _fetch(source, open: true, latest: true);
         }
-      case SourceWebsiteAction.browser:
+      case _WebsiteAction.browser:
         context.push(
           '/mangawebview',
           extra: {'url': source.baseUrl!, 'title': source.name ?? ''},
         );
-      case SourceWebsiteAction.settings:
+      case _WebsiteAction.settings:
         context.push('/extension_detail', extra: source);
     }
   }
@@ -553,50 +599,48 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                   open();
               }
             },
-      onDetails: selecting ? null : () => _sourceActions(source),
-      onLongPress: selecting ? onOpen : () => _sourceActions(source),
+      onDetails: selecting
+          ? null
+          : () {
+              _openIntent++;
+              showSourceWebsiteInfo(context, source);
+            },
+      onLongPress: selecting
+          ? (onOpen == null ? null : (_) => onOpen())
+          : (point) => _sourceActions(source, point),
     );
   }
 
-  Future<void> _manage(
-    List<ItemType> types, {
-    bool repositories = false,
-  }) async {
+  Future<void> _manage(DirectoryAction action) async {
     if (_managementShowing || selecting || _bulkBusy) return;
     _openIntent++;
     FocusScope.of(context).unfocus();
-    _managementShowing = true;
-    SourceManagementAction? action;
-    try {
-      action = await pushBrowsePage<SourceManagementAction>(
-        context,
-        MobileSourceManagement(
-          type: type,
-          types: types,
-          repositories: repositories,
-          onMediaChanged: (media) {
-            if (mounted) _switchDirectory(media, thirdParty);
-          },
-        ),
-      );
-    } finally {
-      _managementShowing = false;
-    }
-    if (!mounted) return;
     switch (action) {
-      case SourceManagementAction.search:
+      case DirectoryAction.repositories || DirectoryAction.request:
+        _managementShowing = true;
+        try {
+          await pushBrowsePage<void>(
+            context,
+            action == DirectoryAction.repositories
+                ? MobileRepositoryManager(itemType: type)
+                : SupportRequestPage(
+                    kind: SupportRequestKind.website,
+                    editingSession: _requestEdits,
+                  ),
+          );
+        } finally {
+          _managementShowing = false;
+        }
+      case DirectoryAction.search:
         _searchContents();
-      case SourceManagementAction.local:
+      case DirectoryAction.local:
         _open(Source(name: 'local', lang: '', itemType: type));
-      case SourceManagementAction.bulk:
+      case DirectoryAction.bulk:
         _startSelection();
-      case SourceManagementAction.update:
-        _switchDirectory(type, true);
+      case DirectoryAction.update:
         await _updateInstalled();
-      case SourceManagementAction.create:
+      case DirectoryAction.create:
         context.push('/createExtension');
-      case null:
-        break;
     }
   }
 
@@ -650,6 +694,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                   0,
         )
         .toList();
+    if (updates.isEmpty) {
+      _notice?.dismiss();
+      _notice = showNodeLaneNotice(context.l10n.up_to_date);
+      return;
+    }
+    if (!thirdParty || _site != null) _switchDirectory(type, true);
     for (final source in updates) {
       if (!mounted) return;
       await _fetch(source);
@@ -674,15 +724,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
       segments: [
         const ButtonSegment(value: 0, label: Text('NodeLane')),
         ButtonSegment(value: 1, label: Text(l10n.source_third_party)),
-        ButtonSegment(value: 2, label: Text(l10n.manage)),
       ],
-      onChanged: (value) {
-        if (value == 2) {
-          _manage(types);
-        } else {
-          _switchDirectory(type, value == 1);
-        }
-      },
+      onChanged: (value) => _switchDirectory(type, value == 1),
     );
     final navigation = Wrap(
       spacing: NodeLaneTokens.space8,
@@ -729,6 +772,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                       active: open || filters.isNotEmpty,
                       onPressed: () => _toggleFilters(open),
                     ),
+                  ),
+                  const SizedBox(width: NodeLaneTokens.space4),
+                  SourceDirectoryMenu(
+                    type: type,
+                    onOpened: () => _openIntent++,
+                    onSelected: _manage,
                   ),
                 ],
               ),
@@ -1019,7 +1068,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                                   ? const NodeLaneEmptyState.loading()
                                   : _emptyState(
                                       onRepositories: () =>
-                                          _manage(types, repositories: true),
+                                          _manage(DirectoryAction.repositories),
                                       searching: keyword.isNotEmpty,
                                       filtered: filters.isNotEmpty,
                                       hasSources: catalog.isNotEmpty,
@@ -1050,8 +1099,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                                 onAction: groupIndex == 0 && !selecting
                                     ? thirdParty
                                           ? () => _manage(
-                                              types,
-                                              repositories: true,
+                                              DirectoryAction.repositories,
                                             )
                                           : () => setState(
                                               () => managing = !managing,

@@ -99,7 +99,7 @@ void main() {
               onOpen: () {},
               onAction: () {},
               onDetails: () {},
-              onLongPress: () {},
+              onLongPress: (_) {},
             ),
             width: width,
             scale: scale,
@@ -140,7 +140,7 @@ void main() {
         onOpen: () {},
         onAction: () {},
         onDetails: () {},
-        onLongPress: () {},
+        onLongPress: (_) {},
       );
       for (final (width, scale, spacing, visible, hidden) in [
         (350.0, 1.0, null, '日漫 / 韩漫 / 国漫 / 欧美漫画', 4),
@@ -209,7 +209,7 @@ void main() {
           onOpen: () {},
           onAction: () {},
           onDetails: () {},
-          onLongPress: () {},
+          onLongPress: (_) {},
         ),
         width: width,
         direction: TextDirection.rtl,
@@ -240,7 +240,7 @@ void main() {
             action: SourceCardAction.update,
             onOpen: () => opened++,
             onAction: () => updated++,
-            onLongPress: () => longPressed++,
+            onLongPress: (_) => longPressed++,
             onDetails: () => showSourceWebsiteInfo(context, source),
           ),
         ),
@@ -250,7 +250,6 @@ void main() {
       await tester.tap(find.text('+4'));
       await tester.pumpAndSettle();
       expect(find.byType(NodeLaneCatalogSheet), findsNothing);
-      expect(find.text('最新内容'), findsOneWidget);
       expect(find.text('日漫、韩漫、国漫、欧美漫画'), findsOneWidget);
       expect(opened, 0);
       Navigator.of(tester.element(find.text('地区'))).pop();
@@ -274,7 +273,7 @@ void main() {
             onOpen: () {},
             onAction: () {},
             onDetails: () {},
-            onLongPress: () {},
+            onLongPress: (_) {},
           ),
           direction: TextDirection.rtl,
         );

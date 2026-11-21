@@ -57,13 +57,14 @@ class _CreateExtensionState extends State<CreateExtension> {
       l10n.source_language_lnreader_compiled_js,
     ];
     Future<void> choose(
+      BuildContext row,
       String title,
       List<String> options,
       int current,
       ValueChanged<int> update,
     ) async {
       final value = await showSourceChoice<int>(
-        context,
+        row,
         title: title,
         current: current,
         options: [
@@ -78,17 +79,21 @@ class _CreateExtensionState extends State<CreateExtension> {
       List<String> options,
       int current,
       ValueChanged<int> update,
-    ) => NodeLaneRow(
-      title: title,
-      value: options[current],
-      trailing: _isEditMode
-          ? Icon(
-              NodeLaneIcons.of(context).lock,
-              size: NodeLaneTokens.smallIconSize,
-              color: NodeLaneTokens.of(context).muted,
-            )
-          : null,
-      onTap: _isEditMode ? null : () => choose(title, options, current, update),
+    ) => Builder(
+      builder: (row) => NodeLaneRow(
+        title: title,
+        value: options[current],
+        trailing: _isEditMode
+            ? Icon(
+                NodeLaneIcons.of(context).lock,
+                size: NodeLaneTokens.smallIconSize,
+                color: NodeLaneTokens.of(context).muted,
+              )
+            : null,
+        onTap: _isEditMode
+            ? null
+            : () => choose(row, title, options, current, update),
+      ),
     );
     return MobileBrowsePage(
       title: _isEditMode

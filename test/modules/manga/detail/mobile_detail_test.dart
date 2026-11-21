@@ -65,59 +65,6 @@ void main() {
     },
   );
   testWidgets(
-    'large-text filter sheet scrolls its tabs and contents independently',
-    (tester) async {
-      final events = <String>[];
-      await show(
-        tester,
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 420),
-          child: MobileChapterFilterSheet(
-            labels: const ['Filter', 'Sort', 'Display'],
-            closeLabel: 'Close',
-            onClose: () => events.add('close'),
-            children: [
-              const Text('Unread filter'),
-              Column(
-                children: [
-                  for (var i = 0; i < 10; i++)
-                    TextButton(
-                      onPressed: () => events.add('sort $i'),
-                      child: Text('Sort option $i'),
-                    ),
-                ],
-              ),
-              const Text('Chapter title display'),
-            ],
-          ),
-        ),
-      );
-      final compactHeight = tester
-          .getSize(find.byType(MobileChapterFilterSheet))
-          .height;
-      await tester.ensureVisible(find.text('Sort'));
-      await tester.tap(find.text('Sort'));
-      await tester.pumpAndSettle();
-      expect(
-        tester.getSize(find.byType(MobileChapterFilterSheet)).height,
-        greaterThan(compactHeight),
-      );
-      await tester.ensureVisible(find.text('Sort option 9'));
-      await tester.tap(find.text('Sort option 9'));
-      await tester.ensureVisible(find.text('Display'));
-      await tester.tap(find.text('Display'));
-      await tester.pumpAndSettle();
-      expect(find.text('Chapter title display'), findsOneWidget);
-      expect(
-        tester.getSize(find.byType(MobileChapterFilterSheet)).height,
-        lessThan(200),
-      );
-      await tester.tap(find.byTooltip('Close'));
-      expect(events, ['sort 9', 'close']);
-      expect(tester.takeException(), isNull);
-    },
-  );
-  testWidgets(
     'synopsis expands without invoking its independent genre action',
     (tester) async {
       var expanded = false;

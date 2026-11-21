@@ -93,7 +93,7 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
   Widget group({required List<Widget> children}) => widget.nested
       ? Column(children: children)
       : NodeLaneGroupSurface(children: children);
-  Future<void> select(dynamic f) async {
+  Future<void> select(BuildContext row, dynamic f) async {
     final l10n = context.l10n;
     final int current = f is SortFilter ? f.state.index : f.state;
     final options = <SourceOption<int>>[
@@ -101,7 +101,7 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
         SourceOption(i, sourceFilterLabel(l10n, f.values[i].name as String)),
     ];
     final value = await showSourceChoice<int>(
-      context,
+      row,
       title: sourceFilterLabel(l10n, f.name),
       current: current,
       options: options,
@@ -248,10 +248,14 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                         : null;
                     return group(
                       children: [
-                        NodeLaneRow(
-                          title: label(f.name),
-                          value: selectedLabel,
-                          onTap: f.values.isEmpty ? null : () => select(f),
+                        Builder(
+                          builder: (row) => NodeLaneRow(
+                            title: label(f.name),
+                            value: selectedLabel,
+                            onTap: f.values.isEmpty
+                                ? null
+                                : () => select(row, f),
+                          ),
                         ),
                         if (f is SortFilter)
                           Padding(

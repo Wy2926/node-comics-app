@@ -10,9 +10,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_detail_actions.dart';
 
-/// The detail page app bar's download shortcut: pick "next N" / "unread" /
-/// "all" and queue those chapters, without opening the full filter/sort
-/// sheet.
+/// The range is resolved against the current chapter filter at selection time.
 class DownloadQuickMenu extends StatelessWidget {
   final ItemType itemType;
   final Manga manga;
@@ -33,6 +31,7 @@ class DownloadQuickMenu extends StatelessWidget {
     final l10n = l10nLocalizations(context)!;
     if (isMobile && !isTv) {
       return MobileMangaDownloadActionsButton(
+        key: ValueKey(manga.id),
         episodes: itemType == ItemType.anime,
         bookTitle: manga.name ?? '',
         hasChapters: hasChapters,
@@ -43,58 +42,13 @@ class DownloadQuickMenu extends StatelessWidget {
       popUpAnimationStyle: popupAnimationStyle,
       icon: const Icon(Icons.download_outlined),
       tooltip: l10n.download,
-      itemBuilder: (context) {
-        return [
-          PopupMenuItem<int>(
-            value: 0,
-            child: Text(
-              itemType != ItemType.anime
-                  ? context.l10n.next_chapter
-                  : context.l10n.next_episode,
-            ),
-          ),
-          PopupMenuItem<int>(
-            value: 1,
-            child: Text(
-              itemType != ItemType.anime
-                  ? context.l10n.next_5_chapters
-                  : context.l10n.next_5_episodes,
-            ),
-          ),
-          PopupMenuItem<int>(
-            value: 2,
-            child: Text(
-              itemType != ItemType.anime
-                  ? context.l10n.next_10_chapters
-                  : context.l10n.next_10_episodes,
-            ),
-          ),
-          PopupMenuItem<int>(
-            value: 3,
-            child: Text(
-              itemType != ItemType.anime
-                  ? context.l10n.next_25_chapters
-                  : context.l10n.next_25_episodes,
-            ),
-          ),
-          PopupMenuItem<int>(
-            value: 4,
-            child: Text(
-              itemType != ItemType.anime
-                  ? context.l10n.unread
-                  : context.l10n.unwatched,
-            ),
-          ),
-          PopupMenuItem<int>(
-            value: 5,
-            child: Text(
-              itemType != ItemType.anime
-                  ? context.l10n.all_chapters
-                  : context.l10n.all_episodes,
-            ),
-          ),
-        ];
-      },
+      itemBuilder: (_) => [
+        for (final (i, label) in downloadRangeLabels(
+          l10n,
+          episodes: itemType == ItemType.anime,
+        ).indexed)
+          PopupMenuItem<int>(value: i, child: Text(label)),
+      ],
       onSelected: (value) => _download(context, value),
     );
   }

@@ -9,6 +9,7 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
@@ -171,50 +172,47 @@ class _MobileRepositoryManagerState
         !configured.any((r) => r.jsonUrl == official.jsonUrl);
     final repos = [if (builtIn) official, ...configured];
     final icons = NodeLaneIcons.of(context), t = NodeLaneTokens.of(context);
-    final list = ListView(
-      padding: NodeLaneTokens.pagePadding,
-      children: [
-        Text(context.l10n.repository_manage_hint, style: t.readerSecondary),
-        const SizedBox(height: NodeLaneTokens.space16),
-        if (repos.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              context.l10n.repository_empty,
-              style: t.readerSecondary,
-            ),
-          ),
-        for (var i = 0; i < repos.length; i++)
-          _repository(repos[i], builtIn && i == 0),
-        const SizedBox(height: 20),
-        NodeLaneRow.card(
-          title: context.l10n.onboarding_add,
-          leading: Icon(icons.add),
-          onTap: () => showMobileAddRepository(context, widget.itemType),
-        ),
-        const SizedBox(height: 20),
-        NodeLaneRow.card(
-          title: refreshing
-              ? context.l10n.repository_refreshing
-              : context.l10n.repository_refresh,
-          leading: refreshing
-              ? const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Icon(icons.refresh),
-          onTap: refreshing ? null : _refresh,
-        ),
-        if (refreshError != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(refreshError!, style: t.readerSecondary),
-          ),
-      ],
-    );
+    final l = context.l10n;
     return MobileBrowsePage.form(
-      title: context.l10n.repository_third_party,
-      body: list,
+      title:
+          '${widget.itemType.localized(l)} · ${l.source_manage_repositories}',
+      actions: [
+        NodeLaneIconButton(
+          tooltip: refreshing ? l.repository_refreshing : l.repository_refresh,
+          icon: icons.refresh,
+          busy: refreshing,
+          onPressed: _refresh,
+        ),
+      ],
+      bottomAction: FilledButton.icon(
+        onPressed: () => showMobileAddRepository(context, widget.itemType),
+        icon: Icon(icons.add),
+        label: Text(l.onboarding_add),
+      ),
+      body: ListView(
+        padding: NodeLaneTokens.pagePadding,
+        children: [
+          Text(l.repository_manage_hint, style: t.readerSecondary),
+          const SizedBox(height: NodeLaneTokens.space16),
+          if (refreshError != null)
+            NodeLaneNotice(
+              message: refreshError!,
+              kind: NodeLaneNoticeKind.error,
+              actionLabel: l.retry,
+              onAction: _refresh,
+            ),
+          if (repos.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                context.l10n.repository_empty,
+                style: t.readerSecondary,
+              ),
+            ),
+          for (var i = 0; i < repos.length; i++)
+            _repository(repos[i], builtIn && i == 0),
+        ],
+      ),
     );
   }
 }

@@ -1,12 +1,11 @@
-import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
-/// Presents existing detail action values; dispatch remains with the owner.
 class MobileMangaDetailActionsButton extends StatelessWidget {
   const MobileMangaDetailActionsButton({
     super.key,
@@ -24,71 +23,38 @@ class MobileMangaDetailActionsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return _MangaMenuButton(
-      tooltip: title ?? l10n.manga_actions,
-      icon: NodeLaneIcons.of(context).more,
+    final l = context.l10n, icons = NodeLaneIcons.of(context);
+    return _BookMenu(
+      bookTitle: bookTitle,
+      tooltip: title ?? l.manga_actions,
+      icon: icons.more,
       onSelected: onSelected,
-      menu: _MangaActionSheet(
-        title: title ?? l10n.manga_actions,
-        bookTitle: bookTitle,
-        actions: (choose) => [
-          [
-            if (!localArchive)
-              _action(
-                l10n.refresh,
-                NodeLaneIcons.of(context).refresh,
-                () => choose(0),
-              ),
-            if (favorite)
-              _action(
-                l10n.set_categories,
-                NodeLaneIcons.of(context).folderOutline,
-                () => choose(1),
-                disclosure: true,
-              ),
-            if (!localArchive)
-              _action(
-                l10n.share,
-                NodeLaneIcons.of(context).share,
-                () => choose(2),
-              ),
-          ],
-          [
-            _action(
-              l10n.migrate,
-              NodeLaneIcons.of(context).migrate,
-              () => choose(3),
-              disclosure: true,
-            ),
-            _action(
-              l10n.mass_migration_title,
-              NodeLaneIcons.of(context).categories,
-              () => choose(6),
-              disclosure: true,
-            ),
-            if (!localArchive)
-              _action(
-                l10n.extension_settings,
-                NodeLaneIcons.of(context).extensions,
-                () => choose(4),
-                disclosure: true,
-              ),
-          ],
-          [
-            _action(
-              l10n.export_metadata,
-              NodeLaneIcons.of(context).export,
-              () => choose(5),
-            ),
-          ],
-        ],
-      ),
+      items: (item) => [
+        if (!localArchive) item(0, l.refresh, icons.refresh),
+        if (favorite) item(1, l.set_categories, icons.folderOutline),
+        if (!localArchive) item(2, l.share, icons.share),
+        if (!localArchive || favorite) const PopupMenuDivider(),
+        item(3, l.migrate, icons.migrate),
+        item(6, l.mass_migration_title, icons.categories),
+        if (!localArchive) item(4, l.extension_settings, icons.extensions),
+        item(5, l.export_metadata, icons.export),
+      ],
     );
   }
 }
 
-/// Collects a download range only, without querying chapters or queue state.
+List<String> downloadRangeLabels(
+  AppLocalizations l, {
+  required bool episodes,
+}) => [
+  episodes ? l.next_episode : l.next_chapter,
+  episodes ? l.next_5_episodes : l.next_5_chapters,
+  episodes ? l.next_10_episodes : l.next_10_chapters,
+  episodes ? l.next_25_episodes : l.next_25_chapters,
+  episodes ? l.unwatched : l.unread,
+  episodes ? l.all_episodes : l.all_chapters,
+];
+
 class MobileMangaDownloadActionsButton extends StatelessWidget {
   const MobileMangaDownloadActionsButton({
     super.key,
@@ -104,96 +70,66 @@ class MobileMangaDownloadActionsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final labels = [
-      episodes ? l10n.next_episode : l10n.next_chapter,
-      episodes ? l10n.next_5_episodes : l10n.next_5_chapters,
-      episodes ? l10n.next_10_episodes : l10n.next_10_chapters,
-      episodes ? l10n.next_25_episodes : l10n.next_25_chapters,
-      episodes ? l10n.unwatched : l10n.unread,
-      episodes ? l10n.all_episodes : l10n.all_chapters,
-    ];
-    return _MangaMenuButton(
-      tooltip: l10n.download,
-      icon: NodeLaneIcons.of(context).download,
+    final l = context.l10n, icons = NodeLaneIcons.of(context);
+    return _BookMenu(
+      bookTitle: bookTitle,
+      tooltip: l.download,
+      icon: icons.download,
       onSelected: onSelected,
-      menu: _MangaActionSheet(
-        title: episodes ? l10n.download : l10n.manga_download_scope,
-        bookTitle: bookTitle,
-        hint: episodes
-            ? (hasChapters ? null : l10n.no_result)
-            : hasChapters
-            ? l10n.manga_download_scope_hint
-            : l10n.manga_download_scope_empty,
-        actions: (choose) => [
-          for (final indices in [
-            const [0, 1, 2, 3],
-            const [4, 5],
-          ])
-            [
-              for (final index in indices)
-                _action(
-                  labels[index],
-                  index < 4
-                      ? NodeLaneIcons.of(context).forward
-                      : index == 4
-                      ? NodeLaneIcons.of(context).unread
-                      : NodeLaneIcons.of(context).manga,
-                  hasChapters ? () => choose(index) : null,
-                ),
-            ],
-        ],
-      ),
+      items: (item) => [
+        if (!hasChapters)
+          PopupMenuItem(
+            enabled: false,
+            child: Text(episodes ? l.no_result : l.manga_download_scope_empty),
+          )
+        else
+          for (final (i, label) in downloadRangeLabels(
+            l,
+            episodes: episodes,
+          ).indexed) ...[
+            if (i == 4) const PopupMenuDivider(),
+            item(
+              i,
+              label,
+              i < 4
+                  ? icons.nextChapter
+                  : i == 4
+                  ? icons.unread
+                  : icons.chapters,
+            ),
+          ],
+      ],
     );
   }
 }
 
-Widget _action(
-  String label,
-  IconData icon,
-  VoidCallback? onTap, {
-  bool disclosure = false,
-}) => NodeLaneRow(
-  title: label,
-  icon: icon,
-  enabled: onTap != null,
-  onTap: onTap,
-  trailing: disclosure ? null : const SizedBox.shrink(),
-);
+typedef _Item = PopupMenuItem<int> Function(int, String, IconData);
 
-/// Only owns presentation and in-flight UI state. The callback keeps the
-/// existing navigation, file picker, export and download implementations.
-class _MangaMenuButton extends StatefulWidget {
-  const _MangaMenuButton({
+class _BookMenu extends StatefulWidget {
+  const _BookMenu({
+    required this.bookTitle,
     required this.tooltip,
     required this.icon,
-    required this.menu,
+    required this.items,
     required this.onSelected,
   });
-
-  final String tooltip;
+  final String bookTitle, tooltip;
   final IconData icon;
-  final Widget menu;
+  final List<PopupMenuEntry<int>> Function(_Item) items;
   final Future<void> Function(int) onSelected;
 
   @override
-  State<_MangaMenuButton> createState() => _MangaMenuButtonState();
+  State<_BookMenu> createState() => _BookMenuState();
 }
 
-class _MangaMenuButtonState extends State<_MangaMenuButton> {
-  bool _opened = false, _working = false;
+class _BookMenuState extends State<_BookMenu> {
+  bool _busy = false;
 
-  Future<void> _open() async {
-    if (_opened) return;
-    // Keep the action paired with the book for which this menu was opened.
-    final action = widget.onSelected;
-    final menu = widget.menu;
-    setState(() => _opened = true);
+  Future<void> _run(int value) async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
-      final value = await showNodeLaneCatalogSheet<int>(context, menu);
-      if (!mounted || value == null) return;
-      setState(() => _working = true);
-      await action(value);
+      await widget.onSelected(value);
     } catch (_) {
       if (mounted) {
         showNodeLaneNotice(
@@ -202,72 +138,36 @@ class _MangaMenuButtonState extends State<_MangaMenuButton> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _opened = false;
-          _working = false;
-        });
-      }
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
-  Widget build(BuildContext context) => NodeLaneIconButton(
+  Widget build(BuildContext context) => NodeLaneMenuButton<int>(
     tooltip: widget.tooltip,
-    onPressed: _opened ? null : _open,
     icon: widget.icon,
-    busy: _working,
-  );
-}
-
-class _MangaActionSheet extends StatefulWidget {
-  const _MangaActionSheet({
-    required this.title,
-    required this.bookTitle,
-    required this.actions,
-    this.hint,
-  });
-
-  final String title, bookTitle;
-  final String? hint;
-  final List<List<Widget>> Function(ValueChanged<int>) actions;
-
-  @override
-  State<_MangaActionSheet> createState() => _MangaActionSheetState();
-}
-
-class _MangaActionSheetState extends State<_MangaActionSheet> {
-  bool _leaving = false;
-
-  void _close([int? value]) {
-    if (!mounted || _leaving || ModalRoute.of(context)?.isCurrent != true) {
-      return;
-    }
-    _leaving = true;
-    Navigator.pop(context, value);
-  }
-
-  @override
-  Widget build(BuildContext context) => NodeLaneCatalogSheet(
-    title: widget.title,
-    subtitle: [
-      widget.bookTitle,
-      widget.hint,
-    ].whereType<String>().where((text) => text.isNotEmpty).join('\n'),
-    onClose: _close,
-    heightFactor: .85,
-    fitContent: true,
-    child: ListView(
-      shrinkWrap: true,
-      padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
-      children: [
-        for (final section
-            in widget.actions(_close).where((items) => items.isNotEmpty))
-          NodeLaneGroupSurface(
-            margin: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
-            children: section,
+    busy: _busy,
+    enabled: !_busy,
+    onSelected: _run,
+    itemBuilder: (_) => [
+      if (widget.bookTitle.isNotEmpty)
+        PopupMenuItem<int>(
+          enabled: false,
+          child: Text(
+            widget.bookTitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: NodeLaneTokens.of(context).secondary,
           ),
-      ],
-    ),
+        ),
+      ...widget.items(
+        (value, label, icon) => nodeLaneSelectionMenuItem(
+          context,
+          value: value,
+          label: label,
+          icon: icon,
+        ),
+      ),
+    ],
   );
 }

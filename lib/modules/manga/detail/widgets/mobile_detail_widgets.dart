@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -230,78 +229,6 @@ class MobileDetailPrimaryActions extends StatelessWidget {
     constraints: const BoxConstraints(minHeight: NodeLaneTokens.rowHeight),
     child: child,
   );
-}
-
-/// Keeps the existing filter controls inside one bounded, scrollable sheet.
-class MobileChapterFilterSheet extends StatelessWidget {
-  const MobileChapterFilterSheet({
-    super.key,
-    required this.labels,
-    required this.children,
-    required this.closeLabel,
-    required this.onClose,
-  }) : assert(labels.length == children.length);
-
-  final List<String> labels;
-  final List<Widget> children;
-  final String closeLabel;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return NodeLaneSurface(
-      child: DefaultTabController(
-        animationDuration: NodeLaneMotion.time(context),
-        length: labels.length,
-        child: Builder(
-          builder: (context) {
-            final controller = DefaultTabController.of(context);
-            return ListenableBuilder(
-              listenable: controller,
-              builder: (context, _) => SafeArea(
-                top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: NodeLaneTabSegments(
-                            controller: controller,
-                            labels: labels,
-                            scrollable: true,
-                          ),
-                        ),
-                        NodeLaneIconButton(
-                          tooltip: closeLabel,
-                          onPressed: onClose,
-                          icon: NodeLaneIcons.of(context).close,
-                        ),
-                        const SizedBox(width: NodeLaneTokens.space4),
-                      ],
-                    ),
-                    const NodeLaneGroupDivider(),
-                    Flexible(
-                      child: NodeLaneContentMotion(
-                        value: controller.index,
-                        child: SingleChildScrollView(
-                          key: PageStorageKey(controller.index),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: NodeLaneTokens.space8,
-                          ),
-                          child: children[controller.index],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
 }
 
 /// Chapter text and controls have separate hit targets; no repository work or

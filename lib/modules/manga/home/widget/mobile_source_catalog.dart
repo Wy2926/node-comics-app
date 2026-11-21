@@ -23,19 +23,23 @@ class MobileSourceCatalog extends StatelessWidget {
     required this.supportsLatest,
     this.filtering = false,
     required this.onSelect,
-    required this.onOptions,
+    required this.menu,
+    required this.display,
+    required this.onDisplay,
     required this.results,
     this.onBrowser,
   });
 
   final String title;
   final TextEditingController search;
-  final VoidCallback onSubmit, onClear, onOptions;
+  final VoidCallback onSubmit, onClear;
+  final DisplayType display;
+  final ValueChanged<DisplayType> onDisplay;
   final ValueChanged<int> onSelect;
   final VoidCallback? onBrowser;
   final int selected;
   final bool supportsLatest, filtering;
-  final Widget results;
+  final Widget results, menu;
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +57,7 @@ class MobileSourceCatalog extends StatelessWidget {
           ),
           const SizedBox(width: NodeLaneTokens.space8),
         ],
-        NodeLaneIconButton(
-          icon: icons.settings,
-          tooltip: l10n.source_actions,
-          onPressed: onOptions,
-          active: filtering,
-        ),
+        menu,
       ],
       body: LayoutBuilder(
         builder: (context, constraints) => Column(
@@ -82,51 +81,82 @@ class MobileSourceCatalog extends StatelessWidget {
                     hint: context.l10n.source_search_here,
                     clearLabel: l10n.reset,
                   ),
-                  second: selected == 2
-                      ? Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                filtering
-                                    ? context.l10n.source_filter_results
-                                    : context.l10n.source_search_results,
-                                style: t.readerLabel,
+                  second: Row(
+                    children: [
+                      Expanded(
+                        child: selected == 2
+                            ? Wrap(
+                                alignment: WrapAlignment.spaceBetween,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Text(
+                                    filtering
+                                        ? context.l10n.source_filter_results
+                                        : context.l10n.source_search_results,
+                                    style: t.readerLabel,
+                                  ),
+                                  TextButton(
+                                    onPressed: () => onSelect(0),
+                                    child: Text(
+                                      context.l10n.source_return_popular,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : supportsLatest
+                            ? NodeLaneSegments<int>(
+                                value: selected,
+                                labelStyle: t.readerLabel,
+                                segments: [
+                                  ButtonSegment(
+                                    value: 0,
+                                    label: Text(context.l10n.popular),
+                                  ),
+                                  ButtonSegment(
+                                    value: 1,
+                                    label: Text(context.l10n.latest),
+                                  ),
+                                ],
+                                onChanged: onSelect,
+                              )
+                            : ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  minHeight: NodeLaneTokens.minTapTarget,
+                                ),
+                                child: Align(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: Text(
+                                    context.l10n.source_popular_titles,
+                                    style: t.readerLabel,
+                                  ),
+                                ),
                               ),
+                      ),
+                      const SizedBox(width: NodeLaneTokens.space8),
+                      NodeLaneMenuButton<DisplayType>(
+                        icon: display == DisplayType.list
+                            ? icons.chapters
+                            : icons.extensions,
+                        tooltip: l10n.source_display,
+                        onSelected: onDisplay,
+                        itemBuilder: (_) => [
+                          for (final (value, label) in [
+                            (
+                              DisplayType.comfortableGrid,
+                              l10n.source_cover_title,
                             ),
-                            TextButton(
-                              onPressed: () => onSelect(0),
-                              child: Text(context.l10n.source_return_popular),
+                            (DisplayType.compactGrid, l10n.source_cover_only),
+                            (DisplayType.list, l10n.list),
+                          ])
+                            CheckedPopupMenuItem<DisplayType>(
+                              value: value,
+                              checked: value == display,
+                              child: Text(label),
                             ),
-                          ],
-                        )
-                      : supportsLatest
-                      ? NodeLaneSegments<int>(
-                          value: selected,
-                          labelStyle: t.readerLabel,
-                          segments: [
-                            ButtonSegment(
-                              value: 0,
-                              label: Text(context.l10n.popular),
-                            ),
-                            ButtonSegment(
-                              value: 1,
-                              label: Text(context.l10n.latest),
-                            ),
-                          ],
-                          onChanged: onSelect,
-                        )
-                      : ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minHeight: NodeLaneTokens.minTapTarget,
-                          ),
-                          child: Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: Text(
-                              context.l10n.source_popular_titles,
-                              style: t.readerLabel,
-                            ),
-                          ),
-                        ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

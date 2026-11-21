@@ -9,7 +9,6 @@ import 'package:mangayomi/modules/browse/widgets/source_catalog_labels.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -43,7 +42,8 @@ class SourceWebsiteCard extends StatelessWidget {
   final Source source;
   final SourceCardAction action;
   final VoidCallback? onAction, onOpen;
-  final VoidCallback? onDetails, onLongPress;
+  final VoidCallback? onDetails;
+  final ValueChanged<Offset>? onLongPress;
   final bool? selected;
 
   static ({double heading, double labels, double footer, bool stacked})
@@ -169,6 +169,7 @@ class SourceWebsiteCard extends StatelessWidget {
                 onPressed: onOpen,
                 style: NodeLaneIconButtonStyle.plain,
               );
+        Offset? touch;
         final card = Material(
           color: free ? t.sourceFreeSurface : t.surface,
           shape: RoundedRectangleBorder(
@@ -185,7 +186,16 @@ class SourceWebsiteCard extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onOpen,
-            onLongPress: onLongPress,
+            onTapDown: (event) => touch = event.globalPosition,
+            onLongPress: onLongPress == null
+                ? null
+                : () {
+                    final box = context.findRenderObject()! as RenderBox;
+                    onLongPress!(
+                      touch ?? box.localToGlobal(box.size.center(Offset.zero)),
+                    );
+                    touch = null;
+                  },
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -587,109 +597,71 @@ class _UnknownPricingDivider extends CustomPainter {
       oldDelegate.color != color;
 }
 
-enum SourceWebsiteAction { pin, latest, browser, settings }
-
-Future<SourceWebsiteAction?> showSourceWebsiteInfo(
-  BuildContext context,
-  Source source,
-) {
+Future<void> showSourceWebsiteInfo(BuildContext context, Source source) {
   final metadata = source.catalogMetadata;
-  return pushBrowsePage<SourceWebsiteAction>(
+  final host = Uri.tryParse(source.baseUrl ?? '')?.host ?? '';
+  return pushBrowsePage<void>(
     context,
     Builder(
       builder: (context) {
-        final l = context.l10n, icons = NodeLaneIcons.of(context);
+        final l = context.l10n;
         return MobileBrowsePage.form(
-          title: source.name ?? '',
+          title: source.name ?? l.source_information,
           body: ListView(
             padding: NodeLaneTokens.pagePadding,
             children: [
-              NodeLaneToolbarPair(
-                alignment: WrapCrossAlignment.start,
-                first: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    NodeLaneCatalogHeading(l.source_information),
-                    Text(
-                      l.source_metadata_hint,
-                      style: NodeLaneTokens.of(context).secondary,
-                    ),
-                    const SizedBox(height: NodeLaneTokens.space8),
-                    NodeLaneGroupSurface(
-                      children: [
-                        for (final entry in [
-                          (
-                            context.l10n.source_region,
-                            metadata.regionLabels(context.l10n),
-                          ),
-                          (
-                            context.l10n.source_format,
-                            metadata.formatLabels(context.l10n),
-                          ),
-                          (
-                            context.l10n.source_creation,
-                            metadata.creationLabels(context.l10n),
-                          ),
-                        ])
-                          NodeLaneRow(
-                            title: entry.$1,
-                            subtitle: entry.$2.isEmpty
-                                ? context.l10n.source_unspecified
-                                : entry.$2.join(context.l10n.list_separator),
-                          ),
-                        NodeLaneRow(
-                          title: context.l10n.source_pricing,
-                          subtitle: sourcePricingLabel(
-                            metadata.pricing,
-                            source.itemType,
-                            context.l10n,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              if (host.isNotEmpty)
+                SelectableText(
+                  host,
+                  style: NodeLaneTokens.of(context).secondary,
                 ),
-                second: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    NodeLaneCatalogHeading(l.source_actions),
-                    NodeLaneGroupSurface(
-                      children: [
-                        for (final (action, label, icon) in [
-                          (
-                            SourceWebsiteAction.pin,
-                            source.isPinned == true
-                                ? l.source_unpin
-                                : l.source_pin,
-                            icons.pin,
-                          ),
-                          (
-                            SourceWebsiteAction.latest,
-                            l.source_latest_content,
-                            icons.latest,
-                          ),
-                          if ((source.baseUrl ?? '').isNotEmpty)
-                            (
-                              SourceWebsiteAction.browser,
-                              l.open_in_browser,
-                              icons.browser,
-                            ),
-                          if (source.isAdded == true)
-                            (
-                              SourceWebsiteAction.settings,
-                              l.sources_settings,
-                              icons.settings,
-                            ),
-                        ])
-                          NodeLaneRow(
-                            title: label,
-                            icon: icon,
-                            onTap: () => Navigator.pop(context, action),
-                          ),
-                      ],
-                    ),
-                  ],
+              if (source.notes?.trim().isNotEmpty == true)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: NodeLaneTokens.space8,
+                  ),
+                  child: SelectableText(
+                    source.notes!,
+                    style: NodeLaneTokens.of(context).readerSecondary,
+                  ),
                 ),
+              NodeLaneCatalogHeading(l.source_information),
+              Text(
+                l.source_metadata_hint,
+                style: NodeLaneTokens.of(context).secondary,
+              ),
+              const SizedBox(height: NodeLaneTokens.space8),
+              NodeLaneGroupSurface(
+                children: [
+                  for (final entry in [
+                    (
+                      context.l10n.source_region,
+                      metadata.regionLabels(context.l10n),
+                    ),
+                    (
+                      context.l10n.source_format,
+                      metadata.formatLabels(context.l10n),
+                    ),
+                    (
+                      context.l10n.source_creation,
+                      metadata.creationLabels(context.l10n),
+                    ),
+                  ])
+                    NodeLaneRow(
+                      title: entry.$1,
+                      subtitle: entry.$2.isEmpty
+                          ? context.l10n.source_unspecified
+                          : entry.$2.join(context.l10n.list_separator),
+                    ),
+                  NodeLaneRow(
+                    title: context.l10n.source_pricing,
+                    subtitle: sourcePricingLabel(
+                      metadata.pricing,
+                      source.itemType,
+                      context.l10n,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

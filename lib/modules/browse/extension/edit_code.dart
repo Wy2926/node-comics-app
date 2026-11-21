@@ -312,29 +312,31 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
     final icons = NodeLaneIcons.of(context), t = NodeLaneTokens.of(context);
     return ListView(
       children: [
-        NodeLaneRow.card(
-          title: _getServices(context)
-              .firstWhere((e) => e.$2 == _serviceIndex)
-              .$1,
-          enabled: !_isLoading,
-          onTap: () async {
-            final value = await showSourceChoice<int>(
-              context,
-              title: context.l10n.type,
-              current: _serviceIndex,
-              options: [
-                for (final service in _getServices(context))
-                  SourceOption(service.$2, service.$1),
-              ],
-            );
-            if (mounted && value != null) {
-              setState(() {
-                _serviceIndex = value;
-                result = null;
-                _errorText = '';
-              });
-            }
-          },
+        Builder(
+          builder: (row) => NodeLaneRow.card(
+            title: _getServices(context)
+                .firstWhere((e) => e.$2 == _serviceIndex)
+                .$1,
+            enabled: !_isLoading,
+            onTap: () async {
+              final value = await showSourceChoice<int>(
+                row,
+                title: context.l10n.type,
+                current: _serviceIndex,
+                options: [
+                  for (final service in _getServices(context))
+                    SourceOption(service.$2, service.$1),
+                ],
+              );
+              if (mounted && value != null) {
+                setState(() {
+                  _serviceIndex = value;
+                  result = null;
+                  _errorText = '';
+                });
+              }
+            },
+          ),
         ),
         if (_serviceIndex <= 2)
           _input(

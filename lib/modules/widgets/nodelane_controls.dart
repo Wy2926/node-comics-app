@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart' show CupertinoPicker, CupertinoSwitch;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
@@ -1482,6 +1483,7 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     required this.tooltip,
     required this.itemBuilder,
     required this.onSelected,
+    this.onOpened,
     this.enabled = true,
     this.busy = false,
     this.progress,
@@ -1493,6 +1495,7 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     required this.tooltip,
     required this.itemBuilder,
     required this.onSelected,
+    this.onOpened,
     this.enabled = true,
   }) : icon = null,
        busy = false,
@@ -1503,6 +1506,7 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
   final String tooltip;
   final PopupMenuItemBuilder<T> itemBuilder;
   final PopupMenuItemSelected<T> onSelected;
+  final VoidCallback? onOpened;
   final bool enabled;
   // Menus stay available during work so a pending operation can be cancelled.
   final bool busy;
@@ -1510,9 +1514,14 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final motion = NodeLaneMotion.menu(context);
     if (label != null) {
       final t = NodeLaneTokens.of(context);
       return PopupMenuButton<T>(
+        position: PopupMenuPosition.under,
+        useRootNavigator: true,
+        popUpAnimationStyle: motion,
+        onOpened: onOpened,
         enabled: enabled,
         tooltip: tooltip,
         itemBuilder: itemBuilder,
@@ -1537,7 +1546,17 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
                 color: t.soft,
                 borderRadius: t.inputRadius,
               ),
-              child: Text(label!, style: t.readerValue),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(child: Text(label!, style: t.readerValue)),
+                  const SizedBox(width: NodeLaneTokens.space4),
+                  Icon(
+                    NodeLaneIcons.of(context).down,
+                    size: NodeLaneTokens.badgeIconSize,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1546,6 +1565,10 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     return _iconButtonSurface(
       style: NodeLaneIconButtonStyle.glass,
       child: PopupMenuButton<T>(
+        position: PopupMenuPosition.under,
+        useRootNavigator: true,
+        popUpAnimationStyle: motion,
+        onOpened: onOpened,
         enabled: enabled,
         tooltip: tooltip,
         icon: busy

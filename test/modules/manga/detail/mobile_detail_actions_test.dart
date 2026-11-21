@@ -1,5 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-
 import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
@@ -86,7 +84,7 @@ void main() {
           find.text('Set categories'),
           favorite ? findsOneWidget : findsNothing,
         );
-        await tester.tap(find.byTooltip('Close'));
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
       }
       expect(actions, expected.values.toList());
@@ -95,7 +93,7 @@ void main() {
   );
 
   testWidgets(
-    'download ranges stay separate and empty/short sheets remain usable',
+    'download ranges dispatch by scope and empty filters explain how to recover',
     (tester) async {
       final actions = <int>[];
       await _show(
@@ -136,23 +134,7 @@ void main() {
       await tester.pump();
       await _open(tester, 'Download');
       expect(find.textContaining('No chapters match'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('All chapters'),
-        160,
-        scrollable: find.descendant(
-          of: find.byType(ListView),
-          matching: find.byType(Scrollable),
-        ),
-      );
-      final tile = tester.widget<NodeLaneRow>(
-        find.widgetWithText(NodeLaneRow, 'All chapters'),
-      );
-      expect(tile.onTap, isNull);
-      expect(tile.enabled, false);
-      expect(
-        tester.getRect(find.byTooltip('Close')).top,
-        greaterThanOrEqualTo(0),
-      );
+      expect(find.text('All chapters'), findsNothing);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(actions, [0, 1, 2, 3, 4, 5]);
@@ -178,39 +160,19 @@ void main() {
           },
         ),
       );
-      final reopen = tester
-          .widget<IconButton>(
-            find.byWidgetPredicate(
-              (widget) =>
-                  widget is IconButton && widget.tooltip == 'Comic actions',
-            ),
-          )
-          .onPressed!;
       await _open(tester, 'Comic actions');
       await tester.ensureVisible(find.text('Export metadata'));
-      final choose = tester
-          .widget<NodeLaneRow>(
-            find.widgetWithText(NodeLaneRow, 'Export metadata'),
-          )
-          .onTap!;
-      choose();
-      choose();
-      reopen();
+      final point = tester.getCenter(find.text('Export metadata'));
+      await tester.tapAt(point);
+      await tester.pump(const Duration(milliseconds: 32));
+      await tester.tapAt(point);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.byTooltip('Comic actions'), warnIfMissed: false);
+      await tester.pump();
       expect(calls, 1);
       expect(find.text('Detail page'), findsOneWidget);
-      expect(
-        tester
-            .widget<IconButton>(
-              find.byWidgetPredicate(
-                (widget) =>
-                    widget is IconButton && widget.tooltip == 'Comic actions',
-              ),
-            )
-            .onPressed,
-        isNull,
-      );
+      expect(find.text('Export metadata'), findsNothing);
       pending.completeError(StateError('private fixture path'));
       await tester.pumpAndSettle();
       expect(find.textContaining('The action did not finish'), findsOneWidget);

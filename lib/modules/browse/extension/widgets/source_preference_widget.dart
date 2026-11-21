@@ -65,7 +65,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
     }
   }
 
-  Future<void> edit(int i) async {
+  Future<void> edit(BuildContext row, int i) async {
     if (saving) return;
     final pref = values[i], owner = revision;
     final subtitle = widget.source.name;
@@ -103,7 +103,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
       ];
       final result = mobile
           ? await showSourceChoice<int>(
-              context,
+              row,
               title: list.title ?? '',
               subtitle: subtitle,
               current: list.valueIndex,
@@ -206,22 +206,26 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
                   }),
           );
     if (mobile) {
-      return NodeLaneRow(
-        title: title,
-        subtitle: checked != null || p.editTextPreference != null
-            ? summary
-            : null,
-        value: checked == null && p.editTextPreference == null ? summary : null,
-        icon: icon,
-        trailing: toggle,
-        onTap: saving || checked != null ? null : () => edit(i),
+      return Builder(
+        builder: (row) => NodeLaneRow(
+          title: title,
+          subtitle: checked != null || p.editTextPreference != null
+              ? summary
+              : null,
+          value: checked == null && p.editTextPreference == null
+              ? summary
+              : null,
+          icon: icon,
+          trailing: toggle,
+          onTap: saving || checked != null ? null : () => edit(row, i),
+        ),
       );
     }
     return ListTile(
       title: Text(title),
       subtitle: Text(summary),
       trailing: toggle,
-      onTap: saving || checked != null ? null : () => edit(i),
+      onTap: saving || checked != null ? null : () => edit(context, i),
     );
   }
 

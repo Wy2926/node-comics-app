@@ -99,7 +99,7 @@ class NodeLaneTokens {
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const menuMaxWidth = 280.0;
   static const catalogRowHeight = 72.0, websiteIconSize = 40.0;
-  static const catalogTabsWidth = 264.0;
+  static const catalogTabsWidth = 176.0;
   // Source cards share geometry across directories, metadata and action states.
   static const sourceCardTopInset = space8;
   static const sourceCardClassificationHeight = minTapTarget;

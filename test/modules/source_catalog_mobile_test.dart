@@ -117,7 +117,9 @@ void main() {
           supportsLatest: true,
           filtering: true,
           onSelect: (_) {},
-          onOptions: () {},
+          menu: const SizedBox.shrink(),
+          display: DisplayType.comfortableGrid,
+          onDisplay: (_) {},
           results: MobileSourceResults(
             controller: scroll,
             display: DisplayType.comfortableGrid,
@@ -241,7 +243,10 @@ void main() {
       await tester.tap(find.text('A long ordering choice'));
       await tester.pumpAndSettle();
       await tester.tap(
-        find.text('A long alternate order that must wrap completely'),
+        find.widgetWithText(
+          CheckedPopupMenuItem<int>,
+          'A long alternate order that must wrap completely',
+        ),
       );
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Apply filters'));
@@ -282,7 +287,7 @@ void main() {
       );
       await tester.tap(find.text('排序'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('人气'));
+      await tester.tap(find.widgetWithText(CheckedPopupMenuItem<int>, '人气'));
       await tester.pumpAndSettle();
       expect((draft[0] as SortFilter).state.index, 1);
       expect((draft[0] as SortFilter).state.ascending, isFalse);

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -131,17 +132,9 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () => showModalBottomSheet<void>(
-                  context: context,
-                  useRootNavigator: true,
-                  isScrollControlled: true,
-                  builder: (_) => ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 555),
-                    child: MobileMangaChapterSettings(
-                      manga: manga,
-                      localArchive: false,
-                    ),
-                  ),
+                onPressed: () => pushBrowsePage<void>(
+                  context,
+                  MobileChapterSettingsPage(manga: manga, localArchive: false),
                 ),
                 child: const Text('Open settings'),
               ),
@@ -214,6 +207,20 @@ void main() {
     );
     expect(container.read(groups).$2, ['Team 00']);
   });
+
+  testWidgets(
+    'episode filters and sort use episode labels and stay bound to the same title',
+    (tester) async {
+      manga.itemType = ItemType.anime;
+      addTearDown(() => manga.itemType = ItemType.manga);
+      await start(tester);
+      expect(find.text('Unwatched'), findsOneWidget);
+      expect(find.text('Settings'), findsNothing);
+      await tester.tap(find.text('Sort'));
+      await tester.pumpAndSettle();
+      expect(find.text('By episode number'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'chapter controls select explicit states and keep sort direction independent',
@@ -291,7 +298,7 @@ void main() {
             .value,
         1,
       );
-      await tester.tap(find.byTooltip('Close'));
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.text('Open settings'), findsOneWidget);
       expect(tester.takeException(), isNull);

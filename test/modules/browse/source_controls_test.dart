@@ -44,6 +44,37 @@ void main() {
   }
 
   testWidgets(
+    'long single choices search by label and return the plugin value',
+    (tester) async {
+      int? choice;
+      await mount(
+        tester,
+        Builder(
+          builder: (context) => TextButton(
+            onPressed: () async => choice = await showSourceChoice<int>(
+              context,
+              title: '版本',
+              current: 500,
+              options: [
+                for (var i = 0; i < 12; i++)
+                  SourceOption(500 + i, 'Version $i'),
+              ],
+            ),
+            child: const Text('版本'),
+          ),
+        ),
+      );
+      await tester.tap(find.text('版本'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '11');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Version 11'));
+      await tester.pumpAndSettle();
+      expect(choice, 511);
+    },
+  );
+
+  testWidgets(
     'multi selection cancels, preserves hidden choices and commits once',
     (tester) async {
       Set<String>? result;

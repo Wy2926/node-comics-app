@@ -10,6 +10,11 @@ abstract final class NodeLaneMotion {
   static const curve = Curves.easeOutCubic;
   static Duration time(BuildContext context) =>
       MediaQuery.disableAnimationsOf(context) ? Duration.zero : duration;
+  static AnimationStyle menu(BuildContext context) => AnimationStyle(
+    duration: time(context),
+    reverseDuration: time(context),
+    curve: curve,
+  );
 
   static TabController tabs({
     required int length,

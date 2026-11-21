@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
@@ -39,51 +38,33 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('display choices and website actions return distinct values', (
-    tester,
-  ) async {
-    Object? result;
-    await mount(
-      tester,
-      Builder(
-        builder: (context) => TextButton(
-          onPressed: () async {
-            result = await pushBrowsePage<Object>(
-              context,
-              const MobileSourceActions(
-                title: '来源',
-                display: DisplayType.comfortableGrid,
-                canSave: false,
-                local: false,
-                hasFilters: true,
-                filtering: true,
-                notes: '网站自己的说明内容',
-              ),
-            );
-          },
-          child: const Text('打开'),
+  testWidgets(
+    'source tools run in place and only look up plugin filters on open',
+    (tester) async {
+      SourceCatalogAction? result;
+      var reads = 0;
+      await mount(
+        tester,
+        MobileSourceMenu(
+          canSave: false,
+          local: false,
+          hasFilters: () => ++reads > 0,
+          filtering: true,
+          onSelected: (choice) => result = choice,
         ),
-      ),
-    );
-    await tester.tap(find.text('打开'));
-    await tester.pumpAndSettle();
-    expect(find.text('保存当前搜索'), findsNothing);
-    expect(find.text('在浏览器打开'), findsNothing);
-    expect(find.text('网站自己的说明内容'), findsNothing);
-    await tester.tap(find.text('网站说明'));
-    await tester.pumpAndSettle();
-    expect(find.text('网站自己的说明内容'), findsOneWidget);
-    expect(find.text('显示方式'), findsOneWidget);
-    await tester.tap(find.text('仅封面'));
-    await tester.pumpAndSettle();
-    expect(result, DisplayType.compactGrid);
-    await tester.tap(find.text('打开'));
-    await tester.pumpAndSettle();
-    expect(find.text('已应用'), findsOneWidget);
-    await tester.tap(find.text('筛选'));
-    await tester.pumpAndSettle();
-    expect(result, SourceCatalogAction.filter);
-  });
+      );
+      expect(reads, 0);
+      await tester.tap(find.byTooltip('来源操作'));
+      await tester.pumpAndSettle();
+      expect(reads, 1);
+      expect(find.text('保存当前搜索'), findsNothing);
+      expect(find.text('在浏览器打开'), findsNothing);
+      expect(find.text('网站说明'), findsOneWidget);
+      await tester.tap(find.text('筛选 · 已应用'));
+      await tester.pumpAndSettle();
+      expect(result, SourceCatalogAction.filter);
+    },
+  );
 
   testWidgets(
     'saved searches open directly, expose removal only in manage mode and stay source-scoped',

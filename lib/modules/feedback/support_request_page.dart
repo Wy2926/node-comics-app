@@ -36,10 +36,14 @@ class SupportRequestPage extends StatefulWidget {
     required this.kind,
     this.website,
     this.requests,
+    this.editingSession,
   });
   final SupportRequestKind kind;
   final String? website;
   final SupportRequests? requests;
+
+  /// Unsubmitted text lives only as long as the source directory that opened it.
+  final PageStorageBucket? editingSession;
 
   @override
   State<SupportRequestPage> createState() => _SupportRequestPageState();
@@ -61,7 +65,18 @@ class _SupportRequestPageState extends State<SupportRequestPage> {
   @override
   void initState() {
     super.initState();
-    _prefill();
+    final edits = widget.editingSession?.readState(
+      context,
+      identifier: widget.kind,
+    ) as (String, String, String, String)?;
+    if (edits == null) {
+      _prefill();
+    } else {
+      _name.text = edits.$1;
+      _url.text = edits.$2;
+      _comment.text = edits.$3;
+      _contact.text = edits.$4;
+    }
     _load();
   }
 
@@ -157,6 +172,15 @@ class _SupportRequestPageState extends State<SupportRequestPage> {
 
   @override
   void dispose() {
+    if (!_loading && !_loadFailed) {
+      widget.editingSession?.writeState(
+        context,
+        _draft == null
+            ? (_name.text, _url.text, _comment.text, _contact.text)
+            : null,
+        identifier: widget.kind,
+      );
+    }
     _requests.close();
     for (final controller in [_name, _url, _comment, _contact]) {
       controller.dispose();

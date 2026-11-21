@@ -120,6 +120,7 @@ class DetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
             const SizedBox(width: NodeLaneTokens.space8),
           ],
           MobileMangaDetailActionsButton(
+            key: ValueKey(manga.id),
             title: mobileManga ? null : l10n.more,
             bookTitle: manga.name ?? '',
             localArchive: isLocalArchive,

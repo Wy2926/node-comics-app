@@ -1,139 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
-enum SourceCatalogAction { save, saved, settings, filter }
+enum SourceCatalogAction { save, saved, settings, info, filter }
 
-class MobileSourceActions extends StatefulWidget {
-  const MobileSourceActions({
+class MobileSourceMenu extends StatelessWidget {
+  const MobileSourceMenu({
     super.key,
-    required this.title,
-    required this.display,
     required this.canSave,
     required this.local,
-    this.host,
-    this.notes,
-    this.hasFilters = false,
-    this.filtering = false,
+    required this.hasFilters,
+    required this.filtering,
+    required this.onSelected,
   });
-  final String title;
-  final String? host, notes;
-  final DisplayType display;
-  final bool canSave, local, hasFilters, filtering;
-  @override
-  State<MobileSourceActions> createState() => _MobileSourceActionsState();
-}
+  final bool canSave, local, filtering;
+  // Some plugins execute code to describe their filters. Ask only on opening.
+  final bool Function() hasFilters;
+  final ValueChanged<SourceCatalogAction> onSelected;
 
-class _MobileSourceActionsState extends State<MobileSourceActions> {
-  bool showNotes = false;
   @override
   Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
-    void choose(Object value) => Navigator.pop(context, value);
-    return MobileBrowsePage.form(
-      title: widget.title,
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          NodeLaneTokens.gutter,
-          0,
-          NodeLaneTokens.gutter,
-          NodeLaneTokens.space20,
+    final l = context.l10n, icons = NodeLaneIcons.of(context);
+    PopupMenuItem<SourceCatalogAction> item(
+      SourceCatalogAction action,
+      String label,
+      IconData icon,
+    ) => nodeLaneSelectionMenuItem(
+      context,
+      value: action,
+      label: label,
+      icon: icon,
+    );
+    return NodeLaneMenuButton<SourceCatalogAction>(
+      icon: icons.more,
+      tooltip: l.source_actions,
+      onSelected: onSelected,
+      itemBuilder: (_) => [
+        if (hasFilters())
+          item(
+            SourceCatalogAction.filter,
+            filtering ? '${l.filter} · ${l.source_filter_active}' : l.filter,
+            icons.adjustments,
+          ),
+        if (canSave)
+          item(
+            SourceCatalogAction.save,
+            l.source_save_search,
+            icons.bookmarkOutline,
+          ),
+        item(
+          SourceCatalogAction.saved,
+          l.source_saved_searches,
+          icons.bookmark,
         ),
-        children: [
-          if (widget.host != null) Text(widget.host!, style: t.secondary),
-          NodeLaneCatalogHeading(context.l10n.source_display),
-          NodeLaneSegments<DisplayType>(
-            value: widget.display,
-            labelStyle: t.readerLabel,
-            segments: [
-              ButtonSegment(
-                value: DisplayType.comfortableGrid,
-                label: Text(context.l10n.source_cover_title),
-              ),
-              ButtonSegment(
-                value: DisplayType.compactGrid,
-                label: Text(context.l10n.source_cover_only),
-              ),
-              ButtonSegment(
-                value: DisplayType.list,
-                label: Text(context.l10n.list),
-              ),
-            ],
-            onChanged: choose,
+        if (!local) ...[
+          const PopupMenuDivider(),
+          item(SourceCatalogAction.info, l.source_website_info, icons.info),
+          item(
+            SourceCatalogAction.settings,
+            l.sources_settings,
+            icons.settings,
           ),
-          if (widget.hasFilters) ...[
-            const SizedBox(height: NodeLaneTokens.space16),
-            NodeLaneRow.card(
-              title: context.l10n.filter,
-              icon: icons.adjustments,
-              value: widget.filtering
-                  ? context.l10n.source_filter_active
-                  : null,
-              onTap: () => choose(SourceCatalogAction.filter),
-            ),
-          ],
-          const SizedBox(height: 20),
-          NodeLaneGroupSurface(
-            children: [
-              if (widget.canSave)
-                NodeLaneRow(
-                  title: context.l10n.source_save_search,
-                  icon: icons.bookmarkOutline,
-                  onTap: () => choose(SourceCatalogAction.save),
-                ),
-              NodeLaneRow(
-                title: context.l10n.source_saved_searches,
-                icon: icons.manga,
-                onTap: () => choose(SourceCatalogAction.saved),
-              ),
-            ],
-          ),
-          if (!widget.local) ...[
-            const SizedBox(height: 20),
-            NodeLaneGroupSurface(
-              children: [
-                NodeLaneRow(
-                  title: context.l10n.sources_settings,
-                  icon: icons.settings,
-                  onTap: () => choose(SourceCatalogAction.settings),
-                ),
-              ],
-            ),
-          ],
-          if (widget.notes?.trim().isNotEmpty == true) ...[
-            const SizedBox(height: NodeLaneTokens.space20),
-            NodeLaneGroupSurface(
-              children: [
-                NodeLaneRow(
-                  title: context.l10n.source_website_info,
-                  icon: icons.info,
-                  trailing: Icon(
-                    showNotes ? icons.down : icons.forward,
-                    size: NodeLaneTokens.smallIconSize,
-                    color: t.muted,
-                  ),
-                  onTap: () => setState(() => showNotes = !showNotes),
-                ),
-                if (showNotes)
-                  Padding(
-                    padding: NodeLaneTokens.groupPadding,
-                    child: SelectableText(
-                      widget.notes!,
-                      style: t.readerSecondary,
-                    ),
-                  ),
-              ],
-            ),
-          ],
         ],
-      ),
+      ],
     );
   }
 }
@@ -161,6 +95,15 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
         const <SavedSearch>[];
     return MobileBrowsePage.form(
       title: context.l10n.source_saved_searches,
+      actions: [
+        if (entries.isNotEmpty)
+          TextButton(
+            onPressed: () => setState(() => managing = !managing),
+            child: Text(
+              managing ? context.l10n.action_done : context.l10n.manage,
+            ),
+          ),
+      ],
       body: ListView(
         padding: NodeLaneTokens.pagePadding,
         children: [
@@ -168,16 +111,7 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
             context.l10n.source_saved_search_title(widget.title),
             style: t.secondary,
           ),
-          if (entries.isNotEmpty)
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => setState(() => managing = !managing),
-                child: Text(
-                  managing ? context.l10n.action_done : context.l10n.manage,
-                ),
-              ),
-            ),
+          const SizedBox(height: NodeLaneTokens.space12),
           for (var i = 0; i < entries.length; i++)
             NodeLaneRow.card(
               title: entries[i].name,

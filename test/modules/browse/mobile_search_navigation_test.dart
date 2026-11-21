@@ -519,6 +519,26 @@ void main() {
           matching: find.byType(TextField),
         );
         await tester.enterText(draft, 'unfinished search');
+        await tester.tap(find.byTooltip('Display'));
+        await tester.pumpAndSettle();
+        final coverChoice = find.widgetWithText(
+          CheckedPopupMenuItem<DisplayType>,
+          'Cover and title',
+        );
+        await tester.tap(coverChoice);
+        await tester.pumpAndSettle();
+        expect(reads, [name]);
+        expect(find.text('unfinished search'), findsOneWidget);
+        await tester.tap(find.byTooltip('Display'));
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<CheckedPopupMenuItem<DisplayType>>(coverChoice).checked,
+          isTrue,
+        );
+        await tester.tap(
+          find.widgetWithText(CheckedPopupMenuItem<DisplayType>, 'List'),
+        );
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Book $name'));
         // The Isar ID is resolved before the detail opens; its remote contents
         // are independent of the pane navigation exercised here.

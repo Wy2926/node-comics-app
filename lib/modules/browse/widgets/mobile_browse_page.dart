@@ -23,9 +23,9 @@ class MobileBrowsePage extends StatelessWidget {
     super.key,
     required this.title,
     required this.body,
+    this.actions,
     this.bottomAction,
   }) : leading = null,
-       actions = null,
        _form = true;
 
   final String title;

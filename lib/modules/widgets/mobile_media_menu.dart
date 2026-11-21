@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -44,6 +45,7 @@ class MobileMediaMenu extends StatelessWidget {
         enabled: types.length > 1,
         useRootNavigator: true,
         position: PopupMenuPosition.under,
+        popUpAnimationStyle: NodeLaneMotion.menu(context),
         offset: const Offset(0, 6),
         constraints: const BoxConstraints(minWidth: 220, maxWidth: 320),
         borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),

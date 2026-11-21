@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
 import 'package:mangayomi/eval/model/filter.dart';
@@ -258,7 +259,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           !identical(results, _results) ||
           revision != results.revision ||
           identical(results.notifiedError, error) ||
-          !TickerMode.of(context) ||
+          !TickerMode.valuesOf(context).enabled ||
           ModalRoute.of(context)?.isCurrent == false) {
         return;
       }
@@ -366,7 +367,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   }
 
   void _onScroll() {
-    if (TickerMode.of(context) &&
+    if (TickerMode.valuesOf(context).enabled &&
         _scrollController.position.extentAfter < 240 &&
         _results.items.isNotEmpty &&
         _results.pageError == null) {
@@ -494,29 +495,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     }
   }
 
-  Future<void> _mobileOptions(DisplayType display) async {
-    final choice = await pushBrowsePage<Object>(
-      context,
-      MobileSourceActions(
-        title: source.name ?? '',
-        host: isLocal ? null : Uri.tryParse(source.baseUrl ?? '')?.host,
-        display: display,
-        canSave: _query.trim().isNotEmpty,
-        local: isLocal,
-        notes: source.notes,
-        hasFilters: _defaultFilters.isNotEmpty,
-        filtering: _isFiltering,
-      ),
-    );
-    if (choice == null || !mounted) return;
-    if (choice is DisplayType) {
-      if (choice != display) {
-        ref
-            .read(mangaHomeDisplayTypeStateProvider.notifier)
-            .setMangaHomeDisplayType(choice);
-      }
-      return;
-    }
+  Future<void> _mobileAction(SourceCatalogAction choice) async {
+    FocusScope.of(context).unfocus();
     switch (choice) {
       case SourceCatalogAction.save:
         await _promptSaveSearch();
@@ -524,6 +504,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
         await _showSavedSearches();
       case SourceCatalogAction.settings:
         await _onSourceOverflow(1);
+      case SourceCatalogAction.info:
+        await showSourceWebsiteInfo(context, source);
       case SourceCatalogAction.filter:
         await _mobileFilters();
     }
@@ -574,7 +556,21 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       supportsLatest: supportsLatest,
       filtering: _isFiltering,
       onSelect: _select,
-      onOptions: () => _mobileOptions(display),
+      menu: MobileSourceMenu(
+        local: isLocal,
+        canSave: _query.trim().isNotEmpty,
+        hasFilters: () => _defaultFilters.isNotEmpty,
+        filtering: _isFiltering,
+        onSelected: _mobileAction,
+      ),
+      display: display,
+      onDisplay: (value) {
+        if (value != display) {
+          ref
+              .read(mangaHomeDisplayTypeStateProvider.notifier)
+              .setMangaHomeDisplayType(value);
+        }
+      },
       onBrowser: canOpenWebsite ? () => _onSourceOverflow(0) : null,
       results: RefreshIndicator(
         onRefresh: _refresh,
