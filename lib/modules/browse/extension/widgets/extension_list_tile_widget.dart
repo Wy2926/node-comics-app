@@ -80,7 +80,11 @@ class _ExtensionListTileWidgetState
 
   void _openDetail(BuildContext context) {
     if (NodeLaneBubbleFlow.contains(context)) {
-      NodeLaneBubbleFlow.push(context, ExtensionDetail(source: widget.source));
+      NodeLaneBubbleFlow.open<void>(
+        context,
+        title: context.l10n.settings_source_preferences,
+        child: ExtensionDetail(source: widget.source),
+      );
     } else {
       context.push('/extension_detail', extra: widget.source);
     }

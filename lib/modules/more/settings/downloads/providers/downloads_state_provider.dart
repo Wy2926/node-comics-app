@@ -97,19 +97,6 @@ class AllowConcurrentDownloadsState extends _$AllowConcurrentDownloadsState {
 }
 
 @riverpod
-class AskDownloadDestinationState extends _$AskDownloadDestinationState {
-  @override
-  bool build() {
-    return settingsRepository.current.askDownloadDestination ?? true;
-  }
-
-  void set(bool value) {
-    state = value;
-    settingsRepository.update((s) => s.askDownloadDestination = value);
-  }
-}
-
-@riverpod
 class DownloadDelaySecondsState extends _$DownloadDelaySecondsState {
   @override
   int build() {

@@ -1,6 +1,7 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
@@ -22,6 +23,7 @@ import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
 import 'package:mangayomi/modules/widgets/listview_widget.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/services/get_popular.dart';
 import 'package:mangayomi/services/get_latest_updates.dart';
@@ -362,6 +364,131 @@ void main() {
         await database.close(deleteFromDisk: true);
         await directory.delete(recursive: true);
       });
+
+      testWidgets(
+        'live source tools debounce text, isolate in-flight filters and restore the latest tab',
+        (tester) async {
+          final site = Source(
+            id: 712,
+            name: 'Filter fixture',
+            lang: 'en',
+            supportLatest: true,
+            filterList: jsonEncode(
+              FilterList([
+                TextFilter('author', 'Author', 'TextFilter'),
+                GroupFilter('genres', 'Genres', [
+                  CheckBoxFilter('genre', 'Adventure', 'wire', 'CheckBox'),
+                ], 'GroupFilter'),
+                SelectFilter('catalog', 'Collection', 0, [
+                  for (var i = 0; i < 10; i++)
+                    SelectFilterOption('Edition $i', 'k$i', 'SelectOption'),
+                ], 'SelectFilter'),
+              ]).toJson(),
+            ),
+          )..sourceCodeLanguage = SourceCodeLanguage.mihon;
+          final stale = Completer<MPages?>();
+          final requests = <List<dynamic>>[];
+          var latestReads = 0;
+          await tester.runAsync(
+            () => mount(
+              tester,
+              ProviderScope(
+                overrides: [
+                  headersProvider.overrideWith((_, _) => {}),
+                  getLatestUpdatesProvider.overrideWith((_, _) async {
+                    latestReads++;
+                    return MPages(list: [_book('Latest title')]);
+                  }),
+                  searchProvider.overrideWith((_, args) async {
+                    requests.add(args.filterList);
+                    if (requests.length == 1) return stale.future;
+                    return MPages(list: [_book('Newest result')]);
+                  }),
+                ],
+                child: MangaHomeScreen(
+                  source: site,
+                  isLatest: true,
+                  onOpenDetail: (_) {},
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byTooltip('Source actions'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Filter'));
+          await tester.pumpAndSettle();
+          final editor = find.byType(MobileSourceFilterPage);
+          final field = find.descendant(
+            of: editor,
+            matching: find.byType(TextField),
+          );
+          expect(NodeLaneBubbleFlow.contains(tester.element(editor)), isTrue);
+          expect(find.text('Apply filters'), findsNothing);
+          await tester.ensureVisible(find.text('Collection'));
+          await tester.tap(find.text('Collection'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byType(TextField).hitTestable(),
+            'Edition 9',
+          );
+          await tester.pumpAndSettle();
+          expect(
+            find.widgetWithText(NodeLaneRow, 'Edition 9').hitTestable(),
+            findsOneWidget,
+          );
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+          expect(editor.hitTestable(), findsOneWidget);
+          expect(requests, isEmpty);
+          await tester.ensureVisible(find.byType(NodeLaneSwitch));
+          await tester.tap(find.byType(NodeLaneSwitch));
+          await tester.pump();
+          expect(requests, hasLength(1));
+          await tester.enterText(field, 's');
+          await tester.pump(const Duration(milliseconds: 100));
+          await tester.enterText(field, 'sea');
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(requests, hasLength(1));
+          await tester.binding.handlePopRoute();
+          await tester.pump(const Duration(milliseconds: 350));
+          await tester.pump();
+          expect(requests, hasLength(2));
+          expect((requests.last.first as TextFilter).state, 'sea');
+          expect((requests.first.first as TextFilter).state, '');
+          expect(
+            ((requests.last[1] as GroupFilter).state.single as CheckBoxFilter)
+                .value,
+            'wire',
+          );
+          stale.complete(MPages(list: [_book('Stale result')]));
+          await tester.pumpAndSettle();
+          expect(find.text('Newest result'), findsOneWidget);
+          expect(find.text('Stale result'), findsNothing);
+          await tester.tap(find.text('Filter · Applied'));
+          await tester.pumpAndSettle();
+          expect(tester.widget<TextField>(field).controller!.text, 'sea');
+          await tester.tap(
+            find.descendant(of: editor, matching: find.text('Reset')),
+          );
+          await tester.pumpAndSettle();
+          expect(find.text('Latest title'), findsOneWidget);
+          expect(latestReads, 1);
+          expect(requests, hasLength(2));
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+          expect(find.text('Filter').hitTestable(), findsOneWidget);
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+          expect(
+            find.byTooltip('Source actions').hitTestable(),
+            findsOneWidget,
+          );
+          await tester.pumpWidget(const SizedBox());
+          await tester.runAsync(() => database.mangas.count());
+          expect(tester.takeException(), isNull);
+        },
+      );
 
       testWidgets(
         'browse tabs retain pagination, in-flight pages and position until leaving the source',

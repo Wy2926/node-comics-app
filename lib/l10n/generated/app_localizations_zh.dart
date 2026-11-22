@@ -654,6 +654,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get downloaded_only => '仅已下载';
 
   @override
+  String get downloaded_only_hint => '书架只显示有下载内容的作品。';
+
+  @override
+  String get incognito_mode_hint => '暂停保存阅读和播放进度。';
+
+  @override
   String get download_queue => '下载队列';
 
   @override
@@ -4505,11 +4511,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get search_scope => '搜索范围';
 
   @override
-  String search_websites_action(int count) {
-    return '搜索这 $count 个网站';
-  }
-
-  @override
   String get search_find_website => '查找网站';
 
   @override
@@ -5878,6 +5879,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get downloaded_only => '僅已下載';
+
+  @override
+  String get downloaded_only_hint => '書架只顯示有下載內容的作品。';
+
+  @override
+  String get incognito_mode_hint => '暫停儲存閱讀和播放進度。';
 
   @override
   String get download_queue => '下載佇列';
@@ -9729,11 +9736,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get search_scope => '搜尋範圍';
-
-  @override
-  String search_websites_action(int count) {
-    return '搜尋這 $count 個網站';
-  }
 
   @override
   String get search_find_website => '查詢網站';

@@ -1,13 +1,17 @@
+import 'dart:async';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/download.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/download_queue/mobile_download_queue.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/updates/widgets/download_queue_button.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 
 Download entry(
   int id,
@@ -43,6 +47,66 @@ Download entry(
 }
 
 void main() {
+  testWidgets(
+    'queue shortcut stays reachable when empty and keeps the update search on return',
+    (tester) async {
+      final counts = StreamController<int>();
+      addTearDown(counts.close);
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => const Scaffold(
+              body: Row(
+                children: [
+                  Expanded(child: TextField()),
+                  DownloadQueueButton(),
+                ],
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/downloadQueue',
+            builder: (_, _) => const Scaffold(body: Text('Queue contents')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            pendingDownloadCountProvider.overrideWith((_) => counts.stream),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      counts.add(0);
+      await tester.pumpAndSettle();
+      final button = find.byTooltip('Download Queue');
+      expect(button.hitTestable(), findsOneWidget);
+      expect(find.text('0'), findsNothing);
+      await tester.enterText(find.byType(TextField), 'chapter 12');
+      counts.add(3);
+      await tester.pumpAndSettle();
+      expect(find.text('3'), findsOneWidget);
+      expect(find.bySemanticsLabel('3 pending'), findsOneWidget);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(find.text('Queue contents'), findsOneWidget);
+      counts.add(0);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('chapter 12'), findsOneWidget);
+      expect(find.text('3'), findsNothing);
+      expect(button.hitTestable(), findsOneWidget);
+    },
+  );
+
   testWidgets(
     'queue actions stay separate while sorting, starting and scrolling at large text',
     (tester) async {
@@ -89,7 +153,7 @@ void main() {
                   starts++;
                   starting = true;
                 }),
-                onSettings: () => settings++,
+                onSettings: (_) => settings++,
                 onReorder: (from, to) => setState(() {
                   moves.add((from, to));
                   entries = entries.toList();
@@ -206,7 +270,7 @@ void main() {
   );
 
   testWidgets(
-    'action sheet is compact, dismissible and checks the live queue',
+    'action bubble is compact, dismissible and checks the live queue',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
@@ -237,7 +301,7 @@ void main() {
                 isStarting: false,
                 onStart: () {},
                 onReorder: (_, _) {},
-                onSettings: () {},
+                onSettings: (_) {},
                 onCancel: cancelled.add,
                 onCancelSeries: cancelledSeries.add,
               ),
@@ -258,20 +322,27 @@ void main() {
       open();
       open();
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.byType(NodeLaneBubblePanel), findsOneWidget);
       expect(
-        tester.getSize(find.byType(NodeLaneReaderSurface)).height,
+        tester.getSize(find.byType(NodeLaneBubblePanel)).height,
         lessThan(400),
       );
       final subtitle = tester.getRect(find.text('Series · Chapter 1'));
       final firstAction = tester.getRect(
         find.text('Cancel this chapter’s download'),
       );
-      expect(subtitle.left, 20);
+      expect(
+        subtitle.left,
+        greaterThanOrEqualTo(
+          tester.getRect(find.byType(NodeLaneBubblePanel)).left,
+        ),
+      );
       expect(subtitle.bottom, lessThan(firstAction.top));
       expect(
-        844 - tester.getBottomLeft(find.byType(NodeLaneGroupSurface).last).dy,
-        closeTo(34 + 24, .01),
+        tester.getBottomLeft(find.byType(NodeLaneGroupSurface).last).dy,
+        lessThanOrEqualTo(
+          tester.getBottomLeft(find.byType(NodeLaneBubblePanel)).dy,
+        ),
       );
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
@@ -315,7 +386,7 @@ void main() {
           .intersect(
             tester.getRect(
               find.descendant(
-                of: find.byType(NodeLaneCatalogSheet),
+                of: find.byType(NodeLaneBubblePanel),
                 matching: find.byType(SingleChildScrollView),
               ),
             ),

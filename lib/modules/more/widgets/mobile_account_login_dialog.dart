@@ -1,4 +1,4 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -104,12 +104,13 @@ class _MobileAccountLoginDialogState extends State<MobileAccountLoginDialog> {
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !_busy,
-    child: NodeLaneCatalogSheet(
+    child: NodeLaneBubblePanel(
       title: widget.title,
-      canClose: !_busy,
-      fitContent: true,
-      heightFactor: .9,
-      bottom: NodeLaneModalActions(
+      closeButton: NodeLaneCloseButton(
+        tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+        onPressed: _busy ? null : () => Navigator.maybePop(context),
+      ),
+      footer: NodeLaneModalActions(
         actions: [
           NodeLaneDialogAction(
             label: widget.submitLabel,

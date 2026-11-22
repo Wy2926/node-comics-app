@@ -34,6 +34,7 @@ class IncognitoModeWidget extends ConsumerWidget {
     if (mobile) {
       return NodeLaneSwitchRow(
         title: l10n.incognito_mode,
+        subtitle: l10n.incognito_mode_hint,
         icon: NodeLaneIcons.of(context).incognito,
         value: incognitoMode,
         onChanged: change,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:mangayomi/modules/novel/tts/novel_tts_service.dart';
 import 'package:mangayomi/modules/novel/tts/tts_settings_tab.dart';
 import 'package:mangayomi/modules/novel/widgets/novel_general_settings_tab.dart';
@@ -19,7 +20,9 @@ class NovelReaderScreen extends ConsumerWidget {
     final ttsSupported = NovelTtsService.instance.isSupported;
     if (isMobile && !isTv) {
       return MobileNovelReaderScreen(
-        onOpenTts: ttsSupported ? () => context.push('/ttsSettings') : null,
+        onOpenTts: ttsSupported
+            ? (anchor) => anchor.push('/ttsSettings')
+            : null,
       );
     }
     return DefaultTabController(

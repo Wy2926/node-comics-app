@@ -1,4 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import '../../helpers/bubble_finders.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_number_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -56,6 +59,9 @@ void main() {
   }
 
   Future<void> tap(WidgetTester tester, Finder finder) async {
+    if (find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty) {
+      finder = await revealBubble(tester, finder);
+    }
     await tester.ensureVisible(finder);
     await tester.pumpAndSettle();
     await tester.tap(finder);
@@ -138,12 +144,9 @@ void main() {
         tester.getRect(find.byKey(const ValueKey('page-viewport'))),
         viewport,
       );
-      tester
-          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
-          .scrollController!
-          .jumpToItem(9);
+      await tester.tap(find.byTooltip('Increase'));
       await tester.pumpAndSettle();
-      await tap(tester, find.text('Font size'));
+      await tap(tester, find.byTooltip('Close'));
       await tap(tester, find.text('Text-to-Speech'));
       await tap(tester, find.text('Settings'));
       expect(actions, ['next', 'chapters', 'font', 'listen', 'settings']);
@@ -225,7 +228,7 @@ void main() {
   );
 
   testWidgets(
-    'font popover saves only after scrolling stops and fits at large text',
+    'font bubble previews the drag and saves on release at large text',
     (tester) async {
       var value = 16;
       final writes = <int>[];
@@ -233,7 +236,8 @@ void main() {
         tester,
         Scaffold(
           body: StatefulBuilder(
-            builder: (context, setState) => NodeLaneNumberPicker(
+            builder: (context, setState) => NodeLaneNumberButton(
+              title: 'Font size',
               value: value,
               min: 8,
               max: 40,
@@ -249,9 +253,9 @@ void main() {
         ),
       );
       await tap(tester, find.text('Font size'));
-      final wheel = find.byType(CupertinoPicker);
-      final gesture = await tester.startGesture(tester.getCenter(wheel));
-      await gesture.moveBy(const Offset(0, -90));
+      final slider = find.byType(Slider);
+      final gesture = await tester.startGesture(tester.getCenter(slider));
+      await gesture.moveBy(const Offset(85, 0));
       await tester.pump();
       expect(writes, isEmpty);
       await gesture.up();
@@ -294,7 +298,7 @@ void main() {
         container: container,
       );
       await tap(tester, find.text('Reading mode').last);
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(modes, isEmpty);
       await tap(tester, find.text('Page mode'));
@@ -308,6 +312,7 @@ void main() {
       expect(find.byType(Slider), findsNothing);
       await tap(tester, find.text('Auto scroll'));
       expect(auto.value, isTrue);
+      await tap(tester, find.text('Speed'));
       final slider = find.byType(Slider);
       await tester.ensureVisible(slider);
       await tester.pumpAndSettle();
@@ -319,9 +324,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(speeds, hasLength(1));
       expect(speed.value, speeds.single);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       await tap(tester, find.text('Auto scroll'));
       expect(find.byType(Slider), findsNothing);
       await tap(tester, find.text('Auto scroll'));
+      await tap(tester, find.text('Speed'));
       expect(tester.widget<Slider>(slider).value, speeds.single);
       expect(tester.takeException(), isNull);
     },

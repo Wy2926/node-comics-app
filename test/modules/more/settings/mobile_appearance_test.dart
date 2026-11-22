@@ -1,3 +1,5 @@
+import '../../../helpers/bubble_finders.dart';
+
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
@@ -78,9 +80,11 @@ void main() {
   }
 
   Future<void> choose(WidgetTester tester, String label) async {
-    await tester.ensureVisible(find.text(label).last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(label).last);
+    final option = await revealBubble(
+      tester,
+      find.widgetWithText(NodeLaneRow, label),
+    );
+    await tester.tap(option);
     await tester.pumpAndSettle();
   }
 
@@ -91,7 +95,7 @@ void main() {
       expect(find.byType(TextField), findsOneWidget);
       final locale =
           container.read(l10nLocaleStateProvider.notifier) as _Locale;
-      await tester.tap(find.byTooltip('Back'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       container.read(themeModeStateProvider.notifier).setTheme(Brightness.dark);
       await tester.pumpAndSettle();
@@ -127,8 +131,9 @@ void main() {
       await tester.enterText(find.byType(TextField), '中文');
       await tester.pumpAndSettle();
       expect(find.text('简体中文'), findsOneWidget);
-      expect(find.text('繁體中文'), findsOneWidget);
-      await tester.tap(find.byTooltip('Back'));
+      await revealBubble(tester, find.text('繁體中文'));
+      expect(inBubble(find.text('繁體中文')), findsOneWidget);
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(locale.writes, isEmpty);
       await tester.tap(language);
@@ -158,12 +163,17 @@ void main() {
           container.read(l10nLocaleStateProvider.notifier) as _Locale;
       for (final locale in nodeLaneSupportedLocales) {
         await open(tester, 'App language');
-        expect(
-          tester
-              .widgetList<NodeLaneRow>(find.byType(NodeLaneRow))
-              .map((row) => row.title),
-          nodeLaneLanguageNames.values,
-        );
+        final current = nodeLaneLanguageName(locale);
+        // Scroll the actual bounded list at least once, then filter by the localized name.
+        if (locale == nodeLaneSupportedLocales.first) {
+          await revealBubble(
+            tester,
+            find.text(nodeLaneLanguageNames.values.last),
+          );
+          await revealBubble(tester, find.byType(TextField), delta: -200);
+        }
+        await tester.enterText(inBubble(find.byType(TextField)), current);
+        await tester.pumpAndSettle();
         await choose(tester, nodeLaneLanguageName(locale));
         expect(container.read(l10nLocaleStateProvider), locale);
         expect(
@@ -245,7 +255,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Clear search'));
       await tester.pumpAndSettle();
       expect(find.text('No result'), findsNothing);
-      await tester.tap(find.byTooltip('Back'));
+      await tester.binding.handlePopRoute();
       tester.view.viewInsets = FakeViewPadding.zero;
       await tester.pumpAndSettle();
       expect(font.writes, isEmpty);
@@ -256,6 +266,7 @@ void main() {
 
       await tester.scrollUntilVisible(find.text('Interface scale'), -300);
       await tester.pumpAndSettle();
+      await open(tester, 'Interface scale');
       final slider = find.byWidgetPredicate(
         (widget) => widget is Slider && widget.min == .85,
       );

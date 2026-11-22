@@ -1,12 +1,13 @@
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/more/widgets/incognito_mode_widget.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
-/// Presentation only. System authentication and preference writes stay in
-/// SecurityScreen; the app's existing lifecycle listener owns relocking.
+/// SecurityScreen owns device authentication; incognito is independent of it.
 class MobileSecuritySettingsView extends StatelessWidget {
   const MobileSecuritySettingsView({
     super.key,
@@ -33,39 +34,34 @@ class MobileSecuritySettingsView extends StatelessWidget {
         : canAuthenticate
         ? l10n.require_biometric_or_device_credential
         : l10n.biometric_or_device_credential_not_available;
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: l10n.security),
-        body: SafeArea(
-          top: false,
-          child: MobileSettingsList(
-            padding: NodeLaneTokens.pagePadding,
+    return MobileBrowsePage(
+      title: l10n.settings_security_privacy,
+      body: MobileSettingsList(
+        children: [
+          MobileSettingsGroup(
             children: [
-              MobileSettingsGroup(
-                children: [
-                  NodeLaneSwitchRow(
-                    title: l10n.app_lock,
-                    subtitle: subtitle,
-                    icon: NodeLaneIcons.of(context).security,
-                    value: enabled,
-                    onChanged: onChanged,
-                  ),
-                ],
+              const IncognitoModeWidget(mobile: true),
+              NodeLaneSwitchRow(
+                title: l10n.app_lock,
+                subtitle: subtitle,
+                icon: NodeLaneIcons.of(context).security,
+                value: enabled,
+                onChanged: onChanged,
               ),
-              if (authenticationIncomplete)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 20),
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Text(
-                      l10n.device_authentication_incomplete,
-                      style: colors.readerSecondary.copyWith(color: colors.ink),
-                    ),
-                  ),
-                ),
             ],
           ),
-        ),
+          if (authenticationIncomplete)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 20),
+              child: Semantics(
+                liveRegion: true,
+                child: Text(
+                  l10n.device_authentication_incomplete,
+                  style: colors.readerSecondary.copyWith(color: colors.ink),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

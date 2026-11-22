@@ -320,6 +320,8 @@
   "clean_database_desc": "سيؤدي هذا إلى إزالة جميع العناصر التي لم تتم إضافتها إلى المكتبة!",
   "incognito_mode": "وضع التخفي",
   "downloaded_only": "المحملة فقط",
+  "downloaded_only_hint": "اعرض في المكتبة الأعمال التي لها محتوى مُنزّل فقط.",
+  "incognito_mode_hint": "أوقف حفظ تقدم القراءة والتشغيل مؤقتًا.",
   "download_queue": "قائمة الانتظار للتحميل",
   "categories": "الفئات",
   "statistics": "الإحصائيات",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "نطاق البحث",
-  "search_websites_action": "البحث في المواقع: {count}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "البحث عن موقع على الانترنت",
   "search_selected_websites": "المواقع المحددة: {count}",
   "@search_selected_websites": {

@@ -1,3 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -13,7 +15,9 @@ import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/widgets/global_search_result_card.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
+import 'package:mangayomi/modules/manga/detail/manga_detail_main.dart';
+import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -23,6 +27,7 @@ import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/utils/list_extent_precalculation.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -52,6 +57,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
   late List<Source> sourceList;
   late SourceSearchScope _scope;
   final _activity = ValueNotifier<Map<int, SourceSearchActivity>>({});
+  final _levels = SourceBrowseHistory<Source>();
+  int? _bookSource;
 
   bool _isVisible(Source source) =>
       ref.read(showNSFWStateProvider) || source.isNsfw != true;
@@ -64,21 +71,34 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
         .toList();
   }
 
-  Future<void> _editScope() async {
+  Future<void> _editScope(BuildContext anchor) async {
     FocusScope.of(context).unfocus();
     final candidates = sourceRepository
         .getAddedByItemType(widget.itemType)
         .where(_isVisible)
         .toList();
-    final result = await pushBrowsePage<SourceSearchScope>(
-      context,
-      SourceSearchScopePage(sources: candidates, current: _scope),
+    await NodeLaneBubbleFlow.open<void>(
+      anchor,
+      title: context.l10n.search_scope,
+      child: SourceSearchScopePanel(
+        sources: candidates,
+        current: _scope,
+        onChanged: _setScope,
+      ),
     );
-    if (!mounted || result == null) return;
+  }
+
+  void _setScope(SourceSearchScope result) {
+    if (!mounted) return;
     setState(() {
       _scope = result;
       _readSources();
       final ids = sourceList.map((s) => s.id).toSet();
+      final (:site, :book, visit: _) = _levels.value;
+      if ((site != null && !ids.contains(site.id)) ||
+          (book != null && !ids.contains(_bookSource))) {
+        _levels.clear();
+      }
       _activity.value = {
         for (final entry in _activity.value.entries)
           if (ids.contains(entry.key)) entry.key: entry.value,
@@ -87,17 +107,18 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     });
   }
 
-  void _showActivity() {
+  void _showActivity(BuildContext anchor) {
     FocusScope.of(context).unfocus();
-    pushBrowsePage<void>(
-      context,
-      SearchActivityPage(
+    NodeLaneBubbleFlow.open<void>(
+      anchor,
+      title: context.l10n.search_details,
+      child: SearchActivityPage(
         query: _query,
         sources: sourceList,
         activity: _activity,
         onOpen: (source) {
           Navigator.of(context, rootNavigator: true).pop();
-          _openSearchSource(context, source, _query);
+          _openSite(source);
         },
       ),
     );
@@ -121,11 +142,36 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     final query = value.trim();
     _textEditingController.text = query;
     if (_query == query) return;
+    _levels.clear();
     setState(() {
       _query = query;
       _searchVersion++;
       _activity.value = {};
     });
+  }
+
+  void _openSite(Source source) {
+    FocusScope.of(context).unfocus();
+    if (!context.isTouchPlatform) {
+      Navigator.push(
+        context,
+        createRoute(
+          page: MangaHomeScreen(query: _query, source: source),
+        ),
+      );
+      return;
+    }
+    _levels.openSite(context, source);
+  }
+
+  void _openBook(Source source, int id) {
+    if (!mounted || ModalRoute.isCurrentOf(context) != true) return;
+    FocusScope.of(context).unfocus();
+    if (_levels.value.site case final site? when site.id != source.id) {
+      _levels.clear();
+    }
+    _bookSource = source.id;
+    _levels.openBook(context, id);
   }
 
   void _reportActivity(
@@ -154,39 +200,86 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
             icon: NodeLaneIcons.of(context).search,
             title: context.l10n.search_start_title,
           )
-        : Column(
-            children: [
-              ValueListenableBuilder(
-                valueListenable: _activity,
-                builder: (context, activity, _) => SearchActivitySummary(
-                  total: sourceList.length,
-                  activity: activity,
-                  onDetails: _showActivity,
-                  onScope: _editScope,
-                ),
-              ),
-              for (final source in sourceList)
-                SourceSearchScreen(
-                  key: ValueKey((version, source.id)),
-                  query: query,
-                  source: source,
-                  fetchGate: _fetchGate,
-                  onActivity: (activity) =>
-                      _reportActivity(source, activity, version),
-                ),
-            ],
+        : LayoutBuilder(
+            builder: (context, box) => ValueListenableBuilder(
+              valueListenable: _activity,
+              builder: (context, activity, _) {
+                final paired =
+                    context.isTouchPlatform &&
+                    context.hasPaneWidth(box.maxWidth) &&
+                    activity.values
+                            .where((a) => a.phase == SearchPhase.results)
+                            .take(2)
+                            .length ==
+                        2;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SearchActivitySummary(
+                      total: sourceList.length,
+                      activity: activity,
+                      onDetails: _showActivity,
+                      onScope: _editScope,
+                    ),
+                    Wrap(
+                      children: [
+                        for (final source in sourceList)
+                          SourceSearchScreen(
+                            key: ValueKey((version, source.id)),
+                            query: query,
+                            source: source,
+                            fetchGate: _fetchGate,
+                            width: paired ? box.maxWidth / 2 : box.maxWidth,
+                            onOpen: () => _openSite(source),
+                            onOpenDetail: context.isTouchPlatform
+                                ? (id) => _openBook(source, id)
+                                : null,
+                            onActivity: (activity) =>
+                                _reportActivity(source, activity, version),
+                          ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
           );
-    return MobileGlobalSearchPage(
-      controller: _textEditingController,
-      onSubmit: () => _submit(_textEditingController.text),
-      onClear: () => _submit(''),
-      scope: '${_scope.mode.label(context.l10n)} · ${sourceList.length}',
-      onScope: _editScope,
-      onDetails: query.isNotEmpty && sourceList.isNotEmpty
-          ? _showActivity
-          : null,
-      query: query,
-      results: results,
+    final selecting = ref.watch(isLongPressedStateProvider);
+    return ValueListenableBuilder(
+      valueListenable: _levels,
+      child: results,
+      builder: (context, levels, child) {
+        final (:site, :book, :visit) = levels;
+        return MobileGlobalSearchPage(
+          controller: _textEditingController,
+          onSubmit: () => _submit(_textEditingController.text),
+          onClear: () => _submit(''),
+          scope: '${_scope.mode.label(context.l10n)} · ${sourceList.length}',
+          onScope: _editScope,
+          onDetails: query.isNotEmpty && sourceList.isNotEmpty
+              ? _showActivity
+              : null,
+          query: query,
+          results: child!,
+          visit: visit,
+          lockParents: book != null && selecting,
+          website: site == null
+              ? null
+              : MangaHomeScreen(
+                  key: ValueKey((site.id, query)),
+                  source: site,
+                  query: query,
+                  sharedSearch: true,
+                  activeBookId: book,
+                  onOpenDetail: (id) {
+                    if (_levels.value.site == site) _openBook(site, id);
+                  },
+                ),
+          book: book == null
+              ? null
+              : MangaReaderDetail(key: ValueKey(book), mangaId: book),
+        );
+      },
     );
   }
 
@@ -197,9 +290,11 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
       return NodeLaneEmptyState(
         icon: NodeLaneIcons.of(context).web,
         title: context.l10n.search_empty_scope,
-        action: FilledButton(
-          onPressed: _editScope,
-          child: Text(context.l10n.search_scope),
+        action: Builder(
+          builder: (anchor) => FilledButton(
+            onPressed: () => _editScope(anchor),
+            child: Text(context.l10n.search_scope),
+          ),
         ),
       );
     }
@@ -227,6 +322,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     }
     await Navigator.push(context, createRoute(page: const BrowseSScreen()));
     if (!mounted) return;
+    _levels.clear();
     setState(() {
       _readSources();
       _searchVersion++;
@@ -236,6 +332,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
 
   @override
   void dispose() {
+    _levels.dispose();
     _activity.dispose();
     _textEditingController.dispose();
     super.dispose();
@@ -246,6 +343,9 @@ class SourceSearchScreen extends ConsumerStatefulWidget {
   final String query;
 
   final Source source;
+  final double? width;
+  final VoidCallback? onOpen;
+  final ValueChanged<int>? onOpenDetail;
 
   final FetchGate fetchGate;
 
@@ -257,6 +357,9 @@ class SourceSearchScreen extends ConsumerStatefulWidget {
     required this.source,
     required this.fetchGate,
     this.onActivity,
+    this.width,
+    this.onOpen,
+    this.onOpenDetail,
   });
 
   @override
@@ -359,6 +462,7 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
         source: widget.source.name!,
         sourceId: widget.source.id,
         addToFavourite: quickAdd,
+        onOpenDetail: widget.onOpenDetail,
       );
 
   @override
@@ -372,18 +476,22 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
     }
 
     if (!isTv) {
-      return SourceResultSection(
-        title: widget.source.name ?? '',
-        metadata: context.l10n.search_result_count(pages.list.length),
-        onOpen: () => _openSearchSource(context, widget.source, widget.query),
-        count: pages.list.length,
-        itemBuilder: (context, index) => _resultCard(pages.list[index], index),
+      return SizedBox(
+        width: widget.width,
+        child: SourceResultSection(
+          title: widget.source.name ?? '',
+          metadata: context.l10n.search_result_count(pages.list.length),
+          onOpen: widget.onOpen,
+          count: pages.list.length,
+          itemBuilder: (context, index) =>
+              _resultCard(pages.list[index], index),
+        ),
       );
     }
 
     final header = ListTile(
       dense: true,
-      onTap: () => _openSearchSource(context, widget.source, widget.query),
+      onTap: widget.onOpen,
       title: Text(widget.source.name!),
       subtitle: Text(
         completeLanguageName(widget.source.lang!),
@@ -416,13 +524,4 @@ class _SourceSearchScreenState extends ConsumerState<SourceSearchScreen> {
       ),
     );
   }
-}
-
-void _openSearchSource(BuildContext context, Source source, String query) {
-  Navigator.push(
-    context,
-    createRoute(
-      page: MangaHomeScreen(query: query, source: source),
-    ),
-  );
 }

@@ -3,6 +3,7 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
@@ -68,7 +69,7 @@ class _CreateExtensionState extends State<CreateExtension> {
         title: title,
         current: current,
         options: [
-          for (var i = 0; i < options.length; i++) SourceOption(i, options[i]),
+          for (var i = 0; i < options.length; i++) SettingOption(i, options[i]),
         ],
       );
       if (mounted && value != null) setState(() => update(value));

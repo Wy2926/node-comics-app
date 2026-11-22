@@ -1,4 +1,4 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -81,12 +81,13 @@ class _MobileBackupPasswordDialogState
     );
     return PopScope(
       canPop: !_busy,
-      child: NodeLaneCatalogSheet(
+      child: NodeLaneBubblePanel(
         title: _setup ? l10n.set_backup_password : l10n.enter_backup_password,
-        canClose: !_busy,
-        fitContent: true,
-        heightFactor: .9,
-        bottom: NodeLaneModalActions(
+        closeButton: NodeLaneCloseButton(
+          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          onPressed: _busy ? null : () => Navigator.maybePop(context),
+        ),
+        footer: NodeLaneModalActions(
           actions: [
             NodeLaneDialogAction(
               label: l10n.ok,

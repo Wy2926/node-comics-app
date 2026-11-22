@@ -1,7 +1,7 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/models/download.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -23,7 +23,8 @@ class MobileDownloadQueue extends StatefulWidget {
 
   final List<Download> entries;
   final bool isStarting;
-  final VoidCallback onStart, onSettings;
+  final VoidCallback onStart;
+  final ValueChanged<BuildContext> onSettings;
   final void Function(int, int) onReorder;
   final ValueChanged<Download> onCancel, onCancelSeries;
 
@@ -36,24 +37,23 @@ enum _DownloadAction { cancelChapter, cancelSeries }
 class _MobileDownloadQueueState extends State<MobileDownloadQueue> {
   bool _actionsOpen = false;
 
-  Future<void> _showActions(Download entry) async {
+  Future<void> _showActions(BuildContext anchor, Download entry) async {
     if (_actionsOpen || widget.isStarting) return;
     setState(() => _actionsOpen = true);
     final l10n = context.l10n;
     final icons = NodeLaneIcons.of(context);
     _DownloadAction? action;
     try {
-      action = await showNodeLaneCatalogSheet<_DownloadAction>(
-        context,
-        Builder(
-          builder: (context) => NodeLaneCatalogSheet(
+      action = await showNodeLaneBubble<_DownloadAction>(
+        anchor,
+        label: l10n.download_queue_actions,
+        child: Builder(
+          builder: (context) => NodeLaneBubblePanel(
             title: l10n.download_queue_actions,
             subtitle: [
               entry.chapter.value?.manga.value?.name,
               entry.chapter.value?.name,
             ].whereType<String>().where((text) => text.isNotEmpty).join(' · '),
-            fitContent: true,
-            heightFactor: .9,
             child: SingleChildScrollView(
               padding: NodeLaneTokens.pagePadding,
               child: NodeLaneGroupSurface(
@@ -108,10 +108,12 @@ class _MobileDownloadQueueState extends State<MobileDownloadQueue> {
           context,
           title: l10n.download_queue,
           actions: [
-            NodeLaneIconButton(
-              icon: icons.settings,
-              tooltip: l10n.downloads,
-              onPressed: widget.onSettings,
+            Builder(
+              builder: (anchor) => NodeLaneIconButton(
+                icon: icons.settings,
+                tooltip: l10n.downloads,
+                onPressed: () => widget.onSettings(anchor),
+              ),
             ),
           ],
         ),
@@ -156,7 +158,7 @@ class _MobileDownloadQueueState extends State<MobileDownloadQueue> {
                           canReorder: !widget.isStarting,
                           onActions: widget.isStarting || _actionsOpen
                               ? null
-                              : () => _showActions(entry),
+                              : (anchor) => _showActions(anchor, entry),
                         ),
                       );
                     },
@@ -205,7 +207,7 @@ class _DownloadChapterCard extends StatelessWidget {
   final Download entry;
   final int index;
   final bool canReorder;
-  final VoidCallback? onActions;
+  final ValueChanged<BuildContext>? onActions;
 
   @override
   Widget build(BuildContext context) {
@@ -254,10 +256,14 @@ class _DownloadChapterCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: NodeLaneTokens.space8),
-                NodeLaneIconButton(
-                  icon: icons.more,
-                  tooltip: l10n.more,
-                  onPressed: onActions,
+                Builder(
+                  builder: (anchor) => NodeLaneIconButton(
+                    icon: icons.more,
+                    tooltip: l10n.more,
+                    onPressed: onActions == null
+                        ? null
+                        : () => onActions!(anchor),
+                  ),
                 ),
               ],
             ),

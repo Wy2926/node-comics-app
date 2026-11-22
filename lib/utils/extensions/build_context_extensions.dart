@@ -10,9 +10,17 @@ import 'package:mangayomi/utils/platform_utils.dart';
 ///
 /// Separate from [BuildContextExtensions.prefersNavRail] so the rule can be
 /// exercised on its own.
-bool sizeWantsNavRail(Size size) => size.shortestSide >= 600;
+const tabletMinShortSide = 600.0;
+bool sizeWantsNavRail(Size size) => size.shortestSide >= tabletMinShortSide;
 
 extension BuildContextExtensions on BuildContext {
+  bool get isTouchPlatform =>
+      !isTv &&
+      switch (Theme.of(this).platform) {
+        TargetPlatform.android || TargetPlatform.iOS => true,
+        _ => false,
+      };
+
   bool get isAndroidTablet =>
       Theme.of(this).platform == TargetPlatform.android &&
       !isTv &&

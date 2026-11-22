@@ -13,7 +13,7 @@ import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 
 import 'mobile_library_action.dart';
 import 'mobile_library_choices.dart';
@@ -404,7 +404,7 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
   }
 
   final picked = mobile
-      ? (await showMobileSettingsPicker<_TaggedMangaCluster?>(
+      ? (await showSettingChoice<_TaggedMangaCluster?>(
           context,
           title: l10n.merge_manga_pick_title,
           current: null,
@@ -412,7 +412,7 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
           emptyMessage: l10n.merge_manga_none_found,
           options: [
             for (final tagged in taggedClusters)
-              MobileSettingOption(
+              SettingOption(
                 tagged,
                 tagged.cluster.mangaList.first.name ?? '',
                 subtitle:

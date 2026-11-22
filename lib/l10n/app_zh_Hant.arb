@@ -320,6 +320,8 @@
   "clean_database_desc": "這將移除所有未新增到圖書館的專案！",
   "incognito_mode": "隱身模式",
   "downloaded_only": "僅已下載",
+  "downloaded_only_hint": "書架只顯示有下載內容的作品。",
+  "incognito_mode_hint": "暫停儲存閱讀和播放進度。",
   "download_queue": "下載佇列",
   "categories": "類別",
   "statistics": "統計",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "搜尋範圍",
-  "search_websites_action": "搜尋這 {count} 個網站",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "查詢網站",
   "search_selected_websites": "已選 {count} 個網站",
   "@search_selected_websites": {

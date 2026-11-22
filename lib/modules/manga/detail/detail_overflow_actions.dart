@@ -79,7 +79,11 @@ Future<void> handleDetailOverflowAction({
         return;
       }
       if (NodeLaneBubbleFlow.contains(context)) {
-        await NodeLaneBubbleFlow.push(context, ExtensionDetail(source: source));
+        await NodeLaneBubbleFlow.open(
+          context,
+          title: l10n.settings_source_preferences,
+          child: ExtensionDetail(source: source),
+        );
         return;
       }
       context.push('/extension_detail', extra: source);

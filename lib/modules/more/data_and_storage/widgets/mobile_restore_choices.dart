@@ -2,7 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -135,17 +135,16 @@ class _MobileRestoreSourcesState extends State<MobileRestoreSources> {
   String _sourceLabel(Source source) =>
       '${source.name ?? context.l10n.unknown} (${source.lang ?? ''})';
 
-  Future<void> _choose(String name, ItemType type) async {
-    final selected = await showMobileSettingsPicker<int?>(
-      context,
+  Future<void> _choose(BuildContext anchor, String name, ItemType type) async {
+    final selected = await showSettingChoice<int?>(
+      anchor,
       title: name,
       current: _selections[name],
       searchable: true,
       options: [
-        MobileSettingOption(null, context.l10n.source_conflict_keep),
+        SettingOption(null, context.l10n.source_conflict_keep),
         for (final source in widget.sources[type] ?? <Source>[])
-          if (source.id != null)
-            MobileSettingOption(source.id, _sourceLabel(source)),
+          if (source.id != null) SettingOption(source.id, _sourceLabel(source)),
       ],
     );
     if (mounted && selected != null) {
@@ -192,7 +191,7 @@ class _MobileRestoreSourcesState extends State<MobileRestoreSources> {
                 subtitle: typeLabel,
                 value: selectedLabel,
                 icon: Icons.extension_outlined,
-                onTap: () => _choose(entry.key, entry.value),
+                onOpen: (a) => _choose(a, entry.key, entry.value),
               ),
             ],
           );

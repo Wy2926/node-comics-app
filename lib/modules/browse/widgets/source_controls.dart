@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-
-typedef SourceOption<T> = MobileSettingOption<T>;
 
 Future<T?> showSourceChoice<T>(
   BuildContext context, {
   required String title,
   String? subtitle,
   required T? current,
-  required List<SourceOption<T>> options,
+  required List<SettingOption<T>> options,
 }) async {
   if (options.isEmpty) return null;
   if (options.length <= 8 && !NodeLaneBubbleFlow.contains(context)) {
@@ -33,7 +29,7 @@ Future<T?> showSourceChoice<T>(
     );
     return value == current ? null : value;
   }
-  final option = await showMobileSettingsPicker<T?>(
+  final option = await showSettingChoice<T?>(
     context,
     title: title,
     current: current,
@@ -44,19 +40,22 @@ Future<T?> showSourceChoice<T>(
   return option?.value == current ? null : option?.value;
 }
 
-Future<Set<T>?> showSourceMultiChoice<T>(
+Future<void> showSourceMultiChoice<T>(
   BuildContext context, {
   required String title,
   String? subtitle,
   required Set<T> current,
-  required List<SourceOption<T>> options,
-}) => pushBrowsePage<Set<T>>(
+  required List<SettingOption<T>> options,
+  required Future<bool> Function(Set<T>) onChanged,
+}) => NodeLaneBubbleFlow.open<void>(
   context,
-  _SourceMultiSelect<T>(
+  title: title,
+  child: _SourceMultiSelect<T>(
     title: title,
     subtitle: subtitle,
     options: options,
     initial: current,
+    onChanged: onChanged,
   ),
 );
 
@@ -66,19 +65,39 @@ class _SourceMultiSelect<T> extends StatefulWidget {
     this.subtitle,
     required this.options,
     required this.initial,
+    required this.onChanged,
   });
   final String title;
   final String? subtitle;
-  final List<SourceOption<T>> options;
+  final List<SettingOption<T>> options;
   final Set<T> initial;
+  final Future<bool> Function(Set<T>) onChanged;
   @override
   State<_SourceMultiSelect<T>> createState() => _SourceMultiSelectState<T>();
 }
 
 class _SourceMultiSelectState<T> extends State<_SourceMultiSelect<T>> {
   final search = TextEditingController();
-  late final selected = {...widget.initial};
-  bool leaving = false;
+  late var selected = {...widget.initial};
+  bool saving = false, failed = false;
+  Future<void> toggle(T value) async {
+    if (saving) return;
+    final next = {...selected};
+    if (!next.remove(value)) next.add(value);
+    setState(() {
+      saving = true;
+      failed = false;
+    });
+    final saved = await widget.onChanged(next);
+    if (mounted) {
+      setState(() {
+        if (saved) selected = next;
+        failed = !saved;
+        saving = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     search.dispose();
@@ -114,6 +133,13 @@ class _SourceMultiSelectState<T> extends State<_SourceMultiSelect<T>> {
                   l.source_selected_count(selected.length),
                   style: t.readerSecondary,
                 ),
+                if (failed)
+                  Text(
+                    l.source_settings_save_failed,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                 if (filtered.isEmpty) Text(l.no_result, style: t.secondary),
               ],
             ),
@@ -131,41 +157,14 @@ class _SourceMultiSelectState<T> extends State<_SourceMultiSelect<T>> {
                   selected: selected.contains(o.value),
                   checkable: true,
                   compact: true,
-                  onTap: () => setState(() {
-                    if (!selected.remove(o.value)) selected.add(o.value);
-                  }),
+                  enabled: !saving,
+                  onTap: () => toggle(o.value),
                 );
               },
             ),
           ),
         ],
       ),
-      bottomAction: FilledButton(
-        onPressed: () {
-          if (leaving) return;
-          leaving = true;
-          Navigator.pop(context, {...selected});
-        },
-        child: Text(l.save),
-      ),
     );
   }
 }
-
-Future<String?> showSourceTextEditor(
-  BuildContext context, {
-  required String title,
-  String? subtitle,
-  String? description,
-  required String initialValue,
-  bool allowEmpty = true,
-}) => showNodeLaneDialog<String>(
-  context: context,
-  useRootNavigator: !NodeLaneBubbleFlow.contains(context),
-  builder: (_) => MobileSettingsTextDialog(
-    title: title,
-    initialValue: initialValue,
-    helper: [?subtitle, ?description].where((s) => s.isNotEmpty).join('\n'),
-    isValid: (text) => allowEmpty || text.trim().isNotEmpty,
-  ),
-);

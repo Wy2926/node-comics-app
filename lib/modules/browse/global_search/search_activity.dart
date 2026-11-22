@@ -38,7 +38,7 @@ class SearchActivitySummary extends StatelessWidget {
   });
   final int total;
   final Map<int, SourceSearchActivity> activity;
-  final VoidCallback onDetails, onScope;
+  final ValueChanged<BuildContext> onDetails, onScope;
 
   @override
   Widget build(BuildContext context) {
@@ -95,12 +95,14 @@ class SearchActivitySummary extends StatelessWidget {
                   : null,
               action: searching
                   ? null
-                  : TextButton(
-                      onPressed: failed ? onDetails : onScope,
-                      child: Text(
-                        failed
-                            ? context.l10n.search_view_details
-                            : context.l10n.search_adjust_scope,
+                  : Builder(
+                      builder: (anchor) => TextButton(
+                        onPressed: () => (failed ? onDetails : onScope)(anchor),
+                        child: Text(
+                          failed
+                              ? context.l10n.search_view_details
+                              : context.l10n.search_adjust_scope,
+                        ),
                       ),
                     ),
             ),

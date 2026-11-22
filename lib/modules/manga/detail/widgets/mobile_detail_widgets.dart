@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -84,9 +85,12 @@ class _MobileDetailLayoutState extends State<MobileDetailLayout> {
       builder: (context, box) {
         final width = box.maxWidth, scale = context.paneTextScale;
         final split = context.hasPaneWidth(width);
-        final triple = context.hasPaneWidth(
-          width - NodeLaneTokens.tabletSupportingWidth * scale,
-        );
+        final triple =
+            context.findAncestorWidgetOfExactType<SourceBrowsePanes>() ==
+                null &&
+            context.hasPaneWidth(
+              width - NodeLaneTokens.tabletSupportingWidth * scale,
+            );
         _retainChapter(
           triple
               ? 3

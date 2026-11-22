@@ -9,7 +9,7 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/custom_button.dart';
 import 'package:mangayomi/modules/more/settings/player/mobile_custom_button_editor.dart';
 import 'package:mangayomi/modules/more/settings/player/mobile_custom_button_screen.dart';
-import 'package:mangayomi/modules/more/settings/player/mobile_player_action_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_confirm_panel.dart';
 import 'package:mangayomi/modules/more/settings/player/mobile_player_advanced_screen.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/custom_buttons_provider.dart';
 import 'package:mangayomi/repositories/custom_button_repository.dart';
@@ -234,10 +234,10 @@ void main() {
             .onPressed,
         isNull,
       );
-      await Navigator.of(tester.element(find.byType(MobilePlayerActionDialog)))
+      await Navigator.of(tester.element(find.byType(NodeLaneConfirmPanel)))
           .maybePop();
       await tester.pump();
-      expect(find.byType(MobilePlayerActionDialog), findsOneWidget);
+      expect(find.byType(NodeLaneConfirmPanel), findsOneWidget);
       wait.completeError(StateError('unavailable'));
       await tester.pumpAndSettle();
       expect(repository.records.length, 2);
@@ -247,7 +247,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(repository.records.map((button) => button.id), [2]);
       expect(repository.deletes, 2);
-      expect(find.byType(MobilePlayerActionDialog), findsNothing);
+      expect(find.byType(NodeLaneConfirmPanel), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -299,13 +299,13 @@ void main() {
             update = setState;
             return MobilePlayerAdvancedScreen(
               enabled: enabled,
-              onEnabledChanged: (value) async {
+              onEnabledChanged: (_, value) async {
                 writes++;
                 final completed = await result.future;
                 if (completed == true) update(() => enabled = value);
                 return completed;
               },
-              onRestore: () async {
+              onRestore: (_) async {
                 restores++;
                 return result.future;
               },

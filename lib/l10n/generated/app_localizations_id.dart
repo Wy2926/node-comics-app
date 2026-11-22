@@ -677,6 +677,14 @@ class AppLocalizationsId extends AppLocalizations {
   String get downloaded_only => 'Hanya yang diunduh';
 
   @override
+  String get downloaded_only_hint =>
+      'Hanya tampilkan judul dengan konten yang sudah diunduh di pustaka.';
+
+  @override
+  String get incognito_mode_hint =>
+      'Jeda penyimpanan progres membaca dan pemutaran.';
+
+  @override
   String get download_queue => 'Antrian Unduhan';
 
   @override
@@ -4689,17 +4697,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get search_scope => 'Ruang lingkup pencarian';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Telusuri situs web $count',
-      one: 'Cari 1 situs web',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'Temukan situs web';

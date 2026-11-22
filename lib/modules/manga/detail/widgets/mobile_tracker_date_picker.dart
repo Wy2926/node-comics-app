@@ -4,8 +4,8 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 /// Keeps the stock calendar and localized date input in a scrollable phone
 /// route, without the fixed-height header/actions of DatePickerDialog.
@@ -53,107 +53,104 @@ class _MobileTrackerDatePickerState extends State<MobileTrackerDatePicker> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final material = MaterialLocalizations.of(context);
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: widget.title),
-        body: SafeArea(
-          top: false,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            children: [
-              Text(
-                material.formatFullDate(_selected),
-                style: Theme.of(context).textTheme.titleLarge,
+    return MobileBrowsePage(
+      title: widget.title,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              material.formatFullDate(_selected),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () {
+                if (_input) {
+                  _readInput();
+                } else {
+                  _dateInput.text = material.formatCompactDate(_selected);
+                }
+                FocusScope.of(context).unfocus();
+                setState(() => _input = !_input);
+              },
+              icon: Icon(
+                _input
+                    ? NodeLaneIcons.of(context).calendar
+                    : NodeLaneIcons.of(context).edit,
               ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: () {
-                  if (_input) {
-                    _readInput();
-                  } else {
-                    _dateInput.text = material.formatCompactDate(_selected);
-                  }
-                  FocusScope.of(context).unfocus();
-                  setState(() => _input = !_input);
-                },
-                icon: Icon(
-                  _input
-                      ? NodeLaneIcons.of(context).calendar
-                      : NodeLaneIcons.of(context).edit,
-                ),
-                label: Text(
-                  _input
-                      ? material.calendarModeButtonLabel
-                      : material.inputDateModeButtonLabel,
-                ),
+              label: Text(
+                _input
+                    ? material.calendarModeButtonLabel
+                    : material.inputDateModeButtonLabel,
               ),
-              const SizedBox(height: 16),
-              if (_input)
-                Form(
-                  key: _form,
-                  child: NodeLaneTextField(
-                    controller: _dateInput,
-                    label: material.dateInputLabel,
-                    hint: material.dateHelpText,
-                    keyboardType: TextInputType.datetime,
-                    autofocus: true,
-                    validator: (text) {
-                      final date = material.parseCompactDate(text ?? '');
-                      if (date == null) return material.invalidDateFormatLabel;
-                      if (date.isBefore(widget.first) ||
-                          date.isAfter(widget.last)) {
-                        return material.dateOutOfRangeLabel;
-                      }
-                      return null;
-                    },
-                  ),
-                )
-              else
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    // The stock calendar caps day text scaling at 2, but narrow
-                    // seven-column layouts can still wrap two-digit dates. Bound
-                    // only the calendar; the full date and input keep system size.
-                    final style =
-                        DatePickerTheme.of(context).dayStyle ??
-                        DatePickerTheme.defaults(context).dayStyle;
-                    final measure = TextPainter(
-                      text: TextSpan(text: '88', style: style),
-                      textDirection: Directionality.of(context),
-                    )..layout();
-                    final scale = math.min(
-                      2.0,
-                      math.max(
-                        1.0,
-                        ((constraints.maxWidth - 32) / 7 - 16) / measure.width,
-                      ),
-                    );
-                    measure.dispose();
-                    return MediaQuery.withClampedTextScaling(
-                      maxScaleFactor: scale,
-                      child: CalendarDatePicker(
-                        initialDate: _selected,
-                        firstDate: widget.first,
-                        lastDate: widget.last,
-                        onDateChanged: (value) =>
-                            setState(() => _selected = value),
-                      ),
-                    );
+            ),
+            const SizedBox(height: 16),
+            if (_input)
+              Form(
+                key: _form,
+                child: NodeLaneTextField(
+                  controller: _dateInput,
+                  label: material.dateInputLabel,
+                  hint: material.dateHelpText,
+                  keyboardType: TextInputType.datetime,
+                  autofocus: true,
+                  validator: (text) {
+                    final date = material.parseCompactDate(text ?? '');
+                    if (date == null) return material.invalidDateFormatLabel;
+                    if (date.isBefore(widget.first) ||
+                        date.isAfter(widget.last)) {
+                      return material.dateOutOfRangeLabel;
+                    }
+                    return null;
                   },
                 ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _confirm,
-                child: Text(l10n.dialog_confirm),
+              )
+            else
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  // The stock calendar caps day text scaling at 2, but narrow
+                  // seven-column layouts can still wrap two-digit dates. Bound
+                  // only the calendar; the full date and input keep system size.
+                  final style =
+                      DatePickerTheme.of(context).dayStyle ??
+                      DatePickerTheme.defaults(context).dayStyle;
+                  final measure = TextPainter(
+                    text: TextSpan(text: '88', style: style),
+                    textDirection: Directionality.of(context),
+                  )..layout();
+                  final scale = math.min(
+                    2.0,
+                    math.max(
+                      1.0,
+                      ((constraints.maxWidth - 32) / 7 - 16) / measure.width,
+                    ),
+                  );
+                  measure.dispose();
+                  return MediaQuery.withClampedTextScaling(
+                    maxScaleFactor: scale,
+                    child: CalendarDatePicker(
+                      initialDate: _selected,
+                      firstDate: widget.first,
+                      lastDate: widget.last,
+                      onDateChanged: (value) =>
+                          setState(() => _selected = value),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l10n.cancel),
-              ),
-            ],
-          ),
+          ],
         ),
+      ),
+      bottomAction: OverflowBar(
+        children: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(onPressed: _confirm, child: Text(l10n.dialog_confirm)),
+        ],
       ),
     );
   }

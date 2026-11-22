@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -23,18 +21,16 @@ Future<void> showComicReaderSettings({
 }) {
   final translation = ReaderTranslationHost.controllerOf(context);
   autoScroll.value = false;
-  return showNodeLaneBubble<void>(
+  return NodeLaneBubbleFlow.open<void>(
     context,
-    label: context.l10n.comic_reading,
+    title: context.l10n.comic_reading,
     width: NodeLaneTokens.bubbleSettingsWidth,
-    child: NodeLaneBubbleFlow(
-      home: ComicReaderSettingsPanel(
-        onTranslation: translation == null
-            ? null
-            : (anchor) => showTranslationControls(anchor, translation),
-        bookId: bookId,
-        autoScroll: autoScroll,
-      ),
+    child: ComicReaderSettingsPanel(
+      onTranslation: translation == null
+          ? null
+          : (anchor) => showTranslationControls(anchor, translation),
+      bookId: bookId,
+      autoScroll: autoScroll,
     ),
   );
 }
@@ -61,11 +57,13 @@ class ComicReaderSettingsPanel extends StatelessWidget {
           builder: (context, scrolling, _) => ComicReaderSettingsContent(
             bookId: bookId,
             onTranslation: onTranslation,
-            onDefaults: () => NodeLaneBubbleFlow.push<void>(
-              context,
-              MobileBrowsePage(
+            onDefaults: (anchor) => showNodeLaneBubble<void>(
+              anchor,
+              label: context.l10n.comic_defaults_title,
+              width: NodeLaneTokens.bubbleFormWidth,
+              child: NodeLaneBubblePanel(
                 title: context.l10n.comic_defaults_title,
-                body: const NodeLaneReaderScope(
+                child: const NodeLaneReaderScope(
                   child: SingleChildScrollView(
                     padding: NodeLaneTokens.pagePadding,
                     child: ComicReaderSettingsContent(),
@@ -97,7 +95,7 @@ class ComicReaderSettingsContent extends ConsumerWidget {
     this.onAutoScroll,
   });
   final int? bookId;
-  final VoidCallback? onDefaults;
+  final ValueChanged<BuildContext>? onDefaults;
   final ValueChanged<BuildContext>? onTranslation;
   final bool scrolling;
   final ValueChanged<bool>? onAutoScroll;
@@ -144,7 +142,7 @@ class ComicReaderSettingsContent extends ConsumerWidget {
       label: (v) => labels[v]!,
       options: [
         for (final entry in labels.entries)
-          MobileSettingOption(
+          SettingOption(
             entry.key,
             entry.value,
             icon: optionIcons?[entry.key],
@@ -372,12 +370,12 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                 NodeLaneRow(
                   title: context.l10n.translation_title,
                   icon: icons.translate,
-                  onTap: () => onTranslation!(context),
+                  onOpen: onTranslation,
                 ),
               NodeLaneRow(
                 title: l.comic_defaults_title,
                 icon: icons.settings,
-                onTap: onDefaults,
+                onOpen: onDefaults,
               ),
               NodeLaneRow(
                 title: l.comic_book_reset,

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 class _Saved extends SavedSearchesNotifier {
   @override
@@ -49,8 +49,11 @@ void main() {
           canSave: false,
           local: false,
           hasFilters: () => ++reads > 0,
-          filtering: true,
-          onSelected: (choice) => result = choice,
+          filtering: () => true,
+          onSelected: (menu, choice) async {
+            expect(NodeLaneBubbleFlow.contains(menu), isTrue);
+            result = choice;
+          },
         ),
       );
       expect(reads, 0);
@@ -75,9 +78,10 @@ void main() {
         Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              query = await pushBrowsePage<String>(
+              query = await NodeLaneBubbleFlow.open<String>(
                 context,
-                const MobileSavedSearches(sourceId: 1, title: '来源 A'),
+                title: '来源 A',
+                child: const MobileSavedSearches(sourceId: 1, title: '来源 A'),
               );
             },
             child: const Text('打开'),

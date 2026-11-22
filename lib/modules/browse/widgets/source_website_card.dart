@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/source_catalog_metadata.dart';
 import 'package:mangayomi/modules/browse/widgets/source_catalog_labels.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -42,7 +42,7 @@ class SourceWebsiteCard extends StatelessWidget {
   final Source source;
   final SourceCardAction action;
   final VoidCallback? onAction, onOpen;
-  final VoidCallback? onDetails;
+  final ValueChanged<BuildContext>? onDetails;
   final ValueChanged<Offset>? onLongPress;
   final bool? selected;
 
@@ -373,7 +373,7 @@ class _SourceClassifications extends StatelessWidget {
   const _SourceClassifications({required this.labels, required this.onDetails});
 
   final List<String> labels;
-  final VoidCallback? onDetails;
+  final ValueChanged<BuildContext>? onDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -438,16 +438,22 @@ class _SourceClassifications extends StatelessWidget {
                 const SizedBox(width: NodeLaneTokens.space8),
               SizedBox(
                 width: math.min(counterWidth, constraints.maxWidth),
-                child: _CardLink(
-                  onPressed: onDetails,
-                  child: Semantics(
-                    label: context.l10n.source_more_classifications(remaining),
-                    child: ExcludeSemantics(
-                      child: Text(
-                        '+$remaining',
-                        maxLines: 1,
-                        softWrap: false,
-                        style: style.copyWith(color: t.accent),
+                child: Builder(
+                  builder: (anchor) => _CardLink(
+                    onPressed: onDetails == null
+                        ? null
+                        : () => onDetails!(anchor),
+                    child: Semantics(
+                      label: context.l10n.source_more_classifications(
+                        remaining,
+                      ),
+                      child: ExcludeSemantics(
+                        child: Text(
+                          '+$remaining',
+                          maxLines: 1,
+                          softWrap: false,
+                          style: style.copyWith(color: t.accent),
+                        ),
                       ),
                     ),
                   ),
@@ -600,68 +606,66 @@ class _UnknownPricingDivider extends CustomPainter {
 Future<void> showSourceWebsiteInfo(BuildContext context, Source source) {
   final metadata = source.catalogMetadata;
   final host = Uri.tryParse(source.baseUrl ?? '')?.host ?? '';
-  return pushBrowsePage<void>(
-    context,
-    Builder(
-      builder: (context) {
-        final l = context.l10n;
-        return MobileBrowsePage.form(
-          title: source.name ?? l.source_information,
-          body: ListView(
-            padding: NodeLaneTokens.pagePadding,
-            children: [
-              if (host.isNotEmpty)
-                SelectableText(
-                  host,
-                  style: NodeLaneTokens.of(context).secondary,
+  final title = source.name ?? context.l10n.source_information;
+  final step = NodeLaneBubbleFlow.contains(context);
+  final panel = Builder(
+    builder: (context) {
+      final l = context.l10n;
+      return NodeLaneBubblePanel(
+        title: title,
+        closeButton: step
+            ? BackButton(onPressed: () => Navigator.maybePop(context))
+            : null,
+        child: ListView(
+          shrinkWrap: true,
+          padding: NodeLaneTokens.pagePadding,
+          children: [
+            if (host.isNotEmpty)
+              SelectableText(host, style: NodeLaneTokens.of(context).secondary),
+            if (source.notes?.trim().isNotEmpty == true)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: NodeLaneTokens.space8,
                 ),
-              if (source.notes?.trim().isNotEmpty == true)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: NodeLaneTokens.space8,
-                  ),
-                  child: SelectableText(
-                    source.notes!,
-                    style: NodeLaneTokens.of(context).readerSecondary,
-                  ),
+                child: SelectableText(
+                  source.notes!,
+                  style: NodeLaneTokens.of(context).readerSecondary,
                 ),
-              NodeLaneCatalogHeading(l.source_information),
-              NodeLaneGroupSurface(
-                children: [
-                  for (final entry in [
-                    (
-                      context.l10n.source_region,
-                      metadata.regionLabels(context.l10n),
-                    ),
-                    (
-                      context.l10n.source_format,
-                      metadata.formatLabels(context.l10n),
-                    ),
-                    (
-                      context.l10n.source_creation,
-                      metadata.creationLabels(context.l10n),
-                    ),
-                  ])
-                    NodeLaneRow(
-                      title: entry.$1,
-                      subtitle: entry.$2.isEmpty
-                          ? context.l10n.source_unspecified
-                          : entry.$2.join(context.l10n.list_separator),
-                    ),
-                  NodeLaneRow(
-                    title: context.l10n.source_pricing,
-                    subtitle: sourcePricingLabel(
-                      metadata.pricing,
-                      source.itemType,
-                      context.l10n,
-                    ),
-                  ),
-                ],
               ),
-            ],
-          ),
-        );
-      },
-    ),
+            NodeLaneGroupSurface(
+              children: [
+                for (final entry in [
+                  (l.source_region, metadata.regionLabels(l)),
+                  (l.source_format, metadata.formatLabels(l)),
+                  (l.source_creation, metadata.creationLabels(l)),
+                ])
+                  NodeLaneRow(
+                    title: entry.$1,
+                    subtitle: entry.$2.isEmpty
+                        ? l.source_unspecified
+                        : entry.$2.join(l.list_separator),
+                  ),
+                NodeLaneRow(
+                  title: l.source_pricing,
+                  subtitle: sourcePricingLabel(
+                    metadata.pricing,
+                    source.itemType,
+                    l,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
   );
+  return step
+      ? NodeLaneBubbleFlow.showPanel(context, panel)
+      : showNodeLaneBubble<void>(
+          context,
+          label: title,
+          width: NodeLaneTokens.bubbleFormWidth,
+          child: panel,
+        );
 }

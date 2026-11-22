@@ -23,7 +23,6 @@ extension on PlayerSubtitleSettings {
     int? backgroundColorR,
     int? backgroundColorG,
     int? backgroundColorB,
-    bool? overrideAssSubtitles,
   }) {
     return PlayerSubtitleSettings(
       fontSize: fontSize ?? this.fontSize,
@@ -41,7 +40,7 @@ extension on PlayerSubtitleSettings {
       backgroundColorR: backgroundColorR ?? this.backgroundColorR,
       backgroundColorG: backgroundColorG ?? this.backgroundColorG,
       backgroundColorB: backgroundColorB ?? this.backgroundColorB,
-      overrideAssSubtitles: overrideAssSubtitles ?? this.overrideAssSubtitles,
+      overrideAssSubtitles: overrideAssSubtitles,
     );
   }
 }
@@ -91,7 +90,7 @@ class _SubtitleAppearanceWidgetState
     _fontSizeController.text = '$clamped';
   }
 
-  void _updateColorChannel(String channel, int value, bool end) {
+  void _updateColorChannel(String channel, int value) {
     final current = ref.read(subtitleSettingsStateProvider);
     final clamped = value.clamp(0, 255);
     final updated = switch (_colorTarget) {
@@ -114,7 +113,7 @@ class _SubtitleAppearanceWidgetState
         _ => current.copyWith(backgroundColorA: clamped),
       },
     };
-    ref.read(subtitleSettingsStateProvider.notifier).set(updated, end);
+    ref.read(subtitleSettingsStateProvider.notifier).set(updated, true);
   }
 
   void _applyPresetColor(int r, int g, int b) {
@@ -425,25 +424,25 @@ class _SubtitleAppearanceWidgetState
             label: 'R',
             value: activeR,
             channelColor: Colors.redAccent,
-            onChanged: (v) => _updateColorChannel('r', v, true),
+            onChanged: (v) => _updateColorChannel('r', v),
           ),
           _ColorChannelSlider(
             label: 'G',
             value: activeG,
             channelColor: Colors.greenAccent,
-            onChanged: (v) => _updateColorChannel('g', v, true),
+            onChanged: (v) => _updateColorChannel('g', v),
           ),
           _ColorChannelSlider(
             label: 'B',
             value: activeB,
             channelColor: Colors.lightBlueAccent,
-            onChanged: (v) => _updateColorChannel('b', v, true),
+            onChanged: (v) => _updateColorChannel('b', v),
           ),
           _ColorChannelSlider(
             label: 'A',
             value: activeA,
             channelColor: Colors.grey.shade400,
-            onChanged: (v) => _updateColorChannel('a', v, true),
+            onChanged: (v) => _updateColorChannel('a', v),
           ),
 
           // Reset button
@@ -656,27 +655,5 @@ class _ColorChannelSlider extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-/// Backward compatibility alias for [SubtitleAppearanceWidget].
-class FontSettingWidget extends StatelessWidget {
-  final bool hasSubtitleTrack;
-  const FontSettingWidget({super.key, required this.hasSubtitleTrack});
-
-  @override
-  Widget build(BuildContext context) {
-    return SubtitleAppearanceWidget(hasSubtitleTrack: hasSubtitleTrack);
-  }
-}
-
-/// Backward compatibility alias.
-class ColorSettingWidget extends StatelessWidget {
-  final bool hasSubtitleTrack;
-  const ColorSettingWidget({super.key, required this.hasSubtitleTrack});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.shrink();
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_progress.dart';
-import 'package:flutter/cupertino.dart' show CupertinoPicker, CupertinoSwitch;
+import 'package:flutter/cupertino.dart' show CupertinoSwitch;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -198,6 +198,7 @@ class NodeLaneRow extends StatelessWidget {
     this.minHeight,
     this.trailing,
     this.onTap,
+    this.onOpen,
     this.onLongPress,
     this.selected,
     this.destructive = false,
@@ -209,6 +210,7 @@ class NodeLaneRow extends StatelessWidget {
     this.enabled = true,
     this.openOnReveal = false,
   }) : assert(icon == null || leading == null),
+       assert(onOpen == null || onTap == null),
        _card = false,
        first = true,
        last = true;
@@ -230,6 +232,7 @@ class NodeLaneRow extends StatelessWidget {
     this.minHeight,
     this.trailing,
     this.onTap,
+    this.onOpen,
     this.onLongPress,
     this.selected,
     this.destructive = false,
@@ -243,6 +246,7 @@ class NodeLaneRow extends StatelessWidget {
     this.first = true,
     this.last = true,
   }) : assert(icon == null || leading == null),
+       assert(onOpen == null || onTap == null),
        _card = true;
 
   final String title;
@@ -263,6 +267,7 @@ class NodeLaneRow extends StatelessWidget {
   final double? minHeight;
   final Widget? leading, trailing, valueLeading;
   final VoidCallback? onTap, onLongPress;
+  final ValueChanged<BuildContext>? onOpen;
   final bool? selected;
   final bool destructive,
       checkable,
@@ -278,10 +283,11 @@ class NodeLaneRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activate = onOpen == null ? onTap : () => onOpen!(context);
     NodeLaneRevealScope.reveal(
       context,
       title,
-      open: openOnReveal && enabled && !destructive ? onTap : null,
+      open: openOnReveal && enabled && !destructive ? activate : null,
     );
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final color = !enabled
@@ -298,7 +304,7 @@ class NodeLaneRow extends StatelessWidget {
             child: Center(child: leading!),
           );
     final content = InkWell(
-      onTap: enabled ? onTap : null,
+      onTap: enabled ? activate : null,
       onLongPress: enabled ? onLongPress : null,
       child: Column(
         children: [
@@ -395,10 +401,10 @@ class NodeLaneRow extends StatelessWidget {
                             )
                           : null,
                     ),
-                  ] else if (onTap != null && !destructive) ...[
+                  ] else if (activate != null && !destructive) ...[
                     const SizedBox(width: NodeLaneTokens.space12),
                     Icon(
-                      icons.forward,
+                      onOpen == null ? icons.forward : icons.down,
                       size: NodeLaneTokens.smallIconSize,
                       color: t.muted,
                     ),
@@ -415,8 +421,8 @@ class NodeLaneRow extends StatelessWidget {
       container: true,
       selected: checkable ? null : selected,
       checked: checkable ? selected == true : null,
-      button: onTap != null || !enabled,
-      enabled: onTap != null || !enabled || checkable ? enabled : null,
+      button: activate != null || !enabled,
+      enabled: activate != null || !enabled || checkable ? enabled : null,
       child: _card
           ? NodeLaneGroupSurface(
               first: first,
@@ -797,255 +803,6 @@ class _NodeLaneDisclosureState extends State<NodeLaneDisclosure> {
   );
 }
 
-/// The existing setting row opens a compact wheel anchored to its value.
-class NodeLaneNumberRow extends StatelessWidget {
-  const NodeLaneNumberRow({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.onChanged,
-    this.step = 1,
-    this.label,
-    this.valueLabel,
-    this.subtitle,
-    this.icon,
-    this.enabled = true,
-  }) : assert(min <= max),
-       assert(step > 0);
-  final String title;
-  final int value, min, max, step;
-  final ValueChanged<int> onChanged;
-  final String Function(int)? label;
-  final String? valueLabel, subtitle;
-  final IconData? icon;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) => NodeLaneNumberPicker(
-    value: value,
-    min: min,
-    max: max,
-    step: step,
-    label: label,
-    enabled: enabled,
-    onChanged: onChanged,
-    builder: (context, toggle, isOpen) => NodeLaneRow(
-      title: title,
-      subtitle: subtitle,
-      value: valueLabel ?? label?.call(value) ?? '$value',
-      icon: icon,
-      enabled: enabled,
-      openOnReveal: true,
-      onTap: toggle,
-      trailing: Icon(
-        NodeLaneIcons.of(context).down,
-        size: NodeLaneTokens.smallIconSize,
-        color: NodeLaneTokens.of(context).muted,
-      ),
-    ),
-  );
-}
-
-/// One anchored picker for settings rows and reader/player toolbar actions.
-/// It never changes the page layout or pushes a modal route.
-class NodeLaneNumberPicker extends StatefulWidget {
-  const NodeLaneNumberPicker({
-    super.key,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.onChanged,
-    required this.builder,
-    this.controller,
-    this.onClose,
-    this.step = 1,
-    this.label,
-    this.enabled = true,
-  }) : assert(min <= max),
-       assert(step > 0);
-  final int value, min, max, step;
-  final ValueChanged<int> onChanged;
-  final String Function(int)? label;
-  final bool enabled;
-  final Widget Function(BuildContext, VoidCallback?, bool) builder;
-  final MenuController? controller;
-  final VoidCallback? onClose;
-
-  @override
-  State<NodeLaneNumberPicker> createState() => _NodeLaneNumberPickerState();
-}
-
-class _NodeLaneNumberPickerState extends State<NodeLaneNumberPicker> {
-  final _menu = MenuController();
-
-  @override
-  Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context);
-    final width =
-        (NodeLaneTokens.numberPickerWidth *
-                (MediaQuery.textScalerOf(context).scale(17) / 17).clamp(1, 1.5))
-            .clamp(
-              0.0,
-              MediaQuery.sizeOf(context).width - NodeLaneTokens.gutter * 2,
-            );
-    return MenuAnchor(
-      controller: widget.controller ?? _menu,
-      onClose: widget.onClose,
-      consumeOutsideTap: true,
-      animated: !MediaQuery.disableAnimationsOf(context),
-      clipBehavior: Clip.none,
-      alignmentOffset: Offset(-width, NodeLaneTokens.space8),
-      reservedPadding: const EdgeInsets.all(NodeLaneTokens.space8),
-      style: const MenuStyle(
-        alignment: AlignmentDirectional.bottomEnd,
-        padding: WidgetStatePropertyAll(EdgeInsets.zero),
-        elevation: WidgetStatePropertyAll(0),
-        backgroundColor: WidgetStatePropertyAll(Colors.transparent),
-        surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
-        side: WidgetStatePropertyAll(BorderSide.none),
-      ),
-      menuChildren: [
-        SizedBox(
-          width: width,
-          child: NodeLaneGlassSurface(
-            borderRadius: t.inputRadius,
-            elevated: true,
-            child: _NodeLaneNumberWheel(
-              value: widget.value,
-              min: widget.min,
-              max: widget.max,
-              step: widget.step,
-              label: widget.label,
-              enabled: widget.enabled,
-              onChanged: widget.onChanged,
-            ),
-          ),
-        ),
-      ],
-      builder: (context, controller, _) => widget.builder(
-        context,
-        widget.enabled
-            ? () => controller.isOpen ? controller.close() : controller.open()
-            : null,
-        controller.isOpen,
-      ),
-    );
-  }
-}
-
-/// Lazy wheel. Report only the settled item, not every frame of a fling.
-class _NodeLaneNumberWheel extends StatefulWidget {
-  const _NodeLaneNumberWheel({
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.step,
-    required this.onChanged,
-    required this.enabled,
-    this.label,
-  });
-  final int value, min, max, step;
-  final ValueChanged<int> onChanged;
-  final String Function(int)? label;
-  final bool enabled;
-
-  @override
-  State<_NodeLaneNumberWheel> createState() => _NodeLaneNumberWheelState();
-}
-
-class _NodeLaneNumberWheelState extends State<_NodeLaneNumberWheel> {
-  int get _count => (widget.max - widget.min) ~/ widget.step + 1;
-  int get _index =>
-      ((widget.value - widget.min) ~/ widget.step).clamp(0, _count - 1);
-  // The popover shares the route's PageStorage with its anchor's list.
-  // Reopen from the setting value, never from a page/list scroll offset.
-  late final _scroll = FixedExtentScrollController(
-    initialItem: _index,
-    keepScrollOffset: false,
-  );
-
-  @override
-  void didUpdateWidget(covariant _NodeLaneNumberWheel oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value ||
-        oldWidget.min != widget.min ||
-        oldWidget.max != widget.max ||
-        oldWidget.step != widget.step) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _scroll.hasClients && _scroll.selectedItem != _index) {
-          _scroll.jumpToItem(_index);
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context);
-    final scaled = MediaQuery.textScalerOf(context).scale(17);
-    final extent = scaled * 1.5 > NodeLaneTokens.minTapTarget
-        ? scaled * 1.5
-        : NodeLaneTokens.minTapTarget;
-    return Padding(
-      padding: const EdgeInsets.all(NodeLaneTokens.space12),
-      child: SizedBox(
-        height: extent * 3,
-        child: IgnorePointer(
-          ignoring: !widget.enabled,
-          child: CupertinoPicker.builder(
-            scrollController: _scroll,
-            itemExtent: extent,
-            childCount: _count,
-            diameterRatio: 2,
-            squeeze: 1,
-            changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
-            selectionOverlay: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: NodeLaneTokens.space4,
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: t.accentOverlay,
-                  borderRadius: t.inputRadius,
-                ),
-              ),
-            ),
-            onSelectedItemChanged: (index) {
-              final value = widget.min + index * widget.step;
-              if (widget.enabled && value != widget.value) {
-                widget.onChanged(value);
-              }
-            },
-            itemBuilder: (context, index) {
-              final value = widget.min + index * widget.step;
-              return Center(
-                child: Text(
-                  widget.label?.call(value) ?? '$value',
-                  style: t.readerLabel.copyWith(
-                    color: !widget.enabled
-                        ? t.muted
-                        : index == _index
-                        ? t.accent
-                        : t.ink,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Pins existing content without duplicating its controller, focus or layout.
 /// PinnedHeaderSliver measures the child, including accessibility text scaling.
 class NodeLanePinnedHeader extends StatelessWidget {
@@ -1059,7 +816,7 @@ class NodeLanePinnedHeader extends StatelessWidget {
 
 /// Shared slider presentation and local drag draft. A gesture commits once;
 /// callers may opt into live preview without moving persistence into the view.
-class NodeLaneSliderRow extends StatefulWidget {
+class NodeLaneSliderRow extends StatelessWidget {
   const NodeLaneSliderRow({
     super.key,
     required this.title,
@@ -1082,58 +839,80 @@ class NodeLaneSliderRow extends StatefulWidget {
   final ValueChanged<double> onChanged;
   final ValueChanged<double>? onPreview;
   @override
-  State<NodeLaneSliderRow> createState() => _NodeLaneSliderRowState();
+  Widget build(BuildContext context) => NodeLaneLiveBubbleButton(
+    title: title,
+    enabled: enabled,
+    builder: (_, open, _) => NodeLaneRow(
+      title: title,
+      subtitle: subtitle,
+      value: label?.call(value) ?? value.round().toString(),
+      enabled: enabled,
+      openOnReveal: true,
+      onOpen: open == null ? null : (_) => open(),
+    ),
+    editor: _SettingSlider(row: this, origin: context),
+  );
 }
 
-class _NodeLaneSliderRowState extends State<NodeLaneSliderRow> {
-  late double _draft = widget.value.clamp(widget.min, widget.max);
+class _SettingSlider extends StatefulWidget {
+  const _SettingSlider({required this.row, required this.origin});
+  final NodeLaneSliderRow row;
+  final BuildContext origin;
   @override
-  void didUpdateWidget(covariant NodeLaneSliderRow oldWidget) {
+  State<_SettingSlider> createState() => _SettingSliderState();
+}
+
+class _SettingSliderState extends State<_SettingSlider> {
+  late double _draft = widget.row.value.clamp(widget.row.min, widget.row.max);
+  @override
+  void didUpdateWidget(_SettingSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value ||
-        oldWidget.min != widget.min ||
-        oldWidget.max != widget.max) {
-      _draft = widget.value.clamp(widget.min, widget.max);
+    final row = widget.row;
+    if (oldWidget.row.value != row.value ||
+        oldWidget.row.min != row.min ||
+        oldWidget.row.max != row.max) {
+      _draft = row.value.clamp(row.min, row.max);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    NodeLaneRevealScope.reveal(context, widget.title);
+    final row = widget.row;
     final t = NodeLaneTokens.of(context);
-    final valueLabel = widget.label?.call(_draft) ?? _draft.round().toString();
-    return Padding(
+    final valueLabel = row.label?.call(_draft) ?? _draft.round().toString();
+    return SingleChildScrollView(
+      primary: false,
       padding: NodeLaneTokens.groupPadding,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _NodeLaneLabelValue(
-            title: widget.title,
-            titleStyle: t.readerLabel,
-            value: valueLabel,
+          Text(
+            valueLabel,
+            textAlign: TextAlign.center,
+            style: t.readerTitle.copyWith(color: t.accent),
           ),
-          if (widget.subtitle != null) ...[
-            const SizedBox(height: NodeLaneTokens.space4),
-            Text(widget.subtitle!, style: t.readerSecondary),
-          ],
           Slider(
             value: _draft,
-            min: widget.min,
-            max: widget.max,
-            divisions: widget.divisions,
+            min: row.min,
+            max: row.max,
+            divisions: row.divisions,
             label: valueLabel,
-            semanticFormatterCallback: (_) => valueLabel,
-            onChanged: !widget.enabled
+            semanticFormatterCallback: (v) =>
+                row.label?.call(v) ?? v.round().toString(),
+            onChanged: !row.enabled
                 ? null
                 : (value) {
+                    if (!widget.origin.mounted) return;
                     setState(() => _draft = value);
-                    widget.onPreview?.call(value);
+                    row.onPreview?.call(value);
                   },
-            onChangeEnd: !widget.enabled
+            onChangeEnd: !row.enabled
                 ? null
                 : (value) {
-                    if (value != widget.value || widget.onPreview != null) {
-                      widget.onChanged(value);
+                    if (widget.origin.mounted &&
+                        (value != row.value || row.onPreview != null)) {
+                      row.onChanged(value);
                     }
                   },
           ),

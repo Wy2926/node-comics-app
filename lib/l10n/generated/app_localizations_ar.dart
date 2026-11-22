@@ -683,6 +683,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get downloaded_only => 'المحملة فقط';
 
   @override
+  String get downloaded_only_hint =>
+      'اعرض في المكتبة الأعمال التي لها محتوى مُنزّل فقط.';
+
+  @override
+  String get incognito_mode_hint => 'أوقف حفظ تقدم القراءة والتشغيل مؤقتًا.';
+
+  @override
   String get download_queue => 'قائمة الانتظار للتحميل';
 
   @override
@@ -4674,11 +4681,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get search_scope => 'نطاق البحث';
-
-  @override
-  String search_websites_action(int count) {
-    return 'البحث في المواقع: $count';
-  }
 
   @override
   String get search_find_website => 'البحث عن موقع على الانترنت';

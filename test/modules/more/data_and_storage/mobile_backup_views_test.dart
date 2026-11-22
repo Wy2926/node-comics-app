@@ -1,4 +1,6 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import '../../../helpers/bubble_finders.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 import 'dart:async';
 
@@ -67,6 +69,10 @@ void main() {
     Finder target, {
     double delta = 250,
   }) async {
+    if (find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty) {
+      await revealBubble(tester, target, delta: delta);
+      return;
+    }
     for (var attempt = 0; attempt < 2; attempt++) {
       if (target.evaluate().isEmpty) {
         await tester.scrollUntilVisible(
@@ -87,7 +93,11 @@ void main() {
     double delta = 250,
   }) async {
     await reveal(tester, target, delta: delta);
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
   }
@@ -122,7 +132,7 @@ void main() {
           directoryCalls++;
           return chosenPath;
         },
-        onEncryptionChanged: (value) async {
+        onEncryptionChanged: (_, value) async {
           _writes.add(('encrypt-request', value));
         },
         canChooseBackupLocation: true,
@@ -135,7 +145,7 @@ void main() {
       );
       await start(tester, home, container: container);
       await tap(tester, find.text('Automatic backups'));
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(_writes, isEmpty);
       await tap(tester, find.text('Automatic backups'));
@@ -161,6 +171,7 @@ void main() {
       expect(_writes.where((e) => e.$1 == 'encrypt-request'), [
         ('encrypt-request', true),
       ]);
+      await tap(tester, find.text('Compression level'));
       final slider = find.byType(Slider);
       await reveal(tester, slider);
       final box = tester.getRect(slider);
@@ -173,6 +184,8 @@ void main() {
       await drag.up();
       await tester.pumpAndSettle();
       expect(_writes.where((e) => e.$1 == 'compression'), hasLength(1));
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       await tap(tester, find.text('Download location'), delta: -300);
       await tap(tester, find.text('Default'));
       expect(container.read(downloadLocationStateProvider).$2, '');
@@ -223,7 +236,7 @@ void main() {
           onCreate: () {},
           onRestore: () async {},
           onChooseDirectory: () async => null,
-          onEncryptionChanged: (_) async {},
+          onEncryptionChanged: (_, _) async {},
           canChooseBackupLocation: false,
           maintenance: const [],
           onClearCovers: () async {
@@ -354,7 +367,7 @@ void main() {
       expect(calls, hasLength(2));
       create.complete();
       await tester.pumpAndSettle();
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       await tap(tester, find.text('Open'));
       await reveal(tester, find.byKey(const ValueKey('backup-option-8')));
@@ -381,9 +394,10 @@ void main() {
           body: TextButton(
             child: const Text('Open'),
             onPressed: () async {
-              result = await showNodeLaneCatalogSheet<bool>(
+              result = await showNodeLaneBubble<bool>(
                 context,
-                MobileBackupPasswordDialog(
+                label: 'Test form',
+                child: MobileBackupPasswordDialog(
                   onSave: (value) {
                     calls.add(value);
                     return save.future;
@@ -475,9 +489,10 @@ void main() {
           body: TextButton(
             child: const Text('Open'),
             onPressed: () async {
-              result = await showNodeLaneCatalogSheet<String>(
+              result = await showNodeLaneBubble<String>(
                 context,
-                const MobileBackupPasswordDialog(wasIncorrect: true),
+                label: 'Test form',
+                child: const MobileBackupPasswordDialog(wasIncorrect: true),
                 dismissible: false,
               );
             },
@@ -545,7 +560,7 @@ void main() {
       await tap(tester, find.text('Merge'));
       expect(result, isTrue);
       await tap(tester, find.text('Open'));
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(result, isNull);
       choice = const MobileRestoreCategories(
@@ -631,7 +646,7 @@ void main() {
       await tester.pumpAndSettle();
       await tap(tester, find.text('Manga destination with a long name (en)'));
       await tap(tester, find.text('Missing manga source'));
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(
         find.textContaining('Manga destination with a long name'),

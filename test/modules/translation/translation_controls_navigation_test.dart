@@ -13,6 +13,8 @@ import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 
+import '../../helpers/bubble_finders.dart';
+
 class _Runtime extends Fake implements ChannelRuntime {
   @override
   void setWindow(
@@ -210,7 +212,11 @@ void main() {
     expect(find.byType(MobileNodeLaneAccountPage), findsNothing);
     expect(service.loginCalls, 0);
     expect(controller.shouldTranslateAutomatically, isFalse);
-    await tester.tap(find.byTooltip('关闭').last);
+    expect(find.byType(NodeLaneBubblePanel), findsNWidgets(2));
+    await tester.tap(inBubble(find.byTooltip('关闭')));
+    await tester.pumpAndSettle();
+    expect(find.text('登录后开启翻译'), findsOneWidget);
+    await tester.tap(find.byTooltip('关闭'));
     await tester.pumpAndSettle();
     expect(readerKey.currentState, same(reader));
     expect(readingPosition.offset, 320);

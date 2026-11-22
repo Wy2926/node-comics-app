@@ -2,7 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/delete_source.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -34,7 +34,7 @@ Future<LibrarySourceGroup?> showMobileLibrarySourcePicker(
   String? description,
   required String emptyMessage,
 }) async {
-  final picked = await showMobileSettingsPicker<LibrarySourceGroup?>(
+  final picked = await showSettingChoice<LibrarySourceGroup?>(
     context,
     title: title,
     current: null,
@@ -43,7 +43,7 @@ Future<LibrarySourceGroup?> showMobileLibrarySourcePicker(
     emptyMessage: emptyMessage,
     options: [
       for (final group in groups)
-        MobileSettingOption(
+        SettingOption(
           group,
           group.sourceName,
           subtitle: librarySourceDetails(context, group),

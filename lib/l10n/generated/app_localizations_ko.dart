@@ -658,6 +658,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get downloaded_only => '다운로드 항목만';
 
   @override
+  String get downloaded_only_hint => '서재에 다운로드한 콘텐츠가 있는 작품만 표시합니다.';
+
+  @override
+  String get incognito_mode_hint => '읽기 및 재생 위치 저장을 일시 중지합니다.';
+
+  @override
   String get download_queue => '다운로드 대기열';
 
   @override
@@ -4575,17 +4581,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get search_scope => '검색 범위';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count 웹사이트 검색',
-      one: '1 웹사이트 검색',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => '웹사이트 찾기';

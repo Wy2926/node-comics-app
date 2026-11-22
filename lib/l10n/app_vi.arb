@@ -320,6 +320,8 @@
   "clean_database_desc": "Thao tác này sẽ xóa tất cả các mục chưa được thêm vào thư viện!",
   "incognito_mode": "Chế độ ẩn danh",
   "downloaded_only": "Chỉ được tải xuống",
+  "downloaded_only_hint": "Chỉ hiển thị trong thư viện những tác phẩm có nội dung đã tải xuống.",
+  "incognito_mode_hint": "Tạm dừng lưu tiến độ đọc và phát.",
   "download_queue": "Hàng đợi tải xuống",
   "categories": "Danh mục",
   "statistics": "Thống kê",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Phạm vi tìm kiếm",
-  "search_websites_action": "{count, plural, =1{Tìm kiếm 1 trang web} other{Tìm kiếm {count} website}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Tìm một trang web",
   "search_selected_websites": "{count, plural, =1{1 trang web được chọn} other{{count} trang web được chọn}}",
   "@search_selected_websites": {

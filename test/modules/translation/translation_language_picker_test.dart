@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/translation/translation_language_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 import 'package:mangayomi/services/translation/languages.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -58,7 +58,7 @@ void main() {
         }, textScale: scale);
         final first = find.widgetWithText(NodeLaneRow, '简体中文');
         expect(first.hitTestable(), findsOneWidget);
-        final surface = tester.getRect(find.byType(NodeLaneReaderSurface));
+        final surface = tester.getRect(find.byType(NodeLaneBubblePanel));
         expect(surface.top, greaterThanOrEqualTo(47));
         expect(surface.bottom, lessThanOrEqualTo(844));
         expect(
@@ -84,15 +84,16 @@ void main() {
         await tester.pumpAndSettle();
         expect(last.hitTestable(), findsOneWidget);
         expect(
-          tester.getRect(find.byType(NodeLaneReaderSurface)).bottom -
-              tester.getRect(last).bottom,
-          greaterThanOrEqualTo(34),
+          tester.getRect(last).bottom,
+          lessThanOrEqualTo(
+            tester.getRect(find.byType(NodeLaneBubblePanel)).bottom,
+          ),
         );
         await tester.tap(last);
         await tester.pumpAndSettle();
         expect(results, [null, choice.key]);
         expect(current, choice.key);
-        expect(find.byType(NodeLaneReaderSurface), findsNothing);
+        expect(find.byType(NodeLaneBubblePanel), findsNothing);
 
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();

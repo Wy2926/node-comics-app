@@ -4,9 +4,10 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/settings/downloads/providers/downloads_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -30,7 +31,7 @@ class MobileDataAndStorage extends ConsumerStatefulWidget {
   final VoidCallback onCreate;
   final Future<void> Function() onRestore;
   final Future<String?> Function() onChooseDirectory;
-  final Future<void> Function(bool) onEncryptionChanged;
+  final Future<void> Function(BuildContext, bool) onEncryptionChanged;
   final bool canChooseBackupLocation;
   final List<Widget> maintenance;
   final Future<void> Function() onClearCovers;
@@ -57,15 +58,18 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
     }
   }
 
-  Future<void> _downloadLocation((String, String) location) async {
+  Future<void> _downloadLocation(
+    BuildContext anchor,
+    (String, String) location,
+  ) async {
     final l10n = context.l10n;
-    final selected = await showMobileSettingsPicker<bool>(
-      context,
+    final selected = await showSettingChoice<bool>(
+      anchor,
       title: l10n.download_location,
       current: location.$2.isNotEmpty,
       options: [
-        MobileSettingOption(false, l10n.default0, subtitle: location.$1),
-        MobileSettingOption(
+        SettingOption(false, l10n.default0, subtitle: location.$1),
+        SettingOption(
           true,
           l10n.custom_location,
           subtitle: location.$2.isEmpty ? null : location.$2,
@@ -87,12 +91,16 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
     });
   }
 
-  Future<void> _clear(String title, Future<void> Function() operation) async {
+  Future<void> _clear(
+    BuildContext anchor,
+    String title,
+    Future<void> Function() operation,
+  ) async {
     if (_busy || _confirming) return;
     _confirming = true;
     try {
       final confirmed = await showNodeLaneConfirmation(
-        context,
+        anchor,
         title: title,
         message: context.l10n.settings_cache_confirmation(title),
         confirmLabel: context.l10n.settings_cache_clear,
@@ -148,194 +156,185 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
       title: title,
       value: value,
       icon: icon,
-      trailing: TextButton(
-        onPressed: _busy || !enabled ? null : () => _clear(title, action),
-        child: Text(l.settings_cache_clear),
+      trailing: Builder(
+        builder: (a) => TextButton(
+          onPressed: _busy || !enabled ? null : () => _clear(a, title, action),
+          child: Text(l.settings_cache_clear),
+        ),
       ),
     );
 
-    return NodeLaneSurface(
-      child: PopScope(
-        canPop: !_busy,
-        child: Scaffold(
-          appBar: nodeLaneAppBar(
-            context,
-            title: l.settings_storage_backup,
-            busy: _busy,
-          ),
-          body: SafeArea(
-            top: false,
-            child: AbsorbPointer(
-              absorbing: _busy,
-              child: MobileSettingsList(
-                key: const PageStorageKey('mobile-data-and-storage'),
-                padding: NodeLaneTokens.pagePadding,
+    return PopScope(
+      canPop: !_busy,
+      child: MobileBrowsePage(
+        title: l.settings_storage_backup,
+        leading: _busy
+            ? const SizedBox(width: NodeLaneTokens.minTapTarget)
+            : null,
+        body: AbsorbPointer(
+          absorbing: _busy,
+          child: MobileSettingsList(
+            key: const PageStorageKey('mobile-data-and-storage'),
+            children: [
+              MobileSettingsGroup(
+                title: l.backup_and_restore,
                 children: [
-                  MobileSettingsGroup(
-                    title: l.backup_and_restore,
-                    children: [
-                      NodeLaneRow(
-                        title: l.create_backup,
-                        icon: icons.backup,
-                        onTap: widget.onCreate,
-                      ),
-                      NodeLaneRow(
-                        title: l.restore_backup,
-                        icon: icons.restore,
-                        onTap: () => _run(widget.onRestore),
-                      ),
-                      NodeLaneRow(
-                        title: l.automatic_backups,
-                        openOnReveal: true,
-                        icon: icons.refresh,
-                        value: frequency >= 0 && frequency < frequencies.length
-                            ? frequencies[frequency]
-                            : l.unknown,
-                        onTap: () async {
-                          final selected = await showMobileSettingsPicker<int>(
-                            context,
-                            title: l.backup_frequency,
-                            current: frequency,
-                            options: [
-                              for (var i = 0; i < frequencies.length; i++)
-                                MobileSettingOption(i, frequencies[i]),
-                            ],
-                          );
-                          if (mounted &&
-                              selected != null &&
-                              selected.value != frequency) {
-                            ref
-                                .read(backupFrequencyStateProvider.notifier)
-                                .set(selected.value);
-                          }
-                        },
-                      ),
-                    ],
+                  NodeLaneRow(
+                    title: l.create_backup,
+                    icon: icons.backup,
+                    onTap: widget.onCreate,
                   ),
-                  MobileSettingsGroup(
-                    title: l.settings_local_cache,
-                    children: [
-                      clearRow(
-                        l.settings_chapter_cache,
-                        icons.categories,
-                        () => ref
-                            .read(totalChapterCacheSizeStateProvider.notifier)
-                            .clearCache(),
-                        value: cacheSize,
-                      ),
-                      clearRow(
-                        l.settings_cover_cache,
-                        icons.image,
-                        widget.onClearCovers,
-                      ),
-                      ListenableBuilder(
-                        listenable: translation,
-                        builder: (context, _) => clearRow(
-                          l.settings_translation_cache,
-                          icons.translate,
-                          _clearTranslation,
-                          enabled: !translation.busy,
-                        ),
-                      ),
-                    ],
+                  NodeLaneRow(
+                    title: l.restore_backup,
+                    icon: icons.restore,
+                    onTap: () => _run(widget.onRestore),
                   ),
-                  MobileSettingsGroup(
-                    children: [
-                      NodeLaneRow(
-                        title: l.download_location,
-                        openOnReveal: true,
-                        icon: icons.folderOutline,
-                        value: location.$2.isEmpty
-                            ? l.default0
-                            : l.custom_location,
-                        subtitle: location.$2.isEmpty
-                            ? location.$1
-                            : location.$2,
-                        onTap: () => _downloadLocation(location),
-                      ),
-                    ],
+                  NodeLaneRow(
+                    title: l.automatic_backups,
+                    openOnReveal: true,
+                    icon: icons.refresh,
+                    value: frequency >= 0 && frequency < frequencies.length
+                        ? frequencies[frequency]
+                        : l.unknown,
+                    onOpen: (a) async {
+                      final selected = await showSettingChoice<int>(
+                        a,
+                        title: l.backup_frequency,
+                        current: frequency,
+                        options: [
+                          for (var i = 0; i < frequencies.length; i++)
+                            SettingOption(i, frequencies[i]),
+                        ],
+                      );
+                      if (mounted &&
+                          selected != null &&
+                          selected.value != frequency) {
+                        ref
+                            .read(backupFrequencyStateProvider.notifier)
+                            .set(selected.value);
+                      }
+                    },
                   ),
-                  NodeLaneDisclosure(
-                    title: l.settings_advanced_options,
-                    icon: icons.adjustments,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: NodeLaneTokens.groupPadding,
-                          child: Text(
-                            l.backup_and_restore_warning_info,
-                            style: t.readerSecondary,
-                          ),
-                        ),
-                        if (widget.canChooseBackupLocation)
-                          NodeLaneRow(
-                            title: l.backup_location,
-                            value: backupLocation.$2.isEmpty
-                                ? backupLocation.$1
-                                : backupLocation.$2,
-                            icon: icons.folderOutline,
-                            onTap: () => _run(() async {
-                              final path = await widget.onChooseDirectory();
-                              if (mounted &&
-                                  path != null &&
-                                  path != backupLocation.$2) {
-                                ref
-                                    .read(
-                                      autoBackupLocationStateProvider.notifier,
-                                    )
-                                    .set(path);
-                              }
-                            }),
-                          ),
-                        NodeLaneSwitchRow(
-                          title: l.encrypt_backups,
-                          icon: icons.security,
-                          value: ref.watch(backupEncryptionEnabledProvider),
-                          onChanged: _busy
-                              ? null
-                              : (value) => _run(
-                                  () => widget.onEncryptionChanged(value),
-                                ),
-                        ),
-                        NodeLaneSliderRow(
-                          title: l.compression_level,
-                          value: compression.clamp(0, 9).toDouble(),
-                          min: 0,
-                          max: 9,
-                          divisions: 9,
-                          enabled: !_busy,
-                          onPreview: (value) => ref
-                              .read(backupCompressionLevelProvider.notifier)
-                              .update(value.round()),
-                          onChanged: (value) => _run(
-                            () => ref
-                                .read(backupCompressionLevelProvider.notifier)
-                                .set(value.round()),
-                          ),
-                        ),
-                        NodeLaneSwitchRow(
-                          title: l.clear_chapter_or_episode_cache_on_app_launch,
-                          icon: icons.delete,
-                          value: ref.watch(
-                            clearChapterCacheOnAppLaunchStateProvider,
-                          ),
-                          onChanged: _busy
-                              ? null
-                              : ref
-                                    .read(
-                                      clearChapterCacheOnAppLaunchStateProvider
-                                          .notifier,
-                                    )
-                                    .set,
-                        ),
-                        ...widget.maintenance,
-                      ],
+                ],
+              ),
+              MobileSettingsGroup(
+                title: l.settings_local_cache,
+                children: [
+                  clearRow(
+                    l.settings_chapter_cache,
+                    icons.categories,
+                    () => ref
+                        .read(totalChapterCacheSizeStateProvider.notifier)
+                        .clearCache(),
+                    value: cacheSize,
+                  ),
+                  clearRow(
+                    l.settings_cover_cache,
+                    icons.image,
+                    widget.onClearCovers,
+                  ),
+                  ListenableBuilder(
+                    listenable: translation,
+                    builder: (context, _) => clearRow(
+                      l.settings_translation_cache,
+                      icons.translate,
+                      _clearTranslation,
+                      enabled: !translation.busy,
                     ),
                   ),
                 ],
               ),
-            ),
+              MobileSettingsGroup(
+                children: [
+                  NodeLaneRow(
+                    title: l.download_location,
+                    openOnReveal: true,
+                    icon: icons.folderOutline,
+                    value: location.$2.isEmpty ? l.default0 : l.custom_location,
+                    subtitle: location.$2.isEmpty ? location.$1 : location.$2,
+                    onOpen: (a) => _downloadLocation(a, location),
+                  ),
+                ],
+              ),
+              NodeLaneDisclosure(
+                title: l.settings_advanced_options,
+                icon: icons.adjustments,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: NodeLaneTokens.groupPadding,
+                      child: Text(
+                        l.backup_and_restore_warning_info,
+                        style: t.readerSecondary,
+                      ),
+                    ),
+                    if (widget.canChooseBackupLocation)
+                      NodeLaneRow(
+                        title: l.backup_location,
+                        value: backupLocation.$2.isEmpty
+                            ? backupLocation.$1
+                            : backupLocation.$2,
+                        icon: icons.folderOutline,
+                        onTap: () => _run(() async {
+                          final path = await widget.onChooseDirectory();
+                          if (mounted &&
+                              path != null &&
+                              path != backupLocation.$2) {
+                            ref
+                                .read(autoBackupLocationStateProvider.notifier)
+                                .set(path);
+                          }
+                        }),
+                      ),
+                    Builder(
+                      builder: (a) => NodeLaneSwitchRow(
+                        title: l.encrypt_backups,
+                        icon: icons.security,
+                        value: ref.watch(backupEncryptionEnabledProvider),
+                        onChanged: _busy
+                            ? null
+                            : (value) => _run(
+                                () => widget.onEncryptionChanged(a, value),
+                              ),
+                      ),
+                    ),
+                    NodeLaneSliderRow(
+                      title: l.compression_level,
+                      value: compression.clamp(0, 9).toDouble(),
+                      min: 0,
+                      max: 9,
+                      divisions: 9,
+                      enabled: !_busy,
+                      onPreview: (value) => ref
+                          .read(backupCompressionLevelProvider.notifier)
+                          .update(value.round()),
+                      onChanged: (value) => _run(
+                        () => ref
+                            .read(backupCompressionLevelProvider.notifier)
+                            .set(value.round()),
+                      ),
+                    ),
+                    NodeLaneSwitchRow(
+                      title: l.clear_chapter_or_episode_cache_on_app_launch,
+                      icon: icons.delete,
+                      value: ref.watch(
+                        clearChapterCacheOnAppLaunchStateProvider,
+                      ),
+                      onChanged: _busy
+                          ? null
+                          : ref
+                                .read(
+                                  clearChapterCacheOnAppLaunchStateProvider
+                                      .notifier,
+                                )
+                                .set,
+                    ),
+                    ...widget.maintenance,
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

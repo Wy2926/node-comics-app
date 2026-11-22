@@ -1254,6 +1254,18 @@ abstract class AppLocalizations {
   /// **'Downloaded only'**
   String get downloaded_only;
 
+  /// No description provided for @downloaded_only_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only show titles with downloads in the library.'**
+  String get downloaded_only_hint;
+
+  /// No description provided for @incognito_mode_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause saving reading and playback progress.'**
+  String get incognito_mode_hint;
+
   /// No description provided for @download_queue.
   ///
   /// In en, this message translates to:
@@ -8374,12 +8386,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search scope'**
   String get search_scope;
-
-  /// No description provided for @search_websites_action.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{Search 1 website} other{Search {count} websites}}'**
-  String search_websites_action(int count);
 
   /// No description provided for @search_find_website.
   ///

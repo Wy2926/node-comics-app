@@ -41,7 +41,7 @@ final class LocalFoldersStateProvider
   }
 }
 
-String _$localFoldersStateHash() => r'23812f818bb33d3d3b3aa8970b57585c4bd7a499';
+String _$localFoldersStateHash() => r'5b96eab0eccfc3bac0d60a2f40de19eb9fdd8665';
 
 abstract class _$LocalFoldersState extends $Notifier<List<LocalFolder>> {
   List<LocalFolder> build();
@@ -54,60 +54,6 @@ abstract class _$LocalFoldersState extends $Notifier<List<LocalFolder>> {
             as $ClassProviderElement<
               AnyNotifier<List<LocalFolder>, List<LocalFolder>>,
               List<LocalFolder>,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(DownloadLocalFolderNameState)
-final downloadLocalFolderNameStateProvider =
-    DownloadLocalFolderNameStateProvider._();
-
-final class DownloadLocalFolderNameStateProvider
-    extends $NotifierProvider<DownloadLocalFolderNameState, String?> {
-  DownloadLocalFolderNameStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'downloadLocalFolderNameStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$downloadLocalFolderNameStateHash();
-
-  @$internal
-  @override
-  DownloadLocalFolderNameState create() => DownloadLocalFolderNameState();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<String?>(value),
-    );
-  }
-}
-
-String _$downloadLocalFolderNameStateHash() =>
-    r'7b0b53217a77ef741221bd74cd1903789512e98e';
-
-abstract class _$DownloadLocalFolderNameState extends $Notifier<String?> {
-  String? build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<String?, String?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<String?, String?>,
-              String?,
               Object?,
               Object?
             >;

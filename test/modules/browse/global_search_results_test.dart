@@ -15,6 +15,10 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/global_search/global_search_screen.dart';
 import 'package:mangayomi/modules/browse/global_search/search_activity.dart';
+import 'package:mangayomi/modules/manga/detail/manga_detail_main.dart';
+import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
+import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_providers.dart';
+import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
@@ -170,7 +174,7 @@ void main() {
         await pumpActivity(tester);
         expect(find.textContaining('搜索失败'), findsNothing);
         expect(find.textContaining('正在搜索'), findsNothing);
-        await tester.tap(find.byTooltip('返回'));
+        await tester.tap(find.byTooltip('关闭').hitTestable());
         await tester.pumpAndSettle();
         expect(find.text('Website 3'), findsOneWidget);
         expect(find.text('Website 2'), findsNothing);
@@ -180,6 +184,83 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
+      });
+    },
+  );
+
+  testWidgets(
+    'one toolbar serves both result columns and a direct title opens below without querying another level',
+    (tester) async {
+      await tester.runAsync(() async {
+        final calls = <int>[];
+        final container = ProviderContainer(
+          overrides: [
+            searchProvider.overrideWith((_, args) async {
+              final id = args.source.id!;
+              calls.add(id);
+              return id.isOdd ? matches('Match $id') : MPages(list: []);
+            }),
+            getMangaDetailStreamProvider.overrideWith(
+              (_, _) => Stream.value(null),
+            ),
+            updateMangaDetailProvider.overrideWith((_, _) async {}),
+          ],
+        );
+        addTearDown(container.dispose);
+        await mount(tester, container);
+        tester.view.physicalSize = const Size(1180, 760);
+        await tester.pumpAndSettle();
+        final sections = find.byType(SourceResultSection),
+            field = find.byType(TextField);
+        final left = tester.getRect(sections.first),
+            right = tester.getRect(sections.last);
+        expect(sections, findsNWidgets(2));
+        expect(field, findsOneWidget);
+        expect(tester.getRect(field).bottom, lessThan(left.top));
+        expect(left.top, right.top);
+        expect(left.right, closeTo(right.left, 1));
+        expect(left.left, 0);
+        expect(right.right, 1180);
+        final feed = find.byKey(const ValueKey('Ocean'));
+        final initial = tester.getRect(feed);
+        final cover = find.text('Match 3 0');
+        final book = find.byType(MangaReaderDetail);
+        Future<void> openCover() async {
+          await tester.tap(cover);
+          final deadline = DateTime.now().add(const Duration(seconds: 4));
+          do {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+            await pumpActivity(tester);
+          } while ((book.evaluate().isEmpty ||
+                  tester.getRect(book).top > initial.top + 1) &&
+              DateTime.now().isBefore(deadline));
+          expect(tester.getRect(book), initial);
+        }
+
+        await tester.enterText(field, 'next draft');
+        await openCover();
+        final detailState = tester.state(book);
+        expect(tester.getSize(feed), initial.size);
+        expect(
+          tester.getRect(book).top,
+          closeTo(tester.getRect(feed).bottom, 1),
+        );
+        expect(find.byType(MangaHomeScreen), findsNothing);
+        expect(field, findsOneWidget);
+        await tester.ensureVisible(cover);
+        await tester.pump();
+        expect(cover.hitTestable(), findsOneWidget);
+        await openCover();
+        expect(tester.state(book), same(detailState));
+        expect(calls, [1, 2, 3, 4]);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(book, findsNothing);
+        expect(tester.getRect(sections.first), left);
+        expect(tester.widget<TextField>(field).controller!.text, 'next draft');
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await database.mangas.count();
       });
     },
   );
@@ -217,7 +298,8 @@ void main() {
         expect(find.text('Other media'), findsNothing);
         await tester.tap(find.text('常用'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('搜索这 1 个网站'));
+        expect(find.text('已选 1 个网站'), findsOneWidget);
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(find.byType(SourceResultSection), findsOneWidget);
         expect(state.position.pixels, offset);
@@ -228,7 +310,7 @@ void main() {
         );
         await tester.tap(find.textContaining('常用网站 · 1'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('搜索这 1 个网站'));
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(calls, [1, 2, 3, 4]);
         expect(state.position.pixels, offset);
@@ -305,7 +387,7 @@ void main() {
         expect(find.text('Novel website'), findsNothing);
         await tester.tap(find.text('全部'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('搜索这 1 个网站'));
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(calls, [1]);
       }

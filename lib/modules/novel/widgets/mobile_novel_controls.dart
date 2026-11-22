@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_number_bubble.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +92,8 @@ class MobileNovelControls extends StatelessWidget {
           builder: (context, constraints) {
             final actions = [
               chapterAction,
-              NodeLaneNumberPicker(
+              NodeLaneNumberButton(
+                title: l10n.font_size,
                 value: fontSize,
                 min: 8,
                 max: 40,

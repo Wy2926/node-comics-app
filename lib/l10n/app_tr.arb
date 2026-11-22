@@ -320,6 +320,8 @@
   "clean_database_desc": "Bu, kütüphaneye eklenmeyen tüm öğeleri kaldıracaktır!",
   "incognito_mode": "Gizli Mod",
   "downloaded_only": "Sadece indirilmiş",
+  "downloaded_only_hint": "Kitaplıkta yalnızca indirilmiş içeriği olan eserleri göster.",
+  "incognito_mode_hint": "Okuma ve oynatma ilerlemesini kaydetmeyi duraklat.",
   "download_queue": "İndirme Kuyruğu",
   "categories": "Kategoriler",
   "statistics": "İstatistikler",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Arama kapsamı",
-  "search_websites_action": "{count, plural, =1{1 web sitesinde arama yapın} other{{count} web sitelerinde arama yapın}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Bir web sitesi bulun",
   "search_selected_websites": "{count, plural, =1{1 web sitesi seçildi} other{{count} web siteleri seçildi}}",
   "@search_selected_websites": {

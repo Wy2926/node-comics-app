@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/source_preference_widget.dart';
 
 void main() {
@@ -20,20 +22,21 @@ void main() {
               .copyWith(textScaler: TextScaler.linear(2)),
           child: child!,
         ),
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: TextButton(
-              onPressed: () => showDialog<void>(
-                context: context,
-                builder: (_) => EditTextDialogWidget(
-                  text: 'Original',
+        home: Scaffold(
+          body: SourcePreferenceWidget(
+            source: Source(id: 8),
+            sourcePreference: [
+              SourcePreference(
+                editTextPreference: EditTextPreference(
+                  title: 'Edit',
+                  value: 'Original',
                   dialogTitle: 'Source preference',
                   dialogMessage: 'A longer description supplied by the source.',
-                  onChanged: saved.add,
                 ),
               ),
-              child: const Text('Edit'),
-            ),
+            ],
+            onSave: (pref, _) async =>
+                saved.add(pref.editTextPreference!.value!),
           ),
         ),
       ),

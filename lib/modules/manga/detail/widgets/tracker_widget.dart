@@ -15,7 +15,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_tracker_card.dart';
 
-import 'package:numberpicker/numberpicker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class TrackerWidget extends ConsumerStatefulWidget {
@@ -278,81 +278,38 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
               Expanded(
                 child: _elevatedButton(
                   context,
-                  onPressed: () {
-                    int currentIntValue = widget.trackRes.lastChapterRead!;
-                    showNodeLaneDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text(
-                            widget.itemType == ItemType.manga
-                                ? l10n!.chapters
-                                : l10n!.episodes,
-                          ),
-                          content: StatefulBuilder(
-                            builder: (context, setState) => SizedBox(
-                              height: 200,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  NumberPicker(
-                                    value: currentIntValue,
-                                    minValue: 0,
-                                    maxValue: widget.trackRes.totalChapter != 0
-                                        ? widget.trackRes.totalChapter!
-                                        : 10000,
-                                    step: 1,
-                                    haptics: true,
-                                    onChanged: (value) =>
-                                        setState(() => currentIntValue = value),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.cancel,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes
-                                              ..lastChapterRead =
-                                                  currentIntValue,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .updateManga();
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.ok,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
+                  onOpen: (anchor) async {
+                    final max = (widget.trackRes.totalChapter ?? 0) > 0
+                        ? widget.trackRes.totalChapter!
+                        : 10000;
+                    final value = await showSettingText(
+                      anchor,
+                      title: widget.itemType == ItemType.manga
+                          ? context.l10n.chapters
+                          : context.l10n.episodes,
+                      initialValue: '${widget.trackRes.lastChapterRead ?? 0}',
+                      helper: '0–$max',
+                      keyboardType: TextInputType.number,
+                      isValid: (text) {
+                        final n = int.tryParse(text.trim());
+                        return n != null && n >= 0 && n <= max;
                       },
                     );
+                    if (mounted &&
+                        value != null &&
+                        int.parse(value.trim()) !=
+                            widget.trackRes.lastChapterRead) {
+                      ref
+                          .read(
+                            trackStateProvider(
+                              track: widget.trackRes
+                                ..lastChapterRead = int.parse(value.trim()),
+                              itemType: widget.itemType,
+                              widgetRef: ref,
+                            ).notifier,
+                          )
+                          .updateManga();
+                    }
                   },
                   text: widget.trackRes.totalChapter != 0
                       ? "${widget.trackRes.lastChapterRead}/${widget.trackRes.totalChapter}"
@@ -362,101 +319,38 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
               Expanded(
                 child: _elevatedButton(
                   context,
-                  onPressed: () {
-                    int currentIntValue = widget.trackRes.score!;
-                    showNodeLaneDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text(l10n!.score),
-                          content: StatefulBuilder(
-                            builder: (context, setState) => SizedBox(
-                              height: 200,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  NumberPicker(
-                                    value: currentIntValue,
-                                    minValue: 0,
-                                    maxValue: ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .getScoreMaxValue(),
-                                    textMapper: (numberText) {
-                                      return ref
-                                          .read(
-                                            trackStateProvider(
-                                              track: widget.trackRes,
-                                              itemType: widget.itemType,
-                                              widgetRef: ref,
-                                            ).notifier,
-                                          )
-                                          .getTextMapper(numberText);
-                                    },
-                                    step: ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .getScoreStep(),
-                                    haptics: true,
-                                    onChanged: (value) =>
-                                        setState(() => currentIntValue = value),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.cancel,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes
-                                              ..score = currentIntValue,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .updateManga();
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.ok,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
+                  onOpen: (anchor) async {
+                    final state = ref.read(
+                      trackStateProvider(
+                        track: widget.trackRes,
+                        itemType: widget.itemType,
+                        widgetRef: ref,
+                      ).notifier,
                     );
+                    final step = state.getScoreStep(),
+                        max = state.getScoreMaxValue();
+                    final picked = await showSettingChoice<int>(
+                      anchor,
+                      title: context.l10n.score,
+                      current: widget.trackRes.score ?? 0,
+                      options: [
+                        for (var i = 0; i <= max; i += step)
+                          SettingOption(i, state.getTextMapper('$i')),
+                      ],
+                    );
+                    if (mounted &&
+                        picked != null &&
+                        picked.value != widget.trackRes.score) {
+                      ref
+                          .read(
+                            trackStateProvider(
+                              track: widget.trackRes..score = picked.value,
+                              itemType: widget.itemType,
+                              widgetRef: ref,
+                            ).notifier,
+                          )
+                          .updateManga();
+                    }
                   },
                   text: widget.trackRes.score != 0
                       ? ref
@@ -567,36 +461,39 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
 
 Widget _elevatedButton(
   BuildContext context, {
-  required Function()? onPressed,
+  VoidCallback? onPressed,
+  ValueChanged<BuildContext>? onOpen,
   String text = "",
   Widget? child,
   BorderRadiusGeometry? borderRadius,
 }) {
-  return ElevatedButton(
-    style: ElevatedButton.styleFrom(
-      padding: const EdgeInsets.all(0),
-      backgroundColor: context.isLight
-          ? Theme.of(context).scaffoldBackgroundColor
-          : Colors.black,
-      elevation: 0,
-      shadowColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(
-          width: 0,
-          color: context.secondaryColor.withValues(alpha: 0.1),
-        ),
-        borderRadius: borderRadius ?? BorderRadius.circular(0),
-      ),
-    ),
-    onPressed: onPressed,
-    child:
-        child ??
-        Text(
-          text,
-          style: TextStyle(
-            color: Theme.of(context).textTheme.bodyMedium!.color!
-                .withValues(alpha: 0.9),
+  return Builder(
+    builder: (anchor) => ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.all(0),
+        backgroundColor: context.isLight
+            ? Theme.of(context).scaffoldBackgroundColor
+            : Colors.black,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            width: 0,
+            color: context.secondaryColor.withValues(alpha: 0.1),
           ),
+          borderRadius: borderRadius ?? BorderRadius.circular(0),
         ),
+      ),
+      onPressed: onOpen == null ? onPressed : () => onOpen(anchor),
+      child:
+          child ??
+          Text(
+            text,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium!.color!
+                  .withValues(alpha: 0.9),
+            ),
+          ),
+    ),
   );
 }

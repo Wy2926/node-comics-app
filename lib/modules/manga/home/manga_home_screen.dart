@@ -3,15 +3,14 @@ import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/browse/extension/extension_detail.dart';
 import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_actions.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_catalog.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
 import 'package:mangayomi/modules/webview/browser_url.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,12 +53,15 @@ class MangaHomeScreen extends ConsumerStatefulWidget {
   final String query;
   final ValueChanged<int>? onOpenDetail;
   final int? activeBookId;
+
+  final bool sharedSearch;
   const MangaHomeScreen({
     required this.source,
     this.query = "",
     this.isLatest = false,
     this.onOpenDetail,
     this.activeBookId,
+    this.sharedSearch = false,
     super.key,
   });
 
@@ -116,6 +118,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       ? []
       : getFilterList(source: source);
   late List<dynamic> filters = copySourceFilters(_defaultFilters);
+  List<dynamic>? _pendingFilters;
+  Timer? _filterTimer;
+  late int _browseIndex = widget.isLatest ? 1 : 0;
   late StreamSubscription<List<Manga>> _mangaStreamSub;
   Map<String, Manga> _libraryIndex = {};
   List<TypeMangaSelector> _types(BuildContext context) {
@@ -165,6 +170,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   }
 
   void _submit(String value) {
+    if (_pendingFilters case final pending?) _editFilters(pending, false);
     final query = value.trim();
     FocusScope.of(context).unfocus();
     if (query == _query && (_usesSearch || _selectedIndex == 0)) return;
@@ -176,6 +182,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       if (_usesSearch) {
         _resetResults();
       } else {
+        _browseIndex = 0;
         _visitedBrowseTabs.add(0);
         _restorePosition();
       }
@@ -188,12 +195,15 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
   }
 
   void _select(int index) {
+    _filterTimer?.cancel();
+    _pendingFilters = null;
     FocusScope.of(context).unfocus();
     _textEditingController.clear();
     if (_selectedIndex == index && !_usesSearch) return;
     _savePosition();
     setState(() {
       _selectedIndex = index;
+      _browseIndex = index;
       _showSearchField = false;
       if (_isFiltering) filters = copySourceFilters(_defaultFilters);
       _isFiltering = false;
@@ -356,6 +366,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
 
   @override
   void dispose() {
+    _filterTimer?.cancel();
     _notice?.dismiss();
     _mangaStreamSub.cancel();
     _scrollController.removeListener(_onScroll);
@@ -375,7 +386,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     }
   }
 
-  Future<void> _promptSaveSearch() async {
+  Future<void> _promptSaveSearch([BuildContext? menu]) async {
     final query = _query.trim();
     if (query.isEmpty) {
       showNodeLaneNotice(
@@ -384,37 +395,20 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       );
       return;
     }
-    final name = isMobile && !isTv
-        ? await showSourceTextEditor(
-            context,
-            title: context.l10n.save_search,
-            subtitle: source.name,
-            initialValue: query,
-            allowEmpty: false,
-          )
-        : await showDialog<String>(
-            context: context,
-            builder: (_) => MobileSettingsTextDialog(
-              title: context.l10n.save_search,
-              initialValue: query,
-              hint: context.l10n.name,
-              isValid: (value) => value.trim().isNotEmpty,
-            ),
-          );
+    final name = await showSettingText(
+      menu ?? context,
+      title: context.l10n.save_search,
+      helper: source.name,
+      hint: context.l10n.name,
+      initialValue: query,
+      isValid: (value) => value.trim().isNotEmpty,
+    );
     if (name != null && mounted) {
       ref.read(savedSearchesProvider.notifier).add(source.id!, name, query);
     }
   }
 
   Future<void> _showSavedSearches() async {
-    if (isMobile && !isTv) {
-      final query = await pushBrowsePage<String>(
-        context,
-        MobileSavedSearches(sourceId: source.id!, title: source.name ?? ''),
-      );
-      if (query != null && mounted) _runSavedSearch(query);
-      return;
-    }
     showModalBottomSheet(
       context: context,
       builder: (ctx) => Consumer(
@@ -495,34 +489,73 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     }
   }
 
-  Future<void> _mobileAction(SourceCatalogAction choice) async {
-    FocusScope.of(context).unfocus();
+  Future<void> _mobileAction(
+    BuildContext menu,
+    SourceCatalogAction choice,
+  ) async {
+    if (!mounted) return;
     switch (choice) {
       case SourceCatalogAction.save:
-        await _promptSaveSearch();
+        await _promptSaveSearch(menu);
       case SourceCatalogAction.saved:
-        await _showSavedSearches();
+        final query = await NodeLaneBubbleFlow.push<String>(
+          menu,
+          MobileSavedSearches(sourceId: source.id!, title: source.name ?? ''),
+        );
+        if (query != null && mounted && menu.mounted) {
+          Navigator.pop(menu);
+          _runSavedSearch(query);
+        }
       case SourceCatalogAction.settings:
-        await _onSourceOverflow(1);
+        final updated = await showSourceSettings(menu, source);
+        if (updated != null && mounted) setState(() => source = updated);
       case SourceCatalogAction.info:
-        await showSourceWebsiteInfo(context, source);
+        await showSourceWebsiteInfo(menu, source);
       case SourceCatalogAction.filter:
-        await _mobileFilters();
+        await NodeLaneBubbleFlow.open<void>(
+          menu,
+          title: menu.l10n.filter,
+          child: MobileSourceFilterPage(
+            filters: _pendingFilters ?? filters,
+            defaults: () => _defaultFilters,
+            sourceName: source.name,
+            onChanged: _editFilters,
+          ),
+        );
     }
   }
 
-  Future<void> _mobileFilters() async {
-    FocusScope.of(context).unfocus();
-    final selected = await pushBrowsePage<List<dynamic>>(
-      context,
-      MobileSourceFilterPage(
-        filters: filters,
-        defaults: () => _defaultFilters,
-        sourceName: source.name,
-      ),
-    );
-    if (selected == null || !mounted) return;
-    _applyFilters(selected);
+  void _editFilters(List<dynamic> edited, bool typing) {
+    if (!mounted) return;
+    _filterTimer?.cancel();
+    _pendingFilters = edited;
+    void apply() {
+      _pendingFilters = null;
+      if (sameSourceFilterState(edited, filters)) return;
+      if (!sameSourceFilterState(edited, _defaultFilters)) {
+        _applyFilters(copySourceFilters(edited));
+        return;
+      }
+      _savePosition();
+      setState(() {
+        _isFiltering = false;
+        filters = copySourceFilters(_defaultFilters);
+        if (_query.isEmpty) {
+          _selectedIndex = _browseIndex;
+          _visitedBrowseTabs.add(_browseIndex);
+          _restorePosition();
+        } else {
+          _resetResults();
+        }
+      });
+    }
+
+    if (typing) {
+      // The screen owns the timer so dismissing the editor still applies the last edit.
+      _filterTimer = Timer(const Duration(milliseconds: 300), apply);
+    } else {
+      apply();
+    }
   }
 
   void _applyFilters(List<dynamic> selected) {
@@ -533,7 +566,6 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       _isFiltering = true;
       _resetResults();
     });
-    _invalidatePage(1);
   }
 
   Widget _buildMobile(DisplayType display) {
@@ -541,7 +573,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     final loading = _getManga!.isLoading;
     final error = loading ? null : _getManga!.error;
     final count = _visibleCount;
-    if (error != null) _notifyFailure(error);
+    if (error != null && ModalRoute.isCurrentOf(context) != false) {
+      _notifyFailure(error);
+    }
     final canOpenWebsite =
         !isLocal &&
         isBrowserUrl(ref.watch(sourceBaseUrlProvider(source: source)));
@@ -550,6 +584,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           ? '${l10n.local_source} ${source.itemType.localized(l10n)}'
           : source.name ?? '',
       search: _textEditingController,
+      sharedQuery: widget.sharedSearch ? _query : null,
       onSubmit: () => _submit(_textEditingController.text),
       onClear: _clearSearch,
       selected: _usesSearch ? 2 : _selectedIndex,
@@ -560,7 +595,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
         local: isLocal,
         canSave: _query.trim().isNotEmpty,
         hasFilters: () => _defaultFilters.isNotEmpty,
-        filtering: _isFiltering,
+        filtering: () => _pendingFilters == null
+            ? _isFiltering
+            : !sameSourceFilterState(_pendingFilters!, _defaultFilters),
         onSelected: _mobileAction,
       ),
       display: display,
@@ -650,7 +687,8 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       _results.loadingNext = false;
       _results.pageError = null;
     }
-    if (_results.pageError != null) {
+    if (_results.pageError != null &&
+        ModalRoute.isCurrentOf(context) != false) {
       _notifyFailure(_results.pageError!, nextPage: true);
     }
     final l10n = context.l10n;

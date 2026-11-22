@@ -1,3 +1,5 @@
+import '../../../helpers/bubble_finders.dart';
+
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +11,7 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/more/settings/general/mobile_general_screen.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/memory_probe_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 
 void main() {
   Widget app(Widget child) => MaterialApp(
@@ -72,7 +74,7 @@ void main() {
       }
 
       await openUpdate();
-      await tester.tap(find.byTooltip('Back'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       final interval = container.read(
         autoLibraryUpdateIntervalStateProvider.notifier,
@@ -81,7 +83,7 @@ void main() {
       Future<void> choose(int value) async {
         await openUpdate();
         final tiles = tester
-            .widgetList<NodeLaneRow>(find.byType(NodeLaneRow))
+            .widgetList<NodeLaneRow>(inBubble(find.byType(NodeLaneRow)))
             .toList();
         final index = [0, 12, 24, 48, 168].indexOf(value);
         final tile = find.byWidget(tiles[index]);
@@ -112,9 +114,12 @@ void main() {
       expect(find.text('Discord'), findsNothing);
       await tester.tap(weightsSection);
       await tester.pumpAndSettle();
-      final slider = find.byType(Slider).first;
-      await tester.ensureVisible(slider);
+      final genre = find.widgetWithText(NodeLaneRow, 'Genre Similarity');
+      await tester.ensureVisible(genre);
       await tester.pumpAndSettle();
+      await tester.tap(genre);
+      await tester.pumpAndSettle();
+      final slider = await revealBubble(tester, find.byType(Slider));
       await tester.drag(slider, const Offset(45, 0));
       await tester.pumpAndSettle();
       final weights =
@@ -124,6 +129,8 @@ void main() {
       expect(weights.writes.single.setting, 15);
       expect(weights.writes.single.synopsis, 40);
       expect(weights.writes.single.theme, 20);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.widgetWithText(TextButton, 'Reset'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(TextButton, 'Reset'));
@@ -146,15 +153,13 @@ void main() {
               body: TextButton(
                 onPressed: () async {
                   results.add(
-                    await showDialog<String>(
-                      context: context,
-                      builder: (_) => MobileSettingsTextDialog(
-                        title: 'Custom network service address',
-                        initialValue: 'https://original.invalid',
-                        helper: 'The existing address is kept until you confirm. Leave empty to disable.',
-                        isValid: (value) =>
-                            value.isEmpty || value.startsWith('https://'),
-                      ),
+                    await showSettingText(
+                      context,
+                      title: 'Custom network service address',
+                      initialValue: 'https://original.invalid',
+                      helper: 'The existing address is kept until you confirm. Leave empty to disable.',
+                      isValid: (value) =>
+                          value.isEmpty || value.startsWith('https://'),
                     ),
                   );
                 },
@@ -176,7 +181,7 @@ void main() {
             .onPressed,
         isNull,
       );
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(await revealBubble(tester, find.text('Cancel')));
       await tester.pumpAndSettle();
       expect(results, [null]);
       tester.view.viewInsets = FakeViewPadding.zero;

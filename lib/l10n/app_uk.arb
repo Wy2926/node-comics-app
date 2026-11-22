@@ -320,6 +320,8 @@
   "clean_database_desc": "Це видалить усі елементи, які не додано до бібліотеки!",
   "incognito_mode": "Режим анонімного перегляду",
   "downloaded_only": "Лише завантажено",
+  "downloaded_only_hint": "Показувати в бібліотеці лише твори із завантаженим вмістом.",
+  "incognito_mode_hint": "Призупинити збереження поступу читання та перегляду.",
   "download_queue": "Черга завантаження",
   "categories": "Категорії",
   "statistics": "Статистика",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Обсяг пошуку",
-  "search_websites_action": "{count, plural, one{Пошук на {count} сайті} few{Пошук на {count} сайтах} many{Пошук на {count} сайтах} other{Пошук на {count} сайта}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Знайдіть веб-сайт",
   "search_selected_websites": "{count, plural, one{Вибрано {count} сайт} few{Вибрано {count} сайти} many{Вибрано {count} сайтів} other{Вибрано {count} сайта}}",
   "@search_selected_websites": {

@@ -8,6 +8,7 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/update.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/updates/widgets/update_chapter_list_tile_widget.dart';
+import 'package:mangayomi/modules/updates/widgets/download_queue_button.dart';
 import 'package:mangayomi/modules/updates/update_errors_screen.dart';
 import 'package:mangayomi/services/update_errors_provider.dart';
 import 'package:mangayomi/modules/history/providers/isar_providers.dart';
@@ -109,6 +110,7 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
 
   @override
   List<Widget> buildExtraActions(BuildContext context) {
+    if (visibleTabTypes.isEmpty) return const [DownloadQueueButton()];
     final l10n = l10nLocalizations(context)!;
 
     final running = ref.watch(libraryUpdateProvider.select((s) => s.running));
@@ -118,6 +120,8 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
     if (isMobile && !isTv) {
       final icons = NodeLaneIcons.of(context);
       return [
+        const DownloadQueueButton(),
+        const SizedBox(width: NodeLaneTokens.space8),
         NodeLaneIconButton(
           tooltip: running ? l10n.cancel : l10n.refresh,
           icon: running ? icons.stop : icons.refresh,

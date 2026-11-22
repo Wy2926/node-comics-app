@@ -4,15 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/more/mobile_more_screen.dart';
-import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
-import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
-import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
+import 'package:mangayomi/modules/more/settings/mobile_settings_layout.dart';
+import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reveal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
@@ -44,10 +45,6 @@ void main() {
           ref.onDispose(service.dispose);
           return service;
         }),
-        morePendingDownloadsProvider.overrideWith((ref) => Stream.value(0)),
-        downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
-        incognitoModeStateProvider.overrideWith(_Incognito.new),
-        hideDiscordRpcInIncognitoStateProvider.overrideWith(_HideRpc.new),
       ],
     );
     addTearDown(container.dispose);
@@ -56,11 +53,21 @@ void main() {
         GoRoute(path: '/', builder: (_, _) => const MobileMoreScreen()),
         GoRoute(
           path: '/appearance',
-          builder: (_, state) => Scaffold(
-            appBar: AppBar(
-              title: Text(
-                state.uri.queryParameters['setting'] ??
-                    'Appearance destination',
+          builder: (_, state) => MobileSettingsLayout(
+            category: '/appearance',
+            child: NodeLaneRevealScope(
+              path: state.uri.queryParametersAll['setting']!,
+              child: Scaffold(
+                appBar: AppBar(title: const Text('Appearance destination')),
+                body: MobileSettingsChoice<int>(
+                  title: 'App language',
+                  icon: Icons.language,
+                  value: 0,
+                  label: (_) => 'English',
+                  options: const [SettingOption(0, 'English')],
+                  onChanged: (_) =>
+                      fail('Opening search must not change the language'),
+                ),
               ),
             ),
           ),
@@ -139,9 +146,20 @@ void main() {
     await tester.ensureVisible(find.text('App language'));
     await tester.tap(find.text('App language'));
     await tester.pumpAndSettle();
-    expect(find.text('App language'), findsOneWidget);
+    final panel = find.byType(NodeLaneBubblePanel);
+    expect(
+      find.descendant(of: panel, matching: find.text('App language')),
+      findsOneWidget,
+    );
+    expect(ModalRoute.of(tester.element(panel)), isA<PopupRoute>());
     expect(find.byType(MobileMoreScreen), findsNothing);
-    router.pop();
+    final page = find.text('Appearance destination');
+    expect(ModalRoute.of(tester.element(page)), isA<PageRoute>());
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(panel, findsNothing);
+    expect(page, findsOneWidget);
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
@@ -188,7 +206,77 @@ void main() {
   });
 
   testWidgets(
-    'More switches write once and its last row clears the bottom bar',
+    'tablet settings switch categories in place; a landscape phone keeps just the detail',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(840, 640);
+      addTearDown(tester.view.reset);
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => const Scaffold(body: Text('Origin')),
+          ),
+          for (final path in ['/general', '/appearance'])
+            GoRoute(
+              path: path,
+              builder: (_, _) => MobileSettingsLayout(
+                category: path,
+                child: Scaffold(
+                  body: Center(child: TextField(key: ValueKey('draft:$path'))),
+                ),
+              ),
+            ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hideItemsStateProvider.overrideWith(_HiddenItems.new)],
+          child: MaterialApp.router(
+            routerConfig: router,
+            theme: ThemeData(platform: TargetPlatform.iOS),
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      router.push('/general');
+      await tester.pumpAndSettle();
+      final sidebar = find.byKey(const PageStorageKey('settings-directory'));
+      final appearance = find.descendant(
+        of: sidebar,
+        matching: find.text('Appearance and interface'),
+      );
+      final field = find.byType(TextField);
+      expect(
+        tester.getTopRight(sidebar).dx,
+        lessThanOrEqualTo(tester.getTopLeft(field).dx),
+      );
+      await tester.ensureVisible(appearance);
+      await tester.tap(appearance);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('draft:/appearance')), findsOneWidget);
+      final state = tester.element(field);
+      await tester.enterText(field, 'draft');
+      tester.view.physicalSize = const Size(840, 390);
+      await tester.pumpAndSettle();
+      expect(sidebar, findsNothing);
+      expect(tester.element(field), same(state));
+      tester.view.physicalSize = const Size(600, 850);
+      await tester.pumpAndSettle();
+      expect(sidebar, findsOneWidget);
+      expect(find.text('draft'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Origin'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'More groups phone settings by purpose and keeps tablet tools beside the results',
     (tester) async {
       phone(tester);
       final account = _AccountService();
@@ -196,11 +284,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           translationServiceProvider.overrideWithValue(account),
-          morePendingDownloadsProvider.overrideWith((ref) => Stream.value(0)),
           hideItemsStateProvider.overrideWith(_HiddenItems.new),
-          downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
-          incognitoModeStateProvider.overrideWith(_Incognito.new),
-          hideDiscordRpcInIncognitoStateProvider.overrideWith(_HideRpc.new),
         ],
       );
       addTearDown(container.dispose);
@@ -222,62 +306,16 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(MobileNodeLaneAccountSummary), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Downloaded only'),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      // The account card can push this group beyond the initial viewport.
-      // Read its auto-dispose notifiers only after the switches are mounted.
-      final downloaded =
-          container.read(downloadedOnlyStateProvider.notifier) as _Downloaded;
-      final incognito =
-          container.read(incognitoModeStateProvider.notifier) as _Incognito;
-      await tester.tap(find.text('Downloaded only'));
-      await tester.pumpAndSettle();
-      expect(downloaded.writes, [true]);
-      final toggle = find.descendant(
-        of: find.byType(DownloadedOnlyWidget),
-        matching: find.byType(NodeLaneSwitch),
-      );
-      await tester.ensureVisible(toggle);
-      await tester.pumpAndSettle();
-      await tester.tap(toggle);
-      await tester.pumpAndSettle();
-      expect(downloaded.writes, [true, false]);
-      expect(incognito.writes, isEmpty);
-      await tester.scrollUntilVisible(
-        find.text('Incognito Mode'),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Incognito Mode'));
-      await tester.pumpAndSettle();
-      expect(incognito.writes, [true]);
-      expect(downloaded.writes, [true, false]);
-
-      final appearance = find.widgetWithText(
-        NodeLaneRow,
-        'Appearance and interface',
-      );
-      await tester.scrollUntilVisible(
-        appearance,
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      expect(tester.widget<NodeLaneRow>(appearance).value, isNull);
-      expect(tester.widget<NodeLaneRow>(appearance).subtitle, isNull);
-
+      expect(find.text('Frequently used'), findsNothing);
+      expect(find.text('Reading and translation'), findsOneWidget);
       container.read(hideItemsStateProvider.notifier).set(['/browser']);
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('Browser'),
-        -300,
+        find.text('More tools'),
+        300,
         scrollable: find.byType(Scrollable).first,
       );
+      await tester.tap(find.text('More tools'));
       await tester.pumpAndSettle();
       expect(find.text('Browser'), findsOneWidget);
       await tester.scrollUntilVisible(
@@ -292,6 +330,35 @@ void main() {
         tester.getBottomLeft(find.text('About and help')).dy,
         lessThan(640),
       );
+
+      tester.view.physicalSize = const Size(1600, 1000);
+      await tester.pumpAndSettle();
+      final sidebar = find.byKey(const PageStorageKey('more-shortcuts'));
+      expect(
+        find.descendant(of: sidebar, matching: find.text('About and help')),
+        findsOneWidget,
+      );
+      final search = find.descendant(
+        of: sidebar,
+        matching: find.byType(TextField),
+      );
+      for (final (title, parent) in [
+        ('Downloaded only', 'Download settings'),
+        ('Incognito Mode', 'Security and privacy'),
+        ('Download Queue', 'Updates'),
+        ('App feedback', 'About and help'),
+      ]) {
+        await tester.enterText(search, title);
+        await tester.pumpAndSettle();
+        final match = find.byWidgetPredicate(
+          (w) => w is NodeLaneRow && w.title == title,
+        );
+        expect(tester.widget<NodeLaneRow>(match).subtitle, parent);
+        expect(
+          tester.getTopLeft(match).dx,
+          greaterThanOrEqualTo(tester.getTopRight(sidebar).dx),
+        );
+      }
       expect(tester.takeException(), isNull);
     },
   );
@@ -302,33 +369,6 @@ class _HiddenItems extends HideItemsState {
   List<String> build() => [];
   @override
   void set(List<String> values) => state = values;
-}
-
-class _Downloaded extends DownloadedOnlyState {
-  final writes = <bool>[];
-  @override
-  bool build() => false;
-  @override
-  void setDownloadedOnly(bool value) {
-    writes.add(value);
-    state = value;
-  }
-}
-
-class _Incognito extends IncognitoModeState {
-  final writes = <bool>[];
-  @override
-  bool build() => false;
-  @override
-  void setIncognitoMode(bool value) {
-    writes.add(value);
-    state = value;
-  }
-}
-
-class _HideRpc extends HideDiscordRpcInIncognitoState {
-  @override
-  bool build() => false;
 }
 
 class _AccountService extends TranslationService {

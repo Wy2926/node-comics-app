@@ -2,7 +2,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -40,32 +40,33 @@ class SourceSearchScope {
   };
 }
 
-/// Selection is a local draft; leaving without applying changes nothing.
-class SourceSearchScopePage extends StatefulWidget {
-  const SourceSearchScopePage({
+class SourceSearchScopePanel extends StatefulWidget {
+  const SourceSearchScopePanel({
     super.key,
     required this.sources,
     required this.current,
+    required this.onChanged,
   });
   final List<Source> sources;
   final SourceSearchScope current;
+  final ValueChanged<SourceSearchScope> onChanged;
   @override
-  State<SourceSearchScopePage> createState() => _SourceSearchScopePageState();
+  State<SourceSearchScopePanel> createState() => _SourceSearchScopePanelState();
 }
 
-class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
+class _SourceSearchScopePanelState extends State<SourceSearchScopePanel> {
   final search = TextEditingController();
-  late final selected = widget.sources
-      .where(widget.current.includes)
-      .map((s) => s.id)
-      .whereType<int>()
-      .toSet();
+  late final selected = {...widget.current.ids};
   late var mode = widget.current.mode;
-  bool leaving = false;
 
   SourceSearchScope get draft => SourceSearchScope(mode: mode, ids: selected);
 
-  void _toggle(Source source) => setState(() {
+  void change(VoidCallback edit) {
+    setState(edit);
+    widget.onChanged(SourceSearchScope(mode: mode, ids: {...selected}));
+  }
+
+  void _toggle(Source source) => change(() {
     // Editing a preset starts from exactly the websites it currently includes.
     if (mode != SourceSearchScopeMode.custom) {
       final ids = widget.sources.where(draft.includes).map((s) => s.id);
@@ -98,25 +99,9 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
     final count = widget.sources.where(draft.includes).length;
     final allMatchesSelected =
         matches.isNotEmpty && matches.every(draft.includes);
-    return MobileBrowsePage.form(
+    return NodeLaneBubblePanel(
       title: context.l10n.search_scope,
-      bottomAction: FilledButton(
-        onPressed: count == 0
-            ? null
-            : () {
-                if (leaving) return;
-                leaving = true;
-                Navigator.pop(
-                  context,
-                  SourceSearchScope(mode: mode, ids: {...selected}),
-                );
-              },
-        child: Text(
-          context.l10n.search_websites_action(count),
-          textAlign: TextAlign.center,
-        ),
-      ),
-      body: CustomScrollView(
+      child: CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
           SliverPadding(
@@ -140,7 +125,7 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
                           label: Text(option.shortLabel(context.l10n)),
                         ),
                     ],
-                    onChanged: (value) => setState(() => mode = value),
+                    onChanged: (value) => change(() => mode = value),
                   ),
                   const SizedBox(height: NodeLaneTokens.space16),
                   NodeLaneTextField.search(
@@ -162,7 +147,7 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
                         style: TextButton.styleFrom(padding: EdgeInsets.zero),
                         onPressed: matches.isEmpty
                             ? null
-                            : () => setState(() {
+                            : () => change(() {
                                 final ids = widget.sources
                                     .where(draft.includes)
                                     .map((s) => s.id)

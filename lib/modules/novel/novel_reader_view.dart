@@ -1193,45 +1193,40 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
 
   Future<void> _openMobileSettings(BuildContext anchor) =>
       _presentMobileControl(() async {
-        await showNodeLaneBubble<void>(
+        await NodeLaneBubbleFlow.open<void>(
           anchor,
-          label: context.l10n.settings,
+          title: context.l10n.settings,
           width: NodeLaneTokens.bubbleSettingsWidth,
-          child: NodeLaneBubbleFlow(
-            home: Builder(
-              builder: (settingsContext) => MobileNovelReaderScreen(
-                sessionControls: MobileNovelSessionSettings(
-                  readerMode: _readerMode,
-                  pageMode: _pageMode,
-                  autoScroll: _autoScrollPage,
-                  speed: _pageOffset,
-                  onReaderModeChanged: (mode) {
-                    _readerController.setReaderMode(mode);
-                    setState(() => _readerMode = mode);
-                  },
-                  onPageModeChanged: (mode) {
-                    _readerController.setPageMode(mode);
-                    setState(() => _pageMode = mode);
-                  },
-                  onAutoScrollChanged: (value) {
-                    _readerController.setAutoScroll(value, _pageOffset.value);
-                    _autoScrollPage.value = value;
-                    _autoScroll.value = value;
-                  },
-                  onSpeedPreview: (value) => _pageOffset.value = value,
-                  onSpeedChanged: (value) => _readerController.setAutoScroll(
-                    _autoScrollPage.value,
-                    value,
-                  ),
-                ),
-                onOpenTts: _ttsSupported
-                    ? () => NodeLaneBubbleFlow.push<void>(
-                        settingsContext,
-                        const MobileTtsSettingsScreen(),
-                      )
-                    : null,
-              ),
+          child: MobileNovelReaderScreen(
+            sessionControls: MobileNovelSessionSettings(
+              readerMode: _readerMode,
+              pageMode: _pageMode,
+              autoScroll: _autoScrollPage,
+              speed: _pageOffset,
+              onReaderModeChanged: (mode) {
+                _readerController.setReaderMode(mode);
+                setState(() => _readerMode = mode);
+              },
+              onPageModeChanged: (mode) {
+                _readerController.setPageMode(mode);
+                setState(() => _pageMode = mode);
+              },
+              onAutoScrollChanged: (value) {
+                _readerController.setAutoScroll(value, _pageOffset.value);
+                _autoScrollPage.value = value;
+                _autoScroll.value = value;
+              },
+              onSpeedPreview: (value) => _pageOffset.value = value,
+              onSpeedChanged: (value) =>
+                  _readerController.setAutoScroll(_autoScrollPage.value, value),
             ),
+            onOpenTts: _ttsSupported
+                ? (anchor) => NodeLaneBubbleFlow.open<void>(
+                    anchor,
+                    title: context.l10n.tts,
+                    child: const MobileTtsSettingsScreen(),
+                  )
+                : null,
           ),
         );
       });

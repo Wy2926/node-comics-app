@@ -1,12 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
+import 'package:mangayomi/modules/more/providers/downloaded_only_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/downloads/mobile_downloads_screen.dart';
 import 'package:mangayomi/modules/more/settings/downloads/providers/downloads_state_provider.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 const _customName = 'A custom folder with a long descriptive collection name';
 const _customPath = '/storage/emulated/0/Documents/comics/collection';
@@ -29,6 +30,7 @@ void main() {
   ProviderContainer preferences() {
     final container = ProviderContainer(
       overrides: [
+        downloadedOnlyStateProvider.overrideWith(_Downloaded.new),
         onlyOnWifiStateProvider.overrideWith(_Wifi.new),
         allowConcurrentDownloadsStateProvider.overrideWith(
           _AllowConcurrent.new,
@@ -73,10 +75,10 @@ void main() {
             MobileDownloadsScreen(
               defaultFolder: Future.value(null),
               onPickLocation: () {},
-              onAddFolder: () {},
-              onRemoveFolder: (_) {},
+              onAddFolder: (_) {},
+              onRemoveFolder: (_, _) {},
               onRescan: () {},
-              onHelp: () {},
+              onHelp: (_) {},
             ),
           ),
         ),
@@ -86,22 +88,22 @@ void main() {
           container.read(concurrentDownloadsStateProvider.notifier) as _Count;
       final delay =
           container.read(downloadDelaySecondsStateProvider.notifier) as _Delay;
-      Future<void> openWheel(String title) async {
+      Future<void> openNumber(String title) async {
         await reveal(tester, find.text(title));
         await tester.tap(find.text(title));
         await tester.pumpAndSettle();
         expect(find.byType(Dialog), findsNothing);
       }
 
-      await openWheel('Concurrent downloads');
+      await openNumber('Concurrent downloads');
       expect(count.writes, isEmpty);
-      tester
-          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
-          .scrollController!
-          .jumpToItem(2);
+      expect(find.byTooltip('Decrease').hitTestable(), findsOneWidget);
+      await tester.tap(find.byTooltip('Increase'));
       await tester.pumpAndSettle();
-      expect(count.writes, [3]);
-      await tester.tap(find.text('Concurrent downloads'));
+      await tester.tap(find.byTooltip('Increase'));
+      await tester.pumpAndSettle();
+      expect(count.writes, [2, 3]);
+      await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       await reveal(tester, find.text('Allow concurrent downloads'));
       await tester.tap(find.text('Allow concurrent downloads'));
@@ -111,14 +113,17 @@ void main() {
       await tester.tap(find.text('Allow concurrent downloads'));
       await tester.pumpAndSettle();
       expect(find.text('3'), findsWidgets);
-      expect(count.writes, [3]);
+      expect(count.writes, [2, 3]);
 
-      await openWheel('Download delay');
-      final picker = find.byType(CupertinoPicker);
-      tester.widget<CupertinoPicker>(picker).scrollController!.jumpToItem(0);
+      await openNumber('Download delay');
+      final slider = tester.widget<Slider>(find.byType(Slider));
+      expect(slider.max, 120);
+      slider.onChanged!(0);
+      expect(delay.writes, isEmpty);
+      slider.onChangeEnd!(0);
       await tester.pumpAndSettle();
       expect(delay.writes, [0]);
-      await tester.tap(find.text('Download delay'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
 
       await reveal(tester, find.text('Only on wifi'));
@@ -126,6 +131,18 @@ void main() {
       await tester.pumpAndSettle();
       expect(container.read(onlyOnWifiStateProvider), isTrue);
       expect(container.read(saveAsCBZArchiveStateProvider), isFalse);
+      final only = find.widgetWithText(NodeLaneSwitchRow, 'Downloaded only');
+      await reveal(tester, only);
+      final downloaded =
+          container.read(downloadedOnlyStateProvider.notifier) as _Downloaded;
+      expect(downloaded.writes, isEmpty);
+      await tester.tap(find.text('Downloaded only'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(of: only, matching: find.byType(NodeLaneSwitch)),
+      );
+      await tester.pumpAndSettle();
+      expect(downloaded.writes, [true, false]);
       await reveal(tester, find.text('Save as CBZ archive'));
       await tester.tap(find.text('Save as CBZ archive'));
       await tester.pumpAndSettle();
@@ -156,10 +173,10 @@ void main() {
                 LocalFolder(name: 'local', path: '/app/local'),
               ),
               onPickLocation: () {},
-              onAddFolder: () => adds++,
-              onRemoveFolder: removed.add,
+              onAddFolder: (_) => adds++,
+              onRemoveFolder: (_, folder) => removed.add(folder),
               onRescan: () => scans++,
-              onHelp: () => help++,
+              onHelp: (_) => help++,
             ),
             textScale: 2.5,
           ),
@@ -190,6 +207,17 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+class _Downloaded extends DownloadedOnlyState {
+  final writes = <bool>[];
+  @override
+  bool build() => false;
+  @override
+  void setDownloadedOnly(bool value) {
+    writes.add(value);
+    state = value;
+  }
 }
 
 class _Wifi extends OnlyOnWifiState {

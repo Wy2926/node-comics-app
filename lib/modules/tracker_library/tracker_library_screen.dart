@@ -1,7 +1,8 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
@@ -102,10 +103,12 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
           NodeLanePageHeading(
             title: l10n.tracking,
             actions: [
-              NodeLaneIconButton(
-                icon: icons.tracking,
-                tooltip: l10n.track_library_switch,
-                onPressed: () => _switchTracker(l10n),
+              Builder(
+                builder: (anchor) => NodeLaneIconButton(
+                  icon: icons.tracking,
+                  tooltip: l10n.track_library_switch,
+                  onPressed: () => _switchTracker(anchor, l10n),
+                ),
               ),
             ],
           ),
@@ -716,62 +719,70 @@ class _TrackerLibraryScreenState extends ConsumerState<TrackerLibraryScreen> {
         .fetchWatchlistData();
   }
 
-  Future<void> _switchTracker(AppLocalizations l10n, {int? syncId}) async {
-    final choice = await showNodeLaneCatalogSheet<(int, bool?)>(
-      context,
-      NodeLaneCatalogSheet(
-        title: l10n.track_library_switch,
-        fitContent: true,
-        child: Builder(
-          builder: (sheetContext) => ListView(
+  Future<void> _switchTracker(
+    BuildContext anchor,
+    AppLocalizations l10n,
+  ) => showNodeLaneBubble<void>(
+    anchor,
+    label: l10n.track_library_switch,
+    child: NodeLaneBubblePanel(
+      title: l10n.track_library_switch,
+      child: Consumer(
+        builder: (context, ref, _) {
+          final location = ref.watch(lastTrackerLibraryLocationStateProvider);
+          return ListView(
             shrinkWrap: true,
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             children: [
               NodeLaneGroupSurface(
                 children: [
-                  if (syncId == null)
-                    for (final provider in TrackerProviders.values)
-                      NodeLaneRow(
-                        title: trackInfos(provider.syncId).$2,
-                        icon: NodeLaneIcons.of(sheetContext).tracking,
-                        enabled: _preferences.any(
-                          (p) => p.syncId == provider.syncId,
-                        ),
-                        onTap: () => Navigator.pop(sheetContext, (
-                          provider.syncId,
-                          null,
-                        )),
-                      )
-                  else
-                    for (final manga in [true, false])
-                      NodeLaneRow(
-                        title: manga ? l10n.manga : l10n.anime,
-                        icon: manga
-                            ? NodeLaneIcons.of(sheetContext).manga
-                            : NodeLaneIcons.of(sheetContext).anime,
-                        onTap: () =>
-                            Navigator.pop(sheetContext, (syncId, manga)),
+                  for (final provider in TrackerProviders.values)
+                    NodeLaneRow(
+                      title: trackInfos(provider.syncId).$2,
+                      icon: NodeLaneIcons.of(context).tracking,
+                      selected: provider.syncId == location.$1,
+                      enabled: _preferences.any(
+                        (p) => p.syncId == provider.syncId,
                       ),
+                      onOpen: (row) async {
+                        final hasMedia =
+                            provider != TrackerProviders.simkl &&
+                            provider != TrackerProviders.trakt;
+                        final manga = hasMedia
+                            ? (await showSettingChoice<bool?>(
+                                row,
+                                title: trackInfos(provider.syncId).$2,
+                                current: provider.syncId == location.$1
+                                    ? location.$2
+                                    : null,
+                                options: [
+                                  SettingOption(true, l10n.manga),
+                                  SettingOption(false, l10n.anime),
+                                ],
+                              ))?.value
+                            : false;
+                        if (manga == null || !row.mounted) return;
+                        final next = (provider.syncId, manga);
+                        if (ref.read(lastTrackerLibraryLocationStateProvider) !=
+                            next) {
+                          ref
+                              .read(
+                                lastTrackerLibraryLocationStateProvider
+                                    .notifier,
+                              )
+                              .set(next);
+                        }
+                        if (!hasMedia) Navigator.pop(row);
+                      },
+                    ),
                 ],
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
-    );
-    if (!mounted || choice == null) return;
-    final (provider, manga) = choice;
-    if (manga == null &&
-        provider != TrackerProviders.simkl.syncId &&
-        provider != TrackerProviders.trakt.syncId) {
-      await _switchTracker(l10n, syncId: provider);
-    } else {
-      ref.read(lastTrackerLibraryLocationStateProvider.notifier).set((
-        provider,
-        manga ?? false,
-      ));
-    }
-  }
+    ),
+  );
 }
 
 /// The app bar title for a tracker's library: the service and item type, with

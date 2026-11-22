@@ -8,7 +8,6 @@ import 'package:mangayomi/services/translation/image_work.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/http.dart';
 import 'package:mangayomi/services/translation/source_file.dart';
 // Use path_provider's existing platform seam, as in the other storage fixtures.
-// ignore: depend_on_referenced_packages
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
 class _TemporaryPath extends PathProviderPlatform {

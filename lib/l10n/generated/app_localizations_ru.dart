@@ -686,6 +686,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get downloaded_only => 'Только загруженные';
 
   @override
+  String get downloaded_only_hint =>
+      'Показывать в библиотеке только произведения со скачанным содержимым.';
+
+  @override
+  String get incognito_mode_hint =>
+      'Приостановить сохранение прогресса чтения и просмотра.';
+
+  @override
   String get download_queue => 'Очередь загрузки';
 
   @override
@@ -4732,19 +4740,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get search_scope => 'Область поиска';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Поиск на $count сайта',
-      many: 'Поиск на $count сайтах',
-      few: 'Поиск на $count сайтах',
-      one: 'Поиск на $count сайте',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'Найти веб-сайт';

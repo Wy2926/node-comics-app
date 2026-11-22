@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -10,19 +13,24 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<void> showSubtitleServiceSettings(BuildContext context) => Navigator.of(
-  context,
-).push<void>(MaterialPageRoute(builder: (_) => const SubtitleServiceScreen()));
+Future<void> showSubtitleServiceSettings(BuildContext context) =>
+    NodeLaneBubbleFlow.open<void>(
+      context,
+      title: context.l10n.subtitle_service,
+      child: const SubtitleServiceScreen(),
+    );
 
 class SubtitleServiceSettingsRow extends StatelessWidget {
-  const SubtitleServiceSettingsRow({super.key});
+  const SubtitleServiceSettingsRow({super.key, this.onOpen});
+  final ValueChanged<BuildContext>? onOpen;
 
   @override
   Widget build(BuildContext context) => NodeLaneRow(
     title: context.l10n.subtitle_service,
     icon: NodeLaneIcons.of(context).subtitles,
     openOnReveal: true,
-    onTap: () => showSubtitleServiceSettings(context),
+    onTap: onOpen == null ? () => context.push('/subtitleService') : null,
+    onOpen: onOpen,
   );
 }
 
@@ -30,29 +38,27 @@ class SubtitleServiceScreen extends ConsumerWidget {
   const SubtitleServiceScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => NodeLaneSurface(
-    child: Scaffold(
-      appBar: nodeLaneAppBar(context, title: context.l10n.subtitle_service),
-      body: SafeArea(
-        top: false,
-        child: ref
-            .watch(subtitlePreferencesProvider)
-            .when(
-              data: (preferences) => _SubtitleServiceForm(initial: preferences),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, _) => Padding(
-                padding: NodeLaneTokens.pagePadding,
-                child: NodeLaneNotice(
-                  message: context.l10n.subtitle_storage_failed,
-                  kind: NodeLaneNoticeKind.error,
-                  actionLabel: context.l10n.retry,
-                  onAction: () => ref.invalidate(subtitlePreferencesProvider),
-                ),
-              ),
+  Widget build(BuildContext context, WidgetRef ref) => ref
+      .watch(subtitlePreferencesProvider)
+      .when(
+        data: (preferences) => _SubtitleServiceForm(initial: preferences),
+        loading: () => MobileBrowsePage(
+          title: context.l10n.subtitle_service,
+          body: const Center(child: CircularProgressIndicator()),
+        ),
+        error: (_, _) => MobileBrowsePage(
+          title: context.l10n.subtitle_service,
+          body: Padding(
+            padding: NodeLaneTokens.pagePadding,
+            child: NodeLaneNotice(
+              message: context.l10n.subtitle_storage_failed,
+              kind: NodeLaneNoticeKind.error,
+              actionLabel: context.l10n.retry,
+              onAction: () => ref.invalidate(subtitlePreferencesProvider),
             ),
-      ),
-    ),
-  );
+          ),
+        ),
+      );
 }
 
 class _SubtitleServiceForm extends ConsumerStatefulWidget {
@@ -127,118 +133,122 @@ class _SubtitleServiceFormState extends ConsumerState<_SubtitleServiceForm> {
       canPop: !_saving,
       child: Form(
         key: _form,
-        child: SingleChildScrollView(
-          padding: NodeLaneTokens.pagePadding,
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AbsorbPointer(
-                absorbing: _saving,
-                child: MobileSettingsGroup(
-                  children: [
-                    MobileSettingsChoice<SubtitleConnectionMode>(
-                      title: l.subtitle_service_mode,
-                      icon: NodeLaneIcons.of(context).subtitles,
-                      value: _mode,
-                      label: modeLabel,
-                      options: [
-                        for (final mode in SubtitleConnectionMode.values)
-                          MobileSettingOption(mode, modeLabel(mode)),
-                      ],
-                      onChanged: (mode) => setState(() {
-                        _mode = mode;
-                        _failed = false;
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-              if (_mode == SubtitleConnectionMode.personalKey) ...[
-                NodeLaneTextField(
-                  key: const ValueKey('subtitle-key'),
-                  controller: _key,
-                  label: l.subtitle_key,
-                  enabled: !_saving,
-                  obscureText: true,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  validator: (value) =>
-                      value!.trim().isEmpty ||
-                          RegExp(r'\s').hasMatch(value.trim())
-                      ? l.subtitle_invalid_key
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l.subtitle_key_hint,
-                  style: NodeLaneTokens.of(context).readerSecondary,
-                ),
-                Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: TextButton(
-                    onPressed: _saving
-                        ? null
-                        : () async {
-                            try {
-                              await launchUrl(
-                                Uri.parse('https://store.wyzie.io/redeem'),
-                                mode: LaunchMode.externalApplication,
-                              );
-                            } catch (_) {}
-                          },
-                    child: Text(l.subtitle_get_key),
+        child: MobileBrowsePage(
+          title: l.subtitle_service,
+          bottomAction: FilledButton(
+            onPressed: _saving ? null : _save,
+            child: Text(_saving ? l.mass_migration_loading : l.save),
+          ),
+          body: SingleChildScrollView(
+            padding: NodeLaneTokens.pagePadding,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AbsorbPointer(
+                  absorbing: _saving,
+                  child: MobileSettingsGroup(
+                    children: [
+                      MobileSettingsChoice<SubtitleConnectionMode>(
+                        title: l.subtitle_service_mode,
+                        icon: NodeLaneIcons.of(context).subtitles,
+                        value: _mode,
+                        label: modeLabel,
+                        options: [
+                          for (final mode in SubtitleConnectionMode.values)
+                            SettingOption(mode, modeLabel(mode)),
+                        ],
+                        onChanged: (mode) => setState(() {
+                          _mode = mode;
+                          _failed = false;
+                        }),
+                      ),
+                    ],
                   ),
                 ),
+                if (_mode == SubtitleConnectionMode.personalKey) ...[
+                  NodeLaneTextField(
+                    key: const ValueKey('subtitle-key'),
+                    controller: _key,
+                    label: l.subtitle_key,
+                    enabled: !_saving,
+                    obscureText: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    validator: (value) =>
+                        value!.trim().isEmpty ||
+                            RegExp(r'\s').hasMatch(value.trim())
+                        ? l.subtitle_invalid_key
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l.subtitle_key_hint,
+                    style: NodeLaneTokens.of(context).readerSecondary,
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      onPressed: _saving
+                          ? null
+                          : () async {
+                              try {
+                                await launchUrl(
+                                  Uri.parse('https://store.wyzie.io/redeem'),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } catch (_) {}
+                            },
+                      child: Text(l.subtitle_get_key),
+                    ),
+                  ),
+                ],
+                if (_mode == SubtitleConnectionMode.customService) ...[
+                  NodeLaneTextField(
+                    key: const ValueKey('subtitle-address'),
+                    controller: _address,
+                    label: l.subtitle_service_address,
+                    hint: 'https://example.com/search',
+                    enabled: !_saving,
+                    keyboardType: TextInputType.url,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    validator: (value) {
+                      final uri = Uri.tryParse(value!.trim());
+                      return uri != null &&
+                              SubtitlePreferences.validEndpoint(uri)
+                          ? null
+                          : l.subtitle_invalid_address;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  NodeLaneTextField(
+                    key: const ValueKey('subtitle-token'),
+                    controller: _token,
+                    label: l.subtitle_service_token,
+                    enabled: !_saving,
+                    obscureText: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    validator: (value) => RegExp(r'\s').hasMatch(value!.trim())
+                        ? l.subtitle_invalid_token
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l.subtitle_custom_hint,
+                    style: NodeLaneTokens.of(context).readerSecondary,
+                  ),
+                ],
+                if (_mode != SubtitleConnectionMode.disabled)
+                  const SizedBox(height: 24),
+                if (_failed)
+                  NodeLaneNotice(
+                    message: l.subtitle_storage_failed,
+                    kind: NodeLaneNoticeKind.error,
+                  ),
               ],
-              if (_mode == SubtitleConnectionMode.customService) ...[
-                NodeLaneTextField(
-                  key: const ValueKey('subtitle-address'),
-                  controller: _address,
-                  label: l.subtitle_service_address,
-                  hint: 'https://example.com/search',
-                  enabled: !_saving,
-                  keyboardType: TextInputType.url,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  validator: (value) {
-                    final uri = Uri.tryParse(value!.trim());
-                    return uri != null && SubtitlePreferences.validEndpoint(uri)
-                        ? null
-                        : l.subtitle_invalid_address;
-                  },
-                ),
-                const SizedBox(height: 16),
-                NodeLaneTextField(
-                  key: const ValueKey('subtitle-token'),
-                  controller: _token,
-                  label: l.subtitle_service_token,
-                  enabled: !_saving,
-                  obscureText: true,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  validator: (value) => RegExp(r'\s').hasMatch(value!.trim())
-                      ? l.subtitle_invalid_token
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l.subtitle_custom_hint,
-                  style: NodeLaneTokens.of(context).readerSecondary,
-                ),
-              ],
-              if (_mode != SubtitleConnectionMode.disabled)
-                const SizedBox(height: 24),
-              if (_failed)
-                NodeLaneNotice(
-                  message: l.subtitle_storage_failed,
-                  kind: NodeLaneNoticeKind.error,
-                ),
-              FilledButton(
-                onPressed: _saving ? null : _save,
-                child: Text(_saving ? l.mass_migration_loading : l.save),
-              ),
-            ],
+            ),
           ),
         ),
       ),

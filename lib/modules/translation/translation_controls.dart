@@ -29,14 +29,12 @@ Future<void> showTranslationControls(
     subtitle: subtitle,
     browser: browser,
   );
-  return NodeLaneBubbleFlow.contains(context)
-      ? NodeLaneBubbleFlow.push<void>(context, content)
-      : showNodeLaneBubble<void>(
-          context,
-          label: title ?? context.l10n.translation_title,
-          width: NodeLaneTokens.bubbleTabsWidth,
-          child: NodeLaneBubbleFlow(home: content),
-        );
+  return NodeLaneBubbleFlow.open<void>(
+    context,
+    title: title ?? context.l10n.translation_title,
+    width: NodeLaneTokens.bubbleTabsWidth,
+    child: content,
+  );
 }
 
 /// Reader and browser share the same controls; recovery lives on each image.

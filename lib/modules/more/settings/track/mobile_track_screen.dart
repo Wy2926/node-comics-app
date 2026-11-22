@@ -1,8 +1,9 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/track_preference.dart';
@@ -35,15 +36,17 @@ class _MobileTrackScreenState extends ConsumerState<MobileTrackScreen> {
     _preferences = trackRepository.watchAllWithSyncId();
   }
 
-  Future<void> _login(int id) async {
+  Future<void> _login(BuildContext anchor, int id) async {
     if (id == TrackerProviders.anilist.syncId) {
       await ref
           .read(anilistProvider(syncId: id, widgetRef: ref).notifier)
           .login();
     } else if (id == TrackerProviders.kitsu.syncId) {
-      await showNodeLaneCatalogSheet<void>(
-        context,
-        MobileAccountLoginDialog(
+      await showNodeLaneBubble<void>(
+        anchor,
+        label: context.l10n.login_into('Kitsu'),
+        width: NodeLaneTokens.bubbleFormWidth,
+        child: MobileAccountLoginDialog(
           title: context.l10n.login_into('Kitsu'),
           submitLabel: context.l10n.login,
           fields: [
@@ -129,7 +132,7 @@ class MobileTrackingSettings extends StatefulWidget {
   final List<TrackPreference> entries;
   final bool updateProgress, loading, loadFailed;
   final ValueChanged<bool> onUpdateProgress;
-  final Future<void> Function(int) onLogin;
+  final Future<void> Function(BuildContext, int) onLogin;
   final ValueChanged<int> onLogout;
   final VoidCallback onManage, onRetry;
   @override
@@ -144,7 +147,7 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
     TrackerProviders.simkl.syncId,
   ];
   bool _busy = false, _failed = false;
-  Future<void> _account(int id) async {
+  Future<void> _account(BuildContext anchor, int id) async {
     if (_busy) return;
     setState(() {
       _busy = true;
@@ -153,13 +156,13 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
     try {
       if (widget.entries.any((entry) => entry.syncId == id)) {
         final confirmed = await showNodeLaneConfirmation(
-          context,
+          anchor,
           title: context.l10n.log_out_from(trackInfos(id).$2),
           confirmLabel: context.l10n.log_out,
         );
         if (mounted && confirmed) widget.onLogout(id);
       } else {
-        await widget.onLogin(id);
+        await widget.onLogin(anchor, id);
       }
     } catch (_) {
       if (mounted) setState(() => _failed = true);
@@ -173,85 +176,76 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
     final l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
-      child: NodeLaneSurface(
-        child: Scaffold(
-          appBar: nodeLaneAppBar(context, title: l10n.tracking),
-          body: SafeArea(
-            top: false,
-            child: MobileSettingsList(
-              key: const PageStorageKey('mobile-tracking-settings'),
-              padding: NodeLaneTokens.pagePadding,
+      child: MobileBrowsePage(
+        title: l10n.tracking,
+        body: MobileSettingsList(
+          key: const PageStorageKey('mobile-tracking-settings'),
+          children: [
+            MobileSettingsGroup(
               children: [
-                MobileSettingsGroup(
-                  children: [
-                    NodeLaneSwitchRow(
-                      title: l10n.updateProgressAfterReading,
-                      icon: NodeLaneIcons.of(context).manga,
-                      value: widget.updateProgress,
-                      onChanged: _busy ? null : widget.onUpdateProgress,
-                    ),
-                  ],
+                NodeLaneSwitchRow(
+                  title: l10n.updateProgressAfterReading,
+                  icon: NodeLaneIcons.of(context).manga,
+                  value: widget.updateProgress,
+                  onChanged: _busy ? null : widget.onUpdateProgress,
                 ),
-                if (_failed)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Semantics(
-                      liveRegion: true,
-                      child: Text(l10n.failed),
-                    ),
-                  ),
-                if (widget.loading)
-                  const LinearProgressIndicator()
-                else if (widget.loadFailed) ...[
-                  Text(l10n.failed),
-                  OutlinedButton(
-                    onPressed: widget.onRetry,
-                    child: Text(l10n.retry),
-                  ),
-                ] else ...[
-                  MobileSettingsGroup(
-                    title: l10n.services,
-                    children: [
-                      for (final id in _ids)
-                        MobileServiceAccount(
-                          key: ValueKey('tracker-account-$id'),
-                          title: trackInfos(id).$2,
-                          icon: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: ColoredBox(
-                              color: trackInfos(id).$3,
-                              child: Image.asset(trackInfos(id).$1),
-                            ),
-                          ),
-                          connected: widget.entries.any(
-                            (entry) => entry.syncId == id,
-                          ),
-                          subtitle:
-                              widget.entries.any((entry) => entry.syncId == id)
-                              ? widget.entries
-                                        .where((entry) => entry.syncId == id)
-                                        .first
-                                        .accountLabel ??
-                                    l10n.sync_status_connected
-                              : l10n.sync_status_not_configured,
-                          onAction: _busy ? null : () => _account(id),
-                        ),
-                    ],
-                  ),
-                  MobileSettingsGroup(
-                    children: [
-                      NodeLaneRow(
-                        title: l10n.manage_trackers,
-                        enabled: !_busy,
-                        onTap: _busy ? null : widget.onManage,
-                        icon: NodeLaneIcons.of(context).accountOutline,
-                      ),
-                    ],
-                  ),
-                ],
               ],
             ),
-          ),
+            if (_failed)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Semantics(liveRegion: true, child: Text(l10n.failed)),
+              ),
+            if (widget.loading)
+              const LinearProgressIndicator()
+            else if (widget.loadFailed) ...[
+              Text(l10n.failed),
+              OutlinedButton(
+                onPressed: widget.onRetry,
+                child: Text(l10n.retry),
+              ),
+            ] else ...[
+              MobileSettingsGroup(
+                title: l10n.services,
+                children: [
+                  for (final id in _ids)
+                    MobileServiceAccount(
+                      key: ValueKey('tracker-account-$id'),
+                      title: trackInfos(id).$2,
+                      icon: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: ColoredBox(
+                          color: trackInfos(id).$3,
+                          child: Image.asset(trackInfos(id).$1),
+                        ),
+                      ),
+                      connected: widget.entries.any(
+                        (entry) => entry.syncId == id,
+                      ),
+                      subtitle:
+                          widget.entries.any((entry) => entry.syncId == id)
+                          ? widget.entries
+                                    .where((entry) => entry.syncId == id)
+                                    .first
+                                    .accountLabel ??
+                                l10n.sync_status_connected
+                          : l10n.sync_status_not_configured,
+                      onAction: _busy ? null : (a) => _account(a, id),
+                    ),
+                ],
+              ),
+              MobileSettingsGroup(
+                children: [
+                  NodeLaneRow(
+                    title: l10n.manage_trackers,
+                    enabled: !_busy,
+                    onTap: _busy ? null : widget.onManage,
+                    icon: NodeLaneIcons.of(context).accountOutline,
+                  ),
+                ],
+              ),
+            ],
+          ],
         ),
       ),
     );

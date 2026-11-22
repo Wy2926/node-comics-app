@@ -10,6 +10,8 @@ import 'package:mangayomi/modules/manga/reader/settings/comic_reader_settings.da
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
+import '../../../helpers/bubble_finders.dart';
+
 class MemoryPreferences extends ComicReaderPreferencesController {
   int writes = 0;
   bool fail = false;
@@ -86,7 +88,7 @@ void main() {
   }
 
   testWidgets(
-    'bubble choices and defaults preserve the parent panel, cancellation and book scope',
+    'choices open separate anchored popups over live book and default panels',
     (tester) async {
       final container = await mount(tester);
       final controller = container.read(
@@ -95,14 +97,31 @@ void main() {
       expect(controller.writes, 0);
       expect(find.text('Left'), findsOneWidget);
       final panel = tester.element(find.byType(ComicReaderSettingsPanel));
-      final bubble = tester.element(find.byType(NodeLaneBubbleFlow));
-      await tester.tap(find.widgetWithText(NodeLaneRow, 'Reading mode'));
+      final parentRoute = ModalRoute.of(panel)!;
+      final panels = find.byType(NodeLaneBubblePanel);
+      final parentRect = tester.getRect(panels);
+      final trigger = find.widgetWithText(NodeLaneRow, 'Reading mode');
+      final triggerRect = tester.getRect(trigger);
+      await tester.tap(trigger);
       await tester.pumpAndSettle();
-      expect(tester.element(find.byType(NodeLaneBubbleFlow)), same(bubble));
+      expect(panels, findsNWidgets(2));
+      final choiceRoute = ModalRoute.of(tester.element(panels.last))!;
+      expect(choiceRoute, isA<PopupRoute>());
+      expect(choiceRoute.isCurrent, isTrue);
+      expect(parentRoute.isCurrent, isFalse);
+      expect(tester.getRect(panels.first), parentRect);
+      final choices = tester.getRect(panels.last);
+      expect(choices.width, lessThan(parentRect.width));
+      expect(
+        choices.top >= triggerRect.bottom || choices.bottom <= triggerRect.top,
+        isTrue,
+      );
       expect(find.byType(BottomSheet), findsNothing);
       expect(find.byType(AppBar), findsNothing);
-      await tester.tap(find.byTooltip('Back'));
+      await tester.tapAt(const Offset(2, 12));
       await tester.pumpAndSettle();
+      expect(panels, findsOneWidget);
+      expect(parentRoute.isCurrent, isTrue);
       expect(
         tester.element(find.byType(ComicReaderSettingsPanel)),
         same(panel),
@@ -141,13 +160,16 @@ void main() {
       final offset = position.pixels;
       await tester.tap(find.text('Defaults & habits'));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Back'), findsOneWidget);
+      expect(panels, findsNWidgets(2));
       await tester.tap(
-        find.widgetWithText(NodeLaneRow, 'Swipe to the next page'),
+        await revealBubble(
+          tester,
+          find.widgetWithText(NodeLaneRow, 'Swipe to the next page'),
+        ),
       );
       await tester.pumpAndSettle();
-      expect(tester.element(find.byType(NodeLaneBubbleFlow)), same(bubble));
-      await tester.tap(find.text('Right'));
+      expect(panels, findsNWidgets(3));
+      await tester.tap(inBubble(find.text('Right')));
       await tester.pumpAndSettle();
       expect(
         container.read(comicReaderPreferencesProvider).resolve(2).turn,
@@ -159,7 +181,7 @@ void main() {
       );
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Back'), findsNothing);
+      expect(panels, findsOneWidget);
       expect(
         tester.element(find.byType(ComicReaderSettingsPanel)),
         same(panel),
@@ -170,44 +192,46 @@ void main() {
     },
   );
 
-  testWidgets(
-    'large Chinese settings use pages globally and one bubble while reading',
-    (tester) async {
-      await mount(tester, scale: 2.5, locale: const Locale('zh'), global: true);
-      final context = tester.element(find.byType(ComicReaderSettingsContent));
-      final l = AppLocalizations.of(context)!;
-      await tester.scrollUntilVisible(find.text(l.comic_tap), 240);
-      await tester.pumpAndSettle();
-      expect(find.text(l.comic_tap).hitTestable(), findsOneWidget);
-      expect(find.byType(NodeLaneSwitchRow), findsNWidgets(3));
-      await tester.scrollUntilVisible(
-        find.widgetWithText(NodeLaneRow, l.reading_mode),
-        -240,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
-      await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneBubbleFlow), findsNothing);
-      expect(find.byType(AppBar), findsOneWidget);
-      await tester.tap(find.text(l.comic_scroll));
-      await tester.pumpAndSettle();
-      expect(find.text(l.comic_turn), findsNothing);
-      expect(find.text(l.comic_layout), findsNothing);
-      expect(tester.takeException(), isNull);
+  testWidgets('large Chinese default and book choices both use bubbles', (
+    tester,
+  ) async {
+    await mount(tester, scale: 2.5, locale: const Locale('zh'), global: true);
+    final context = tester.element(find.byType(ComicReaderSettingsContent));
+    final l = AppLocalizations.of(context)!;
+    await tester.scrollUntilVisible(find.text(l.comic_tap), 240);
+    await tester.pumpAndSettle();
+    expect(find.text(l.comic_tap).hitTestable(), findsOneWidget);
+    expect(find.byType(NodeLaneSwitchRow), findsNWidgets(3));
+    await tester.scrollUntilVisible(
+      find.widgetWithText(NodeLaneRow, l.reading_mode),
+      -240,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
+    await tester.pumpAndSettle();
+    expect(
+      ModalRoute.of(tester.element(find.byType(NodeLaneBubblePanel))),
+      isA<PopupRoute>(),
+    );
+    expect(find.byType(AppBar), findsOneWidget);
+    await tester.tap(find.text(l.comic_scroll));
+    await tester.pumpAndSettle();
+    expect(find.text(l.comic_turn), findsNothing);
+    expect(find.text(l.comic_layout), findsNothing);
+    expect(tester.takeException(), isNull);
 
-      await mount(tester, scale: 2.5, locale: const Locale('zh'));
-      await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
-      await tester.pumpAndSettle();
-      expect(find.byType(AppBar), findsNothing);
-      expect(find.byType(NodeLaneBubbleFlow), findsOneWidget);
-      expect(find.text(l.comic_scroll).hitTestable(), findsOneWidget);
-      await tester.tap(find.text(l.comic_scroll));
-      await tester.pumpAndSettle();
-      expect(find.byType(ComicReaderSettingsPanel), findsOneWidget);
-      expect(find.text(l.comic_width), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    await mount(tester, scale: 2.5, locale: const Locale('zh'));
+    await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppBar), findsNothing);
+    expect(find.byType(NodeLaneBubblePanel), findsNWidgets(2));
+    expect(find.text(l.comic_scroll).hitTestable(), findsOneWidget);
+    await tester.tap(find.text(l.comic_scroll));
+    await tester.pumpAndSettle();
+    expect(find.byType(ComicReaderSettingsPanel), findsOneWidget);
+    expect(find.text(l.comic_width), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'failed save leaves the selection intact and reports the failure',

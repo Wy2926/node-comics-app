@@ -679,6 +679,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get downloaded_only => 'Téléchargés uniquement';
 
   @override
+  String get downloaded_only_hint =>
+      'Afficher uniquement les titres avec du contenu téléchargé dans la bibliothèque.';
+
+  @override
+  String get incognito_mode_hint =>
+      'Suspendre l’enregistrement de la progression de lecture et de visionnage.';
+
+  @override
   String get download_queue => 'File de téléchargement';
 
   @override
@@ -4746,17 +4754,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get search_scope => 'Portée de recherche';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Rechercher des sites Web $count',
-      one: 'Rechercher 1 site Web',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'Trouver un site Internet';

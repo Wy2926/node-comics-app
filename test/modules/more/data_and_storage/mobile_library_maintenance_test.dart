@@ -1,3 +1,6 @@
+import '../../../helpers/bubble_finders.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -66,7 +69,11 @@ void main() {
       await Scrollable.ensureVisible(tester.element(target), alignment: .5);
       await tester.pump(const Duration(milliseconds: 350));
     }
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
   }
@@ -117,7 +124,7 @@ void main() {
       await tap(tester, find.text('Shared source'));
       expect(selections.last, same(anime));
       await tap(tester, find.text('Open'));
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(selections.last, isNull);
       groups = [];
@@ -318,7 +325,7 @@ void main() {
       final row = find.byKey(ValueKey(snapshot.backupPath));
       await tap(tester, row);
       await tester.tap(row, warnIfMissed: false);
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pump();
       expect(find.byType(MobileLibrarySnapshots), findsOneWidget);
       expect(calls, [same(snapshot)]);
@@ -369,7 +376,7 @@ void main() {
       await tap(tester, find.text('Open'));
       await tap(tester, find.text('Maintain'));
       await tester.tap(find.text('Maintain'), warnIfMissed: false);
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pump();
       expect(calls, 1);
       expect(find.byType(MobileLibraryAction), findsOneWidget);
@@ -379,7 +386,7 @@ void main() {
       operation = Completer<void>()..complete();
       await tap(tester, find.text('Maintain'));
       expect(calls, 2);
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.text('Open'), findsOneWidget);
     },

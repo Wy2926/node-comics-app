@@ -11,7 +11,10 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:path/path.dart' as path;
 import 'package:mangayomi/utils/platform_utils.dart';
 
-import 'mobile_player_action_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_confirm_panel.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
 import 'mobile_player_advanced_screen.dart';
 
 class PlayerAdvancedScreen extends ConsumerStatefulWidget {
@@ -30,13 +33,13 @@ class _PlayerAdvancedScreenState extends ConsumerState<PlayerAdvancedScreen> {
     if (isMobile && !isTv) {
       return MobilePlayerAdvancedScreen(
         enabled: useMpvConfig,
-        onEnabledChanged: (value) async {
-          final result = value ? await _checkMpvConfig(context) : true;
+        onEnabledChanged: (anchor, value) async {
+          final result = value ? await _checkMpvConfig(anchor) : true;
           if (result != true || !mounted) return result;
           ref.read(useMpvConfigStateProvider.notifier).set(value);
           return true;
         },
-        onRestore: () => _checkMpvConfig(context, redownload: true),
+        onRestore: (anchor) => _checkMpvConfig(anchor, redownload: true),
       );
     }
 
@@ -88,10 +91,12 @@ class _PlayerAdvancedScreenState extends ConsumerState<PlayerAdvancedScreen> {
         !(await mpvFile.exists()) && !(await inputFile.exists());
     if ((redownload || filesMissing) && context.mounted) {
       if (isMobile && !isTv) {
-        return showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => MobilePlayerActionDialog(
+        return showNodeLaneBubble<bool>(
+          context,
+          label: context.l10n.mpv_restore_bundled,
+          width: NodeLaneTokens.bubbleFormWidth,
+          dismissible: false,
+          child: NodeLaneConfirmPanel(
             title: context.l10n.mpv_restore_bundled,
             message: context.l10n.mpv_restore_confirm,
             confirmLabel: context.l10n.dialog_confirm,

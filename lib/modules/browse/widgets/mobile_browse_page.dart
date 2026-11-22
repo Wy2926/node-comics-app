@@ -41,50 +41,20 @@ class MobileBrowsePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = NodeLaneTokens.of(context);
     if (NodeLaneBubbleFlow.contains(context)) {
-      return LayoutBuilder(
-        builder: (context, box) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                leading ??
-                    BackButton(onPressed: () => Navigator.maybePop(context)),
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: colors.readerLabel,
-                    ),
-                  ),
-                ),
-                ...?actions,
-                const SizedBox(width: NodeLaneTokens.space8),
-              ],
-            ),
-            const NodeLaneGroupDivider(),
-            Expanded(child: body),
-            if (bottomAction != null)
-              ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: box.maxHeight * .44),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    NodeLaneTokens.space12,
-                    NodeLaneTokens.space4,
-                    NodeLaneTokens.space12,
-                    NodeLaneTokens.space8,
-                  ),
-                  child: bottomAction,
-                ),
-              ),
-          ],
-        ),
+      return NodeLaneBubblePanel(
+        title: title,
+        actions: actions ?? const [],
+        closeButton:
+            leading ??
+            (ModalRoute.of(context) is PageRoute
+                ? BackButton(onPressed: () => Navigator.maybePop(context))
+                : null),
+        footer: bottomAction,
+        child: body,
       );
     }
+    final colors = NodeLaneTokens.of(context);
     return NodeLaneSurface(
       child: Scaffold(
         appBar: nodeLaneAppBar(

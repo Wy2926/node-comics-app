@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -154,20 +153,16 @@ void main() {
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Chapters'));
       expect(find.byType(Dialog), findsNothing);
       expect(writes.length, 1);
-      tester
-          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
-          .scrollController!
-          .jumpToItem(0);
+      tester.widget<Slider>(find.byType(Slider).last).onChangeEnd!(0);
       await tester.pumpAndSettle();
       expect(writes.last.lastChapterRead, 0);
-      await tap(tester, find.widgetWithText(NodeLaneRow, 'Chapters'));
-      await tap(tester, find.widgetWithText(NodeLaneRow, 'Score'));
-      tester
-          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
-          .scrollController!
-          .jumpToItem(2);
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Score'));
+      tester.widget<Slider>(find.byType(Slider).last).onChangeEnd!(2);
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       expect(writes.last.score, 60);
       expect(tester.takeException(), isNull, reason: 'Before date picker');
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Start date'));
@@ -264,7 +259,7 @@ void main() {
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Completed'));
       await tester.pump(const Duration(milliseconds: 500));
       expect(writes, 1);
-      expect(tester.widget<NodeLaneRow>(status).onTap, isNull);
+      expect(tester.widget<NodeLaneRow>(status).onOpen, isNull);
       await Navigator.of(tester.element(find.byType(MobileTrackerEditor)))
           .maybePop();
       await tester.pump();
@@ -273,7 +268,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(original.status, TrackStatus.reading);
       expect(find.textContaining('private service error'), findsNothing);
-      expect(tester.widget<NodeLaneRow>(status).onTap, isNull);
+      expect(tester.widget<NodeLaneRow>(status).onOpen, isNull);
       final refresh = find.widgetWithText(TextButton, 'Refresh');
       await reveal(tester, refresh, delta: -250);
       final action = tester.widget<TextButton>(refresh).onPressed!;
@@ -284,7 +279,7 @@ void main() {
       expect(writes, 1);
       recheck.complete();
       await tester.pumpAndSettle();
-      expect(tester.widget<NodeLaneRow>(status).onTap, isNotNull);
+      expect(tester.widget<NodeLaneRow>(status).onOpen, isNotNull);
       await Navigator.of(tester.element(find.byType(MobileTrackerEditor)))
           .maybePop();
       await tester.pumpAndSettle();

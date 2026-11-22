@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/novel/utils/novel_reader_fonts.dart';
 import 'package:mangayomi/modules/novel/utils/novel_reader_palette.dart';
@@ -19,7 +19,7 @@ class MobileNovelReaderScreen extends ConsumerWidget {
     this.onOpenTts,
     this.sessionControls,
   });
-  final VoidCallback? onOpenTts;
+  final ValueChanged<BuildContext>? onOpenTts;
 
   /// Only the in-reader entry supplies controls for the current book.
   final Widget? sessionControls;
@@ -32,7 +32,6 @@ class MobileNovelReaderScreen extends ConsumerWidget {
       title: '${l10n.novel} ${l10n.reader}',
       body: MobileSettingsList(
         key: const PageStorageKey('mobile-novel-reader-settings'),
-        padding: NodeLaneTokens.pagePadding,
         children: [
           ?sessionControls,
           MobileSettingsGroup(
@@ -54,7 +53,7 @@ class MobileNovelReaderScreen extends ConsumerWidget {
                     l10n.default0,
                 options: [
                   for (final option in novelReaderFontOptions)
-                    MobileSettingOption(
+                    SettingOption(
                       option.key,
                       option.key == null ? l10n.default0 : option.label,
                     ),
@@ -99,7 +98,10 @@ class MobileNovelReaderScreen extends ConsumerWidget {
                   openOnReveal: true,
                   title: l10n.tts,
                   icon: NodeLaneIcons.of(context).speech,
-                  onTap: onOpenTts!,
+                  onTap: sessionControls == null
+                      ? () => onOpenTts!(context)
+                      : null,
+                  onOpen: sessionControls != null ? onOpenTts : null,
                 ),
             ],
           ),
@@ -141,7 +143,7 @@ class _NovelColors extends ConsumerWidget {
           label: (value) => value?.label(context) ?? l10n.custom,
           options: [
             for (final option in NovelReaderThemePreset.values)
-              MobileSettingOption(
+              SettingOption(
                 option,
                 option.label(context),
                 leading: _ColorSample(option.background, text: option.text),
@@ -201,7 +203,7 @@ class _NovelColors extends ConsumerWidget {
     label: (value) => value,
     options: [
       for (final color in novelReaderColorPalette)
-        MobileSettingOption(
+        SettingOption(
           _hex(color),
           _hex(color),
           leading: _ColorSample(_hex(color)),
@@ -267,7 +269,7 @@ class _NovelPageLayout extends ConsumerWidget {
           label: alignLabel,
           options: [
             for (final value in NovelTextAlign.values)
-              MobileSettingOption(value, alignLabel(value)),
+              SettingOption(value, alignLabel(value)),
           ],
           onChanged: ref.read(novelTextAlignStateProvider.notifier).set,
         ),

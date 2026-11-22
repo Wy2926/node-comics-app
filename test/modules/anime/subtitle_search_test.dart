@@ -12,6 +12,8 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/services/subtitles/subtitle_preferences.dart';
 import 'package:mangayomi/services/subtitles/subtitle_service.dart';
 
+import '../../helpers/bubble_finders.dart';
+
 Widget app(ProviderContainer container, Widget home, {double keyboard = 0}) =>
     UncontrolledProviderScope(
       container: container,
@@ -37,7 +39,8 @@ Finder field(String key) => find.descendant(
 );
 
 Future<void> tap(WidgetTester tester, Finder finder) async {
-  await tester.ensureVisible(finder);
+  await Scrollable.ensureVisible(tester.element(finder), alignment: .5);
+  await tester.pumpAndSettle();
   await tester.tap(finder);
   await tester.pumpAndSettle();
 }
@@ -77,7 +80,13 @@ void main() {
         find.widgetWithText(NodeLaneRow, 'Online subtitle service'),
       );
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Subtitle source'));
-      await tap(tester, find.widgetWithText(NodeLaneRow, 'My Wyzie key'));
+      await tester.tap(
+        await revealBubble(
+          tester,
+          find.widgetWithText(NodeLaneRow, 'My Wyzie key'),
+        ),
+      );
+      await tester.pumpAndSettle();
       await tester.enterText(field('subtitle-key'), 'personal-fixture');
       expect(
         tester
@@ -90,7 +99,7 @@ void main() {
             .obscureText,
         isTrue,
       );
-      await tap(tester, find.byTooltip('Back'));
+      await tap(tester, inBubble(find.byTooltip('Close')));
       expect((await store.read()).mode, SubtitleConnectionMode.disabled);
 
       await tap(
@@ -98,10 +107,13 @@ void main() {
         find.widgetWithText(NodeLaneRow, 'Online subtitle service'),
       );
       await tap(tester, find.widgetWithText(NodeLaneRow, 'Subtitle source'));
-      await tap(
-        tester,
-        find.widgetWithText(NodeLaneRow, 'My subtitle service'),
+      await tester.tap(
+        await revealBubble(
+          tester,
+          find.widgetWithText(NodeLaneRow, 'My subtitle service'),
+        ),
       );
+      await tester.pumpAndSettle();
       await tester.enterText(
         field('subtitle-address'),
         'https://own.example/search?key=bad',

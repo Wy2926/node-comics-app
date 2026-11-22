@@ -19,6 +19,9 @@ import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provi
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+
+import '../../../helpers/bubble_finders.dart';
+
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences_provider.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_scope.dart';
@@ -29,7 +32,6 @@ import 'package:mangayomi/services/get_chapter_pages.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 // Platform replacement for the plugin in this host-only widget test.
-// ignore: depend_on_referenced_packages
 import 'package:wakelock_plus_platform_interface/wakelock_plus_platform_interface.dart';
 
 class _Wakelock extends WakelockPlusPlatformInterface {
@@ -333,13 +335,14 @@ void main() {
       await tester.tap(find.text('Manga translation'));
       await tester.pumpAndSettle();
       expect(find.byType(TranslationControlsContent), findsOneWidget);
-      expect(find.byType(NodeLaneBubbleFlow), findsOneWidget);
+      expect(find.byType(NodeLaneBubblePanel), findsNWidgets(2));
       expect(find.byType(BottomSheet), findsNothing);
       await tester.ensureVisible(find.text('Translation language'));
       await tester.tap(find.text('Translation language'));
       await tester.pumpAndSettle();
-      expect(find.text('简体中文'), findsOneWidget);
-      await tester.tap(find.byTooltip('Close').last);
+      expect(find.byType(NodeLaneBubblePanel), findsNWidgets(3));
+      expect(inBubble(find.text('简体中文')), findsOneWidget);
+      await tester.tap(inBubble(find.byTooltip('Close')));
       await tester.pumpAndSettle();
       expect(find.byType(TranslationControlsContent), findsOneWidget);
       await tester.binding.handlePopRoute();

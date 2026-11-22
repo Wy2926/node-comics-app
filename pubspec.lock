@@ -396,7 +396,7 @@ packages:
     source: hosted
     version: "10.1.0"
   extended_image_library:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: extended_image_library
       sha256: "1f9a24d3a00c2633891c6a7b5cab2807999eb2d5b597e5133b63f49d113811fe"
@@ -705,7 +705,7 @@ packages:
     source: hosted
     version: "3.0.3"
   flutter_secure_storage_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: flutter_secure_storage_platform_interface
       sha256: "64951127f001f546891c86f414972bf49ef2c4c8a4c92c65f5790cc0c9100045"
@@ -868,7 +868,7 @@ packages:
     source: hosted
     version: "1.6.0"
   http_client_helper:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http_client_helper
       sha256: "8a9127650734da86b5c73760de2b404494c968a3fd55602045ffec789dac3cb1"
@@ -907,14 +907,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.10.1"
-  infinite_listview:
-    dependency: transitive
-    description:
-      name: infinite_listview
-      sha256: f6062c1720eb59be553dfa6b89813d3e8dd2f054538445aaa5edaddfa5195ce6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   inno_bundle:
     dependency: "direct dev"
     description:
@@ -1285,14 +1277,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.2"
-  numberpicker:
-    dependency: "direct main"
-    description:
-      name: numberpicker
-      sha256: "4c129154944b0f6b133e693f8749c3f8bfb67c4d07ef9dcab48b595c22d1f156"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.2"
   objective_c:
     dependency: transitive
     description:
@@ -1367,7 +1351,7 @@ packages:
     source: hosted
     version: "2.2.2"
   path_provider_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: path_provider_platform_interface
       sha256: "484838772624c3a4b94f1e44a3e19897fee738f2d5c4ce448443b0417f7c9dda"
@@ -1979,7 +1963,7 @@ packages:
     source: hosted
     version: "3.2.6"
   url_launcher_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: url_launcher_platform_interface
       sha256: "552f8a1e663569be95a8190206a38187b531910283c3e982193e4f2733f01029"
@@ -2027,7 +2011,7 @@ packages:
     source: hosted
     version: "15.3.0"
   volume_controller:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: volume_controller
       sha256: a77534cf64fab42c47b7fc7a9fdc85fb8566c9477790bd1de53e3ed7991f0c94
@@ -2043,7 +2027,7 @@ packages:
     source: hosted
     version: "1.8.0"
   wakelock_plus_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: wakelock_plus_platform_interface
       sha256: "764c25504562abc8ac3406f5d175f126b276e6ba916c7c2675690b73368ca384"

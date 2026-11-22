@@ -320,6 +320,8 @@
   "clean_database_desc": "Ini akan menghapus semua item yang tidak ditambahkan ke perpustakaan!",
   "incognito_mode": "Mode Incognito",
   "downloaded_only": "Hanya yang diunduh",
+  "downloaded_only_hint": "Hanya tampilkan judul dengan konten yang sudah diunduh di pustaka.",
+  "incognito_mode_hint": "Jeda penyimpanan progres membaca dan pemutaran.",
   "download_queue": "Antrian Unduhan",
   "categories": "Kategori",
   "statistics": "Statistik",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Ruang lingkup pencarian",
-  "search_websites_action": "{count, plural, =1{Cari 1 situs web} other{Telusuri situs web {count}}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Temukan situs web",
   "search_selected_websites": "{count, plural, =1{1 situs web dipilih} other{{count} situs web dipilih}}",
   "@search_selected_websites": {

@@ -1,3 +1,5 @@
+import '../../../helpers/bubble_finders.dart';
+
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +33,7 @@ void main() {
           home:
               home ??
               MobileNovelReaderScreen(
-                onOpenTts: ttsSupported ? () => ttsOpens++ : null,
+                onOpenTts: ttsSupported ? (_) => ttsOpens++ : null,
               ),
         ),
       );
@@ -113,6 +115,10 @@ void main() {
     Finder target, {
     double delta = 280,
   }) async {
+    if (find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty) {
+      await revealBubble(tester, target, delta: delta);
+      return;
+    }
     await tester.scrollUntilVisible(
       target,
       delta,
@@ -129,7 +135,11 @@ void main() {
   }) async {
     final target = find.widgetWithText(NodeLaneRow, title);
     await reveal(tester, target, delta: delta);
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pumpAndSettle();
   }
 
@@ -142,7 +152,11 @@ void main() {
     await open(tester, title, delta: delta);
     final target = find.widgetWithText(NodeLaneRow, option);
     await reveal(tester, target);
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pumpAndSettle();
   }
 
@@ -153,7 +167,11 @@ void main() {
   }) async {
     final target = find.text(label);
     await reveal(tester, target, delta: delta);
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pumpAndSettle();
   }
 
@@ -164,7 +182,11 @@ void main() {
   }) async {
     final target = find.widgetWithText(NodeLaneSwitchRow, title);
     await reveal(tester, target, delta: delta);
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pumpAndSettle();
   }
 
@@ -218,8 +240,8 @@ void main() {
       await tester.pumpWidget(app(container));
       await tester.pumpAndSettle();
       await open(tester, 'Font');
-      expect(find.text('Atkinson Hyperlegible'), findsOneWidget);
-      await tester.tap(find.byTooltip('Back'));
+      expect(inBubble(find.text('Atkinson Hyperlegible')), findsOneWidget);
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(_writes, isEmpty);
       await choose(tester, 'Font', 'Default');
@@ -241,7 +263,7 @@ void main() {
       ]);
       await expand(tester, 'Custom');
       await open(tester, 'Background');
-      await tester.tap(find.byTooltip('Back'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(_writes, hasLength(5));
       await choose(tester, 'Background', '#FFFFFF');
@@ -263,8 +285,9 @@ void main() {
       final container = preferences(tester);
       await tester.pumpWidget(app(container));
       await tester.pumpAndSettle();
-      Future<void> dragSlider(Finder slider, String preference) async {
-        await reveal(tester, slider);
+      Future<void> dragSlider(String title, String preference) async {
+        await open(tester, title);
+        final slider = await revealBubble(tester, find.byType(Slider));
         final before = _writes.length;
         final gesture = await tester.startGesture(tester.getCenter(slider));
         await gesture.moveBy(const Offset(35, 0));
@@ -274,9 +297,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(_writes, hasLength(before + 1));
         expect(_writes.last.$1, preference);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
       }
 
-      await dragSlider(find.byType(Slider).first, 'novelFontSize');
+      await dragSlider('Font size', 'novelFontSize');
       expect(
         container.read(novelFontSizeStateProvider),
         inInclusiveRange(8, 40),
@@ -290,14 +315,8 @@ void main() {
       await expand(tester, 'Page layout');
       expect(_writes, hasLength(beforeExpand));
       await choose(tester, 'Text Align', 'Justify');
-      final paddingSlider = find.byWidgetPredicate(
-        (widget) => widget is Slider && widget.min == 0 && widget.max == 50,
-      );
-      await dragSlider(paddingSlider, 'novelReaderPadding');
-      final lineHeightSlider = find.byWidgetPredicate(
-        (widget) => widget is Slider && widget.min == 1 && widget.max == 3,
-      );
-      await dragSlider(lineHeightSlider, 'novelReaderLineHeight');
+      await dragSlider('Padding', 'novelReaderPadding');
+      await dragSlider('Line Height', 'novelReaderLineHeight');
       expect(
         container.read(novelReaderLineHeightStateProvider),
         inInclusiveRange(1, 3),

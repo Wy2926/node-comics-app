@@ -329,6 +329,8 @@
   "clean_database_desc": "This will remove all items that are not added to the library!",
   "incognito_mode": "Incognito Mode",
   "downloaded_only": "Downloaded only",
+  "downloaded_only_hint": "Only show titles with downloads in the library.",
+  "incognito_mode_hint": "Pause saving reading and playback progress.",
   "download_queue": "Download Queue",
   "categories": "Categories",
   "statistics": "Statistics",
@@ -1948,14 +1950,6 @@
     }
   },
   "search_scope": "Search scope",
-  "search_websites_action": "{count, plural, =1{Search 1 website} other{Search {count} websites}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Find a website",
   "search_selected_websites": "{count, plural, =1{1 website selected} other{{count} websites selected}}",
   "@search_selected_websites": {

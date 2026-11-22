@@ -100,17 +100,25 @@ Future<T?> showNodeLaneBubble<T>(
   double width = NodeLaneTokens.menuMaxWidth,
   Offset? localPoint,
   bool requestFocus = true,
+  bool dismissible = true,
 }) {
   final navigator = Navigator.of(anchor, rootNavigator: true);
   final overlay = navigator.overlay!.context.findRenderObject()! as RenderBox;
   final themes = InheritedTheme.capture(from: anchor, to: navigator.context);
-  final box = anchor.findRenderObject()! as RenderBox;
+  final nested =
+      ModalRoute.of(anchor) is _BubbleRoute ||
+      NodeLaneBubbleFlow.contains(anchor);
+  final render = anchor.findRenderObject();
+  final box = render is RenderBox
+      ? render
+      : anchor.findAncestorRenderObjectOfType<RenderBox>() ?? overlay;
   Rect measure() => localPoint == null
       ? box.localToGlobal(Offset.zero, ancestor: overlay) & box.size
       : box.localToGlobal(localPoint, ancestor: overlay) & Size.zero;
   var lastRect = measure();
   return navigator.push<T>(
     _BubbleRoute<T>(
+      barrierDismissible: dismissible,
       barrierLabel: MaterialLocalizations.of(anchor).menuDismissLabel,
       requestFocus: requestFocus,
       transitionDuration: NodeLaneMotion.time(anchor),
@@ -124,7 +132,12 @@ Future<T?> showNodeLaneBubble<T>(
               math.max(media.viewPadding.right, media.viewInsets.right),
               math.max(media.viewPadding.bottom, media.viewInsets.bottom),
             ).deflateRect(Offset.zero & size);
-            final bounds = safe.deflate(NodeLaneTokens.space8);
+            final bounds = EdgeInsets.symmetric(
+              horizontal: nested
+                  ? NodeLaneTokens.space16
+                  : NodeLaneTokens.space8,
+              vertical: NodeLaneTokens.space8,
+            ).deflateRect(safe);
             if (bounds.isEmpty) return const SizedBox.shrink();
             if (box.attached && box.hasSize) lastRect = measure();
             var rect = lastRect;
@@ -140,9 +153,24 @@ Future<T?> showNodeLaneBubble<T>(
             final tip = (rect.center.dx - left)
                 .clamp(math.min(22, w / 2), math.max(w - 22, w / 2))
                 .toDouble();
-            final above = (rect.top - 3).clamp(bounds.top, bounds.bottom);
-            final below = (rect.bottom + 3).clamp(bounds.top, bounds.bottom);
+            var above = (rect.top - 3).clamp(bounds.top, bounds.bottom);
+            var below = (rect.bottom + 3).clamp(bounds.top, bounds.bottom);
             final down = bounds.bottom - below >= above - bounds.top;
+            // A focused form can overlap its trigger. Menus which leave focus in
+            // an underlying text field must leave that field visible.
+            if (requestFocus) {
+              final needed = math.min(
+                bounds.height,
+                3 *
+                    NodeLaneTokens.minTapTarget *
+                    math.max(1, media.textScaler.scale(16) / 16),
+              );
+              if (down) {
+                below = math.min(below, bounds.bottom - needed);
+              } else {
+                above = math.max(above, bounds.top + needed);
+              }
+            }
             final height = down ? bounds.bottom - below : above - bounds.top;
             final pivot = Alignment(tip / w * 2 - 1, down ? -1 : 1);
             final colors = NodeLaneTokens.of(context);
@@ -200,6 +228,7 @@ Future<T?> showNodeLaneBubble<T>(
 
 class _BubbleRoute<T> extends RawDialogRoute<T> {
   _BubbleRoute({
+    required super.barrierDismissible,
     required super.pageBuilder,
     required super.barrierLabel,
     required super.requestFocus,
@@ -227,6 +256,42 @@ class NodeLaneBubbleFlow extends StatefulWidget {
 
   static bool contains(BuildContext context) =>
       context.findAncestorStateOfType<_NodeLaneBubbleFlowState>() != null;
+
+  static Future<T?> open<T>(
+    BuildContext anchor, {
+    required String title,
+    required Widget child,
+    Offset? localPoint,
+    double width = NodeLaneTokens.bubbleFormWidth,
+  }) => showNodeLaneBubble<T>(
+    anchor,
+    label: title,
+    localPoint: localPoint,
+    width: width,
+    child: NodeLaneBubbleFlow(home: child),
+  );
+
+  /// The editor owns a popup above its trigger; closing it never pops the parent.
+  static Future<T?> edit<T>(
+    BuildContext anchor, {
+    required String title,
+    required Widget Function(BuildContext, ValueChanged<T?> finish) body,
+    double width = NodeLaneTokens.bubbleToolWidth,
+  }) => showNodeLaneBubble<T>(
+    anchor,
+    label: title,
+    width: width,
+    child: NodeLaneBubblePanel(
+      title: title,
+      child: Builder(
+        builder: (context) => body(context, (value) {
+          if (context.mounted && ModalRoute.isCurrentOf(context) == true) {
+            Navigator.pop<T>(context, value);
+          }
+        }),
+      ),
+    ),
+  );
 
   static Future<T?> push<T>(BuildContext context, Widget step) => context
       .findAncestorStateOfType<_NodeLaneBubbleFlowState>()!
@@ -376,6 +441,89 @@ class _NodeLaneBubbleFlowState extends State<NodeLaneBubbleFlow> {
   );
 }
 
+/// Live preferences and pending writes keep updating a detached popup.
+class NodeLaneLiveBubbleButton extends StatefulWidget {
+  const NodeLaneLiveBubbleButton({
+    super.key,
+    required this.title,
+    required this.editor,
+    required this.builder,
+    this.enabled = true,
+    this.openOnMount = false,
+    this.onClose,
+  });
+  final String title;
+  final Widget editor;
+  final Widget Function(BuildContext, VoidCallback?, bool) builder;
+  final bool enabled, openOnMount;
+  final VoidCallback? onClose;
+  @override
+  State<NodeLaneLiveBubbleButton> createState() => _LiveBubbleButtonState();
+}
+
+class _LiveBubbleButtonState extends State<NodeLaneLiveBubbleButton> {
+  ValueNotifier<Widget>? _editor;
+  VoidCallback? _dismiss;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.openOnMount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _open();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(NodeLaneLiveBubbleButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_editor != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _editor?.value = widget.editor;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    final dismiss = _dismiss;
+    if (dismiss != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => dismiss());
+    }
+    super.dispose();
+  }
+
+  Future<void> _open() async {
+    if (_editor != null || !widget.enabled) return;
+    final editor = ValueNotifier(widget.editor);
+    setState(() => _editor = editor);
+    try {
+      await NodeLaneBubbleFlow.edit<void>(
+        context,
+        title: widget.title,
+        body: (_, finish) {
+          _dismiss = () => finish(null);
+          return ValueListenableBuilder<Widget>(
+            valueListenable: editor,
+            builder: (_, child, _) => child,
+          );
+        },
+      );
+    } finally {
+      _dismiss = null;
+      editor.dispose();
+      if (mounted) {
+        setState(() => _editor = null);
+        widget.onClose?.call();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(context, widget.enabled ? _open : null, _editor != null);
+}
+
 class _BubbleOutline extends ShapeBorder {
   const _BubbleOutline(this.down, this.tip, this.line);
   final bool down;
@@ -491,25 +639,38 @@ class NodeLaneBubblePanel extends StatelessWidget {
     this.subtitle,
     this.actions = const [],
     this.closeButton,
+    this.footer,
   });
   final String title;
   final String? subtitle;
   final List<Widget> actions;
   final Widget? closeButton;
+  final Widget? footer;
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      NodeLaneBubbleHeading(
-        title,
-        subtitle: subtitle,
-        actions: actions,
-        closeButton: closeButton,
-      ),
-      Flexible(child: child),
-    ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        NodeLaneBubbleHeading(
+          title,
+          subtitle: subtitle,
+          actions: actions,
+          closeButton: closeButton,
+        ),
+        Flexible(child: child),
+        if (footer != null)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: box.maxHeight * .42),
+            child: SingleChildScrollView(
+              primary: false,
+              padding: NodeLaneTokens.sheetFooterPadding,
+              child: footer!,
+            ),
+          ),
+      ],
+    ),
   );
 }

@@ -320,6 +320,8 @@
   "clean_database_desc": "보관함에 추가되지 않은 모든 항목을 제거합니다!",
   "incognito_mode": "시크릿 모드",
   "downloaded_only": "다운로드 항목만",
+  "downloaded_only_hint": "서재에 다운로드한 콘텐츠가 있는 작품만 표시합니다.",
+  "incognito_mode_hint": "읽기 및 재생 위치 저장을 일시 중지합니다.",
   "download_queue": "다운로드 대기열",
   "categories": "카테고리",
   "statistics": "통계",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "검색 범위",
-  "search_websites_action": "{count, plural, =1{1 웹사이트 검색} other{{count} 웹사이트 검색}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "웹사이트 찾기",
   "search_selected_websites": "{count, plural, =1{웹사이트 1개 선택됨} other{{count} 웹사이트가 선택됨}}",
   "@search_selected_websites": {

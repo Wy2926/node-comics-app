@@ -1,4 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
 import 'package:mangayomi/services/mobile_source_catalog.dart';
 
@@ -25,6 +24,7 @@ import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/services/fetch_item_sources.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 class _Repos extends ExtensionsRepoState {
   int writes = 0;
@@ -138,7 +138,7 @@ void main() {
   }
 
   testWidgets(
-    'directory filters sit above the full grid and survive a narrow resize',
+    'the filter stays anchored across tablet resize without moving or reserving space in the grid',
     (tester) async {
       await mountCatalog(
         tester,
@@ -157,65 +157,43 @@ void main() {
           tester.getRect(find.widgetWithText(SourceWebsiteCard, name));
       final before = card('Site 00');
       expect(before.top, card('Site 01').top);
+      expect(card('Site 02').top, greaterThan(before.bottom));
       final panel = find.byType(SourceDirectoryFilterPanel);
-      expect(tester.getRect(panel).bottom, lessThan(before.top));
-      expect(tester.getRect(panel).width, greaterThan(before.width * 2));
-      final chips = find.widgetWithText(FilterChip, '日本語');
-      final results = find.byKey(const PageStorageKey('catalog-manga-false'));
-      await tester.drag(results, const Offset(0, -580));
-      await tester.pumpAndSettle();
-      expect(chips.hitTestable(), findsNothing);
-      final pos = tester
-          .state<ScrollableState>(
-            find
-                .descendant(of: results, matching: find.byType(Scrollable))
-                .first,
-          )
-          .position;
-      expect(pos.pixels, greaterThan(0));
-      pos.jumpTo(0);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('筛选'));
-      await tester.pumpAndSettle();
       expect(panel, findsNothing);
-      expect(card('Site 00').top, lessThan(before.top));
-      expect(card('Site 00').width, before.width);
-      final closedTop = card('Site 00').top;
-      await tester.tap(find.byTooltip('筛选'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 60));
-      final movingTop = card('Site 00').top;
+      final chips = find.widgetWithText(FilterChip, '日本語');
+      final trigger = find.byTooltip('筛选');
+      final anchor = tester.getRect(trigger);
+      await tester.tap(trigger);
       await tester.pumpAndSettle();
-      expect(movingTop, inExclusiveRange(closedTop, before.top));
+      expect(ModalRoute.of(tester.element(panel)), isA<PopupRoute>());
+      expect(tester.getRect(panel).top, greaterThanOrEqualTo(anchor.bottom));
       expect(card('Site 00'), before);
-      expect(card('Site 01').top, card('Site 00').top);
-      await tester.tap(find.descendant(of: panel, matching: find.text('日本語')));
+      await tester.tap(chips);
       await tester.pumpAndSettle();
       expect(find.text('Site 00'), findsNothing);
-      expect(find.text('Site 01'), findsOneWidget);
+      expect(card('Site 01'), before);
+      expect(tester.widget<FilterChip>(chips).selected, isTrue);
       await tester.tap(find.descendant(of: panel, matching: find.text('形式')));
       await tester.pumpAndSettle();
+      final state = tester.state(panel);
       tester.view.physicalSize = const Size(540, 800);
       await tester.pumpAndSettle();
-      expect(
-        tester.getRect(panel).bottom,
-        lessThanOrEqualTo(card('Site 01').top),
-      );
+      expect(tester.state(panel), same(state));
       expect(find.text('Site 00'), findsNothing);
-      expect(
-        find.descendant(of: panel, matching: find.text('条漫')),
-        findsOneWidget,
-      );
       tester.view.physicalSize = const Size(1180, 720);
       await tester.pumpAndSettle();
-      expect(tester.getRect(panel).bottom, lessThan(card('Site 01').top));
       expect(
         find.descendant(of: panel, matching: find.text('条漫')),
         findsOneWidget,
       );
-      await tester.tap(find.byTooltip('筛选'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(panel, findsNothing);
+      expect(find.text('清空'), findsNothing);
+      expect(card('Site 01'), before);
+      await tester.tap(trigger);
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilterChip>(chips).selected, isTrue);
       expect(tester.takeException(), isNull);
     },
   );
@@ -258,16 +236,20 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('管理仓库'));
       await tester.pumpAndSettle();
+      expect(
+        NodeLaneBubbleFlow.contains(
+          tester.element(find.byType(MobileRepositoryManager)),
+        ),
+        isTrue,
+      );
       await tester.tap(find.text(repo.name!));
       await tester.pumpAndSettle();
       tester.view.physicalSize = const Size(580, 665);
       await tester.pumpAndSettle();
       expect(find.text('复制目录链接').hitTestable(), findsOneWidget);
-      await tester.tap(find.byTooltip('返回'));
+      await tester.tap(find.byTooltip('关闭').hitTestable());
       await tester.pumpAndSettle();
-      await tester.tap(find.text('管理'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('申请新增来源'));
+      await tester.tap(find.text('申请新增来源').hitTestable());
       await tester.pumpAndSettle();
       expect(find.text('https://example.org/'), findsOneWidget);
       tester.view.physicalSize = const Size(540, 800);
@@ -313,19 +295,16 @@ void main() {
       );
       final panel = find.byType(SourceDirectoryFilterPanel);
       final trigger = find.byTooltip('筛选');
-      double y() => tester.getTopLeft(find.text('Website ar')).dy;
-      final before = y();
-      await tester.tap(trigger);
-      await tester.pump();
       expect(panel, findsNothing);
-      final closed = y();
-      expect(closed, lessThan(before));
+      Rect first() =>
+          tester.getRect(find.widgetWithText(SourceWebsiteCard, 'Website ar'));
+      final before = first();
       await tester.tap(trigger);
       await tester.pump();
       final open = tester.getSize(panel);
       await tester.pump(const Duration(milliseconds: 80));
       expect(tester.getSize(panel), open);
-      expect(y(), before);
+      expect(first(), before);
       await tester.enterText(
         find.descendant(of: panel, matching: find.byType(TextField)),
         'JA',
@@ -334,13 +313,15 @@ void main() {
       await tester.tap(find.widgetWithText(FilterChip, '日本語'));
       await tester.pumpAndSettle();
       expect(find.text('Website ja'), findsOneWidget);
-      expect(find.bySemanticsLabel(RegExp('1 个结果')), findsOneWidget);
+      expect(
+        find.descendant(of: panel, matching: find.textContaining('1 个结果')),
+        findsOneWidget,
+      );
       await tester.tap(find.text('清空'));
       await tester.pumpAndSettle();
-      await tester.tap(trigger);
-      await tester.pump();
-      expect(y(), closed);
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
+      expect(first(), before);
       expect(panel, findsNothing);
       expect(tester.takeException(), isNull);
     },
@@ -507,7 +488,13 @@ void main() {
       final all = find.widgetWithText(FilterChip, '全部语言');
       await tester.tap(all);
       await tester.pumpAndSettle();
-      expect(find.bySemanticsLabel(RegExp('2 个结果')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(SourceDirectoryFilterPanel),
+          matching: find.textContaining('2 个结果'),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(all);
       await tester.pumpAndSettle();
       expect(find.text('Japanese site'), findsNothing);
@@ -521,6 +508,8 @@ void main() {
       expect(english.isActive, isTrue);
       expect(japanese.isAdded, isFalse);
       expect(japanese.isActive, isFalse);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Japanese');
       await tester.tap(find.text('第三方'));
       await tester.pumpAndSettle();
@@ -538,7 +527,7 @@ void main() {
     },
   );
   testWidgets(
-    'inline facets intersect groups, combine choices and clear without losing the query',
+    'bubble facets intersect groups, follow catalog updates and clear without losing the query',
     (tester) async {
       final entries = StreamController<List<Source>>();
       addTearDown(entries.close);
@@ -572,6 +561,10 @@ void main() {
       final panel = find.byType(SourceDirectoryFilterPanel);
       Finder inside(String text) =>
           find.descendant(of: panel, matching: find.text(text));
+      Finder bubbleCount(int n) => find.descendant(
+        of: find.byType(NodeLaneBubblePanel),
+        matching: find.textContaining('$n 个结果'),
+      );
       Future<void> tap(Finder finder) async {
         await tester.ensureVisible(finder);
         await tester.tap(finder);
@@ -580,37 +573,42 @@ void main() {
 
       await tap(find.byTooltip('筛选'));
       expect(inside('地区'), findsOneWidget);
-      expect(find.byType(NodeLaneCatalogSheet), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
       await tap(inside('收费'));
-      expect(find.bySemanticsLabel(RegExp('3 个结果')), findsOneWidget);
-      await tap(inside('免费阅读'));
-      expect(find.bySemanticsLabel(RegExp('1 个结果')), findsOneWidget);
+      expect(bubbleCount(3), findsOneWidget);
+      await tap(find.widgetWithText(FilterChip, '免费阅读'));
+      expect(bubbleCount(1), findsOneWidget);
       await tap(inside('付费阅读'));
-      expect(find.bySemanticsLabel(RegExp('2 个结果')), findsOneWidget);
+      expect(bubbleCount(2), findsOneWidget);
       await tap(inside('地区'));
       await tap(inside('日漫'));
-      expect(find.bySemanticsLabel(RegExp('1 个结果')), findsOneWidget);
+      expect(bubbleCount(1), findsOneWidget);
       entries.add([...initial, site(6, 'jp', 'paid')]);
       await tester.pumpAndSettle();
-      expect(find.bySemanticsLabel(RegExp('2 个结果')), findsOneWidget);
-      await tap(find.byTooltip('筛选'));
+      expect(bubbleCount(2), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       expect(find.text('Site 1'), findsOneWidget);
       expect(find.text('Site 2'), findsNothing);
       expect(find.text('Site 3'), findsNothing);
       await tap(find.byTooltip('筛选'));
       await tap(inside('收费'));
-      await tap(inside('免费阅读'));
-      expect(find.bySemanticsLabel(RegExp('1 个结果')), findsOneWidget);
-      await tap(find.text('清空'));
-      expect(find.bySemanticsLabel(RegExp('4 个结果')), findsOneWidget);
+      await tap(find.widgetWithText(FilterChip, '免费阅读'));
+      expect(bubbleCount(1), findsOneWidget);
+      await tap(find.text('清空').hitTestable());
+      expect(bubbleCount(4), findsOneWidget);
       await tap(inside('地区'));
       await tap(inside('国漫'));
-      expect(find.bySemanticsLabel(RegExp('0 个结果')), findsOneWidget);
-      await tap(find.byTooltip('筛选'));
+      expect(bubbleCount(0), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       expect(find.text('没有匹配的网站'), findsOneWidget);
       await tap(find.byTooltip('清除搜索'));
-      expect(find.text('清空').hitTestable(), findsOneWidget);
+      expect(find.text('清空'), findsNothing);
+      await tap(find.byTooltip('筛选'));
       await tap(find.text('清空'));
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       expect(find.bySemanticsLabel(RegExp('5 个结果')), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

@@ -1,3 +1,6 @@
+import '../../../helpers/bubble_finders.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -101,6 +104,10 @@ void main() {
     Finder finder, {
     double delta = 250,
   }) async {
+    if (find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty) {
+      await revealBubble(tester, finder, delta: delta);
+      return;
+    }
     await tester.scrollUntilVisible(
       finder,
       delta,
@@ -111,7 +118,7 @@ void main() {
   }
 
   Future<void> openLanguage(WidgetTester tester) async {
-    final tile = find.byType(NodeLaneRow);
+    final tile = find.widgetWithText(NodeLaneRow, 'Language');
     await reveal(tester, tile);
     await tester.tap(tile);
     await tester.pumpAndSettle();
@@ -127,13 +134,12 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pump();
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(find.byType(Slider), findsNothing);
       expect(
-        tester.widget<Slider>(find.byType(Slider).first).onChanged,
-        isNull,
-      );
-      expect(
-        tester.widget<NodeLaneRow>(find.byType(NodeLaneRow)).onTap,
-        isNull,
+        tester
+            .widgetList<NodeLaneRow>(find.byType(NodeLaneRow))
+            .every((r) => !r.enabled),
+        isTrue,
       );
       expect(writes, isEmpty);
       pending.complete(['en-US', 'zh-CN', 'en-US', null, 42, '']);
@@ -153,7 +159,7 @@ void main() {
       expect(find.text('No result'), findsOneWidget);
       await tester.tap(find.byTooltip('Reset'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Back'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(language, 'en-NZ');
       expect(writes, isEmpty);
@@ -192,17 +198,18 @@ void main() {
       await tester.pumpAndSettle();
       final pending = Completer<void>();
       apply = () => pending.future;
-      final slider = find.descendant(
-        of: find.byKey(const ValueKey('tts-speed')),
-        matching: find.byType(Slider),
-      );
-      await reveal(tester, slider);
+      final speedRow = find.byKey(const ValueKey('tts-speed'));
+      await reveal(tester, speedRow);
+      await tester.tap(speedRow);
+      await tester.pumpAndSettle();
+      final slider = inBubble(find.byType(Slider));
       final gesture = await tester.startGesture(tester.getCenter(slider));
       await gesture.moveBy(const Offset(35, 0));
       await tester.pump();
       expect(writes, isEmpty);
       expect(calls, isEmpty);
       await gesture.up();
+      await tester.pump();
       await tester.pump();
       expect(writes, hasLength(1));
       expect(calls, hasLength(1));
@@ -213,6 +220,8 @@ void main() {
         expect(control.onChanged, isNull);
       }
       pending.completeError(StateError('private engine details'));
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.textContaining('private engine details'), findsNothing);
       final retry = find.byKey(const ValueKey('tts-retry-apply'));
@@ -231,12 +240,11 @@ void main() {
       expect(find.byKey(const ValueKey('tts-retry-apply')), findsNothing);
       final savedSpeed = speed;
       apply = null;
-      final pitchSlider = find.descendant(
-        of: find.byKey(const ValueKey('tts-pitch')),
-        matching: find.byType(Slider),
-      );
-      await reveal(tester, pitchSlider, delta: -250);
-      await tester.drag(pitchSlider, const Offset(30, 0));
+      final pitchRow = find.byKey(const ValueKey('tts-pitch'));
+      await reveal(tester, pitchRow, delta: -250);
+      await tester.tap(pitchRow);
+      await tester.pumpAndSettle();
+      await tester.drag(inBubble(find.byType(Slider)), const Offset(30, 0));
       await tester.pumpAndSettle();
       expect(writes, hasLength(2));
       expect(calls, hasLength(3));
@@ -283,7 +291,7 @@ void main() {
       await openLanguage(tester);
       final saved = find.widgetWithText(NodeLaneRow, 'en-NZ');
       await reveal(tester, saved);
-      await tester.tap(saved);
+      await tester.tap(inBubble(saved));
       await tester.pumpAndSettle();
       expect(writes, isEmpty);
       expect(calls, isEmpty);

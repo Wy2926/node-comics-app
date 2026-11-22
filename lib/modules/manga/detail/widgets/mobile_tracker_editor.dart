@@ -1,11 +1,12 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_number_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -98,43 +99,41 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
     await widget.onUpdate(draft);
   }
 
-  Future<void> _status() => _run(() async {
+  Future<void> _status(BuildContext anchor) => _run(() async {
     final current = toTrackStatus(
       widget.track.status,
       widget.itemType,
       widget.track.syncId!,
     );
-    final selected = await showMobileSettingsPicker(
-      context,
+    final selected = await showSettingChoice(
+      anchor,
       title: context.l10n.status,
       current: current,
       options: [
         for (final status in widget.statuses)
-          MobileSettingOption(status, getTrackStatus(status, context)),
+          SettingOption(status, getTrackStatus(status, context)),
       ],
     );
     if (!mounted || selected == null || selected.value == current) return;
     await _update((draft) => draft.status = selected.value);
   });
 
-  Future<void> _progress() => _run(() async {
+  Future<void> _progress(BuildContext anchor) => _run(() async {
     final max = (widget.track.totalChapter ?? 0) > 0
         ? widget.track.totalChapter!
         : 10000;
-    final selected = await showNodeLaneDialog<String>(
-      context: context,
-      builder: (_) => MobileSettingsTextDialog(
-        title: widget.itemType == ItemType.manga
-            ? context.l10n.chapters
-            : context.l10n.episodes,
-        initialValue: '${widget.track.lastChapterRead ?? 0}',
-        helper: '0–$max',
-        keyboardType: TextInputType.number,
-        isValid: (text) {
-          final value = int.tryParse(text.trim());
-          return value != null && value >= 0 && value <= max;
-        },
-      ),
+    final selected = await showSettingText(
+      anchor,
+      title: widget.itemType == ItemType.manga
+          ? context.l10n.chapters
+          : context.l10n.episodes,
+      initialValue: '${widget.track.lastChapterRead ?? 0}',
+      helper: '0–$max',
+      keyboardType: TextInputType.number,
+      isValid: (text) {
+        final value = int.tryParse(text.trim());
+        return value != null && value >= 0 && value <= max;
+      },
     );
     if (!mounted || selected == null) return;
     final value = int.parse(selected.trim());
@@ -143,7 +142,7 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
     }
   });
 
-  Future<void> _date(bool start) => _run(() async {
+  Future<void> _date(BuildContext anchor, bool start) => _run(() async {
     final milliseconds = start
         ? widget.track.startedReadingDate
         : widget.track.finishedReadingDate;
@@ -155,13 +154,16 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
         stored != null && !stored.isBefore(first) && !stored.isAfter(last)
         ? stored
         : DateTime.now();
-    final selected = await Navigator.of(context).push<DateTime>(
-      MaterialPageRoute(
+    final title = start ? context.l10n.start_date : context.l10n.finish_date;
+    final selected = await NodeLaneBubbleFlow.open<DateTime>(
+      anchor,
+      title: title,
+      child: Builder(
         builder: (routeContext) => Localizations.override(
           context: routeContext,
           locale: widget.locale,
           child: MobileTrackerDatePicker(
-            title: start ? context.l10n.start_date : context.l10n.finish_date,
+            title: title,
             initial: initial,
             first: first,
             last: last,
@@ -181,9 +183,9 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
     });
   });
 
-  Future<void> _remove() => _run(() async {
+  Future<void> _remove(BuildContext anchor) => _run(() async {
     final confirmed = await showNodeLaneConfirmation(
-      context,
+      anchor,
       title: context.l10n.remove_tracking,
       message: context.l10n.remove_tracking_confirm(widget.track.title ?? ''),
       confirmLabel: context.l10n.remove,
@@ -208,13 +210,13 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
       String title,
       String text,
       IconData icon,
-      VoidCallback action,
+      ValueChanged<BuildContext> action,
     ) => NodeLaneRow(
       title: title,
       value: text,
       icon: icon,
       enabled: !locked,
-      onTap: locked ? null : action,
+      onOpen: locked ? null : action,
     );
     return PopScope(
       canPop: !_busy,
@@ -307,20 +309,22 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
             l10n.start_date,
             widget.startLabel,
             Icons.event_outlined,
-            () => _date(true),
+            (a) => _date(a, true),
           ),
           value(
             l10n.finish_date,
             widget.finishLabel,
             NodeLaneIcons.of(context).calendar,
-            () => _date(false),
+            (a) => _date(a, false),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
-            child: TextButton.icon(
-              onPressed: locked ? null : _remove,
-              icon: const Icon(Icons.link_off_rounded),
-              label: Text(l10n.remove_tracking),
+            child: Builder(
+              builder: (a) => TextButton.icon(
+                onPressed: locked ? null : () => _remove(a),
+                icon: const Icon(Icons.link_off_rounded),
+                label: Text(l10n.remove_tracking),
+              ),
             ),
           ),
         ],

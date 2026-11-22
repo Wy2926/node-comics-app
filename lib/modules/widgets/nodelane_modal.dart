@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -205,7 +206,7 @@ class NodeLaneDialogAction extends StatelessWidget {
   }
 }
 
-/// Only returns a decision. Persistence and recovery remain with the caller.
+/// A separate confirmation above the triggering control; work starts after a decision.
 Future<bool> showNodeLaneConfirmation(
   BuildContext context, {
   required String title,
@@ -213,47 +214,35 @@ Future<bool> showNodeLaneConfirmation(
   required String confirmLabel,
   bool destructive = false,
 }) async =>
-    await showNodeLaneDialog<bool>(
-      context: context,
-      builder: (dialogContext) => NodeLaneAlertDialog(
-        title: Text(title),
-        content: message == null ? null : Text(message),
-        actions: [
-          NodeLaneDialogAction(
-            label: context.l10n.cancel,
-            secondary: true,
-            onPressed: () => Navigator.pop(dialogContext, false),
+    await showNodeLaneBubble<bool>(
+      context,
+      label: title,
+      width: NodeLaneTokens.bubbleFormWidth,
+      child: Builder(
+        builder: (dialogContext) => NodeLaneBubblePanel(
+          title: title,
+          footer: NodeLaneModalActions(
+            actions: [
+              NodeLaneDialogAction(
+                label: context.l10n.cancel,
+                secondary: true,
+                onPressed: () => Navigator.pop(dialogContext, false),
+              ),
+              NodeLaneDialogAction(
+                label: confirmLabel,
+                destructive: destructive,
+                onPressed: () => Navigator.pop(dialogContext, true),
+              ),
+            ],
           ),
-          NodeLaneDialogAction(
-            label: confirmLabel,
-            destructive: destructive,
-            onPressed: () => Navigator.pop(dialogContext, true),
-          ),
-        ],
+          child: message == null
+              ? const SizedBox.shrink()
+              : SingleChildScrollView(
+                  primary: false,
+                  padding: NodeLaneTokens.groupPadding,
+                  child: Text(message),
+                ),
+        ),
       ),
     ) ??
     false;
-
-/// Existing sheets keep their own SafeArea, height and keyboard handling.
-class NodeLaneSheetSurface extends StatelessWidget {
-  const NodeLaneSheetSurface({
-    super.key,
-    required this.child,
-    this.grouped = false,
-    this.radius = NodeLaneTokens.modalRadius,
-  });
-  final Widget child;
-  final bool grouped;
-  final double radius;
-
-  @override
-  Widget build(BuildContext context) {
-    return NodeLaneModalScope(
-      child: NodeLaneGlassSurface(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
-        grouped: grouped,
-        child: child,
-      ),
-    );
-  }
-}

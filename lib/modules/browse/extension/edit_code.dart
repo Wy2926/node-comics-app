@@ -1,9 +1,10 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/home/widget/mobile_source_filters.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 
 import 'dart:async';
 
@@ -116,10 +117,11 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
       ? []
       : getFilterList(source: source!);
 
-  Future<void> _chooseFilters() async {
-    final selected = await pushBrowsePage<List<dynamic>>(
-      context,
-      MobileSourceFilterPage(
+  Future<void> _chooseFilters(BuildContext anchor) async {
+    final selected = await NodeLaneBubbleFlow.open<List<dynamic>>(
+      anchor,
+      title: context.l10n.filter,
+      child: MobileSourceFilterPage(
         filters: filters,
         sourceName: source?.name,
         defaults: () => getFilterList(source: source!),
@@ -325,7 +327,7 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
                 current: _serviceIndex,
                 options: [
                   for (final service in _getServices(context))
-                    SourceOption(service.$2, service.$1),
+                    SettingOption(service.$2, service.$1),
                 ],
               );
               if (mounted && value != null) {
@@ -394,10 +396,12 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
                 child: Text(context.l10n.reset),
               ),
               if (_serviceIndex == 2 && filters.isNotEmpty)
-                NodeLaneSecondaryButton(
-                  icon: icons.filter,
-                  onPressed: _isLoading ? null : _chooseFilters,
-                  child: Text(context.l10n.filter),
+                Builder(
+                  builder: (anchor) => NodeLaneSecondaryButton(
+                    icon: icons.filter,
+                    onPressed: _isLoading ? null : () => _chooseFilters(anchor),
+                    child: Text(context.l10n.filter),
+                  ),
                 ),
             ],
           ),

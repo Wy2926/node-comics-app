@@ -1,10 +1,11 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:flutter/foundation.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extension_preferences_providers.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -29,7 +30,8 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
   bool saving = false;
   int revision = 0;
   String? error;
-  bool get mobile => isMobile && !isTv;
+  bool get mobile =>
+      NodeLaneBubbleFlow.contains(context) || (isMobile && !isTv);
 
   @override
   void didUpdateWidget(SourcePreferenceWidget oldWidget) {
@@ -42,8 +44,8 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
     }
   }
 
-  Future<void> save(int index, void Function(SourcePreference) change) async {
-    if (saving) return;
+  Future<bool> save(int index, void Function(SourcePreference) change) async {
+    if (saving) return false;
     final source = widget.source, generation = revision;
     final copy = SourcePreference.fromJson(values[index].toJson());
     change(copy);
@@ -55,6 +57,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
       await (widget.onSave ?? savePreferenceSetting)(copy, source);
       if (mounted && revision == generation) {
         setState(() => values[index] = copy);
+        return true;
       }
     } catch (_) {
       if (mounted && revision == generation) {
@@ -63,6 +66,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
     } finally {
       if (mounted) setState(() => saving = false);
     }
+    return false;
   }
 
   Future<void> edit(BuildContext row, int i) async {
@@ -71,23 +75,23 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
     final subtitle = widget.source.name;
     if (pref.editTextPreference case final text?) {
       final result = mobile
-          ? await showSourceTextEditor(
-              context,
+          ? await showSettingText(
+              row,
               title: text.dialogTitle?.isNotEmpty == true
                   ? text.dialogTitle!
                   : text.title ?? '',
-              subtitle: subtitle,
-              description: text.dialogMessage,
+              helper: [
+                ?subtitle,
+                ?text.dialogMessage,
+              ].where((s) => s.isNotEmpty).join('\n'),
               initialValue: text.value ?? '',
             )
           : await showDialog<String>(
               context: context,
-              builder: (_) => EditTextDialogWidget(
+              builder: (_) => _EditTextDialog(
                 text: text.value ?? '',
                 dialogTitle: text.dialogTitle ?? text.title ?? '',
                 dialogMessage: text.dialogMessage ?? '',
-                onChanged: (v) {},
-                returnValue: true,
               ),
             );
       if (mounted &&
@@ -99,7 +103,7 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
     } else if (pref.listPreference case final list?) {
       final options = [
         for (var n = 0; n < (list.entries?.length ?? 0); n++)
-          SourceOption(n, list.entries![n]),
+          SettingOption(n, list.entries![n]),
       ];
       final result = mobile
           ? await showSourceChoice<int>(
@@ -132,24 +136,22 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
       final entries = list.entries ?? [], keys = list.entryValues ?? [];
       final options = [
         for (var n = 0; n < entries.length && n < keys.length; n++)
-          SourceOption(keys[n], entries[n]),
+          SettingOption(keys[n], entries[n]),
       ];
-      final result = await showSourceMultiChoice<String>(
-        context,
+      await showSourceMultiChoice<String>(
+        row,
         title: list.title ?? '',
         subtitle: subtitle,
         current: {...?list.values},
         options: options,
+        onChanged: (next) async =>
+            mounted &&
+            owner == revision &&
+            await save(
+              i,
+              (p) => p.multiSelectListPreference!.values = next.toList(),
+            ),
       );
-      if (mounted &&
-          owner == revision &&
-          result != null &&
-          !setEquals(result, {...?list.values})) {
-        await save(
-          i,
-          (p) => p.multiSelectListPreference!.values = result.toList(),
-        );
-      }
     }
   }
 
@@ -252,26 +254,21 @@ class _SourcePreferenceWidgetState extends State<SourcePreferenceWidget> {
   );
 }
 
-class EditTextDialogWidget extends StatefulWidget {
+class _EditTextDialog extends StatefulWidget {
   final String text;
   final String dialogTitle;
   final String dialogMessage;
-  final Function(String) onChanged;
-  final bool returnValue;
-  const EditTextDialogWidget({
-    super.key,
+  const _EditTextDialog({
     required this.text,
-    required this.onChanged,
-    this.returnValue = false,
     required this.dialogTitle,
     required this.dialogMessage,
   });
 
   @override
-  State<EditTextDialogWidget> createState() => _EditTextDialogWidgetState();
+  State<_EditTextDialog> createState() => _EditTextDialogState();
 }
 
-class _EditTextDialogWidgetState extends State<EditTextDialogWidget> {
+class _EditTextDialogState extends State<_EditTextDialog> {
   late final _controller = TextEditingController(text: widget.text);
 
   @override
@@ -298,13 +295,7 @@ class _EditTextDialogWidgetState extends State<EditTextDialogWidget> {
           child: Text(context.l10n.cancel),
         ),
         TextButton(
-          onPressed: () {
-            widget.onChanged(_controller.text);
-            Navigator.pop(
-              context,
-              widget.returnValue ? _controller.text : null,
-            );
-          },
+          onPressed: () => Navigator.pop(context, _controller.text),
           child: Text(context.l10n.ok),
         ),
       ],

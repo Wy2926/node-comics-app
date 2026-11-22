@@ -235,9 +235,7 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
       clearLabel: l10n.reset,
       onChanged: (_) => setState(() {}),
     );
-    final actions = visibleTabTypes.isEmpty
-        ? <Widget>[]
-        : buildExtraActions(context);
+    final actions = buildExtraActions(context);
     return NodeLaneSurface(
       child: Scaffold(
         body: SafeArea(

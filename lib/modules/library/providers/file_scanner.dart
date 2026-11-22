@@ -27,44 +27,22 @@ part 'file_scanner.g.dart';
 @riverpod
 class LocalFoldersState extends _$LocalFoldersState {
   @override
-  List<LocalFolder> build() {
-    final settings = settingsRepository.current;
-    return _normalizeLocalFolders(
-      settings.namedLocalFolders ??
-          settings.localFolders
-              ?.map((e) => LocalFolder.fromPath(path: e))
-              .toList() ??
-          [],
-    );
-  }
+  List<LocalFolder> build() => _configuredLocalFolders();
 
   void set(List<LocalFolder> value) {
     final currentDownloadFolderName =
         settingsRepository.current.downloadLocalFolderName;
     state = _normalizeLocalFolders(value);
-    final downloadFolderName = _resolveDownloadFolderName(
-      currentDownloadFolderName,
-      [LocalFolder(name: 'local'), ...state],
-    );
+    final downloadFolderName =
+        state.any((f) => f.name == currentDownloadFolderName)
+        ? currentDownloadFolderName
+        : 'local';
     settingsRepository.update((s) {
       s
         ..localFolders = state.map((e) => e.path ?? '').toList()
         ..namedLocalFolders = state
         ..downloadLocalFolderName = downloadFolderName;
     });
-  }
-}
-
-@riverpod
-class DownloadLocalFolderNameState extends _$DownloadLocalFolderNameState {
-  @override
-  String? build() {
-    return settingsRepository.current.downloadLocalFolderName;
-  }
-
-  void set(String? value) {
-    state = value;
-    setDownloadLocalFolderName(value);
   }
 }
 
@@ -660,35 +638,21 @@ Future<LocalFolder?> getDefaultLocalFolder() async {
   return LocalFolder(name: 'local', path: dir.path);
 }
 
-Future<List<LocalFolder>> getAllLocalFolders({
-  bool includeDefault = true,
-}) async {
+List<LocalFolder> _configuredLocalFolders() {
   final settings = settingsRepository.current;
-  final folders = _normalizeLocalFolders(
+  return _normalizeLocalFolders(
     settings.namedLocalFolders ??
         settings.localFolders
             ?.map((e) => LocalFolder.fromPath(path: e))
             .toList() ??
         [],
   );
-  if (!includeDefault) return folders;
+}
+
+Future<List<LocalFolder>> getAllLocalFolders() async {
+  final folders = _configuredLocalFolders();
   final defaultFolder = await getDefaultLocalFolder();
   return [?defaultFolder, ...folders];
-}
-
-Future<LocalFolder?> getDownloadLocalFolder() async {
-  final folders = await getAllLocalFolders();
-  if (folders.isEmpty) return null;
-  final settings = settingsRepository.current;
-  final name = _resolveDownloadFolderName(
-    settings.downloadLocalFolderName,
-    folders,
-  );
-  return folders.firstWhere((folder) => folder.name == name);
-}
-
-void setDownloadLocalFolderName(String? name) {
-  settingsRepository.update((s) => s.downloadLocalFolderName = name);
 }
 
 String getLocalVirtualPath(LocalFolder folder, String entityPath) {
@@ -778,13 +742,6 @@ String _uniqueLocalFolderName(String value, Set<String> usedNames) {
     index++;
   }
   return name;
-}
-
-String? _resolveDownloadFolderName(String? name, List<LocalFolder> folders) {
-  if (name != null && folders.any((folder) => folder.name == name)) {
-    return name;
-  }
-  return folders.firstOrNull?.name;
 }
 
 List<LocalFolder> _replaceLocalFolder(

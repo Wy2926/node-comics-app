@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 
@@ -17,6 +18,7 @@ class MobileSourceCatalog extends StatelessWidget {
     super.key,
     required this.title,
     required this.search,
+    this.sharedQuery,
     required this.onSubmit,
     required this.onClear,
     required this.selected,
@@ -32,6 +34,7 @@ class MobileSourceCatalog extends StatelessWidget {
 
   final String title;
   final TextEditingController search;
+  final String? sharedQuery;
   final VoidCallback onSubmit, onClear;
   final DisplayType display;
   final ValueChanged<DisplayType> onDisplay;
@@ -46,6 +49,72 @@ class MobileSourceCatalog extends StatelessWidget {
     final t = NodeLaneTokens.of(context),
         icons = NodeLaneIcons.of(context),
         l10n = context.l10n;
+    final controls = Row(
+      children: [
+        Expanded(
+          child: selected == 2
+              ? Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      [
+                        filtering
+                            ? l10n.source_filter_results
+                            : l10n.source_search_results,
+                        if (sharedQuery?.isNotEmpty == true) sharedQuery!,
+                      ].join(' · '),
+                      style: t.readerLabel,
+                    ),
+                    TextButton(
+                      onPressed: () => onSelect(0),
+                      child: Text(context.l10n.source_return_popular),
+                    ),
+                  ],
+                )
+              : supportsLatest
+              ? NodeLaneSegments<int>(
+                  value: selected,
+                  labelStyle: t.readerLabel,
+                  segments: [
+                    ButtonSegment(value: 0, label: Text(context.l10n.popular)),
+                    ButtonSegment(value: 1, label: Text(context.l10n.latest)),
+                  ],
+                  onChanged: onSelect,
+                )
+              : ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: NodeLaneTokens.minTapTarget,
+                  ),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      context.l10n.source_popular_titles,
+                      style: t.readerLabel,
+                    ),
+                  ),
+                ),
+        ),
+        const SizedBox(width: NodeLaneTokens.space8),
+        NodeLaneMenuButton<DisplayType>(
+          icon: display == DisplayType.list ? icons.chapters : icons.extensions,
+          tooltip: l10n.source_display,
+          onSelected: onDisplay,
+          itemBuilder: (_) => [
+            for (final (value, label) in [
+              (DisplayType.comfortableGrid, l10n.source_cover_title),
+              (DisplayType.compactGrid, l10n.source_cover_only),
+              (DisplayType.list, l10n.list),
+            ])
+              CheckedPopupMenuItem<DisplayType>(
+                value: value,
+                checked: value == display,
+                child: Text(label),
+              ),
+          ],
+        ),
+      ],
+    );
     return MobileBrowsePage(
       title: title,
       actions: [
@@ -59,112 +128,21 @@ class MobileSourceCatalog extends StatelessWidget {
         ],
         menu,
       ],
-      body: LayoutBuilder(
-        builder: (context, constraints) => Column(
-          children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: constraints.maxHeight * .5,
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space8,
-                  NodeLaneTokens.gutter,
-                  NodeLaneTokens.space16,
+      body: SourceResultsLayout(
+        tools: sharedQuery != null
+            ? controls
+            : NodeLaneToolbarPair(
+                gap: NodeLaneTokens.space8,
+                first: NodeLaneTextField.search(
+                  controller: search,
+                  onSubmitted: (_) => onSubmit(),
+                  onClear: onClear,
+                  hint: context.l10n.source_search_here,
+                  clearLabel: l10n.reset,
                 ),
-                child: NodeLaneToolbarPair(
-                  first: NodeLaneTextField.search(
-                    controller: search,
-                    onSubmitted: (_) => onSubmit(),
-                    onClear: onClear,
-                    hint: context.l10n.source_search_here,
-                    clearLabel: l10n.reset,
-                  ),
-                  second: Row(
-                    children: [
-                      Expanded(
-                        child: selected == 2
-                            ? Wrap(
-                                alignment: WrapAlignment.spaceBetween,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  Text(
-                                    filtering
-                                        ? context.l10n.source_filter_results
-                                        : context.l10n.source_search_results,
-                                    style: t.readerLabel,
-                                  ),
-                                  TextButton(
-                                    onPressed: () => onSelect(0),
-                                    child: Text(
-                                      context.l10n.source_return_popular,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : supportsLatest
-                            ? NodeLaneSegments<int>(
-                                value: selected,
-                                labelStyle: t.readerLabel,
-                                segments: [
-                                  ButtonSegment(
-                                    value: 0,
-                                    label: Text(context.l10n.popular),
-                                  ),
-                                  ButtonSegment(
-                                    value: 1,
-                                    label: Text(context.l10n.latest),
-                                  ),
-                                ],
-                                onChanged: onSelect,
-                              )
-                            : ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  minHeight: NodeLaneTokens.minTapTarget,
-                                ),
-                                child: Align(
-                                  alignment: AlignmentDirectional.centerStart,
-                                  child: Text(
-                                    context.l10n.source_popular_titles,
-                                    style: t.readerLabel,
-                                  ),
-                                ),
-                              ),
-                      ),
-                      const SizedBox(width: NodeLaneTokens.space8),
-                      NodeLaneMenuButton<DisplayType>(
-                        icon: display == DisplayType.list
-                            ? icons.chapters
-                            : icons.extensions,
-                        tooltip: l10n.source_display,
-                        onSelected: onDisplay,
-                        itemBuilder: (_) => [
-                          for (final (value, label) in [
-                            (
-                              DisplayType.comfortableGrid,
-                              l10n.source_cover_title,
-                            ),
-                            (DisplayType.compactGrid, l10n.source_cover_only),
-                            (DisplayType.list, l10n.list),
-                          ])
-                            CheckedPopupMenuItem<DisplayType>(
-                              value: value,
-                              checked: value == display,
-                              child: Text(label),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                second: controls,
               ),
-            ),
-            Expanded(
-              child: NodeLaneContentMotion(value: selected, child: results),
-            ),
-          ],
-        ),
+        results: NodeLaneContentMotion(value: selected, child: results),
       ),
     );
   }

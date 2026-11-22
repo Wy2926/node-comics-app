@@ -320,6 +320,8 @@
   "clean_database_desc": "Diese Aktion löscht alle Einträge, die nicht im Bibliothek sind!",
   "incognito_mode": "Inkognito-Modus",
   "downloaded_only": "Nur heruntergeladene",
+  "downloaded_only_hint": "In der Bibliothek nur Titel mit Downloads anzeigen.",
+  "incognito_mode_hint": "Lese- und Wiedergabefortschritt vorübergehend nicht speichern.",
   "download_queue": "Download-Warteschlange",
   "categories": "Kategorien",
   "statistics": "Statistiken",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Suchumfang",
-  "search_websites_action": "{count, plural, =1{1 Website durchsuchen} other{Durchsuchen Sie {count}-Websites}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Eine Website finden",
   "search_selected_websites": "{count, plural, =1{1 Website ausgewählt} other{{count} Websites ausgewählt}}",
   "@search_selected_websites": {

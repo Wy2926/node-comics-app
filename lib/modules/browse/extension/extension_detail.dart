@@ -30,8 +30,22 @@ import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
-import 'edit_code.dart';
 import 'widgets/create_extension.dart';
+
+Future<Source?> showSourceSettings(BuildContext menu, Source source) async {
+  bool installed() => sourceRepository.getById(source.id!)?.isAdded == true;
+  if (installed()) {
+    final updated = await NodeLaneBubbleFlow.open<Source>(
+      menu,
+      title: menu.l10n.settings_source_preferences,
+      child: ExtensionDetail(source: source),
+    );
+    if (!menu.mounted || installed()) return updated;
+  }
+  // Uninstall can delete a local source entirely. Don't return to its stale actions.
+  if (menu.mounted && ModalRoute.isCurrentOf(menu) == true) Navigator.pop(menu);
+  return null;
+}
 
 class ExtensionDetail extends ConsumerStatefulWidget {
   final Source source;
@@ -65,12 +79,8 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
   }
 
   Future<void> _editCode() async {
-    final res = NodeLaneBubbleFlow.contains(context)
-        ? await NodeLaneBubbleFlow.push<Source>(
-            context,
-            CodeEditorPage(sourceId: source.id),
-          )
-        : await context.push<Source>('/codeEditor', extra: source.id);
+    // Editing and running source code needs the editor, service controls and console together.
+    final res = await context.push<Source>('/codeEditor', extra: source.id);
     if (res != null && mounted) {
       setState(() {
         source = res;
@@ -81,13 +91,12 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     }
   }
 
-  Future<void> _editMetadata() async {
-    final res = NodeLaneBubbleFlow.contains(context)
-        ? await NodeLaneBubbleFlow.push<Source>(
-            context,
-            CreateExtension(editSource: source),
-          )
-        : await context.push<Source>('/createExtension', extra: source);
+  Future<void> _editMetadata(BuildContext anchor) async {
+    final res = await NodeLaneBubbleFlow.open<Source>(
+      anchor,
+      title: context.l10n.source_edit_metadata,
+      child: CreateExtension(editSource: source),
+    );
     if (res != null && mounted) setState(() => source = res);
   }
 
@@ -116,11 +125,11 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     }
   }
 
-  Future<void> _confirmUninstall() async {
+  Future<void> _confirmUninstall(BuildContext anchor) async {
     if (_busy) return;
     final l10n = context.l10n;
     final confirmed = await showNodeLaneConfirmation(
-      context,
+      anchor,
       title: source.name ?? '',
       message: l10n.uninstall_extension(source.name ?? ''),
       confirmLabel: l10n.uninstall,
@@ -130,7 +139,9 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
     setState(() => _busy = true);
     try {
       await sourceRepository.uninstall(ref, source);
-      if (mounted) Navigator.pop(context);
+      if (mounted && ModalRoute.isCurrentOf(context) == true) {
+        Navigator.pop(context);
+      }
     } catch (_) {
       if (mounted) {
         showNodeLaneNotice(
@@ -198,7 +209,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                   NodeLaneRow(
                     title: context.l10n.source_edit_metadata,
                     icon: icons.edit,
-                    onTap: _editMetadata,
+                    onOpen: _editMetadata,
                   ),
                 NodeLaneRow(
                   title: context.l10n.source_clear_cookies,
@@ -210,7 +221,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                   title: context.l10n.source_uninstall,
                   icon: icons.delete,
                   destructive: true,
-                  onTap: _busy ? null : _confirmUninstall,
+                  onOpen: _busy ? null : _confirmUninstall,
                 ),
               ],
             ),
@@ -223,7 +234,9 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
-    if (isMobile && !isTv) return _mobileView(context);
+    if (NodeLaneBubbleFlow.contains(context) || (isMobile && !isTv)) {
+      return _mobileView(context);
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.extension_detail),
@@ -400,7 +413,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                       elevation: 0,
                       shadowColor: Colors.transparent,
                     ),
-                    onPressed: _editMetadata,
+                    onPressed: () => _editMetadata(context),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -463,7 +476,7 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
                     elevation: 0,
                     shadowColor: Colors.transparent,
                   ),
-                  onPressed: _confirmUninstall,
+                  onPressed: () => _confirmUninstall(context),
                   child: Text(
                     l10n.uninstall,
                     style: const TextStyle(

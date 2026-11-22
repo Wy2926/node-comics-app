@@ -675,6 +675,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get downloaded_only => 'Sadece indirilmiş';
 
   @override
+  String get downloaded_only_hint =>
+      'Kitaplıkta yalnızca indirilmiş içeriği olan eserleri göster.';
+
+  @override
+  String get incognito_mode_hint =>
+      'Okuma ve oynatma ilerlemesini kaydetmeyi duraklat.';
+
+  @override
   String get download_queue => 'İndirme Kuyruğu';
 
   @override
@@ -4692,17 +4700,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get search_scope => 'Arama kapsamı';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count web sitelerinde arama yapın',
-      one: '1 web sitesinde arama yapın',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'Bir web sitesi bulun';

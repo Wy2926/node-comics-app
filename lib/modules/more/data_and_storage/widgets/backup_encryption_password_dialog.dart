@@ -1,5 +1,6 @@
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/backup_password_storage.dart';
@@ -13,9 +14,11 @@ import 'mobile_backup_password_dialog.dart';
 /// the caller should only flip the encryption toggle on when this is `true`.
 Future<bool?> showBackupEncryptionPasswordDialog(BuildContext context) {
   if (isMobile && !isTv) {
-    return showNodeLaneCatalogSheet<bool>(
+    return showNodeLaneBubble<bool>(
       context,
-      MobileBackupPasswordDialog(
+      label: context.l10n.set_backup_password,
+      width: NodeLaneTokens.bubbleFormWidth,
+      child: MobileBackupPasswordDialog(
         onSave: (password) => persistResolvedPassword(password, context),
       ),
       dismissible: false,
@@ -35,24 +38,11 @@ Future<bool?> showBackupEncryptionPasswordDialog(BuildContext context) {
 /// embedded password" flows, so the wording/behavior stays consistent.
 Future<bool?> showSecureStorageFallbackPrompt(BuildContext context) {
   final l10n = l10nLocalizations(context)!;
-  return showDialog<bool>(
-    context: context,
-    builder: (context) => NodeLaneAlertDialog(
-      scrollable: isMobile && !isTv,
-      title: Text(l10n.no_secure_storage),
-      content: Text(l10n.no_keyring_warning),
-      actions: [
-        NodeLaneDialogAction(
-          label: l10n.cancel,
-          secondary: true,
-          onPressed: () => Navigator.pop(context, false),
-        ),
-        NodeLaneDialogAction(
-          label: l10n.ok,
-          onPressed: () => Navigator.pop(context, true),
-        ),
-      ],
-    ),
+  return showNodeLaneConfirmation(
+    context,
+    title: l10n.no_secure_storage,
+    message: l10n.no_keyring_warning,
+    confirmLabel: l10n.ok,
   );
 }
 
@@ -87,9 +77,11 @@ Future<String?> showBackupDecryptPasswordDialog(
   bool wasIncorrect = false,
 }) {
   if (isMobile && !isTv) {
-    return showNodeLaneCatalogSheet<String>(
+    return showNodeLaneBubble<String>(
       context,
-      MobileBackupPasswordDialog(wasIncorrect: wasIncorrect),
+      label: context.l10n.enter_backup_password,
+      width: NodeLaneTokens.bubbleFormWidth,
+      child: MobileBackupPasswordDialog(wasIncorrect: wasIncorrect),
       dismissible: false,
     );
   }

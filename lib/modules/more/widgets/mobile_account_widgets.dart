@@ -18,7 +18,7 @@ class MobileServiceAccount extends StatelessWidget {
   final Widget icon;
   final bool connected;
   final String? subtitle;
-  final VoidCallback? onAction;
+  final ValueChanged<BuildContext>? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -32,20 +32,22 @@ class MobileServiceAccount extends StatelessWidget {
           const SizedBox(height: 8),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: Semantics(
-              label: '${connected ? l10n.log_out : l10n.login} $title',
-              button: true,
-              enabled: onAction != null,
-              onTap: onAction,
-              excludeSemantics: true,
-              child: TextButton.icon(
-                onPressed: onAction,
-                icon: Icon(
-                  connected
-                      ? NodeLaneIcons.of(context).signOut
-                      : NodeLaneIcons.of(context).signIn,
+            child: Builder(
+              builder: (anchor) => Semantics(
+                label: '${connected ? l10n.log_out : l10n.login} $title',
+                button: true,
+                enabled: onAction != null,
+                onTap: onAction == null ? null : () => onAction!(anchor),
+                excludeSemantics: true,
+                child: TextButton.icon(
+                  onPressed: onAction == null ? null : () => onAction!(anchor),
+                  icon: Icon(
+                    connected
+                        ? NodeLaneIcons.of(context).signOut
+                        : NodeLaneIcons.of(context).signIn,
+                  ),
+                  label: Text(connected ? l10n.log_out : l10n.login),
                 ),
-                label: Text(connected ? l10n.log_out : l10n.login),
               ),
             ),
           ),

@@ -158,10 +158,11 @@ class _Filters extends ConsumerWidget {
           value: sources.$2.isEmpty
               ? l10n.bookshelf_all_sources
               : l10n.bookshelf_sources_selected(sources.$2.length),
-          onTap: () async {
-            final selected = await pushBrowsePage<List<String>>(
-              context,
-              MobileBookshelfSourceFilter(
+          onOpen: (anchor) async {
+            final selected = await NodeLaneBubbleFlow.open<List<String>>(
+              anchor,
+              title: l10n.sources,
+              child: MobileBookshelfSourceFilter(
                 sources: sources.$1,
                 selected: sources.$2,
               ),
@@ -559,7 +560,7 @@ class _MobileBookshelfSourceFilterState
                     action: l10n.reset,
                     onAction: _selected.isEmpty
                         ? null
-                        : () => setState(_selected.clear),
+                        : (_) => setState(_selected.clear),
                   ),
                 ],
               ),

@@ -10,7 +10,9 @@ import 'package:mangayomi/repositories/custom_button_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'mobile_custom_button_editor.dart';
-import 'mobile_player_action_dialog.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_confirm_panel.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 class MobileCustomButtonScreen extends ConsumerStatefulWidget {
   const MobileCustomButtonScreen({super.key, this.repository});
@@ -80,20 +82,24 @@ class _MobileCustomButtonScreenState
     );
   });
 
-  Future<void> _delete(CustomButton button) => _present(() async {
-    await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => MobilePlayerActionDialog(
-        title: context.l10n.delete,
-        message:
-            '${button.title ?? ''}\n\n${context.l10n.custom_buttons_delete}',
-        confirmLabel: context.l10n.delete,
-        destructive: true,
-        onConfirm: () => _repository.delete(button.id!),
-      ),
-    );
-  });
+  Future<void> _delete(BuildContext anchor, CustomButton button) => _present(
+    () async {
+      await showNodeLaneBubble<bool>(
+        anchor,
+        label: context.l10n.delete,
+        dismissible: false,
+        width: NodeLaneTokens.bubbleFormWidth,
+        child: NodeLaneConfirmPanel(
+          title: context.l10n.delete,
+          message:
+              '${button.title ?? ''}\n\n${context.l10n.custom_buttons_delete}',
+          confirmLabel: context.l10n.delete,
+          destructive: true,
+          onConfirm: () => _repository.delete(button.id!),
+        ),
+      );
+    },
+  );
 
   Future<void> _primary(List<CustomButton> buttons, CustomButton selected) =>
       _perform(
@@ -307,14 +313,21 @@ class _MobileCustomButtonScreenState
                                               icon: NodeLaneIcons.of(context)
                                                   .edit,
                                             ),
-                                            NodeLaneIconButton(
-                                              tooltip: l10n.delete,
-                                              onPressed: _locked
-                                                  ? null
-                                                  : () => _delete(button),
-                                              icon: NodeLaneIcons.of(context)
-                                                  .delete,
-                                              destructive: true,
+                                            Builder(
+                                              builder: (anchor) =>
+                                                  NodeLaneIconButton(
+                                                    tooltip: l10n.delete,
+                                                    onPressed: _locked
+                                                        ? null
+                                                        : () => _delete(
+                                                            anchor,
+                                                            button,
+                                                          ),
+                                                    icon: NodeLaneIcons.of(
+                                                      context,
+                                                    ).delete,
+                                                    destructive: true,
+                                                  ),
                                             ),
                                           ],
                                         ),

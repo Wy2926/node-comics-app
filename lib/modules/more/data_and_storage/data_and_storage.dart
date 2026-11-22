@@ -34,13 +34,13 @@ class DataAndStorage extends ConsumerWidget {
           await performRestore(context, ref);
         },
         onChooseDirectory: () => FilePicker.getDirectoryPath(),
-        onEncryptionChanged: (value) async {
+        onEncryptionChanged: (anchor, value) async {
           if (!value) {
             await ref.read(backupEncryptionEnabledProvider.notifier).set(false);
             await BackupPasswordStorage.clear();
             return;
           }
-          final saved = await showBackupEncryptionPasswordDialog(context);
+          final saved = await showBackupEncryptionPasswordDialog(anchor);
           if (context.mounted && saved == true) {
             await ref.read(backupEncryptionEnabledProvider.notifier).set(true);
           }

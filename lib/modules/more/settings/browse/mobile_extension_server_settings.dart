@@ -1,10 +1,11 @@
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -77,16 +78,14 @@ class _MobileExtensionServerSettingsState
     }
   }
 
-  Future<void> _editAddress() async {
+  Future<void> _editAddress(BuildContext anchor) async {
     final l10n = context.l10n;
-    final value = await showDialog<String>(
-      context: context,
-      builder: (_) => MobileSettingsTextDialog(
-        title: l10n.proxy_address,
-        initialValue: widget.proxyAddress,
-        hint: l10n.proxy_server_ip_hint,
-        keyboardType: TextInputType.url,
-      ),
+    final value = await showSettingText(
+      anchor,
+      title: l10n.proxy_address,
+      initialValue: widget.proxyAddress,
+      hint: l10n.proxy_server_ip_hint,
+      keyboardType: TextInputType.url,
     );
     if (!mounted || value == null) return;
     // Preserve the existing dialog's single trailing-slash normalization.
@@ -102,101 +101,92 @@ class _MobileExtensionServerSettingsState
     final status = _running == null
         ? (_busy ? l10n.checking_runtime_status : l10n.unknown)
         : (_running! ? l10n.running : l10n.stopped);
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: l10n.extension_service),
-        body: SafeArea(
-          top: false,
-          child: ListView(
-            key: const PageStorageKey('mobile-extension-service'),
-            padding: NodeLaneTokens.pagePadding,
-            children: [
-              if (widget.showRuntime)
-                MobileSettingsGroup(
-                  title: l10n.zero_interpreter,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Semantics(
-                            liveRegion: true,
-                            child: Text(
-                              '${l10n.runtime_status}: $status',
-                              style: colors.readerLabel,
-                            ),
-                          ),
-                          if (_busy) ...[
-                            const SizedBox(height: 12),
-                            const LinearProgressIndicator(),
-                          ],
-                          if (_failed) ...[
-                            const SizedBox(height: 12),
-                            Semantics(
-                              liveRegion: true,
-                              child: Text(
-                                l10n.failed,
-                                style: colors.readerSecondary.copyWith(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          FilledButton.icon(
-                            onPressed: _busy
-                                ? null
-                                : () => _updateRuntime(
-                                    target: _running == null
-                                        ? null
-                                        : !_running!,
-                                  ),
-                            icon: Icon(
-                              _running == null
-                                  ? NodeLaneIcons.of(context).refresh
-                                  : (_running!
-                                        ? NodeLaneIcons.of(context).stop
-                                        : NodeLaneIcons.of(context).anime),
-                            ),
-                            label: Text(
-                              _running == null
-                                  ? l10n.refresh
-                                  : (_running! ? l10n.stop : l10n.start),
-                            ),
-                          ),
-                        ],
+    return MobileBrowsePage(
+      title: l10n.extension_service,
+      body: ListView(
+        key: const PageStorageKey('mobile-extension-service'),
+        padding: NodeLaneTokens.pagePadding,
+        children: [
+          if (widget.showRuntime)
+            MobileSettingsGroup(
+              title: l10n.zero_interpreter,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          '${l10n.runtime_status}: $status',
+                          style: colors.readerLabel,
+                        ),
                       ),
-                    ),
-                    NodeLaneSwitchRow(
-                      title: l10n.start_server_on_launch,
-                      icon: NodeLaneIcons.of(context).settings,
-                      value: widget.autoStart,
-                      onChanged: widget.onAutoStartChanged,
-                    ),
-                  ],
+                      if (_busy) ...[
+                        const SizedBox(height: 12),
+                        const LinearProgressIndicator(),
+                      ],
+                      if (_failed) ...[
+                        const SizedBox(height: 12),
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            l10n.failed,
+                            style: colors.readerSecondary.copyWith(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: _busy
+                            ? null
+                            : () => _updateRuntime(
+                                target: _running == null ? null : !_running!,
+                              ),
+                        icon: Icon(
+                          _running == null
+                              ? NodeLaneIcons.of(context).refresh
+                              : (_running!
+                                    ? NodeLaneIcons.of(context).stop
+                                    : NodeLaneIcons.of(context).anime),
+                        ),
+                        label: Text(
+                          _running == null
+                              ? l10n.refresh
+                              : (_running! ? l10n.stop : l10n.start),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              MobileSettingsGroup(
-                title: l10n.proxy_address,
-                children: [
-                  NodeLaneRow(
-                    enabled: !_busy,
-                    title: l10n.set_proxy_address,
-                    value: widget.proxyAddress.isEmpty
-                        ? '—'
-                        : widget.proxyAddress,
-                    onTap: _busy ? null : _editAddress,
-                  ),
-                  NodeLaneRow(
-                    title: l10n.get_m_extension_server,
-                    icon: NodeLaneIcons.of(context).external,
-                    onTap: widget.onGetServer,
-                  ),
-                ],
+                NodeLaneSwitchRow(
+                  title: l10n.start_server_on_launch,
+                  icon: NodeLaneIcons.of(context).settings,
+                  value: widget.autoStart,
+                  onChanged: widget.onAutoStartChanged,
+                ),
+              ],
+            ),
+          MobileSettingsGroup(
+            title: l10n.proxy_address,
+            children: [
+              NodeLaneRow(
+                enabled: !_busy,
+                title: l10n.set_proxy_address,
+                value: widget.proxyAddress.isEmpty ? '—' : widget.proxyAddress,
+                onOpen: _busy ? null : _editAddress,
+              ),
+              NodeLaneRow(
+                title: l10n.get_m_extension_server,
+                icon: NodeLaneIcons.of(context).external,
+                onTap: widget.onGetServer,
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

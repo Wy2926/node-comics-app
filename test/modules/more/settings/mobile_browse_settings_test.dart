@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -7,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/more/settings/browse/mobile_browse_cleanup_dialog.dart';
+import 'package:mangayomi/modules/more/settings/browse/mobile_browse_cleanup_panel.dart';
 import 'package:mangayomi/modules/more/settings/browse/mobile_browse_settings.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 
@@ -65,10 +66,10 @@ void main() {
               showProxyServer: false,
               onRepositories: repositories.add,
               onProxyServer: () => fail('Android has no proxy settings link'),
-              onClearSources: () => fail('No cleanup requested'),
-              onCleanDatabase: () => fail('No cleanup requested'),
-              onClearLibrary: () => fail('No cleanup requested'),
-              onClearLocalLibrary: () => fail('No cleanup requested'),
+              onClearSources: (_) => fail('No cleanup requested'),
+              onCleanDatabase: (_) => fail('No cleanup requested'),
+              onClearLibrary: (_) => fail('No cleanup requested'),
+              onClearLocalLibrary: (_) => fail('No cleanup requested'),
             ),
           ),
         ),
@@ -131,10 +132,10 @@ void main() {
               showProxyServer: true,
               onRepositories: (_) => fail('No repository requested'),
               onProxyServer: () => actions.add('proxy'),
-              onClearSources: () => actions.add('sources'),
-              onCleanDatabase: () => actions.add('database'),
-              onClearLibrary: () => actions.add('library'),
-              onClearLocalLibrary: () => actions.add('local'),
+              onClearSources: (_) => actions.add('sources'),
+              onCleanDatabase: (_) => actions.add('database'),
+              onClearLibrary: (_) => actions.add('library'),
+              onClearLocalLibrary: (_) => actions.add('local'),
             ),
             scale: 2.5,
           ),
@@ -179,9 +180,10 @@ void main() {
           Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () => showDialog<void>(
-                  context: context,
-                  builder: (_) => MobileBrowseCleanupDialog(
+                onPressed: () => showNodeLaneBubble<bool>(
+                  context,
+                  label: 'Clear library',
+                  child: MobileBrowseCleanupPanel(
                     title: 'Clear library',
                     message:
                         'Choose to clear all manga, anime and/or novel entries',
@@ -252,12 +254,12 @@ void main() {
       );
       await tester.binding.handlePopRoute();
       await tester.pump();
-      expect(find.byType(MobileBrowseCleanupDialog), findsOneWidget);
+      expect(find.byType(MobileBrowseCleanupPanel), findsOneWidget);
       requests.single.completeError(StateError('private storage detail'));
       await tester.pumpAndSettle();
       expect(find.text('Failed!'), findsOneWidget);
       expect(find.textContaining('private storage detail'), findsNothing);
-      expect(find.byType(MobileBrowseCleanupDialog), findsOneWidget);
+      expect(find.byType(MobileBrowseCleanupPanel), findsOneWidget);
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pump();
       expect(selected, [
@@ -266,7 +268,7 @@ void main() {
       ]);
       requests.last.complete();
       await tester.pumpAndSettle();
-      expect(find.byType(MobileBrowseCleanupDialog), findsNothing);
+      expect(find.byType(MobileBrowseCleanupPanel), findsNothing);
 
       chooseTypes = false;
       await open();

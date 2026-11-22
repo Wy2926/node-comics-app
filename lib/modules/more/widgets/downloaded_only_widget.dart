@@ -19,6 +19,7 @@ class DownloadedOnlyWidget extends ConsumerWidget {
     if (mobile) {
       return NodeLaneSwitchRow(
         title: l10n.downloaded_only,
+        subtitle: l10n.downloaded_only_hint,
         icon: NodeLaneIcons.of(context).download,
         value: downloadedOnly,
         onChanged: change,

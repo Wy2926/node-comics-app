@@ -320,6 +320,8 @@
   "clean_database_desc": "这将移除所有未添加到图书馆的项目！",
   "incognito_mode": "隐身模式",
   "downloaded_only": "仅已下载",
+  "downloaded_only_hint": "书架只显示有下载内容的作品。",
+  "incognito_mode_hint": "暂停保存阅读和播放进度。",
   "download_queue": "下载队列",
   "categories": "类别",
   "statistics": "统计",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "搜索范围",
-  "search_websites_action": "搜索这 {count} 个网站",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "查找网站",
   "search_selected_websites": "已选 {count} 个网站",
   "@search_selected_websites": {

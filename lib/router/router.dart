@@ -66,7 +66,9 @@ import 'package:mangayomi/modules/more/settings/browse/browse_screen.dart';
 import 'package:mangayomi/modules/more/settings/browse/extension_server_screen.dart';
 import 'package:mangayomi/modules/more/settings/general/general_screen.dart';
 import 'package:mangayomi/modules/more/settings/reader/novel_reader_screen.dart';
-import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
+import 'package:mangayomi/modules/more/settings/reader/mobile_reader_screen.dart';
+import 'package:mangayomi/modules/more/settings/mobile_settings_layout.dart';
+import 'package:mangayomi/modules/more/settings/player/subtitle_service_screen.dart';
 import 'package:mangayomi/modules/more/settings/settings_screen.dart';
 import 'package:mangayomi/modules/more/settings/security/security_screen.dart';
 import 'package:mangayomi/services/crash_route_observer.dart';
@@ -183,7 +185,7 @@ List<RouteBase> get _routes => [
     ),
   if (!(isMobile && !isTv))
     _genericRoute(name: "settings", child: const SettingsScreen()),
-  _genericRoute(name: "appearance", child: const AppearanceScreen()),
+  _settingsRoute("appearance", const AppearanceScreen()),
   _genericRoute<Source>(
     name: "extension_detail",
     builder: (source) => ExtensionDetail(source: source),
@@ -198,8 +200,8 @@ List<RouteBase> get _routes => [
     builder: (update) => SoftwareUpdateScreen(update: update),
   ),
   _genericRoute(name: "errorReports", child: const ErrorReportsScreen()),
-  _genericRoute(name: "track", child: const TrackScreen()),
-  _genericRoute(name: "sync", child: const SyncScreen()),
+  _settingsRoute("track", const TrackScreen()),
+  _settingsRoute("sync", const SyncScreen()),
   if (!(isMobile && !isTv))
     _genericRoute<ItemType>(
       name: "sourceFilter",
@@ -219,27 +221,50 @@ List<RouteBase> get _routes => [
         : MangaWebView(url: data["url"]!, title: data['title']!),
   ),
   _genericRoute(name: "statistics", child: const StatisticsScreen()),
-  _genericRoute(name: "general", child: const GeneralScreen()),
-  _genericRoute(name: "readerMode", child: const ReaderScreen()),
-  _genericRoute(name: "novelReaderMode", child: const NovelReaderScreen()),
+  _settingsRoute("general", const GeneralScreen()),
+  _settingsRoute("readerMode", const MobileReaderScreen()),
+  _settingsRoute("novelReaderMode", const NovelReaderScreen()),
   if (isMobile && !isTv)
-    _genericRoute(name: "ttsSettings", child: const MobileTtsSettingsScreen()),
-  _genericRoute(name: "browseS", child: const BrowseSScreen()),
-  _genericRoute(name: "extensionServer", child: const ExtensionServerScreen()),
+    _settingsRoute(
+      "ttsSettings",
+      const MobileTtsSettingsScreen(),
+      category: '/novelReaderMode',
+    ),
+  _settingsRoute("browseS", const BrowseSScreen()),
+  _settingsRoute(
+    "extensionServer",
+    const ExtensionServerScreen(),
+    category: '/browseS',
+  ),
   _genericRoute<ItemType>(
     name: "SourceRepositories",
     builder: (itemType) => SourceRepositories(itemType: itemType),
+    settingsCategory: '/browseS',
   ),
-  _genericRoute(name: "downloads", child: const DownloadsScreen()),
-  _genericRoute(name: "dataAndStorage", child: const DataAndStorage()),
-  _genericRoute(name: "security", child: const SecurityScreen()),
-  _genericRoute(name: "manageTrackers", child: const ManageTrackersScreen()),
+  _settingsRoute("downloads", const DownloadsScreen()),
+  _settingsRoute("dataAndStorage", const DataAndStorage()),
+  _settingsRoute("security", const SecurityScreen()),
+  _settingsRoute(
+    "manageTrackers",
+    const ManageTrackersScreen(),
+    category: '/track',
+  ),
   _genericRoute<TrackPreference>(
     name: "trackingDetail",
     builder: (trackerPref) => TrackingDetail(trackerPref: trackerPref),
+    settingsCategory: '/track',
   ),
-  _genericRoute(name: "playerOverview", child: const PlayerOverviewScreen()),
-  _genericRoute(name: "playerMode", child: const PlayerScreen()),
+  _settingsRoute("playerOverview", const PlayerOverviewScreen()),
+  _settingsRoute(
+    "playerMode",
+    const PlayerScreen(),
+    category: '/playerOverview',
+  ),
+  _settingsRoute(
+    "subtitleService",
+    const SubtitleServiceScreen(),
+    category: '/playerOverview',
+  ),
   _genericRoute<int>(
     name: "codeEditor",
     builder: (sourceId) => CodeEditorPage(sourceId: sourceId),
@@ -249,19 +274,30 @@ List<RouteBase> get _routes => [
     builder: (source) => CreateExtension(editSource: source),
   ),
   _genericRoute(name: "createBackup", child: const CreateBackup()),
-  _genericRoute(
-    name: "customNavigationSettings",
-    child: const CustomNavigationSettings(),
+  _settingsRoute(
+    "customNavigationSettings",
+    const CustomNavigationSettings(),
+    category: '/appearance',
   ),
-  _genericRoute(name: "customButtonScreen", child: const CustomButtonScreen()),
-  _genericRoute(
-    name: "playerDecoderScreen",
-    child: const PlayerDecoderScreen(),
+  _settingsRoute(
+    "customButtonScreen",
+    const CustomButtonScreen(),
+    category: '/playerOverview',
   ),
-  _genericRoute(name: "playerAudioScreen", child: const PlayerAudioScreen()),
-  _genericRoute(
-    name: "playerAdvancedScreen",
-    child: const PlayerAdvancedScreen(),
+  _settingsRoute(
+    "playerDecoderScreen",
+    const PlayerDecoderScreen(),
+    category: '/playerOverview',
+  ),
+  _settingsRoute(
+    "playerAudioScreen",
+    const PlayerAudioScreen(),
+    category: '/playerOverview',
+  ),
+  _settingsRoute(
+    "playerAdvancedScreen",
+    const PlayerAdvancedScreen(),
+    category: '/playerOverview',
   ),
   _genericRoute<ItemType?>(
     name: "calendarScreen",
@@ -312,22 +348,33 @@ List<RouteBase> get _routes => [
 StatefulShellBranch _branch(GoRoute route) =>
     StatefulShellBranch(routes: [route]);
 
+GoRoute _settingsRoute(String name, Widget child, {String? category}) =>
+    _genericRoute(
+      name: name,
+      child: child,
+      settingsCategory: category ?? '/$name',
+    );
+
 GoRoute _genericRoute<T>({
   String? name,
   String? path,
   Widget Function(T extra)? builder,
   Widget? child,
+  String? settingsCategory,
 }) {
   Widget pageChild(GoRouterState state) {
-    final page = builder != null ? builder(state.extra as T) : child!;
+    Widget page = builder != null ? builder(state.extra as T) : child!;
     final target = state.uri.queryParametersAll['setting'];
-    return target == null || target.isEmpty
-        ? page
-        : NodeLaneRevealScope(
-            key: ValueKey(state.uri),
-            path: target,
-            child: page,
-          );
+    if (target != null && target.isNotEmpty) {
+      page = NodeLaneRevealScope(
+        key: ValueKey(state.uri),
+        path: target,
+        child: page,
+      );
+    }
+    return settingsCategory != null && isMobile && !isTv
+        ? MobileSettingsLayout(category: settingsCategory, child: page)
+        : page;
   }
 
   return GoRoute(

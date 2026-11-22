@@ -1,4 +1,6 @@
-import 'package:flutter/cupertino.dart';
+import '../../../helpers/bubble_finders.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,6 +92,10 @@ void main() {
     Finder target, {
     double delta = 250,
   }) async {
+    if (find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty) {
+      await revealBubble(tester, target, delta: delta);
+      return;
+    }
     if (target.evaluate().isEmpty) {
       await tester.scrollUntilVisible(
         target,
@@ -108,7 +114,11 @@ void main() {
   }) async {
     final target = find.widgetWithText(NodeLaneRow, title);
     await reveal(tester, target, delta: delta);
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pumpAndSettle();
   }
 
@@ -116,7 +126,7 @@ void main() {
     await open(tester, title);
     final option = find.widgetWithText(NodeLaneRow, label);
     await reveal(tester, option);
-    await tester.tap(option);
+    await tester.tap(inBubble(option));
     await tester.pumpAndSettle();
   }
 
@@ -149,7 +159,7 @@ void main() {
       await tester.pumpWidget(app(container, const MobilePlayerScreen()));
       await tester.pumpAndSettle();
       await open(tester, 'Default playback speed');
-      await tester.tap(find.byTooltip('Back'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(_writes, isEmpty);
       await choose(tester, 'Default playback speed', 'x1.25');
@@ -188,12 +198,10 @@ void main() {
       await open(tester, 'Intro skip duration');
       expect(find.byType(Dialog), findsNothing);
       expect(_writes, isEmpty);
-      tester
-          .widget<CupertinoPicker>(find.byType(CupertinoPicker))
-          .scrollController!
-          .jumpToItem(254);
+      tester.widget<Slider>(find.byType(Slider).last).onChangeEnd!(254);
       await tester.pumpAndSettle();
-      await open(tester, 'Intro skip duration');
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       await choose(tester, 'Double-tap seek duration', '3s');
       await expand(tester, 'Display');
       await toggle(tester, 'Use Fullscreen');
@@ -261,6 +269,7 @@ void main() {
       expect(_writes.last, ('languages', ''));
       await choose(tester, 'Audio channels', 'Reverse stereo');
       await toggle(tester, 'Enable audio pitch correction');
+      await open(tester, 'Volume boost cap');
       final slider = find.byType(Slider);
       await reveal(tester, slider);
       final before = _writes.length;
@@ -292,7 +301,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await open(tester, 'Hardware Decoder');
-      await tester.tap(find.byTooltip('Back'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(_writes, isEmpty);
       await toggle(tester, 'Hardware Acceleration');
@@ -324,7 +333,7 @@ void main() {
   testWidgets(
     'overview keeps every existing route and advanced expansion after returning',
     (tester) async {
-      preferences(tester);
+      final container = preferences(tester);
       final destinations = [
         ('Internal player', '/playerMode'),
         ('Audio', '/playerAudioScreen'),
@@ -348,12 +357,15 @@ void main() {
       );
       addTearDown(router.dispose);
       await tester.pumpWidget(
-        MaterialApp.router(
-          routerConfig: router,
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          builder: withMetrics,
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: withMetrics,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -361,7 +373,8 @@ void main() {
         if (i == 2) await expand(tester, 'Advanced');
         await open(tester, destinations[i].$1);
         expect(find.text(destinations[i].$2), findsOneWidget);
-        await tester.tap(find.byTooltip('Back'));
+        expect(find.byType(NodeLaneBubblePanel), findsNothing);
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
       }
       expect(_writes, isEmpty);

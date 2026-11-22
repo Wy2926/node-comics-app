@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
@@ -7,15 +8,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/providers/algorithm_weights_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/http/cf_proxy_store.dart';
 import 'package:mangayomi/services/http/doh/doh_custom_store.dart';
 import 'package:mangayomi/services/http/doh/doh_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
-import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'providers/doh_provider_notifier.dart';
 import 'providers/general_state_provider.dart';
@@ -36,101 +35,91 @@ class MobileGeneralScreen extends ConsumerWidget {
       _ => l10n.auto_library_update_never,
     };
 
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: l10n.general),
-        body: SafeArea(
-          top: false,
-          child: MobileSettingsList(
-            key: const PageStorageKey('mobile-general'),
-            padding: NodeLaneTokens.pagePadding,
+    return MobileBrowsePage(
+      title: l10n.general,
+      body: MobileSettingsList(
+        key: const PageStorageKey('mobile-general'),
+        children: [
+          MobileSettingsGroup(
+            title: l10n.library,
             children: [
-              MobileSettingsGroup(
-                title: l10n.library,
-                children: [
-                  NodeLaneRow(
-                    openOnReveal: true,
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.auto_library_update,
+                value: updateLabel(interval),
+                icon: NodeLaneIcons.of(context).refresh,
+                onOpen: (anchor) async {
+                  final selected = await showSettingChoice<int>(
+                    anchor,
                     title: l10n.auto_library_update,
-                    value: updateLabel(interval),
-                    icon: NodeLaneIcons.of(context).refresh,
-                    onTap: () async {
-                      final selected = await showMobileSettingsPicker<int>(
-                        context,
-                        title: l10n.auto_library_update,
-                        current: interval,
-                        options: [
-                          for (final hours in libraryUpdateIntervals)
-                            MobileSettingOption(hours, updateLabel(hours)),
-                        ],
-                      );
-                      if (context.mounted &&
-                          selected != null &&
-                          selected.value != interval) {
-                        ref
-                            .read(
-                              autoLibraryUpdateIntervalStateProvider.notifier,
-                            )
-                            .set(selected.value);
-                      }
-                    },
-                  ),
-                  if (interval > 0)
-                    NodeLaneSwitchRow(
-                      title: l10n.auto_library_update_wifi_only,
-                      icon: NodeLaneIcons.of(context).wifi,
-                      value: ref.watch(autoLibraryUpdateWifiOnlyStateProvider),
-                      onChanged: ref
-                          .read(autoLibraryUpdateWifiOnlyStateProvider.notifier)
-                          .set,
-                    ),
-                ],
+                    current: interval,
+                    options: [
+                      for (final hours in libraryUpdateIntervals)
+                        SettingOption(hours, updateLabel(hours)),
+                    ],
+                  );
+                  if (context.mounted &&
+                      selected != null &&
+                      selected.value != interval) {
+                    ref
+                        .read(autoLibraryUpdateIntervalStateProvider.notifier)
+                        .set(selected.value);
+                  }
+                },
               ),
-              MobileSettingsGroup(
-                title: l10n.app_settings,
-                children: [
-                  NodeLaneSwitchRow(
-                    title: l10n.show_nav_double_tap_tooltip,
-                    icon: NodeLaneIcons.of(context).navigation,
-                    value: ref.watch(showNavDoubleTapTooltipStateProvider),
-                    onChanged: ref
-                        .read(showNavDoubleTapTooltipStateProvider.notifier)
-                        .set,
-                  ),
-                ],
+              if (interval > 0)
+                NodeLaneSwitchRow(
+                  title: l10n.auto_library_update_wifi_only,
+                  icon: NodeLaneIcons.of(context).wifi,
+                  value: ref.watch(autoLibraryUpdateWifiOnlyStateProvider),
+                  onChanged: ref
+                      .read(autoLibraryUpdateWifiOnlyStateProvider.notifier)
+                      .set,
+                ),
+            ],
+          ),
+          MobileSettingsGroup(
+            title: l10n.app_settings,
+            children: [
+              NodeLaneSwitchRow(
+                title: l10n.show_nav_double_tap_tooltip,
+                icon: NodeLaneIcons.of(context).navigation,
+                value: ref.watch(showNavDoubleTapTooltipStateProvider),
+                onChanged: ref
+                    .read(showNavDoubleTapTooltipStateProvider.notifier)
+                    .set,
               ),
-              MobileSettingsGroup(
-                title: l10n.advanced,
-                children: [
-                  NodeLaneDisclosure(
-                    title: l10n.network_settings,
-                    icon: NodeLaneIcons.of(context).web,
-                    child: const _NetworkSettings(),
-                  ),
-                  NodeLaneDisclosure(
-                    title: l10n.recommendations_weights,
-                    icon: NodeLaneIcons.of(context).adjustments,
-                    child: const _RecommendationWeights(),
-                  ),
-                  /* Discord settings are temporarily hidden.
+            ],
+          ),
+          MobileSettingsGroup(
+            title: l10n.advanced,
+            children: [
+              NodeLaneDisclosure(
+                title: l10n.network_settings,
+                icon: NodeLaneIcons.of(context).web,
+                child: const _NetworkSettings(),
+              ),
+              NodeLaneDisclosure(
+                title: l10n.recommendations_weights,
+                icon: NodeLaneIcons.of(context).adjustments,
+                child: const _RecommendationWeights(),
+              ),
+              /* Discord settings are temporarily hidden.
                   NodeLaneDisclosure(
                     title: 'Discord',
                     icon: NodeLaneIcons.of(context).chat,
                     child: _DiscordSettings(),
                   ),
                   */
-                  NodeLaneSwitchRow(
-                    title: l10n.memory_overlay,
-                    icon: NodeLaneIcons.of(context).memory,
-                    value: ref.watch(memoryOverlayVisibleProvider),
-                    onChanged: ref
-                        .read(memoryOverlayVisibleProvider.notifier)
-                        .set,
-                  ),
-                ],
+              NodeLaneSwitchRow(
+                title: l10n.memory_overlay,
+                icon: NodeLaneIcons.of(context).memory,
+                value: ref.watch(memoryOverlayVisibleProvider),
+                onChanged: ref.read(memoryOverlayVisibleProvider.notifier).set,
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -145,39 +134,39 @@ class _NetworkSettings extends ConsumerStatefulWidget {
 class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
   late String _proxyUrl = CfProxyStore.url;
 
-  Future<String?> _edit({
+  Future<String?> _edit(
+    BuildContext anchor, {
     required String title,
     required String value,
     String? hint,
     String? helper,
     bool Function(String)? isValid,
-  }) => showDialog<String>(
-    context: context,
-    builder: (_) => MobileSettingsTextDialog(
-      title: title,
-      initialValue: value,
-      hint: hint,
-      helper: helper,
-      keyboardType: TextInputType.url,
-      isValid: isValid,
-    ),
+  }) => showSettingText(
+    anchor,
+    title: title,
+    initialValue: value,
+    hint: hint,
+    helper: helper,
+    keyboardType: TextInputType.url,
+    isValid: isValid,
   );
 
-  Future<void> _chooseDoh(int current) async {
+  Future<void> _chooseDoh(BuildContext anchor, int current) async {
     final l10n = context.l10n;
-    final selected = await showMobileSettingsPicker<int>(
-      context,
+    final selected = await showSettingChoice<int>(
+      anchor,
       title: l10n.dns_provider,
       current: current,
       options: [
         for (final provider in ref.read(availableDoHProvidersProvider))
-          MobileSettingOption(provider.id, provider.name),
-        MobileSettingOption(DoHProviders.customId, l10n.custom),
+          SettingOption(provider.id, provider.name),
+        SettingOption(DoHProviders.customId, l10n.custom),
       ],
     );
-    if (!mounted || selected == null) return;
+    if (!mounted || !anchor.mounted || selected == null) return;
     if (selected.value == DoHProviders.customId) {
       final value = await _edit(
+        anchor,
         title: l10n.custom_doh_url,
         value: DohCustomStore.url,
         hint: 'https://example.com/dns-query',
@@ -219,7 +208,7 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
                 : (DoHProviders.byId[doh.providerId ?? 0]?.name ??
                       DoHProviders.cloudflare.name),
             icon: NodeLaneIcons.of(context).repository,
-            onTap: () => _chooseDoh(doh.providerId ?? 0),
+            onOpen: (anchor) => _chooseDoh(anchor, doh.providerId ?? 0),
           )
         else
           NodeLaneRow(
@@ -227,8 +216,9 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
             title: l10n.custom_dns,
             value: dns.isEmpty ? l10n.default0 : dns,
             icon: NodeLaneIcons.of(context).repository,
-            onTap: () async {
+            onOpen: (anchor) async {
               final value = await _edit(
+                anchor,
                 title: l10n.custom_dns,
                 value: dns,
                 hint: '8.8.8.8',
@@ -243,8 +233,9 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
           title: l10n.default_user_agent,
           value: userAgent,
           icon: NodeLaneIcons.of(context).web,
-          onTap: () async {
+          onOpen: (anchor) async {
             final value = await _edit(
+              anchor,
               title: l10n.default_user_agent,
               value: userAgent,
             );
@@ -259,8 +250,9 @@ class _NetworkSettingsState extends ConsumerState<_NetworkSettings> {
           value: _proxyUrl.isEmpty ? l10n.off : _proxyUrl,
           subtitle: l10n.cf_proxy_helper,
           icon: NodeLaneIcons.of(context).repository,
-          onTap: () async {
+          onOpen: (anchor) async {
             final value = await _edit(
+              anchor,
               title: l10n.cloudflare_bypass_proxy,
               value: _proxyUrl,
               hint: 'http://localhost:8191/v1',

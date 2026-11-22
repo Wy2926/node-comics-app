@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -16,10 +18,13 @@ class MobileSourceFilterPage extends StatefulWidget {
     required this.filters,
     required this.defaults,
     this.sourceName,
+    this.onChanged,
   });
   final List<dynamic> filters;
   final String? sourceName;
   final List<dynamic> Function() defaults;
+  // Only the developer's test runner needs an explicit Apply before executing code.
+  final void Function(List<dynamic>, bool typing)? onChanged;
 
   @override
   State<MobileSourceFilterPage> createState() => _MobileSourceFilterPageState();
@@ -29,37 +34,47 @@ class _MobileSourceFilterPageState extends State<MobileSourceFilterPage> {
   late List<dynamic> _draft = copySourceFilters(widget.filters);
   int _resetVersion = 0;
 
+  void _reset() {
+    setState(() {
+      _draft = copySourceFilters(widget.defaults());
+      _resetVersion++;
+    });
+    widget.onChanged?.call(_draft, false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final actions = [
+      NodeLaneSecondaryButton(onPressed: _reset, child: Text(l10n.reset)),
+    ];
+    final body = ListView(
+      shrinkWrap: true,
+      padding: NodeLaneTokens.pagePadding,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: [
+        SourceFilterFields(
+          key: ValueKey(_resetVersion),
+          filters: _draft,
+          onChanged: (typing) => widget.onChanged?.call(_draft, typing),
+        ),
+      ],
+    );
+    if (widget.onChanged != null) {
+      return NodeLaneBubblePanel(
+        title: l10n.filter,
+        subtitle: widget.sourceName,
+        actions: actions,
+        child: body,
+      );
+    }
     return MobileBrowsePage.form(
       title: l10n.filter,
-      bottomAction: Row(
-        children: [
-          NodeLaneSecondaryButton(
-            onPressed: () => setState(() {
-              _draft = copySourceFilters(widget.defaults());
-              _resetVersion++;
-            }),
-            child: Text(l10n.reset),
-          ),
-          const SizedBox(width: NodeLaneTokens.space12),
-          Expanded(
-            child: FilledButton(
-              onPressed: () => Navigator.pop(context, _draft),
-              child: Text(l10n.source_filter_apply),
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: NodeLaneTokens.pagePadding,
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        children: [
-          if (widget.sourceName != null)
-            NodeLaneSectionHeading(widget.sourceName!),
-          SourceFilterFields(key: ValueKey(_resetVersion), filters: _draft),
-        ],
+      actions: actions,
+      body: body,
+      bottomAction: FilledButton(
+        onPressed: () => Navigator.pop(context, _draft),
+        child: Text(l10n.source_filter_apply),
       ),
     );
   }
@@ -70,10 +85,12 @@ class SourceFilterFields extends StatefulWidget {
   const SourceFilterFields({
     super.key,
     required this.filters,
+    this.onChanged,
     this.nested = false,
   });
   final List<dynamic> filters;
   final bool nested;
+  final ValueChanged<bool>? onChanged;
   @override
   State<SourceFilterFields> createState() => _SourceFilterFieldsState();
 }
@@ -88,12 +105,17 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
   Widget group({required List<Widget> children}) => widget.nested
       ? Column(children: children)
       : NodeLaneGroupSurface(children: children);
+  void change(VoidCallback edit) {
+    setState(edit);
+    widget.onChanged?.call(false);
+  }
+
   Future<void> select(BuildContext row, dynamic f) async {
     final l10n = context.l10n;
     final int current = f is SortFilter ? f.state.index : f.state;
-    final options = <SourceOption<int>>[
+    final options = <SettingOption<int>>[
       for (var i = 0; i < f.values.length; i++)
-        SourceOption(i, sourceFilterLabel(l10n, f.values[i].name as String)),
+        SettingOption(i, sourceFilterLabel(l10n, f.values[i].name as String)),
     ];
     final value = await showSourceChoice<int>(
       row,
@@ -102,7 +124,7 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
       options: options,
     );
     if (mounted && value != null) {
-      setState(() {
+      change(() {
         if (f is SortFilter) {
           f.state.index = value;
         } else {
@@ -166,8 +188,10 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                                     widget.filters[j + 1] is TextFilter
                                 ? TextInputAction.next
                                 : TextInputAction.done,
-                            onChanged: (v) =>
-                                (widget.filters[j] as TextFilter).state = v,
+                            onChanged: (v) {
+                              (widget.filters[j] as TextFilter).state = v;
+                              widget.onChanged?.call(true);
+                            },
                           ),
                       ],
                     );
@@ -194,7 +218,7 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                                 label: Text(l10n.bookshelf_filter_exclude),
                               ),
                             ],
-                            onChanged: (v) => setState(() => f.state = v),
+                            onChanged: (v) => change(() => f.state = v),
                           ),
                         ),
                       ],
@@ -207,7 +231,7 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                           title: label(f.name),
                           trailing: NodeLaneSwitch(
                             value: f.state,
-                            onChanged: (v) => setState(() => f.state = v),
+                            onChanged: (v) => change(() => f.state = v),
                           ),
                         ),
                       ],
@@ -230,7 +254,11 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                         NodeLaneMotion.disclosure(
                           context,
                           expanded.contains(i),
-                          SourceFilterFields(filters: f.state, nested: true),
+                          SourceFilterFields(
+                            filters: f.state,
+                            nested: true,
+                            onChanged: widget.onChanged,
+                          ),
                         ),
                       ],
                     );
@@ -268,7 +296,7 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
                                 ),
                               ],
                               onChanged: (v) =>
-                                  setState(() => f.state.ascending = v),
+                                  change(() => f.state.ascending = v),
                             ),
                           ),
                       ],

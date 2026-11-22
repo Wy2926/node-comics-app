@@ -328,60 +328,6 @@ abstract class _$AllowConcurrentDownloadsState extends $Notifier<bool> {
   }
 }
 
-@ProviderFor(AskDownloadDestinationState)
-final askDownloadDestinationStateProvider =
-    AskDownloadDestinationStateProvider._();
-
-final class AskDownloadDestinationStateProvider
-    extends $NotifierProvider<AskDownloadDestinationState, bool> {
-  AskDownloadDestinationStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'askDownloadDestinationStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$askDownloadDestinationStateHash();
-
-  @$internal
-  @override
-  AskDownloadDestinationState create() => AskDownloadDestinationState();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
-    );
-  }
-}
-
-String _$askDownloadDestinationStateHash() =>
-    r'123c974bbb0701c5f2550cf099137c9986b86d47';
-
-abstract class _$AskDownloadDestinationState extends $Notifier<bool> {
-  bool build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<bool, bool>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
-
 @ProviderFor(DownloadDelaySecondsState)
 final downloadDelaySecondsStateProvider = DownloadDelaySecondsStateProvider._();
 

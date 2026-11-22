@@ -1,5 +1,5 @@
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -175,11 +175,11 @@ class NodeLaneMobileNavigation extends StatelessWidget {
         onSelected(route);
         return;
       }
-      final destination = await showNodeLaneCatalogSheet<String>(
+      final destination = await showNodeLaneBubble<String>(
         context,
-        NodeLaneCatalogSheet(
+        label: item(mobileOverflowTab).label,
+        child: NodeLaneBubblePanel(
           title: item(mobileOverflowTab).label,
-          fitContent: true,
           child: ListView(
             shrinkWrap: true,
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -197,7 +197,7 @@ class NodeLaneMobileNavigation extends StatelessWidget {
                       value: (badges[route] ?? 0) > 0
                           ? '${badges[route]}'
                           : null,
-                      onTap: () => Navigator.pop(context, route),
+                      onOpen: (row) => Navigator.pop(row, route),
                     ),
                 ],
               ),

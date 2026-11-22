@@ -18,8 +18,8 @@ void main() {
     'counts and optional translation issues use localized complete messages',
     () {
       final en = AppLocalizationsEn(), zh = AppLocalizationsZh();
-      expect(en.search_websites_action(1), 'Search 1 website');
-      expect(en.search_websites_action(2), 'Search 2 websites');
+      expect(en.search_selected_websites(1), '1 website selected');
+      expect(en.search_selected_websites(2), '2 websites selected');
       expect(en.source_selected_count(0), '0 items selected');
       expect(zh.source_selected_count(2), '已选择 2 项');
       expect(en.translation_progress(1, 2, 0), 'Completed 1 / 2 images');
@@ -63,12 +63,13 @@ void main() {
                       onChanged: (value) => setState(() => translated = value),
                     ),
                     Expanded(
-                      child: SourceSearchScopePage(
+                      child: SourceSearchScopePanel(
                         sources: [
                           Source(id: 1, name: 'Example', lang: 'en'),
                           Source(id: 2, name: 'Second', lang: 'en'),
                         ],
                         current: const SourceSearchScope(),
+                        onChanged: (_) {},
                       ),
                     ),
                   ],
@@ -79,10 +80,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Search 2 websites'), findsOneWidget);
+      expect(find.text('2 websites selected'), findsOneWidget);
       await tester.tap(find.text('Example'));
       await tester.pumpAndSettle();
-      expect(find.text('Search 1 website'), findsOneWidget);
+      expect(find.text('1 website selected'), findsOneWidget);
       expect(
         const TranslationFailure('AUTH_REQUIRED').message,
         AppLocalizationsEn().translation_auth_required,
@@ -92,7 +93,7 @@ void main() {
       expect(translated, isTrue);
       locale.value = const Locale('zh');
       await tester.pumpAndSettle();
-      expect(find.text('搜索这 1 个网站'), findsOneWidget);
+      expect(find.text('已选 1 个网站'), findsOneWidget);
       expect(find.text('译图'), findsOneWidget);
       expect(
         const TranslationFailure('AUTH_REQUIRED').message,
@@ -136,7 +137,7 @@ void main() {
                   action: SourceCardAction.retry,
                   onAction: () {},
                   onOpen: () {},
-                  onDetails: () {},
+                  onDetails: (_) {},
                   onLongPress: (_) {},
                 ),
               ],

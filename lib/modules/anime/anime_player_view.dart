@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_number_bubble.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -280,7 +281,6 @@ class _AnimeStreamPageState extends riv.ConsumerState<AnimeStreamPage>
     int value,
   })?
   _scriptNumber;
-  final _scriptNumberMenu = MenuController();
 
   riv.ProviderSubscription<PlayerSubtitleSettings>? _subSettingsSub;
 
@@ -669,9 +669,6 @@ class _AnimeStreamPageState extends riv.ConsumerState<AnimeStreamPage>
               value: start,
             ),
           );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && _scriptNumber != null) _scriptNumberMenu.open();
-          });
         }
         nativePlayer.setProperty("user-data/aniyomi/launch_int_picker", "");
         break;
@@ -2779,8 +2776,9 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
             right: NodeLaneTokens.gutter,
             bottom: NodeLaneTokens.gutter,
             child: SafeArea(
-              child: NodeLaneNumberPicker(
-                controller: _scriptNumberMenu,
+              child: NodeLaneNumberButton(
+                title: selection.title,
+                openOnMount: true,
                 value: selection.value,
                 min: selection.min,
                 max: selection.max,

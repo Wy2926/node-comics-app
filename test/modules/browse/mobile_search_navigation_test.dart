@@ -81,6 +81,9 @@ void main() {
           showNSFW: false,
           hideItems: [],
           mangaExtensionsRepo: [repo],
+          savedSearchesList: [
+            SavedSearch(sourceId: 101, name: 'Evening', query: 'dusk'),
+          ],
         ),
       );
       database.sources.putSync(source);
@@ -286,6 +289,17 @@ void main() {
             reFresh: false,
             itemType: ItemType.manga,
           ).overrideWith((ref) async {}),
+          sourceBaseUrlProvider.overrideWith((_, _) => ''),
+          supportsLatestProvider.overrideWith((_, _) => true),
+          getPopularProvider.overrideWith((_, args) async {
+            expect(args.source.sourceCode, 'existing');
+            expect(args.source.version, '1.0.0');
+            return MPages(
+              list: [
+                MManga(name: 'Opened existing website', link: '/existing'),
+              ],
+            );
+          }),
           mobileCatalogEntriesProvider(ItemType.manga).overrideWith(
             (ref) => Stream.value([
               for (var i = 0; i < 30; i++)
@@ -306,21 +320,15 @@ void main() {
             path: '/browse',
             builder: (_, _) => const MobileSourcesScreen(),
           ),
-          GoRoute(
-            path: '/mangaHome',
-            builder: (_, state) {
-              final (opened, latest) = state.extra! as (Source, bool);
-              expect(opened.sourceCode, 'existing');
-              expect(opened.version, '1.0.0');
-              expect(latest, isFalse);
-              return const Scaffold(body: Text('Opened existing website'));
-            },
-          ),
         ],
       );
       addTearDown(container.dispose);
       addTearDown(router.dispose);
-      tester.view.physicalSize = const Size(390, 844);
+      tester.view.display.size = tester.view.physicalSize = const Size(
+        390,
+        844,
+      );
+      addTearDown(tester.view.display.resetSize);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       await tester.runAsync(() async {
@@ -355,8 +363,7 @@ void main() {
         }
         await tester.tap(pageChoice);
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.byTooltip(l10n.filter));
-        await tester.tap(find.byTooltip(l10n.filter));
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         final filter = find.byTooltip(l10n.filter);
         final count = find.descendant(of: filter, matching: find.text('15'));
@@ -364,17 +371,13 @@ void main() {
           tester.getCenter(count).dy,
           closeTo(tester.getCenter(find.byType(TextField)).dy, 3),
         );
-        final summary = find.descendant(
-          of: find.byType(PinnedHeaderSliver),
-          matching: find.textContaining(l10n.source_format_page),
-        );
         final catalog = find.byKey(const PageStorageKey('catalog-manga-false'));
         final position = Scrollable.of(tester.element(find.text('Local 00')))
             .position;
         await tester.drag(catalog, const Offset(0, -960));
         await tester.pumpAndSettle();
         expect(find.byType(TextField).hitTestable(), findsNothing);
-        expect(summary.hitTestable(), findsOneWidget);
+        expect(filter.hitTestable(), findsNothing);
         expect(
           find.byTooltip(l10n.feedback_source).hitTestable(),
           findsNothing,
@@ -395,9 +398,12 @@ void main() {
         await tester.tap(find.text(name));
         await tester.pumpAndSettle();
         expect(find.text('Opened existing website'), findsOneWidget);
-        router.pop();
+        expect(
+          tester.getRect(find.byType(MangaHomeScreen)).top,
+          greaterThanOrEqualTo(tester.getRect(catalog).bottom - 1),
+        );
+        expect(await router.routerDelegate.popRoute(), isTrue);
         await tester.pumpAndSettle();
-        expect(summary.hitTestable(), findsOneWidget);
         expect(find.byType(TextField).hitTestable(), findsNothing);
         expect(position.pixels, y);
         expect(tester.getRect(find.text(name)), before);
@@ -409,7 +415,7 @@ void main() {
   );
 
   testWidgets(
-    'tablet opens site and book progressively, and back restores the filtered grid anchor',
+    'tablet pairs directory and website, appends the book below and restores each parent',
     (tester) async {
       final reads = <String>[];
       final container = ProviderContainer(
@@ -470,7 +476,7 @@ void main() {
               locale: const Locale('en'),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              theme: ThemeData(platform: TargetPlatform.android),
+              theme: ThemeData(),
             ),
           ),
         );
@@ -482,8 +488,10 @@ void main() {
             book = find.byType(MangaReaderDetail);
         expect(site, findsNothing);
         await tester.enterText(find.byType(TextField), 'Pane');
-        await tester.tap(find.widgetWithText(FilterChip, 'English'));
         await tester.tap(find.byTooltip('Filter'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilterChip, 'English'));
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         await tester.drag(directory, const Offset(0, -820));
         await tester.pumpAndSettle();
@@ -491,24 +499,11 @@ void main() {
         final name = tester.widget<SourceWebsiteCard>(card).source.name!;
         final row = find.widgetWithText(SourceWebsiteCard, name);
         final original = tester.getRect(row);
-        final width = tester.getSize(directory).width;
         final scroll = tester.widget<CustomScrollView>(directory).controller!;
         final offset = scroll.offset;
         expect(offset, greaterThan(300));
         await tester.tap(card);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 60));
-        final during = tester.getRect(site).left;
-        expect(
-          tester.getSize(directory).width,
-          width,
-          reason: 'the grid is clipped, not laid out on each tick',
-        );
         await tester.pumpAndSettle();
-        expect(
-          during,
-          inExclusiveRange(tester.getSize(directory).width, width),
-        );
         expect(
           tester.getRect(directory).right,
           closeTo(tester.getRect(site).left, 1),
@@ -521,6 +516,7 @@ void main() {
         expect(cells.evaluate().length, lessThan(beforePressure));
         expect(row.hitTestable(), findsOneWidget);
         final siteState = tester.state(site);
+        final siteHeight = tester.getSize(site).height;
         final draft = find.descendant(
           of: site,
           matching: find.byType(TextField),
@@ -569,20 +565,32 @@ void main() {
           closeTo(tester.getRect(site).left, 1),
         );
         expect(
-          tester.getRect(site).right,
-          closeTo(tester.getRect(book).left, 1),
+          tester.getRect(site).bottom,
+          closeTo(tester.getRect(book).top, 1),
         );
+        expect(tester.getRect(book).width, 1180);
+        expect(tester.getSize(site).height, siteHeight);
         tester.view.physicalSize = const Size(900, 720);
         await settleLayout();
-        expect(directory, findsNothing);
         expect(
-          tester.getRect(site).right,
-          closeTo(tester.getRect(book).left, 1),
+          tester.getRect(directory).right,
+          closeTo(tester.getRect(site).left, 1),
+        );
+        expect(
+          tester.getRect(directory).bottom,
+          closeTo(tester.getRect(book).top, 1),
         );
         tester.view.physicalSize = const Size(540, 800);
         await settleLayout();
         expect(tester.getRect(book).width, 540);
-        expect(find.text('Book $name').hitTestable(), findsNothing);
+        expect(
+          tester.getRect(directory).bottom,
+          closeTo(tester.getRect(site).top, 1),
+        );
+        expect(
+          tester.getRect(site).bottom,
+          closeTo(tester.getRect(book).top, 1),
+        );
         expect(await router.routerDelegate.popRoute(), isTrue);
         await tester.pumpAndSettle();
         expect(book, findsNothing);
@@ -607,22 +615,31 @@ void main() {
         expect(site, findsNothing);
         expect(scroll.offset, closeTo(offset, 1));
         expect(tester.getRect(row), original);
-        final summary = find.byType(PinnedHeaderSliver);
-        expect(
-          find.descendant(of: summary, matching: find.text('English')),
-          findsOneWidget,
-        );
         await tester.drag(directory, const Offset(0, 240));
         await tester.pumpAndSettle();
         expect(
           tester.widget<TextField>(find.byType(TextField)).controller!.text,
           'Pane',
         );
+        await tester.tap(find.byTooltip('Filter'));
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<FilterChip>(find.widgetWithText(FilterChip, 'English'))
+              .selected,
+          isTrue,
+        );
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
         await database.sources.count();
       });
     },
+    variant: TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
   );
 
   testWidgets(
@@ -684,6 +701,14 @@ void main() {
             ).overrideWith((ref) async {}),
             mobileCatalogEntriesProvider(ItemType.manga)
                 .overrideWith((ref) => Stream.value([installed])),
+            sourceBaseUrlProvider.overrideWith((_, _) => ''),
+            supportsLatestProvider.overrideWith((_, _) => true),
+            getPopularProvider.overrideWith((_, args) async {
+              expect(args.source.sourceCode, 'existing');
+              return MPages(
+                list: [MManga(name: 'Existing website', link: '/existing')],
+              );
+            }),
           ],
         );
         final router = GoRouter(
@@ -694,18 +719,14 @@ void main() {
               path: '/browse',
               builder: (_, _) => const MobileSourcesScreen(),
             ),
-            GoRoute(
-              path: '/mangaHome',
-              builder: (_, state) {
-                final (opened, _) = state.extra! as (Source, bool);
-                expect(opened.sourceCode, 'existing');
-                return const Scaffold(body: Text('Existing website'));
-              },
-            ),
           ],
         );
         try {
-          tester.view.physicalSize = const Size(390, 844);
+          tester.view.display.size = tester.view.physicalSize = const Size(
+            390,
+            844,
+          );
+          addTearDown(tester.view.display.resetSize);
           tester.view.devicePixelRatio = 1;
           addTearDown(tester.view.reset);
           await tester.pumpWidget(
@@ -829,7 +850,11 @@ void main() {
         );
         addTearDown(container.dispose);
         addTearDown(router.dispose);
-        tester.view.physicalSize = const Size(390, 844);
+        tester.view.display.size = tester.view.physicalSize = const Size(
+          390,
+          844,
+        );
+        addTearDown(tester.view.display.resetSize);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
         // Isar watcher transactions must run outside the fake async clock.
@@ -897,12 +922,36 @@ void main() {
             tester.widget<MangaHomeScreen>(find.byType(MangaHomeScreen)).query,
             '海岸来信',
           );
-          expect(find.text('Match 1'), findsOneWidget);
+          final site = find.byType(MangaHomeScreen);
+          expect(
+            find.descendant(of: site, matching: find.text('Match 1')),
+            findsOneWidget,
+          );
+          expect(find.byType(TextField), findsOneWidget);
+          expect(
+            tester.getRect(site).top,
+            greaterThanOrEqualTo(
+              tester.getRect(find.byKey(const ValueKey('海岸来信'))).bottom - 1,
+            ),
+          );
           expect(calls, ['海岸来信:1']);
           await tester.tap(find.widgetWithText(FilledButton, 'Load More'));
           await tester.pumpAndSettle();
           expect(calls, ['海岸来信:1', '海岸来信:2']);
           expect(find.text('Match 2'), findsOneWidget);
+          if (entry == 'keyboard') {
+            await tester.tap(find.byTooltip('Source actions'));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Saved searches'));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Evening'));
+            await tester.pumpAndSettle();
+            expect(find.text('Search results · dusk'), findsOneWidget);
+            expect(
+              tester.widget<TextField>(find.byType(TextField)).controller!.text,
+              '尚未提交',
+            );
+          }
           Navigator.of(tester.element(find.byType(MangaHomeScreen))).pop();
           await tester.pumpAndSettle();
           expect(find.byType(GlobalSearchScreen), findsOneWidget);
@@ -913,7 +962,11 @@ void main() {
                 .text,
             '尚未提交',
           );
-          expect(calls, ['海岸来信:1', '海岸来信:2']);
+          expect(calls, [
+            '海岸来信:1',
+            '海岸来信:2',
+            if (entry == 'keyboard') 'dusk:1',
+          ]);
           expect(tester.takeException(), isNull);
           await database.mangas.count();
           await tester.pumpWidget(const SizedBox());

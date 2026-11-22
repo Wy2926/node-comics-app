@@ -677,6 +677,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downloaded_only => 'Downloaded only';
 
   @override
+  String get downloaded_only_hint =>
+      'Only show titles with downloads in the library.';
+
+  @override
+  String get incognito_mode_hint =>
+      'Pause saving reading and playback progress.';
+
+  @override
   String get download_queue => 'Download Queue';
 
   @override
@@ -4679,17 +4687,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get search_scope => 'Search scope';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Search $count websites',
-      one: 'Search 1 website',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'Find a website';

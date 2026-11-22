@@ -7,6 +7,7 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -42,7 +43,11 @@ String repositoryKey(String value) {
 }
 
 Future<void> showMobileAddRepository(BuildContext context, ItemType type) =>
-    pushBrowsePage<void>(context, MobileAddRepository(itemType: type));
+    NodeLaneBubbleFlow.open<void>(
+      context,
+      title: context.l10n.onboarding_add,
+      child: MobileAddRepository(itemType: type),
+    );
 
 class MobileRepositoryManager extends ConsumerStatefulWidget {
   const MobileRepositoryManager({super.key, required this.itemType});
@@ -79,10 +84,10 @@ class _MobileRepositoryManagerState
     }
   }
 
-  Future<void> _remove(Repo repo) async {
+  Future<void> _remove(BuildContext anchor, Repo repo) async {
     final l = context.l10n, type = widget.itemType;
     if (!await showNodeLaneConfirmation(
-          context,
+          anchor,
           title: l.repository_remove,
           message: l.repository_remove_hint,
           confirmLabel: l.remove,
@@ -153,7 +158,7 @@ class _MobileRepositoryManagerState
                 title: l.repository_remove,
                 icon: icons.delete,
                 destructive: true,
-                onTap: () => _remove(repo),
+                onOpen: (a) => _remove(a, repo),
               ),
           ],
         ),
@@ -184,10 +189,12 @@ class _MobileRepositoryManagerState
           onPressed: _refresh,
         ),
       ],
-      bottomAction: FilledButton.icon(
-        onPressed: () => showMobileAddRepository(context, widget.itemType),
-        icon: Icon(icons.add),
-        label: Text(l.onboarding_add),
+      bottomAction: Builder(
+        builder: (a) => FilledButton.icon(
+          onPressed: () => showMobileAddRepository(a, widget.itemType),
+          icon: Icon(icons.add),
+          label: Text(l.onboarding_add),
+        ),
       ),
       body: ListView(
         padding: NodeLaneTokens.pagePadding,

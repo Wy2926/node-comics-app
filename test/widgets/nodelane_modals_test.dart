@@ -1,3 +1,4 @@
+import 'package:mangayomi/modules/widgets/nodelane_number_bubble.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
@@ -220,7 +221,7 @@ void main() {
     },
   );
   testWidgets(
-    'anchored wheel preserves page layout, external values and disabled input',
+    'number bubble preserves page layout, external values and disabled input',
     (tester) async {
       _phone(tester);
       final value = ValueNotifier(6);
@@ -255,36 +256,34 @@ void main() {
       await tester.tap(find.text('Preload'));
       await tester.pumpAndSettle();
       expect(find.byType(Dialog), findsNothing);
-      expect(routes.pushed, hasLength(1));
+      expect(routes.pushed.last, isA<PopupRoute>());
       expect(tester.getRect(find.byType(NodeLaneNumberRow)), rowRect);
       expect(writes, isEmpty);
       value.value = 12;
       await tester.pumpAndSettle();
-      var picker = tester.widget<CupertinoPicker>(find.byType(CupertinoPicker));
-      expect(picker.scrollController!.selectedItem, 11);
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 11);
       expect(writes, isEmpty);
       enabled.value = false;
       await tester.pumpAndSettle();
       await tester.dragFrom(
-        tester.getCenter(find.byType(CupertinoPicker)),
-        const Offset(0, -60),
+        tester.getCenter(find.byType(Slider)),
+        const Offset(60, 0),
       );
       await tester.pumpAndSettle();
       expect(writes, isEmpty);
       enabled.value = true;
       await tester.pumpAndSettle();
-      picker = tester.widget<CupertinoPicker>(find.byType(CupertinoPicker));
-      picker.scrollController!.jumpToItem(19);
+      tester.widget<Slider>(find.byType(Slider)).onChangeEnd!(19);
       await tester.pumpAndSettle();
       expect(writes, [20]);
-      await tester.tap(find.text('Preload'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       await tester.tap(find.text('Preload'));
       await tester.pumpAndSettle();
       expect(writes, [20]);
       await tester.tapAt(const Offset(20, 600));
       await tester.pumpAndSettle();
-      expect(find.byType(CupertinoPicker), findsNothing);
+      expect(find.byType(Slider), findsNothing);
       expect(tester.getRect(find.byType(NodeLaneNumberRow)), rowRect);
       expect(writes, [20]);
       expect(tester.takeException(), isNull);

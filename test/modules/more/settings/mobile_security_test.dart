@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
+import 'package:mangayomi/modules/more/settings/general/providers/general_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/security/app_lock_screen.dart';
 import 'package:mangayomi/modules/more/settings/security/mobile_security_views.dart';
 import 'package:mangayomi/modules/more/settings/security/providers/security_state_provider.dart';
@@ -34,6 +36,8 @@ void main() {
       overrides: [
         appLockEnabledStateProvider.overrideWith(_Enabled.new),
         appUnlockedStateProvider.overrideWith(_Unlocked.new),
+        incognitoModeStateProvider.overrideWith(_Incognito.new),
+        hideDiscordRpcInIncognitoStateProvider.overrideWith(_HideRpc.new),
       ],
     );
     addTearDown(container.dispose);
@@ -215,39 +219,41 @@ void main() {
         );
         expect(find.bySemanticsLabel('Private library'), findsNothing);
 
-        await tester.pumpWidget(
-          app(
-            const MobileSecuritySettingsView(
+        final container = preferences();
+        Widget security({required bool checking}) => UncontrolledProviderScope(
+          container: container,
+          child: app(
+            MobileSecuritySettingsView(
               enabled: false,
               canAuthenticate: false,
-              isChecking: true,
+              isChecking: checking,
               isAuthenticating: false,
+              authenticationIncomplete: !checking,
               onChanged: null,
             ),
             textScale: 2.5,
           ),
         );
+        await tester.pumpWidget(security(checking: true));
         await tester.pumpAndSettle();
         expect(find.text('Checking device authentication…'), findsOneWidget);
         expect(
           tester
-              .widget<NodeLaneSwitchRow>(find.byType(NodeLaneSwitchRow))
+              .widget<NodeLaneSwitchRow>(
+                find.widgetWithText(NodeLaneSwitchRow, 'App lock'),
+              )
               .onChanged,
           isNull,
         );
-        await tester.pumpWidget(
-          app(
-            const MobileSecuritySettingsView(
-              enabled: false,
-              canAuthenticate: false,
-              isChecking: false,
-              isAuthenticating: false,
-              authenticationIncomplete: true,
-              onChanged: null,
-            ),
-            textScale: 2.5,
-          ),
-        );
+        final incognito =
+            container.read(incognitoModeStateProvider.notifier) as _Incognito;
+        expect(incognito.writes, isEmpty);
+        await tester.ensureVisible(find.text('Incognito Mode'));
+        await tester.tap(find.text('Incognito Mode'));
+        await tester.pumpAndSettle();
+        expect(incognito.writes, [true]);
+        expect(container.read(appLockEnabledStateProvider), isFalse);
+        await tester.pumpWidget(security(checking: false));
         await tester.pumpAndSettle();
         final notice = find.text(
           'Authentication was not completed. Your setting has not changed.',
@@ -264,6 +270,22 @@ void main() {
       }
     },
   );
+}
+
+class _Incognito extends IncognitoModeState {
+  final writes = <bool>[];
+  @override
+  bool build() => false;
+  @override
+  void setIncognitoMode(bool value) {
+    writes.add(value);
+    state = value;
+  }
+}
+
+class _HideRpc extends HideDiscordRpcInIncognitoState {
+  @override
+  bool build() => false;
 }
 
 class _DeviceAuth {

@@ -176,7 +176,10 @@ List<SettingsSearchEntry> settingsSearchEntries(
     ],
     section: ['Discord'],
   );
-  rows(l.settings_security_privacy, '/security', i.security, [l.app_lock]);
+  rows(l.settings_security_privacy, '/security', i.security, [
+    l.app_lock,
+    l.incognito_mode,
+  ]);
 
   if (!hidden.contains('/MangaLibrary')) {
     final reader = l.settings_manga_reader;
@@ -247,12 +250,12 @@ List<SettingsSearchEntry> settingsSearchEntries(
       l.default_playback_speed_length,
       l.markEpisodeAsSeenSetting,
       l.default_subtitle_language,
-      l.subtitle_service,
       l.use_libass,
       l.player_controls,
       l.display,
       'AniSkip',
     ]);
+    page(l.subtitle_service, '/subtitleService', player, i.subtitles);
     rows(
       player,
       '/playerMode',
@@ -310,7 +313,9 @@ List<SettingsSearchEntry> settingsSearchEntries(
     [l.encrypt_backups, l.clear_chapter_or_episode_cache_on_app_launch],
     section: [l.settings_advanced_options],
   );
+  page(l.download_queue, '/downloadQueue', l.updates, i.download);
   rows(l.settings_downloads, '/downloads', i.download, [
+    l.downloaded_only,
     l.only_on_wifi,
     l.allow_concurrent_downloads,
     l.download_delay,
@@ -370,6 +375,7 @@ List<SettingsSearchEntry> settingsSearchEntries(
   );
   page(l.error_reports, '/errorReports', l.settings_about_help, i.info);
   rows(l.settings_about_help, '/about', i.info, [
+    l.feedback_app,
     l.check_for_update,
     l.app_update_auto,
     l.app_diagnostics,

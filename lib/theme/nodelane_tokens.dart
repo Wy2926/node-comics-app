@@ -31,7 +31,6 @@ class NodeLaneTokens {
   static const floatingShadowBlur = 12.0, floatingShadowOffset = 4.0;
   static const rowHeight = 56.0, iconSize = 24.0, smallIconSize = 20.0;
   static const emptyStateIconSize = 48.0, progressTrackHeight = 3.0;
-  static const numberPickerWidth = 184.0;
   static const avatarSize = 64.0, searchHeight = 48.0;
   static const brandMarkSize = 80.0, brandCompactMarkSize = 40.0;
   static const accountHeroAvatarSize = 96.0, accountHeroIconSize = 56.0;
@@ -53,7 +52,6 @@ class NodeLaneTokens {
   static const readerEntryCoverWidth = 96.0, readerEntryCoverHeight = 136.0;
   static const chapterRowHeight = 72.0;
   static const defaultMobileAccent = Color(0xff006eff);
-  static const readerRowHeight = 62.0;
   static const readerChapterHeight = 68.0, readerActionHeight = 64.0;
   static const readerValueSwatchSize = 28.0;
   static const readerIconSize = 24.0, readerSliderTrack = 3.0;

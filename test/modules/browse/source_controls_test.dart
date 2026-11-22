@@ -8,7 +8,8 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/source_preference_widget.dart';
 import 'package:mangayomi/modules/browse/global_search/source_search_scope.dart';
 import 'package:mangayomi/modules/browse/widgets/source_controls.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 void main() {
@@ -16,7 +17,7 @@ void main() {
     WidgetTester tester,
     Widget child, {
     double scale = 1,
-    double inset = 0,
+    double? inset,
   }) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -33,7 +34,7 @@ void main() {
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaler: TextScaler.linear(scale),
-            viewInsets: EdgeInsets.only(bottom: inset),
+            viewInsets: inset == null ? null : EdgeInsets.only(bottom: inset),
           ),
           child: child!,
         ),
@@ -57,7 +58,7 @@ void main() {
               current: 500,
               options: [
                 for (var i = 0; i < 12; i++)
-                  SourceOption(500 + i, 'Version $i'),
+                  SettingOption(500 + i, 'Version $i'),
               ],
             ),
             child: const Text('版本'),
@@ -75,70 +76,25 @@ void main() {
   );
 
   testWidgets(
-    'multi selection cancels, preserves hidden choices and commits once',
+    'text bubble keeps its draft above keyboard and cancel never returns a value',
     (tester) async {
-      Set<String>? result;
-      var completions = 0;
-      final original = {'en'};
+      final saved = <String>[];
       await mount(
         tester,
-        Builder(
-          builder: (context) => TextButton(
-            onPressed: () async {
-              result = await showSourceMultiChoice(
-                context,
-                title: '语言',
-                current: original,
-                options: const [
-                  SourceOption('en', 'English'),
-                  SourceOption('ja', '日本語'),
-                ],
-              );
-              completions++;
-            },
-            child: const Text('打开'),
-          ),
-        ),
-      );
-      await tester.tap(find.text('打开'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('日本語'));
-      await tester.tap(find.byTooltip('返回'));
-      await tester.pumpAndSettle();
-      expect(result, isNull);
-      expect(original, {'en'});
-      await tester.tap(find.text('打开'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), '日本');
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('日本語'));
-      expect(find.text('English'), findsNothing);
-      await tester.tap(find.text('保存'));
-      await tester.pumpAndSettle();
-      expect(result, {'en', 'ja'});
-      expect(original, {'en'});
-      expect(completions, 2);
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets(
-    'text dialog keeps its draft above keyboard and cancel never returns a value',
-    (tester) async {
-      String? result;
-      await mount(
-        tester,
-        Builder(
-          builder: (context) => TextButton(
-            onPressed: () async {
-              result = await showSourceTextEditor(
-                context,
-                title: '来源地址',
-                subtitle: '测试来源',
-                initialValue: 'https://example.org',
-              );
-            },
-            child: const Text('编辑'),
+        NodeLaneBubbleFlow(
+          home: SourcePreferenceWidget(
+            source: Source(id: 8, name: '测试来源'),
+            sourcePreference: [
+              SourcePreference(
+                editTextPreference: EditTextPreference(
+                  title: '编辑',
+                  dialogTitle: '来源地址',
+                  value: 'https://example.org',
+                ),
+              ),
+            ],
+            onSave: (pref, _) async =>
+                saved.add(pref.editTextPreference!.value!),
           ),
         ),
       );
@@ -150,7 +106,7 @@ void main() {
       expect(find.text('确认').hitTestable(), findsOneWidget);
       await tester.tap(find.text('取消'));
       await tester.pumpAndSettle();
-      expect(result, isNull);
+      expect(saved, isEmpty);
       tester.view.viewInsets = FakeViewPadding.zero;
       await tester.tap(find.text('编辑'));
       await tester.pumpAndSettle();
@@ -161,13 +117,13 @@ void main() {
       await tester.enterText(find.byType(TextField), '');
       await tester.tap(find.text('确认'));
       await tester.pumpAndSettle();
-      expect(result, '');
+      expect(saved, ['']);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'preference write failure keeps original values and blocks duplicate writes',
+    'filtered source choices preserve hidden selections across a failed write and retry',
     (tester) async {
       final pref = SourcePreference(
         key: 'langs',
@@ -187,46 +143,57 @@ void main() {
           source: Source(id: 8, name: '来源 A'),
           onSave: (value, source) {
             saved.add(value);
-            return pending.future;
+            return saved.length == 1 ? pending.future : Future.value();
           },
         ),
       );
       await tester.tap(find.text('内容语言'));
       await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '日本');
+      await tester.pumpAndSettle();
       await tester.tap(find.text('日本語'));
-      await tester.tap(find.text('保存'));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 600));
-      await tester.tap(find.text('内容语言'));
+      await tester.tap(find.text('日本語'));
       await tester.pump();
       expect(saved.length, 1);
       expect(saved.single.multiSelectListPreference!.values, ['en', 'ja']);
       expect(pref.multiSelectListPreference!.values, ['en']);
       pending.completeError(StateError('failed'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('保存未完成'), findsOneWidget);
-      expect(find.text('English'), findsOneWidget);
+      expect(find.textContaining('保存未完成').hitTestable(), findsOneWidget);
+      await tester.tap(find.text('日本語'));
+      await tester.pumpAndSettle();
+      expect(saved, hasLength(2));
+      expect(saved.last.multiSelectListPreference!.values, ['en', 'ja']);
+      expect(find.textContaining('保存未完成').hitTestable(), findsNothing);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('English、日本語'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'search scope saves a local draft including hidden selections and cancels cleanly',
+    'scope updates while open, including searches with hidden selections',
     (tester) async {
       final sources = [
         Source(id: 1, name: 'Alpha', isAdded: true, isPinned: true),
         Source(id: 2, name: 'Beta', isAdded: true),
       ];
       SourceSearchScope? result;
-      final initial = const SourceSearchScope();
       await mount(
         tester,
         Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              result = await pushBrowsePage<SourceSearchScope>(
+              await NodeLaneBubbleFlow.open<void>(
                 context,
-                SourceSearchScopePage(sources: sources, current: initial),
+                title: '范围',
+                child: SourceSearchScopePanel(
+                  sources: sources,
+                  current: result ?? const SourceSearchScope(),
+                  onChanged: (next) => result = next,
+                ),
               );
             },
             child: const Text('范围'),
@@ -235,21 +202,17 @@ void main() {
       );
       await tester.tap(find.text('范围'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Beta').last);
-      await tester.tap(find.byTooltip('返回'));
-      await tester.pumpAndSettle();
-      expect(result, isNull);
-      expect(initial.mode, SourceSearchScopeMode.all);
-      await tester.tap(find.text('范围'));
-      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Beta');
       await tester.pumpAndSettle();
       await tester.tap(find.text('Beta').last);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('搜索这 1 个网站'));
-      await tester.pumpAndSettle();
       expect(result!.ids, {1});
       expect(result!.mode, SourceSearchScopeMode.custom);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('范围'));
+      await tester.pumpAndSettle();
+      expect(find.text('已选 1 个网站'), findsOneWidget);
       expect(
         sources.every((s) => s.isAdded == true && s.isActive == true),
         isTrue,
@@ -258,20 +221,23 @@ void main() {
     },
   );
   testWidgets(
-    'scope presets preserve hidden choices and keep apply reachable with large text and keyboard',
+    'scope presets preserve hidden choices at large text with a keyboard',
     (tester) async {
+      var scope = const SourceSearchScope();
       await mount(
         tester,
         Builder(
           builder: (context) => TextButton(
-            onPressed: () => pushBrowsePage(
+            onPressed: () => NodeLaneBubbleFlow.open<void>(
               context,
-              SourceSearchScopePage(
+              title: '范围',
+              child: SourceSearchScopePanel(
                 sources: [
                   Source(id: 1, name: 'Alpha', lang: 'en', isPinned: true),
                   Source(id: 2, name: 'Beta', lang: 'zh'),
                 ],
-                current: const SourceSearchScope(),
+                current: scope,
+                onChanged: (next) => scope = next,
               ),
             ),
             child: const Text('范围'),
@@ -309,29 +275,27 @@ void main() {
       }
 
       await tap('常用');
-      expect(find.text('搜索这 1 个网站').hitTestable(), findsOneWidget);
+      expect(scope.mode, SourceSearchScopeMode.pinned);
       await tap('Beta');
-      expect(find.text('搜索这 2 个网站').hitTestable(), findsOneWidget);
+      expect(scope.ids, {1, 2});
       await top();
       await tester.ensureVisible(find.byType(TextField));
       await tester.enterText(find.byType(TextField), 'Beta');
       await tester.pumpAndSettle();
       await tap('取消当前结果');
-      expect(find.text('搜索这 1 个网站'), findsOneWidget);
+      expect(scope.ids, {1});
       await top();
       await tester.enterText(find.byType(TextField), '');
       await tester.pumpAndSettle();
       await tap('全选');
       await tap('清空');
-      expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
-        isNull,
-      );
+      expect(scope.ids, isEmpty);
       await top();
       await tap('全部');
-      expect(find.text('搜索这 2 个网站'), findsOneWidget);
+      expect(scope.mode, SourceSearchScopeMode.all);
       await tap('自选');
-      expect(find.text('搜索这 0 个网站'), findsOneWidget);
+      expect(scope.mode, SourceSearchScopeMode.custom);
+      expect(scope.ids, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );

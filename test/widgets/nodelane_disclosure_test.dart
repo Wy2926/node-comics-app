@@ -188,6 +188,9 @@ void main() {
       onChanged: writes.add,
     );
     await tester.pumpWidget(app(slider(20)));
+    expect(find.byType(Slider), findsNothing);
+    await tester.tap(find.text('Speed'));
+    await tester.pumpAndSettle();
     var control = tester.widget<Slider>(find.byType(Slider));
     control.onChanged!(40);
     control.onChanged!(60);
@@ -197,6 +200,7 @@ void main() {
     control.onChangeEnd!(60);
     expect(writes, [60]);
     await tester.pumpWidget(app(slider(80)));
+    await tester.pumpAndSettle();
     expect(tester.widget<Slider>(find.byType(Slider)).value, 80);
   });
 

@@ -16,9 +16,7 @@ import 'package:mangayomi/modules/widgets/nodelane_progress.dart';
 import 'package:mangayomi/services/app_update_downloads.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-// ignore: depend_on_referenced_packages
 import 'package:url_launcher_platform_interface/link.dart';
-// ignore: depend_on_referenced_packages
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 final _package = PackageInfo(

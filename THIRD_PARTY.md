@@ -24,4 +24,6 @@ Android 原版 APK 运行使用锁定的 [`m_extension_server` 源码](https://g
 
 网页归档提取直接使用 [Dart mime](https://pub.dev/packages/mime) 的流式 MIME multipart 解析器，许可为 **BSD-3-Clause**（[源码与许可](https://github.com/dart-lang/tools/tree/main/pkgs/mime)）。该包从既有间接依赖改为显式依赖，版本沿用锁文件；分发时随 Flutter 依赖许可保留原始声明。WebView 归档创建继续使用现有 `flutter_inappwebview`，iOS property-list 解码使用系统 Foundation。
 
+播放器音量使用 [volume_controller](https://pub.dev/packages/volume_controller)，图片加载使用 [extended_image_library](https://pub.dev/packages/extended_image_library) 和 [http_client_helper](https://pub.dev/packages/http_client_helper)，三者均为 **MIT**。测试直接使用的 [path_provider](https://pub.dev/packages/path_provider_platform_interface)、[wakelock_plus](https://pub.dev/packages/wakelock_plus_platform_interface)、[url_launcher](https://pub.dev/packages/url_launcher_platform_interface) 和 [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage_platform_interface) 平台接口均为 **BSD-3-Clause**；版本见 `pubspec.lock`。
+
 Flutter 界面图标使用已有 [cupertino_icons](https://pub.dev/packages/cupertino_icons)（**MIT**），版本与摘要以 `pubspec.lock` 为准；iOS 原生底栏使用系统 SF Symbols。品牌素材及生成设计图的来源见[品牌说明](docs/design/nodelane-brand-assets.md)与[设计参考](docs/MOBILE_UI_DESIGN.md#设计参考与素材)。

@@ -40,7 +40,10 @@ class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
       child: ListView(
         shrinkWrap: true,
         padding: NodeLaneTokens.pagePadding,
-        children: [const SubtitleServiceSettingsRow(), child],
+        children: [
+          const SubtitleServiceSettingsRow(onOpen: showSubtitleServiceSettings),
+          child,
+        ],
       ),
     );
     return ref
@@ -244,7 +247,9 @@ class _SubtitleSearchResultsState extends State<_SubtitleSearchResults> {
         children: [
           AbsorbPointer(
             absorbing: _busy,
-            child: const SubtitleServiceSettingsRow(),
+            child: const SubtitleServiceSettingsRow(
+              onOpen: showSubtitleServiceSettings,
+            ),
           ),
           NodeLaneTextField.search(
             controller: _controller,

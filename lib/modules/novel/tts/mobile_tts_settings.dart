@@ -4,7 +4,7 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -85,28 +85,28 @@ class _MobileTtsSettingsState extends State<MobileTtsSettings> {
     }
   }
 
-  Future<void> _selectLanguage() async {
+  Future<void> _selectLanguage(BuildContext anchor) async {
     if (_busy || _picking || _loadFailed) return;
     final l10n = context.l10n;
     final previous = widget.language;
     setState(() => _picking = true);
-    MobileSettingOption<String?>? selected;
+    SettingOption<String?>? selected;
     try {
-      selected = await showMobileSettingsPicker<String?>(
-        context,
+      selected = await showSettingChoice<String?>(
+        anchor,
         title: l10n.tts_language,
         current: previous,
         searchable: true,
         options: [
-          MobileSettingOption(null, l10n.tts_default),
+          SettingOption(null, l10n.tts_default),
           if (previous != null && !_languages.contains(previous))
-            MobileSettingOption(
+            SettingOption(
               previous,
               _languageLabel(previous),
               subtitle: l10n.tts_language_unavailable,
             ),
           for (final code in _languages)
-            MobileSettingOption(
+            SettingOption(
               code,
               _languageLabel(code),
               subtitle: ttsLocaleNames.containsKey(code) ? code : null,
@@ -173,7 +173,7 @@ class _MobileTtsSettingsState extends State<MobileTtsSettings> {
                 value: language == null
                     ? l10n.tts_default
                     : _languageLabel(language),
-                onTap: enabled && !_loadFailed ? _selectLanguage : null,
+                onOpen: enabled && !_loadFailed ? _selectLanguage : null,
               ),
               if (!_busy && _loadFailed)
                 _Feedback(

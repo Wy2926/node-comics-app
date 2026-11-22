@@ -320,6 +320,8 @@
   "clean_database_desc": "Spowoduje to usunięcie wszystkich elementów, które nie zostały dodane do biblioteki!",
   "incognito_mode": "Tryb incognito",
   "downloaded_only": "Tylko pobrane",
+  "downloaded_only_hint": "Pokazuj w bibliotece tylko tytuły z pobraną zawartością.",
+  "incognito_mode_hint": "Wstrzymaj zapisywanie postępów czytania i odtwarzania.",
   "download_queue": "Kolejka pobierania",
   "categories": "Kategorie",
   "statistics": "Statystyka",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Zakres wyszukiwania",
-  "search_websites_action": "{count, plural, one{Przeszukaj {count} witrynę} few{Przeszukaj {count} witryny} many{Przeszukaj {count} witryn} other{Przeszukaj {count} witryny}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Znajdź stronę internetową",
   "search_selected_websites": "{count, plural, one{Wybrano {count} witrynę} few{Wybrano {count} witryny} many{Wybrano {count} witryn} other{Wybrano {count} witryny}}",
   "@search_selected_websites": {

@@ -450,7 +450,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     return Scaffold(
       appBar: appBar,
       body: NodeLanePaneLayout(
-        useAvailableWidth: mobile,
+        splitWhen: mobile
+            ? (context, width) => context.hasPaneWidth(width)
+            : null,
         paneWidth: NodeLaneTokens.tabletCategoryWidth,
         pane: mobile && tabCount > 1
             ? (context) => ScrollConfiguration(

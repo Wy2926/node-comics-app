@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:mangayomi/eval/http_response_extensions.dart';
 
 class FilterList {
@@ -283,6 +284,30 @@ List<Map<String, dynamic>?> filterValuesListToJson(List<dynamic> values) {
     }
     return (e.toJson() as Map<String, dynamic>?);
   }).toList();
+}
+
+/// Compare edits to the same adapter definition, including nested groups.
+bool sameSourceFilterState(List<dynamic> a, List<dynamic> b) {
+  Iterable<Object> states(List<dynamic> values) sync* {
+    for (final value in values) {
+      switch (value) {
+        case GroupFilter f:
+          yield* states(f.state);
+        case TextFilter f:
+          yield f.state;
+        case CheckBoxFilter f:
+          yield f.state;
+        case TriStateFilter f:
+          yield f.state;
+        case SelectFilter f:
+          yield f.state;
+        case SortFilter f:
+          yield (f.state.index, f.state.ascending);
+      }
+    }
+  }
+
+  return const IterableEquality<Object>().equals(states(a), states(b));
 }
 
 /// The extension's mutable filter objects must never be edited by a cancelled

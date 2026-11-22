@@ -178,7 +178,7 @@ class MobileBrowserStartPage extends StatelessWidget {
         child: NodeLaneCatalogHeading(
           l.source_pinned_websites,
           action: onManage != null ? l.manage : null,
-          onAction: onManage,
+          onAction: onManage == null ? null : (_) => onManage!(),
         ),
       ),
       SliverGrid.builder(

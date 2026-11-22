@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/more/settings/downloads/downloads_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
@@ -10,7 +11,6 @@ import 'package:mangayomi/modules/manga/download/providers/download_provider.dar
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/download_manager/download_queue_order.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
-import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
@@ -57,7 +57,11 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
     isStarting: _isStarting,
     onStart: () => _startQueue(entries),
     onReorder: (from, to) => _reorder(entries, from, to),
-    onSettings: () => context.push('/downloads'),
+    onSettings: (anchor) => NodeLaneBubbleFlow.open<void>(
+      anchor,
+      title: context.l10n.downloads,
+      child: const DownloadsScreen(),
+    ),
     onCancel: (entry) => _onDownloadAction(context, 'Cancel', entry, entries),
     onCancelSeries: (entry) =>
         _onDownloadAction(context, 'CancelAll', entry, entries),
@@ -72,27 +76,11 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
       // download progress ticks.
       stream: _pendingDownloads,
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          if (isMobile && !isTv) return _mobileQueue(const []);
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(l10n.download_queue),
-              leading: isTv
-                  ? IconButton(
-                      autofocus: true,
-                      icon: const BackButtonIcon(),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )
-                  : null,
-            ),
-            body: Center(child: Text(l10n.no_downloads)),
-          );
-        }
         // Filter out orphaned downloads (chapter or manga deleted) and auto-
         // clean their records.
         final orphanIds = <int>[];
         final valid = <Download>[];
-        for (final d in snapshot.data!) {
+        for (final d in snapshot.data ?? const <Download>[]) {
           if (d.chapter.value == null || d.chapter.value?.manga.value == null) {
             if (d.id != null) orphanIds.add(d.id!);
           } else {

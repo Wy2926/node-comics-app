@@ -320,6 +320,8 @@
   "clean_database_desc": "Isso removerá todos os itens que não foram adicionados à biblioteca!",
   "incognito_mode": "Modo Incógnito",
   "downloaded_only": "Apenas baixados",
+  "downloaded_only_hint": "Mostrar na biblioteca apenas títulos com conteúdo baixado.",
+  "incognito_mode_hint": "Pausar o registro do progresso de leitura e reprodução.",
   "download_queue": "Fila de Download",
   "categories": "Categorias",
   "statistics": "Estatísticas",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Escopo de pesquisa",
-  "search_websites_action": "{count, plural, =1{Pesquisar 1 site} other{Pesquisar sites {count}}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Encontrar um site",
   "search_selected_websites": "{count, plural, =1{1 site selecionado} other{{count} sites selecionados}}",
   "@search_selected_websites": {

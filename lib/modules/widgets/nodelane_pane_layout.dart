@@ -20,7 +20,8 @@ class NodeLaneToolbarPair extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final width = context.tabletPanesFit(constraints.maxWidth)
+      final width =
+          context.isTouchPlatform && context.hasPaneWidth(constraints.maxWidth)
           ? (constraints.maxWidth - gap) / 2
           : constraints.maxWidth;
       return Wrap(
@@ -60,22 +61,21 @@ class NodeLanePaneLayout extends StatelessWidget {
     required this.pane,
     required this.body,
     this.paneWidth = NodeLaneTokens.tabletSupportingWidth,
-    this.useAvailableWidth = false,
+    this.splitWhen,
   });
 
   final WidgetBuilder? pane;
   final Widget Function(BuildContext, bool split) body;
   final double paneWidth;
-  final bool useAvailableWidth;
+  final bool Function(BuildContext, double width)? splitWhen;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final split =
           pane != null &&
-          (useAvailableWidth
-              ? context.hasPaneWidth(constraints.maxWidth)
-              : context.tabletPanesFit(constraints.maxWidth));
+          (splitWhen?.call(context, constraints.maxWidth) ??
+              context.tabletPanesFit(constraints.maxWidth));
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

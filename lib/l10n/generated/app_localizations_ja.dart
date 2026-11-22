@@ -665,6 +665,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get downloaded_only => 'ダウンロード済みのみ';
 
   @override
+  String get downloaded_only_hint => '本棚にはダウンロードしたコンテンツがある作品だけを表示します。';
+
+  @override
+  String get incognito_mode_hint => '読書位置と再生位置の保存を一時停止します。';
+
+  @override
   String get download_queue => 'ダウンロードキュー';
 
   @override
@@ -4574,17 +4580,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get search_scope => '検索範囲';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ウェブサイトを検索',
-      one: '1 つのウェブサイトを検索',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'ウェブサイトを探す';

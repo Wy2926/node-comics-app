@@ -320,6 +320,8 @@
   "clean_database_desc": "Это удалит все элементы, которые не добавлены в библиотеку!",
   "incognito_mode": "Инкогнито режим",
   "downloaded_only": "Только загруженные",
+  "downloaded_only_hint": "Показывать в библиотеке только произведения со скачанным содержимым.",
+  "incognito_mode_hint": "Приостановить сохранение прогресса чтения и просмотра.",
   "download_queue": "Очередь загрузки",
   "categories": "Категории",
   "statistics": "Статистика",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "Область поиска",
-  "search_websites_action": "{count, plural, one{Поиск на {count} сайте} few{Поиск на {count} сайтах} many{Поиск на {count} сайтах} other{Поиск на {count} сайта}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "Найти веб-сайт",
   "search_selected_websites": "{count, plural, one{Выбран {count} сайт} few{Выбрано {count} сайта} many{Выбрано {count} сайтов} other{Выбрано {count} сайта}}",
   "@search_selected_websites": {

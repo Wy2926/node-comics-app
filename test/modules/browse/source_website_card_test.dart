@@ -7,7 +7,6 @@ import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/source_catalog_metadata.dart';
 import 'package:mangayomi/modules/browse/widgets/source_website_card.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 Source _source(SourcePricing pricing, {bool adult = false}) => Source(
@@ -98,7 +97,7 @@ void main() {
               action: action,
               onOpen: () {},
               onAction: () {},
-              onDetails: () {},
+              onDetails: (_) {},
               onLongPress: (_) {},
             ),
             width: width,
@@ -139,7 +138,7 @@ void main() {
         action: SourceCardAction.open,
         onOpen: () {},
         onAction: () {},
-        onDetails: () {},
+        onDetails: (_) {},
         onLongPress: (_) {},
       );
       for (final (width, scale, spacing, visible, hidden) in [
@@ -208,7 +207,7 @@ void main() {
           action: SourceCardAction.open,
           onOpen: () {},
           onAction: () {},
-          onDetails: () {},
+          onDetails: (_) {},
           onLongPress: (_) {},
         ),
         width: width,
@@ -241,7 +240,7 @@ void main() {
             onOpen: () => opened++,
             onAction: () => updated++,
             onLongPress: (_) => longPressed++,
-            onDetails: () => showSourceWebsiteInfo(context, source),
+            onDetails: (anchor) => showSourceWebsiteInfo(anchor, source),
           ),
         ),
       );
@@ -249,7 +248,7 @@ void main() {
       expect([opened, updated], [0, 1]);
       await tester.tap(find.text('+4'));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
       expect(find.text('日漫、韩漫、国漫、欧美漫画'), findsOneWidget);
       expect(opened, 0);
       Navigator.of(tester.element(find.text('地区'))).pop();
@@ -272,7 +271,7 @@ void main() {
             action: SourceCardAction.retry,
             onOpen: () {},
             onAction: () {},
-            onDetails: () {},
+            onDetails: (_) {},
             onLongPress: (_) {},
           ),
           direction: TextDirection.rtl,

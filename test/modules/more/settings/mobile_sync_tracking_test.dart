@@ -1,4 +1,6 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import '../../../helpers/bubble_finders.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 import 'dart:async';
@@ -45,6 +47,10 @@ void main() {
     Finder target, {
     double delta = 250,
   }) async {
+    if (find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty) {
+      await revealBubble(tester, target, delta: delta);
+      return;
+    }
     // A lazy list can refine its scroll extent after an expanded group lays out.
     for (var attempt = 0; attempt < 2; attempt++) {
       if (target.evaluate().isEmpty) {
@@ -66,7 +72,11 @@ void main() {
     double delta = 250,
   }) async {
     await reveal(tester, target, delta: delta);
-    await tester.tap(target);
+    await tester.tap(
+      find.byType(NodeLaneBubblePanel).evaluate().isNotEmpty
+          ? inBubble(target)
+          : target,
+    );
     await tester.pump(const Duration(milliseconds: 350));
   }
 
@@ -77,9 +87,10 @@ void main() {
       final home = Builder(
         builder: (context) => Scaffold(
           body: TextButton(
-            onPressed: () => showNodeLaneCatalogSheet<void>(
+            onPressed: () => showNodeLaneBubble<void>(
               context,
-              MobileAccountLoginDialog(
+              label: 'Test form',
+              child: MobileAccountLoginDialog(
                 title: AppLocalizations.of(context)!
                     .login_into(AppLocalizations.of(context)!.sync_service),
                 submitLabel: 'Log in with browser',
@@ -149,9 +160,10 @@ void main() {
       final home = Builder(
         builder: (context) => Scaffold(
           body: TextButton(
-            onPressed: () => showNodeLaneCatalogSheet<void>(
+            onPressed: () => showNodeLaneBubble<void>(
               context,
-              MobileAccountLoginDialog(
+              label: 'Test form',
+              child: MobileAccountLoginDialog(
                 title: 'Login into Kitsu',
                 submitLabel: 'Login',
                 fields: const [
@@ -272,7 +284,7 @@ void main() {
               );
             },
             onRecheck: () {},
-            onLogin: () async {},
+            onLogin: (_) async {},
             onLogout: () {},
             onSync: (_) async {
               syncs++;
@@ -302,7 +314,7 @@ void main() {
       for (final label in choices) {
         await reveal(tester, find.widgetWithText(NodeLaneRow, label));
       }
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(frequencies, isEmpty);
       await tap(tester, frequency, delta: -250);
@@ -353,7 +365,7 @@ void main() {
             onEnabledChanged: (_) {},
             onFrequencyChanged: (_) {},
             onRecheck: () {},
-            onLogin: () async {},
+            onLogin: (_) async {},
             onLogout: () => logouts++,
             onSync: (action) {
               calls.add(action);
@@ -434,7 +446,7 @@ void main() {
             entries: accounts,
             updateProgress: true,
             onUpdateProgress: updates.add,
-            onLogin: (id) {
+            onLogin: (_, id) {
               logins.add(id);
               return loginResult.future;
             },

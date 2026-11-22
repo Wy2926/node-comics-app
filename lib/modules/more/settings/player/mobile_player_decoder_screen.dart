@@ -3,7 +3,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -42,45 +42,37 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
                 value: ref.watch(hwdecModeStateProvider(rawValue: true)),
                 label: (value) => value,
                 options: const [
-                  MobileSettingOption('no', 'no'),
-                  MobileSettingOption('auto', 'auto'),
-                  MobileSettingOption(
-                    'd3d11va',
-                    'd3d11va',
-                    subtitle: 'Windows 8+',
-                  ),
-                  MobileSettingOption(
+                  SettingOption('no', 'no'),
+                  SettingOption('auto', 'auto'),
+                  SettingOption('d3d11va', 'd3d11va', subtitle: 'Windows 8+'),
+                  SettingOption(
                     'd3d11va-copy',
                     'd3d11va-copy',
                     subtitle: 'Windows 8+',
                   ),
-                  MobileSettingOption(
+                  SettingOption(
                     'videotoolbox',
                     'videotoolbox',
                     subtitle: 'iOS 9.0+',
                   ),
-                  MobileSettingOption(
+                  SettingOption(
                     'videotoolbox-copy',
                     'videotoolbox-copy',
                     subtitle: 'iOS 9.0+',
                   ),
-                  MobileSettingOption('nvdec', 'nvdec', subtitle: 'CUDA'),
-                  MobileSettingOption(
-                    'nvdec-copy',
-                    'nvdec-copy',
-                    subtitle: 'CUDA',
-                  ),
-                  MobileSettingOption(
+                  SettingOption('nvdec', 'nvdec', subtitle: 'CUDA'),
+                  SettingOption('nvdec-copy', 'nvdec-copy', subtitle: 'CUDA'),
+                  SettingOption(
                     'mediacodec',
                     'mediacodec',
                     subtitle: 'HW (Android)',
                   ),
-                  MobileSettingOption(
+                  SettingOption(
                     'mediacodec-copy',
                     'mediacodec-copy',
                     subtitle: 'HW+ (Android)',
                   ),
-                  MobileSettingOption('crystalhd', 'crystalhd'),
+                  SettingOption('crystalhd', 'crystalhd'),
                 ],
                 onChanged: ref
                     .read(hwdecModeStateProvider(rawValue: true).notifier)
@@ -98,7 +90,7 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
               label: (value) => debanding[value]!,
               options: [
                 for (final entry in debanding.entries)
-                  MobileSettingOption(entry.key, entry.value),
+                  SettingOption(entry.key, entry.value),
               ],
               onChanged: ref.read(debandingStateProvider.notifier).set,
             ),

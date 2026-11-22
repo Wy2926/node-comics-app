@@ -137,10 +137,11 @@ class _ChapterFilters extends ConsumerWidget {
           NodeLaneRow.card(
             title: l10n.filter_scanlator_groups,
             icon: NodeLaneIcons.of(context).groups,
-            onTap: () async {
-              final chosen = await pushBrowsePage<List<String>>(
-                context,
-                _ScanlatorDraft(names: names, excluded: excluded),
+            onOpen: (anchor) async {
+              final chosen = await NodeLaneBubbleFlow.open<List<String>>(
+                anchor,
+                title: l10n.filter_scanlator_groups,
+                child: _ScanlatorDraft(names: names, excluded: excluded),
               );
               if (!context.mounted || chosen == null) return;
               // A covered route's stream may be paused. Recheck the

@@ -1,9 +1,10 @@
+import 'package:mangayomi/modules/widgets/nodelane_number_bubble.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -42,10 +43,7 @@ class MobilePlayerScreen extends ConsumerWidget {
                   1.75,
                   2.0,
                 ])
-                  MobileSettingOption(
-                    value,
-                    l10n.playback_speed_multiplier(value),
-                  ),
+                  SettingOption(value, l10n.playback_speed_multiplier(value)),
               ],
               onChanged: ref
                   .read(defaultPlayBackSpeedStateProvider.notifier)
@@ -58,7 +56,7 @@ class MobilePlayerScreen extends ConsumerWidget {
               label: (value) => '$value%',
               options: [
                 for (final value in [100, 95, 90, 85, 80, 75, 70])
-                  MobileSettingOption(value, '$value%'),
+                  SettingOption(value, '$value%'),
               ],
               onChanged: ref
                   .read(markEpisodeAsSeenTypeStateProvider.notifier)
@@ -78,7 +76,7 @@ class MobilePlayerScreen extends ConsumerWidget {
               searchable: true,
               options: [
                 for (final locale in AppLocalizations.supportedLocales)
-                  MobileSettingOption(
+                  SettingOption(
                     locale,
                     completeLanguageName(locale.toLanguageTag()),
                     subtitle: locale.toLanguageTag(),
@@ -152,7 +150,7 @@ class _Controls extends ConsumerWidget {
           label: (value) => '${value}s',
           options: [
             for (final value in [30, 20, 10, 5, 3, 1])
-              MobileSettingOption(value, '${value}s'),
+              SettingOption(value, '${value}s'),
           ],
           onChanged: ref
               .read(defaultDoubleTapToSkipLengthStateProvider.notifier)
@@ -223,7 +221,7 @@ class _AniSkip extends ConsumerWidget {
             label: (value) => '${value}s',
             options: [
               for (final value in [5, 6, 7, 8, 9, 10])
-                MobileSettingOption(value, '${value}s'),
+                SettingOption(value, '${value}s'),
             ],
             onChanged: ref.read(aniSkipTimeoutLengthStateProvider.notifier).set,
           ),

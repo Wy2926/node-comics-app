@@ -91,7 +91,6 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
           top: false,
           child: MobileSettingsList(
             key: const PageStorageKey('mobile-about'),
-            padding: NodeLaneTokens.pagePadding,
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -144,6 +143,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                 children: [
                   NodeLaneRow(
                     title: l.feedback_app,
+                    subtitle: l.feedback_app_hint,
                     icon: icons.chat,
                     onTap: widget.onFeedback,
                   ),

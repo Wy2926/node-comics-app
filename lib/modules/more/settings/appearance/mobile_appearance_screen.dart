@@ -1,10 +1,12 @@
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -33,17 +35,17 @@ class MobileAppearanceScreen extends ConsumerWidget {
         ? ThemeMode.dark
         : ThemeMode.light;
     final modeOptions = [
-      MobileSettingOption(
+      SettingOption(
         ThemeMode.system,
         l10n.follow_system_theme,
         leading: Icon(NodeLaneIcons.of(context).brightness),
       ),
-      MobileSettingOption(
+      SettingOption(
         ThemeMode.light,
         l10n.theme_light,
         leading: Icon(NodeLaneIcons.of(context).brightness),
       ),
-      MobileSettingOption(
+      SettingOption(
         ThemeMode.dark,
         l10n.theme_dark,
         leading: Icon(NodeLaneIcons.of(context).night),
@@ -68,15 +70,16 @@ class MobileAppearanceScreen extends ConsumerWidget {
       useRelativeTimesTamps: false,
     );
 
-    Future<void> select<T>({
+    Future<void> select<T>(
+      BuildContext anchor, {
       required String title,
       required T current,
-      required List<MobileSettingOption<T>> options,
+      required List<SettingOption<T>> options,
       required ValueChanged<T> apply,
       bool searchable = false,
     }) async {
-      final selected = await showMobileSettingsPicker<T>(
-        context,
+      final selected = await showSettingChoice<T>(
+        anchor,
         title: title,
         current: current,
         options: options,
@@ -87,220 +90,209 @@ class MobileAppearanceScreen extends ConsumerWidget {
       }
     }
 
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: l10n.appearance),
-        body: SafeArea(
-          top: false,
-          child: MobileSettingsList(
-            key: const PageStorageKey('mobile-appearance'),
-            padding: NodeLaneTokens.pagePadding,
+    return MobileBrowsePage(
+      title: l10n.appearance,
+      body: MobileSettingsList(
+        key: const PageStorageKey('mobile-appearance'),
+        children: [
+          NodeLaneGroupSurface(
             children: [
-              NodeLaneGroupSurface(
-                children: [
-                  NodeLaneRow(
-                    openOnReveal: true,
-                    title: l10n.app_language,
-                    value: nodeLaneLanguageName(locale),
-                    icon: NodeLaneIcons.of(context).web,
-                    onTap: () => select(
-                      title: l10n.app_language,
-                      current: locale,
-                      searchable: true,
-                      options: [
-                        for (final value in nodeLaneSupportedLocales)
-                          MobileSettingOption(
-                            value,
-                            nodeLaneLanguageName(value),
-                          ),
-                      ],
-                      apply: ref
-                          .read(l10nLocaleStateProvider.notifier)
-                          .setLocale,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: NodeLaneTokens.space24),
-              MobileSettingsGroup(
-                key: const ValueKey('appearance-theme'),
-                title: l10n.theme,
-                children: [
-                  NodeLaneRow(
-                    openOnReveal: true,
-                    title: l10n.theme,
-                    value: modeOptions
-                        .firstWhere((option) => option.value == mode)
-                        .label,
-                    icon: NodeLaneIcons.of(context).brightness,
-                    onTap: () => select(
-                      title: l10n.theme,
-                      current: mode,
-                      options: modeOptions,
-                      apply: (value) {
-                        if (value == ThemeMode.system) {
-                          ref
-                              .read(followSystemThemeStateProvider.notifier)
-                              .set(true);
-                        } else {
-                          if (ref.read(followSystemThemeStateProvider)) {
-                            ref
-                                .read(followSystemThemeStateProvider.notifier)
-                                .set(false);
-                          }
-                          ref
-                              .read(themeModeStateProvider.notifier)
-                              .setTheme(
-                                value == ThemeMode.dark
-                                    ? Brightness.dark
-                                    : Brightness.light,
-                              );
-                        }
-                      },
-                    ),
-                  ),
-                  NodeLaneRow(
-                    openOnReveal: true,
-                    title: l10n.color,
-                    value: ThemeAA.schemes[schemeIndex].name,
-                    icon: NodeLaneIcons.of(context).palette,
-                    onTap: () => select(
-                      title: l10n.color,
-                      current: schemeIndex,
-                      searchable: true,
-                      options: [
-                        for (var i = 0; i < ThemeAA.schemes.length; i++)
-                          MobileSettingOption(
-                            i,
-                            ThemeAA.schemes[i].name,
-                            leading: _ColorSample(index: i, dark: dark),
-                          ),
-                      ],
-                      apply: (index) {
-                        final scheme = ThemeAA.schemes[index];
-                        ref
-                            .read(flexSchemeColorStateProvider.notifier)
-                            .setTheme(
-                              ref.read(themeModeStateProvider)
-                                  ? scheme.dark
-                                  : scheme.light,
-                              index,
-                            );
-                      },
-                    ),
-                  ),
-                  if (dark)
-                    NodeLaneSwitchRow(
-                      title: l10n.pure_black_dark_mode,
-                      value: pureBlack,
-                      onChanged: (value) => ref
-                          .read(pureBlackDarkModeStateProvider.notifier)
-                          .set(value),
-                    ),
-                  if (!pureBlack || !dark)
-                    NodeLaneSliderRow(
-                      title: l10n.color_blend_level,
-                      value: blend,
-                      min: 0,
-                      max: 40,
-                      divisions: 39,
-                      label: (value) => '${value.round()}',
-                      onPreview: (value) => ref
-                          .read(blendLevelStateProvider.notifier)
-                          .setBlendLevel(value),
-                      onChanged: (value) => ref
-                          .read(blendLevelStateProvider.notifier)
-                          .setBlendLevel(value, end: true),
-                    ),
-                ],
-              ),
-              MobileSettingsGroup(
-                key: const ValueKey('appearance-interface'),
-                title: l10n.appearance,
-                children: [
-                  NodeLaneSliderRow(
-                    title: l10n.app_ui_scale,
-                    value: scale,
-                    min: .85,
-                    max: 1.25,
-                    divisions: 8,
-                    label: (value) => '${(value * 100).round()}%',
-                    onPreview: (value) =>
-                        ref.read(appUiScaleStateProvider.notifier).set(value),
-                    onChanged: (value) => ref
-                        .read(appUiScaleStateProvider.notifier)
-                        .set(value, end: true),
-                  ),
-                  NodeLaneRow(
-                    openOnReveal: true,
-                    title: l10n.font,
-                    value: font ?? l10n.default0,
-                    icon: NodeLaneIcons.of(context).font,
-                    onTap: () => select<String?>(
-                      title: l10n.font,
-                      current: font,
-                      searchable: true,
-                      options: [
-                        MobileSettingOption(null, l10n.default0),
-                        for (final name in GoogleFonts.asMap().keys)
-                          MobileSettingOption(name, name),
-                      ],
-                      apply: ref.read(appFontFamilyProvider.notifier).set,
-                    ),
-                  ),
-                  NodeLaneRow(
-                    openOnReveal: true,
-                    title: l10n.reorder_navigation,
-                    icon: NodeLaneIcons.of(context).pageLayout,
-                    onTap: () => context.push('/customNavigationSettings'),
-                  ),
-                ],
-              ),
-              MobileSettingsGroup(
-                key: const ValueKey('appearance-time'),
-                title: l10n.timestamp,
-                children: [
-                  NodeLaneRow(
-                    openOnReveal: true,
-                    title: l10n.relative_timestamp,
-                    value: relativeLabels[relative],
-                    icon: NodeLaneIcons.of(context).history,
-                    onTap: () => select(
-                      title: l10n.relative_timestamp,
-                      current: relative,
-                      options: [
-                        for (var i = 0; i < relativeLabels.length; i++)
-                          MobileSettingOption(i, relativeLabels[i]),
-                      ],
-                      apply: ref
-                          .read(relativeTimesTampsStateProvider.notifier)
-                          .set,
-                    ),
-                  ),
-                  NodeLaneRow(
-                    openOnReveal: true,
-                    title: l10n.date_format,
-                    value: datePattern,
-                    icon: NodeLaneIcons.of(context).calendar,
-                    onTap: () => select(
-                      title: l10n.date_format,
-                      current: datePattern,
-                      options: [
-                        for (final value in dateFormatsList)
-                          MobileSettingOption(
-                            value,
-                            dateExample(value),
-                            subtitle: value,
-                          ),
-                      ],
-                      apply: ref.read(dateFormatStateProvider.notifier).set,
-                    ),
-                  ),
-                ],
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.app_language,
+                value: nodeLaneLanguageName(locale),
+                icon: NodeLaneIcons.of(context).web,
+                onOpen: (anchor) => select(
+                  anchor,
+                  title: l10n.app_language,
+                  current: locale,
+                  searchable: true,
+                  options: [
+                    for (final value in nodeLaneSupportedLocales)
+                      SettingOption(value, nodeLaneLanguageName(value)),
+                  ],
+                  apply: ref.read(l10nLocaleStateProvider.notifier).setLocale,
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: NodeLaneTokens.space24),
+          MobileSettingsGroup(
+            key: const ValueKey('appearance-theme'),
+            title: l10n.theme,
+            children: [
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.theme,
+                value: modeOptions
+                    .firstWhere((option) => option.value == mode)
+                    .label,
+                icon: NodeLaneIcons.of(context).brightness,
+                onOpen: (anchor) => select(
+                  anchor,
+                  title: l10n.theme,
+                  current: mode,
+                  options: modeOptions,
+                  apply: (value) {
+                    if (value == ThemeMode.system) {
+                      ref
+                          .read(followSystemThemeStateProvider.notifier)
+                          .set(true);
+                    } else {
+                      if (ref.read(followSystemThemeStateProvider)) {
+                        ref
+                            .read(followSystemThemeStateProvider.notifier)
+                            .set(false);
+                      }
+                      ref
+                          .read(themeModeStateProvider.notifier)
+                          .setTheme(
+                            value == ThemeMode.dark
+                                ? Brightness.dark
+                                : Brightness.light,
+                          );
+                    }
+                  },
+                ),
+              ),
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.color,
+                value: ThemeAA.schemes[schemeIndex].name,
+                icon: NodeLaneIcons.of(context).palette,
+                onOpen: (anchor) => select(
+                  anchor,
+                  title: l10n.color,
+                  current: schemeIndex,
+                  searchable: true,
+                  options: [
+                    for (var i = 0; i < ThemeAA.schemes.length; i++)
+                      SettingOption(
+                        i,
+                        ThemeAA.schemes[i].name,
+                        leading: _ColorSample(index: i, dark: dark),
+                      ),
+                  ],
+                  apply: (index) {
+                    final scheme = ThemeAA.schemes[index];
+                    ref
+                        .read(flexSchemeColorStateProvider.notifier)
+                        .setTheme(
+                          ref.read(themeModeStateProvider)
+                              ? scheme.dark
+                              : scheme.light,
+                          index,
+                        );
+                  },
+                ),
+              ),
+              if (dark)
+                NodeLaneSwitchRow(
+                  title: l10n.pure_black_dark_mode,
+                  value: pureBlack,
+                  onChanged: (value) => ref
+                      .read(pureBlackDarkModeStateProvider.notifier)
+                      .set(value),
+                ),
+              if (!pureBlack || !dark)
+                NodeLaneSliderRow(
+                  title: l10n.color_blend_level,
+                  value: blend,
+                  min: 0,
+                  max: 40,
+                  divisions: 39,
+                  label: (value) => '${value.round()}',
+                  onPreview: (value) => ref
+                      .read(blendLevelStateProvider.notifier)
+                      .setBlendLevel(value),
+                  onChanged: (value) => ref
+                      .read(blendLevelStateProvider.notifier)
+                      .setBlendLevel(value, end: true),
+                ),
+            ],
+          ),
+          MobileSettingsGroup(
+            key: const ValueKey('appearance-interface'),
+            title: l10n.appearance,
+            children: [
+              NodeLaneSliderRow(
+                title: l10n.app_ui_scale,
+                value: scale,
+                min: .85,
+                max: 1.25,
+                divisions: 8,
+                label: (value) => '${(value * 100).round()}%',
+                onPreview: (value) =>
+                    ref.read(appUiScaleStateProvider.notifier).set(value),
+                onChanged: (value) => ref
+                    .read(appUiScaleStateProvider.notifier)
+                    .set(value, end: true),
+              ),
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.font,
+                value: font ?? l10n.default0,
+                icon: NodeLaneIcons.of(context).font,
+                onOpen: (anchor) => select<String?>(
+                  anchor,
+                  title: l10n.font,
+                  current: font,
+                  searchable: true,
+                  options: [
+                    SettingOption(null, l10n.default0),
+                    for (final name in GoogleFonts.asMap().keys)
+                      SettingOption(name, name),
+                  ],
+                  apply: ref.read(appFontFamilyProvider.notifier).set,
+                ),
+              ),
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.reorder_navigation,
+                icon: NodeLaneIcons.of(context).pageLayout,
+                onTap: () => context.push('/customNavigationSettings'),
+              ),
+            ],
+          ),
+          MobileSettingsGroup(
+            key: const ValueKey('appearance-time'),
+            title: l10n.timestamp,
+            children: [
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.relative_timestamp,
+                value: relativeLabels[relative],
+                icon: NodeLaneIcons.of(context).history,
+                onOpen: (anchor) => select(
+                  anchor,
+                  title: l10n.relative_timestamp,
+                  current: relative,
+                  options: [
+                    for (var i = 0; i < relativeLabels.length; i++)
+                      SettingOption(i, relativeLabels[i]),
+                  ],
+                  apply: ref.read(relativeTimesTampsStateProvider.notifier).set,
+                ),
+              ),
+              NodeLaneRow(
+                openOnReveal: true,
+                title: l10n.date_format,
+                value: datePattern,
+                icon: NodeLaneIcons.of(context).calendar,
+                onOpen: (anchor) => select(
+                  anchor,
+                  title: l10n.date_format,
+                  current: datePattern,
+                  options: [
+                    for (final value in dateFormatsList)
+                      SettingOption(value, dateExample(value), subtitle: value),
+                  ],
+                  apply: ref.read(dateFormatStateProvider.notifier).set,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

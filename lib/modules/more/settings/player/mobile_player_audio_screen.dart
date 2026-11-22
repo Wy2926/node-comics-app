@@ -3,8 +3,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -35,15 +34,13 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
               title: l10n.audio_preferred_languages,
               value: languages.isEmpty ? l10n.default0 : languages,
               icon: NodeLaneIcons.of(context).translate,
-              onTap: () async {
-                final result = await showDialog<String>(
-                  context: context,
-                  builder: (_) => MobileSettingsTextDialog(
-                    title: l10n.audio_preferred_languages,
-                    initialValue: languages,
-                    helper: l10n.audio_preferred_languages_info,
-                    hint: 'ja, en',
-                  ),
+              onOpen: (anchor) async {
+                final result = await showSettingText(
+                  anchor,
+                  title: l10n.audio_preferred_languages,
+                  initialValue: languages,
+                  helper: l10n.audio_preferred_languages_info,
+                  hint: 'ja, en',
                 );
                 if (context.mounted &&
                     result != null &&
@@ -63,7 +60,7 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
               label: (value) => channels[value]!,
               options: [
                 for (final entry in channels.entries)
-                  MobileSettingOption(entry.key, entry.value),
+                  SettingOption(entry.key, entry.value),
               ],
               onChanged: ref.read(audioChannelStateProvider.notifier).set,
             ),

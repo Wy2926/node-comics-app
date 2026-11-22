@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -71,19 +71,19 @@ class _MobileNovelSessionSettingsState
               subtitle: _readerMode.isContinuous
                   ? l10n.reading_mode_vertical_continuous
                   : l10n.reading_mode_left_to_right,
-              onTap: () async {
-                final picked = await showMobileSettingsPicker<ReaderMode>(
-                  context,
+              onOpen: (anchor) async {
+                final picked = await showSettingChoice<ReaderMode>(
+                  anchor,
                   title: l10n.reading_mode,
                   current: _readerMode.isContinuous
                       ? ReaderMode.verticalContinuous
                       : ReaderMode.ltr,
                   options: [
-                    MobileSettingOption(
+                    SettingOption(
                       ReaderMode.verticalContinuous,
                       l10n.reading_mode_vertical_continuous,
                     ),
-                    MobileSettingOption(
+                    SettingOption(
                       ReaderMode.ltr,
                       l10n.reading_mode_left_to_right,
                     ),
@@ -103,17 +103,14 @@ class _MobileNovelSessionSettingsState
                 subtitle: effectivePage == PageMode.onePage
                     ? l10n.single_page
                     : l10n.double_page,
-                onTap: () async {
-                  final picked = await showMobileSettingsPicker<PageMode>(
-                    context,
+                onOpen: (anchor) async {
+                  final picked = await showSettingChoice<PageMode>(
+                    anchor,
                     title: l10n.page_mode,
                     current: effectivePage,
                     options: [
-                      MobileSettingOption(PageMode.onePage, l10n.single_page),
-                      MobileSettingOption(
-                        PageMode.doublePage,
-                        l10n.double_page,
-                      ),
+                      SettingOption(PageMode.onePage, l10n.single_page),
+                      SettingOption(PageMode.doublePage, l10n.double_page),
                     ],
                   );
                   if (!mounted || picked == null) return;
@@ -151,23 +148,15 @@ class _MobileNovelSessionSettingsState
                 if (enabled)
                   ValueListenableBuilder<double>(
                     valueListenable: widget.speed,
-                    builder: (context, value, _) => Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(l10n.speed),
-                          Text('${value.toStringAsFixed(1)}x'),
-                          Slider(
-                            min: 2,
-                            max: 30,
-                            divisions: 28,
-                            value: value.clamp(2, 30),
-                            onChanged: widget.onSpeedPreview,
-                            onChangeEnd: widget.onSpeedChanged,
-                          ),
-                        ],
-                      ),
+                    builder: (context, value, _) => NodeLaneSliderRow(
+                      title: l10n.speed,
+                      value: value.clamp(2, 30),
+                      min: 2,
+                      max: 30,
+                      divisions: 28,
+                      label: (v) => '${v.toStringAsFixed(1)}x',
+                      onPreview: widget.onSpeedPreview,
+                      onChanged: widget.onSpeedChanged,
                     ),
                   ),
               ],

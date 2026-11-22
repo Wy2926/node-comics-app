@@ -1,12 +1,14 @@
-// ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
+import 'package:mangayomi/modules/library/providers/file_scanner.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
+import 'package:mangayomi/repositories/db_write_queue.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
@@ -84,8 +86,16 @@ void main() {
       expect(await oldFile.readAsString(), 'upstream data');
       expect(File(p.join(dbDir.path, 'mangayomiDb.isar')).existsSync(), isTrue);
       final custom = p.join(root.path, 'chosen');
+      final books = p.join(custom, 'books');
       await current.writeTxn(() async {
-        await current.settings.put(Settings()..downloadLocation = custom);
+        await current.settings.put(
+          Settings(
+            downloadLocation: custom,
+            localFolders: [books],
+            downloadLocalFolderName: 'books',
+            askDownloadDestination: false,
+          ),
+        );
       });
       await current.close();
 
@@ -96,6 +106,28 @@ void main() {
         (await storage.getDirectory())!.path,
         p.join(custom, 'nodelane-comics'),
       );
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        localFoldersStateProvider,
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
+      final folders = subscription.read();
+      expect(folders.single.path, books);
+      expect((await getAllLocalFolders()).map((f) => f.name), [
+        'local',
+        'books',
+      ]);
+      final notifier = container.read(localFoldersStateProvider.notifier);
+      notifier.set(folders);
+      await dbWriteQueue.run(() {});
+      expect(reopened.settings.getSync(227)!.downloadLocalFolderName, 'books');
+      notifier.set([]);
+      await dbWriteQueue.run(() {});
+      final settings = reopened.settings.getSync(227)!;
+      expect(settings.downloadLocalFolderName, 'local');
+      expect(settings.askDownloadDestination, isFalse);
     },
   );
 }

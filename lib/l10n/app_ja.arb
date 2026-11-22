@@ -320,6 +320,8 @@
   "clean_database_desc": "これによりライブラリに追加されていないすべてのアイテムが削除されます！",
   "incognito_mode": "シークレットモード",
   "downloaded_only": "ダウンロード済みのみ",
+  "downloaded_only_hint": "本棚にはダウンロードしたコンテンツがある作品だけを表示します。",
+  "incognito_mode_hint": "読書位置と再生位置の保存を一時停止します。",
   "download_queue": "ダウンロードキュー",
   "categories": "カテゴリ",
   "statistics": "統計",
@@ -1937,14 +1939,6 @@
     }
   },
   "search_scope": "検索範囲",
-  "search_websites_action": "{count, plural, =1{1 つのウェブサイトを検索} other{{count} ウェブサイトを検索}}",
-  "@search_websites_action": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "search_find_website": "ウェブサイトを探す",
   "search_selected_websites": "{count, plural, =1{1 つの Web サイトが選択されました} other{{count} 個の Web サイトが選択されました}}",
   "@search_selected_websites": {

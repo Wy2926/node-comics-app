@@ -2,32 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/modules/feedback/support_request_page.dart';
 import 'package:mangayomi/modules/main_view/main_screen.dart';
 import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
 import 'package:mangayomi/utils/item_type_filters.dart';
-import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/settings_search.dart';
-import 'package:mangayomi/modules/more/widgets/downloaded_only_widget.dart';
-import 'package:mangayomi/modules/more/widgets/incognito_mode_widget.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/translation/translation_language_picker.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/more/settings/mobile_settings_layout.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/repositories/download_repository.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
-final morePendingDownloadsProvider = StreamProvider.autoDispose<int>(
-  (ref) => downloadRepository.watchPending().map((entries) => entries.length),
-);
-
-/// One root for account, shortcuts and preferences. Search filters local labels;
-/// it does not search account data or call a remote service.
+/// Settings search filters local labels and never sends account data.
 class MobileMoreScreen extends ConsumerStatefulWidget {
   const MobileMoreScreen({super.key});
   @override
@@ -36,159 +27,92 @@ class MobileMoreScreen extends ConsumerStatefulWidget {
 
 class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
   final _search = TextEditingController();
-  String _query = '';
   @override
   void dispose() {
     _search.dispose();
     super.dispose();
   }
 
-  void _clear() {
-    _search.clear();
-    setState(() => _query = '');
-  }
-
-  void _open(String route, {Object? extra}) {
-    FocusScope.of(context).unfocus();
-    context.push(route, extra: extra);
-  }
+  Widget _destination(
+    String title,
+    IconData icon,
+    String route, {
+    String? subtitle,
+    Key? key,
+    Object? extra,
+  }) => NodeLaneRow(
+    key: key,
+    title: title,
+    subtitle: subtitle,
+    icon: icon,
+    onTap: () {
+      FocusScope.of(context).unfocus();
+      context.push(route, extra: extra);
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n, icons = NodeLaneIcons.of(context);
     final hidden = ref.watch(hideItemsStateProvider);
-    final query = _query.trim().toLowerCase();
-    ({String terms, Widget child}) entry(
-      String title,
-      Widget child, [
-      String extra = '',
-    ]) => (terms: '$title $extra'.toLowerCase(), child: child);
-    ({String terms, Widget child}) link(
-      String title,
-      IconData icon,
-      String route, {
-      String keywords = '',
-    }) => entry(
-      title,
-      NodeLaneRow(title: title, icon: icon, onTap: () => _open(route)),
-      keywords,
-    );
-    final sections = [
-      (
-        title: l.settings_frequent,
-        entries: [
-          entry(l.download_queue, const _DownloadQueueLink()),
-          entry(
-            l.feedback_app,
-            NodeLaneRow(
-              title: l.feedback_app,
-              icon: icons.chat,
-              onTap: () => showSupportRequest(context, SupportRequestKind.app),
-            ),
-            l.feedback_app_hint,
-          ),
-          entry(l.downloaded_only, const DownloadedOnlyWidget(mobile: true)),
-          entry(l.incognito_mode, const IncognitoModeWidget(mobile: true)),
-          if (hidden.contains('/browser'))
-            entry(
-              '浏览器 Browser',
-              NodeLaneRow(
-                title: context.l10n.browser_title,
-                icon: icons.browser,
-                onTap: () => context.go('/browser'),
-              ),
-            ),
-        ],
-      ),
-      (
-        title: l.settings_reading_translation,
-        entries: [
-          entry(
-            l.settings_translation_language,
-            const TranslationLanguageRow(),
-            l.settings_translation_scope,
-          ),
-          if (!hidden.contains('/MangaLibrary'))
-            link(
-              l.settings_manga_reader,
-              icons.manga,
-              '/readerMode',
-              keywords: l.reader_subtitle,
-            ),
-          if (!hidden.contains('/NovelLibrary'))
-            link(l.settings_novel_reader, icons.novel, '/novelReaderMode'),
-          if (!hidden.contains('/AnimeLibrary'))
-            link(l.player, icons.anime, '/playerOverview'),
-        ],
-      ),
-      (
-        title: l.settings_app_preferences,
-        entries: [
-          link(
-            l.settings_appearance_interface,
-            icons.palette,
-            '/appearance',
-            keywords: l.appearance_subtitle,
-          ),
-          link(l.settings_security_privacy, icons.security, '/security'),
-          link(l.general, icons.settings, '/general'),
-        ],
-      ),
-      (
-        title: l.settings_data_management,
-        entries: [
-          link(
-            l.settings_storage_backup,
-            icons.storage,
-            '/dataAndStorage',
-            keywords: '${l.settings_translation_cache} ${l.backup_and_restore}',
-          ),
-          link(l.settings_downloads, icons.download, '/downloads'),
-          link(l.syncing, icons.cloud, '/sync'),
-          link(l.tracking, icons.tracking, '/track'),
-          link(
-            l.settings_source_preferences,
-            icons.webLink,
-            '/browseS',
-            keywords: l.browse_subtitle,
-          ),
-        ],
-      ),
-    ];
+    final query = _search.text.trim().toLowerCase();
+    bool matches(String title, [String keywords = '']) =>
+        '$title $keywords'.toLowerCase().contains(query);
+    final sections = <Widget>[];
+    for (final group in mobileSettingsCategories(context, hidden).entries) {
+      final children = [
+        if (group.key == l.settings_reading_translation &&
+            matches(
+              l.settings_translation_language,
+              l.settings_translation_scope,
+            ))
+          const TranslationLanguageRow(),
+        for (final item in group.value)
+          if (matches(item.title, item.keywords))
+            _destination(item.title, item.icon, item.route),
+      ];
+      if (children.isNotEmpty) {
+        sections.add(MobileSettingsGroup(title: group.key, children: children));
+      }
+    }
     final visibleShelves = visibleItemTypes(hidden);
     final tools = [
-      if (visibleShelves.isNotEmpty)
-        entry(
-          l.categories,
-          NodeLaneRow(
-            title: l.categories,
-            icon: icons.categories,
-            onTap: () => showCategoryManager(
-              context,
-              MainScreen.libraryForTools(context) ?? visibleShelves.first,
-            ),
+      if (hidden.contains('/browser') &&
+          matches(l.browser_title, '浏览器 Browser'))
+        NodeLaneRow(
+          title: l.browser_title,
+          icon: icons.browser,
+          onTap: () => context.go('/browser'),
+        ),
+      if (visibleShelves.isNotEmpty && matches(l.categories))
+        NodeLaneRow(
+          title: l.categories,
+          icon: icons.categories,
+          onTap: () => showCategoryManager(
+            context,
+            MainScreen.libraryForTools(context) ?? visibleShelves.first,
           ),
         ),
-      link(l.statistics, icons.statistics, '/statistics'),
-      link(l.calendar, icons.calendar, '/calendarScreen'),
+      if (matches(l.statistics))
+        _destination(l.statistics, icons.statistics, '/statistics'),
+      if (matches(l.calendar))
+        _destination(l.calendar, icons.calendar, '/calendarScreen'),
     ];
-    final filtered = sections
-        .map(
-          (section) => (
-            title: section.title,
-            children: section.entries
-                .where((e) => e.terms.contains(query))
-                .map((e) => e.child)
-                .toList(),
-          ),
-        )
-        .where((section) => section.children.isNotEmpty)
-        .toList();
-    final matchingTools = tools
-        .where((e) => e.terms.contains(query))
-        .map((e) => e.child)
-        .toList();
-    final showAbout = l.settings_about_help.toLowerCase().contains(query);
+    final toolsAndHelp = [
+      if (query.isEmpty) ...[
+        NodeLaneDisclosure(
+          title: l.settings_more_tools,
+          icon: icons.folderOutline,
+          child: Column(children: tools),
+        ),
+        const SizedBox(height: NodeLaneTokens.space24),
+      ] else if (tools.isNotEmpty)
+        MobileSettingsGroup(title: l.settings_more_tools, children: tools),
+      if (matches(l.settings_about_help))
+        NodeLaneGroupSurface(
+          children: [_destination(l.settings_about_help, icons.info, '/about')],
+        ),
+    ];
     final settingMatches = query.isEmpty
         ? <SettingsSearchEntry>[]
         : settingsSearchEntries(
@@ -196,16 +120,12 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
             hidden,
           ).where((entry) => entry.matches(query)).toList();
     final empty =
-        filtered.isEmpty &&
-        matchingTools.isEmpty &&
-        settingMatches.isEmpty &&
-        !showAbout;
+        sections.isEmpty && toolsAndHelp.isEmpty && settingMatches.isEmpty;
     final search = NodeLaneTextField.search(
       key: const ValueKey('more-settings-search'),
       controller: _search,
       hint: l.settings_search_hint,
-      onChanged: (v) => setState(() => _query = v),
-      onClear: _clear,
+      onChanged: (_) => setState(() {}),
       clearLabel: l.reset,
       onSubmitted: (_) => FocusScope.of(context).unfocus(),
     );
@@ -215,9 +135,12 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
         body: SafeArea(
           bottom: false,
           child: NodeLanePaneLayout(
+            splitWhen: settingsPanesFit,
             pane: (context) => ListView(
               key: const PageStorageKey('more-shortcuts'),
-              padding: NodeLaneTokens.pagePadding,
+              padding: NodeLaneTokens.pagePadding.add(
+                pageBottomInsets(context),
+              ),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               children: [
                 const MobileNodeLaneAccountSummary(),
@@ -225,10 +148,7 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                 search,
                 if (query.isEmpty) ...[
                   const SizedBox(height: NodeLaneTokens.space24),
-                  MobileSettingsGroup(
-                    title: filtered.first.title,
-                    children: filtered.first.children,
-                  ),
+                  ...toolsAndHelp,
                 ],
               ],
             ),
@@ -258,7 +178,7 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                           icon: icons.search,
                           title: l.settings_search_empty,
                           action: NodeLaneSecondaryButton(
-                            onPressed: _clear,
+                            onPressed: () => setState(_search.clear),
                             child: Text(l.search_clear),
                           ),
                         ),
@@ -276,47 +196,20 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                           MobileSettingsGroup(
                             children: [
                               for (final entry in settingMatches)
-                                NodeLaneRow(
+                                _destination(
+                                  entry.title,
+                                  entry.icon,
+                                  entry.location,
                                   key: ValueKey(
                                     'settings-search:${entry.title}:${entry.location}',
                                   ),
-                                  title: entry.title,
                                   subtitle: entry.breadcrumb,
-                                  icon: entry.icon,
-                                  onTap: () =>
-                                      _open(entry.location, extra: entry.extra),
+                                  extra: entry.extra,
                                 ),
                             ],
                           ),
-                        for (final section in filtered.skip(
-                          split && query.isEmpty ? 1 : 0,
-                        ))
-                          MobileSettingsGroup(
-                            title: section.title,
-                            children: section.children,
-                          ),
-                        if (query.isEmpty) ...[
-                          NodeLaneDisclosure(
-                            title: l.settings_more_tools,
-                            icon: icons.folderOutline,
-                            child: Column(children: matchingTools),
-                          ),
-                          const SizedBox(height: NodeLaneTokens.space24),
-                        ] else if (matchingTools.isNotEmpty)
-                          MobileSettingsGroup(
-                            title: l.settings_more_tools,
-                            children: matchingTools,
-                          ),
-                        if (showAbout)
-                          NodeLaneGroupSurface(
-                            children: [
-                              NodeLaneRow(
-                                title: l.settings_about_help,
-                                icon: icons.info,
-                                onTap: () => _open('/about'),
-                              ),
-                            ],
-                          ),
+                        ...sections,
+                        if (!split || query.isNotEmpty) ...toolsAndHelp,
                       ],
                     ),
                   ),
@@ -325,22 +218,6 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _DownloadQueueLink extends ConsumerWidget {
-  const _DownloadQueueLink();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final count = ref.watch(morePendingDownloadsProvider).asData?.value;
-    return NodeLaneRow(
-      title: context.l10n.download_queue,
-      value: count != null && count > 0
-          ? context.l10n.settings_pending_downloads(count)
-          : null,
-      icon: NodeLaneIcons.of(context).download,
-      onTap: () => context.push('/downloadQueue'),
     );
   }
 }

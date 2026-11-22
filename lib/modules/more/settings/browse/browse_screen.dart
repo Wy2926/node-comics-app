@@ -16,8 +16,13 @@ import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
-import 'mobile_browse_cleanup_dialog.dart';
+import 'mobile_browse_cleanup_panel.dart';
+
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+
 import 'mobile_browse_settings.dart';
+
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 class BrowseSScreen extends ConsumerWidget {
   const BrowseSScreen({super.key});
@@ -30,11 +35,11 @@ class BrowseSScreen extends ConsumerWidget {
         onRepositories: (type) =>
             context.push('/SourceRepositories', extra: type),
         onProxyServer: () => context.push('/extensionServer'),
-        onClearSources: () => _showClearAllSourcesDialog(context, context.l10n),
-        onCleanDatabase: () =>
-            _showCleanNonLibraryDialog(context, context.l10n, ref),
-        onClearLibrary: () => _showClearLibraryDialog(context, ref),
-        onClearLocalLibrary: () => _showClearLocalLibraryDialog(context, ref),
+        onClearSources: (a) => _showClearAllSourcesDialog(a, context.l10n),
+        onCleanDatabase: (a) =>
+            _showCleanNonLibraryDialog(a, context.l10n, ref),
+        onClearLibrary: (a) => _showClearLibraryDialog(a, ref),
+        onClearLocalLibrary: (a) => _showClearLocalLibraryDialog(a, ref),
       );
     }
     final onlyIncludePinnedSource = ref.watch(
@@ -302,9 +307,11 @@ void _showMobileCleanupDialog(
   bool chooseTypes = false,
   required Future<void> Function(List<ItemType>) onConfirm,
 }) {
-  showDialog<void>(
-    context: context,
-    builder: (_) => MobileBrowseCleanupDialog(
+  showNodeLaneBubble<bool>(
+    context,
+    label: title,
+    width: NodeLaneTokens.bubbleFormWidth,
+    child: MobileBrowseCleanupPanel(
       title: title,
       message: message,
       chooseTypes: chooseTypes,

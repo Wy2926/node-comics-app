@@ -15,8 +15,8 @@ class MobilePlayerAdvancedScreen extends StatefulWidget {
   });
   final bool enabled;
   // null means the user cancelled; false means permission or storage was unavailable.
-  final Future<bool?> Function(bool) onEnabledChanged;
-  final Future<bool?> Function() onRestore;
+  final Future<bool?> Function(BuildContext, bool) onEnabledChanged;
+  final Future<bool?> Function(BuildContext) onRestore;
   @override
   State<MobilePlayerAdvancedScreen> createState() =>
       _MobilePlayerAdvancedScreenState();
@@ -53,13 +53,16 @@ class _MobilePlayerAdvancedScreenState
         children: [
           MobileSettingsGroup(
             children: [
-              NodeLaneSwitchRow(
-                title: l10n.enable_mpv,
-                icon: NodeLaneIcons.of(context).code,
-                value: widget.enabled,
-                onChanged: _busy
-                    ? null
-                    : (value) => _run(() => widget.onEnabledChanged(value)),
+              Builder(
+                builder: (a) => NodeLaneSwitchRow(
+                  title: l10n.enable_mpv,
+                  icon: NodeLaneIcons.of(context).code,
+                  value: widget.enabled,
+                  onChanged: _busy
+                      ? null
+                      : (value) =>
+                            _run(() => widget.onEnabledChanged(a, value)),
+                ),
               ),
             ],
           ),
@@ -72,10 +75,14 @@ class _MobilePlayerAdvancedScreenState
                   children: [
                     Text(l10n.mpv_bundled_config_hint),
                     const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      onPressed: _busy ? null : () => _run(widget.onRestore),
-                      icon: Icon(NodeLaneIcons.of(context).reset),
-                      label: Text(l10n.mpv_restore_bundled),
+                    Builder(
+                      builder: (a) => OutlinedButton.icon(
+                        onPressed: _busy
+                            ? null
+                            : () => _run(() => widget.onRestore(a)),
+                        icon: Icon(NodeLaneIcons.of(context).reset),
+                        label: Text(l10n.mpv_restore_bundled),
+                      ),
                     ),
                   ],
                 ),

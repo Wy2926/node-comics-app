@@ -677,6 +677,14 @@ class AppLocalizationsUk extends AppLocalizations {
   String get downloaded_only => 'Лише завантажено';
 
   @override
+  String get downloaded_only_hint =>
+      'Показувати в бібліотеці лише твори із завантаженим вмістом.';
+
+  @override
+  String get incognito_mode_hint =>
+      'Призупинити збереження поступу читання та перегляду.';
+
+  @override
   String get download_queue => 'Черга завантаження';
 
   @override
@@ -4713,19 +4721,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get search_scope => 'Обсяг пошуку';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Пошук на $count сайта',
-      many: 'Пошук на $count сайтах',
-      few: 'Пошук на $count сайтах',
-      one: 'Пошук на $count сайті',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'Знайдіть веб-сайт';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/browse/widgets/source_tool_menu.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -18,56 +19,55 @@ class MobileSourceMenu extends StatelessWidget {
     required this.filtering,
     required this.onSelected,
   });
-  final bool canSave, local, filtering;
+  final bool canSave, local;
+  final bool Function() filtering;
   // Some plugins execute code to describe their filters. Ask only on opening.
   final bool Function() hasFilters;
-  final ValueChanged<SourceCatalogAction> onSelected;
+  final Future<void> Function(BuildContext, SourceCatalogAction) onSelected;
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n, icons = NodeLaneIcons.of(context);
-    PopupMenuItem<SourceCatalogAction> item(
-      SourceCatalogAction action,
-      String label,
-      IconData icon,
-    ) => nodeLaneSelectionMenuItem(
-      context,
-      value: action,
-      label: label,
-      icon: icon,
-    );
-    return NodeLaneMenuButton<SourceCatalogAction>(
+    return NodeLaneIconButton(
       icon: icons.more,
       tooltip: l.source_actions,
-      onSelected: onSelected,
-      itemBuilder: (_) => [
-        if (hasFilters())
-          item(
-            SourceCatalogAction.filter,
-            filtering ? '${l.filter} · ${l.source_filter_active}' : l.filter,
-            icons.adjustments,
-          ),
-        if (canSave)
-          item(
-            SourceCatalogAction.save,
-            l.source_save_search,
-            icons.bookmarkOutline,
-          ),
-        item(
-          SourceCatalogAction.saved,
-          l.source_saved_searches,
-          icons.bookmark,
-        ),
-        if (!local) ...[
-          const PopupMenuDivider(),
-          item(SourceCatalogAction.info, l.source_website_info, icons.info),
-          item(
-            SourceCatalogAction.settings,
-            l.sources_settings,
-            icons.settings,
-          ),
-        ],
-      ],
+      onPressed: () {
+        final available = hasFilters();
+        showSourceToolMenu<SourceCatalogAction>(
+          context,
+          title: l.source_actions,
+          onSelected: onSelected,
+          items: () => [
+            if (available)
+              (
+                SourceCatalogAction.filter,
+                filtering()
+                    ? '${l.filter} · ${l.source_filter_active}'
+                    : l.filter,
+                icons.adjustments,
+              ),
+            if (canSave)
+              (
+                SourceCatalogAction.save,
+                l.source_save_search,
+                icons.bookmarkOutline,
+              ),
+            (
+              SourceCatalogAction.saved,
+              l.source_saved_searches,
+              icons.bookmark,
+            ),
+            if (!local) ...[
+              (SourceCatalogAction.info, l.source_website_info, icons.info),
+              (
+                SourceCatalogAction.settings,
+                l.sources_settings,
+                icons.settings,
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -118,7 +118,11 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
               last: i == entries.length - 1,
               onTap: managing
                   ? null
-                  : () => Navigator.pop(context, entries[i].query),
+                  : () {
+                      if (ModalRoute.isCurrentOf(context) == true) {
+                        Navigator.pop(context, entries[i].query);
+                      }
+                    },
               trailing: managing
                   ? NodeLaneIconButton(
                       tooltip: context.l10n.remove,

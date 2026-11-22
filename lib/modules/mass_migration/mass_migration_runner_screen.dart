@@ -12,7 +12,7 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/mass_migration/widgets/mobile_mass_migration.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/mass_migration/models/mass_migration_models.dart';
 import 'package:mangayomi/modules/mass_migration/services/mass_migration_service.dart';
 import 'package:mangayomi/modules/mass_migration/widgets/mass_migration_widgets.dart';
@@ -847,7 +847,7 @@ class _MassMigrationRunnerScreenState
           item.searchResult.candidates.length == 1) {
         selected = item.searchResult.candidates.single;
       } else if (isMobile && !isTv) {
-        final option = await showMobileSettingsPicker<MManga?>(
+        final option = await showSettingChoice<MManga?>(
           context,
           title: context.l10n.mass_migration_choose_another_result,
           description: item.sourceItem.name,
@@ -855,7 +855,7 @@ class _MassMigrationRunnerScreenState
           searchable: true,
           options: [
             for (final candidate in item.searchResult.candidates)
-              MobileSettingOption<MManga?>(
+              SettingOption<MManga?>(
                 candidate,
                 candidate.name ?? context.l10n.mass_migration_unknown_title,
                 subtitle: [

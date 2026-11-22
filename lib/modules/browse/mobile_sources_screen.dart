@@ -6,6 +6,9 @@ import 'package:flutter/rendering.dart' show RenderSliverGrid;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/browse/mobile_repositories.dart';
+import 'package:mangayomi/modules/browse/extension/extension_detail.dart';
+import 'package:mangayomi/modules/browse/extension/widgets/create_extension.dart';
+import 'package:mangayomi/modules/browse/widgets/source_tool_menu.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -40,7 +43,6 @@ import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 enum _WebsiteAction { pin, latest, browser, settings, info }
@@ -62,12 +64,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   int _openIntent = 0;
   int? _anchor;
   double? _returnOffset;
-  final _levels = ValueNotifier<((Source, bool)?, int?)>((null, null));
-  (Source, bool)? get _site => _levels.value.$1;
-  int? get _book => _levels.value.$2;
-  LocalHistoryEntry? _siteEntry, _bookEntry;
+  final _levels = SourceBrowseHistory<(Source, bool)>();
+  (Source, bool)? get _site => _levels.value.site;
+  int? get _book => _levels.value.book;
   ModalRoute<dynamic>? _route;
-  bool _disposing = false;
   ItemType type = ItemType.manga;
   bool thirdParty = false, managing = false;
   final selected = <int>{};
@@ -80,7 +80,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   final keywords = <(ItemType, bool), String>{};
   bool _refreshing = false;
   bool _managementShowing = false;
-  bool? _filtersOpen;
+  bool _filterBubble = false;
   NodeLaneNoticeHandle? _notice;
   @override
   void initState() {
@@ -102,9 +102,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _disposing = true;
-    _bookEntry?.remove();
-    _siteEntry?.remove();
     _levels.dispose();
     _returnTiles.dispose();
     _scroll.dispose();
@@ -134,19 +131,37 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     _returnTiles.value = ranges;
   }
 
-  void _toggleFilters(bool open) {
+  Future<void> _directoryFilters(BuildContext anchor) async {
+    if (_filterBubble) return;
     FocusScope.of(context).unfocus();
-    setState(() => _filtersOpen = !open);
+    final key = (type, thirdParty);
+    _openIntent++;
+    setState(() => _filterBubble = true);
+    try {
+      await showNodeLaneBubble<void>(
+        anchor,
+        label: context.l10n.filter,
+        width: NodeLaneTokens.bubbleSettingsWidth,
+        child: SourceDirectoryFilterPanel(
+          directory: key,
+          keyword: query.text.trim().toLowerCase(),
+          initial: filtersByDirectory[key] ?? const {},
+          onChanged: (filters) {
+            if (mounted && (type, thirdParty) == key) {
+              setState(() => filtersByDirectory[key] = filters);
+            }
+          },
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _filterBubble = false);
+    }
   }
-
-  void _setFilters(DirectoryFilters filters) =>
-      setState(() => filtersByDirectory[(type, thirdParty)] = filters);
 
   void _switchDirectory(ItemType media, bool community) {
     FocusScope.of(context).unfocus();
     _openIntent++;
-    _bookEntry?.remove();
-    _siteEntry?.remove();
+    _levels.clear();
     _returnOffset = null;
     _returnTiles.value = const {};
     keywords[(type, thirdParty)] = query.text;
@@ -154,7 +169,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     setState(() {
       type = media;
       thirdParty = community;
-      _filtersOpen = null;
       managing = false;
       query.value = TextEditingValue(
         text: text,
@@ -269,45 +283,23 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     }
   }
 
-  LocalHistoryEntry _level(VoidCallback onRemove) {
-    final entry = LocalHistoryEntry(
-      onRemove: () {
-        if (!_disposing) onRemove();
-      },
-    );
-    _route!.addLocalHistoryEntry(entry);
-    return entry;
-  }
-
   void _open(Source source, {bool latest = false}) {
     _openIntent++;
     FocusScope.of(context).unfocus();
     sourceRepository.markLastUsed(source.itemType, source.id);
-    // A tablet may first open the website in a narrow window and widen it later.
-    final display = View.of(context).display;
-    final tablet =
-        context.isAndroidTablet ||
-        (Theme.of(context).platform == TargetPlatform.android &&
-            !isTv &&
-            sizeWantsNavRail(display.size / display.devicePixelRatio));
-    if (!tablet && _site == null) {
-      context.push('/mangaHome', extra: (source, latest));
-      return;
-    }
-    _bookEntry?.remove();
-    if (_siteEntry == null) {
+    if (_site == null) {
       _returnOffset = _scroll.hasClients ? _scroll.offset : null;
       _rememberReturnTiles();
-      _anchor = source.id;
-      _siteEntry = _level(() {
-        _openIntent++;
-        _restoreDirectoryOffset();
-        _levels.value = (null, null);
-        _siteEntry = null;
-        _anchor = null;
-      });
     }
-    _levels.value = ((source, latest), null);
+    _anchor = source.id;
+    _levels.openSite(
+      context,
+      (source, latest),
+      onClose: () {
+        _openIntent++;
+        _anchor = null;
+      },
+    );
   }
 
   void _openBook((Source, bool) site, int id) {
@@ -316,11 +308,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     }
     _openIntent++;
     FocusScope.of(context).unfocus();
-    _bookEntry ??= _level(() {
-      _levels.value = (_site, null);
-      _bookEntry = null;
-    });
-    _levels.value = (site, id);
+    _anchor = site.$1.id;
+    _levels.openBook(context, id);
   }
 
   void _restoreDirectoryOffset() {
@@ -330,36 +319,33 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   }
 
   void _settleDirectory(List<(String, List<Source>)> groups) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scroll.hasClients) return;
-      if (_site == null && _returnOffset != null) {
-        _restoreDirectoryOffset();
-        _returnOffset = null;
-        _returnTiles.value = const {};
-      } else if (_anchor case final id?) {
-        _anchor = null;
-        for (final (group, entries) in groups.indexed) {
-          final index = entries.$2.indexWhere((s) => s.id == id);
-          final grid = _grids[group].currentContext?.findRenderObject();
-          if (index < 0 || grid is! RenderSliverGrid) continue;
-          final layout = grid.gridDelegate.getLayout(grid.constraints);
-          final tile = layout.getGeometryForChildIndex(index);
-          final top =
-              grid.constraints.precedingScrollExtent + tile.scrollOffset;
-          final viewport = _scroll.position.viewportDimension;
-          if (top < _scroll.offset + grid.constraints.overlap ||
-              top + tile.mainAxisExtent > _scroll.offset + viewport) {
-            _scroll.jumpTo(
-              (top - (viewport - tile.mainAxisExtent) * .4).clamp(
-                0,
-                _scroll.position.maxScrollExtent,
-              ),
-            );
-          }
-          break;
+    if (!mounted || !_scroll.hasClients) return;
+    if (_site == null && _returnOffset != null) {
+      _restoreDirectoryOffset();
+      _returnOffset = null;
+      _returnTiles.value = const {};
+    } else if (_anchor case final id?) {
+      _anchor = null;
+      for (final (group, entries) in groups.indexed) {
+        final index = entries.$2.indexWhere((s) => s.id == id);
+        final grid = _grids[group].currentContext?.findRenderObject();
+        if (index < 0 || grid is! RenderSliverGrid) continue;
+        final layout = grid.gridDelegate.getLayout(grid.constraints);
+        final tile = layout.getGeometryForChildIndex(index);
+        final top = grid.constraints.precedingScrollExtent + tile.scrollOffset;
+        final viewport = _scroll.position.viewportDimension;
+        if (top < _scroll.offset + grid.constraints.overlap ||
+            top + tile.mainAxisExtent > _scroll.offset + viewport) {
+          _scroll.jumpTo(
+            (top - (viewport - tile.mainAxisExtent) * .4).clamp(
+              0,
+              _scroll.position.maxScrollExtent,
+            ),
+          );
         }
+        break;
       }
-    });
+    }
   }
 
   void _searchContents() {
@@ -484,54 +470,53 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   Future<void> _sourceActions(Source source, Offset point) async {
     _openIntent++;
     final l = context.l10n, icons = NodeLaneIcons.of(context);
-    final action = await showNodeLaneBubbleMenu<_WebsiteAction>(
+    await showSourceToolMenu<_WebsiteAction>(
       context,
-      label: source.name ?? l.source_actions,
+      title: source.name ?? l.source_actions,
       localPoint: (context.findRenderObject()! as RenderBox).globalToLocal(
         point,
       ),
-      items: [
-        for (final (value, label, icon) in [
-          (
-            _WebsiteAction.pin,
-            source.isPinned == true ? l.source_unpin : l.source_pin,
-            icons.pin,
-          ),
-          (_WebsiteAction.latest, l.source_latest_content, icons.latest),
-          if (isBrowserUrl(source.baseUrl))
-            (_WebsiteAction.browser, l.open_in_browser, icons.browser),
-          (_WebsiteAction.info, l.source_website_info, icons.info),
-          if (source.isAdded == true)
-            (_WebsiteAction.settings, l.sources_settings, icons.settings),
-        ])
-          nodeLaneSelectionMenuItem(
-            context,
-            value: value,
-            label: label,
-            icon: icon,
-          ),
+      items: () => [
+        (
+          _WebsiteAction.pin,
+          source.isPinned == true ? l.source_unpin : l.source_pin,
+          icons.pin,
+        ),
+        (_WebsiteAction.latest, l.source_latest_content, icons.latest),
+        if (isBrowserUrl(source.baseUrl))
+          (_WebsiteAction.browser, l.open_in_browser, icons.browser),
+        (_WebsiteAction.info, l.source_website_info, icons.info),
+        if (source.isAdded == true)
+          (_WebsiteAction.settings, l.sources_settings, icons.settings),
       ],
-    );
-    if (!mounted || action == null) return;
-    switch (action) {
-      case _WebsiteAction.info:
-        await showSourceWebsiteInfo(context, source);
-      case _WebsiteAction.pin:
-        await _pin(source);
-      case _WebsiteAction.latest:
-        if (source.isAdded == true && source.sourceCode?.isNotEmpty == true) {
-          _open(source, latest: true);
-        } else {
-          await _fetch(source, open: true, latest: true);
+      onSelected: (menu, action) async {
+        if (!mounted) return;
+        if (action != _WebsiteAction.info &&
+            action != _WebsiteAction.settings) {
+          Navigator.pop(menu);
         }
-      case _WebsiteAction.browser:
-        context.push(
-          '/mangawebview',
-          extra: {'url': source.baseUrl!, 'title': source.name ?? ''},
-        );
-      case _WebsiteAction.settings:
-        context.push('/extension_detail', extra: source);
-    }
+        switch (action) {
+          case _WebsiteAction.info:
+            await showSourceWebsiteInfo(menu, source);
+          case _WebsiteAction.pin:
+            await _pin(source);
+          case _WebsiteAction.latest:
+            if (source.isAdded == true &&
+                source.sourceCode?.isNotEmpty == true) {
+              _open(source, latest: true);
+            } else {
+              await _fetch(source, open: true, latest: true);
+            }
+          case _WebsiteAction.browser:
+            context.push(
+              '/mangawebview',
+              extra: {'url': source.baseUrl!, 'title': source.name ?? ''},
+            );
+          case _WebsiteAction.settings:
+            await showSourceSettings(menu, source);
+        }
+      },
+    );
   }
 
   Widget _card(Source source) {
@@ -595,9 +580,9 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
             },
       onDetails: selecting
           ? null
-          : () {
+          : (anchor) {
               _openIntent++;
-              showSourceWebsiteInfo(context, source);
+              showSourceWebsiteInfo(anchor, source);
             },
       onLongPress: selecting
           ? (onOpen == null ? null : (_) => onOpen())
@@ -605,58 +590,71 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     );
   }
 
-  Future<void> _manage(DirectoryAction action) async {
+  Future<void> _repositories(BuildContext anchor) {
+    _openIntent++;
+    return NodeLaneBubbleFlow.open<void>(
+      anchor,
+      title: context.l10n.source_manage_repositories,
+      child: MobileRepositoryManager(itemType: type),
+    );
+  }
+
+  Future<void> _manage(BuildContext menu, DirectoryAction action) async {
     if (_managementShowing || selecting || _bulkBusy) return;
     _openIntent++;
     FocusScope.of(context).unfocus();
     switch (action) {
-      case DirectoryAction.repositories || DirectoryAction.request:
+      case DirectoryAction.repositories:
+        await _repositories(menu);
+      case DirectoryAction.create:
+        await NodeLaneBubbleFlow.push<void>(menu, const CreateExtension());
+      case DirectoryAction.request:
+        Navigator.pop(menu);
         _managementShowing = true;
         try {
           await pushBrowsePage<void>(
             context,
-            action == DirectoryAction.repositories
-                ? MobileRepositoryManager(itemType: type)
-                : SupportRequestPage(
-                    kind: SupportRequestKind.website,
-                    editingSession: _requestEdits,
-                  ),
+            SupportRequestPage(
+              kind: SupportRequestKind.website,
+              editingSession: _requestEdits,
+            ),
           );
         } finally {
           _managementShowing = false;
         }
       case DirectoryAction.search:
+        Navigator.pop(menu);
         _searchContents();
       case DirectoryAction.local:
+        Navigator.pop(menu);
         _open(Source(name: 'local', lang: '', itemType: type));
       case DirectoryAction.bulk:
+        Navigator.pop(menu);
         _startSelection();
       case DirectoryAction.update:
+        Navigator.pop(menu);
         await _updateInstalled();
-      case DirectoryAction.create:
-        context.push('/createExtension');
     }
   }
 
   Widget _emptyState({
-    required VoidCallback onRepositories,
     required bool searching,
     required bool filtered,
     required bool hasSources,
   }) {
     final icons = NodeLaneIcons.of(context), l10n = context.l10n;
     final noMatch = searching || filtered || hasSources;
-    final (String, VoidCallback)? action;
+    final (String, ValueChanged<BuildContext>)? action;
     if (searching) {
-      action = (l10n.source_global_search, _searchContents);
+      action = (l10n.source_global_search, (_) => _searchContents());
     } else if (noMatch) {
       action = null;
     } else if (thirdParty) {
-      action = (l10n.source_manage_repositories, onRepositories);
+      action = (l10n.source_manage_repositories, _repositories);
     } else {
       action = (
         l10n.source_view_third_party,
-        () => _switchDirectory(type, true),
+        (_) => _switchDirectory(type, true),
       );
     }
     return Center(
@@ -665,12 +663,15 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
         title: noMatch
             ? l10n.source_no_matching_websites
             : l10n.source_no_websites,
-        action: action == null
-            ? null
-            : NodeLaneSecondaryButton(
-                onPressed: action.$2,
-                child: Text(action.$1),
-              ),
+        action: switch (action) {
+          (final label, final run) => Builder(
+            builder: (anchor) => NodeLaneSecondaryButton(
+              onPressed: () => run(anchor),
+              child: Text(label),
+            ),
+          ),
+          null => null,
+        },
       ),
     );
   }
@@ -701,10 +702,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
 
   Widget _header(
     List<ItemType> types,
-    DirectoryFilters filters,
-    List<Source> catalog, {
+    DirectoryFilters filters, {
     required int? count,
-    required bool open,
   }) {
     final l10n = context.l10n;
     final media = LibraryMediaButton(
@@ -739,76 +738,63 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
       color: NodeLaneTokens.of(context).canvas,
       child: Padding(
         padding: NodeLaneTokens.headerPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            NodeLaneToolbarPair(
-              gap: NodeLaneTokens.space12,
-              first: navigation,
-              second: Row(
-                children: [
-                  Expanded(
-                    child: NodeLaneTextField.search(
-                      controller: query,
-                      hint: l10n.source_name_or_title,
-                      clearLabel: l10n.search_clear,
-                      onSubmitted: (_) => _searchContents(),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                  const SizedBox(width: NodeLaneTokens.space8),
-                  Tooltip(
-                    message: l10n.filter,
-                    child: Semantics(
-                      liveRegion: true,
-                      label: count == null
-                          ? l10n.filter
-                          : '${l10n.filter}, ${l10n.search_result_count(count)}',
-                      expanded: open,
-                      child: TextButton.icon(
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size.square(
-                            NodeLaneTokens.minTapTarget,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: NodeLaneTokens.space4,
-                          ),
-                          foregroundColor: open || filters.isNotEmpty
-                              ? NodeLaneTokens.of(context).accent
-                              : NodeLaneTokens.of(context).ink,
-                        ),
-                        icon: Icon(NodeLaneIcons.of(context).adjustments),
-                        label: ExcludeSemantics(
-                          child: Text(count?.toString() ?? '…'),
-                        ),
-                        onPressed: () => _toggleFilters(open),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: NodeLaneTokens.space4),
-                  SourceDirectoryMenu(
-                    type: type,
-                    onOpened: () => _openIntent++,
-                    onSelected: _manage,
-                  ),
-                ],
-              ),
-            ),
-            NodeLaneMotion.disclosure(
-              context,
-              open,
-              Padding(
-                padding: const EdgeInsets.only(top: NodeLaneTokens.space12),
-                child: SourceDirectoryFilterPanel(
-                  key: ValueKey((type, thirdParty)),
-                  catalog: catalog,
-                  type: type,
-                  filters: filters,
-                  onChanged: _setFilters,
+        child: NodeLaneToolbarPair(
+          gap: NodeLaneTokens.space12,
+          first: navigation,
+          second: Row(
+            children: [
+              Expanded(
+                child: NodeLaneTextField.search(
+                  controller: query,
+                  hint: l10n.source_name_or_title,
+                  clearLabel: l10n.search_clear,
+                  onSubmitted: (_) => _searchContents(),
+                  onChanged: (_) => setState(() {}),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: NodeLaneTokens.space8),
+              Builder(
+                builder: (anchor) => Tooltip(
+                  message: l10n.filter,
+                  child: Semantics(
+                    liveRegion: true,
+                    label: count == null
+                        ? l10n.filter
+                        : '${l10n.filter}, ${l10n.search_result_count(count)}',
+                    expanded: _filterBubble,
+                    value: filters.isEmpty ? null : filters.summary(l10n, type),
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size.square(
+                          NodeLaneTokens.minTapTarget,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: NodeLaneTokens.space4,
+                        ),
+                        foregroundColor: _filterBubble || filters.isNotEmpty
+                            ? NodeLaneTokens.of(context).accent
+                            : NodeLaneTokens.of(context).ink,
+                      ),
+                      icon: Badge(
+                        isLabelVisible: filters.isNotEmpty,
+                        child: Icon(NodeLaneIcons.of(context).adjustments),
+                      ),
+                      label: ExcludeSemantics(
+                        child: Text(count?.toString() ?? '…'),
+                      ),
+                      onPressed: () => _directoryFilters(anchor),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: NodeLaneTokens.space4),
+              SourceDirectoryMenu(
+                type: type,
+                onOpened: () => _openIntent++,
+                onSelected: _manage,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -819,65 +805,13 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     final minWidth =
         NodeLaneTokens.sourceCardMinWidth *
         math.max(1, MediaQuery.textScalerOf(context).scale(16) / 16);
-    final columns = context.isAndroidTablet
-        ? math.max(1, ((available + gap) / (minWidth + gap)).floor())
-        : 1;
+    final columns = ((available + gap) / (minWidth + gap)).floor().clamp(1, 2);
     final width = (available - gap * (columns - 1)) / columns;
     return SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: columns,
       mainAxisSpacing: gap,
       crossAxisSpacing: gap,
       mainAxisExtent: SourceWebsiteCard.gridExtent(context, width),
-    );
-  }
-
-  Widget _activeFilters(DirectoryFilters filters) {
-    final l10n = context.l10n, t = NodeLaneTokens.of(context);
-    final active = [
-      for (final entry in filters.entries)
-        if (entry.value.length == 1)
-          entry.key.options(l10n, type, entry.value)[entry.value.first]!
-        else
-          '${entry.key.label(l10n)} (${entry.value.length})',
-    ].join(' · ');
-    return PinnedHeaderSliver(
-      child: Material(
-        color: t.canvas,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: NodeLaneTokens.gutter,
-          ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: NodeLaneTokens.buttonHeight,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: NodeLaneTokens.space8,
-                      ),
-                      child: Text(
-                        active,
-                        style: t.caption,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => _setFilters(const {}),
-                  child: Text(l10n.action_clear),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -979,11 +913,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     return NodeLaneSurface(
       child: SafeArea(
         bottom: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final open =
-                !selecting &&
-                (_filtersOpen ??= context.tabletPanesFit(constraints.maxWidth));
+        child: Builder(
+          builder: (context) {
             final directory = Scaffold(
               bottomNavigationBar: selecting
                   ? NodeLaneNoticeAvoidance(child: _selectionBar(all))
@@ -1028,18 +959,14 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
                       slivers: [
-                        if (!selecting) ...[
+                        if (!selecting)
                           SliverFloatingHeader(
                             child: _header(
                               types,
                               filters,
-                              catalog,
-                              open: open,
                               count: waitingForDirectory ? null : all.length,
                             ),
                           ),
-                          if (filters.isNotEmpty) _activeFilters(filters),
-                        ],
                         if (all.isEmpty)
                           SliverFillRemaining(
                             hasScrollBody: false,
@@ -1050,8 +977,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                               child: waitingForDirectory
                                   ? const NodeLaneEmptyState.loading()
                                   : _emptyState(
-                                      onRepositories: () =>
-                                          _manage(DirectoryAction.repositories),
                                       searching: keyword.isNotEmpty,
                                       filtered: filters.isNotEmpty,
                                       hasSources: catalog.isNotEmpty,
@@ -1081,10 +1006,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                                     : null,
                                 onAction: groupIndex == 0 && !selecting
                                     ? thirdParty
-                                          ? () => _manage(
-                                              DirectoryAction.repositories,
-                                            )
-                                          : () => setState(
+                                          ? _repositories
+                                          : (_) => setState(
                                               () => managing = !managing,
                                             )
                                     : null,
@@ -1127,20 +1050,19 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
               builder: (paneContext, levels, child) {
                 // Local history changes canPop; subscribe here, below the directory.
                 _route = ModalRoute.of(paneContext);
-                final (site, book) = levels;
+                final (:site, :book, :visit) = levels;
                 return PopScope(
-                  canPop: !selecting && !_bulkBusy && (site != null || !open),
+                  canPop: !selecting && !_bulkBusy,
                   onPopInvokedWithResult: (didPop, _) {
                     if (didPop || _bulkBusy || site != null) return;
                     if (selecting) {
                       _finishSelection();
-                    } else if (open) {
-                      _toggleFilters(true);
                     }
                   },
                   child: IgnorePointer(
                     ignoring: _bulkBusy,
                     child: SourceBrowsePanes(
+                      visit: visit,
                       directory: CurrentWebsite(id: site?.$1.id, child: child!),
                       onDirectorySettled: () => _settleDirectory(groups),
                       website: site == null

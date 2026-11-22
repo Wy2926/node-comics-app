@@ -674,6 +674,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get downloaded_only => 'Chỉ được tải xuống';
 
   @override
+  String get downloaded_only_hint =>
+      'Chỉ hiển thị trong thư viện những tác phẩm có nội dung đã tải xuống.';
+
+  @override
+  String get incognito_mode_hint => 'Tạm dừng lưu tiến độ đọc và phát.';
+
+  @override
   String get download_queue => 'Hàng đợi tải xuống';
 
   @override
@@ -4689,17 +4696,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get search_scope => 'Phạm vi tìm kiếm';
-
-  @override
-  String search_websites_action(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Tìm kiếm $count website',
-      one: 'Tìm kiếm 1 trang web',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get search_find_website => 'Tìm một trang web';

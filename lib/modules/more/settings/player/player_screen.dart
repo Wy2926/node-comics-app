@@ -4,7 +4,7 @@ import 'package:mangayomi/modules/more/settings/player/providers/player_state_pr
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
-import 'package:numberpicker/numberpicker.dart';
+import 'package:mangayomi/modules/widgets/nodelane_number_bubble.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -169,74 +169,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
             ),
-            ListTile(
-              onTap: () {
-                int currentIntValue = defaultSkipIntroLength;
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text(context.l10n.default_skip_intro_length),
-                      content: StatefulBuilder(
-                        builder: (context, setState) => SizedBox(
-                          height: 200,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              NumberPicker(
-                                value: currentIntValue,
-                                minValue: 1,
-                                maxValue: 255,
-                                step: 1,
-                                haptics: true,
-                                textMapper: (numberText) => "${numberText}s",
-                                onChanged: (value) =>
-                                    setState(() => currentIntValue = value),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      actions: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () async {
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                context.l10n.cancel,
-                                style: TextStyle(color: context.primaryColor),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                ref
-                                    .read(
-                                      defaultSkipIntroLengthStateProvider
-                                          .notifier,
-                                    )
-                                    .set(currentIntValue);
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                context.l10n.ok,
-                                style: TextStyle(color: context.primaryColor),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              title: Text(context.l10n.default_skip_intro_length),
-              subtitle: Text(
-                "${defaultSkipIntroLength}s",
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
+            NodeLaneNumberRow(
+              title: context.l10n.default_skip_intro_length,
+              value: defaultSkipIntroLength,
+              min: 1,
+              max: 255,
+              label: (v) => '${v}s',
+              onChanged: ref
+                  .read(defaultSkipIntroLengthStateProvider.notifier)
+                  .set,
             ),
             ListTile(
               onTap: () {
