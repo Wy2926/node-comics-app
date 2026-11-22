@@ -175,17 +175,9 @@ class _BrowserLibraryPanelState extends State<BrowserLibraryPanel> {
                         BrowserCollection.history => icons.history,
                         BrowserCollection.reading => icons.library,
                       },
-                      title: context.l10n.browser_library_empty,
-                      message: query.text.isNotEmpty
-                          ? context.l10n.search_empty_hint
-                          : switch (collection) {
-                              BrowserCollection.bookmarks =>
-                                context.l10n.browser_bookmarks_hint,
-                              BrowserCollection.history =>
-                                context.l10n.browser_history_hint,
-                              BrowserCollection.reading =>
-                                context.l10n.browser_continue_hint,
-                            },
+                      title: query.text.isNotEmpty
+                          ? context.l10n.search_no_results
+                          : context.l10n.browser_library_empty,
                     ),
             )
           else

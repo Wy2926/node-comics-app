@@ -31,7 +31,7 @@ Future<LibrarySourceGroup?> showMobileLibrarySourcePicker(
   BuildContext context, {
   required List<LibrarySourceGroup> groups,
   required String title,
-  required String? description,
+  String? description,
   required String emptyMessage,
 }) async {
   final picked = await showMobileSettingsPicker<LibrarySourceGroup?>(

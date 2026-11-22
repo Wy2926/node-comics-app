@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -18,60 +20,65 @@ Future<void> showComicReaderSettings({
   required BuildContext context,
   required int bookId,
   required ValueNotifier<bool> autoScroll,
-}) async {
+}) {
   final translation = ReaderTranslationHost.controllerOf(context);
   autoScroll.value = false;
-  await showNodeLaneCatalogSheet<void>(
+  return showNodeLaneBubble<void>(
     context,
-    ComicReaderSettingsSheet(
-      onTranslation: translation == null
-          ? null
-          : () => showTranslationControls(context, translation),
-      bookId: bookId,
-      autoScroll: autoScroll,
+    label: context.l10n.comic_reading,
+    width: NodeLaneTokens.bubbleSettingsWidth,
+    child: NodeLaneBubbleFlow(
+      home: ComicReaderSettingsPanel(
+        onTranslation: translation == null
+            ? null
+            : (anchor) => showTranslationControls(anchor, translation),
+        bookId: bookId,
+        autoScroll: autoScroll,
+      ),
     ),
   );
 }
 
-class ComicReaderSettingsSheet extends StatelessWidget {
-  const ComicReaderSettingsSheet({
+class ComicReaderSettingsPanel extends StatelessWidget {
+  const ComicReaderSettingsPanel({
     super.key,
     required this.bookId,
     this.onTranslation,
     required this.autoScroll,
   });
   final int bookId;
-  final VoidCallback? onTranslation;
+  final ValueChanged<BuildContext>? onTranslation;
   final ValueNotifier<bool> autoScroll;
 
   @override
-  Widget build(BuildContext context) => NodeLaneCatalogSheet(
+  Widget build(BuildContext context) => NodeLaneBubblePanel(
     title: context.l10n.comic_reading,
-    subtitle: context.l10n.comic_book_scope,
-    heightFactor: NodeLaneTokens.readerSheetFraction,
-    child: SingleChildScrollView(
-      padding: NodeLaneTokens.pagePadding,
-      child: ValueListenableBuilder<bool>(
-        valueListenable: autoScroll,
-        builder: (context, scrolling, _) => ComicReaderSettingsContent(
-          bookId: bookId,
-          onTranslation: onTranslation,
-          onDefaults: () => showNodeLaneCatalogSheet<void>(
-            context,
-            NodeLaneCatalogSheet(
-              title: context.l10n.comic_defaults_title,
-              heightFactor: NodeLaneTokens.readerSheetFraction,
-              child: const SingleChildScrollView(
-                padding: NodeLaneTokens.pagePadding,
-                child: ComicReaderSettingsContent(),
+    child: NodeLaneReaderScope(
+      child: SingleChildScrollView(
+        padding: NodeLaneTokens.pagePadding,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: autoScroll,
+          builder: (context, scrolling, _) => ComicReaderSettingsContent(
+            bookId: bookId,
+            onTranslation: onTranslation,
+            onDefaults: () => NodeLaneBubbleFlow.push<void>(
+              context,
+              MobileBrowsePage(
+                title: context.l10n.comic_defaults_title,
+                body: const NodeLaneReaderScope(
+                  child: SingleChildScrollView(
+                    padding: NodeLaneTokens.pagePadding,
+                    child: ComicReaderSettingsContent(),
+                  ),
+                ),
               ),
             ),
+            scrolling: scrolling,
+            onAutoScroll: (value) {
+              autoScroll.value = value;
+              Navigator.pop(context);
+            },
           ),
-          scrolling: scrolling,
-          onAutoScroll: (value) {
-            autoScroll.value = value;
-            Navigator.pop(context);
-          },
         ),
       ),
     ),
@@ -90,7 +97,8 @@ class ComicReaderSettingsContent extends ConsumerWidget {
     this.onAutoScroll,
   });
   final int? bookId;
-  final VoidCallback? onDefaults, onTranslation;
+  final VoidCallback? onDefaults;
+  final ValueChanged<BuildContext>? onTranslation;
   final bool scrolling;
   final ValueChanged<bool>? onAutoScroll;
 
@@ -127,7 +135,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
       required T value,
       required Map<T, String> labels,
       required ValueChanged<T> onChanged,
-      Map<T, String>? hints,
       Map<T, IconData>? optionIcons,
       Widget Function(T)? preview,
     }) => MobileSettingsChoice<T>(
@@ -140,7 +147,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
           MobileSettingOption(
             entry.key,
             entry.value,
-            subtitle: hints?[entry.key],
             icon: optionIcons?[entry.key],
             leading: preview?.call(entry.key),
           ),
@@ -151,11 +157,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (bookId == null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
-            child: Text(l.comic_defaults_hint, style: t.readerSecondary),
-          ),
         MobileSettingsGroup(
           title: bookId == null ? l.default_reading_mode : l.reading_mode,
           children: [
@@ -227,7 +228,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                     ComicPageLayout.single: icons.singlePage,
                     ComicPageLayout.double: icons.horizontalPages,
                   },
-                  hints: {ComicPageLayout.automatic: l.comic_layout_hint},
                   onChanged: (layout) => bookId == null
                       ? defaults((v) => v.copyWith(layout: layout))
                       : book((v) => v.copyWith(layout: layout)),
@@ -277,7 +277,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                   title: scrolling
                       ? l.comic_scroll_pause
                       : l.comic_scroll_start,
-                  subtitle: l.comic_scroll_hint,
                   icon: scrolling ? icons.pause : icons.play,
                   onTap: () => onAutoScroll?.call(!scrolling),
                 ),
@@ -288,7 +287,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
               NodeLaneDisclosure(
                 title: l.comic_image_title,
                 icon: icons.adjustments,
-                subtitle: l.comic_image_hint,
                 child: Column(
                   children: [
                     NodeLaneSwitchRow(
@@ -313,7 +311,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
                             ComicWidePage.split: icons.horizontalPages,
                             ComicWidePage.rotate: icons.rotate,
                           },
-                          hints: {ComicWidePage.split: l.comic_wide_hint},
                           onChanged: (widePage) =>
                               book((v) => v.copyWith(widePage: widePage)),
                         ),
@@ -374,9 +371,8 @@ class ComicReaderSettingsContent extends ConsumerWidget {
               if (onTranslation != null)
                 NodeLaneRow(
                   title: context.l10n.translation_title,
-                  subtitle: context.l10n.translation_settings_hint,
                   icon: icons.translate,
-                  onTap: onTranslation,
+                  onTap: () => onTranslation!(context),
                 ),
               NodeLaneRow(
                 title: l.comic_defaults_title,
@@ -392,10 +388,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
             ],
           ),
         ] else ...[
-          Padding(
-            padding: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
-            child: Text(l.comic_habits_hint, style: t.readerSecondary),
-          ),
           MobileSettingsGroup(
             title: l.theme,
             children: [
@@ -444,7 +436,6 @@ class ComicReaderSettingsContent extends ConsumerWidget {
               ),
               NodeLaneSwitchRow(
                 title: l.comic_tap,
-                subtitle: l.comic_tap_hint,
                 icon: icons.navigation,
                 value: data.habits.tapToTurn,
                 onChanged: (tapToTurn) =>

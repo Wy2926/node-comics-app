@@ -266,11 +266,6 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
                 l10n.android_proxy_server,
                 style: TextStyle(fontSize: 13, color: context.primaryColor),
               ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.m_extension_server_description,
-                style: TextStyle(color: context.secondaryColor),
-              ),
               const SizedBox(height: 12),
               ExtensionServerStatusTile(
                 label: l10n.android_proxy_server,
@@ -325,11 +320,6 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
                         fontSize: 13,
                         color: context.primaryColor,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.m_extension_server_description,
-                      style: TextStyle(color: context.secondaryColor),
                     ),
                     const SizedBox(height: 12),
                     ExtensionServerStatusTile(

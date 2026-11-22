@@ -35,7 +35,6 @@ class TranslationSettingsState extends ConsumerState<TranslationSettings> {
                   ? service.accountName
                   : context.l10n.nodelane_sign_in,
             ),
-            subtitle: Text(context.l10n.translation_system_sign_in),
             trailing: TextButton(
               onPressed: service.busy
                   ? null
@@ -67,7 +66,6 @@ class TranslationSettingsState extends ConsumerState<TranslationSettings> {
           ),
           ListTile(
             title: Text(context.l10n.translation_clear_cache),
-            subtitle: Text(context.l10n.translation_cache_hint),
             leading: const Icon(Icons.cleaning_services_outlined),
             onTap: service.busy ? null : service.clearResults,
           ),

@@ -53,7 +53,6 @@ class MobileDownloadsScreen extends ConsumerWidget {
                   ),
                   NodeLaneSwitchRow(
                     title: l10n.allow_concurrent_downloads,
-                    subtitle: l10n.allow_concurrent_downloads_subtitle,
                     icon: NodeLaneIcons.of(context).download,
                     value: concurrent,
                     onChanged: ref

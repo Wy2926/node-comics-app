@@ -87,7 +87,7 @@ void main() {
 
     expect(find.text('Reset'), findsNothing);
     expect(find.text('Hide'), findsNothing);
-    expect(find.textContaining('toggle it off and on'), findsOneWidget);
+    expect(find.textContaining('RSS'), findsOneWidget);
   });
 
   testWidgets('and still offers them where there is a pointer', (tester) async {

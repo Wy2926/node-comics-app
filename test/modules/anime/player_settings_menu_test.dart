@@ -7,32 +7,31 @@ import 'package:mangayomi/modules/anime/providers/state_provider.dart';
 import 'package:mangayomi/modules/anime/utils/video_prefs.dart';
 import 'package:mangayomi/modules/anime/widgets/audio_section_widget.dart';
 import 'package:mangayomi/modules/anime/widgets/player_settings_sections.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_menu.dart';
 import 'package:media_kit/media_kit.dart';
-
-void _done(BuildContext context) {
-  final scope = SettingsDrilldownScope.of(context)!;
-  scope.isDirectShortcut ? scope.close() : scope.goHome();
-}
 
 Widget _app({
   required List<SettingsEntry> entries,
   int initialIndex = -1,
   VoidCallback? onClosed,
+  bool desktop = false,
 }) => MaterialApp(
   theme: ThemeData(platform: TargetPlatform.iOS),
   locale: const Locale('en'),
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
-    body: Builder(
-      builder: (context) => Center(
-        child: TextButton(
+    body: Align(
+      alignment: Alignment.bottomRight,
+      child: Builder(
+        builder: (context) => TextButton(
           onPressed: () async {
-            await showUnifiedPlayerSettings<void>(
+            await showPlayerSettingsMenu(
               context,
               title: 'Player settings',
               entries: entries,
+              mobile: !desktop,
               initialIndex: initialIndex,
             );
             onClosed?.call();
@@ -56,6 +55,59 @@ Future<void> _open(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets(
+    'desktop choices return home; a direct shortcut closes just the menu',
+    (tester) async {
+      var writes = 0, actions = 0, closed = 0;
+      final entries = [
+        SettingsEntry(
+          label: 'Speed',
+          icon: Icons.speed,
+          contentBuilder: (section) => SettingsOptionRow(
+            label: '1.5x',
+            selected: false,
+            onTap: () {
+              writes++;
+              SettingsDrilldownScope.finishChoice(section);
+            },
+          ),
+        ),
+        SettingsEntry(
+          label: 'Share',
+          icon: Icons.share,
+          onTap: (menu) {
+            actions++;
+            SettingsDrilldownScope.of(menu)!.close();
+          },
+        ),
+      ];
+      for (final index in [1, 0]) {
+        await tester.pumpWidget(
+          _app(
+            entries: entries,
+            initialIndex: index,
+            desktop: true,
+            onClosed: () => closed++,
+          ),
+        );
+        await _open(tester);
+        if (index == 1) {
+          await tester.tap(find.text('Speed'));
+          await tester.pumpAndSettle();
+        }
+        await tester.tap(find.text('1.5x'));
+        await tester.pumpAndSettle();
+        if (index == 1) {
+          expect(closed, 0);
+          await tester.tap(find.text('Share'));
+          await tester.pumpAndSettle();
+        }
+        expect(find.text('Open').hitTestable(), findsOneWidget);
+      }
+      expect((writes, actions, closed), (2, 1, 2));
+    },
+  );
+
   testWidgets('selection returns home with its scroll and live value intact', (
     tester,
   ) async {
@@ -87,7 +139,7 @@ void main() {
                 writes.add(value);
                 speed.value = value;
               },
-              onDone: () => _done(context),
+              onDone: () => SettingsDrilldownScope.finishChoice(context),
             ),
           ),
         ],
@@ -142,7 +194,7 @@ void main() {
           contentBuilder: (context) => SpeedSectionWidget(
             playbackSpeed: speed,
             onSelect: (_) => selections++,
-            onDone: () => _done(context),
+            onDone: () => SettingsDrilldownScope.finishChoice(context),
           ),
         ),
         SettingsEntry(
@@ -228,7 +280,7 @@ void main() {
                     isTrackSelected: (candidate, current) =>
                         candidate == current,
                     onSelect: (value) => selected = value,
-                    onDone: () => _done(context),
+                    onDone: () => SettingsDrilldownScope.finishChoice(context),
                   ),
                 ],
               ),

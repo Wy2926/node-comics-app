@@ -111,7 +111,7 @@ void main() {
                       backgroundColor: canvas.color(context),
                       widthFactor: profile.widthFactor,
                       gap: profile.gap ? 8 : 0,
-                      onLongPressData: (_) {},
+                      onLongPressData: (_, _) {},
                       onFailedToLoadImage: (_, _) {},
                     ),
                   ),

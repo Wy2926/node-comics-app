@@ -22,10 +22,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser_continue => 'متابعة القراءة';
 
   @override
-  String get browser_continue_hint =>
-      'يُحفظ موضعك في الفصل أثناء القراءة دون الحاجة إلى إضافة إشارة مرجعية.';
-
-  @override
   String get browser_insert_suggestion => 'إدراج اقتراح البحث';
 
   @override
@@ -70,10 +66,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get feedback_app_hint =>
       'هل لديك مشكلة أو اقتراح؟ أخبرنا دون الحاجة إلى تسجيل الدخول.';
-
-  @override
-  String get feedback_source_hint =>
-      'ما الموقع الذي تريد دعمه؟ لا يلزم تسجيل الدخول.';
 
   @override
   String get feedback_site_name => 'اسم الموقع';
@@ -122,9 +114,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser_search_hint => 'ابحث أو أدخل عنوان URL';
 
   @override
-  String get browser_start_hint => 'صفحة جديدة لاكتشافات جديدة.';
-
-  @override
   String get browser_search_engine => 'محرك البحث';
 
   @override
@@ -146,14 +135,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get browser_library_empty => 'لا توجد عناصر بعد';
-
-  @override
-  String get browser_bookmarks_hint =>
-      'أضف الصفحة إلى الإشارات المرجعية من قائمتها لتجدها هنا.';
-
-  @override
-  String get browser_history_hint =>
-      'تبقى الصفحات التي تزورها هنا حتى بعد إغلاق علامات تبويبها.';
 
   @override
   String get browser_recent => 'الزيارات الأخيرة';
@@ -188,9 +169,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get app_update_details_hint => 'عرض ملاحظات الإصدار وخيارات التثبيت';
-
-  @override
   String get app_update_download => 'تنزيل التحديث';
 
   @override
@@ -202,10 +180,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String app_update_full(String size) {
     return 'تنزيل حزمة APK الكاملة ($size)';
   }
-
-  @override
-  String get app_update_download_hint =>
-      'بعد التنزيل، اتبع المطالبات لتثبيت التحديث.';
 
   @override
   String get bookshelf_all => 'الكل';
@@ -233,10 +207,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settings_search_empty => 'لا توجد إعدادات مطابقة';
 
   @override
-  String get search_empty_hint =>
-      'جرب كلمة رئيسية أخرى، أو امسح البحث لترى كل شيء.';
-
-  @override
   String get search_clear => 'مسح البحث';
 
   @override
@@ -250,9 +220,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get app_update_later => 'لاحقا';
-
-  @override
-  String get app_update_external_hint => 'يفتح رابط التحديث في متصفحك';
 
   @override
   String get app_update_failed =>
@@ -375,11 +342,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get compression_level => 'مستوى الضغط';
 
   @override
-  String compression_info(Object level) {
-    return 'كلما زاد الضغط، قل حجم ملف النسخة الاحتياطية، ولكنه يستهلك المزيد من المعالج. الافتراضي: $level';
-  }
-
-  @override
   String get comfortable_grid => 'شبكة مريحة';
 
   @override
@@ -435,9 +397,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get remove_everything => 'إزالة كل شيء';
 
   @override
-  String get remove_everything_msg => 'هل أنت متأكد؟ سيتم فقدان كل التاريخ';
-
-  @override
   String get remove_all_update_msg => 'هل أنت متأكد؟ سيتم مسح التحديث بالكامل';
 
   @override
@@ -448,10 +407,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get remove => 'إزالة';
-
-  @override
-  String get remove_history_msg =>
-      'سيتم إزالة تاريخ القراءة لهذا الفصل. هل أنت متأكد؟';
 
   @override
   String get last_used => 'آخر استخدام';
@@ -496,20 +451,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mass_migration_installed => 'تم التثبيت';
-
-  @override
-  String mass_migration_items_ready_for_review(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count عنصر جاهز للمراجعة',
-      many: '$count عنصر جاهز للمراجعة',
-      few: '$count عناصر جاهزة للمراجعة',
-      two: 'عنصران جاهزان للمراجعة',
-      one: 'عنصر واحد جاهز للمراجعة',
-    );
-    return '$_temp0';
-  }
 
   @override
   String mass_migration_item_count(int count) {
@@ -739,14 +680,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get incognito_mode => 'وضع التخفي';
 
   @override
-  String get incognito_mode_description => 'يوقف سجل القراءة';
-
-  @override
   String get downloaded_only => 'المحملة فقط';
-
-  @override
-  String get downloaded_only_description =>
-      'إظهار الإدخالات المحملة فقط في مكتبتك';
 
   @override
   String get download_queue => 'قائمة الانتظار للتحميل';
@@ -768,13 +702,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get no_downloads => 'لا توجد تحميلات';
-
-  @override
-  String get edit_categories => 'تحرير الفئات';
-
-  @override
-  String get edit_categories_description =>
-      'ليس لديك أي فئات. اضغط على زر الإضافة لإنشاء واحدة لتنظيم مكتبتك';
 
   @override
   String get add => 'إضافة';
@@ -812,9 +739,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get general => 'عام';
-
-  @override
-  String get general_subtitle => 'لغة التطبيق';
 
   @override
   String get app_language => 'لغة التطبيق';
@@ -877,9 +801,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reading_mode_vertical => 'عمودي';
 
   @override
-  String get reading_mode_horizontal => 'أفقي';
-
-  @override
   String get reading_mode_left_to_right => 'من اليسار إلى اليمين';
 
   @override
@@ -892,28 +813,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reading_mode_webtoon => 'ويبتون';
 
   @override
-  String get double_tap_animation_speed => 'سرعة النقر المزدوج';
-
-  @override
   String get normal => 'عادي';
 
   @override
   String get fast => 'سريع';
 
   @override
-  String get no_animation => 'بدون رسوم متحركة';
-
-  @override
-  String get animate_page_transitions => 'تحريك انتقالات الصفحة';
-
-  @override
   String get crop_borders => 'قص الحواف';
 
   @override
   String get downloads => 'التحميلات';
-
-  @override
-  String get downloads_subtitle => 'إعدادات التحميل';
 
   @override
   String get download_location => 'موقع التحميل';
@@ -1011,18 +920,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get unknown => 'غير معروف';
 
   @override
-  String get empty_placeholder => 'فارغ';
-
-  @override
   String get error => 'خطأ';
 
   @override
   String error_with_message(Object error) {
     return 'خطأ: $error';
   }
-
-  @override
-  String get no_pages_available => 'خطأ: لا توجد صفحات متاحة';
 
   @override
   String get set_categories => 'ضبط الفئات';
@@ -1038,9 +941,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reset => 'إعادة تعيين';
-
-  @override
-  String get by_source => 'حسب المصدر';
 
   @override
   String get by_chapter_number => 'حسب رقم الفصل';
@@ -1059,10 +959,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get developer_mode => 'وضع المطور';
-
-  @override
-  String get developer_mode_subtitle =>
-      'إظهار أدوات مطور الإضافات (إنشاء إضافة، تعديل الكود)';
 
   @override
   String get choose_extension_language => 'اختر لغة الإضافة';
@@ -1220,9 +1116,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get no_more_chapter => 'لا يوجد المزيد من الفصول';
-
-  @override
   String get no_result => 'لا نتائج';
 
   @override
@@ -1260,13 +1153,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get split_epub_chapters => 'تقسيم إلى فصول';
-
-  @override
-  String get split_epub_chapters_description =>
-      'استيراد كل فصل EPUB كإدخال منفصل';
-
-  @override
-  String get nothing_read_recently => 'لم يتم قراءة شيء مؤخراً';
 
   @override
   String get status => 'الحالة';
@@ -1320,10 +1206,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sync_logged => 'تم تسجيل الدخول بنجاح';
-
-  @override
-  String get syncing_subtitle =>
-      'أدخل عنوان خادم المزامنة وسجّل الدخول عبر المتصفح لمزامنة تقدّم القراءة بين أجهزتك.';
 
   @override
   String get sync_service => 'المزامنة على خادم ذاتي الاستضافة';
@@ -1428,9 +1310,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sync_auto_12_hours => 'كل 12 ساعة';
 
   @override
-  String get server_error => 'خطأ في الخادم!';
-
-  @override
   String get dialog_confirm => 'تأكيد';
 
   @override
@@ -1440,22 +1319,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reorder_navigation => 'تخصيص التنقل';
 
   @override
-  String get reorder_navigation_description =>
-      'أعد ترتيب وتبديل كل تنقل حسب احتياجاتك.';
-
-  @override
   String get floating_navigation_bar => 'شريط التنقل العائم';
 
   @override
-  String get floating_navigation_bar_description =>
-      'استخدم كبسولة عائمة بدلاً من شريط التنقل القياسي المرفق.';
-
-  @override
   String get full_screen_player => 'استخدام الشاشة الكاملة';
-
-  @override
-  String get full_screen_player_info =>
-      'استخدام الشاشة الكاملة تلقائيًا عند تشغيل الفيديو.';
 
   @override
   String episode_progress(Object n) {
@@ -1532,9 +1399,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get searching_for_updates => 'جارٍ البحث عن التحديثات...';
 
   @override
-  String get no_new_updates_available => 'لا يوجد تحديثات جديدة متاحة';
-
-  @override
   String get uninstall => 'إلغاء التثبيت';
 
   @override
@@ -1551,10 +1415,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get show_nav_double_tap_tooltip => 'إظهار تلميح البحث بالنقر المزدوج';
 
   @override
-  String get show_nav_double_tap_tooltip_subtitle =>
-      'إظهار تلميح على وجهات مانغا/أنمي/روايات يوضح أن النقر المزدوج يفتح البحث الشامل.';
-
-  @override
   String already_in_library(Object source, Object title) {
     return '\"$title\" موجود بالفعل في مكتبتك عبر $source.';
   }
@@ -1563,38 +1423,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get add_anyway => 'إضافة على أي حال';
 
   @override
-  String get langauage => 'اللغة';
-
-  @override
   String get extension_detail => 'تفاصيل الامتداد';
 
   @override
-  String get scale_type => 'نوع التحجيم';
-
-  @override
   String get scale_type_fit_screen => 'ملاءمة الشاشة';
-
-  @override
-  String get scale_type_stretch => 'تمديد';
-
-  @override
-  String get scale_type_fit_width => 'ملاءمة العرض';
-
-  @override
-  String get scale_type_fit_height => 'ملاءمة الارتفاع';
-
-  @override
-  String get scale_type_original_size => 'الحجم الأصلي';
-
-  @override
-  String get scale_type_smart_fit => 'ملاءمة ذكية';
-
-  @override
-  String get page_preload_amount => 'كمية تحميل الصفحات مسبقاً';
-
-  @override
-  String get page_preload_amount_subtitle =>
-      'عدد الصفحات التي يتم تحميلها مسبقاً أثناء القراءة. القيم الأعلى توفر تجربة قراءة أكثر سلاسة، ولكنها تتطلب استخدام أكبر للذاكرة المؤقتة والشبكة.';
 
   @override
   String get image_loading_error => 'تعذر تحميل هذه الصورة';
@@ -1615,20 +1447,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get auto_extensions_updates => 'تحديثات الامتداد التلقائية';
 
   @override
-  String get auto_extensions_updates_subtitle =>
-      'سيتم تحديث الامتداد تلقائياً عند توفر إصدار جديد.';
-
-  @override
   String get check_for_app_updates => 'تحقق من تحديثات التطبيق عند بدء التشغيل';
 
   @override
   String get reading_mode => 'وضع القراءة';
-
-  @override
-  String get custom_filter => 'فلتر مخصص';
-
-  @override
-  String get background_color => 'لون الخلفية';
 
   @override
   String get white => 'أبيض';
@@ -1638,12 +1460,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get grey => 'رمادي';
-
-  @override
-  String get automaic => 'تلقائي';
-
-  @override
-  String get preferred_domain => 'النطاق المفضل';
 
   @override
   String get load_more => 'تحميل المزيد';
@@ -1686,22 +1502,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get create_backup => 'إنشاء نسخة احتياطية';
 
   @override
-  String get create_backup_dialog_title =>
-      'ما الذي ترغب في أخذ نسخة احتياطية منه؟';
-
-  @override
-  String get create_backup_subtitle =>
-      'يمكن استخدامها لاستعادة المكتبة الحالية';
-
-  @override
   String get restore_backup => 'استعادة النسخة الاحتياطية';
 
   @override
   String get encrypt_backups => 'تشفير النسخ الاحتياطية';
-
-  @override
-  String get encrypt_backups_info =>
-      'حماية النسخ بكلمة مرور باستخدام تشفير AES';
 
   @override
   String get no_secure_storage => 'لم يتم العثور على تخزين آمن';
@@ -1731,10 +1535,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'يلزم إدخال كلمة المرور لاستعادة هذه النسخة.';
 
   @override
-  String get restore_backup_subtitle =>
-      'استعادة المكتبة من ملف النسخة الاحتياطية';
-
-  @override
   String get automatic_backups => 'النسخ الاحتياطي التلقائي';
 
   @override
@@ -1742,17 +1542,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get backup_location => 'موقع النسخ الاحتياطي';
-
-  @override
-  String get backup_options => 'خيارات النسخ الاحتياطي';
-
-  @override
-  String get backup_options_dialog_title =>
-      'ما الذي ترغب في أخذ نسخة احتياطية منه؟';
-
-  @override
-  String get backup_options_subtitle =>
-      'المعلومات التي يجب تضمينها في ملف النسخة الاحتياطية';
 
   @override
   String get backup_and_restore_warning_info =>
@@ -1825,10 +1614,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get services => 'الخدمات';
 
   @override
-  String get tracking_warning_info =>
-      'مزامنة في اتجاه واحد لتحديث تقدم الفصول في خدمات التتبع. قم بإعداد التتبع لكل مدخل على حدة من خلال زر التتبع الخاص به.';
-
-  @override
   String get use_page_tap_zones => 'استخدام مناطق النقر في الصفحة';
 
   @override
@@ -1854,10 +1639,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get video_audio => 'الصوت';
-
-  @override
-  String get video_audio_info =>
-      'اللغات المفضلة، تصحيح طبقة الصوت، قنوات الصوت';
 
   @override
   String get player => 'لاعب';
@@ -1965,51 +1746,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get include_subtitles => 'تضمين الترجمة';
 
   @override
-  String get blend_mode_default => 'الافتراضي';
-
-  @override
-  String get blend_mode_multiply => 'ضرب';
-
-  @override
-  String get blend_mode_screen => 'الشاشة';
-
-  @override
-  String get blend_mode_overlay => 'تراكيب';
-
-  @override
-  String get blend_mode_colorDodge => 'تفادي اللون';
-
-  @override
-  String get blend_mode_lighten => 'تفتيح';
-
-  @override
-  String get blend_mode_colorBurn => 'حرق اللون';
-
-  @override
-  String get blend_mode_darken => 'تظليل';
-
-  @override
-  String get blend_mode_difference => 'الفرق';
-
-  @override
-  String get blend_mode_saturation => 'التشبع';
-
-  @override
-  String get blend_mode_softLight => 'ضوء ناعم';
-
-  @override
-  String get blend_mode_plus => 'زائد';
-
-  @override
-  String get blend_mode_exclusion => 'استثناء';
-
-  @override
-  String get custom_color_filter => 'مرشح اللون المخصص';
-
-  @override
-  String get color_filter_blend_mode => 'وضع امتزاج مرشح اللون';
-
-  @override
   String get enable_all => 'تمكين الكل';
 
   @override
@@ -2055,18 +1791,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get use_libass => 'تفعيل libass';
 
   @override
-  String get use_libass_info =>
-      'استخدام عرض الترجمة المستندة إلى libass للواجهة الخلفية الأصلية.';
-
-  @override
-  String get libass_not_disable_message =>
-      'عطل `استخدام libass` في إعدادات المشغل لتتمكن من تخصيص الترجمة.';
-
-  @override
   String get override_ass_subtitles => 'تجاوز ترجمات ASS';
-
-  @override
-  String get override_ass_subtitles_info => 'تطبيق نمط مخصص على ترجمات ASS/SSA';
 
   @override
   String get torrent_stream => 'بث التورنت';
@@ -2088,13 +1813,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get advanced_info => 'تكوين mpv';
-
-  @override
-  String get use_native_http_client => 'استخدام عميل HTTP الأصلي';
-
-  @override
-  String get use_native_http_client_info =>
-      'يدعم تلقائيًا ميزات المنصة مثل الشبكات الافتراضية الخاصة (VPNs)، ويدعم ميزات HTTP أكثر مثل HTTP/3 ومعالجة إعادة التوجيه المخصصة';
 
   @override
   String n_hour_ago(Object hour) {
@@ -2133,9 +1851,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get data_and_storage => 'البيانات والتخزين';
 
   @override
-  String get download_location_info => 'تُستخدم لتنزيل الفصول';
-
-  @override
   String get storage => 'التخزين';
 
   @override
@@ -2167,9 +1882,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get recommendations => 'التوصيات';
-
-  @override
-  String get recommendations_similar => 'مشابه';
 
   @override
   String get recommendations_weights => 'أوزان التوصية';
@@ -2299,10 +2011,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enable_hardware_accel => 'تسريع الأجهزة';
 
   @override
-  String get enable_hardware_accel_info =>
-      'قم بتشغيله/إيقافه إذا كنت تواجه أخطاء أو أعطال';
-
-  @override
   String get track_library_navigate => 'انتقل إلى الإدخال المحلي الموجود';
 
   @override
@@ -2346,9 +2054,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enable_mpv => 'تمكين تظليل / سكريبتات mpv';
 
   @override
-  String get mpv_info => 'يدعم سكريبتات .js تحت mpv/scripts/';
-
-  @override
   String get mpv_redownload => 'إعادة تنزيل ملفات تكوين mpv';
 
   @override
@@ -2359,9 +2064,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get custom_buttons => 'أزرار مخصصة';
-
-  @override
-  String get custom_buttons_info => 'تنفيذ كود lua بأزرار مخصصة';
 
   @override
   String get custom_buttons_edit => 'تحرير الأزرار المخصصة';
@@ -2406,23 +2108,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get decoder => 'فك التشفير';
 
   @override
-  String get decoder_info => 'فك تشفير الأجهزة، تنسيق البكسل، إزالة التدرج';
-
-  @override
   String get enable_gpu_next => 'تمكين gpu-next (Android فقط)';
-
-  @override
-  String get enable_gpu_next_info => 'محرك عرض فيديو جديد';
 
   @override
   String get debanding => 'إزالة التدرج';
 
   @override
   String get use_yuv420p => 'استخدام تنسيق بكسل YUV420P';
-
-  @override
-  String get use_yuv420p_info =>
-      'قد يصلح الشاشات السوداء على بعض برامج ترميز الفيديو، ويمكن أيضًا تحسين الأداء على حساب الجودة';
 
   @override
   String get audio_preferred_languages => 'اللغات المفضلة';
@@ -2435,10 +2127,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enable_audio_pitch_correction => 'تمكين تصحيح طبقة الصوت';
 
   @override
-  String get enable_audio_pitch_correction_info =>
-      'يمنع الصوت من أن يصبح حادًا بسرعات أسرع وعميقًا بسرعات أبطأ';
-
-  @override
   String get audio_channels => 'قنوات الصوت';
 
   @override
@@ -2446,9 +2134,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get internal_player => 'المشغل الداخلي';
-
-  @override
-  String get internal_player_info => 'التقدم، عناصر التحكم، الاتجاه';
 
   @override
   String get subtitle_delay_text => 'تأخير الترجمة';
@@ -2554,9 +2239,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sequels => 'الأجزاء التالية';
 
   @override
-  String get recommendations_similarity => 'التشابه:';
-
-  @override
   String recommendation_rating_accessibility(String rating) {
     return 'التقييم $rating';
   }
@@ -2574,18 +2256,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rescan_local_folder => 'إعادة فحص جميع المجلدات المحلية الآن';
 
   @override
-  String get default_download_destination => 'مجلد التنزيل الافتراضي';
-
-  @override
-  String get ask_download_destination => 'السؤال عن وجهة التنزيل';
-
-  @override
-  String get ask_download_destination_desc => 'اختيار مجلد محلي عند كل تنزيل.';
-
-  @override
-  String get select_download_destination => 'تحديد وجهة التنزيل';
-
-  @override
   String get clear_local_library => 'مسح المكتبة المحلية';
 
   @override
@@ -2598,10 +2268,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get custom => 'مخصص';
-
-  @override
-  String get no_local_folder_available_for_downloads =>
-      'لا يوجد مجلد محلي متاح للتنزيلات';
 
   @override
   String failed_to_create_cbz(Object error) {
@@ -2672,14 +2338,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String could_not_launch_url(Object url) {
-    return 'تعذر فتح $url';
-  }
-
-  @override
-  String get text_size => 'حجم النص:';
-
-  @override
   String get text_align => 'محاذاة النص';
 
   @override
@@ -2704,10 +2362,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forceLandscapeMode => 'فرض وضع المناظر الطبيعية';
 
   @override
-  String get forceLandscapeModeSubtitle =>
-      'فرض المشغل لاستخدام اتجاه المناظر الطبيعية.';
-
-  @override
   String get dns_over_https => 'DNS-over-HTTPS (DoH)';
 
   @override
@@ -2721,9 +2375,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get app_locked => 'NodeLane Comics مقفول';
-
-  @override
-  String get auth_to_continue => 'المصادقة للمتابعة';
 
   @override
   String get authenticating => 'جاري المصادقة...';
@@ -2753,10 +2404,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'المصادقة البيومترية غير متاحة على هذا الجهاز';
 
   @override
-  String get app_lock_description =>
-      'عند تفعيل قفل التطبيق، سيُطلب منك المصادقة\nفي كل مرة تفتح التطبيق أو تعود إليه من الخلفية.';
-
-  @override
   String get checking_device_authentication =>
       'جارٍ التحقق من مصادقة الجهاز...';
 
@@ -2766,12 +2413,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get keep_screen_on => 'إبقاء الشاشة مضاءة';
-
-  @override
-  String get webtoon_side_padding => 'حشو جانب الويب توون';
-
-  @override
-  String get show_page_gaps => 'إظهار فجوات الصفحات';
 
   @override
   String get invert_colors => 'عكس الألوان';
@@ -2789,28 +2430,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get saturation => 'التشبع';
 
   @override
-  String get navigation_layout => 'تخطيط الملاحة';
-
-  @override
-  String get nav_layout_default => 'افتراضي';
-
-  @override
-  String get nav_layout_l_shaped => 'على شكل L';
-
-  @override
-  String get nav_layout_kindle => 'Kindle';
-
-  @override
-  String get nav_layout_edge => 'الحافة';
-
-  @override
-  String get nav_layout_right_and_left => 'اليمين واليسار';
-
-  @override
   String get nav_layout_disabled => 'معطل';
-
-  @override
-  String get color_enhancements => 'تحسينات اللون';
 
   @override
   String get total => 'الإجمالي';
@@ -2840,10 +2460,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get android_proxy_server_mihon => 'خادم بروكسي أندرويد (Mihon)';
-
-  @override
-  String get android_proxy_server_mihon_description =>
-      'قم بتنزيل وتكوين خادم البروكسي المطلوب لاستخدام امتدادات Mihon.';
 
   @override
   String get mihon_proxy_server => 'خادم بروكسي Mihon';
@@ -2900,10 +2516,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get latest_version => 'أحدث إصدار';
-
-  @override
-  String get m_extension_server_description =>
-      'استخدم M-Extension-Server عندما تحتاج إلى وكيل جهاز أندرويد منفصل. اضبط عنوان الوكيل هنا وقم بتحميل APK من GitHub.';
 
   @override
   String get set_proxy_address => 'ضبط عنوان الوكيل';
@@ -2975,10 +2587,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get zero_interpreter => 'مترجم Zero';
 
   @override
-  String get zero_interpreter_description =>
-      'التحكم في خادم مترجم Zero تلقائياً أو يدوياً.';
-
-  @override
   String get start_server_on_launch => 'تشغيل الخادم عند بدء التطبيق';
 
   @override
@@ -3012,9 +2620,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tts_language => 'اللغة';
 
   @override
-  String get tts_voice => 'الصوت';
-
-  @override
   String get tts_stop => 'إيقاف';
 
   @override
@@ -3035,55 +2640,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get tts_settings => 'إعدادات TTS';
-
-  @override
   String get tts_default => 'افتراضي';
 
   @override
-  String get webtoon_disable_zoom_out => 'تعطيل التصغير في الويب تون';
-
-  @override
-  String get webtoon_double_tap_zoom_enabled =>
-      'النقر المزدوج للتكبير في الويب تون';
-
-  @override
-  String get navigate_to_pan => 'التنقل للسحب';
-
-  @override
-  String get navigate_to_pan_subtitle => 'تحريك الصورة المكبرة قبل قلب الصفحة';
-
-  @override
-  String get split_wide_pages => 'تقسيم الصفحات العريضة';
-
-  @override
-  String get dual_page_invert => 'عكس نصفي الصفحات المقسمة';
-
-  @override
-  String get dual_page_rotate_to_fit => 'التدوير للملاءمة';
-
-  @override
-  String get dual_page_rotate_to_fit_invert => 'عكس اتجاه التدوير';
-
-  @override
-  String get double_page_single_first_page => 'الصفحة الأولى مفردة';
-
-  @override
-  String get double_page_single_first_page_subtitle =>
-      'عرض الصفحة الأولى بمفردها في وضع الصفحتين';
-
-  @override
   String get double_page_auto => 'صفحة مزدوجة تلقائياً';
-
-  @override
-  String get double_page_auto_subtitle =>
-      'التبديل إلى وضع الصفحة المزدوجة تلقائياً في الوضع الأفقي';
-
-  @override
-  String get landscape_zoom => 'تكبير تلقائي للوضع الأفقي';
-
-  @override
-  String get zoom_start_position => 'موضع بدء التكبير';
 
   @override
   String get zoom_start_left => 'اليسار';
@@ -3095,108 +2655,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get zoom_start_center => 'الوسط';
 
   @override
-  String get automatic_background => 'خلفية تلقائية';
-
-  @override
-  String get tapping_inversion => 'عكس النقر';
-
-  @override
-  String get tapping_inversion_none => 'لا شيء';
-
-  @override
-  String get tapping_inversion_horizontal => 'أفقي';
-
-  @override
-  String get tapping_inversion_vertical => 'عمودي';
-
-  @override
-  String get tapping_inversion_both => 'كلاهما';
-
-  @override
-  String get flash_on_page_change => 'وميض عند تغيير الصفحة';
-
-  @override
-  String get flash_on_page_change_subtitle => 'مساعد منع احتراق شاشة AMOLED';
-
-  @override
-  String get flash_color => 'لون الوميض';
-
-  @override
-  String get flash_color_black => 'أسود';
-
-  @override
-  String get flash_color_white => 'أبيض';
-
-  @override
-  String get flash_color_white_black => 'أبيض وأسود';
-
-  @override
-  String get flash_interval_label => 'معدل الوميض';
-
-  @override
-  String flash_interval_value(String n) {
-    return 'كل $n صفحات';
-  }
-
-  @override
-  String flash_interval(String n) {
-    return 'معدل الوميض: كل $n صفحات';
-  }
-
-  @override
-  String get flash_duration_label => 'مدة الوميض';
-
-  @override
-  String flash_duration_value(String n) {
-    return '$n مللي ثانية';
-  }
-
-  @override
-  String flash_duration(String n) {
-    return 'مدة الوميض: $n مللي ثانية';
-  }
-
-  @override
-  String get show_navigation_overlay_on_start => 'إظهار واجهة التنقل عند البدء';
-
-  @override
-  String get reader_hide_threshold => 'حد إخفاء القارئ';
-
-  @override
-  String get reader_hide_threshold_highest => 'الأعلى (5 بكسل)';
-
-  @override
-  String get reader_hide_threshold_high => 'مرتفع (13 بكسل)';
-
-  @override
-  String get reader_hide_threshold_low => 'منخفض (31 بكسل)';
-
-  @override
-  String get reader_hide_threshold_lowest => 'الأدنى (47 بكسل)';
-
-  @override
-  String get error_no_pages_available => 'خطأ: لا توجد صفحات متاحة';
-
-  @override
   String get app_ui_scale => 'حجم الواجهة';
-
-  @override
-  String get app_ui_scale_subtitle =>
-      'اجعل الواجهة أكبر أو أصغر لتناسب شاشتك ومسافة المشاهدة.';
 
   @override
   String get allow_concurrent_downloads => 'السماح بالتنزيلات المتزامنة';
 
   @override
-  String get allow_concurrent_downloads_subtitle =>
-      'قم بالتنزيل من مصادر مختلفة في نفس الوقت. يقوم مصدر واحد فقط بتنزيل فصل واحد في المرة حتى لا يتم الإرهاق. أطفئها للتنزيل واحدة تلو الأخرى في كل مكان.';
-
-  @override
   String get download_delay => 'تأخير التنزيل';
-
-  @override
-  String get download_delay_subtitle =>
-      'إيقاف. أضف انتظارًا مع اهتزاز عشوائي بين الفصول لتكون أكثر لطفًا على المصادر.';
 
   @override
   String get save_search => 'حفظ البحث';
@@ -3208,10 +2673,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enter_search_to_save_first => 'أدخل بحثًا لحفظه أولاً';
 
   @override
-  String get no_saved_searches =>
-      'لا توجد عمليات بحث محفوظة لهذا المصدر حتى الآن.\nقم بإجراء بحث، ثم اختر \"حفظ البحث\".';
-
-  @override
   String get source => 'المصدر';
 
   @override
@@ -3219,18 +2680,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get startup_failed => 'تعذر على NodeLane Comics إكمال بدء التشغيل';
-
-  @override
-  String sources_with_no_results(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count مصدراً بلا نتائج',
-      few: '$count مصادر بلا نتائج',
-      one: 'مصدر واحد بلا نتائج',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get import_mode_title => 'كيف تريد الاستيراد؟';
@@ -3391,10 +2840,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get merge_manga_title => 'دمج المانغا المكررة';
 
   @override
-  String get merge_manga_subtitle =>
-      'البحث عن مانغا بنفس العنوان تحت نفس المصدر ودمجها معاً.';
-
-  @override
   String get merge_manga_none_found => 'لم يتم العثور على مانغا مكررة.';
 
   @override
@@ -3444,17 +2889,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get memory_overlay => 'إظهار استخدام الذاكرة';
 
   @override
-  String get memory_overlay_subtitle =>
-      'قراءة مباشرة لاستهلاك الذاكرة في التطبيق. للقياس على الجهاز بدلاً من التخمين: راقبها أثناء التمرير في المكتبة أو قراءة فصل.';
-
-  @override
   String get beta => 'تجريبي';
 
   @override
   String get error_reports => 'تقارير الأخطاء';
-
-  @override
-  String get error_reports_subtitle => 'الأخطاء المسجلة وطريقة الإبلاغ عنها';
 
   @override
   String get error_reports_empty => 'لم تحدث أي أخطاء.';
@@ -3464,9 +2902,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get error_reports_report => 'إبلاغ على GitHub';
-
-  @override
-  String get error_reports_banner => 'واجه NodeLane Comics خطأ';
 
   @override
   String get error_reports_banner_action => 'عرض';
@@ -3499,23 +2934,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboarding_title => 'مرحباً بك في NodeLane Comics';
 
   @override
-  String get onboarding_libraries_body => 'اختر ما تقرأه وتشاهده.';
-
-  @override
   String get onboarding_nav_title => 'مكتباتك';
-
-  @override
-  String get onboarding_nav_body =>
-      'تبويب لكل منها أو تجميعها في تبويب مكتبة واحد.';
 
   @override
   String get onboarding_nav_split => 'تبويب لكل نوع';
 
   @override
   String get onboarding_nav_merged => 'تبويب مكتبة موحد';
-
-  @override
-  String get onboarding_nav_inside => 'الضغط على المكتبة يبدل هذه التبويبات';
 
   @override
   String get onboarding_next => 'التالي';
@@ -3533,9 +2958,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String onboarding_local_existing(Object count) {
     return '$count مجلدات معدة بالفعل';
   }
-
-  @override
-  String get onboarding_local_any_type => 'يدعم المانغا والأنمي والروايات.';
 
   @override
   String get onboarding_local_scanning => 'جارٍ فحص المجلد';
@@ -3562,10 +2984,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboarding_repo_title => 'إضافة مصدر';
 
   @override
-  String get onboarding_body =>
-      'أضف مستودعاً لتتمكن من تثبيت الإضافات وتصفحها.';
-
-  @override
   String get onboarding_add => 'إضافة مستودع';
 
   @override
@@ -3575,20 +2993,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboarding_continue => 'متابعة';
 
   @override
-  String get onboarding_later => 'يمكنك إضافته لاحقاً من الإعدادات > تصفح.';
-
-  @override
   String get onboarding_replay => 'عرض شاشة الترحيب';
 
   @override
-  String get onboarding_replay_subtitle => 'فتح شاشة الإعداد الأولى مجدداً.';
-
-  @override
   String get missing_source_check_title => 'فحص المصادر المفقودة';
-
-  @override
-  String get missing_source_check_subtitle =>
-      'العثور على عناصر لم يتم تثبيت إضافاتها.';
 
   @override
   String get missing_source_check_none_found => 'جميع مصادر المكتبة مثبتة.';
@@ -3611,10 +3019,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get global_search_no_sources_hint =>
-      'أضف مستودعاً ضمن قسم التصفح، ثم قم بتثبيت إضافة له.';
-
-  @override
   String global_search_only_pinned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3627,20 +3031,12 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get global_search_only_pinned_hint =>
-      'قم بتثبيت أحدها، أو أوقف تشغيل \"تضمين المصادر المثبتة فقط\" في إعدادات التصفح.';
-
-  @override
   String get global_search_all_nsfw =>
       'جميع مصادرك لهذا مصنفة كـ NSFW وهي مخفية.';
 
   @override
-  String get global_search_all_nsfw_hint =>
-      'قم بتفعيل مصادر NSFW في إعدادات التصفح للبحث فيها.';
-
-  @override
   String get missing_source_check_result_message =>
-      'تشير هذه العناصر إلى مصادر غير مثبتة. اضغط لنقلها أو ثبت الإضافة.';
+      'تشير هذه العناصر إلى مصادر غير مثبتة.';
 
   @override
   String get related_titles => 'ذات صلة';
@@ -3673,10 +3069,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get auto_library_update => 'تحديثات المكتبة التلقائية';
 
   @override
-  String get auto_library_update_subtitle =>
-      'التحقق من وجود فصول جديدة لكل عنصر في مكتبتك عند بدء تشغيل التطبيق.';
-
-  @override
   String get auto_library_update_never => 'أبداً';
 
   @override
@@ -3693,10 +3085,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get auto_library_update_wifi_only => 'عبر Wi-Fi فقط';
-
-  @override
-  String get auto_library_update_wifi_only_subtitle =>
-      'تخطي التحديث المجدول أثناء استخدام بيانات الجوال.';
 
   @override
   String get padding => 'الهامش';
@@ -3847,18 +3235,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reader_page_layout => 'تخطيط الصفحة';
 
   @override
-  String get reader_continuous_options => 'القراءة المستمرة';
-
-  @override
-  String get reader_default_mode_hint =>
-      'ينطبق وضع القراءة الافتراضي على العناوين دون تعيين وضع فردي أثناء القراءة.';
-
-  @override
   String get extension_service => 'خدمة الإرشاد';
-
-  @override
-  String get extension_service_description =>
-      'إدارة وقت تشغيل الامتداد وعنوان الوكيل.';
 
   @override
   String get proxy_address => 'عنوان الوكيل';
@@ -3881,10 +3258,6 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get download_queue_empty_hint =>
-      'إضافة التنزيلات من قائمة فصول العنوان.';
 
   @override
   String get download_queue_order_hint => 'اسحب المقابض لإعادة الترتيب';
@@ -3922,15 +3295,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'نقطة نهاية FlareSolverr / Byparr. اتركه فارغًا للتعطيل.';
 
   @override
-  String get mobile_navigation_description =>
-      'اسحب لإعادة الترتيب. تشترك المانغا والأنيمي والروايات في علامة تبويب المكتبة. يتم فتح العنصر المرئي الأول عند الإطلاق. التصفح والمزيد يبقى مرئيًا؛ تظهر علامات التبويب الإضافية ضمن المزيد.';
-
-  @override
   String get text_align_justify => 'تبرير';
-
-  @override
-  String get novel_session_modes_hint =>
-      'ضبط وضع القراءة والصفحات المفردة أو المزدوجة أثناء قراءة العنوان.';
 
   @override
   String get tts_languages_failed => 'تعذر تحميل اللغات من محرك الكلام.';
@@ -3981,9 +3346,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'لا يمكن إكمال العملية. تحقق من الوصول إلى الملف وحاول مرة أخرى.';
 
   @override
-  String get custom_buttons_empty_hint => 'أضف زر مشغل مع تسمية وإجراء ضغط.';
-
-  @override
   String get custom_button_primary => 'الزر الافتراضي';
 
   @override
@@ -3998,7 +3360,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tracking_entries_empty =>
-      'لا توجد إدخالات متعقبة لنوع الوسائط هذا. أضف تتبعًا من صفحة تفاصيل العنوان.';
+      'لا توجد إدخالات متعقبة لنوع الوسائط هذا.';
 
   @override
   String get change_tracking_match => 'تغيير العنوان المطابق';
@@ -4018,10 +3380,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get tracking_entry_unlinked =>
       'هذا السجل غير مرتبط بعنوان محلي، لذلك لا يمكن تحريره هنا.';
-
-  @override
-  String get backup_selection_shared =>
-      'يتم حفظ التغييرات التي يتم إجراؤها على هذه التحديدات على الفور ويتم تطبيقها أيضًا على النسخ الاحتياطية التلقائية.';
 
   @override
   String get library_snapshot_history => 'استعادة لقطة المكتبة';
@@ -4049,14 +3407,6 @@ class AppLocalizationsAr extends AppLocalizations {
   ) {
     return 'إدخالات المكتبة: $mangaCount. الفصول: $chapterCount. إدخالات التاريخ: $historyCount. التحديثات: $updateCount.\n\nاختر ما تريد الاحتفاظ به أدناه.';
   }
-
-  @override
-  String get library_delete_pick_message =>
-      'اختر مصدرًا لمراجعة محتوياته وخيارات الحذف.';
-
-  @override
-  String get mobile_categories_hint =>
-      'اسحب لإعادة الترتيب. افتح فئة لإعادة تسميتها أو تغيير رؤيتها وتحديثاتها.';
 
   @override
   String get mobile_category_visible => 'العرض في المكتبة';
@@ -4099,15 +3449,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get preparing_installation => 'جارٍ تحضير التثبيت...';
 
   @override
-  String get onboarding_mobile_libraries_body =>
-      'اختر ما تريد قراءته. يمكنك تغيير هذا لاحقا.';
-
-  @override
   String get onboarding_content_title => 'ابدأ القراءة';
-
-  @override
-  String get onboarding_mobile_sources_body =>
-      'اختر طريقة للبدء، أو أضف محتوى لاحقًا.';
 
   @override
   String onboarding_step_count(int step, int total) {
@@ -4117,17 +3459,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String global_search_results_for(String query) {
     return 'نتائج لـ “$query”';
-  }
-
-  @override
-  String global_search_scope(String type, int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count المصادر',
-      one: 'مصدر واحد',
-    );
-    return '$type · $_temp0';
   }
 
   @override
@@ -4165,10 +3496,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get bookshelf_ignore_filters => 'تجاهل عوامل التصفية عند البحث';
-
-  @override
-  String get bookshelf_ignore_filters_hint =>
-      'ابحث في جميع الأعمال في هذه الفئة، بما في ذلك تلك المخفية بواسطة المرشحات.';
 
   @override
   String get bookshelf_stop_update => 'إيقاف تحديث المكتبة';
@@ -4216,10 +3543,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookshelf_settings => 'إعدادات رف الكتب';
 
   @override
-  String get bookshelf_settings_live =>
-      'تسري تغييرات التصفية والفرز والعرض على الفور.';
-
-  @override
   String get bookshelf_filter_any => 'أي';
 
   @override
@@ -4246,15 +3569,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookshelf_layout => 'تخطيط رف الكتب';
 
   @override
-  String get bookshelf_sources_hint =>
-      'حدد لا شيء لإظهار كافة المصادر. يتم تطبيق التغييرات عند النقر فوق \"تصفية\".';
-
-  @override
   String get bookshelf_choose_files => 'اختر الملفات';
-
-  @override
-  String get bookshelf_import_wait =>
-      'اختر ملفًا في المنتقي وانتظر حتى تنتهي عملية الاستيراد.';
 
   @override
   String get bookshelf_import_incomplete =>
@@ -4265,10 +3580,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'يؤدي الحفظ إلى تعيين هذه الفئات لكل عمل محدد، واستبدال فئاتها السابقة.';
 
   @override
-  String get bookshelf_categories_hint =>
-      'اختر فئة واحدة أو أكثر، أو اترك التحديد فارغًا لعدم تعيين أي فئة.';
-
-  @override
   String get bookshelf_categories_hidden =>
       'يتم الاحتفاظ بالفئات المخفية الموجودة لهذا العمل.';
 
@@ -4277,8 +3588,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'لا يمكن حفظ الفئات بالكامل. أغلق مربع الحوار هذا وتحقق من رف الكتب قبل المحاولة مرة أخرى.';
 
   @override
-  String get bookshelf_categories_none_visible =>
-      'لا توجد فئات متاحة هنا. افتح إدارة الفئات لمراجعتها.';
+  String get bookshelf_categories_none_visible => 'لا توجد فئات متاحة هنا.';
 
   @override
   String get bookshelf_manage_categories => 'إدارة الفئات';
@@ -4290,12 +3600,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get manga_download_scope => 'تحميل الفصول';
 
   @override
-  String get manga_download_scope_hint =>
-      'اختر الفصول ضمن المرشحات الحالية. يتم تخطي الفصول التي تم تنزيلها.';
-
-  @override
   String get manga_download_scope_empty =>
-      'لا توجد فصول تتطابق مع عوامل التصفية الحالية. أغلق هذه القائمة واضبط مرشحات الفصل.';
+      'لا توجد فصول تتطابق مع عوامل التصفية الحالية.';
 
   @override
   String get manga_action_incomplete =>
@@ -4305,15 +3611,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chapter_settings => 'إعدادات الفصل';
 
   @override
-  String get chapter_settings_live =>
-      'يتم تطبيق تغييرات التصفية والفرز على الفور.';
-
-  @override
   String get chapter_scanlators_all => 'إظهار كافة مجموعات الماسح الضوئي';
-
-  @override
-  String get chapter_scanlators_hint =>
-      'حدد المجموعات لإخفاء فصولها. يتم تطبيق التغييرات عند النقر فوق \"تصفية\".';
 
   @override
   String chapter_scanlators_hidden(int count) {
@@ -4350,29 +3648,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'لم ينته الإجراء. ربما تم حفظ بعض التغييرات بالفعل. أغلق الفصول والتنزيلات وتحقق منها قبل المتابعة.';
 
   @override
-  String get reader_display_scope =>
-      'ينطبق وضع القراءة والتخطيط اليدوي للصفحة على هذه القصة المصورة. اختر تغييرًا للعودة إلى القراءة.';
-
-  @override
-  String get reader_display_single_only =>
-      'تستخدم القراءة المستمرة الأفقية الصفحات المفردة.';
-
-  @override
-  String get reader_display_manual_pages =>
-      'يؤدي تغيير تخطيط الصفحة إلى إيقاف تشغيل الصفحة المزدوجة التلقائية لجميع القصص المصورة.';
-
-  @override
-  String get reader_display_crop_scope => 'ينطبق على جميع القصص المصورة.';
-
-  @override
   String get reader_chapter_locate => 'حدد موقع الفصل الحالي';
 
   @override
   String get reader_chapter_search => 'البحث في الفصول أو الماسحات الضوئية';
-
-  @override
-  String get reader_chapter_scope =>
-      'يستخدم مرشحات الفصل وترتيب الفرز من التفاصيل المصورة. يتم حفظ الإشارات المرجعية على الفور.';
 
   @override
   String get reader_chapter_current_hidden =>
@@ -4392,50 +3671,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reader_image_actions => 'إجراءات الصورة';
 
   @override
-  String get reader_image_original =>
-      'يستخدم الصفحة الأصلية الكاملة، بدون مرشحات الترجمة أو الاقتصاص أو ألوان القارئ.';
-
-  @override
-  String get reader_image_save_ios =>
-      'احفظ في مجلد الصور في موقع تخزين التطبيق الحالي.';
-
-  @override
-  String get reader_image_save_android =>
-      'احفظ في مجلد الصور/nodelane-comics الخاص بالجهاز.';
-
-  @override
-  String get reader_image_share => 'افتح ورقة مشاركة النظام.';
-
-  @override
-  String get reader_image_cover =>
-      'قم بتغيير غلاف هذه القصة المصورة بعد التأكيد.';
-
-  @override
   String get reader_image_cover_limit =>
       'يجب أن يكون حجم صور الغلاف أصغر من 5 ميجابايت. يبقى الحفظ والمشاركة متاحين.';
 
   @override
   String get reader_image_action_failed =>
       'لا يمكن تأكيد الإجراء. أغلق هذه القائمة وتحقق من النتيجة قبل المحاولة مرة أخرى.';
-
-  @override
-  String get reader_settings_book_scope =>
-      'تنطبق هذه الإعدادات على هذا الفيلم الهزلي فقط.';
-
-  @override
-  String get reader_settings_global_scope =>
-      'تنطبق هذه الإعدادات على كافة القصص المصورة ويتم حفظها على الفور.';
-
-  @override
-  String get reader_filters => 'مرشحات الصور';
-
-  @override
-  String get reader_filter_scope =>
-      'ينطبق على جميع القصص المصورة. يقوم بتغيير عرض القراءة دون تعديل الصور الأصلية.';
-
-  @override
-  String get reader_auto_scroll_pause =>
-      'يتوقف التمرير مؤقتًا أثناء فتح الإعدادات.';
 
   @override
   String get manga_synopsis => 'ملخص';
@@ -4449,43 +3690,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get manga_continue_reading => 'أكمل القراءة';
 
   @override
-  String get reader_settings_title => 'إعدادات القارئ';
-
-  @override
-  String get reader_picker_book_scope => 'فقط لهذا الفيلم الهزلي';
-
-  @override
-  String get reader_picker_global_scope => 'ينطبق على جميع القصص المصورة';
-
-  @override
-  String get reader_picker_apply_hint =>
-      'اضغط للحفظ والعودة إلى المستوى السابق.';
-
-  @override
-  String get reader_scale_fit_screen_hint => 'احتواء الصفحة بأكملها على الشاشة';
-
-  @override
-  String get reader_scale_stretch_hint => 'املأ منطقة القراءة';
-
-  @override
-  String get reader_scale_fit_width_hint => 'ملائمة الصفحة للعرض';
-
-  @override
-  String get reader_scale_fit_height_hint => 'ملائمة الصفحة للارتفاع';
-
-  @override
   String get source_filter_active => 'مطبق';
 
   @override
   String get source_filter_apply => 'تطبيق المرشحات';
-
-  @override
-  String get source_filter_scope =>
-      'تنطبق عوامل التصفية على موقع الويب هذا فقط.';
-
-  @override
-  String get source_filter_apply_hint =>
-      'قم بتطبيق المرشحات لاستخدام اختياراتك.';
 
   @override
   String source_filter_term(String term) {
@@ -4542,14 +3750,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookshelf_more_display => 'المزيد من خيارات العرض';
 
   @override
-  String get bookshelf_more_display_hint => 'الشارات والمصادر والفئات';
-
-  @override
   String get bookshelf_download_count => 'عدد التنزيلات';
-
-  @override
-  String get bookshelf_source_global_hint =>
-      'تستخدم رؤية المصدر تفضيلات العرض المشتركة.';
 
   @override
   String get bookshelf_select_entries => 'حدد الأعمال';
@@ -4558,22 +3759,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookshelf_search_options => 'خيارات البحث';
 
   @override
-  String get bookshelf_empty_hint =>
-      'جمع الأعمال من المصادر أو استيراد الملفات المحلية.';
-
-  @override
-  String get bookshelf_no_match_hint =>
-      'جرب كلمات أساسية أخرى أو اضبط عوامل التصفية الحالية.';
-
-  @override
   String get bookshelf_clear_query => 'مسح الكلمات الأساسية';
 
   @override
   String get bookshelf_view_selection => 'عرض الأعمال المختارة';
-
-  @override
-  String get bookshelf_import_canceled_hint =>
-      'يمكنك الاختيار مرة أخرى بعد إلغاء منتقي الملفات.';
 
   @override
   String get bookshelf_browse_sources => 'تصفح المصادر';
@@ -4597,15 +3786,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nodelane_sign_in => 'قم بتسجيل الدخول إلى NodeLane';
 
   @override
-  String get nodelane_account_intro =>
-      'عرض حسابك واشتراكك وحصة الترجمة الخاصة بك';
-
-  @override
   String get nodelane_login_action => 'متابعة تسجيل الدخول';
-
-  @override
-  String get nodelane_login_browser =>
-      'قم بتسجيل الدخول من خلال متصفح النظام ثم قم بالعودة إلى التطبيق';
 
   @override
   String get nodelane_account_id => 'معرف الحساب';
@@ -4755,9 +3936,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settings_more_tools => 'المزيد من الأدوات';
 
   @override
-  String get settings_more_tools_hint => 'الفئات والإحصائيات والتقويم';
-
-  @override
   String get settings_appearance_interface => 'المظهر والواجهة';
 
   @override
@@ -4785,9 +3963,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'يُستخدم في ترجمة القارئ وصفحات الويب';
 
   @override
-  String get settings_immediate_choice => 'يتم تطبيق التغييرات على الفور';
-
-  @override
   String get settings_translation_init_error =>
       'إعدادات الترجمة غير متوفرة. أعد تشغيل التطبيق وحاول مرة أخرى.';
 
@@ -4803,10 +3978,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get settings_translation_cache =>
       'ذاكرة التخزين المؤقتة للصور المترجمة';
-
-  @override
-  String get settings_translation_cache_hint =>
-      'احتفظ بسجلات الترجمة واسترجاع الصور المترجمة مرة أخرى عند الحاجة';
 
   @override
   String get settings_cache_clear => 'واضح';
@@ -4842,28 +4013,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboarding_choose_one => 'اختر واحدًا على الأقل';
 
   @override
-  String get onboarding_restore_hint => 'استعادة مكتبتك من نسخة احتياطية';
-
-  @override
-  String get onboarding_browse_hint =>
-      'ابحث عن العناوين على مواقع الويب المدعومة';
-
-  @override
   String get onboarding_import_folder => 'قم باستيراد مجلد محلي';
 
   @override
-  String get onboarding_import_folder_hint =>
-      'اقرأ المانغا والروايات والأنمي على جهازك';
-
-  @override
   String get onboarding_third_party => 'إضافة مستودع جهة خارجية';
-
-  @override
-  String get onboarding_third_party_hint =>
-      'استخدم عنوان المستودع الموجود لديك بالفعل';
-
-  @override
-  String get onboarding_repository_hint => 'أدخل العنوان المقدم من المستودع.';
 
   @override
   String get onboarding_repository_address => 'العنوان';
@@ -4888,9 +4041,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notice_backup_created => 'تم إنشاء النسخة الاحتياطية';
-
-  @override
-  String get notice_backup_ready => 'احفظ ملف النسخة الاحتياطية أو شاركه.';
 
   @override
   String get notice_backup_restored => 'تمت استعادة النسخة الاحتياطية';
@@ -4966,10 +4116,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'استخدم بحث HTTPS الكامل URL لخدمة Wyzie-compatible، بما في ذلك مسارها (على سبيل المثال، /search). أدخل رمز الوصول فقط إذا كانت الخدمة تتطلب واحدًا.';
 
   @override
-  String get subtitle_service_off_hint =>
-      'تم إيقاف البحث عن الترجمة عبر الإنترنت. تظل الترجمات المضمنة والمقدمة من المصدر والمحلية متاحة.';
-
-  @override
   String get subtitle_setup_required => 'اختر خدمة الترجمة قبل البحث.';
 
   @override
@@ -5016,10 +4162,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reader_loading_pages => 'الحصول على صور الفصل...';
 
   @override
-  String get reader_loading_pages_hint =>
-      'ستبدأ القراءة تلقائيًا عندما تصبح جاهزة.';
-
-  @override
   String get reader_loading_failed => 'لا يمكن تحميل هذا الفصل';
 
   @override
@@ -5047,28 +4189,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reader_image_loading => 'تحميل الصورة...';
 
   @override
-  String get reader_image_failure_hint =>
-      'يمكنك الاستمرار في قراءة الصفحات الأخرى.';
-
-  @override
   String get comic_paged => 'صفحة بصفحة';
 
   @override
   String get comic_scroll => 'قم بالتمرير لأسفل';
 
   @override
-  String get comic_book_scope =>
-      'ينطبق فقط على هذا الكتاب · يتم حفظ التغييرات على الفور';
-
-  @override
   String get comic_defaults_title => 'الافتراضات والعادات';
-
-  @override
-  String get comic_defaults_hint =>
-      'تنطبق الإعدادات الافتراضية على الحقول التي لم تقم بتخصيصها لكتاب ما.';
-
-  @override
-  String get comic_habits_hint => 'تنطبق هذه العادات على كل قصة كوميدية.';
 
   @override
   String get comic_turn => 'اسحب إلى الصفحة التالية';
@@ -5101,10 +4228,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get comic_auto => 'تلقائي';
 
   @override
-  String get comic_layout_hint =>
-      'يُظهر الانتشار تلقائيًا عندما يكون هناك عرض كافٍ.';
-
-  @override
   String get comic_width => 'عرض المحتوى';
 
   @override
@@ -5129,9 +4252,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get comic_image_title => 'ضبط الصورة بدقة';
 
   @override
-  String get comic_image_hint => 'يؤثر القص والنغمة على هذا الكتاب فقط.';
-
-  @override
   String get comic_wide => 'صفحات واسعة';
 
   @override
@@ -5142,10 +4262,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get comic_rotate => 'تدوير';
-
-  @override
-  String get comic_wide_hint =>
-      'يتبع التقسيم اتجاه قلب الصفحة. ينطبق على قراءة صفحة واحدة.';
 
   @override
   String get comic_cover => 'غلاف واحد لكل فصل';
@@ -5179,10 +4295,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get comic_tap => 'اضغط لقلب الصفحات';
 
   @override
-  String get comic_tap_hint =>
-      'اضغط على الحواف للتحرك؛ اضغط على المركز لإظهار عناصر التحكم.';
-
-  @override
   String get comic_scroll_start => 'بدء التمرير التلقائي';
 
   @override
@@ -5192,18 +4304,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get comic_scroll_speed => 'سرعة التمرير';
 
   @override
-  String get comic_scroll_hint =>
-      'يبدأ عند إغلاق هذه اللوحة. يتوقف مؤقتًا عندما يترك التطبيق المقدمة.';
-
-  @override
   String get comic_save_failed => 'لا يمكن الحفظ. يرجى المحاولة مرة أخرى.';
 
   @override
   String get comic_reading => 'القراءة';
-
-  @override
-  String get comic_chapter_habits_hint =>
-      'تنطبق عادات قائمة الفصول على كافة الكتب.';
 
   @override
   String get browser_title => 'المتصفح';
@@ -5212,26 +4316,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get translation_image_display => 'عرض الصورة';
 
   @override
-  String get translation_display_hint =>
-      'إظهار الترجمات الموجودة أولاً. احتفظ بالأصل في حالة عدم توفر ترجمة.';
-
-  @override
   String get translation_sign_in_required => 'قم بتسجيل الدخول لتمكين الترجمة';
 
   @override
-  String get translation_sign_in_hint =>
-      'بعد تسجيل الدخول، قم بالتبديل إلى الصور المترجمة لترجمتها تلقائيًا.';
-
-  @override
   String get translation_automatic => 'الترجمة الآلية';
-
-  @override
-  String get translation_original_hint =>
-      'عرض النسخ الأصلية. قم بالتبديل إلى الصور المترجمة لترجمتها تلقائيًا.';
-
-  @override
-  String get translation_window_hint =>
-      'معالجة الصور الحالية والقادمة فقط أثناء عرض الترجمات.';
 
   @override
   String get translation_channel => 'قناة الترجمة';
@@ -5259,15 +4347,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get translation_image_actions_hint =>
-      'المس الصورة مع الاستمرار لمزيد من الإجراءات، بما في ذلك ترجمتها مرة أخرى.';
-
-  @override
   String get translation_title => 'ترجمة المانجا';
-
-  @override
-  String get translation_system_sign_in =>
-      'قم بتسجيل الدخول باستخدام متصفح النظام الخاص بك';
 
   @override
   String get translation_target_language => 'اللغة الهدف';
@@ -5275,10 +4355,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get translation_clear_cache =>
       'مسح ذاكرة التخزين المؤقت للصورة المترجمة';
-
-  @override
-  String get translation_cache_hint =>
-      'احتفظ بسجلات الترجمة واستخرج النتائج مرة أخرى عند الحاجة.';
 
   @override
   String get translation_saved_read_failed => 'تعذر تحميل الترجمة المحفوظة';
@@ -5431,9 +4507,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get manage => 'إدارة';
 
   @override
-  String get translation_settings_hint => 'الترجمة الآلية واللغة الهدف والقناة';
-
-  @override
   String get translation_show_original => 'اضغط لإظهار الأصل';
 
   @override
@@ -5458,11 +4531,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get source_website_info => 'معلومات الموقع';
 
   @override
-  String source_saved_search_title(String title) {
-    return '$title · اضغط للبحث';
-  }
-
-  @override
   String get action_done => 'تم';
 
   @override
@@ -5472,14 +4540,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get source_no_saved_searches => 'لا توجد عمليات بحث محفوظة حتى الآن';
-
-  @override
-  String get source_save_search_hint =>
-      'ابحث عن كلمة أساسية، ثم احفظها من إجراءات موقع الويب.';
-
-  @override
-  String get source_saved_search_scope =>
-      'يتم حفظ الكلمات الأساسية لموقع الويب هذا فقط.';
 
   @override
   String get source_search_here => 'ابحث عن العناوين في هذا الموقع';
@@ -5498,10 +4558,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get source_no_titles => 'لم يتم العثور على عناوين مطابقة';
-
-  @override
-  String get source_no_titles_hint =>
-      'قم بتغيير كلماتك الأساسية أو عوامل التصفية أو العودة إلى العناوين الشائعة.';
 
   @override
   String get source_load_more_failed =>
@@ -5585,10 +4641,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get repository_refresh => 'تحديث الكتالوج';
 
   @override
-  String get repository_manage_hint =>
-      'إدارة المكان الذي يتم تنزيل مصادر الجهات الخارجية منه.';
-
-  @override
   String get repository_invalid_address => 'أدخل HTTP أو HTTPS URL صالحًا';
 
   @override
@@ -5621,14 +4673,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get repository_choose_sources_hint =>
-      'بعد إضافة المستودع، اختر المصادر التي تحتاجها.';
-
-  @override
   String get search_scope => 'نطاق البحث';
-
-  @override
-  String get search_scope_hint => 'اختيار المواقع المراد البحث فيها';
 
   @override
   String search_websites_action(int count) {
@@ -5653,10 +4698,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get search_select_results => 'تحديد مواقع الويب المطابقة';
 
   @override
-  String get search_no_websites_hint =>
-      'لا توجد مواقع مطابقة. جرّب اسمًا أو لغة أخرى.';
-
-  @override
   String get search_select_website_hint =>
       'حدد موقع ويب واحدًا على الأقل للبحث فيه.';
 
@@ -5664,16 +4705,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get search_start_title => 'أدخل الكلمات الأساسية للعثور على العناوين';
 
   @override
-  String get search_start_hint =>
-      'ابحث في مواقع ويب متعددة مرة واحدة وأظهر العناوين المتطابقة.';
-
-  @override
   String get search_empty_scope =>
       'لا توجد مواقع ويب قابلة للبحث في هذا النطاق';
-
-  @override
-  String get search_empty_scope_hint =>
-      'قم بالتبديل إلى كافة مواقع الويب أو اختر مواقع الويب للبحث فيها.';
 
   @override
   String search_result_count(int count) {
@@ -5682,9 +4715,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get search_titles => 'عناوين البحث';
-
-  @override
-  String get search_actions => 'إجراءات البحث';
 
   @override
   String get search_details => 'تفاصيل البحث';
@@ -5742,16 +4772,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get search_no_matching_titles => 'لم يتم العثور على عناوين مطابقة';
 
   @override
-  String get search_results_appear_hint =>
-      'ستظهر النتائج هنا كما تم العثور عليها.';
-
-  @override
   String get search_failed_websites_hint =>
-      'لم تتمكن بعض مواقع الويب من إنهاء البحث. أعد المحاولة في تفاصيل البحث.';
-
-  @override
-  String get search_change_keywords_hint =>
-      'جرّب كلمات رئيسية أقصر أو ابحث في المزيد من مواقع الويب.';
+      'لم تتمكن بعض مواقع الويب من إنهاء البحث.';
 
   @override
   String get search_view_details => 'عرض تفاصيل البحث';
@@ -5774,10 +4796,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String search_completed_count(int completed, int total) {
     return 'مكتمل $completed / $total';
   }
-
-  @override
-  String get search_retry_website_hint =>
-      'أعد محاولة مواقع الويب الفاشلة بشكل فردي';
 
   @override
   String source_selected_count(int count) {
@@ -5837,10 +4855,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get source_open => 'مفتوح';
-
-  @override
-  String get source_metadata_hint =>
-      'تأتي المعلومات من كتالوج المصدر. تصف الفئات المحتوى الذي يغطيه الموقع.';
 
   @override
   String get source_region => 'المنطقة';
@@ -5912,9 +4926,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get source_all_languages => 'جميع اللغات';
 
   @override
-  String get action_apply => 'التقديم';
-
-  @override
   String get source_load_retry =>
       'تعذر تحميل هذا الموقع. يرجى المحاولة مرة أخرى.';
 
@@ -5967,10 +4978,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get source_no_websites => 'لا توجد مواقع متاحة';
 
   @override
-  String get source_search_installed_hint =>
-      'البحث عن العناوين في المصادر المثبتة';
-
-  @override
   String get source_global_search => 'البحث عبر المصادر';
 
   @override
@@ -6016,8 +5023,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get source_custom_websites => 'مواقع مختارة';
 
   @override
-  String get tv_hidden_library_hint =>
-      'يقع كل عنوان في فئة مخفية.\nاضغط باستمرار على \"الكل\" لإظهار أحد العناصر.';
+  String get tv_hidden_library_hint => 'يقع كل عنوان في فئة مخفية.';
 
   @override
   String get tv_no_matching_anime => 'لا يوجد أنمي مطابق';
@@ -6028,24 +5034,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get tv_filtered_empty_hint =>
-      'لا يوجد أنمي يطابق المرشحات الحالية.\nقم بتغييرها من الزر الموجود بجانب البحث.';
-
-  @override
   String get tv_new_episodes => 'حلقات جديدة';
 
   @override
   String get tv_recently_added => 'أضيفت مؤخرا';
 
   @override
-  String get tv_empty_category_hint =>
-      'لا يوجد أنمي في هذه الفئة حتى الآن.\nأضف عناوين إليه من صفحة تفاصيل العنوان.';
+  String get tv_empty_category_hint => 'لا يوجد أنمي في هذه الفئة حتى الآن.';
 
   @override
   String get tv_empty_library => 'مكتبة الأنمي الخاصة بك فارغة';
-
-  @override
-  String get tv_empty_library_hint => 'أضف أنيمي من التصفح لملء منزلك';
 
   @override
   String get tv_browse_anime => 'تصفح الانمي';
@@ -6057,7 +5055,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String tv_category_hidden(String category) {
-    return 'اختبأ \"$category\" · استمر في الضغط على \"موافق\" على \"الكل\" لإظهاره';
+    return 'اختبأ \"$category\"';
   }
 
   @override
@@ -6073,23 +5071,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cloudflare_proxy_optional => 'اختياري FlareSolverr / Byparr URL';
 
   @override
-  String get tv_home_layout_hint =>
-      'صفحة الأنمي الرئيسية القائمة على الصفوف (تابع · حلقات جديدة · الفئات) بدلاً من الشبكة المسطحة';
-
-  @override
-  String get tv_hide_libraries_hint =>
-      'إخفاء مكتبات المانجا والروايات (يتم تشغيلها افتراضيًا على التلفزيون)';
-
-  @override
-  String get anime_only_hint =>
-      'إخفاء المانجا والرواية عبر التطبيق. إيقاف لإظهار كل شيء.';
-
-  @override
   String get audio_auto_safe => 'آمن تلقائي';
-
-  @override
-  String get tv_player_hint =>
-      'تشغيل: مشغل تلفزيون مخصص.  مطفأ: مشغل أصلي (سطح المكتب).';
 
   @override
   String get release_open_failed => 'غير قادر على فتح الإصدار';
@@ -6345,10 +5327,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get translation_preparing_ellipsis => 'جارٍ تحضير الترجمة…';
 
   @override
-  String get translation_checking_original =>
-      'جارٍ التحقق من الصورة الأصلية...';
-
-  @override
   String get translation_submitting => 'تقديم...';
 
   @override
@@ -6489,10 +5467,6 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return 'كامل $percent% من $_temp0';
   }
-
-  @override
-  String get memory_reset_hint =>
-      'قم بتبديله وتشغيله في الإعدادات لإعادة التعيين';
 
   @override
   String get action_hide => 'إخفاء';

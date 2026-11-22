@@ -98,11 +98,6 @@ class _AppUpdateDialogState extends State<AppUpdateDialog> {
                               widget.version,
                               style: t.pageTitle.copyWith(fontSize: 36),
                             ),
-                            const SizedBox(height: NodeLaneTokens.space8),
-                            Text(
-                              l.app_update_details_hint,
-                              style: t.readerSecondary,
-                            ),
                           ],
                         ),
                       ),

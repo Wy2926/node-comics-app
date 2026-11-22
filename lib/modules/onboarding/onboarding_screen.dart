@@ -534,9 +534,6 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
       return MobileOnboardingFrame(
         step: first ? 1 : 2,
         title: first ? l10n.app_name : l10n.onboarding_content_title,
-        description: first
-            ? l10n.onboarding_mobile_libraries_body
-            : l10n.onboarding_mobile_sources_body,
         busy: _busy,
         leaveLabel: first
             ? l10n.onboarding_skip
@@ -661,19 +658,6 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
                                     : theme.textTheme.headlineSmall)
                                 ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _body(l10n),
-                        textAlign: TextAlign.center,
-                        style:
-                            (isTv
-                                    ? theme.textTheme.bodyLarge
-                                    : theme.textTheme.bodyMedium)
-                                ?.copyWith(
-                                  color: theme.hintColor,
-                                  height: 1.45,
-                                ),
-                      ),
                       const SizedBox(height: 28),
                       ..._stepBody(l10n),
                     ],
@@ -686,18 +670,6 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
                 onPressed: _busy ? null : _finish,
                 child: Text(_leaveLabel(l10n)),
               ),
-              // Typing a URL on a d-pad is miserable, so on a TV say
-              // plainly that leaving now costs nothing.
-              if (isTv && _step == _Step.repository && _added == null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  l10n.onboarding_later,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.hintColor,
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -709,12 +681,6 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
     _Step.libraries => l10n.onboarding_title,
     _Step.navigation => l10n.onboarding_nav_title,
     _Step.repository => l10n.onboarding_repo_title,
-  };
-
-  String _body(AppLocalizations l10n) => switch (_step) {
-    _Step.libraries => l10n.onboarding_libraries_body,
-    _Step.navigation => l10n.onboarding_nav_body,
-    _Step.repository => l10n.onboarding_body,
   };
 
   String _leaveLabel(AppLocalizations l10n) =>
@@ -840,17 +806,6 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
               .toList(),
         ),
       ],
-      const SizedBox(height: 6),
-      // No type to choose here, unlike the repository above it. A folder is
-      // not bound to one: the scanner reads each title's contents and files
-      // it accordingly, so one folder can feed all three libraries. Saying so
-      // is better than offering a choice that does not exist.
-      Text(
-        l10n.onboarding_local_any_type,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall
-            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-      ),
       if (_folderError != null) ...[
         const SizedBox(height: 12),
         Text(_folderError!),

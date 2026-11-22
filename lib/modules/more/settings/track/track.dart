@@ -117,26 +117,6 @@ class TrackScreen extends ConsumerWidget {
                   id: TrackerProviders.simkl.syncId,
                   entries: entries,
                 ),
-                ListTile(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: context.secondaryColor,
-                        ),
-                      ],
-                    ),
-                  ),
-                  subtitle: Text(
-                    l10n.tracking_warning_info,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
-                    ),
-                  ),
-                ),
                 ListTileWidget(
                   title: l10n.manage_trackers,
                   icon: Icons.settings,

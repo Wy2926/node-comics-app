@@ -102,11 +102,6 @@ class MemoryOverlay extends StatelessWidget {
           ),
           style: style.copyWith(color: pressureColour),
         ),
-        if (isTv)
-          Text(
-            context.l10n.memory_reset_hint,
-            style: style.copyWith(color: Colors.white54, fontSize: 11),
-          ),
         if (interactive)
           Row(
             mainAxisSize: MainAxisSize.min,

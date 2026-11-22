@@ -56,17 +56,8 @@ void main() {
           results.add(result);
           if (result != null) current = result;
         }, textScale: scale);
-        final heading = tester.element(find.byType(NodeLaneReaderHeading));
-        final l10n = AppLocalizations.of(heading)!;
-        final hint = find.text(
-          '${l10n.settings_translation_scope}\n${l10n.settings_immediate_choice}',
-        );
         final first = find.widgetWithText(NodeLaneRow, '简体中文');
-        expect(
-          tester.getBottomLeft(hint).dy,
-          lessThan(tester.getTopLeft(first).dy),
-        );
-        expect(tester.getTopLeft(hint).dx, NodeLaneTokens.gutter);
+        expect(first.hitTestable(), findsOneWidget);
         final surface = tester.getRect(find.byType(NodeLaneReaderSurface));
         expect(surface.top, greaterThanOrEqualTo(47));
         expect(surface.bottom, lessThanOrEqualTo(844));

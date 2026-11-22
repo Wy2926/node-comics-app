@@ -374,10 +374,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             SwitchListTile(
               value: useLibass,
               title: Text(context.l10n.use_libass),
-              subtitle: Text(
-                context.l10n.use_libass_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) {
                 ref.read(useLibassStateProvider.notifier).set(value);
               },
@@ -493,10 +489,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             SwitchListTile(
               value: fullScreenPlayer,
               title: Text(context.l10n.full_screen_player),
-              subtitle: Text(
-                context.l10n.full_screen_player_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) {
                 ref.read(fullScreenPlayerStateProvider.notifier).set(value);
               },
@@ -504,10 +496,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             SwitchListTile(
               value: forceLandscapePlayer,
               title: Text(context.l10n.forceLandscapeMode),
-              subtitle: Text(
-                context.l10n.forceLandscapeModeSubtitle,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) {
                 ref.read(forceLandscapePlayerStateProvider.notifier).set(value);
               },

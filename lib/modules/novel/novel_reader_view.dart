@@ -7,7 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/widgets/library_filter_controls.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -28,10 +30,9 @@ import 'package:mangayomi/modules/novel/tts/tts_settings_tab.dart';
 import 'package:mangayomi/modules/novel/utils/novel_paginator.dart';
 import 'package:mangayomi/modules/novel/utils/novel_reader_fonts.dart';
 import 'package:mangayomi/modules/novel/widgets/novel_general_settings_tab.dart';
-import 'package:mangayomi/modules/novel/widgets/novel_reader_settings_sheet.dart';
+import 'package:mangayomi/modules/novel/widgets/novel_reader_settings_tab.dart';
 import 'package:mangayomi/modules/novel/widgets/mobile_novel_controls.dart';
 import 'package:mangayomi/modules/novel/widgets/mobile_novel_session_settings.dart';
-import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/get_html_content.dart';
@@ -1190,45 +1191,50 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
     }
   }
 
-  Future<void> _openMobileSettings() => _presentMobileControl(() async {
-    await Navigator.push<void>(
-      context,
-      MaterialPageRoute(
-        builder: (settingsContext) => MobileNovelReaderScreen(
-          sessionControls: MobileNovelSessionSettings(
-            readerMode: _readerMode,
-            pageMode: _pageMode,
-            autoScroll: _autoScrollPage,
-            speed: _pageOffset,
-            onReaderModeChanged: (mode) {
-              _readerController.setReaderMode(mode);
-              setState(() => _readerMode = mode);
-            },
-            onPageModeChanged: (mode) {
-              _readerController.setPageMode(mode);
-              setState(() => _pageMode = mode);
-            },
-            onAutoScrollChanged: (value) {
-              _readerController.setAutoScroll(value, _pageOffset.value);
-              _autoScrollPage.value = value;
-              _autoScroll.value = value;
-            },
-            onSpeedPreview: (value) => _pageOffset.value = value,
-            onSpeedChanged: (value) =>
-                _readerController.setAutoScroll(_autoScrollPage.value, value),
-          ),
-          onOpenTts: _ttsSupported
-              ? () => Navigator.push<void>(
-                  settingsContext,
-                  MaterialPageRoute(
-                    builder: (_) => const MobileTtsSettingsScreen(),
+  Future<void> _openMobileSettings(BuildContext anchor) =>
+      _presentMobileControl(() async {
+        await showNodeLaneBubble<void>(
+          anchor,
+          label: context.l10n.settings,
+          width: NodeLaneTokens.bubbleSettingsWidth,
+          child: NodeLaneBubbleFlow(
+            home: Builder(
+              builder: (settingsContext) => MobileNovelReaderScreen(
+                sessionControls: MobileNovelSessionSettings(
+                  readerMode: _readerMode,
+                  pageMode: _pageMode,
+                  autoScroll: _autoScrollPage,
+                  speed: _pageOffset,
+                  onReaderModeChanged: (mode) {
+                    _readerController.setReaderMode(mode);
+                    setState(() => _readerMode = mode);
+                  },
+                  onPageModeChanged: (mode) {
+                    _readerController.setPageMode(mode);
+                    setState(() => _pageMode = mode);
+                  },
+                  onAutoScrollChanged: (value) {
+                    _readerController.setAutoScroll(value, _pageOffset.value);
+                    _autoScrollPage.value = value;
+                    _autoScroll.value = value;
+                  },
+                  onSpeedPreview: (value) => _pageOffset.value = value,
+                  onSpeedChanged: (value) => _readerController.setAutoScroll(
+                    _autoScrollPage.value,
+                    value,
                   ),
-                )
-              : null,
-        ),
-      ),
-    );
-  });
+                ),
+                onOpenTts: _ttsSupported
+                    ? () => NodeLaneBubbleFlow.push<void>(
+                        settingsContext,
+                        const MobileTtsSettingsScreen(),
+                      )
+                    : null,
+              ),
+            ),
+          ),
+        );
+      });
 
   Widget _mobileBottomBar(PageMode effectivePageMode) {
     return MobileNovelPanel(
@@ -1321,46 +1327,21 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
     );
   }
 
-  void _showFontSizeBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      sheetAnimationStyle: NodeLaneMotion.style(context),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Consumer(
+  void _showFontSize(BuildContext anchor) {
+    showNodeLaneBubble<void>(
+      anchor,
+      label: anchor.l10n.font_size,
+      width: NodeLaneTokens.bubbleToolWidth,
+      child: SingleChildScrollView(
+        child: Consumer(
           builder: (context, ref, _) {
             final currentFontSize = ref.watch(novelFontSizeStateProvider);
             final primaryColor = Theme.of(context).primaryColor;
-            return Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
+            return Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1509,8 +1490,8 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
               ),
             );
           },
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -1791,20 +1772,21 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            IconButton(
-                              visualDensity: VisualDensity.compact,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 40,
-                                minHeight: 40,
+                            Builder(
+                              builder: (anchor) => IconButton(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 40,
+                                  minHeight: 40,
+                                ),
+                                onPressed: () => _showFontSize(anchor),
+                                icon: const Icon(
+                                  Icons.format_size_rounded,
+                                  size: 22,
+                                ),
+                                tooltip: context.l10n.font_size,
                               ),
-                              onPressed: () =>
-                                  _showFontSizeBottomSheet(context),
-                              icon: const Icon(
-                                Icons.format_size_rounded,
-                                size: 22,
-                              ),
-                              tooltip: context.l10n.font_size,
                             ),
                             IconButton(
                               visualDensity: VisualDensity.compact,
@@ -1895,62 +1877,92 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                 ),
                                 tooltip: context.l10n.tts,
                               ),
-                            IconButton(
-                              visualDensity: VisualDensity.compact,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 40,
-                                minHeight: 40,
-                              ),
-                              onPressed: () async {
-                                bool autoScrollAlreadyFalse =
-                                    _autoScroll.value == false;
-                                if (!autoScrollAlreadyFalse) {
-                                  _autoScroll.value = false;
-                                }
-                                await customDraggableTabBar(
-                                  tabs: [
-                                    Tab(text: context.l10n.reader),
-                                    Tab(text: context.l10n.general),
-                                    if (_ttsSupported)
-                                      Tab(text: context.l10n.tts),
-                                  ],
-                                  children: [
-                                    ReaderSettingsTab(
-                                      readerController: _readerController,
-                                      currentReaderMode: _readerMode,
-                                      onReaderModeChanged: (newMode) {
-                                        setState(() {
-                                          _readerMode = newMode;
-                                        });
-                                      },
-                                      currentPageMode: effectivePageMode,
-                                      onPageModeChanged: (newMode) {
-                                        setState(() {
-                                          _pageMode = newMode;
-                                        });
-                                      },
-                                    ),
-                                    GeneralSettingsTab(
-                                      autoScrollPage: _autoScrollPage,
-                                      autoScroll: _autoScroll,
-                                      readerController: _readerController,
-                                      pageOffset: _pageOffset,
-                                    ),
-                                    if (_ttsSupported) const TtsSettingsTab(),
-                                  ],
-                                  context: context,
-                                );
-                                if (!autoScrollAlreadyFalse ||
-                                    _autoScroll.value) {
-                                  if (_autoScrollPage.value &&
-                                      _isContinuousMode()) {
-                                    _autoScroll.value = true;
+                            Builder(
+                              builder: (anchor) => IconButton(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 40,
+                                  minHeight: 40,
+                                ),
+                                onPressed: () async {
+                                  bool autoScrollAlreadyFalse =
+                                      _autoScroll.value == false;
+                                  if (!autoScrollAlreadyFalse) {
+                                    _autoScroll.value = false;
                                   }
-                                }
-                              },
-                              icon: const Icon(Icons.tune_rounded),
-                              tooltip: context.l10n.settings,
+                                  final tabs = [
+                                    context.l10n.reader,
+                                    context.l10n.general,
+                                    if (_ttsSupported) context.l10n.tts,
+                                  ];
+                                  await showNodeLaneBubble<void>(
+                                    anchor,
+                                    label: context.l10n.settings,
+                                    width: NodeLaneTokens.bubbleSettingsWidth,
+                                    child: DefaultTabController(
+                                      length: tabs.length,
+                                      child: Column(
+                                        children: [
+                                          LibrarySettingsTabs(tabs),
+                                          Expanded(
+                                            child: TabBarView(
+                                              children: [
+                                                for (final tab in [
+                                                  ReaderSettingsTab(
+                                                    readerController:
+                                                        _readerController,
+                                                    currentReaderMode:
+                                                        _readerMode,
+                                                    onReaderModeChanged:
+                                                        (newMode) {
+                                                          setState(() {
+                                                            _readerMode =
+                                                                newMode;
+                                                          });
+                                                        },
+                                                    currentPageMode:
+                                                        effectivePageMode,
+                                                    onPageModeChanged:
+                                                        (newMode) {
+                                                          setState(() {
+                                                            _pageMode = newMode;
+                                                          });
+                                                        },
+                                                  ),
+                                                  GeneralSettingsTab(
+                                                    autoScrollPage:
+                                                        _autoScrollPage,
+                                                    autoScroll: _autoScroll,
+                                                    readerController:
+                                                        _readerController,
+                                                    pageOffset: _pageOffset,
+                                                  ),
+                                                  if (_ttsSupported)
+                                                    const TtsSettingsTab(),
+                                                ])
+                                                  SingleChildScrollView(
+                                                    child: tab,
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                  if (!mounted) return;
+                                  if (!autoScrollAlreadyFalse ||
+                                      _autoScroll.value) {
+                                    if (_autoScrollPage.value &&
+                                        _isContinuousMode()) {
+                                      _autoScroll.value = true;
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.tune_rounded),
+                                tooltip: context.l10n.settings,
+                              ),
                             ),
                           ],
                         ),

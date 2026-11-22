@@ -626,11 +626,6 @@ Future<void> showSourceWebsiteInfo(BuildContext context, Source source) {
                   ),
                 ),
               NodeLaneCatalogHeading(l.source_information),
-              Text(
-                l.source_metadata_hint,
-                style: NodeLaneTokens.of(context).secondary,
-              ),
-              const SizedBox(height: NodeLaneTokens.space8),
               NodeLaneGroupSurface(
                 children: [
                   for (final entry in [

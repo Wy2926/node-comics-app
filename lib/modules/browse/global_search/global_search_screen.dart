@@ -153,7 +153,6 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
         ? NodeLaneEmptyState(
             icon: NodeLaneIcons.of(context).search,
             title: context.l10n.search_start_title,
-            message: context.l10n.search_start_hint,
           )
         : Column(
             children: [
@@ -198,7 +197,6 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
       return NodeLaneEmptyState(
         icon: NodeLaneIcons.of(context).web,
         title: context.l10n.search_empty_scope,
-        message: context.l10n.search_empty_scope_hint,
         action: FilledButton(
           onPressed: _editScope,
           child: Text(context.l10n.search_scope),
@@ -211,9 +209,6 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
       title: noneInstalled
           ? l10n.global_search_no_sources(widget.itemType.localized(l10n))
           : l10n.global_search_all_nsfw,
-      message: noneInstalled
-          ? l10n.global_search_no_sources_hint
-          : l10n.global_search_all_nsfw_hint,
       action: FilledButton(
         onPressed: () => _openEmptyTarget(install: noneInstalled),
         child: Text(noneInstalled ? l10n.show_extensions : l10n.settings),

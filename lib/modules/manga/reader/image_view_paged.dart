@@ -17,7 +17,8 @@ import 'package:mangayomi/utils/extensions/others.dart';
 
 class ImageViewPaged extends ConsumerStatefulWidget {
   final UChapDataPreload data;
-  final Function(UChapDataPreload data) onLongPressData;
+  final void Function(UChapDataPreload data, Offset globalPosition)
+  onLongPressData;
   final Widget? Function(ssiv.SubsamplingImageState state) loadStateChanged;
   final bool zoomEnabled;
   final bool panEnabled;
@@ -207,7 +208,8 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
       imageController: isAnimated ? null : widget.controller,
       child: applyReaderColorFilter(
         GestureDetector(
-          onLongPress: () => widget.onLongPressData.call(widget.data),
+          onLongPressStart: (press) =>
+              widget.onLongPressData(widget.data, press.globalPosition),
           child: content,
         ),
         profile,

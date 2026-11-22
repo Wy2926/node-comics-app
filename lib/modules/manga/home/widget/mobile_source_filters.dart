@@ -58,11 +58,6 @@ class _MobileSourceFilterPageState extends State<MobileSourceFilterPage> {
         children: [
           if (widget.sourceName != null)
             NodeLaneSectionHeading(widget.sourceName!),
-          Text(
-            l10n.source_filter_scope,
-            style: NodeLaneTokens.of(context).readerSecondary,
-          ),
-          const SizedBox(height: NodeLaneTokens.space16),
           SourceFilterFields(key: ValueKey(_resetVersion), filters: _draft),
         ],
       ),
@@ -105,7 +100,6 @@ class _SourceFilterFieldsState extends State<SourceFilterFields> {
       title: sourceFilterLabel(l10n, f.name),
       current: current,
       options: options,
-      hint: l10n.source_filter_apply_hint,
     );
     if (mounted && value != null) {
       setState(() {

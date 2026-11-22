@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
 import 'package:mangayomi/modules/more/settings/player/subtitle_service_screen.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -35,9 +35,8 @@ class _SubtitlesWidgetSearchState extends ConsumerState<SubtitlesWidgetSearch> {
 
   @override
   Widget build(BuildContext context) {
-    Widget status(Widget child) => NodeLaneCatalogSheet(
+    Widget status(Widget child) => NodeLaneBubblePanel(
       title: context.l10n.search_subtitles,
-      fitContent: true,
       child: ListView(
         shrinkWrap: true,
         padding: NodeLaneTokens.pagePadding,
@@ -221,12 +220,12 @@ class _SubtitleSearchResultsState extends State<_SubtitleSearchResults> {
   Widget build(BuildContext context) {
     final l = context.l10n, icons = NodeLaneIcons.of(context);
     final count = _subtitles?.length ?? _episodes?.length ?? _titles.length;
-    return NodeLaneCatalogSheet(
+    return NodeLaneBubblePanel(
       title: l.search_subtitles,
-      heightFactor: .85,
-      fitContent: true,
-      onBack: !_busy && (_subtitles != null || _episodes != null)
-          ? () => setState(() {
+      actions: [
+        if (!_busy && (_subtitles != null || _episodes != null))
+          BackButton(
+            onPressed: () => setState(() {
               if (_subtitles != null) {
                 _subtitles = null;
               } else {
@@ -235,8 +234,9 @@ class _SubtitleSearchResultsState extends State<_SubtitleSearchResults> {
               }
               _error = null;
               _retry = null;
-            })
-          : null,
+            }),
+          ),
+      ],
       child: ListView(
         shrinkWrap: true,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -312,7 +312,9 @@ Future<SubtitleContent?> showSubtitleSearch(
   BuildContext context, {
   required Chapter chapter,
   required bool isLocal,
-}) => showNodeLaneCatalogSheet<SubtitleContent>(
+}) => showNodeLaneBubble<SubtitleContent>(
   context,
-  SubtitlesWidgetSearch(chapter: chapter, isLocal: isLocal),
+  label: context.l10n.search_subtitles,
+  width: NodeLaneTokens.bubbleSettingsWidth,
+  child: SubtitlesWidgetSearch(chapter: chapter, isLocal: isLocal),
 );

@@ -1,4 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,24 +14,27 @@ void main() {
   var scale = 1.0;
   var ttsOpens = 0;
   var ttsSupported = true;
-  Widget app(ProviderContainer container) => UncontrolledProviderScope(
-    container: container,
-    child: MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(scale),
-          padding: const EdgeInsets.only(top: 24, bottom: 34),
+  Widget app(ProviderContainer container, {Widget? home}) =>
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(scale),
+              padding: const EdgeInsets.only(top: 24, bottom: 34),
+            ),
+            child: child!,
+          ),
+          home:
+              home ??
+              MobileNovelReaderScreen(
+                onOpenTts: ttsSupported ? () => ttsOpens++ : null,
+              ),
         ),
-        child: child!,
-      ),
-      home: MobileNovelReaderScreen(
-        onOpenTts: ttsSupported ? () => ttsOpens++ : null,
-      ),
-    ),
-  );
+      );
 
   ProviderContainer preferences(WidgetTester tester) {
     tester.view.physicalSize = const Size(360, 740);
@@ -165,6 +169,49 @@ void main() {
   }
 
   testWidgets(
+    'novel font choices return to the same anchored reader settings',
+    (tester) async {
+      final container = preferences(tester);
+      await tester.pumpWidget(
+        app(
+          container,
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomRight,
+              child: Builder(
+                builder: (anchor) => TextButton(
+                  onPressed: () => showNodeLaneBubble<void>(
+                    anchor,
+                    label: 'Settings',
+                    child: const NodeLaneBubbleFlow(
+                      home: MobileNovelReaderScreen(),
+                    ),
+                  ),
+                  child: const Text('Open reader tools'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open reader tools'));
+      await tester.pumpAndSettle();
+      final panel = tester.element(find.byType(MobileNovelReaderScreen));
+      await open(tester, 'Font');
+      expect(find.byType(BottomSheet), findsNothing);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(tester.element(find.byType(MobileNovelReaderScreen)), same(panel));
+      expect(_writes, isEmpty);
+      await choose(tester, 'Font', 'Lexend');
+      expect(_writes, [('novelFontFamily', 'Lexend')]);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Open reader tools').hitTestable(), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'font cancel differs from default and theme presets preserve independent custom colors',
     (tester) async {
       final container = preferences(tester);
@@ -258,11 +305,15 @@ void main() {
       await toggle(tester, 'Remove Extra Paragraph Spacing');
       await toggle(tester, 'Use page tap zones');
       await toggle(tester, 'Automatic double page');
-      final hint = find.text(
-        'Set reading mode and single or double pages while reading a title.',
+      final lastSetting = find.widgetWithText(
+        NodeLaneSwitchRow,
+        'Automatic double page',
       );
-      await reveal(tester, hint);
-      expect(tester.getBottomRight(hint).dy, lessThanOrEqualTo(740 - 34));
+      await reveal(tester, lastSetting);
+      expect(
+        tester.getBottomRight(lastSetting).dy,
+        lessThanOrEqualTo(740 - 34),
+      );
       expect(container.read(novelTextAlignStateProvider), NovelTextAlign.block);
       expect(container.read(novelTapToScrollStateProvider), isTrue);
       expect(container.read(doublePageAutoStateProvider), isTrue);

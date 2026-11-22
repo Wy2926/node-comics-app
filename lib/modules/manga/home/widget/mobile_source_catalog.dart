@@ -398,12 +398,6 @@ class MobileSourceStatus extends StatelessWidget {
             ),
             const SizedBox(height: NodeLaneTokens.space16),
             Text(context.l10n.source_no_titles, style: t.title),
-            const SizedBox(height: NodeLaneTokens.space8),
-            Text(
-              context.l10n.source_no_titles_hint,
-              style: t.readerSecondary,
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       );

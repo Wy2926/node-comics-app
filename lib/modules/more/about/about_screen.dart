@@ -96,7 +96,6 @@ class AboutScreen extends ConsumerWidget {
                       ListTile(
                         onTap: () => context.push('/errorReports'),
                         title: Text(l10n.error_reports),
-                        subtitle: Text(l10n.error_reports_subtitle),
                         trailing: CrashReports.reports.isEmpty
                             ? null
                             : Text('${CrashReports.reports.length}'),

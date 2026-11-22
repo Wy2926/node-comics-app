@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/source.dart';
@@ -99,8 +99,7 @@ class ReaderAppBar extends ConsumerWidget {
               ),
               if (!isLocalArchive &&
                   (onRefreshPressed != null || onWebViewPressed != null))
-                PopupMenuButton<int>(
-                  popUpAnimationStyle: NodeLaneMotion.style(context),
+                NodeLaneBubbleButton<int>(
                   tooltip: l10n.more,
                   icon: Icon(NodeLaneIcons.of(context).more),
                   onSelected: (value) {

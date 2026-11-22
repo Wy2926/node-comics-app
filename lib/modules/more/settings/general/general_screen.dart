@@ -94,11 +94,7 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
               ),
               title: Text(l10n.auto_library_update),
               subtitle: Text(
-                // When it's off, say what the setting does; the word "Never"
-                // on its own doesn't explain what would otherwise happen.
-                autoUpdateInterval == 0
-                    ? l10n.auto_library_update_subtitle
-                    : _autoLibraryUpdateLabel(context, autoUpdateInterval),
+                _autoLibraryUpdateLabel(context, autoUpdateInterval),
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
             ),
@@ -106,10 +102,6 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
               SwitchListTile(
                 value: autoUpdateWifiOnly,
                 title: Text(l10n.auto_library_update_wifi_only),
-                subtitle: Text(
-                  l10n.auto_library_update_wifi_only_subtitle,
-                  style: TextStyle(fontSize: 11, color: context.secondaryColor),
-                ),
                 onChanged: (value) => ref
                     .read(autoLibraryUpdateWifiOnlyStateProvider.notifier)
                     .set(value),
@@ -240,10 +232,6 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
                   .read(onboardingCompletedStateProvider.notifier)
                   .showAgain(),
               title: Text(context.l10n.onboarding_replay),
-              subtitle: Text(
-                context.l10n.onboarding_replay_subtitle,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
             ),
             ListTile(
               onTap: () => _showCfProxyDialog(context),
@@ -519,14 +507,12 @@ class _GeneralStateScreen extends ConsumerState<_LegacyGeneralScreen> {
             SwitchListTile(
               value: ref.watch(memoryOverlayVisibleProvider),
               title: Text(l10n.memory_overlay),
-              subtitle: Text(l10n.memory_overlay_subtitle),
               onChanged: (value) =>
                   ref.read(memoryOverlayVisibleProvider.notifier).set(value),
             ),
             SwitchListTile(
               value: showNavDoubleTapTooltip,
               title: Text(l10n.show_nav_double_tap_tooltip),
-              subtitle: Text(l10n.show_nav_double_tap_tooltip_subtitle),
               onChanged: (value) => ref
                   .read(showNavDoubleTapTooltipStateProvider.notifier)
                   .set(value),

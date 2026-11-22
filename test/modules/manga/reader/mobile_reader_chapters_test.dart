@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -133,22 +134,25 @@ void main() {
     required Future<void> Function(Chapter, bool) save,
     ValueChanged<Chapter?>? result,
   }) => Scaffold(
-    body: Builder(
-      builder: (context) => TextButton(
-        onPressed: () async {
-          final value = await showModalBottomSheet<Chapter>(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
-            builder: (_) => MobileReaderChaptersSheet(
-              chapter: current,
-              chapters: items,
-              onBookmark: save,
-            ),
-          );
-          result?.call(value);
-        },
-        child: const Text('Open'),
+    body: Align(
+      alignment: Alignment.bottomCenter,
+      child: Builder(
+        builder: (context) => TextButton(
+          onPressed: () async {
+            final value = await showNodeLaneBubble<Chapter>(
+              context,
+              label: 'Chapters',
+              width: 440,
+              child: MobileReaderChaptersPanel(
+                chapter: current,
+                chapters: items,
+                onBookmark: save,
+              ),
+            );
+            result?.call(value);
+          },
+          child: const Text('Open'),
+        ),
       ),
     ),
   );
@@ -281,7 +285,7 @@ void main() {
       );
       await tester.binding.handlePopRoute();
       await tester.pump();
-      expect(find.byType(MobileReaderChaptersSheet), findsOneWidget);
+      expect(find.byType(MobileReaderChaptersPanel), findsOneWidget);
       completion.complete();
       await tester.pumpAndSettle();
       expect(
@@ -374,7 +378,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Chapters'));
       await tester.pumpAndSettle();
-      expect(find.byType(MobileReaderChaptersSheet), findsOneWidget);
+      expect(find.byType(MobileReaderChaptersPanel), findsOneWidget);
       change(() => showOwner = false);
       await tester.pump();
       await tester.tap(row(chapters[1]));
@@ -390,7 +394,7 @@ void main() {
       select();
       await tester.pumpAndSettle();
       expect(selected, [2]);
-      expect(find.byType(MobileReaderChaptersSheet), findsNothing);
+      expect(find.byType(MobileReaderChaptersPanel), findsNothing);
       expect(find.text('Selected 2'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

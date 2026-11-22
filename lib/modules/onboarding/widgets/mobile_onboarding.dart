@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
@@ -15,7 +16,6 @@ class MobileOnboardingFrame extends StatelessWidget {
     super.key,
     required this.step,
     required this.title,
-    required this.description,
     required this.child,
     required this.busy,
     required this.leaveLabel,
@@ -26,7 +26,7 @@ class MobileOnboardingFrame extends StatelessWidget {
   });
 
   final int step;
-  final String title, description, leaveLabel;
+  final String title, leaveLabel;
   final Widget child;
   final bool busy;
   final VoidCallback onLeave;
@@ -57,12 +57,6 @@ class MobileOnboardingFrame extends StatelessWidget {
             textAlign: welcome ? TextAlign.center : TextAlign.start,
             style: t.detailTitle,
           ),
-        ),
-        const SizedBox(height: NodeLaneTokens.space8),
-        Text(
-          description,
-          textAlign: welcome ? TextAlign.center : TextAlign.start,
-          style: t.readerSecondary,
         ),
       ],
     );
@@ -222,7 +216,6 @@ class MobileOnboardingLibraries extends StatelessWidget {
         const SizedBox(height: NodeLaneTokens.space16),
         NodeLaneRow.card(
           title: l.onboarding_restore,
-          subtitle: l.onboarding_restore_hint,
           icon: icons.tracking,
           enabled: !busy,
           onTap: onRestore,
@@ -268,7 +261,6 @@ class MobileOnboardingSources extends StatelessWidget {
       children: [
         NodeLaneRow.card(
           title: l.bookshelf_browse_sources,
-          subtitle: l.onboarding_browse_hint,
           icon: icons.navigation,
           enabled: !busy,
           onTap: onBrowse,
@@ -277,7 +269,6 @@ class MobileOnboardingSources extends StatelessWidget {
         if (folderStatus == null)
           NodeLaneRow.card(
             title: l.onboarding_import_folder,
-            subtitle: l.onboarding_import_folder_hint,
             icon: icons.folderOutline,
             enabled: !busy,
             onTap: onAddFolder,
@@ -286,7 +277,6 @@ class MobileOnboardingSources extends StatelessWidget {
           NodeLaneDisclosure(
             key: const ValueKey('onboarding-local'),
             title: l.onboarding_import_folder,
-            subtitle: l.onboarding_import_folder_hint,
             icon: icons.folderOutline,
             minHeight: NodeLaneTokens.catalogRowHeight,
             initiallyExpanded: true,
@@ -296,7 +286,6 @@ class MobileOnboardingSources extends StatelessWidget {
         NodeLaneDisclosure(
           key: const ValueKey('onboarding-repository'),
           title: l.onboarding_third_party,
-          subtitle: l.onboarding_third_party_hint,
           icon: icons.webLink,
           minHeight: NodeLaneTokens.catalogRowHeight,
           initiallyExpanded:
@@ -306,35 +295,20 @@ class MobileOnboardingSources extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: NodeLaneTokens.groupPadding,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      l.onboarding_repository_hint,
-                      style: t.readerSecondary,
+              if (libraries.length > 1) ...[
+                Padding(
+                  padding: NodeLaneTokens.groupPadding,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: LibraryMediaButton(
+                      value: repoType,
+                      availableTypes: _mediaOrder.where(libraries.contains),
+                      onChanged: busy ? null : onRepoType,
                     ),
-                    if (libraries.length > 1) ...[
-                      const SizedBox(height: NodeLaneTokens.space12),
-                      NodeLaneSegments<ItemType>(
-                        value: repoType,
-                        segments: [
-                          for (final type in _mediaOrder.where(
-                            libraries.contains,
-                          ))
-                            ButtonSegment(
-                              value: type,
-                              label: Text(_label(context, type)),
-                            ),
-                        ],
-                        onChanged: busy ? null : onRepoType,
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
-              ),
-              const NodeLaneGroupDivider(),
+                const NodeLaneGroupDivider(),
+              ],
               Padding(
                 padding: NodeLaneTokens.groupPadding,
                 child: NodeLaneTextField(

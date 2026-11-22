@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -112,7 +111,6 @@ void main() {
             return MobileOnboardingFrame(
               step: 1,
               title: 'Welcome',
-              description: context.l10n.onboarding_mobile_libraries_body,
               busy: busy,
               leaveLabel: 'Skip for now',
               onLeave: () => skipped++,
@@ -184,7 +182,6 @@ void main() {
             return MobileOnboardingFrame(
               step: 2,
               title: 'Start reading',
-              description: 'You can also add content later.',
               busy: busy,
               leaveLabel: 'Skip for now',
               onLeave: () => skips++,

@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' show SemanticsRole;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -200,10 +201,10 @@ void main() {
       await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
       expect(find.text('Invert selection'), findsNothing);
-      expect(
-        tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
-        lessThan(toolbarTop),
+      final menu = find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.role == SemanticsRole.menu,
       );
+      expect(tester.getBottomRight(menu).dy, lessThan(toolbarTop));
       await tester.tap(find.text('Remove'));
       await tester.pumpAndSettle();
       expect(actions, [10, 11, 3]);
@@ -216,10 +217,7 @@ void main() {
       final compactMore = tester.getCenter(find.text('More'));
       await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
-      expect(
-        tester.getBottomRight(find.byType(SingleChildScrollView)).dy,
-        lessThan(compactToolbarTop),
-      );
+      expect(tester.getBottomRight(menu).dy, lessThan(compactToolbarTop));
       await tester.ensureVisible(find.text('Remove'));
       await tester.pumpAndSettle();
       expect(find.text('Remove').hitTestable(), findsOneWidget);

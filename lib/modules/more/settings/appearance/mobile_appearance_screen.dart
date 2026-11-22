@@ -220,7 +220,6 @@ class MobileAppearanceScreen extends ConsumerWidget {
                 children: [
                   NodeLaneSliderRow(
                     title: l10n.app_ui_scale,
-                    subtitle: l10n.app_ui_scale_subtitle,
                     value: scale,
                     min: .85,
                     max: 1.25,
@@ -252,7 +251,6 @@ class MobileAppearanceScreen extends ConsumerWidget {
                   NodeLaneRow(
                     openOnReveal: true,
                     title: l10n.reorder_navigation,
-                    subtitle: l10n.reorder_navigation_description,
                     icon: NodeLaneIcons.of(context).pageLayout,
                     onTap: () => context.push('/customNavigationSettings'),
                   ),

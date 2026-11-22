@@ -60,14 +60,6 @@ class OnboardingNavPreview extends StatelessWidget {
             size: 18,
             color: theme.colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: 6),
-          Text(
-            l10n.onboarding_nav_inside,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
           const SizedBox(height: 8),
           _NavPreviewBar(items: insideLibrary),
         ],

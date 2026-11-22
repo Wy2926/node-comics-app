@@ -153,11 +153,10 @@ class _AccountViewState extends ConsumerState<_AccountView>
         ? l.nodelane_account_auth_error
         : service.accountLoadFailed
         ? l.nodelane_account_refresh_error
-        : _initializing || service.accountLoading
-        ? null
-        : !service.loggedIn
-        ? l.nodelane_account_intro
-        : account?.plan == null
+        : !_initializing &&
+              !service.accountLoading &&
+              service.loggedIn &&
+              account?.plan == null
         ? l.nodelane_account_unknown
         : null;
     return Semantics(
@@ -266,22 +265,10 @@ class _AccountViewState extends ConsumerState<_AccountView>
             textAlign: TextAlign.center,
             style: t.detailTitle,
           ),
-          const SizedBox(height: NodeLaneTokens.space12),
-          Text(
-            l.nodelane_account_intro,
-            textAlign: TextAlign.center,
-            style: t.readerSecondary,
-          ),
           const SizedBox(height: NodeLaneTokens.space24),
           FilledButton(
             onPressed: _disabled ? null : service.login,
             child: Text(l.nodelane_login_action),
-          ),
-          const SizedBox(height: NodeLaneTokens.space12),
-          Text(
-            l.nodelane_login_browser,
-            textAlign: TextAlign.center,
-            style: t.readerSecondary,
           ),
         ],
       ),

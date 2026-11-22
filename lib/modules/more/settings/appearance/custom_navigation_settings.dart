@@ -37,7 +37,6 @@ class _CustomNavigationSettingsState
                 SwitchListTile(
                   value: ref.watch(animeOnlyTvModeProvider),
                   title: Text(context.l10n.anime_only_tv_layout),
-                  subtitle: Text(context.l10n.tv_hide_libraries_hint),
                   onChanged: (value) {
                     ref.read(animeOnlyTvModeProvider.notifier).set(value);
                   },

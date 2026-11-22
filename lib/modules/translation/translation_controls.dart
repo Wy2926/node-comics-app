@@ -2,7 +2,6 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
@@ -30,14 +29,14 @@ Future<void> showTranslationControls(
     subtitle: subtitle,
     browser: browser,
   );
-  return browser
-      ? showNodeLaneBubble<void>(
+  return NodeLaneBubbleFlow.contains(context)
+      ? NodeLaneBubbleFlow.push<void>(context, content)
+      : showNodeLaneBubble<void>(
           context,
           label: title ?? context.l10n.translation_title,
-          width: 380,
-          child: content,
-        )
-      : showNodeLaneCatalogSheet<void>(context, content);
+          width: NodeLaneTokens.bubbleTabsWidth,
+          child: NodeLaneBubbleFlow(home: content),
+        );
 }
 
 /// Reader and browser share the same controls; recovery lives on each image.
@@ -95,11 +94,6 @@ class TranslationControlsContent extends ConsumerWidget {
                         onChanged: (value) =>
                             controller.configure(showTranslation: value),
                       ),
-                      const SizedBox(height: NodeLaneTokens.space12),
-                      Text(
-                        context.l10n.translation_display_hint,
-                        style: t.readerSecondary,
-                      ),
                     ],
                   ),
                 ),
@@ -110,17 +104,12 @@ class TranslationControlsContent extends ConsumerWidget {
                   if (controller.runtime == null)
                     NodeLaneRow(
                       title: context.l10n.translation_sign_in_required,
-                      subtitle: context.l10n.translation_sign_in_hint,
                       icon: icons.account,
                       onTap: () => _openAccount(context),
                     )
                   else
                     NodeLaneSwitchRow(
                       title: context.l10n.translation_automatic,
-                      subtitle:
-                          controller.enabled && !controller.showTranslation
-                          ? context.l10n.translation_original_hint
-                          : context.l10n.translation_window_hint,
                       value: controller.enabled,
                       onChanged: (value) =>
                           controller.configure(enabled: value),
@@ -130,7 +119,7 @@ class TranslationControlsContent extends ConsumerWidget {
               const SizedBox(height: NodeLaneTokens.space16),
               NodeLaneGroupSurface(
                 children: [
-                  TranslationLanguageRow(anchored: browser),
+                  const TranslationLanguageRow(),
                   NodeLaneRow(
                     title: context.l10n.translation_channel,
                     value: channelLabel,
@@ -154,10 +143,6 @@ class TranslationControlsContent extends ConsumerWidget {
                 ),
                 const SizedBox(height: NodeLaneTokens.space8),
               ],
-              Text(
-                context.l10n.translation_image_actions_hint,
-                style: t.readerSecondary,
-              ),
               if (controller.error != null) ...[
                 const SizedBox(height: NodeLaneTokens.space12),
                 Text(
@@ -170,43 +155,15 @@ class TranslationControlsContent extends ConsumerWidget {
             ],
           ),
         );
-        return SingleChildScrollView(
-          child: browser
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    NodeLaneBubbleHeading(heading),
-                    if (subtitle?.isNotEmpty == true)
-                      Padding(
-                        padding: NodeLaneTokens.rowPadding,
-                        child: Text(
-                          subtitle!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: t.secondary,
-                        ),
-                      ),
-                    controls,
-                  ],
-                )
-              : controls,
-        );
+        return SingleChildScrollView(child: controls);
       },
     );
-    if (browser) return body;
-    return NodeLaneCatalogSheet(
-      title: heading,
-      subtitle: subtitle,
-      fitContent: true,
-      heightFactor: .8,
-      child: body,
-    );
+    return NodeLaneBubblePanel(title: heading, subtitle: subtitle, child: body);
   }
 
   void _openAccount(BuildContext context) {
-    final navigator = Navigator.of(context);
-    navigator.pop();
+    final navigator = Navigator.of(context, rootNavigator: true);
+    Navigator.of(context).pop();
     navigator.push(
       MaterialPageRoute<void>(
         builder: (_) => mobile

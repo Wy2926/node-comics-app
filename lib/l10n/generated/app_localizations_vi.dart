@@ -22,10 +22,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_continue => 'Đọc tiếp';
 
   @override
-  String get browser_continue_hint =>
-      'Vị trí trong chương được lưu khi bạn đọc, không cần thêm dấu trang.';
-
-  @override
   String get browser_insert_suggestion => 'Chèn gợi ý tìm kiếm';
 
   @override
@@ -70,10 +66,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get feedback_app_hint =>
       'Gặp vấn đề hoặc có đề xuất? Hãy cho chúng tôi biết, không cần đăng nhập.';
-
-  @override
-  String get feedback_source_hint =>
-      'Bạn muốn hỗ trợ trang web nào? Không cần đăng nhập.';
 
   @override
   String get feedback_site_name => 'Tên trang web';
@@ -123,9 +115,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_search_hint => 'Tìm kiếm hoặc nhập URL';
 
   @override
-  String get browser_start_hint => 'Một trang mới cho những khám phá mới.';
-
-  @override
   String get browser_search_engine => 'Công cụ tìm kiếm';
 
   @override
@@ -147,14 +136,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get browser_library_empty => 'Chưa có mục nào';
-
-  @override
-  String get browser_bookmarks_hint =>
-      'Thêm dấu trang từ menu của trang để tìm lại tại đây.';
-
-  @override
-  String get browser_history_hint =>
-      'Các trang đã truy cập vẫn ở đây ngay cả sau khi đóng thẻ.';
 
   @override
   String get browser_recent => 'Truy cập gần đây';
@@ -190,10 +171,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get app_update_details_hint =>
-      'Xem ghi chú phát hành và tùy chọn cài đặt';
-
-  @override
   String get app_update_download => 'Tải xuống bản cập nhật';
 
   @override
@@ -205,10 +182,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String app_update_full(String size) {
     return 'Tải APK đầy đủ ($size)';
   }
-
-  @override
-  String get app_update_download_hint =>
-      'Sau khi tải xuống, hãy làm theo lời nhắc để cài đặt bản cập nhật.';
 
   @override
   String get bookshelf_all => 'Tất cả';
@@ -236,10 +209,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settings_search_empty => 'Không có cài đặt phù hợp';
 
   @override
-  String get search_empty_hint =>
-      'Hãy thử từ khóa khác hoặc xóa tìm kiếm để xem mọi thứ.';
-
-  @override
   String get search_clear => 'Xóa tìm kiếm';
 
   @override
@@ -253,10 +222,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get app_update_later => 'Sau này';
-
-  @override
-  String get app_update_external_hint =>
-      'Mở liên kết cập nhật trong trình duyệt của bạn';
 
   @override
   String get app_update_failed =>
@@ -379,11 +344,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get compression_level => 'Mức nén';
 
   @override
-  String compression_info(Object level) {
-    return 'Độ nén càng cao thì tệp sao lưu càng chiếm ít dung lượng nhưng lại sử dụng nhiều CPU hơn. Mặc định: $level';
-  }
-
-  @override
   String get comfortable_grid => 'Lưới thoải mái';
 
   @override
@@ -438,10 +398,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get remove_everything => 'Xóa mọi thứ';
 
   @override
-  String get remove_everything_msg =>
-      'Bạn có chắc không? Tất cả lịch sử sẽ bị mất';
-
-  @override
   String get remove_all_update_msg =>
       'Bạn có chắc không? Toàn bộ bản cập nhật sẽ bị xóa';
 
@@ -453,10 +409,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get remove => 'Xóa';
-
-  @override
-  String get remove_history_msg =>
-      'Thao tác này sẽ xóa ngày đọc của chương này. Bạn có chắc không?';
 
   @override
   String get last_used => 'Được sử dụng lần cuối';
@@ -501,17 +453,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mass_migration_installed => 'Đã cài đặt';
-
-  @override
-  String mass_migration_items_ready_for_review(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count mục sẵn sàng để xem xét',
-      one: '1 mục đã sẵn sàng để xem xét',
-    );
-    return '$_temp0';
-  }
 
   @override
   String mass_migration_item_count(int count) {
@@ -730,14 +671,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get incognito_mode => 'Chế độ ẩn danh';
 
   @override
-  String get incognito_mode_description => 'Tạm dừng lịch sử đọc';
-
-  @override
   String get downloaded_only => 'Chỉ được tải xuống';
-
-  @override
-  String get downloaded_only_description =>
-      'Chỉ hiển thị các mục đã tải xuống trong thư viện của bạn';
 
   @override
   String get download_queue => 'Hàng đợi tải xuống';
@@ -759,13 +693,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get no_downloads => 'Không tải xuống';
-
-  @override
-  String get edit_categories => 'Chỉnh sửa danh mục';
-
-  @override
-  String get edit_categories_description =>
-      'Bạn không có danh mục nào. Nhấn vào nút dấu cộng để tạo một nút để sắp xếp thư viện của bạn';
 
   @override
   String get add => 'Thêm';
@@ -803,9 +730,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get general => 'Tổng quát';
-
-  @override
-  String get general_subtitle => 'Ngôn ngữ ứng dụng';
 
   @override
   String get app_language => 'Ngôn ngữ ứng dụng';
@@ -868,9 +792,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reading_mode_vertical => 'Dọc';
 
   @override
-  String get reading_mode_horizontal => 'Ngang';
-
-  @override
   String get reading_mode_left_to_right => 'Trái sang phải';
 
   @override
@@ -883,28 +804,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reading_mode_webtoon => 'Webtoon';
 
   @override
-  String get double_tap_animation_speed => 'Tốc độ hoạt ảnh chạm hai lần';
-
-  @override
   String get normal => 'Bình thường';
 
   @override
   String get fast => 'Nhanh';
 
   @override
-  String get no_animation => 'Không có hoạt ảnh';
-
-  @override
-  String get animate_page_transitions => 'Tạo hiệu ứng chuyển tiếp trang';
-
-  @override
   String get crop_borders => 'Cắt đường viền';
 
   @override
   String get downloads => 'Tải xuống';
-
-  @override
-  String get downloads_subtitle => 'Cài đặt tải xuống';
 
   @override
   String get download_location => 'Vị trí tải xuống';
@@ -1003,18 +912,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get unknown => 'Không rõ';
 
   @override
-  String get empty_placeholder => 'TRỐNG\nMPTY\nMTY\nMT\n\n';
-
-  @override
   String get error => 'Lỗi';
 
   @override
   String error_with_message(Object error) {
     return 'Lỗi: $error';
   }
-
-  @override
-  String get no_pages_available => 'Lỗi: không có trang nào';
 
   @override
   String get set_categories => 'Đặt danh mục';
@@ -1030,9 +933,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get reset => 'Đặt lại';
-
-  @override
-  String get by_source => 'Theo nguồn';
 
   @override
   String get by_chapter_number => 'Theo số chương';
@@ -1051,10 +951,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get developer_mode => 'Chế độ nhà phát triển';
-
-  @override
-  String get developer_mode_subtitle =>
-      'Hiển thị công cụ dành cho nhà phát triển tiện ích mở rộng (tạo tiện ích mở rộng, chỉnh sửa mã)';
 
   @override
   String get choose_extension_language => 'Chọn ngôn ngữ mở rộng';
@@ -1213,9 +1109,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get no_more_chapter => 'Không còn chương nào nữa';
-
-  @override
   String get no_result => 'Không có kết quả';
 
   @override
@@ -1253,13 +1146,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get split_epub_chapters => 'Chia thành các chương';
-
-  @override
-  String get split_epub_chapters_description =>
-      'Nhập từng chương EPUB dưới dạng một mục riêng biệt';
-
-  @override
-  String get nothing_read_recently => 'Gần đây không có gì đọc';
 
   @override
   String get status => 'Trạng thái';
@@ -1313,10 +1199,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get sync_logged => 'Đăng nhập thành công';
-
-  @override
-  String get syncing_subtitle =>
-      'Nhập địa chỉ máy chủ đồng bộ hóa của bạn và đăng nhập thông qua trình duyệt để đồng bộ hóa tiến trình đọc trên các thiết bị.';
 
   @override
   String get sync_service => 'Đồng bộ hóa tự lưu trữ';
@@ -1422,9 +1304,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sync_auto_12_hours => 'Cứ sau 12 giờ';
 
   @override
-  String get server_error => 'Lỗi máy chủ!';
-
-  @override
   String get dialog_confirm => 'Xác nhận';
 
   @override
@@ -1434,22 +1313,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reorder_navigation => 'Tùy chỉnh điều hướng';
 
   @override
-  String get reorder_navigation_description =>
-      'Sắp xếp lại và chuyển đổi từng điều hướng theo nhu cầu của bạn.';
-
-  @override
   String get floating_navigation_bar => 'Thanh điều hướng nổi';
 
   @override
-  String get floating_navigation_bar_description =>
-      'Sử dụng hộp nổi thay vì thanh điều hướng kèm theo tiêu chuẩn.';
-
-  @override
   String get full_screen_player => 'Sử dụng Toàn màn hình';
-
-  @override
-  String get full_screen_player_info =>
-      'Tự động sử dụng toàn màn hình khi phát video.';
 
   @override
   String episode_progress(Object n) {
@@ -1532,9 +1399,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get searching_for_updates => 'Đang tìm kiếm thông tin cập nhật...';
 
   @override
-  String get no_new_updates_available => 'Không có bản cập nhật mới';
-
-  @override
   String get uninstall => 'Gỡ cài đặt';
 
   @override
@@ -1551,10 +1415,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get show_nav_double_tap_tooltip => 'Hiển thị gợi ý tìm kiếm nhấn đúp';
 
   @override
-  String get show_nav_double_tap_tooltip_subtitle =>
-      'Hiển thị chú giải công cụ về đích điều hướng Manga/Anime/Tiểu thuyết giải thích rằng việc nhấn đúp sẽ mở Tìm kiếm chung.';
-
-  @override
   String already_in_library(Object source, Object title) {
     return '\"$title\" đã có trong thư viện của bạn qua $source.';
   }
@@ -1563,38 +1423,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get add_anyway => 'Dù sao cũng thêm';
 
   @override
-  String get langauage => 'Ngôn ngữ';
-
-  @override
   String get extension_detail => 'Chi tiết phần mở rộng';
 
   @override
-  String get scale_type => 'Loại thang đo';
-
-  @override
   String get scale_type_fit_screen => 'Vừa vặn với màn hình';
-
-  @override
-  String get scale_type_stretch => 'Căng';
-
-  @override
-  String get scale_type_fit_width => 'Chiều rộng phù hợp';
-
-  @override
-  String get scale_type_fit_height => 'Chiều cao phù hợp';
-
-  @override
-  String get scale_type_original_size => 'Kích thước gốc';
-
-  @override
-  String get scale_type_smart_fit => 'Phù hợp thông minh';
-
-  @override
-  String get page_preload_amount => 'Lượng tải trước trang';
-
-  @override
-  String get page_preload_amount_subtitle =>
-      'Số lượng trang cần tải trước khi đọc. Giá trị cao hơn sẽ mang lại trải nghiệm đọc mượt mà hơn nhưng phải trả giá bằng mức sử dụng mạng và bộ nhớ đệm cao hơn.';
 
   @override
   String get image_loading_error => 'Không thể tải được hình ảnh này';
@@ -1617,21 +1449,11 @@ class AppLocalizationsVi extends AppLocalizations {
       'Tự động cập nhật tiện ích mở rộng của bên thứ ba';
 
   @override
-  String get auto_extensions_updates_subtitle =>
-      'Tự động cập nhật các tiện ích mở rộng đã cài đặt của bên thứ ba. Các plugin chính thức luôn được cài đặt và cập nhật tự động.';
-
-  @override
   String get check_for_app_updates =>
       'Kiểm tra cập nhật ứng dụng khi khởi động';
 
   @override
   String get reading_mode => 'Chế độ đọc';
-
-  @override
-  String get custom_filter => 'Bộ lọc tùy chỉnh';
-
-  @override
-  String get background_color => 'Màu nền';
 
   @override
   String get white => 'Trắng';
@@ -1641,12 +1463,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get grey => 'Màu xám';
-
-  @override
-  String get automaic => 'Tự động';
-
-  @override
-  String get preferred_domain => 'Tên miền ưa thích';
 
   @override
   String get load_more => 'Tải thêm';
@@ -1689,21 +1505,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get create_backup => 'Tạo bản sao lưu';
 
   @override
-  String get create_backup_dialog_title => 'Bạn muốn sao lưu cái gì?';
-
-  @override
-  String get create_backup_subtitle =>
-      'Có thể được sử dụng để khôi phục thư viện hiện tại';
-
-  @override
   String get restore_backup => 'Khôi phục bản sao lưu';
 
   @override
   String get encrypt_backups => 'Mã hóa bản sao lưu';
-
-  @override
-  String get encrypt_backups_info =>
-      'Tệp sao lưu được bảo vệ bằng mật khẩu bằng mã hóa AES';
 
   @override
   String get no_secure_storage => 'Không tìm thấy bộ nhớ an toàn';
@@ -1733,9 +1538,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Cần có mật khẩu để khôi phục bản sao lưu này.';
 
   @override
-  String get restore_backup_subtitle => 'Khôi phục thư viện từ tập tin sao lưu';
-
-  @override
   String get automatic_backups => 'Sao lưu tự động';
 
   @override
@@ -1743,16 +1545,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get backup_location => 'Vị trí sao lưu';
-
-  @override
-  String get backup_options => 'Tùy chọn sao lưu';
-
-  @override
-  String get backup_options_dialog_title => 'Bạn muốn sao lưu cái gì?';
-
-  @override
-  String get backup_options_subtitle =>
-      'Thông tin nào cần đưa vào tập tin sao lưu?';
 
   @override
   String get backup_and_restore_warning_info =>
@@ -1826,10 +1618,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get services => 'Dịch vụ';
 
   @override
-  String get tracking_warning_info =>
-      'Đồng bộ một chiều để cập nhật tiến trình chương trong các dịch vụ theo dõi. Thiết lập theo dõi cho từng mục từ nút theo dõi của chúng.';
-
-  @override
   String get use_page_tap_zones => 'Sử dụng vùng nhấn trang';
 
   @override
@@ -1855,10 +1643,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get video_audio => 'Âm thanh';
-
-  @override
-  String get video_audio_info =>
-      'Ngôn ngữ ưa thích, hiệu chỉnh cao độ, kênh âm thanh';
 
   @override
   String get player => 'Người chơi';
@@ -1966,51 +1750,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get include_subtitles => 'Bao gồm phụ đề';
 
   @override
-  String get blend_mode_default => 'Mặc định';
-
-  @override
-  String get blend_mode_multiply => 'Nhân';
-
-  @override
-  String get blend_mode_screen => 'Màn hình';
-
-  @override
-  String get blend_mode_overlay => 'Lớp phủ';
-
-  @override
-  String get blend_mode_colorDodge => 'ColorDodge';
-
-  @override
-  String get blend_mode_lighten => 'Làm sáng';
-
-  @override
-  String get blend_mode_colorBurn => 'ColorBurn';
-
-  @override
-  String get blend_mode_darken => 'Làm tối';
-
-  @override
-  String get blend_mode_difference => 'Sự khác biệt';
-
-  @override
-  String get blend_mode_saturation => 'Độ bão hòa';
-
-  @override
-  String get blend_mode_softLight => 'Ánh Sáng Mềm Mại';
-
-  @override
-  String get blend_mode_plus => 'cộng thêm';
-
-  @override
-  String get blend_mode_exclusion => 'Loại trừ';
-
-  @override
-  String get custom_color_filter => 'Bộ lọc màu tùy chỉnh';
-
-  @override
-  String get color_filter_blend_mode => 'Chế độ hòa trộn bộ lọc màu';
-
-  @override
   String get enable_all => 'Kích hoạt tất cả';
 
   @override
@@ -2056,19 +1795,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get use_libass => 'Kích hoạt libass';
 
   @override
-  String get use_libass_info =>
-      'Sử dụng kết xuất phụ đề dựa trên libass cho phần phụ trợ gốc.';
-
-  @override
-  String get libass_not_disable_message =>
-      'Tắt `use libass` trong cài đặt trình phát để có thể tùy chỉnh phụ đề.';
-
-  @override
   String get override_ass_subtitles => 'Ghi đè phụ đề ASS';
-
-  @override
-  String get override_ass_subtitles_info =>
-      'Áp dụng kiểu tùy chỉnh cho phụ đề ASS/SSA';
 
   @override
   String get torrent_stream => 'Dòng torrent';
@@ -2090,13 +1817,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get advanced_info => 'mpv';
-
-  @override
-  String get use_native_http_client => 'Sử dụng ứng dụng khách http gốc';
-
-  @override
-  String get use_native_http_client_info =>
-      'nó tự động hỗ trợ các tính năng nền tảng như VPN, hỗ trợ nhiều tính năng HTTP hơn như HTTP/3 và xử lý chuyển hướng tùy chỉnh';
 
   @override
   String n_hour_ago(Object hour) {
@@ -2135,9 +1855,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get data_and_storage => 'Dữ liệu và lưu trữ';
 
   @override
-  String get download_location_info => 'Được sử dụng để tải chương';
-
-  @override
   String get storage => 'Lưu trữ';
 
   @override
@@ -2168,9 +1885,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get recommendations => 'Khuyến nghị';
-
-  @override
-  String get recommendations_similar => 'tương tự';
 
   @override
   String get recommendations_weights => 'Trọng lượng khuyến nghị';
@@ -2301,10 +2015,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get enable_hardware_accel => 'Tăng tốc phần cứng';
 
   @override
-  String get enable_hardware_accel_info =>
-      'Bật/tắt nó nếu bạn gặp lỗi hoặc treo máy';
-
-  @override
   String get track_library_navigate => 'Đi tới mục cục bộ hiện có';
 
   @override
@@ -2349,9 +2059,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get enable_mpv => 'Kích hoạt mpv trình đổ bóng / tập lệnh';
 
   @override
-  String get mpv_info => 'Hỗ trợ tập lệnh .js trong mpv/scripts/';
-
-  @override
   String get mpv_redownload => 'Tải xuống lại tập tin cấu hình mpv';
 
   @override
@@ -2363,9 +2070,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get custom_buttons => 'Nút tùy chỉnh';
-
-  @override
-  String get custom_buttons_info => 'Thực thi mã lua bằng các nút tùy chỉnh';
 
   @override
   String get custom_buttons_edit => 'Chỉnh sửa các nút tùy chỉnh';
@@ -2410,23 +2114,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get decoder => 'Bộ giải mã';
 
   @override
-  String get decoder_info => 'Giải mã phần cứng, định dạng pixel, gỡ lỗi';
-
-  @override
   String get enable_gpu_next => 'Kích hoạt gpu-next (chỉ dành cho Android)';
-
-  @override
-  String get enable_gpu_next_info => 'Phần phụ trợ kết xuất video mới';
 
   @override
   String get debanding => 'Gỡ bỏ';
 
   @override
   String get use_yuv420p => 'Sử dụng định dạng pixel YUV420P';
-
-  @override
-  String get use_yuv420p_info =>
-      'Có thể khắc phục màn hình đen trên một số codec video, cũng có thể cải thiện hiệu suất nhưng phải trả giá bằng chất lượng';
 
   @override
   String get audio_preferred_languages => 'Ngôn ngữ ưa thích';
@@ -2439,10 +2133,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get enable_audio_pitch_correction => 'Bật hiệu chỉnh cao độ âm thanh';
 
   @override
-  String get enable_audio_pitch_correction_info =>
-      'Ngăn âm thanh trở nên có âm vực cao ở tốc độ nhanh hơn và âm vực thấp ở tốc độ chậm hơn';
-
-  @override
   String get audio_channels => 'Kênh âm thanh';
 
   @override
@@ -2450,9 +2140,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get internal_player => 'Trình phát nội bộ';
-
-  @override
-  String get internal_player_info => 'Tiến độ, điều khiển, định hướng';
 
   @override
   String get subtitle_delay_text => 'Độ trễ phụ đề';
@@ -2558,9 +2245,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sequels => 'Phần tiếp theo';
 
   @override
-  String get recommendations_similarity => 'Điểm tương đồng:';
-
-  @override
   String recommendation_rating_accessibility(String rating) {
     return 'Đánh giá $rating';
   }
@@ -2579,19 +2263,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Quét lại tất cả các thư mục cục bộ ngay bây giờ';
 
   @override
-  String get default_download_destination => 'Đích tải xuống mặc định';
-
-  @override
-  String get ask_download_destination => 'Hỏi đích tải xuống';
-
-  @override
-  String get ask_download_destination_desc =>
-      'Chọn thư mục cục bộ mỗi lần bắt đầu tải xuống.';
-
-  @override
-  String get select_download_destination => 'Chọn đích tải xuống';
-
-  @override
   String get clear_local_library => 'Xóa thư viện cục bộ';
 
   @override
@@ -2604,10 +2275,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get custom => 'Tùy chỉnh';
-
-  @override
-  String get no_local_folder_available_for_downloads =>
-      'Không có thư mục cục bộ nào để tải xuống';
 
   @override
   String failed_to_create_cbz(Object error) {
@@ -2678,14 +2345,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String could_not_launch_url(Object url) {
-    return 'Không thể khởi chạy $url';
-  }
-
-  @override
-  String get text_size => 'Kích thước văn bản:';
-
-  @override
   String get text_align => 'Căn chỉnh văn bản';
 
   @override
@@ -2709,10 +2368,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get forceLandscapeMode => 'Buộc chế độ ngang';
 
   @override
-  String get forceLandscapeModeSubtitle =>
-      'Buộc người chơi sử dụng hướng ngang.';
-
-  @override
   String get dns_over_https => 'DNS-over-HTTPS (DoH)';
 
   @override
@@ -2726,9 +2381,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get app_locked => 'Ứng dụng đã bị khóa';
-
-  @override
-  String get auth_to_continue => 'Xác thực để tiếp tục';
 
   @override
   String get authenticating => 'Đang xác thực...';
@@ -2758,10 +2410,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Xác thực sinh trắc học hoặc thông tin xác thực thiết bị không khả dụng trên thiết bị này';
 
   @override
-  String get app_lock_description =>
-      'Khi khóa ứng dụng được bật, bạn sẽ được yêu cầu xác thực mỗi khi bạn mở ứng dụng hoặc quay lại ứng dụng đó từ nền.';
-
-  @override
   String get checking_device_authentication =>
       'Đang kiểm tra xác thực thiết bị…';
 
@@ -2771,12 +2419,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get keep_screen_on => 'Giữ màn hình luôn bật';
-
-  @override
-  String get webtoon_side_padding => 'Phần đệm bên webtoon';
-
-  @override
-  String get show_page_gaps => 'Hiển thị khoảng trống trang';
 
   @override
   String get invert_colors => 'Đảo ngược màu sắc';
@@ -2794,28 +2436,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get saturation => 'Độ bão hòa';
 
   @override
-  String get navigation_layout => 'Bố cục điều hướng';
-
-  @override
-  String get nav_layout_default => 'Mặc định';
-
-  @override
-  String get nav_layout_l_shaped => 'Hình chữ L';
-
-  @override
-  String get nav_layout_kindle => 'Kindle-ish';
-
-  @override
-  String get nav_layout_edge => 'Cạnh';
-
-  @override
-  String get nav_layout_right_and_left => 'Phải và trái';
-
-  @override
   String get nav_layout_disabled => 'Bị vô hiệu hóa';
-
-  @override
-  String get color_enhancements => 'Cải tiến màu sắc';
 
   @override
   String get total => 'Tổng cộng';
@@ -2845,10 +2466,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get android_proxy_server_mihon => 'Máy chủ proxy Android (Mihon)';
-
-  @override
-  String get android_proxy_server_mihon_description =>
-      'Tải xuống và định cấu hình máy chủ proxy cần thiết để sử dụng tiện ích mở rộng Mihon.';
 
   @override
   String get mihon_proxy_server => 'Máy chủ proxy Mihon';
@@ -2906,10 +2523,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get latest_version => 'Phiên bản mới nhất';
-
-  @override
-  String get m_extension_server_description =>
-      'Sử dụng M-Extension-Server khi bạn cần proxy thiết bị Android riêng. Đặt địa chỉ proxy tại đây và tải xuống APK từ GitHub.';
 
   @override
   String get set_proxy_address => 'Đặt địa chỉ proxy';
@@ -2982,10 +2595,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get zero_interpreter => 'Không có thông dịch viên';
 
   @override
-  String get zero_interpreter_description =>
-      'Điều khiển máy chủ thông dịch Zero tự động hoặc thủ công.';
-
-  @override
   String get start_server_on_launch => 'Khởi động máy chủ khi khởi chạy';
 
   @override
@@ -3019,9 +2628,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get tts_language => 'Ngôn ngữ';
 
   @override
-  String get tts_voice => 'Giọng nói';
-
-  @override
   String get tts_stop => 'Dừng lại';
 
   @override
@@ -3042,56 +2648,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get tts_settings => 'Cài đặt TTS';
-
-  @override
   String get tts_default => 'Mặc định';
 
   @override
-  String get webtoon_disable_zoom_out => 'Webtoon vô hiệu hóa thu nhỏ';
-
-  @override
-  String get webtoon_double_tap_zoom_enabled =>
-      'Nhấn đúp vào webtoon để thu phóng';
-
-  @override
-  String get navigate_to_pan => 'Điều hướng đến xoay';
-
-  @override
-  String get navigate_to_pan_subtitle =>
-      'Di chuyển hình ảnh đã phóng to trước khi lật trang';
-
-  @override
-  String get split_wide_pages => 'Chia trang rộng';
-
-  @override
-  String get dual_page_invert => 'Đảo ngược cắt nửa trang';
-
-  @override
-  String get dual_page_rotate_to_fit => 'Xoay cho vừa';
-
-  @override
-  String get dual_page_rotate_to_fit_invert => 'Đảo ngược hướng quay';
-
-  @override
-  String get double_page_single_first_page => 'Trang đầu tiên';
-
-  @override
-  String get double_page_single_first_page_subtitle =>
-      'Chỉ hiển thị trang đầu tiên ở chế độ trang đôi';
-
-  @override
   String get double_page_auto => 'Trang đôi tự động';
-
-  @override
-  String get double_page_auto_subtitle =>
-      'Tự động chuyển sang chế độ trang đôi theo chiều ngang';
-
-  @override
-  String get landscape_zoom => 'Tự động thu phóng phong cảnh';
-
-  @override
-  String get zoom_start_position => 'Vị trí bắt đầu thu phóng';
 
   @override
   String get zoom_start_left => 'Còn lại';
@@ -3103,109 +2663,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get zoom_start_center => 'Trung tâm';
 
   @override
-  String get automatic_background => 'Nền tự động';
-
-  @override
-  String get tapping_inversion => 'Khai thác đảo ngược';
-
-  @override
-  String get tapping_inversion_none => 'Không có';
-
-  @override
-  String get tapping_inversion_horizontal => 'Ngang';
-
-  @override
-  String get tapping_inversion_vertical => 'Dọc';
-
-  @override
-  String get tapping_inversion_both => 'Cả hai';
-
-  @override
-  String get flash_on_page_change => 'Flash khi thay đổi trang';
-
-  @override
-  String get flash_on_page_change_subtitle => 'Trợ giúp chống lưu giữ AMOLED';
-
-  @override
-  String get flash_color => 'Màu đèn nháy';
-
-  @override
-  String get flash_color_black => 'Đen';
-
-  @override
-  String get flash_color_white => 'Trắng';
-
-  @override
-  String get flash_color_white_black => 'Trắng & Đen';
-
-  @override
-  String get flash_interval_label => 'Khoảng thời gian nhấp nháy';
-
-  @override
-  String flash_interval_value(String n) {
-    return '$n trang';
-  }
-
-  @override
-  String flash_interval(String n) {
-    return 'Khoảng thời gian flash: $n trang';
-  }
-
-  @override
-  String get flash_duration_label => 'Thời lượng Flash';
-
-  @override
-  String flash_duration_value(String n) {
-    return '$n ms';
-  }
-
-  @override
-  String flash_duration(String n) {
-    return 'Thời lượng flash: $n ms';
-  }
-
-  @override
-  String get show_navigation_overlay_on_start =>
-      'Hiển thị lớp phủ điều hướng khi khởi động';
-
-  @override
-  String get reader_hide_threshold => 'Ngưỡng ẩn đầu đọc';
-
-  @override
-  String get reader_hide_threshold_highest => 'Cao nhất (5 px)';
-
-  @override
-  String get reader_hide_threshold_high => 'Cao (13 px)';
-
-  @override
-  String get reader_hide_threshold_low => 'Thấp (31 px)';
-
-  @override
-  String get reader_hide_threshold_lowest => 'Thấp nhất (47 px)';
-
-  @override
-  String get error_no_pages_available => 'Lỗi: không có trang nào';
-
-  @override
   String get app_ui_scale => 'Thang đo giao diện';
-
-  @override
-  String get app_ui_scale_subtitle =>
-      'Làm cho giao diện lớn hơn hoặc nhỏ hơn để phù hợp với màn hình và khoảng cách xem của bạn.';
 
   @override
   String get allow_concurrent_downloads => 'Cho phép tải xuống đồng thời';
 
   @override
-  String get allow_concurrent_downloads_subtitle =>
-      'Tải xuống từ nhiều nguồn khác nhau cùng một lúc. Một nguồn vẫn tải từng chương một nên không bị quá tải. Tắt để tải xuống từng cái một ở mọi nơi.';
-
-  @override
   String get download_delay => 'Độ trễ tải xuống';
-
-  @override
-  String get download_delay_subtitle =>
-      'Tắt. Thêm thời gian chờ với hiện tượng giật ngẫu nhiên giữa các chương để sử dụng nguồn nhẹ nhàng hơn.';
 
   @override
   String get save_search => 'Lưu tìm kiếm';
@@ -3217,10 +2681,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get enter_search_to_save_first => 'Nhập tìm kiếm để lưu trước';
 
   @override
-  String get no_saved_searches =>
-      'Chưa có tìm kiếm nào được lưu cho nguồn này.\nThực hiện tìm kiếm rồi chọn \"Lưu tìm kiếm\".';
-
-  @override
   String get source => 'Nguồn';
 
   @override
@@ -3229,17 +2689,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get startup_failed =>
       'NodeLane Comics không thể hoàn tất quá trình khởi động';
-
-  @override
-  String sources_with_no_results(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count nguồn không có kết quả',
-      one: '1 nguồn không có kết quả',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get import_mode_title => 'Cái này nên được nhập như thế nào?';
@@ -3405,10 +2854,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get merge_manga_title => 'Hợp nhất các manga trùng lặp';
 
   @override
-  String get merge_manga_subtitle =>
-      'Tìm manga có tựa đề phù hợp trong cùng một nguồn (ví dụ: sau khi hợp nhất các nguồn trùng lặp) và gộp chúng lại thành một mà không xóa bất kỳ nội dung nào bạn muốn giữ lại.';
-
-  @override
   String get merge_manga_none_found => 'Không tìm thấy manga trùng lặp.';
 
   @override
@@ -3458,30 +2903,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get memory_overlay => 'Hiển thị mức sử dụng bộ nhớ';
 
   @override
-  String get memory_overlay_subtitle =>
-      'Bản đọc trực tiếp về nội dung mà ứng dụng đang nắm giữ. Để đo trên thiết bị thay vì đoán: xem nó trong khi cuộn thư viện hoặc đọc một chương.';
-
-  @override
   String get beta => 'Beta';
 
   @override
   String get error_reports => 'Báo cáo lỗi';
 
   @override
-  String get error_reports_subtitle => 'Ứng dụng gặp lỗi và cách báo cáo';
-
-  @override
-  String get error_reports_empty =>
-      'Không có gì sai cả. Các lỗi mà ứng dụng phát hiện được lưu giữ ở đây để bạn có thể báo cáo.';
+  String get error_reports_empty => 'Không có gì sai cả.';
 
   @override
   String get error_reports_likely_cause => 'Nguyên nhân có thể';
 
   @override
   String get error_reports_report => 'Báo cáo trên GitHub';
-
-  @override
-  String get error_reports_banner => 'NodeLane Comics đã gặp lỗi';
 
   @override
   String get error_reports_banner_action => 'Xem nó';
@@ -3514,25 +2948,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get onboarding_title => 'Chào mừng đến với NodeLane Comics';
 
   @override
-  String get onboarding_libraries_body =>
-      'Chọn những gì bạn đọc và xem. Những cái bạn loại bỏ sẽ nằm ngoài thanh điều hướng và bạn có thể thay đổi điều này sau trong Giao diện.';
-
-  @override
   String get onboarding_nav_title => 'Thư viện của bạn';
-
-  @override
-  String get onboarding_nav_body =>
-      'Giữ một tab cho mỗi tab hoặc đặt chúng lại với nhau sau một tab Thư viện mà bạn có thể chuyển đổi bên trong.';
 
   @override
   String get onboarding_nav_split => 'Mỗi tab một tab';
 
   @override
   String get onboarding_nav_merged => 'Một tab Thư viện';
-
-  @override
-  String get onboarding_nav_inside =>
-      'Khai thác Thư viện sẽ hoán đổi thanh cho những thứ này';
 
   @override
   String get onboarding_next => 'Tiếp theo';
@@ -3550,10 +2972,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String onboarding_local_existing(Object count) {
     return '$count thư mục đã được thiết lập';
   }
-
-  @override
-  String get onboarding_local_any_type =>
-      'Manga, anime và tiểu thuyết đều có tác dụng. Mỗi tiêu đề sẽ được chuyển đến đúng thư viện dựa trên nội dung bên trong nó.';
 
   @override
   String get onboarding_local_scanning => 'Đang quét thư mục';
@@ -3582,10 +3000,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get onboarding_repo_title => 'Thêm nguồn';
 
   @override
-  String get onboarding_body =>
-      'NodeLane Comics không có nguồn riêng. Thêm một kho lưu trữ và các tiện ích mở rộng trong đó sẽ có sẵn để cài đặt và duyệt qua.';
-
-  @override
   String get onboarding_add => 'Thêm kho lưu trữ';
 
   @override
@@ -3595,22 +3009,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get onboarding_continue => 'Tiếp tục';
 
   @override
-  String get onboarding_later =>
-      'Bạn có thể thêm một tài khoản sau trong Cài đặt, trong Duyệt.';
-
-  @override
   String get onboarding_replay => 'Hiển thị màn hình chào mừng';
 
   @override
-  String get onboarding_replay_subtitle =>
-      'Mở lại màn hình chạy lần đầu, màn hình cài đặt mới sẽ bắt đầu.';
-
-  @override
   String get missing_source_check_title => 'Kiểm tra các nguồn bị thiếu';
-
-  @override
-  String get missing_source_check_subtitle =>
-      'Tìm các mục trong thư viện có tiện ích mở rộng chưa được cài đặt - việc khôi phục bản sao lưu có thể để lại các mục trỏ đến nguồn mà bạn chưa từng cài đặt trên thiết bị này.';
 
   @override
   String get missing_source_check_none_found =>
@@ -3633,10 +3035,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get global_search_no_sources_hint =>
-      'Thêm kho lưu trữ trong Duyệt qua, sau đó cài đặt tiện ích mở rộng cho nó.';
-
-  @override
   String global_search_only_pinned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3648,20 +3046,12 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get global_search_only_pinned_hint =>
-      'Ghim một hoặc tắt \"Chỉ bao gồm các nguồn được ghim\" trong cài đặt Duyệt.';
-
-  @override
   String get global_search_all_nsfw =>
       'Mọi nguồn bạn có cho việc này đều được đánh dấu NSFW và những nguồn đó đều bị ẩn.';
 
   @override
-  String get global_search_all_nsfw_hint =>
-      'Bật nguồn NSFW trong cài đặt Duyệt để tìm kiếm chúng.';
-
-  @override
   String get missing_source_check_result_message =>
-      'Các mục nhập thư viện này trỏ đến một nguồn chưa được cài đặt trên thiết bị này. Nhấn vào một cái để di chuyển nó sang nguồn đã cài đặt, cài đặt tiện ích mở rộng phù hợp hoặc sử dụng \"Xóa nguồn và manga của nó\" để xóa chúng.';
+      'Các mục nhập thư viện này trỏ đến một nguồn chưa được cài đặt trên thiết bị này.';
 
   @override
   String get related_titles => 'Liên quan';
@@ -3694,10 +3084,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get auto_library_update => 'Cập nhật thư viện tự động';
 
   @override
-  String get auto_library_update_subtitle =>
-      'Kiểm tra mọi mục trong thư viện của bạn để tìm các chương mới khi ứng dụng khởi động.';
-
-  @override
   String get auto_library_update_never => 'Không bao giờ';
 
   @override
@@ -3714,10 +3100,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get auto_library_update_wifi_only => 'Chỉ trên Wi-Fi';
-
-  @override
-  String get auto_library_update_wifi_only_subtitle =>
-      'Bỏ qua cập nhật theo lịch khi sử dụng dữ liệu di động.';
 
   @override
   String get padding => 'Đệm';
@@ -3867,18 +3249,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reader_page_layout => 'Bố cục trang';
 
   @override
-  String get reader_continuous_options => 'Đọc liên tục';
-
-  @override
-  String get reader_default_mode_hint =>
-      'Chế độ đọc mặc định áp dụng cho các tiêu đề không có chế độ riêng được đặt trong khi đọc.';
-
-  @override
   String get extension_service => 'Dịch vụ mở rộng';
-
-  @override
-  String get extension_service_description =>
-      'Quản lý thời gian chạy tiện ích mở rộng và địa chỉ proxy.';
 
   @override
   String get proxy_address => 'Địa chỉ proxy';
@@ -3901,10 +3272,6 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get download_queue_empty_hint =>
-      'Thêm các bản tải xuống từ danh sách chương của tiêu đề.';
 
   @override
   String get download_queue_order_hint => 'Kéo tay cầm để sắp xếp lại';
@@ -3943,15 +3310,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Điểm cuối FlareSolverr / Byparr. Để trống để vô hiệu hóa.';
 
   @override
-  String get mobile_navigation_description =>
-      'Kéo để sắp xếp lại. Manga, anime và tiểu thuyết chia sẻ tab Thư viện. Mục hiển thị đầu tiên sẽ mở ra khi khởi chạy. Duyệt và nhiều hơn nữa vẫn hiển thị; các tab bổ sung xuất hiện trong Thêm.';
-
-  @override
   String get text_align_justify => 'Biện minh';
-
-  @override
-  String get novel_session_modes_hint =>
-      'Đặt chế độ đọc và trang đơn hoặc trang đôi trong khi đọc tiêu đề.';
 
   @override
   String get tts_languages_failed =>
@@ -4003,10 +3362,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Thao tác không thể hoàn thành. Hãy kiểm tra quyền truy cập tệp và thử lại.';
 
   @override
-  String get custom_buttons_empty_hint =>
-      'Thêm nút trình phát có nhãn và thao tác nhấn.';
-
-  @override
   String get custom_button_primary => 'Nút mặc định';
 
   @override
@@ -4021,7 +3376,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tracking_entries_empty =>
-      'Không có mục được theo dõi cho loại phương tiện này. Thêm theo dõi từ trang chi tiết của tiêu đề.';
+      'Không có mục được theo dõi cho loại phương tiện này.';
 
   @override
   String get change_tracking_match => 'Thay đổi tiêu đề phù hợp';
@@ -4041,10 +3396,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get tracking_entry_unlinked =>
       'Bản ghi này không được liên kết với tiêu đề địa phương nên không thể chỉnh sửa nó ở đây.';
-
-  @override
-  String get backup_selection_shared =>
-      'Những thay đổi đối với những lựa chọn này sẽ được lưu ngay lập tức và cũng áp dụng cho việc sao lưu tự động.';
 
   @override
   String get library_snapshot_history => 'Khôi phục ảnh chụp nhanh thư viện';
@@ -4072,14 +3423,6 @@ class AppLocalizationsVi extends AppLocalizations {
   ) {
     return 'Mục thư viện: $mangaCount. Các chương: $chapterCount. Mục lịch sử: $historyCount. Cập nhật: $updateCount.\n\nChọn nội dung cần giữ bên dưới.';
   }
-
-  @override
-  String get library_delete_pick_message =>
-      'Chọn một nguồn để xem lại nội dung của nó và các tùy chọn xóa.';
-
-  @override
-  String get mobile_categories_hint =>
-      'Kéo để sắp xếp lại. Mở một danh mục để đổi tên hoặc thay đổi mức độ hiển thị và cập nhật của nó.';
 
   @override
   String get mobile_category_visible => 'Hiển thị trong thư viện';
@@ -4123,15 +3466,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get preparing_installation => 'Đang chuẩn bị cài đặt…';
 
   @override
-  String get onboarding_mobile_libraries_body =>
-      'Chọn nội dung cần đọc. Bạn có thể thay đổi điều này sau.';
-
-  @override
   String get onboarding_content_title => 'Bắt đầu đọc';
-
-  @override
-  String get onboarding_mobile_sources_body =>
-      'Chọn cách bắt đầu hoặc thêm nội dung sau.';
 
   @override
   String onboarding_step_count(int step, int total) {
@@ -4141,17 +3476,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String global_search_results_for(String query) {
     return 'Kết quả cho “$query”';
-  }
-
-  @override
-  String global_search_scope(String type, int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count nguồn',
-      one: '1 nguồn',
-    );
-    return '$type · $_temp0';
   }
 
   @override
@@ -4189,10 +3513,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get bookshelf_ignore_filters => 'Bỏ qua bộ lọc khi tìm kiếm';
-
-  @override
-  String get bookshelf_ignore_filters_hint =>
-      'Tìm kiếm tất cả tác phẩm trong danh mục này, bao gồm cả những tác phẩm bị bộ lọc ẩn.';
 
   @override
   String get bookshelf_stop_update => 'Dừng cập nhật thư viện';
@@ -4240,10 +3560,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get bookshelf_settings => 'Cài đặt giá sách';
 
   @override
-  String get bookshelf_settings_live =>
-      'Các thay đổi về lọc, sắp xếp và hiển thị sẽ có hiệu lực ngay lập tức.';
-
-  @override
   String get bookshelf_filter_any => 'Bất kỳ';
 
   @override
@@ -4270,15 +3586,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get bookshelf_layout => 'Bố trí giá sách';
 
   @override
-  String get bookshelf_sources_hint =>
-      'Chọn không có để hiển thị tất cả các nguồn. Các thay đổi sẽ được áp dụng khi bạn nhấn vào Bộ lọc.';
-
-  @override
   String get bookshelf_choose_files => 'Chọn tập tin';
-
-  @override
-  String get bookshelf_import_wait =>
-      'Chọn một tệp trong bộ chọn và đợi quá trình nhập hoàn tất.';
 
   @override
   String get bookshelf_import_incomplete =>
@@ -4287,10 +3595,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get bookshelf_categories_replace =>
       'Việc lưu chỉ định các danh mục này cho mọi tác phẩm đã chọn, thay thế các danh mục trước đó của chúng.';
-
-  @override
-  String get bookshelf_categories_hint =>
-      'Chọn một hoặc nhiều danh mục hoặc để trống lựa chọn để không chỉ định danh mục nào.';
 
   @override
   String get bookshelf_categories_hidden =>
@@ -4302,7 +3606,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get bookshelf_categories_none_visible =>
-      'Không có danh mục nào ở đây. Mở quản lý danh mục để xem xét chúng.';
+      'Không có danh mục nào ở đây.';
 
   @override
   String get bookshelf_manage_categories => 'Quản lý danh mục';
@@ -4314,12 +3618,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get manga_download_scope => 'Tải chương';
 
   @override
-  String get manga_download_scope_hint =>
-      'Chọn các chương trong bộ lọc hiện tại. Các chương đã tải xuống sẽ bị bỏ qua.';
-
-  @override
   String get manga_download_scope_empty =>
-      'Không có chương nào phù hợp với bộ lọc hiện tại. Đóng menu này và điều chỉnh bộ lọc chương.';
+      'Không có chương nào phù hợp với bộ lọc hiện tại.';
 
   @override
   String get manga_action_incomplete =>
@@ -4329,15 +3629,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get chapter_settings => 'Cài đặt chương';
 
   @override
-  String get chapter_settings_live =>
-      'Các thay đổi về bộ lọc và sắp xếp sẽ được áp dụng ngay lập tức.';
-
-  @override
   String get chapter_scanlators_all => 'Hiển thị tất cả các nhóm máy quét';
-
-  @override
-  String get chapter_scanlators_hint =>
-      'Chọn nhóm để ẩn chương của họ. Các thay đổi sẽ được áp dụng khi bạn nhấn vào Bộ lọc.';
 
   @override
   String chapter_scanlators_hidden(int count) {
@@ -4374,29 +3666,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Hành động chưa kết thúc. Một số thay đổi có thể đã được lưu. Đóng và kiểm tra các chương cũng như nội dung tải xuống trước khi tiếp tục.';
 
   @override
-  String get reader_display_scope =>
-      'Chế độ đọc và bố cục trang thủ công áp dụng cho truyện tranh này. Chọn một thay đổi để quay lại đọc.';
-
-  @override
-  String get reader_display_single_only =>
-      'Đọc liên tục theo chiều ngang sử dụng các trang đơn.';
-
-  @override
-  String get reader_display_manual_pages =>
-      'Thay đổi bố cục trang sẽ tắt trang đôi tự động cho tất cả truyện tranh.';
-
-  @override
-  String get reader_display_crop_scope => 'Áp dụng cho tất cả truyện tranh.';
-
-  @override
   String get reader_chapter_locate => 'Xác định vị trí chương hiện tại';
 
   @override
   String get reader_chapter_search => 'Tìm kiếm chương hoặc máy quét';
-
-  @override
-  String get reader_chapter_scope =>
-      'Sử dụng bộ lọc chương và sắp xếp thứ tự từ các chi tiết truyện tranh. Dấu trang được lưu ngay lập tức.';
 
   @override
   String get reader_chapter_current_hidden =>
@@ -4416,50 +3689,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reader_image_actions => 'Hành động hình ảnh';
 
   @override
-  String get reader_image_original =>
-      'Sử dụng toàn bộ trang gốc, không có bộ lọc dịch, cắt xén hoặc màu của trình đọc.';
-
-  @override
-  String get reader_image_save_ios =>
-      'Lưu vào thư mục Ảnh ở vị trí lưu trữ ứng dụng hiện tại.';
-
-  @override
-  String get reader_image_save_android =>
-      'Lưu vào thư mục Pictures/nodelane-comics của thiết bị.';
-
-  @override
-  String get reader_image_share => 'Mở bảng chia sẻ hệ thống.';
-
-  @override
-  String get reader_image_cover =>
-      'Thay đổi bìa truyện tranh này sau khi xác nhận.';
-
-  @override
   String get reader_image_cover_limit =>
       'Ảnh bìa phải nhỏ hơn 5 MB. Lưu và chia sẻ vẫn có sẵn.';
 
   @override
   String get reader_image_action_failed =>
       'Hành động không thể được xác nhận. Đóng menu này và kiểm tra kết quả trước khi thử lại.';
-
-  @override
-  String get reader_settings_book_scope =>
-      'Những cài đặt này chỉ áp dụng cho truyện tranh này.';
-
-  @override
-  String get reader_settings_global_scope =>
-      'Các cài đặt này áp dụng cho tất cả truyện tranh và lưu ngay lập tức.';
-
-  @override
-  String get reader_filters => 'Bộ lọc hình ảnh';
-
-  @override
-  String get reader_filter_scope =>
-      'Áp dụng cho tất cả truyện tranh. Thay đổi màn hình đọc mà không sửa đổi hình ảnh gốc.';
-
-  @override
-  String get reader_auto_scroll_pause =>
-      'Quá trình cuộn tạm dừng khi cài đặt đang mở.';
 
   @override
   String get manga_synopsis => 'Tóm tắt';
@@ -4473,42 +3708,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get manga_continue_reading => 'Tiếp tục đọc';
 
   @override
-  String get reader_settings_title => 'Cài đặt đầu đọc';
-
-  @override
-  String get reader_picker_book_scope => 'Chỉ dành cho truyện tranh này';
-
-  @override
-  String get reader_picker_global_scope => 'Áp dụng cho tất cả truyện tranh';
-
-  @override
-  String get reader_picker_apply_hint =>
-      'Nhấn để lưu và quay lại mức trước đó.';
-
-  @override
-  String get reader_scale_fit_screen_hint => 'Vừa toàn bộ trang trên màn hình';
-
-  @override
-  String get reader_scale_stretch_hint => 'Lấp đầy khu vực đọc';
-
-  @override
-  String get reader_scale_fit_width_hint => 'Điều chỉnh trang theo chiều rộng';
-
-  @override
-  String get reader_scale_fit_height_hint => 'Điều chỉnh trang theo chiều cao';
-
-  @override
   String get source_filter_active => 'Đã áp dụng';
 
   @override
   String get source_filter_apply => 'Áp dụng bộ lọc';
-
-  @override
-  String get source_filter_scope => 'Bộ lọc chỉ áp dụng cho trang web này.';
-
-  @override
-  String get source_filter_apply_hint =>
-      'Áp dụng bộ lọc để sử dụng các lựa chọn của bạn.';
 
   @override
   String source_filter_term(String term) {
@@ -4565,14 +3768,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get bookshelf_more_display => 'Thêm tùy chọn hiển thị';
 
   @override
-  String get bookshelf_more_display_hint => 'Huy hiệu, nguồn và danh mục';
-
-  @override
   String get bookshelf_download_count => 'Số lượt tải xuống';
-
-  @override
-  String get bookshelf_source_global_hint =>
-      'Khả năng hiển thị nguồn sử dụng tùy chọn hiển thị được chia sẻ.';
 
   @override
   String get bookshelf_select_entries => 'Chọn tác phẩm';
@@ -4581,22 +3777,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get bookshelf_search_options => 'Tùy chọn tìm kiếm';
 
   @override
-  String get bookshelf_empty_hint =>
-      'Thu thập tác phẩm từ các nguồn hoặc nhập tệp cục bộ.';
-
-  @override
-  String get bookshelf_no_match_hint =>
-      'Hãy thử các từ khóa khác hoặc điều chỉnh các bộ lọc hiện tại.';
-
-  @override
   String get bookshelf_clear_query => 'Xóa từ khóa';
 
   @override
   String get bookshelf_view_selection => 'Xem các tác phẩm đã chọn';
-
-  @override
-  String get bookshelf_import_canceled_hint =>
-      'Bạn có thể chọn lại sau khi hủy bộ chọn tệp.';
 
   @override
   String get bookshelf_browse_sources => 'Duyệt nguồn';
@@ -4620,15 +3804,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get nodelane_sign_in => 'Đăng nhập vào NodeLane';
 
   @override
-  String get nodelane_account_intro =>
-      'Xem tài khoản, đăng ký và hạn ngạch dịch thuật của bạn';
-
-  @override
   String get nodelane_login_action => 'Tiếp tục đăng nhập';
-
-  @override
-  String get nodelane_login_browser =>
-      'Đăng nhập thông qua trình duyệt hệ thống, sau đó quay lại ứng dụng';
 
   @override
   String get nodelane_account_id => 'ID tài khoản';
@@ -4779,9 +3955,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settings_more_tools => 'Thêm công cụ';
 
   @override
-  String get settings_more_tools_hint => 'Danh mục, thống kê và lịch';
-
-  @override
   String get settings_appearance_interface => 'Ngoại hình và giao diện';
 
   @override
@@ -4809,10 +3982,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Được sử dụng trong trình đọc và dịch trang web';
 
   @override
-  String get settings_immediate_choice =>
-      'Các thay đổi được áp dụng ngay lập tức';
-
-  @override
   String get settings_translation_init_error =>
       'Cài đặt dịch không khả dụng. Khởi động lại ứng dụng và thử lại.';
 
@@ -4827,10 +3996,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settings_translation_cache => 'Bộ đệm hình ảnh đã dịch';
-
-  @override
-  String get settings_translation_cache_hint =>
-      'Lưu giữ bản ghi dịch và truy xuất lại hình ảnh đã dịch khi cần';
 
   @override
   String get settings_cache_clear => 'Xóa';
@@ -4866,30 +4031,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get onboarding_choose_one => 'Chọn ít nhất một';
 
   @override
-  String get onboarding_restore_hint =>
-      'Khôi phục thư viện của bạn từ bản sao lưu';
-
-  @override
-  String get onboarding_browse_hint =>
-      'Tìm tiêu đề trên các trang web được hỗ trợ';
-
-  @override
   String get onboarding_import_folder => 'Nhập thư mục cục bộ';
 
   @override
-  String get onboarding_import_folder_hint =>
-      'Đọc manga, tiểu thuyết và anime trên thiết bị của bạn';
-
-  @override
   String get onboarding_third_party => 'Thêm kho lưu trữ của bên thứ ba';
-
-  @override
-  String get onboarding_third_party_hint =>
-      'Sử dụng địa chỉ kho lưu trữ mà bạn đã có';
-
-  @override
-  String get onboarding_repository_hint =>
-      'Nhập địa chỉ được cung cấp bởi kho lưu trữ.';
 
   @override
   String get onboarding_repository_address => 'Địa chỉ';
@@ -4914,9 +4059,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get notice_backup_created => 'Đã tạo bản sao lưu';
-
-  @override
-  String get notice_backup_ready => 'Lưu hoặc chia sẻ tệp sao lưu.';
 
   @override
   String get notice_backup_restored => 'Đã khôi phục bản sao lưu';
@@ -4992,10 +4134,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Sử dụng tìm kiếm HTTPS đầy đủ URL của dịch vụ Wyzie-compatible, bao gồm cả đường dẫn của nó (ví dụ: /search). Chỉ nhập mã thông báo truy cập nếu dịch vụ của bạn yêu cầu.';
 
   @override
-  String get subtitle_service_off_hint =>
-      'Tìm kiếm phụ đề trực tuyến bị tắt. Phụ đề nhúng, do nguồn cung cấp và phụ đề cục bộ vẫn có sẵn.';
-
-  @override
   String get subtitle_setup_required =>
       'Chọn dịch vụ phụ đề trước khi tìm kiếm.';
 
@@ -5043,10 +4181,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reader_loading_pages => 'Đang lấy hình ảnh chương…';
 
   @override
-  String get reader_loading_pages_hint =>
-      'Quá trình đọc sẽ tự động bắt đầu khi sẵn sàng.';
-
-  @override
   String get reader_loading_failed => 'Không thể tải chương này';
 
   @override
@@ -5075,29 +4209,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get reader_image_loading => 'Đang tải hình ảnh…';
 
   @override
-  String get reader_image_failure_hint =>
-      'Bạn có thể tiếp tục đọc các trang khác.';
-
-  @override
   String get comic_paged => 'Từng trang';
 
   @override
   String get comic_scroll => 'Cuộn xuống';
 
   @override
-  String get comic_book_scope =>
-      'Chỉ áp dụng cho cuốn sách này · lưu thay đổi ngay lập tức';
-
-  @override
   String get comic_defaults_title => 'Mặc định & thói quen';
-
-  @override
-  String get comic_defaults_hint =>
-      'Giá trị mặc định áp dụng cho các trường bạn chưa tùy chỉnh cho sách.';
-
-  @override
-  String get comic_habits_hint =>
-      'Những thói quen này áp dụng cho mọi truyện tranh.';
 
   @override
   String get comic_turn => 'Vuốt sang trang tiếp theo';
@@ -5130,10 +4248,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get comic_auto => 'Tự động';
 
   @override
-  String get comic_layout_hint =>
-      'Tự động hiển thị độ rộng khi có đủ chiều rộng.';
-
-  @override
   String get comic_width => 'Độ rộng nội dung';
 
   @override
@@ -5158,10 +4272,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get comic_image_title => 'Tinh chỉnh hình ảnh';
 
   @override
-  String get comic_image_hint =>
-      'Cắt xén và tông màu chỉ ảnh hưởng đến cuốn sách này.';
-
-  @override
   String get comic_wide => 'Trang rộng';
 
   @override
@@ -5172,10 +4282,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get comic_rotate => 'Xoay';
-
-  @override
-  String get comic_wide_hint =>
-      'Việc chia tách theo hướng lật trang. Áp dụng cho việc đọc một trang.';
 
   @override
   String get comic_cover => 'Mỗi chương một bìa';
@@ -5209,10 +4315,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get comic_tap => 'Nhấn để lật trang';
 
   @override
-  String get comic_tap_hint =>
-      'Chạm vào các cạnh để di chuyển; chạm vào giữa để hiển thị các điều khiển.';
-
-  @override
   String get comic_scroll_start => 'Bắt đầu cuộn tự động';
 
   @override
@@ -5222,18 +4324,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get comic_scroll_speed => 'Tốc độ cuộn';
 
   @override
-  String get comic_scroll_hint =>
-      'Bắt đầu khi bảng này đóng lại. Tạm dừng khi ứng dụng rời khỏi nền trước.';
-
-  @override
   String get comic_save_failed => 'Không thể lưu. Vui lòng thử lại.';
 
   @override
   String get comic_reading => 'Đọc sách';
-
-  @override
-  String get comic_chapter_habits_hint =>
-      'Thói quen liệt kê chương áp dụng cho tất cả các cuốn sách.';
 
   @override
   String get browser_title => 'Trình duyệt';
@@ -5242,26 +4336,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get translation_image_display => 'Hiển thị hình ảnh';
 
   @override
-  String get translation_display_hint =>
-      'Hiển thị bản dịch hiện có trước tiên. Giữ bản gốc khi không có bản dịch.';
-
-  @override
   String get translation_sign_in_required => 'Đăng nhập để bật dịch';
 
   @override
-  String get translation_sign_in_hint =>
-      'Sau khi đăng nhập, chuyển sang hình ảnh đã dịch để dịch tự động.';
-
-  @override
   String get translation_automatic => 'Dịch tự động';
-
-  @override
-  String get translation_original_hint =>
-      'Hiển thị bản gốc. Chuyển sang hình ảnh đã dịch để dịch tự động.';
-
-  @override
-  String get translation_window_hint =>
-      'Chỉ xử lý hình ảnh hiện tại và sắp tới trong khi hiển thị bản dịch.';
 
   @override
   String get translation_channel => 'Kênh dịch thuật';
@@ -5286,25 +4364,13 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get translation_image_actions_hint =>
-      'Chạm và giữ hình ảnh để thực hiện thêm thao tác, bao gồm dịch lại hình ảnh đó.';
-
-  @override
   String get translation_title => 'Dịch truyện tranh';
-
-  @override
-  String get translation_system_sign_in =>
-      'Đăng nhập bằng trình duyệt hệ thống của bạn';
 
   @override
   String get translation_target_language => 'Ngôn ngữ đích';
 
   @override
   String get translation_clear_cache => 'Xóa bộ đệm hình ảnh đã dịch';
-
-  @override
-  String get translation_cache_hint =>
-      'Lưu giữ hồ sơ dịch và truy xuất lại kết quả khi cần.';
 
   @override
   String get translation_saved_read_failed => 'Không thể tải bản dịch đã lưu';
@@ -5456,9 +4522,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get manage => 'Quản lý';
 
   @override
-  String get translation_settings_hint => 'Dịch tự động, ngôn ngữ đích và kênh';
-
-  @override
   String get translation_show_original => 'Nhấn để hiển thị bản gốc';
 
   @override
@@ -5483,11 +4546,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get source_website_info => 'Thông tin trang web';
 
   @override
-  String source_saved_search_title(String title) {
-    return '$title · Nhấn để tìm kiếm';
-  }
-
-  @override
   String get action_done => 'Xong';
 
   @override
@@ -5497,14 +4555,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get source_no_saved_searches => 'Chưa lưu tìm kiếm nào';
-
-  @override
-  String get source_save_search_hint =>
-      'Tìm kiếm từ khóa, sau đó lưu nó từ các thao tác trên trang web.';
-
-  @override
-  String get source_saved_search_scope =>
-      'Từ khóa chỉ được lưu cho trang web này.';
 
   @override
   String get source_search_here => 'Tìm kiếm tiêu đề trên trang web này';
@@ -5523,10 +4573,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get source_no_titles => 'Không tìm thấy tiêu đề phù hợp';
-
-  @override
-  String get source_no_titles_hint =>
-      'Thay đổi từ khóa hoặc bộ lọc của bạn hoặc quay lại các tiêu đề phổ biến.';
 
   @override
   String get source_load_more_failed => 'Không thể tải thêm. Vui lòng thử lại.';
@@ -5609,10 +4655,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get repository_refresh => 'Làm mới danh mục';
 
   @override
-  String get repository_manage_hint =>
-      'Quản lý nơi tải xuống nguồn của bên thứ ba.';
-
-  @override
   String get repository_invalid_address => 'Nhập HTTP hoặc HTTPS URL hợp lệ';
 
   @override
@@ -5646,14 +4688,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get repository_choose_sources_hint =>
-      'Sau khi thêm kho lưu trữ, hãy chọn nguồn bạn cần.';
-
-  @override
   String get search_scope => 'Phạm vi tìm kiếm';
-
-  @override
-  String get search_scope_hint => 'Chọn các trang web cần tìm kiếm';
 
   @override
   String search_websites_action(int count) {
@@ -5690,10 +4725,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get search_select_results => 'Chọn trang web phù hợp';
 
   @override
-  String get search_no_websites_hint =>
-      'Không có trang web phù hợp. Hãy thử tên hoặc ngôn ngữ khác.';
-
-  @override
   String get search_select_website_hint =>
       'Chọn ít nhất một trang web để tìm kiếm.';
 
@@ -5701,16 +4732,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get search_start_title => 'Nhập từ khóa tìm tiêu đề';
 
   @override
-  String get search_start_hint =>
-      'Tìm kiếm nhiều trang web cùng một lúc và hiển thị tiêu đề phù hợp.';
-
-  @override
   String get search_empty_scope =>
       'Không có trang web nào có thể tìm kiếm được trong phạm vi này';
-
-  @override
-  String get search_empty_scope_hint =>
-      'Chuyển sang tất cả các trang web hoặc chọn trang web để tìm kiếm.';
 
   @override
   String search_result_count(int count) {
@@ -5725,9 +4748,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get search_titles => 'Tìm kiếm tiêu đề';
-
-  @override
-  String get search_actions => 'Hành động tìm kiếm';
 
   @override
   String get search_details => 'Chi tiết tìm kiếm';
@@ -5791,16 +4811,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get search_no_matching_titles => 'Không tìm thấy tiêu đề phù hợp';
 
   @override
-  String get search_results_appear_hint =>
-      'Kết quả sẽ xuất hiện ở đây khi chúng được tìm thấy.';
-
-  @override
   String get search_failed_websites_hint =>
-      'Một số trang web không thể hoàn tất tìm kiếm. Hãy thử lại chúng trong chi tiết tìm kiếm.';
-
-  @override
-  String get search_change_keywords_hint =>
-      'Hãy thử từ khóa ngắn hơn hoặc tìm kiếm nhiều trang web hơn.';
+      'Một số trang web không thể hoàn tất tìm kiếm.';
 
   @override
   String get search_view_details => 'Xem chi tiết tìm kiếm';
@@ -5823,9 +4835,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String search_completed_count(int completed, int total) {
     return 'Đã hoàn thành $completed / $total';
   }
-
-  @override
-  String get search_retry_website_hint => 'Thử lại từng trang web bị lỗi';
 
   @override
   String source_selected_count(int count) {
@@ -5881,10 +4890,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get source_open => 'Mở';
-
-  @override
-  String get source_metadata_hint =>
-      'Thông tin đến từ danh mục nguồn. Các danh mục mô tả nội dung được bao phủ bởi trang web.';
 
   @override
   String get source_region => 'Vùng';
@@ -5956,9 +4961,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get source_all_languages => 'Tất cả ngôn ngữ';
 
   @override
-  String get action_apply => 'Áp dụng';
-
-  @override
   String get source_load_retry =>
       'Không thể tải trang web này. Vui lòng thử lại.';
 
@@ -6011,10 +5013,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get source_no_websites => 'Không có trang web nào';
 
   @override
-  String get source_search_installed_hint =>
-      'Tìm kiếm tiêu đề trong các nguồn đã cài đặt';
-
-  @override
   String get source_global_search => 'Tìm kiếm trên các nguồn';
 
   @override
@@ -6061,7 +5059,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tv_hidden_library_hint =>
-      'Mỗi tiêu đề đều nằm trong một danh mục ẩn.\nGiữ OK ở “Tất cả” để hiện một mục.';
+      'Mỗi tiêu đề đều nằm trong một danh mục ẩn.';
 
   @override
   String get tv_no_matching_anime => 'Không có anime phù hợp';
@@ -6072,25 +5070,16 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get tv_filtered_empty_hint =>
-      'Không có anime nào phù hợp với bộ lọc hiện tại.\nThay đổi chúng từ nút bên cạnh tìm kiếm.';
-
-  @override
   String get tv_new_episodes => 'Tập Mới';
 
   @override
   String get tv_recently_added => 'Đã thêm gần đây';
 
   @override
-  String get tv_empty_category_hint =>
-      'Chưa có anime nào trong danh mục này.\nThêm tiêu đề cho nó từ trang chi tiết của tiêu đề.';
+  String get tv_empty_category_hint => 'Chưa có anime nào trong danh mục này.';
 
   @override
   String get tv_empty_library => 'Thư viện anime của bạn trống';
-
-  @override
-  String get tv_empty_library_hint =>
-      'Thêm anime từ Duyệt để lấp đầy ngôi nhà của bạn';
 
   @override
   String get tv_browse_anime => 'Duyệt phim hoạt hình';
@@ -6102,7 +5091,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String tv_category_hidden(String category) {
-    return 'Ẩn “$category” · giữ OK ở “All” để hiện';
+    return 'Ẩn “$category”';
   }
 
   @override
@@ -6118,23 +5107,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get cloudflare_proxy_optional => 'FlareSolverr tùy chọn / Byparr URL';
 
   @override
-  String get tv_home_layout_hint =>
-      'Trang chủ anime theo hàng (Tiếp tục · Tập mới · danh mục) thay vì lưới phẳng';
-
-  @override
-  String get tv_hide_libraries_hint =>
-      'Ẩn thư viện manga & tiểu thuyết (bật theo mặc định trên TV)';
-
-  @override
-  String get anime_only_hint =>
-      'Ẩn manga & tiểu thuyết trên ứng dụng. Tắt để hiển thị mọi thứ.';
-
-  @override
   String get audio_auto_safe => 'Tự động an toàn';
-
-  @override
-  String get tv_player_hint =>
-      'Bật: đầu phát TV chuyên dụng.  Tắt: trình phát gốc (máy tính để bàn).';
 
   @override
   String get release_open_failed => 'Không thể mở bản phát hành';
@@ -6387,9 +5360,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get translation_preparing_ellipsis => 'Đang chuẩn bị dịch…';
 
   @override
-  String get translation_checking_original => 'Đang kiểm tra ảnh gốc…';
-
-  @override
   String get translation_submitting => 'Đang gửi…';
 
   @override
@@ -6530,9 +5500,6 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return 'đầy $percent% của $_temp0';
   }
-
-  @override
-  String get memory_reset_hint => 'tắt và bật nó trong cài đặt để đặt lại';
 
   @override
   String get action_hide => 'Ẩn';

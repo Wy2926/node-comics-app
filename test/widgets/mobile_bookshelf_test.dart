@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_card.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
@@ -651,7 +651,7 @@ void main() {
                   onSearchChanged: () => changes++,
                   onImport: (_) => imports++,
                   onFilter: (_) => filters++,
-                  mediaMenu: MobileMediaMenu(
+                  mediaMenu: LibraryMediaButton(
                     value: ItemType.manga,
                     availableTypes: ItemType.values,
                     onChanged: (_) {},

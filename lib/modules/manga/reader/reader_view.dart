@@ -11,7 +11,7 @@ import 'settings/comic_reader_preferences.dart';
 import 'settings/comic_reader_preferences_provider.dart';
 import 'settings/comic_reader_scope.dart';
 import 'settings/comic_page_projection.dart';
-import 'settings/comic_reader_settings_sheet.dart';
+import 'settings/comic_reader_settings.dart';
 
 import 'package:photo_view/photo_view.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';

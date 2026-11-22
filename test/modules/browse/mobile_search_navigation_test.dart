@@ -358,8 +358,15 @@ void main() {
         await tester.ensureVisible(find.byTooltip(l10n.filter));
         await tester.tap(find.byTooltip(l10n.filter));
         await tester.pumpAndSettle();
-        final summary = find.textContaining(
-          '${l10n.search_result_count(15)} · Local',
+        final filter = find.byTooltip(l10n.filter);
+        final count = find.descendant(of: filter, matching: find.text('15'));
+        expect(
+          tester.getCenter(count).dy,
+          closeTo(tester.getCenter(find.byType(TextField)).dy, 3),
+        );
+        final summary = find.descendant(
+          of: find.byType(PinnedHeaderSliver),
+          matching: find.textContaining(l10n.source_format_page),
         );
         final catalog = find.byKey(const PageStorageKey('catalog-manga-false'));
         final position = Scrollable.of(tester.element(find.text('Local 00')))
@@ -602,15 +609,14 @@ void main() {
         expect(tester.getRect(row), original);
         final summary = find.byType(PinnedHeaderSliver);
         expect(
-          find.descendant(
-            of: summary,
-            matching: find.textContaining(' · Pane'),
-          ),
-          findsOneWidget,
-        );
-        expect(
           find.descendant(of: summary, matching: find.text('English')),
           findsOneWidget,
+        );
+        await tester.drag(directory, const Offset(0, 240));
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).controller!.text,
+          'Pane',
         );
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
@@ -846,10 +852,7 @@ void main() {
           expect(calls, isEmpty);
           expect(find.text('添加第三方仓库'), findsNothing);
           expect(find.text('Search titles'), findsNothing);
-          expect(
-            find.text('Search titles in installed sources'),
-            findsOneWidget,
-          );
+          expect(find.text('Search across sources'), findsOneWidget);
           if (entry == 'keyboard') {
             await tester.testTextInput.receiveAction(TextInputAction.search);
           } else if (entry == 'menu') {

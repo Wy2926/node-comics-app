@@ -5,7 +5,7 @@ import 'package:mangayomi/models/changed.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
@@ -176,37 +176,29 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
               shrinkWrap: true,
               padding: NodeLaneTokens.bubbleContentPadding,
               buildDefaultDragHandles: false,
-              header: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: NodeLaneTokens.space8,
-                ),
-                child: _failed || state.hasError
-                    ? Column(
-                        children: [
-                          Text(l.failed),
-                          TextButton(
-                            onPressed: _busy
-                                ? null
-                                : () => _run(() async {
-                                    ref.invalidate(_provider);
-                                    await ref.read(_provider.future);
-                                    if (mounted) {
-                                      setState(() => _failed = false);
-                                    }
-                                  }),
-                            child: Text(l.retry),
-                          ),
-                        ],
-                      )
-                    : state.isLoading
-                    ? const Center(child: NodeLaneProgress())
-                    : Text(
-                        entries.isEmpty
-                            ? l.edit_categories_description
-                            : l.mobile_categories_hint,
-                        style: t.readerSecondary,
-                      ),
-              ),
+              header: _failed || state.hasError
+                  ? Column(
+                      children: [
+                        Text(l.failed),
+                        TextButton(
+                          onPressed: _busy
+                              ? null
+                              : () => _run(() async {
+                                  ref.invalidate(_provider);
+                                  await ref.read(_provider.future);
+                                  if (mounted) {
+                                    setState(() => _failed = false);
+                                  }
+                                }),
+                          child: Text(l.retry),
+                        ),
+                      ],
+                    )
+                  : state.isLoading
+                  ? const Center(child: NodeLaneProgress())
+                  : entries.isEmpty
+                  ? Text(l.library_no_category_exist, style: t.readerSecondary)
+                  : null,
               itemCount: entries.length,
               itemBuilder: (_, i) {
                 final c = entries[i], open = c.id == _expanded;
@@ -420,7 +412,7 @@ class _MobileCategoryNameDialogState extends State<MobileCategoryNameDialog> {
                           Row(
                             children: [
                               Icon(
-                                MobileMediaMenu.iconFor(
+                                LibraryMediaButton.iconFor(
                                   context,
                                   widget.itemType,
                                 ),

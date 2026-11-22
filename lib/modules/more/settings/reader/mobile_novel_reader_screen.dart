@@ -1,6 +1,7 @@
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
@@ -27,103 +28,92 @@ class MobileNovelReaderScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final font = ref.watch(novelFontFamilyStateProvider);
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: '${l10n.novel} ${l10n.reader}'),
-        body: SafeArea(
-          top: false,
-          child: MobileSettingsList(
-            key: const PageStorageKey('mobile-novel-reader-settings'),
-            padding: NodeLaneTokens.pagePadding,
+    return MobileBrowsePage(
+      title: '${l10n.novel} ${l10n.reader}',
+      body: MobileSettingsList(
+        key: const PageStorageKey('mobile-novel-reader-settings'),
+        padding: NodeLaneTokens.pagePadding,
+        children: [
+          ?sessionControls,
+          MobileSettingsGroup(
+            title: l10n.font,
             children: [
-              ?sessionControls,
-              MobileSettingsGroup(
+              MobileSettingsChoice<String?>(
                 title: l10n.font,
-                children: [
-                  MobileSettingsChoice<String?>(
-                    title: l10n.font,
-                    icon: NodeLaneIcons.of(context).font,
-                    value: font,
-                    label: (value) =>
-                        novelReaderFontOptions
-                            .where((option) => option.key == value)
-                            .map(
-                              (option) => option.key == null
-                                  ? l10n.default0
-                                  : option.label,
-                            )
-                            .firstOrNull ??
-                        value ??
-                        l10n.default0,
-                    options: [
-                      for (final option in novelReaderFontOptions)
-                        MobileSettingOption(
-                          option.key,
-                          option.key == null ? l10n.default0 : option.label,
-                        ),
-                    ],
-                    onChanged: ref
-                        .read(novelFontFamilyStateProvider.notifier)
-                        .set,
-                  ),
-                  NodeLaneSliderRow(
-                    title: l10n.font_size,
-                    value: ref.watch(novelFontSizeStateProvider).toDouble(),
-                    min: 8,
-                    max: 40,
-                    divisions: 32,
-                    label: (value) => '${value.round()} px',
-                    onChanged: (value) => ref
-                        .read(novelFontSizeStateProvider.notifier)
-                        .set(value.round()),
-                  ),
-                ],
-              ),
-              const _NovelColors(),
-              MobileSettingsGroup(
-                title: l10n.general,
-                children: [
-                  NodeLaneSwitchRow(
-                    title: l10n.keep_screen_on,
-                    icon: NodeLaneIcons.of(context).brightness,
-                    value: ref.watch(keepScreenOnReaderStateProvider),
-                    onChanged: ref
-                        .read(keepScreenOnReaderStateProvider.notifier)
-                        .set,
-                  ),
-                  NodeLaneSwitchRow(
-                    title: l10n.show_scroll_percentage,
-                    icon: NodeLaneIcons.of(context).percent,
-                    value: ref.watch(novelShowScrollPercentageStateProvider),
-                    onChanged: ref
-                        .read(novelShowScrollPercentageStateProvider.notifier)
-                        .set,
-                  ),
-                  if (onOpenTts != null)
-                    NodeLaneRow(
-                      openOnReveal: true,
-                      title: l10n.tts,
-                      icon: NodeLaneIcons.of(context).speech,
-                      onTap: onOpenTts!,
+                icon: NodeLaneIcons.of(context).font,
+                value: font,
+                label: (value) =>
+                    novelReaderFontOptions
+                        .where((option) => option.key == value)
+                        .map(
+                          (option) =>
+                              option.key == null ? l10n.default0 : option.label,
+                        )
+                        .firstOrNull ??
+                    value ??
+                    l10n.default0,
+                options: [
+                  for (final option in novelReaderFontOptions)
+                    MobileSettingOption(
+                      option.key,
+                      option.key == null ? l10n.default0 : option.label,
                     ),
                 ],
+                onChanged: ref.read(novelFontFamilyStateProvider.notifier).set,
               ),
-              MobileSettingsGroup(
-                children: [
-                  NodeLaneDisclosure(
-                    key: const PageStorageKey('novel-reader-page-layout'),
-                    title: l10n.reader_page_layout,
-                    icon: NodeLaneIcons.of(context).manga,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: const [_NovelPageLayout()],
-                    ),
-                  ),
-                ],
+              NodeLaneSliderRow(
+                title: l10n.font_size,
+                value: ref.watch(novelFontSizeStateProvider).toDouble(),
+                min: 8,
+                max: 40,
+                divisions: 32,
+                label: (value) => '${value.round()} px',
+                onChanged: (value) => ref
+                    .read(novelFontSizeStateProvider.notifier)
+                    .set(value.round()),
               ),
             ],
           ),
-        ),
+          const _NovelColors(),
+          MobileSettingsGroup(
+            title: l10n.general,
+            children: [
+              NodeLaneSwitchRow(
+                title: l10n.keep_screen_on,
+                icon: NodeLaneIcons.of(context).brightness,
+                value: ref.watch(keepScreenOnReaderStateProvider),
+                onChanged: ref
+                    .read(keepScreenOnReaderStateProvider.notifier)
+                    .set,
+              ),
+              NodeLaneSwitchRow(
+                title: l10n.show_scroll_percentage,
+                icon: NodeLaneIcons.of(context).percent,
+                value: ref.watch(novelShowScrollPercentageStateProvider),
+                onChanged: ref
+                    .read(novelShowScrollPercentageStateProvider.notifier)
+                    .set,
+              ),
+              if (onOpenTts != null)
+                NodeLaneRow(
+                  openOnReveal: true,
+                  title: l10n.tts,
+                  icon: NodeLaneIcons.of(context).speech,
+                  onTap: onOpenTts!,
+                ),
+            ],
+          ),
+          MobileSettingsGroup(
+            children: [
+              NodeLaneDisclosure(
+                key: const PageStorageKey('novel-reader-page-layout'),
+                title: l10n.reader_page_layout,
+                icon: NodeLaneIcons.of(context).manga,
+                child: const _NovelPageLayout(),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -317,17 +307,9 @@ class _NovelPageLayout extends ConsumerWidget {
         ),
         NodeLaneSwitchRow(
           title: l10n.double_page_auto,
-          subtitle: l10n.double_page_auto_subtitle,
           icon: NodeLaneIcons.of(context).rotate,
           value: ref.watch(doublePageAutoStateProvider),
           onChanged: ref.read(doublePageAutoStateProvider.notifier).set,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          child: Text(
-            l10n.novel_session_modes_hint,
-            style: NodeLaneTokens.of(context).readerSecondary,
-          ),
         ),
       ],
     );

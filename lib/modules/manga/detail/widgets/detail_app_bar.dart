@@ -9,6 +9,7 @@ import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart'
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -204,10 +205,9 @@ class DetailAppBar extends ConsumerWidget {
                   },
                 )
               else
-                PopupMenuButton(
+                NodeLaneBubbleButton(
                   tooltip: l10n.more,
                   icon: const Icon(Icons.more_vert),
-                  popUpAnimationStyle: NodeLaneMotion.style(context),
                   itemBuilder: (_) => [
                     for (final (id, label) in entries)
                       PopupMenuItem<int>(value: id, child: Text(label)),

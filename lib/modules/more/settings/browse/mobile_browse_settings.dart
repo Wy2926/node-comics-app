@@ -45,26 +45,22 @@ class MobileBrowseSettings extends ConsumerWidget {
                 children: [
                   NodeLaneRow(
                     title: l10n.manga_extensions_repo,
-                    subtitle: l10n.manage_manga_repo_urls,
                     icon: NodeLaneIcons.of(context).manga,
                     onTap: () => onRepositories(ItemType.manga),
                   ),
                   NodeLaneRow(
                     title: l10n.anime_extensions_repo,
-                    subtitle: l10n.manage_anime_repo_urls,
                     icon: NodeLaneIcons.of(context).anime,
                     onTap: () => onRepositories(ItemType.anime),
                   ),
                   NodeLaneRow(
                     title: l10n.novel_extensions_repo,
-                    subtitle: l10n.manage_novel_repo_urls,
                     icon: NodeLaneIcons.of(context).novel,
                     onTap: () => onRepositories(ItemType.novel),
                   ),
                   if (showProxyServer)
                     NodeLaneRow(
                       title: l10n.extension_service,
-                      subtitle: l10n.extension_service_description,
                       icon: NodeLaneIcons.of(context).repository,
                       onTap: onProxyServer,
                     ),
@@ -84,7 +80,6 @@ class MobileBrowseSettings extends ConsumerWidget {
                   if (checkUpdates)
                     NodeLaneSwitchRow(
                       title: l10n.auto_extensions_updates,
-                      subtitle: l10n.auto_extensions_updates_subtitle,
                       icon: NodeLaneIcons.of(context).refresh,
                       value: autoUpdate,
                       onChanged: ref
@@ -123,7 +118,6 @@ class MobileBrowseSettings extends ConsumerWidget {
                 children: [
                   NodeLaneSwitchRow(
                     title: l10n.developer_mode,
-                    subtitle: l10n.developer_mode_subtitle,
                     icon: NodeLaneIcons.of(context).code,
                     value: ref.watch(developerModeStateProvider),
                     onChanged: ref

@@ -1,4 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 import 'dart:async';
 
@@ -99,15 +100,19 @@ void main() {
               appBar: AppBar(
                 title: const Text('Reader'),
                 actions: [
-                  IconButton(
-                    tooltip: 'Translation',
-                    icon: const Icon(Icons.translate),
-                    onPressed: () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (_) => TranslationControlsContent(
-                        controller: controller,
-                        mobile: true,
+                  Builder(
+                    builder: (anchor) => IconButton(
+                      tooltip: 'Translation',
+                      icon: const Icon(Icons.translate),
+                      onPressed: () => showNodeLaneBubble<void>(
+                        anchor,
+                        label: 'Translation',
+                        child: NodeLaneBubbleFlow(
+                          home: TranslationControlsContent(
+                            controller: controller,
+                            mobile: true,
+                          ),
+                        ),
                       ),
                     ),
                   ),

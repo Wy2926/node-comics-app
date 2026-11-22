@@ -52,7 +52,6 @@ Future<void> doBackUp(
       Navigator.pop(context);
       showNodeLaneNotice(
         l10n.notice_backup_created,
-        description: l10n.notice_backup_ready,
         kind: NodeLaneNoticeKind.success,
         actionLabel: l10n.share,
         onAction: () => shareOrCopy(

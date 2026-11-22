@@ -12,13 +12,13 @@ class DownloadedOnlyWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = l10nLocalizations(context);
+    final l10n = context.l10n;
     final downloadedOnly = ref.watch(downloadedOnlyStateProvider);
     void change(bool value) =>
         ref.read(downloadedOnlyStateProvider.notifier).setDownloadedOnly(value);
     if (mobile) {
       return NodeLaneSwitchRow(
-        title: l10n!.downloaded_only,
+        title: l10n.downloaded_only,
         icon: NodeLaneIcons.of(context).download,
         value: downloadedOnly,
         onChanged: change,
@@ -27,7 +27,6 @@ class DownloadedOnlyWidget extends ConsumerWidget {
     return ListTileWidget(
       onTap: () => change(!downloadedOnly),
       icon: Icons.cloud_off_outlined,
-      subtitle: l10n!.downloaded_only_description,
       title: l10n.downloaded_only,
       trailing: Switch(value: downloadedOnly, onChanged: change),
     );

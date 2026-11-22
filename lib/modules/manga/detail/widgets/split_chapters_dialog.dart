@@ -11,7 +11,6 @@ Future<bool> showSplitChaptersDialog(BuildContext context) async {
         context: context,
         builder: (context) => NodeLaneAlertDialog(
           title: Text(l10n.split_epub_chapters),
-          content: Text(l10n.split_epub_chapters_description),
           actions: [
             NodeLaneDialogAction(
               label: l10n.cancel,

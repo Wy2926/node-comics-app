@@ -190,11 +190,6 @@ class _MobileCustomButtonScreenState
                                           size: 32,
                                           color: colors.ink,
                                         ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          l10n.custom_buttons_empty_hint,
-                                          textAlign: TextAlign.center,
-                                        ),
                                         const SizedBox(height: 20),
                                         FilledButton.icon(
                                           onPressed: _locked

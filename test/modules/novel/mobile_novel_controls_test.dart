@@ -103,7 +103,7 @@ void main() {
                       ),
                       fontSize: 16,
                       onFontSizeChanged: (_) => actions.add('font'),
-                      onSettings: () => actions.add('settings'),
+                      onSettings: (_) => actions.add('settings'),
                       onListen: () => actions.add('listen'),
                       listening: false,
                       onNextChapter: () => actions.add('next'),

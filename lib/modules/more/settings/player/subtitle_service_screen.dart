@@ -227,12 +227,8 @@ class _SubtitleServiceFormState extends ConsumerState<_SubtitleServiceForm> {
                   style: NodeLaneTokens.of(context).readerSecondary,
                 ),
               ],
-              if (_mode == SubtitleConnectionMode.disabled)
-                Text(
-                  l.subtitle_service_off_hint,
-                  style: NodeLaneTokens.of(context).readerSecondary,
-                ),
-              const SizedBox(height: 24),
+              if (_mode != SubtitleConnectionMode.disabled)
+                const SizedBox(height: 24),
               if (_failed)
                 NodeLaneNotice(
                   message: l.subtitle_storage_failed,

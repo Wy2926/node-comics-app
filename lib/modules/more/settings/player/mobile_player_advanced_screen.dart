@@ -55,7 +55,6 @@ class _MobilePlayerAdvancedScreenState
             children: [
               NodeLaneSwitchRow(
                 title: l10n.enable_mpv,
-                subtitle: l10n.mpv_info,
                 icon: NodeLaneIcons.of(context).code,
                 value: widget.enabled,
                 onChanged: _busy

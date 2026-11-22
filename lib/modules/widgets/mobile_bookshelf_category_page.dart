@@ -204,12 +204,11 @@ class _MobileBookshelfCategoryPageState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (!_failed) ...[
-                      Text(
-                        widget.isBulk
-                            ? l10n.bookshelf_categories_replace
-                            : l10n.bookshelf_categories_hint,
-                        style: colors.readerSecondary,
-                      ),
+                      if (widget.isBulk)
+                        Text(
+                          l10n.bookshelf_categories_replace,
+                          style: colors.readerSecondary,
+                        ),
                       if (retainsHidden)
                         Padding(
                           padding: const EdgeInsets.only(
@@ -220,7 +219,8 @@ class _MobileBookshelfCategoryPageState
                             style: colors.readerSecondary,
                           ),
                         ),
-                      const SizedBox(height: NodeLaneTokens.space16),
+                      if (widget.isBulk || retainsHidden)
+                        const SizedBox(height: NodeLaneTokens.space16),
                       NodeLaneRow.card(
                         title: l10n.bookshelf_manage_categories,
                         icon: NodeLaneIcons.of(context).categories,

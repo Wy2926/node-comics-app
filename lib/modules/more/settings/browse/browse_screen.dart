@@ -60,7 +60,6 @@ class BrowseSScreen extends ConsumerWidget {
             if (isTv)
               SwitchListTile(
                 title: Text(context.l10n.anime_only_beta),
-                subtitle: Text(context.l10n.anime_only_hint),
                 value: animeOnly,
                 onChanged: (v) =>
                     ref.read(animeOnlyTvModeProvider.notifier).set(v),
@@ -92,15 +91,6 @@ class BrowseSScreen extends ConsumerWidget {
                             ? l10n.android_proxy_server
                             : l10n.android_proxy_server_mihon,
                       ),
-                      subtitle: Text(
-                        isMobile
-                            ? l10n.m_extension_server_description
-                            : l10n.android_proxy_server_mihon_description,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: context.secondaryColor,
-                        ),
-                      ),
                     ),
                   if (!animeOnly)
                     ListTile(
@@ -111,13 +101,6 @@ class BrowseSScreen extends ConsumerWidget {
                         );
                       },
                       title: Text(l10n.manga_extensions_repo),
-                      subtitle: Text(
-                        l10n.manage_manga_repo_urls,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: context.secondaryColor,
-                        ),
-                      ),
                     ),
                   ListTile(
                     onTap: () {
@@ -127,13 +110,6 @@ class BrowseSScreen extends ConsumerWidget {
                       );
                     },
                     title: Text(l10n.anime_extensions_repo),
-                    subtitle: Text(
-                      l10n.manage_anime_repo_urls,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.secondaryColor,
-                      ),
-                    ),
                   ),
                   if (!animeOnly)
                     ListTile(
@@ -144,13 +120,6 @@ class BrowseSScreen extends ConsumerWidget {
                         );
                       },
                       title: Text(l10n.novel_extensions_repo),
-                      subtitle: Text(
-                        l10n.manage_novel_repo_urls,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: context.secondaryColor,
-                        ),
-                      ),
                     ),
                   SwitchListTile(
                     value: checkForExtensionUpdates,
@@ -225,13 +194,6 @@ class BrowseSScreen extends ConsumerWidget {
                     SwitchListTile(
                       value: autoUpdateExtensions,
                       title: Text(l10n.auto_extensions_updates),
-                      subtitle: Text(
-                        l10n.auto_extensions_updates_subtitle,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: context.secondaryColor,
-                        ),
-                      ),
                       onChanged: (value) {
                         ref
                             .read(autoUpdateExtensionsStateProvider.notifier)
@@ -241,13 +203,6 @@ class BrowseSScreen extends ConsumerWidget {
                   SwitchListTile(
                     value: developerMode,
                     title: Text(l10n.developer_mode),
-                    subtitle: Text(
-                      l10n.developer_mode_subtitle,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.secondaryColor,
-                      ),
-                    ),
                     onChanged: (value) {
                       ref.read(developerModeStateProvider.notifier).set(value);
                     },

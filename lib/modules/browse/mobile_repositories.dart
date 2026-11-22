@@ -192,8 +192,6 @@ class _MobileRepositoryManagerState
       body: ListView(
         padding: NodeLaneTokens.pagePadding,
         children: [
-          Text(l.repository_manage_hint, style: t.readerSecondary),
-          const SizedBox(height: NodeLaneTokens.space16),
           if (refreshError != null)
             NodeLaneNotice(
               message: refreshError!,
@@ -385,12 +383,6 @@ class _MobileAddRepositoryState extends ConsumerState<MobileAddRepository> {
                   child: Text(context.l10n.retry),
                 ),
             ],
-            const SizedBox(height: 12),
-            Text(
-              context.l10n.repository_choose_sources_hint,
-              textAlign: TextAlign.center,
-              style: t.readerSecondary,
-            ),
           ],
         ),
       ),

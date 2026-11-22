@@ -215,7 +215,6 @@ class _ReaderAnimatedImageState extends State<ReaderAnimatedImage> {
         message: _failed
             ? context.l10n.image_loading_error
             : context.l10n.reader_image_loading,
-        description: _failed ? context.l10n.reader_image_failure_hint : null,
         loading: !_failed,
         onRetry: _failed
             ? () async {

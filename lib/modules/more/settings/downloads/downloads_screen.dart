@@ -139,7 +139,6 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
             SwitchListTile(
               value: allowConcurrentDownloads,
               title: Text(l10n.allow_concurrent_downloads),
-              subtitle: Text(l10n.allow_concurrent_downloads_subtitle),
               onChanged: (value) {
                 ref
                     .read(allowConcurrentDownloadsStateProvider.notifier)
@@ -270,8 +269,8 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
               title: Text(context.l10n.download_delay),
               subtitle: Text(
                 downloadDelaySeconds == 0
-                    ? l10n.download_delay_subtitle
-                    : "$downloadDelaySeconds s (+ jitter)",
+                    ? l10n.off
+                    : l10n.download_delay_value(downloadDelaySeconds),
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
             ),

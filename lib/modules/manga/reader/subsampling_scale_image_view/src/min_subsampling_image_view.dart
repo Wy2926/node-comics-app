@@ -418,9 +418,6 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
           message: _hasError
               ? context.l10n.image_loading_error
               : context.l10n.reader_image_loading,
-          description: _hasError
-              ? context.l10n.reader_image_failure_hint
-              : null,
           loading: !_hasError,
           progress: progress,
           onRetry: _hasError ? subsamplingState.reLoadImage : null,

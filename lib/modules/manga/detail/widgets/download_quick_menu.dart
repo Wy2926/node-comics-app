@@ -5,7 +5,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
 import 'package:mangayomi/services/download_manager/next_downloads.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_detail_actions.dart';
@@ -35,8 +35,7 @@ class DownloadQuickMenu extends StatelessWidget {
         onSelected: _download,
       );
     }
-    return PopupMenuButton(
-      popUpAnimationStyle: NodeLaneMotion.style(context),
+    return NodeLaneBubbleButton(
       icon: const Icon(Icons.download_outlined),
       tooltip: l10n.download,
       itemBuilder: (_) => [

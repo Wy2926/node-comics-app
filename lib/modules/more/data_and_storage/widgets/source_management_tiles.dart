@@ -36,7 +36,6 @@ class DeleteSourceTile extends ConsumerWidget {
     if (isMobile && !isTv) {
       return MobileLibraryAction(
         title: l10n.delete_source_title,
-        subtitle: l10n.library_delete_pick_message,
         icon: Icons.delete_sweep_outlined,
         onOpen: () => _deleteSource(context, ref),
       );
@@ -65,7 +64,6 @@ class MissingSourceCheckTile extends ConsumerWidget {
     if (isMobile && !isTv) {
       return MobileLibraryAction(
         title: l10n.missing_source_check_title,
-        subtitle: l10n.missing_source_check_subtitle,
         icon: Icons.extension_off_outlined,
         onOpen: () => _checkMissingSources(context),
       );
@@ -73,10 +71,6 @@ class MissingSourceCheckTile extends ConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.extension_off_outlined, color: Colors.orange),
       title: Text(l10n.missing_source_check_title),
-      subtitle: Text(
-        l10n.missing_source_check_subtitle,
-        style: TextStyle(fontSize: 11, color: context.secondaryColor),
-      ),
       onTap: () => _checkMissingSources(context),
     );
   }
@@ -91,7 +85,6 @@ class MergeDuplicateMangaTile extends ConsumerWidget {
     if (isMobile && !isTv) {
       return MobileLibraryAction(
         title: l10n.merge_manga_title,
-        subtitle: l10n.merge_manga_subtitle,
         icon: Icons.join_full_rounded,
         onOpen: () => _mergeDuplicateManga(context, ref),
       );
@@ -99,10 +92,6 @@ class MergeDuplicateMangaTile extends ConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.join_full_rounded),
       title: Text(l10n.merge_manga_title),
-      subtitle: Text(
-        l10n.merge_manga_subtitle,
-        style: TextStyle(fontSize: 11, color: context.secondaryColor),
-      ),
       onTap: () => _mergeDuplicateManga(context, ref),
     );
   }
@@ -231,7 +220,6 @@ Future<void> _deleteSource(BuildContext context, WidgetRef ref) async {
           context,
           groups: groups,
           title: l10n.delete_source_pick_title,
-          description: groups.isEmpty ? null : l10n.library_delete_pick_message,
           emptyMessage: l10n.delete_source_empty,
         )
       : await showDialog<LibrarySourceGroup>(
@@ -421,9 +409,6 @@ Future<void> _mergeDuplicateManga(BuildContext context, WidgetRef ref) async {
           title: l10n.merge_manga_pick_title,
           current: null,
           searchable: taggedClusters.isNotEmpty,
-          description: taggedClusters.isEmpty
-              ? null
-              : l10n.merge_manga_subtitle,
           emptyMessage: l10n.merge_manga_none_found,
           options: [
             for (final tagged in taggedClusters)

@@ -118,7 +118,6 @@ class _MobileBookshelfImportPanelState
                   if (widget.itemType == ItemType.novel)
                     NodeLaneSwitchRow(
                       title: l10n.split_epub_chapters,
-                      subtitle: l10n.split_epub_chapters_description,
                       value: _splitChapters,
                       onChanged: _busy
                           ? null
@@ -133,17 +132,12 @@ class _MobileBookshelfImportPanelState
                     icon: NodeLaneIcons.of(context).folderOutline,
                     onTap: _busy ? null : _choose,
                   ),
-                  const SizedBox(height: NodeLaneTokens.space12),
-                  Text(
-                    _busy
-                        ? l10n.bookshelf_import_wait
-                        : l10n.bookshelf_import_canceled_hint,
-                    style: t.readerSecondary,
-                  ),
                   if (_busy)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: NodeLaneTokens.space16),
-                      child: NodeLaneProgress(),
+                      child: NodeLaneProgress(
+                        semanticsLabel: l10n.translation_processing,
+                      ),
                     ),
                 ],
               ],

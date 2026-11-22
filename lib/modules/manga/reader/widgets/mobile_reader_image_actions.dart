@@ -1,8 +1,7 @@
-import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
@@ -125,195 +124,151 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
     final available = !busy && !_actionFailed;
     final canCover =
         _bytes != null && _bytes!.lengthInBytes < maxMangaCoverImageBytes;
-    final saveHint = Theme.of(context).platform == TargetPlatform.iOS
-        ? l10n.reader_image_save_ios
-        : l10n.reader_image_save_android;
     return PopScope(
-      canPop: !busy,
-      child: NodeLaneReaderSurface(
-        child: SafeArea(
-          top: false,
-          child: LayoutBuilder(
-            builder: (context, constraints) => ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: math.min(
-                  MediaQuery.sizeOf(context).height * .8,
-                  constraints.maxHeight,
+      canPop: !busy && !_confirmCover,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !busy && _confirmCover) {
+          setState(() => _confirmCover = false);
+        }
+      },
+      child: NodeLaneBubblePanel(
+        title: _confirmCover ? l10n.set_as_cover : l10n.reader_image_actions,
+        closeButton: NodeLaneCloseButton(
+          tooltip: l10n.close,
+          onPressed: busy ? null : _close,
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                widget.bookTitle,
+                style: colors.readerLabel.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                [
+                  widget.chapterTitle,
+                  if (widget.pageNumber != null)
+                    l10n.page('${widget.pageNumber}'),
+                ].join(' · '),
+                style: colors.readerSecondary,
+              ),
+              const SizedBox(height: 12),
+              if (!_confirmCover && widget.translationActions != null) ...[
+                widget.translationActions!,
+                const SizedBox(height: NodeLaneTokens.space12),
+              ],
+              if (_loading)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_loadFailed) ...[
+                Text(l10n.image_loading_error),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _load,
+                    icon: Icon(NodeLaneIcons.of(context).refresh),
+                    label: Text(l10n.retry),
+                  ),
                 ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  NodeLaneReaderHeading(
-                    title: _confirmCover
-                        ? l10n.set_as_cover
-                        : l10n.reader_image_actions,
-                    closeLabel: l10n.close,
-                    onClose: busy ? null : _close,
-                  ),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            widget.bookTitle,
-                            style: colors.readerLabel.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            [
-                              widget.chapterTitle,
-                              if (widget.pageNumber != null)
-                                l10n.page('${widget.pageNumber}'),
-                            ].join(' · '),
-                            style: colors.readerSecondary,
-                          ),
-                          const SizedBox(height: 12),
-                          if (!_confirmCover &&
-                              widget.translationActions != null) ...[
-                            widget.translationActions!,
-                            const SizedBox(height: NodeLaneTokens.space12),
-                          ],
-                          Text(
-                            l10n.reader_image_original,
-                            style: colors.readerSecondary,
-                          ),
-                          const SizedBox(height: 12),
-                          if (_loading)
-                            const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(child: CircularProgressIndicator()),
-                            )
-                          else if (_loadFailed) ...[
-                            Text(l10n.image_loading_error),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed: _load,
-                                icon: Icon(NodeLaneIcons.of(context).refresh),
-                                label: Text(l10n.retry),
-                              ),
-                            ),
-                          ] else if (_confirmCover)
-                            Text(l10n.use_this_as_cover_art)
-                          else
-                            NodeLaneGroupSurface(
-                              child: Column(
-                                children: [
-                                  _action(
-                                    context,
-                                    action: _ImageAction.save,
-                                    title: _saved
-                                        ? l10n.picture_saved
-                                        : l10n.save,
-                                    subtitle: saveHint,
-                                    icon: _saved
-                                        ? NodeLaneIcons.of(context).downloaded
-                                        : NodeLaneIcons.of(context).saveImage,
-                                    onTap: available && !_saved
-                                        ? () => _run(_ImageAction.save)
-                                        : null,
-                                  ),
-                                  Divider(
-                                    height: 1,
-                                    indent: 56,
-                                    color: colors.line,
-                                  ),
-                                  _action(
-                                    context,
-                                    action: _ImageAction.share,
-                                    title: l10n.share,
-                                    subtitle: l10n.reader_image_share,
-                                    icon: NodeLaneIcons.of(context).share,
-                                    onTap: available
-                                        ? () => _run(_ImageAction.share)
-                                        : null,
-                                  ),
-                                  Divider(
-                                    height: 1,
-                                    indent: 56,
-                                    color: colors.line,
-                                  ),
-                                  _action(
-                                    context,
-                                    action: _ImageAction.cover,
-                                    title: l10n.set_as_cover,
-                                    subtitle: canCover
-                                        ? l10n.reader_image_cover
-                                        : l10n.reader_image_cover_limit,
-                                    icon: NodeLaneIcons.of(context).image,
-                                    onTap: available && canCover
-                                        ? () {
-                                            if (_working == null &&
-                                                !_leaving &&
-                                                !_actionFailed &&
-                                                mounted &&
-                                                ModalRoute.of(context)
-                                                        ?.isCurrent ==
-                                                    true) {
-                                              setState(
-                                                () => _confirmCover = true,
-                                              );
-                                            }
-                                          }
-                                        : null,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (_actionFailed)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: Text(
-                                l10n.reader_image_action_failed,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                              ),
-                            ),
-                        ],
+              ] else if (_confirmCover)
+                Text(l10n.use_this_as_cover_art)
+              else
+                NodeLaneGroupSurface(
+                  child: Column(
+                    children: [
+                      _action(
+                        context,
+                        action: _ImageAction.save,
+                        title: _saved ? l10n.picture_saved : l10n.save,
+                        icon: _saved
+                            ? NodeLaneIcons.of(context).downloaded
+                            : NodeLaneIcons.of(context).saveImage,
+                        onTap: available && !_saved
+                            ? () => _run(_ImageAction.save)
+                            : null,
                       ),
+                      Divider(height: 1, indent: 56, color: colors.line),
+                      _action(
+                        context,
+                        action: _ImageAction.share,
+                        title: l10n.share,
+                        icon: NodeLaneIcons.of(context).share,
+                        onTap: available
+                            ? () => _run(_ImageAction.share)
+                            : null,
+                      ),
+                      Divider(height: 1, indent: 56, color: colors.line),
+                      _action(
+                        context,
+                        action: _ImageAction.cover,
+                        title: l10n.set_as_cover,
+                        subtitle: canCover
+                            ? null
+                            : l10n.reader_image_cover_limit,
+                        icon: NodeLaneIcons.of(context).image,
+                        onTap: available && canCover
+                            ? () {
+                                if (_working == null &&
+                                    !_leaving &&
+                                    !_actionFailed &&
+                                    mounted &&
+                                    ModalRoute.of(context)?.isCurrent == true) {
+                                  setState(() => _confirmCover = true);
+                                }
+                              }
+                            : null,
+                      ),
+                    ],
+                  ),
+                ),
+              if (_actionFailed)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    l10n.reader_image_action_failed,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
                     ),
                   ),
-                  if (_confirmCover)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextButton(
-                              onPressed: busy
-                                  ? null
-                                  : () => setState(() => _confirmCover = false),
-                              child: Text(l10n.cancel),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: available
-                                  ? () => _run(_ImageAction.cover)
-                                  : null,
-                              child: busy
-                                  ? const SizedBox.square(
-                                      dimension: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(l10n.set_as_cover),
-                            ),
-                          ),
-                        ],
+                ),
+              if (_confirmCover)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: busy
+                              ? null
+                              : () => setState(() => _confirmCover = false),
+                          child: Text(l10n.cancel),
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: available
+                              ? () => _run(_ImageAction.cover)
+                              : null,
+                          child: busy
+                              ? const SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(l10n.set_as_cover),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ),
       ),
@@ -324,11 +279,10 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
     BuildContext context, {
     required _ImageAction action,
     required String title,
-    required String subtitle,
+    String? subtitle,
     required IconData icon,
     required VoidCallback? onTap,
   }) => ListTile(
-    minTileHeight: NodeLaneTokens.readerImageActionHeight,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
     leading: _working == action
         ? const SizedBox.square(
@@ -344,7 +298,9 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
             color: NodeLaneTokens.of(context).muted,
           )
         : null,
-    subtitle: Text(subtitle, style: NodeLaneTokens.of(context).readerSecondary),
+    subtitle: subtitle == null
+        ? null
+        : Text(subtitle, style: NodeLaneTokens.of(context).readerSecondary),
     onTap: onTap,
   );
 }

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/anime/providers/state_provider.dart';
 import 'package:mangayomi/modules/anime/widgets/subtitle_view.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
 extension on PlayerSubtitleSettings {

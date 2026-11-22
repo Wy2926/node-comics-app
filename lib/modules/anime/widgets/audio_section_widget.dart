@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/anime/utils/audio_track_label.dart';
 import 'package:mangayomi/modules/anime/utils/video_prefs.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:media_kit/media_kit.dart';
 

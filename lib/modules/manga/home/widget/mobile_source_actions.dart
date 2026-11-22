@@ -107,10 +107,7 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
       body: ListView(
         padding: NodeLaneTokens.pagePadding,
         children: [
-          Text(
-            context.l10n.source_saved_search_title(widget.title),
-            style: t.secondary,
-          ),
+          Text(widget.title, style: t.secondary),
           const SizedBox(height: NodeLaneTokens.space12),
           for (var i = 0; i < entries.length; i++)
             NodeLaneRow.card(
@@ -139,18 +136,10 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
               children: [
                 NodeLaneRow(
                   title: context.l10n.source_no_saved_searches,
-                  subtitle: context.l10n.source_save_search_hint,
                   icon: icons.bookmarkOutline,
                 ),
               ],
             ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              context.l10n.source_saved_search_scope,
-              style: t.readerSecondary,
-            ),
-          ),
         ],
       ),
     );

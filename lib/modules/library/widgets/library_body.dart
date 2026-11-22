@@ -145,9 +145,6 @@ class LibraryBody extends ConsumerWidget {
                 title: filtered
                     ? l10n.bookshelf_no_match_title
                     : l10n.bookshelf_empty_title,
-                message: filtered
-                    ? l10n.bookshelf_no_match_hint
-                    : l10n.bookshelf_empty_hint,
                 action: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [

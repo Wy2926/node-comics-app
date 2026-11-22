@@ -63,26 +63,6 @@ class MobileSecuritySettingsView extends StatelessWidget {
                     ),
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      NodeLaneIcons.of(context).info,
-                      size: 20,
-                      color: colors.muted,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l10n.app_lock_description,
-                        style: colors.readerSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

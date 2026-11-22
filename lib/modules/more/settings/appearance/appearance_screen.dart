@@ -109,7 +109,6 @@ class AppearanceScreen extends ConsumerWidget {
                   SwitchListTile(
                     secondary: const Icon(Icons.grid_view_outlined),
                     title: Text(context.l10n.tv_home_beta),
-                    subtitle: Text(context.l10n.tv_home_layout_hint),
                     value: ref.watch(tvHomeStyleProvider),
                     onChanged: (v) =>
                         ref.read(tvHomeStyleProvider.notifier).set(v),
@@ -125,10 +124,7 @@ class AppearanceScreen extends ConsumerWidget {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '${l10n.app_ui_scale_subtitle}  '
-                            '(${(scale * 100).round()}%)',
-                          ),
+                          Text('${(scale * 100).round()}%'),
                           TvEscapableSlider(
                             enabled: isTv,
                             onDecrease: () => ref
@@ -168,13 +164,6 @@ class AppearanceScreen extends ConsumerWidget {
                   SwitchListTile(
                     secondary: const Icon(Icons.call_to_action_outlined),
                     title: Text(l10n.floating_navigation_bar),
-                    subtitle: Text(
-                      l10n.floating_navigation_bar_description,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.secondaryColor,
-                      ),
-                    ),
                     value: ref.watch(floatingNavigationBarStateProvider),
                     onChanged: (value) => ref
                         .read(floatingNavigationBarStateProvider.notifier)
@@ -182,13 +171,6 @@ class AppearanceScreen extends ConsumerWidget {
                   ),
                 ListTile(
                   title: Text(l10n.reorder_navigation),
-                  subtitle: Text(
-                    l10n.reorder_navigation_description,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
-                    ),
-                  ),
                   onTap: () {
                     context.push("/customNavigationSettings");
                   },

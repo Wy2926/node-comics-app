@@ -73,7 +73,6 @@ class MobilePlayerAudioScreen extends ConsumerWidget {
           children: [
             NodeLaneSwitchRow(
               title: l10n.enable_audio_pitch_correction,
-              subtitle: l10n.enable_audio_pitch_correction_info,
               icon: NodeLaneIcons.of(context).audio,
               value: ref.watch(enableAudioPitchCorrectionStateProvider),
               onChanged: ref

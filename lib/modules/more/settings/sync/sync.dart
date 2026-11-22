@@ -198,17 +198,6 @@ class SyncScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                const SizedBox(height: 16),
-                SettingsSection(
-                  title: l10n.about,
-                  children: [
-                    _hintTile(
-                      context,
-                      icon: Icons.info_outline_rounded,
-                      text: l10n.syncing_subtitle,
-                    ),
-                  ],
-                ),
                 const SizedBox(height: 20),
               ],
             );

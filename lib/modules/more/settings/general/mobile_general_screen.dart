@@ -77,7 +77,6 @@ class MobileGeneralScreen extends ConsumerWidget {
                   if (interval > 0)
                     NodeLaneSwitchRow(
                       title: l10n.auto_library_update_wifi_only,
-                      subtitle: l10n.auto_library_update_wifi_only_subtitle,
                       icon: NodeLaneIcons.of(context).wifi,
                       value: ref.watch(autoLibraryUpdateWifiOnlyStateProvider),
                       onChanged: ref
@@ -91,7 +90,6 @@ class MobileGeneralScreen extends ConsumerWidget {
                 children: [
                   NodeLaneSwitchRow(
                     title: l10n.show_nav_double_tap_tooltip,
-                    subtitle: l10n.show_nav_double_tap_tooltip_subtitle,
                     icon: NodeLaneIcons.of(context).navigation,
                     value: ref.watch(showNavDoubleTapTooltipStateProvider),
                     onChanged: ref
@@ -122,7 +120,6 @@ class MobileGeneralScreen extends ConsumerWidget {
                   */
                   NodeLaneSwitchRow(
                     title: l10n.memory_overlay,
-                    subtitle: l10n.memory_overlay_subtitle,
                     icon: NodeLaneIcons.of(context).memory,
                     value: ref.watch(memoryOverlayVisibleProvider),
                     onChanged: ref

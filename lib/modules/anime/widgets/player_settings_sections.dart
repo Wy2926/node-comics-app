@@ -6,11 +6,11 @@ import 'package:mangayomi/models/custom_button.dart';
 import 'package:mangayomi/modules/anime/providers/state_provider.dart';
 import 'package:mangayomi/modules/anime/utils/video_prefs.dart';
 import 'package:mangayomi/modules/anime/widgets/subtitle_setting_widget.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:media_kit_video/media_kit_video_controls/src/controls/extensions/duration.dart';
 
-/// The player settings sheet's "video quality" section: one row per
+/// One row per
 /// available quality, selecting it (unless it's already active) via
 /// [onSelect]. [currentVideo] is read once, not reactively - this section is
 /// rebuilt fresh each time it's opened, same as the original inline builder.
@@ -59,7 +59,6 @@ class VideoQualitySectionWidget extends StatelessWidget {
   }
 }
 
-/// The player settings sheet's "chapters" section, one row per chapter mark.
 class ChaptersSectionWidget extends StatelessWidget {
   final List<(String, int)> chapterMarks;
   final ValueListenable<int?> currentChapterMark;
@@ -100,7 +99,6 @@ class ChaptersSectionWidget extends StatelessWidget {
   }
 }
 
-/// The player settings sheet's "playback speed" section.
 class SpeedSectionWidget extends StatelessWidget {
   static const speeds = [0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0];
 
@@ -138,7 +136,6 @@ class SpeedSectionWidget extends StatelessWidget {
   }
 }
 
-/// The player settings sheet's "video fit" section.
 class FitSectionWidget extends StatelessWidget {
   static const fits = [
     BoxFit.contain,
@@ -186,7 +183,6 @@ class FitSectionWidget extends StatelessWidget {
   }
 }
 
-/// The player settings sheet's "shaders" section (mpv GLSL shader presets).
 class ShadersSectionWidget extends StatelessWidget {
   static const shaderModes = [
     ("Anime4K: Mode A (Fast)", "set_anime_a"),
@@ -242,8 +238,7 @@ class ShadersSectionWidget extends StatelessWidget {
   }
 }
 
-/// The player settings sheet's "statistics" section (mpv stats overlay
-/// pages). Not really selectable state - each row just fires an mpv
+/// Each statistics row fires an mpv
 /// script-binding - so unlike the others, no row is ever shown checked.
 class StatsSectionWidget extends StatelessWidget {
   static const statsModes = [
@@ -284,8 +279,6 @@ class StatsSectionWidget extends StatelessWidget {
   }
 }
 
-/// The player settings sheet's "custom buttons" section (user-defined mpv
-/// script-message shortcuts).
 class CustomButtonsSectionWidget extends StatelessWidget {
   final ValueListenable<List<CustomButton>?> customButtons;
   final void Function(CustomButton button) onSelect;
@@ -321,9 +314,6 @@ class CustomButtonsSectionWidget extends StatelessWidget {
   }
 }
 
-/// The player settings sheet's "appearance" section: the ASS-subtitle
-/// override switch (only when libass is in use) plus the shared subtitle
-/// appearance controls (font, color, position...).
 class AppearanceSectionWidget extends ConsumerWidget {
   final bool useLibass;
   final bool hasSubtitleTrack;
@@ -337,7 +327,6 @@ class AppearanceSectionWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mobile = SettingsDrilldownScope.of(context)?.mobile == true;
-    // Phone sections inherit the sheet tokens; preserve the desktop palette.
     final theme = mobile
         ? Theme.of(context)
         : ThemeData.dark(useMaterial3: true);
@@ -359,15 +348,6 @@ class AppearanceSectionWidget extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: mobile ? 16 : 14,
                       fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  subtitle: Text(
-                    context.l10n.override_ass_subtitles_info,
-                    style: TextStyle(
-                      fontSize: mobile ? 13 : 12,
-                      color: mobile
-                          ? theme.colorScheme.onSurfaceVariant
-                          : Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                   onChanged: (val) {

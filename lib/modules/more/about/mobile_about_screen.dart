@@ -162,8 +162,7 @@ class _MobileAboutScreenState extends State<MobileAboutScreen> {
                   children: [
                     NodeLaneRow(
                       title: l.error_reports,
-                      subtitle:
-                          '${l.error_reports_subtitle}${count == 0 ? '' : ' · $count'}',
+                      value: count == 0 ? null : '$count',
                       icon: icons.error,
                       onTap: () => _run(widget.onReports),
                     ),

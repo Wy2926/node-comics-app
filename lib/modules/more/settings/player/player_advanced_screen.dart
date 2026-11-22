@@ -49,10 +49,6 @@ class _PlayerAdvancedScreenState extends ConsumerState<PlayerAdvancedScreen> {
             SwitchListTile(
               value: useMpvConfig,
               title: Text(context.l10n.enable_mpv),
-              subtitle: Text(
-                context.l10n.mpv_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) async {
                 if (value && (await _checkMpvConfig(context)) != true) {
                   return;

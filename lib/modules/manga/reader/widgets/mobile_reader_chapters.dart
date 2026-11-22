@@ -1,10 +1,8 @@
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -13,7 +11,6 @@ import 'package:mangayomi/modules/manga/reader/reader_view.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -56,17 +53,11 @@ class _MobileReaderChaptersButtonState
     widget.onChanged?.call(false);
     try {
       final chapters = owner.manga.value!.getSortedFilteredChapters();
-      final selected = await showModalBottomSheet<Chapter>(
-        context: context,
-        sheetAnimationStyle: NodeLaneMotion.style(context),
-        useRootNavigator: true,
-        isScrollControlled: true,
-        useSafeArea: true,
-        enableDrag: false,
-        backgroundColor: Colors.transparent,
-        showDragHandle: false,
-        shape: NodeLaneTokens.readerSheetShape,
-        builder: (_) => MobileReaderChaptersSheet(
+      final selected = await showNodeLaneBubble<Chapter>(
+        context,
+        label: context.l10n.chapters,
+        width: NodeLaneTokens.bubbleSettingsWidth,
+        child: MobileReaderChaptersPanel(
           chapter: owner,
           chapters: chapters,
           onBookmark: saveReaderChapterBookmark,
@@ -107,8 +98,8 @@ class _MobileReaderChaptersButtonState
 
 /// A local search over the reader's existing sorted, filtered chapter snapshot.
 /// Selection returns to the owning reader before it performs route replacement.
-class MobileReaderChaptersSheet extends StatefulWidget {
-  const MobileReaderChaptersSheet({
+class MobileReaderChaptersPanel extends StatefulWidget {
+  const MobileReaderChaptersPanel({
     super.key,
     required this.chapter,
     required this.chapters,
@@ -119,11 +110,11 @@ class MobileReaderChaptersSheet extends StatefulWidget {
   final Future<void> Function(Chapter, bool) onBookmark;
 
   @override
-  State<MobileReaderChaptersSheet> createState() =>
-      _MobileReaderChaptersSheetState();
+  State<MobileReaderChaptersPanel> createState() =>
+      _MobileReaderChaptersPanelState();
 }
 
-class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
+class _MobileReaderChaptersPanelState extends State<MobileReaderChaptersPanel> {
   final _search = TextEditingController();
   final _scroll = ScrollController();
   final _list = ListController();
@@ -231,156 +222,117 @@ class _MobileReaderChaptersSheetState extends State<MobileReaderChaptersSheet> {
   Widget build(BuildContext context) {
     final colors = NodeLaneTokens.of(context);
     final l10n = context.l10n;
-    final media = MediaQuery.of(context);
     return PopScope(
       canPop: !_busy,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
-        child: LayoutBuilder(
-          builder: (context, constraints) => NodeLaneReaderSurface(
-            child: SafeArea(
-              top: false,
-              child: SizedBox(
-                height: math.min(
-                  media.size.height * NodeLaneTokens.readerSheetFraction -
-                      media.padding.bottom,
-                  constraints.maxHeight - media.padding.bottom,
-                ),
-                child: Column(
-                  children: [
-                    NodeLaneReaderHeading(
-                      title: '${l10n.chapters} · ${_visible.length}',
-                      closeLabel: l10n.close,
-                      onClose: _busy ? null : () => _close(),
-                      actions: [
-                        IconButton(
-                          tooltip: l10n.reader_chapter_locate,
-                          onPressed: _currentIndex >= 0 && !_busy
-                              ? _locate
-                              : null,
-                          icon: Icon(
-                            NodeLaneIcons.of(context).locate,
-                            size: 24,
-                          ),
-                        ),
-                      ],
+      child: NodeLaneBubblePanel(
+        title: '${l10n.chapters} · ${_visible.length}',
+        closeButton: NodeLaneCloseButton(
+          tooltip: l10n.close,
+          onPressed: _busy ? null : () => _close(),
+        ),
+        actions: [
+          IconButton(
+            tooltip: l10n.reader_chapter_locate,
+            onPressed: _currentIndex >= 0 && !_busy ? _locate : null,
+            icon: Icon(NodeLaneIcons.of(context).locate, size: 24),
+          ),
+        ],
+        child: Scrollbar(
+          controller: _scroll,
+          child: CustomScrollView(
+            controller: _scroll,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: [
+              PinnedHeaderSliver(
+                child: ColoredBox(
+                  color: colors.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    child: NodeLaneTextField.search(
+                      controller: _search,
+                      enabled: !_busy,
+                      hint: l10n.reader_chapter_search,
+                      clearLabel: l10n.error_reports_clear,
+                      onChanged: _filter,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      child: NodeLaneTextField.search(
-                        controller: _search,
-                        enabled: !_busy,
-                        hint: l10n.reader_chapter_search,
-                        clearLabel: l10n.error_reports_clear,
-                        onChanged: _filter,
-                      ),
-                    ),
-                    if (_failed)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          l10n.reader_chapter_bookmark_failed,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ),
-                    Expanded(
-                      child: Scrollbar(
-                        controller: _scroll,
-                        child: CustomScrollView(
-                          controller: _scroll,
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          slivers: [
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  20,
-                                  4,
-                                  20,
-                                  12,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(
-                                      widget.chapter.manga.value?.name ?? '',
-                                      style: colors.readerLabel.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      l10n.reader_chapter_scope,
-                                      style: colors.readerSecondary,
-                                    ),
-                                    if (_currentIndex < 0)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 6),
-                                        child: Text(
-                                          l10n.reader_chapter_current_hidden,
-                                          style: colors.readerSecondary,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            if (_visible.isEmpty)
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Text(
-                                    l10n.no_result,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                            SliverPadding(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                              sliver: SuperSliverList.builder(
-                                listController: _list,
-                                itemCount: _visible.length,
-                                itemBuilder: (context, index) {
-                                  final chapter = _visible[index];
-                                  final bookmarked =
-                                      _bookmarks[chapter.id] ??
-                                      chapter.isBookmarked ??
-                                      false;
-                                  return Padding(
-                                    key: ValueKey(chapter.id),
-                                    padding: EdgeInsets.zero,
-                                    child: _ReaderChapterRow(
-                                      first: index == 0,
-                                      last: index == _visible.length - 1,
-                                      chapter: chapter,
-                                      current: _isCurrent(chapter),
-                                      bookmarked: bookmarked,
-                                      saving: _savingId == chapter.id,
-                                      onSelect: _busy
-                                          ? null
-                                          : () => _close(chapter),
-                                      onBookmark: _busy || _failed
-                                          ? null
-                                          : () => _bookmark(chapter),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+              if (_failed)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
+                    child: Text(
+                      l10n.reader_chapter_bookmark_failed,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        widget.chapter.manga.value?.name ?? '',
+                        style: colors.readerLabel.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (_currentIndex < 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            l10n.reader_chapter_current_hidden,
+                            style: colors.readerSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (_visible.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(l10n.no_result, textAlign: TextAlign.center),
+                  ),
+                ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                sliver: SuperSliverList.builder(
+                  listController: _list,
+                  itemCount: _visible.length,
+                  itemBuilder: (context, index) {
+                    final chapter = _visible[index];
+                    final bookmarked =
+                        _bookmarks[chapter.id] ?? chapter.isBookmarked ?? false;
+                    return Padding(
+                      key: ValueKey(chapter.id),
+                      padding: EdgeInsets.zero,
+                      child: _ReaderChapterRow(
+                        first: index == 0,
+                        last: index == _visible.length - 1,
+                        chapter: chapter,
+                        current: _isCurrent(chapter),
+                        bookmarked: bookmarked,
+                        saving: _savingId == chapter.id,
+                        onSelect: _busy ? null : () => _close(chapter),
+                        onBookmark: _busy || _failed
+                            ? null
+                            : () => _bookmark(chapter),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

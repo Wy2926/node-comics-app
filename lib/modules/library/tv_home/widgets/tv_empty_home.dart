@@ -23,7 +23,6 @@ class _EmptyHomeState extends State<TvEmptyHome> {
   @override
   Widget build(BuildContext context) {
     final accent = context.primaryColor;
-    final hint = Theme.of(context).hintColor;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -33,11 +32,6 @@ class _EmptyHomeState extends State<TvEmptyHome> {
           Text(
             context.l10n.tv_empty_library,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            context.l10n.tv_empty_library_hint,
-            style: TextStyle(color: hint),
           ),
           const SizedBox(height: 22),
           Focus(

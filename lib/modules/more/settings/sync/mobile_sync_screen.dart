@@ -412,21 +412,6 @@ class _MobileSyncSettingsState extends State<MobileSyncSettings> {
                     ),
                   ],
                 ),
-                MobileSettingsGroup(
-                  children: [
-                    NodeLaneDisclosure(
-                      key: const PageStorageKey('mobile-sync-about'),
-                      title: l10n.about,
-                      child: Padding(
-                        padding: NodeLaneTokens.groupPadding,
-                        child: Text(
-                          l10n.syncing_subtitle,
-                          style: colors.readerSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ],
           ),

@@ -18,11 +18,11 @@ import 'package:mangayomi/modules/manga/reader/reader_view.dart';
 import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences_provider.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_scope.dart';
-import 'package:mangayomi/modules/manga/reader/settings/comic_reader_settings_sheet.dart';
+import 'package:mangayomi/modules/manga/reader/settings/comic_reader_settings.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/auto_scroll_button.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
@@ -224,6 +224,34 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'long presses anchor the image tools on either side without moving the page',
+    (tester) async {
+      await mount(tester);
+      final reader = content(tester);
+      for (final page in reader.pages.where((p) => !p.isTransitionPage)) {
+        page.archiveImage = Uint8List.fromList([1, 2, 3]);
+      }
+      final offset = reader.scrollController.offset;
+      for (final point in [const Offset(90, 175), const Offset(300, 625)]) {
+        final press = await tester.startGesture(point);
+        await tester.pump(const Duration(milliseconds: 650));
+        await tester.pump(const Duration(milliseconds: 240));
+        await press.up();
+        await tester.pumpAndSettle();
+        final panel = tester.getRect(find.byType(NodeLaneBubblePanel));
+        expect(
+          point.dy < 400 ? panel.top > point.dy : panel.bottom < point.dy,
+          isTrue,
+        );
+        expect(find.byType(BottomSheet), findsNothing);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(reader.scrollController.offset, offset);
+      }
+    },
+  );
+
   testWidgets('a short final image reports the last page at the end', (
     tester,
   ) async {
@@ -271,17 +299,17 @@ void main() {
       expect(running.value, isFalse);
       await frames(tester, 25);
       expect(scroll.offset, pausedAt);
-      final panel = tester.element(find.byType(ComicReaderSettingsSheet));
+      final panel = tester.element(find.byType(ComicReaderSettingsPanel));
       expect(
         find.descendant(
-          of: find.byType(ComicReaderSettingsSheet),
+          of: find.byType(ComicReaderSettingsPanel),
           matching: find.text('Fixture'),
         ),
         findsNothing,
       );
       final panelScroll = find
           .descendant(
-            of: find.byType(ComicReaderSettingsSheet),
+            of: find.byType(ComicReaderSettingsPanel),
             matching: find.byType(Scrollable),
           )
           .first;
@@ -305,10 +333,12 @@ void main() {
       await tester.tap(find.text('Manga translation'));
       await tester.pumpAndSettle();
       expect(find.byType(TranslationControlsContent), findsOneWidget);
-      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
+      expect(find.byType(NodeLaneBubbleFlow), findsOneWidget);
+      expect(find.byType(BottomSheet), findsNothing);
+      await tester.ensureVisible(find.text('Translation language'));
       await tester.tap(find.text('Translation language'));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(3));
+      expect(find.text('简体中文'), findsOneWidget);
       await tester.tap(find.byTooltip('Close').last);
       await tester.pumpAndSettle();
       expect(find.byType(TranslationControlsContent), findsOneWidget);
@@ -316,7 +346,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(TranslationControlsContent), findsNothing);
       expect(
-        tester.element(find.byType(ComicReaderSettingsSheet)),
+        tester.element(find.byType(ComicReaderSettingsPanel)),
         same(panel),
       );
       expect(position.pixels, offset);
@@ -336,7 +366,7 @@ void main() {
         100,
         scrollable: find
             .descendant(
-              of: find.byType(ComicReaderSettingsSheet),
+              of: find.byType(ComicReaderSettingsPanel),
               matching: find.byType(Scrollable),
             )
             .first,

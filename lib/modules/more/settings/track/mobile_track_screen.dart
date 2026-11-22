@@ -171,7 +171,6 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
     return PopScope(
       canPop: !_busy,
       child: NodeLaneSurface(
@@ -248,10 +247,6 @@ class _MobileTrackingSettingsState extends State<MobileTrackingSettings> {
                         icon: NodeLaneIcons.of(context).accountOutline,
                       ),
                     ],
-                  ),
-                  Text(
-                    l10n.tracking_warning_info,
-                    style: colors.readerSecondary,
                   ),
                 ],
               ],

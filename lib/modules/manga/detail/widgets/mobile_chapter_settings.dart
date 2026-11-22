@@ -45,7 +45,7 @@ class MobileChapterSettingsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n, t = NodeLaneTokens.of(context);
+    final l10n = context.l10n;
     final comic = manga.itemType == ItemType.manga;
     final tabs = [l10n.filter, l10n.sort, if (comic) l10n.settings];
     return DefaultTabController(
@@ -73,26 +73,14 @@ class MobileChapterSettingsPanel extends StatelessWidget {
                     controller,
                     Padding(
                       padding: NodeLaneTokens.bubbleContentPadding,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        spacing: NodeLaneTokens.space12,
-                        children: [
-                          switch (controller.index) {
-                            0 => _ChapterFilters(
-                              manga: manga,
-                              localArchive: localArchive,
-                            ),
-                            1 => _ChapterSort(manga: manga),
-                            _ => const _ChapterHabits(),
-                          },
-                          Text(
-                            controller.index == 2
-                                ? l10n.comic_chapter_habits_hint
-                                : l10n.chapter_settings_live,
-                            style: t.readerSecondary,
-                          ),
-                        ],
-                      ),
+                      child: switch (controller.index) {
+                        0 => _ChapterFilters(
+                          manga: manga,
+                          localArchive: localArchive,
+                        ),
+                        1 => _ChapterSort(manga: manga),
+                        _ => const _ChapterHabits(),
+                      },
                     ),
                   ),
                 ),
@@ -292,8 +280,6 @@ class _ScanlatorDraftState extends State<_ScanlatorDraft> {
                     hint: l10n.search,
                     onChanged: (_) => setState(() {}),
                   ),
-                  const SizedBox(height: NodeLaneTokens.space16),
-                  Text(l10n.chapter_scanlators_hint),
                   const SizedBox(height: NodeLaneTokens.space8),
                   Text(
                     _excluded.isEmpty

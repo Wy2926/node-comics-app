@@ -13,7 +13,7 @@ import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
@@ -142,7 +142,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           itemType: itemType,
           entries: entries,
         ),
-        mediaMenu: MobileMediaMenu(
+        mediaMenu: LibraryMediaButton(
           value: itemType,
           availableTypes: visibleItemTypes(hidden),
           onChanged: (type) => context.go(libraryRoutes[type]!),
@@ -317,8 +317,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
             },
           )
         else
-          PopupMenuButton(
-            popUpAnimationStyle: NodeLaneMotion.style(context),
+          NodeLaneBubbleButton(
             itemBuilder: (context) {
               return [
                 PopupMenuItem<int>(

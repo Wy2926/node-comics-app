@@ -154,7 +154,7 @@ class _MobileReaderEntryStateState extends State<MobileReaderEntryState> {
                                       : l10n.reader_loading_pages,
                                   description: failed
                                       ? l10n.reader_loading_retry_hint
-                                      : l10n.reader_loading_pages_hint,
+                                      : null,
                                   kind: failed
                                       ? NodeLaneNoticeKind.info
                                       : NodeLaneNoticeKind.progress,

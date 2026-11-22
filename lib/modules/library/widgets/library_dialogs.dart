@@ -294,10 +294,6 @@ void showImportLocalDialog(BuildContext context, ItemType itemType) {
                                 l10n.split_epub_chapters,
                                 style: const TextStyle(fontSize: 13),
                               ),
-                              subtitle: Text(
-                                l10n.split_epub_chapters_description,
-                                style: const TextStyle(fontSize: 10),
-                              ),
                               value: splitChapters,
                               onChanged: (v) =>
                                   setState(() => splitChapters = v),

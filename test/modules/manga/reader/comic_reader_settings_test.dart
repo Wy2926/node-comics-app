@@ -6,8 +6,8 @@ import 'package:mangayomi/modules/more/settings/reader/mobile_reader_screen.dart
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences_provider.dart';
-import 'package:mangayomi/modules/manga/reader/settings/comic_reader_settings_sheet.dart';
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/manga/reader/settings/comic_reader_settings.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class MemoryPreferences extends ComicReaderPreferencesController {
@@ -63,16 +63,15 @@ void main() {
           home: global
               ? const MobileReaderScreen()
               : Scaffold(
-                  body: Builder(
-                    builder: (context) => Center(
-                      child: TextButton(
+                  body: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Builder(
+                      builder: (context) => TextButton(
                         child: const Text('Open'),
-                        onPressed: () => showNodeLaneCatalogSheet<void>(
-                          context,
-                          ComicReaderSettingsSheet(
-                            bookId: 1,
-                            autoScroll: running,
-                          ),
+                        onPressed: () => showComicReaderSettings(
+                          context: context,
+                          bookId: 1,
+                          autoScroll: running,
                         ),
                       ),
                     ),
@@ -87,7 +86,7 @@ void main() {
   }
 
   testWidgets(
-    'sheet choices and defaults preserve the parent panel, cancellation and book scope',
+    'bubble choices and defaults preserve the parent panel, cancellation and book scope',
     (tester) async {
       final container = await mount(tester);
       final controller = container.read(
@@ -95,22 +94,17 @@ void main() {
       ) as MemoryPreferences;
       expect(controller.writes, 0);
       expect(find.text('Left'), findsOneWidget);
-      final panel = tester.element(find.byType(ComicReaderSettingsSheet));
-      final panelHeight = tester
-          .getSize(find.byType(NodeLaneCatalogSheet))
-          .height;
+      final panel = tester.element(find.byType(ComicReaderSettingsPanel));
+      final bubble = tester.element(find.byType(NodeLaneBubbleFlow));
       await tester.tap(find.widgetWithText(NodeLaneRow, 'Reading mode'));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
+      expect(tester.element(find.byType(NodeLaneBubbleFlow)), same(bubble));
+      expect(find.byType(BottomSheet), findsNothing);
       expect(find.byType(AppBar), findsNothing);
-      expect(
-        tester.getSize(find.byType(NodeLaneCatalogSheet).last).height,
-        lessThan(panelHeight),
-      );
-      await tester.tap(find.byTooltip('Close').last);
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(
-        tester.element(find.byType(ComicReaderSettingsSheet)),
+        tester.element(find.byType(ComicReaderSettingsPanel)),
         same(panel),
       );
       expect(controller.writes, 0);
@@ -131,14 +125,14 @@ void main() {
       await tester.scrollUntilVisible(find.text('Fine-tune image'), 200);
       await tester.tap(find.text('Fine-tune image'));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.byType(ComicReaderSettingsPanel), findsOneWidget);
       expect(find.text('Wide pages'), findsNothing);
       await tester.scrollUntilVisible(find.text('Defaults & habits'), 200);
       final position = tester
           .state<ScrollableState>(
             find
                 .descendant(
-                  of: find.byType(ComicReaderSettingsSheet),
+                  of: find.byType(ComicReaderSettingsPanel),
                   matching: find.byType(Scrollable),
                 )
                 .first,
@@ -147,12 +141,12 @@ void main() {
       final offset = position.pixels;
       await tester.tap(find.text('Defaults & habits'));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
+      expect(find.byTooltip('Back'), findsOneWidget);
       await tester.tap(
         find.widgetWithText(NodeLaneRow, 'Swipe to the next page'),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(3));
+      expect(tester.element(find.byType(NodeLaneBubbleFlow)), same(bubble));
       await tester.tap(find.text('Right'));
       await tester.pumpAndSettle();
       expect(
@@ -165,9 +159,9 @@ void main() {
       );
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.byTooltip('Back'), findsNothing);
       expect(
-        tester.element(find.byType(ComicReaderSettingsSheet)),
+        tester.element(find.byType(ComicReaderSettingsPanel)),
         same(panel),
       );
       expect(position.pixels, offset);
@@ -177,7 +171,7 @@ void main() {
   );
 
   testWidgets(
-    'large Chinese settings use pages globally and compact sheets while reading',
+    'large Chinese settings use pages globally and one bubble while reading',
     (tester) async {
       await mount(tester, scale: 2.5, locale: const Locale('zh'), global: true);
       final context = tester.element(find.byType(ComicReaderSettingsContent));
@@ -193,7 +187,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsNothing);
+      expect(find.byType(NodeLaneBubbleFlow), findsNothing);
       expect(find.byType(AppBar), findsOneWidget);
       await tester.tap(find.text(l.comic_scroll));
       await tester.pumpAndSettle();
@@ -205,11 +199,11 @@ void main() {
       await tester.tap(find.widgetWithText(NodeLaneRow, l.reading_mode));
       await tester.pumpAndSettle();
       expect(find.byType(AppBar), findsNothing);
-      expect(find.byType(NodeLaneCatalogSheet), findsNWidgets(2));
+      expect(find.byType(NodeLaneBubbleFlow), findsOneWidget);
       expect(find.text(l.comic_scroll).hitTestable(), findsOneWidget);
       await tester.tap(find.text(l.comic_scroll));
       await tester.pumpAndSettle();
-      expect(find.byType(NodeLaneCatalogSheet), findsOneWidget);
+      expect(find.byType(ComicReaderSettingsPanel), findsOneWidget);
       expect(find.text(l.comic_width), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

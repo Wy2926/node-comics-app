@@ -124,7 +124,6 @@ class _MobileDownloadQueueState extends State<MobileDownloadQueue> {
                     scrollable: true,
                     icon: icons.downloadQueue,
                     title: l10n.download_queue_empty,
-                    message: l10n.download_queue_empty_hint,
                   )
                 : ReorderableListView.builder(
                     key: const PageStorageKey('mobile-download-queue'),
@@ -135,41 +134,9 @@ class _MobileDownloadQueueState extends State<MobileDownloadQueue> {
                         top: NodeLaneTokens.space16,
                         bottom: NodeLaneTokens.space16,
                       ),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final count = Text(
-                            l10n.download_queue_count(widget.entries.length),
-                            style: t.body.copyWith(fontWeight: FontWeight.w600),
-                          );
-                          final hint = Text(
-                            l10n.download_queue_order_hint,
-                            style: t.secondary,
-                          );
-                          if (MediaQuery.textScalerOf(context).scale(16) > 20 ||
-                              constraints.maxWidth < 320) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                count,
-                                const SizedBox(height: NodeLaneTokens.space4),
-                                hint,
-                              ],
-                            );
-                          }
-                          return Row(
-                            children: [
-                              Expanded(child: count),
-                              const SizedBox(width: NodeLaneTokens.space12),
-                              Expanded(
-                                child: Text(
-                                  l10n.download_queue_order_hint,
-                                  textAlign: TextAlign.end,
-                                  style: t.secondary,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                      child: Text(
+                        l10n.download_queue_count(widget.entries.length),
+                        style: t.body.copyWith(fontWeight: FontWeight.w600),
                       ),
                     ),
                     itemCount: widget.entries.length,

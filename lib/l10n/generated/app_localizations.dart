@@ -151,12 +151,6 @@ abstract class AppLocalizations {
   /// **'Continue reading'**
   String get browser_continue;
 
-  /// No description provided for @browser_continue_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Your place in a chapter is saved as you read. No bookmark needed.'**
-  String get browser_continue_hint;
-
   /// No description provided for @browser_insert_suggestion.
   ///
   /// In en, this message translates to:
@@ -247,12 +241,6 @@ abstract class AppLocalizations {
   /// **'Have a problem or suggestion? Tell us here, no sign-in needed.'**
   String get feedback_app_hint;
 
-  /// No description provided for @feedback_source_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Which website would you like us to support? No sign-in needed.'**
-  String get feedback_source_hint;
-
   /// No description provided for @feedback_site_name.
   ///
   /// In en, this message translates to:
@@ -337,12 +325,6 @@ abstract class AppLocalizations {
   /// **'Search or enter a URL'**
   String get browser_search_hint;
 
-  /// No description provided for @browser_start_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'A fresh page for your next discovery.'**
-  String get browser_start_hint;
-
   /// No description provided for @browser_search_engine.
   ///
   /// In en, this message translates to:
@@ -384,18 +366,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing here yet'**
   String get browser_library_empty;
-
-  /// No description provided for @browser_bookmarks_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Save a page from its menu to find it here.'**
-  String get browser_bookmarks_hint;
-
-  /// No description provided for @browser_history_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Pages you visit appear here, even after closing their tabs.'**
-  String get browser_history_hint;
 
   /// No description provided for @browser_recent.
   ///
@@ -457,12 +427,6 @@ abstract class AppLocalizations {
   /// **'Match {current} of {total}'**
   String browser_find_matches(int current, int total);
 
-  /// No description provided for @app_update_details_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'View release notes and installation options'**
-  String get app_update_details_hint;
-
   /// No description provided for @app_update_download.
   ///
   /// In en, this message translates to:
@@ -480,12 +444,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Download full APK ({size})'**
   String app_update_full(String size);
-
-  /// No description provided for @app_update_download_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'After downloading, follow the prompts to install the update.'**
-  String get app_update_download_hint;
 
   /// No description provided for @bookshelf_all.
   ///
@@ -535,12 +493,6 @@ abstract class AppLocalizations {
   /// **'No matching settings'**
   String get settings_search_empty;
 
-  /// No description provided for @search_empty_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Try another keyword, or clear the search to see everything.'**
-  String get search_empty_hint;
-
   /// No description provided for @search_clear.
   ///
   /// In en, this message translates to:
@@ -570,12 +522,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Later'**
   String get app_update_later;
-
-  /// No description provided for @app_update_external_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Opens the update link in your browser'**
-  String get app_update_external_hint;
 
   /// No description provided for @app_update_failed.
   ///
@@ -792,12 +738,6 @@ abstract class AppLocalizations {
   /// **'Compression level'**
   String get compression_level;
 
-  /// No description provided for @compression_info.
-  ///
-  /// In en, this message translates to:
-  /// **'The higher the compression, the less space the backup file takes, but it uses more CPU. Default: {level}'**
-  String compression_info(Object level);
-
   /// No description provided for @comfortable_grid.
   ///
   /// In en, this message translates to:
@@ -906,12 +846,6 @@ abstract class AppLocalizations {
   /// **'Remove everything'**
   String get remove_everything;
 
-  /// No description provided for @remove_everything_msg.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure? All history will be lost'**
-  String get remove_everything_msg;
-
   /// No description provided for @remove_all_update_msg.
   ///
   /// In en, this message translates to:
@@ -935,12 +869,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get remove;
-
-  /// No description provided for @remove_history_msg.
-  ///
-  /// In en, this message translates to:
-  /// **'This will remove the read date of this chapter. Are you sure?'**
-  String get remove_history_msg;
 
   /// No description provided for @last_used.
   ///
@@ -1025,12 +953,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Installed'**
   String get mass_migration_installed;
-
-  /// No description provided for @mass_migration_items_ready_for_review.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 item ready for review} other{{count} items ready for review}}'**
-  String mass_migration_items_ready_for_review(int count);
 
   /// No description provided for @mass_migration_item_count.
   ///
@@ -1326,23 +1248,11 @@ abstract class AppLocalizations {
   /// **'Incognito Mode'**
   String get incognito_mode;
 
-  /// No description provided for @incognito_mode_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Pauses reading history'**
-  String get incognito_mode_description;
-
   /// No description provided for @downloaded_only.
   ///
   /// In en, this message translates to:
   /// **'Downloaded only'**
   String get downloaded_only;
-
-  /// No description provided for @downloaded_only_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Only show downloaded entries in your library'**
-  String get downloaded_only_description;
 
   /// No description provided for @download_queue.
   ///
@@ -1385,18 +1295,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No Downloads'**
   String get no_downloads;
-
-  /// No description provided for @edit_categories.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Categories'**
-  String get edit_categories;
-
-  /// No description provided for @edit_categories_description.
-  ///
-  /// In en, this message translates to:
-  /// **'You have no categories. Tap the plus button to create one for organizing your library'**
-  String get edit_categories_description;
 
   /// No description provided for @add.
   ///
@@ -1463,12 +1361,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'General'**
   String get general;
-
-  /// No description provided for @general_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'App language'**
-  String get general_subtitle;
 
   /// No description provided for @app_language.
   ///
@@ -1590,12 +1482,6 @@ abstract class AppLocalizations {
   /// **'Vertical'**
   String get reading_mode_vertical;
 
-  /// No description provided for @reading_mode_horizontal.
-  ///
-  /// In en, this message translates to:
-  /// **'Horizontal'**
-  String get reading_mode_horizontal;
-
   /// No description provided for @reading_mode_left_to_right.
   ///
   /// In en, this message translates to:
@@ -1620,12 +1506,6 @@ abstract class AppLocalizations {
   /// **'Webtoon'**
   String get reading_mode_webtoon;
 
-  /// No description provided for @double_tap_animation_speed.
-  ///
-  /// In en, this message translates to:
-  /// **'Double tap animation speed'**
-  String get double_tap_animation_speed;
-
   /// No description provided for @normal.
   ///
   /// In en, this message translates to:
@@ -1638,18 +1518,6 @@ abstract class AppLocalizations {
   /// **'Fast'**
   String get fast;
 
-  /// No description provided for @no_animation.
-  ///
-  /// In en, this message translates to:
-  /// **'No animation'**
-  String get no_animation;
-
-  /// No description provided for @animate_page_transitions.
-  ///
-  /// In en, this message translates to:
-  /// **'Animate page transitions'**
-  String get animate_page_transitions;
-
   /// No description provided for @crop_borders.
   ///
   /// In en, this message translates to:
@@ -1661,12 +1529,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Downloads'**
   String get downloads;
-
-  /// No description provided for @downloads_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloads settings'**
-  String get downloads_subtitle;
 
   /// No description provided for @download_location.
   ///
@@ -1848,12 +1710,6 @@ abstract class AppLocalizations {
   /// **'Unknown'**
   String get unknown;
 
-  /// No description provided for @empty_placeholder.
-  ///
-  /// In en, this message translates to:
-  /// **'EMPTY\nMPTY\nMTY\nMT\n\n'**
-  String get empty_placeholder;
-
   /// No description provided for @error.
   ///
   /// In en, this message translates to:
@@ -1865,12 +1721,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error: {error}'**
   String error_with_message(Object error);
-
-  /// No description provided for @no_pages_available.
-  ///
-  /// In en, this message translates to:
-  /// **'Error: no pages available'**
-  String get no_pages_available;
 
   /// No description provided for @set_categories.
   ///
@@ -1901,12 +1751,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset'**
   String get reset;
-
-  /// No description provided for @by_source.
-  ///
-  /// In en, this message translates to:
-  /// **'By source'**
-  String get by_source;
 
   /// No description provided for @by_chapter_number.
   ///
@@ -1943,12 +1787,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Developer mode'**
   String get developer_mode;
-
-  /// No description provided for @developer_mode_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Show extension developer tools (create extension, edit code)'**
-  String get developer_mode_subtitle;
 
   /// No description provided for @choose_extension_language.
   ///
@@ -2232,12 +2070,6 @@ abstract class AppLocalizations {
   /// **'Previous {char}'**
   String previous(Object char);
 
-  /// No description provided for @no_more_chapter.
-  ///
-  /// In en, this message translates to:
-  /// **'There\'s no more chapter'**
-  String get no_more_chapter;
-
   /// No description provided for @no_result.
   ///
   /// In en, this message translates to:
@@ -2315,18 +2147,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Split into chapters'**
   String get split_epub_chapters;
-
-  /// No description provided for @split_epub_chapters_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Import each EPUB chapter as a separate entry'**
-  String get split_epub_chapters_description;
-
-  /// No description provided for @nothing_read_recently.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing read recently'**
-  String get nothing_read_recently;
 
   /// No description provided for @status.
   ///
@@ -2429,12 +2249,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Login successful'**
   String get sync_logged;
-
-  /// No description provided for @syncing_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your sync server address and sign in through the browser to sync reading progress across devices.'**
-  String get syncing_subtitle;
 
   /// No description provided for @sync_service.
   ///
@@ -2628,12 +2442,6 @@ abstract class AppLocalizations {
   /// **'Every 12 hours'**
   String get sync_auto_12_hours;
 
-  /// No description provided for @server_error.
-  ///
-  /// In en, this message translates to:
-  /// **'Server error!'**
-  String get server_error;
-
   /// No description provided for @dialog_confirm.
   ///
   /// In en, this message translates to:
@@ -2652,35 +2460,17 @@ abstract class AppLocalizations {
   /// **'Customize navigation'**
   String get reorder_navigation;
 
-  /// No description provided for @reorder_navigation_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Reorder and toggle each navigation to your needs.'**
-  String get reorder_navigation_description;
-
   /// No description provided for @floating_navigation_bar.
   ///
   /// In en, this message translates to:
   /// **'Floating navigation bar'**
   String get floating_navigation_bar;
 
-  /// No description provided for @floating_navigation_bar_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Use a floating capsule instead of the standard attached navigation bar.'**
-  String get floating_navigation_bar_description;
-
   /// No description provided for @full_screen_player.
   ///
   /// In en, this message translates to:
   /// **'Use Fullscreen'**
   String get full_screen_player;
-
-  /// No description provided for @full_screen_player_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically use fullscreen when playing a video.'**
-  String get full_screen_player_info;
 
   /// No description provided for @episode_progress.
   ///
@@ -2814,12 +2604,6 @@ abstract class AppLocalizations {
   /// **'Searching for updates...'**
   String get searching_for_updates;
 
-  /// No description provided for @no_new_updates_available.
-  ///
-  /// In en, this message translates to:
-  /// **'No new updates available'**
-  String get no_new_updates_available;
-
   /// No description provided for @uninstall.
   ///
   /// In en, this message translates to:
@@ -2844,12 +2628,6 @@ abstract class AppLocalizations {
   /// **'Show double-tap search hint'**
   String get show_nav_double_tap_tooltip;
 
-  /// No description provided for @show_nav_double_tap_tooltip_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Show a tooltip on the Manga/Anime/Novel nav destinations explaining that double-tapping opens Global Search.'**
-  String get show_nav_double_tap_tooltip_subtitle;
-
   /// No description provided for @already_in_library.
   ///
   /// In en, this message translates to:
@@ -2862,71 +2640,17 @@ abstract class AppLocalizations {
   /// **'Add Anyway'**
   String get add_anyway;
 
-  /// No description provided for @langauage.
-  ///
-  /// In en, this message translates to:
-  /// **'Language'**
-  String get langauage;
-
   /// No description provided for @extension_detail.
   ///
   /// In en, this message translates to:
   /// **'Extension detail'**
   String get extension_detail;
 
-  /// No description provided for @scale_type.
-  ///
-  /// In en, this message translates to:
-  /// **'Scale type'**
-  String get scale_type;
-
   /// No description provided for @scale_type_fit_screen.
   ///
   /// In en, this message translates to:
   /// **'Fit screen'**
   String get scale_type_fit_screen;
-
-  /// No description provided for @scale_type_stretch.
-  ///
-  /// In en, this message translates to:
-  /// **'Stretch'**
-  String get scale_type_stretch;
-
-  /// No description provided for @scale_type_fit_width.
-  ///
-  /// In en, this message translates to:
-  /// **'Fit width'**
-  String get scale_type_fit_width;
-
-  /// No description provided for @scale_type_fit_height.
-  ///
-  /// In en, this message translates to:
-  /// **'Fit height'**
-  String get scale_type_fit_height;
-
-  /// No description provided for @scale_type_original_size.
-  ///
-  /// In en, this message translates to:
-  /// **'Original size'**
-  String get scale_type_original_size;
-
-  /// No description provided for @scale_type_smart_fit.
-  ///
-  /// In en, this message translates to:
-  /// **'Smart fit'**
-  String get scale_type_smart_fit;
-
-  /// No description provided for @page_preload_amount.
-  ///
-  /// In en, this message translates to:
-  /// **'Page preload amount'**
-  String get page_preload_amount;
-
-  /// No description provided for @page_preload_amount_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache and network usage.'**
-  String get page_preload_amount_subtitle;
 
   /// No description provided for @image_loading_error.
   ///
@@ -2964,12 +2688,6 @@ abstract class AppLocalizations {
   /// **'Auto-update third-party extensions'**
   String get auto_extensions_updates;
 
-  /// No description provided for @auto_extensions_updates_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically update installed third-party extensions. Official plugins are always installed and updated automatically.'**
-  String get auto_extensions_updates_subtitle;
-
   /// No description provided for @check_for_app_updates.
   ///
   /// In en, this message translates to:
@@ -2981,18 +2699,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reading mode'**
   String get reading_mode;
-
-  /// No description provided for @custom_filter.
-  ///
-  /// In en, this message translates to:
-  /// **'Custom filter'**
-  String get custom_filter;
-
-  /// No description provided for @background_color.
-  ///
-  /// In en, this message translates to:
-  /// **'Background color'**
-  String get background_color;
 
   /// No description provided for @white.
   ///
@@ -3011,18 +2717,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Grey'**
   String get grey;
-
-  /// No description provided for @automaic.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatic'**
-  String get automaic;
-
-  /// No description provided for @preferred_domain.
-  ///
-  /// In en, this message translates to:
-  /// **'Preferred Domain'**
-  String get preferred_domain;
 
   /// No description provided for @load_more.
   ///
@@ -3096,18 +2790,6 @@ abstract class AppLocalizations {
   /// **'Create backup'**
   String get create_backup;
 
-  /// No description provided for @create_backup_dialog_title.
-  ///
-  /// In en, this message translates to:
-  /// **'What do you want to backup?'**
-  String get create_backup_dialog_title;
-
-  /// No description provided for @create_backup_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Can be used to restore current library'**
-  String get create_backup_subtitle;
-
   /// No description provided for @restore_backup.
   ///
   /// In en, this message translates to:
@@ -3119,12 +2801,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Encrypt backups'**
   String get encrypt_backups;
-
-  /// No description provided for @encrypt_backups_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Password-protect backup files using AES encryption'**
-  String get encrypt_backups_info;
 
   /// No description provided for @no_secure_storage.
   ///
@@ -3174,12 +2850,6 @@ abstract class AppLocalizations {
   /// **'A password is required to restore this backup.'**
   String get password_required_to_restore;
 
-  /// No description provided for @restore_backup_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore library from backup file'**
-  String get restore_backup_subtitle;
-
   /// No description provided for @automatic_backups.
   ///
   /// In en, this message translates to:
@@ -3197,24 +2867,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Backup location'**
   String get backup_location;
-
-  /// No description provided for @backup_options.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup options'**
-  String get backup_options;
-
-  /// No description provided for @backup_options_dialog_title.
-  ///
-  /// In en, this message translates to:
-  /// **'What do you want to backup?'**
-  String get backup_options_dialog_title;
-
-  /// No description provided for @backup_options_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What information to include in the backup file?'**
-  String get backup_options_subtitle;
 
   /// No description provided for @backup_and_restore_warning_info.
   ///
@@ -3342,12 +2994,6 @@ abstract class AppLocalizations {
   /// **'Services'**
   String get services;
 
-  /// No description provided for @tracking_warning_info.
-  ///
-  /// In en, this message translates to:
-  /// **'One-way sync to update the chapter progress in tracking services. Set up tracking for individual entries from their tracking button.'**
-  String get tracking_warning_info;
-
   /// No description provided for @use_page_tap_zones.
   ///
   /// In en, this message translates to:
@@ -3401,12 +3047,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Audio'**
   String get video_audio;
-
-  /// No description provided for @video_audio_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Preferred languages, pitch correction, audio channels'**
-  String get video_audio_info;
 
   /// No description provided for @player.
   ///
@@ -3612,96 +3252,6 @@ abstract class AppLocalizations {
   /// **'Include subtitles'**
   String get include_subtitles;
 
-  /// No description provided for @blend_mode_default.
-  ///
-  /// In en, this message translates to:
-  /// **'Default'**
-  String get blend_mode_default;
-
-  /// No description provided for @blend_mode_multiply.
-  ///
-  /// In en, this message translates to:
-  /// **'Multiply'**
-  String get blend_mode_multiply;
-
-  /// No description provided for @blend_mode_screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Screen'**
-  String get blend_mode_screen;
-
-  /// No description provided for @blend_mode_overlay.
-  ///
-  /// In en, this message translates to:
-  /// **'Overlay'**
-  String get blend_mode_overlay;
-
-  /// No description provided for @blend_mode_colorDodge.
-  ///
-  /// In en, this message translates to:
-  /// **'ColorDodge'**
-  String get blend_mode_colorDodge;
-
-  /// No description provided for @blend_mode_lighten.
-  ///
-  /// In en, this message translates to:
-  /// **'Lighten'**
-  String get blend_mode_lighten;
-
-  /// No description provided for @blend_mode_colorBurn.
-  ///
-  /// In en, this message translates to:
-  /// **'ColorBurn'**
-  String get blend_mode_colorBurn;
-
-  /// No description provided for @blend_mode_darken.
-  ///
-  /// In en, this message translates to:
-  /// **'Darken'**
-  String get blend_mode_darken;
-
-  /// No description provided for @blend_mode_difference.
-  ///
-  /// In en, this message translates to:
-  /// **'Difference'**
-  String get blend_mode_difference;
-
-  /// No description provided for @blend_mode_saturation.
-  ///
-  /// In en, this message translates to:
-  /// **'Saturation'**
-  String get blend_mode_saturation;
-
-  /// No description provided for @blend_mode_softLight.
-  ///
-  /// In en, this message translates to:
-  /// **'SoftLight'**
-  String get blend_mode_softLight;
-
-  /// No description provided for @blend_mode_plus.
-  ///
-  /// In en, this message translates to:
-  /// **'Plus'**
-  String get blend_mode_plus;
-
-  /// No description provided for @blend_mode_exclusion.
-  ///
-  /// In en, this message translates to:
-  /// **'Exclusion'**
-  String get blend_mode_exclusion;
-
-  /// No description provided for @custom_color_filter.
-  ///
-  /// In en, this message translates to:
-  /// **'Custom color filter'**
-  String get custom_color_filter;
-
-  /// No description provided for @color_filter_blend_mode.
-  ///
-  /// In en, this message translates to:
-  /// **'Color filter blend mode'**
-  String get color_filter_blend_mode;
-
   /// No description provided for @enable_all.
   ///
   /// In en, this message translates to:
@@ -3786,29 +3336,11 @@ abstract class AppLocalizations {
   /// **'Enable libass'**
   String get use_libass;
 
-  /// No description provided for @use_libass_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Use libass based subtitle rendering for native backend.'**
-  String get use_libass_info;
-
-  /// No description provided for @libass_not_disable_message.
-  ///
-  /// In en, this message translates to:
-  /// **'Disable `use libass` in player settings to be able to customize the subtitles.'**
-  String get libass_not_disable_message;
-
   /// No description provided for @override_ass_subtitles.
   ///
   /// In en, this message translates to:
   /// **'Override ASS subtitles'**
   String get override_ass_subtitles;
-
-  /// No description provided for @override_ass_subtitles_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply custom styling to ASS/SSA subtitles'**
-  String get override_ass_subtitles_info;
 
   /// No description provided for @torrent_stream.
   ///
@@ -3851,18 +3383,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'mpv config'**
   String get advanced_info;
-
-  /// No description provided for @use_native_http_client.
-  ///
-  /// In en, this message translates to:
-  /// **'Use native http client'**
-  String get use_native_http_client;
-
-  /// No description provided for @use_native_http_client_info.
-  ///
-  /// In en, this message translates to:
-  /// **'it automatically supports platform features such VPNs, support more HTTP features such as HTTP/3 and custom redirect handling'**
-  String get use_native_http_client_info;
 
   /// No description provided for @n_hour_ago.
   ///
@@ -3911,12 +3431,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data and storage'**
   String get data_and_storage;
-
-  /// No description provided for @download_location_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Used for chapter downloads'**
-  String get download_location_info;
 
   /// No description provided for @storage.
   ///
@@ -3977,12 +3491,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recommendations'**
   String get recommendations;
-
-  /// No description provided for @recommendations_similar.
-  ///
-  /// In en, this message translates to:
-  /// **'similar'**
-  String get recommendations_similar;
 
   /// No description provided for @recommendations_weights.
   ///
@@ -4224,12 +3732,6 @@ abstract class AppLocalizations {
   /// **'Hardware Acceleration'**
   String get enable_hardware_accel;
 
-  /// No description provided for @enable_hardware_accel_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Turn it on/off if you are experiencing bugs or crashes'**
-  String get enable_hardware_accel_info;
-
   /// No description provided for @track_library_navigate.
   ///
   /// In en, this message translates to:
@@ -4308,12 +3810,6 @@ abstract class AppLocalizations {
   /// **'Enable mpv shaders / scripts'**
   String get enable_mpv;
 
-  /// No description provided for @mpv_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Supports .js scripts under mpv/scripts/'**
-  String get mpv_info;
-
   /// No description provided for @mpv_redownload.
   ///
   /// In en, this message translates to:
@@ -4337,12 +3833,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom buttons'**
   String get custom_buttons;
-
-  /// No description provided for @custom_buttons_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Execute lua code with custom buttons'**
-  String get custom_buttons_info;
 
   /// No description provided for @custom_buttons_edit.
   ///
@@ -4422,23 +3912,11 @@ abstract class AppLocalizations {
   /// **'Decoder'**
   String get decoder;
 
-  /// No description provided for @decoder_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Hardware decoding, pixel format, debanding'**
-  String get decoder_info;
-
   /// No description provided for @enable_gpu_next.
   ///
   /// In en, this message translates to:
   /// **'Enable gpu-next (Android only)'**
   String get enable_gpu_next;
-
-  /// No description provided for @enable_gpu_next_info.
-  ///
-  /// In en, this message translates to:
-  /// **'A new video rendering backend'**
-  String get enable_gpu_next_info;
 
   /// No description provided for @debanding.
   ///
@@ -4451,12 +3929,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use YUV420P pixel format'**
   String get use_yuv420p;
-
-  /// No description provided for @use_yuv420p_info.
-  ///
-  /// In en, this message translates to:
-  /// **'May fix black screens on some video codecs, can also improve performance at the cost of quality'**
-  String get use_yuv420p_info;
 
   /// No description provided for @audio_preferred_languages.
   ///
@@ -4476,12 +3948,6 @@ abstract class AppLocalizations {
   /// **'Enable audio pitch correction'**
   String get enable_audio_pitch_correction;
 
-  /// No description provided for @enable_audio_pitch_correction_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Prevents the audio from becoming high-pitched at faster speeds and low-pitched at slower speeds'**
-  String get enable_audio_pitch_correction_info;
-
   /// No description provided for @audio_channels.
   ///
   /// In en, this message translates to:
@@ -4499,12 +3965,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Internal player'**
   String get internal_player;
-
-  /// No description provided for @internal_player_info.
-  ///
-  /// In en, this message translates to:
-  /// **'Progress, controls, orientation'**
-  String get internal_player_info;
 
   /// No description provided for @subtitle_delay_text.
   ///
@@ -4674,12 +4134,6 @@ abstract class AppLocalizations {
   /// **'Sequels'**
   String get sequels;
 
-  /// No description provided for @recommendations_similarity.
-  ///
-  /// In en, this message translates to:
-  /// **'Similarity:'**
-  String get recommendations_similarity;
-
   /// Accessible label for a recommendation rating in the provider's display format.
   ///
   /// In en, this message translates to:
@@ -4710,30 +4164,6 @@ abstract class AppLocalizations {
   /// **'Rescan all local folders now'**
   String get rescan_local_folder;
 
-  /// No description provided for @default_download_destination.
-  ///
-  /// In en, this message translates to:
-  /// **'Default download destination'**
-  String get default_download_destination;
-
-  /// No description provided for @ask_download_destination.
-  ///
-  /// In en, this message translates to:
-  /// **'Ask for download destination'**
-  String get ask_download_destination;
-
-  /// No description provided for @ask_download_destination_desc.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a local folder each time a download starts.'**
-  String get ask_download_destination_desc;
-
-  /// No description provided for @select_download_destination.
-  ///
-  /// In en, this message translates to:
-  /// **'Select download destination'**
-  String get select_download_destination;
-
   /// No description provided for @clear_local_library.
   ///
   /// In en, this message translates to:
@@ -4757,12 +4187,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom'**
   String get custom;
-
-  /// No description provided for @no_local_folder_available_for_downloads.
-  ///
-  /// In en, this message translates to:
-  /// **'No local folder is available for downloads'**
-  String get no_local_folder_available_for_downloads;
 
   /// No description provided for @failed_to_create_cbz.
   ///
@@ -4854,18 +4278,6 @@ abstract class AppLocalizations {
   /// **'x{value}'**
   String playback_speed_multiplier(Object value);
 
-  /// No description provided for @could_not_launch_url.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not launch {url}'**
-  String could_not_launch_url(Object url);
-
-  /// No description provided for @text_size.
-  ///
-  /// In en, this message translates to:
-  /// **'Text Size :'**
-  String get text_size;
-
   /// No description provided for @text_align.
   ///
   /// In en, this message translates to:
@@ -4908,12 +4320,6 @@ abstract class AppLocalizations {
   /// **'Force landscape mode'**
   String get forceLandscapeMode;
 
-  /// No description provided for @forceLandscapeModeSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Force the player to use landscape orientation.'**
-  String get forceLandscapeModeSubtitle;
-
   /// No description provided for @dns_over_https.
   ///
   /// In en, this message translates to:
@@ -4943,12 +4349,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App locked'**
   String get app_locked;
-
-  /// No description provided for @auth_to_continue.
-  ///
-  /// In en, this message translates to:
-  /// **'Authenticate to continue'**
-  String get auth_to_continue;
 
   /// No description provided for @authenticating.
   ///
@@ -4998,12 +4398,6 @@ abstract class AppLocalizations {
   /// **'Biometric or device credential authentication is not available on this device'**
   String get biometric_or_device_credential_not_available;
 
-  /// No description provided for @app_lock_description.
-  ///
-  /// In en, this message translates to:
-  /// **'When app lock is enabled, you will be asked to authenticate every time you open the app or switch back to it from the background.'**
-  String get app_lock_description;
-
   /// No description provided for @checking_device_authentication.
   ///
   /// In en, this message translates to:
@@ -5021,18 +4415,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep screen on'**
   String get keep_screen_on;
-
-  /// No description provided for @webtoon_side_padding.
-  ///
-  /// In en, this message translates to:
-  /// **'Webtoon side padding'**
-  String get webtoon_side_padding;
-
-  /// No description provided for @show_page_gaps.
-  ///
-  /// In en, this message translates to:
-  /// **'Show page gaps'**
-  String get show_page_gaps;
 
   /// No description provided for @invert_colors.
   ///
@@ -5064,53 +4446,11 @@ abstract class AppLocalizations {
   /// **'Saturation'**
   String get saturation;
 
-  /// No description provided for @navigation_layout.
-  ///
-  /// In en, this message translates to:
-  /// **'Navigation layout'**
-  String get navigation_layout;
-
-  /// No description provided for @nav_layout_default.
-  ///
-  /// In en, this message translates to:
-  /// **'Default'**
-  String get nav_layout_default;
-
-  /// No description provided for @nav_layout_l_shaped.
-  ///
-  /// In en, this message translates to:
-  /// **'L-shaped'**
-  String get nav_layout_l_shaped;
-
-  /// No description provided for @nav_layout_kindle.
-  ///
-  /// In en, this message translates to:
-  /// **'Kindle-ish'**
-  String get nav_layout_kindle;
-
-  /// No description provided for @nav_layout_edge.
-  ///
-  /// In en, this message translates to:
-  /// **'Edge'**
-  String get nav_layout_edge;
-
-  /// No description provided for @nav_layout_right_and_left.
-  ///
-  /// In en, this message translates to:
-  /// **'Right and left'**
-  String get nav_layout_right_and_left;
-
   /// No description provided for @nav_layout_disabled.
   ///
   /// In en, this message translates to:
   /// **'Disabled'**
   String get nav_layout_disabled;
-
-  /// No description provided for @color_enhancements.
-  ///
-  /// In en, this message translates to:
-  /// **'Color enhancements'**
-  String get color_enhancements;
 
   /// No description provided for @total.
   ///
@@ -5165,12 +4505,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Android Proxy Server (Mihon)'**
   String get android_proxy_server_mihon;
-
-  /// No description provided for @android_proxy_server_mihon_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Download and configure the proxy server required to use Mihon extensions.'**
-  String get android_proxy_server_mihon_description;
 
   /// No description provided for @mihon_proxy_server.
   ///
@@ -5279,12 +4613,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Latest version'**
   String get latest_version;
-
-  /// No description provided for @m_extension_server_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Use M-Extension-Server when you need a separate Android device proxy. Set the proxy address here and download the APK from GitHub.'**
-  String get m_extension_server_description;
 
   /// No description provided for @set_proxy_address.
   ///
@@ -5400,12 +4728,6 @@ abstract class AppLocalizations {
   /// **'Zero interpreter'**
   String get zero_interpreter;
 
-  /// No description provided for @zero_interpreter_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Control the Zero interpreter server automatically or manually.'**
-  String get zero_interpreter_description;
-
   /// No description provided for @start_server_on_launch.
   ///
   /// In en, this message translates to:
@@ -5472,12 +4794,6 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get tts_language;
 
-  /// No description provided for @tts_voice.
-  ///
-  /// In en, this message translates to:
-  /// **'Voice'**
-  String get tts_voice;
-
   /// No description provided for @tts_stop.
   ///
   /// In en, this message translates to:
@@ -5514,101 +4830,17 @@ abstract class AppLocalizations {
   /// **'Paragraph {current} of {total}'**
   String tts_paragraph_progress(Object current, Object total);
 
-  /// No description provided for @tts_settings.
-  ///
-  /// In en, this message translates to:
-  /// **'TTS Settings'**
-  String get tts_settings;
-
   /// No description provided for @tts_default.
   ///
   /// In en, this message translates to:
   /// **'Default'**
   String get tts_default;
 
-  /// No description provided for @webtoon_disable_zoom_out.
-  ///
-  /// In en, this message translates to:
-  /// **'Webtoon disable zoom out'**
-  String get webtoon_disable_zoom_out;
-
-  /// No description provided for @webtoon_double_tap_zoom_enabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Webtoon double tap zoom'**
-  String get webtoon_double_tap_zoom_enabled;
-
-  /// No description provided for @navigate_to_pan.
-  ///
-  /// In en, this message translates to:
-  /// **'Navigate to pan'**
-  String get navigate_to_pan;
-
-  /// No description provided for @navigate_to_pan_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Move zoomed image before turning page'**
-  String get navigate_to_pan_subtitle;
-
-  /// No description provided for @split_wide_pages.
-  ///
-  /// In en, this message translates to:
-  /// **'Split wide pages'**
-  String get split_wide_pages;
-
-  /// No description provided for @dual_page_invert.
-  ///
-  /// In en, this message translates to:
-  /// **'Invert cut half pages'**
-  String get dual_page_invert;
-
-  /// No description provided for @dual_page_rotate_to_fit.
-  ///
-  /// In en, this message translates to:
-  /// **'Rotate to fit'**
-  String get dual_page_rotate_to_fit;
-
-  /// No description provided for @dual_page_rotate_to_fit_invert.
-  ///
-  /// In en, this message translates to:
-  /// **'Invert rotation direction'**
-  String get dual_page_rotate_to_fit_invert;
-
-  /// No description provided for @double_page_single_first_page.
-  ///
-  /// In en, this message translates to:
-  /// **'Single first page'**
-  String get double_page_single_first_page;
-
-  /// No description provided for @double_page_single_first_page_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Display the first page alone in double page mode'**
-  String get double_page_single_first_page_subtitle;
-
   /// No description provided for @double_page_auto.
   ///
   /// In en, this message translates to:
   /// **'Automatic double page'**
   String get double_page_auto;
-
-  /// No description provided for @double_page_auto_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to double page mode automatically in landscape'**
-  String get double_page_auto_subtitle;
-
-  /// No description provided for @landscape_zoom.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatic landscape zoom'**
-  String get landscape_zoom;
-
-  /// No description provided for @zoom_start_position.
-  ///
-  /// In en, this message translates to:
-  /// **'Zoom start position'**
-  String get zoom_start_position;
 
   /// No description provided for @zoom_start_left.
   ///
@@ -5628,167 +4860,11 @@ abstract class AppLocalizations {
   /// **'Center'**
   String get zoom_start_center;
 
-  /// No description provided for @automatic_background.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatic background'**
-  String get automatic_background;
-
-  /// No description provided for @tapping_inversion.
-  ///
-  /// In en, this message translates to:
-  /// **'Tapping Inversion'**
-  String get tapping_inversion;
-
-  /// No description provided for @tapping_inversion_none.
-  ///
-  /// In en, this message translates to:
-  /// **'None'**
-  String get tapping_inversion_none;
-
-  /// No description provided for @tapping_inversion_horizontal.
-  ///
-  /// In en, this message translates to:
-  /// **'Horizontal'**
-  String get tapping_inversion_horizontal;
-
-  /// No description provided for @tapping_inversion_vertical.
-  ///
-  /// In en, this message translates to:
-  /// **'Vertical'**
-  String get tapping_inversion_vertical;
-
-  /// No description provided for @tapping_inversion_both.
-  ///
-  /// In en, this message translates to:
-  /// **'Both'**
-  String get tapping_inversion_both;
-
-  /// No description provided for @flash_on_page_change.
-  ///
-  /// In en, this message translates to:
-  /// **'Flash on page change'**
-  String get flash_on_page_change;
-
-  /// No description provided for @flash_on_page_change_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'AMOLED anti-retention helper'**
-  String get flash_on_page_change_subtitle;
-
-  /// No description provided for @flash_color.
-  ///
-  /// In en, this message translates to:
-  /// **'Flash Color'**
-  String get flash_color;
-
-  /// No description provided for @flash_color_black.
-  ///
-  /// In en, this message translates to:
-  /// **'Black'**
-  String get flash_color_black;
-
-  /// No description provided for @flash_color_white.
-  ///
-  /// In en, this message translates to:
-  /// **'White'**
-  String get flash_color_white;
-
-  /// No description provided for @flash_color_white_black.
-  ///
-  /// In en, this message translates to:
-  /// **'White & Black'**
-  String get flash_color_white_black;
-
-  /// No description provided for @flash_interval_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Flash Interval'**
-  String get flash_interval_label;
-
-  /// No description provided for @flash_interval_value.
-  ///
-  /// In en, this message translates to:
-  /// **'{n} pages'**
-  String flash_interval_value(String n);
-
-  /// No description provided for @flash_interval.
-  ///
-  /// In en, this message translates to:
-  /// **'Flash Interval: {n} pages'**
-  String flash_interval(String n);
-
-  /// No description provided for @flash_duration_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Flash Duration'**
-  String get flash_duration_label;
-
-  /// No description provided for @flash_duration_value.
-  ///
-  /// In en, this message translates to:
-  /// **'{n} ms'**
-  String flash_duration_value(String n);
-
-  /// No description provided for @flash_duration.
-  ///
-  /// In en, this message translates to:
-  /// **'Flash Duration: {n} ms'**
-  String flash_duration(String n);
-
-  /// No description provided for @show_navigation_overlay_on_start.
-  ///
-  /// In en, this message translates to:
-  /// **'Show Navigation Overlay on startup'**
-  String get show_navigation_overlay_on_start;
-
-  /// No description provided for @reader_hide_threshold.
-  ///
-  /// In en, this message translates to:
-  /// **'Reader Hide Threshold'**
-  String get reader_hide_threshold;
-
-  /// No description provided for @reader_hide_threshold_highest.
-  ///
-  /// In en, this message translates to:
-  /// **'Highest (5 px)'**
-  String get reader_hide_threshold_highest;
-
-  /// No description provided for @reader_hide_threshold_high.
-  ///
-  /// In en, this message translates to:
-  /// **'High (13 px)'**
-  String get reader_hide_threshold_high;
-
-  /// No description provided for @reader_hide_threshold_low.
-  ///
-  /// In en, this message translates to:
-  /// **'Low (31 px)'**
-  String get reader_hide_threshold_low;
-
-  /// No description provided for @reader_hide_threshold_lowest.
-  ///
-  /// In en, this message translates to:
-  /// **'Lowest (47 px)'**
-  String get reader_hide_threshold_lowest;
-
-  /// No description provided for @error_no_pages_available.
-  ///
-  /// In en, this message translates to:
-  /// **'Error: no pages available'**
-  String get error_no_pages_available;
-
   /// No description provided for @app_ui_scale.
   ///
   /// In en, this message translates to:
   /// **'Interface scale'**
   String get app_ui_scale;
-
-  /// No description provided for @app_ui_scale_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Make the interface larger or smaller to suit your screen and viewing distance.'**
-  String get app_ui_scale_subtitle;
 
   /// No description provided for @allow_concurrent_downloads.
   ///
@@ -5796,23 +4872,11 @@ abstract class AppLocalizations {
   /// **'Allow concurrent downloads'**
   String get allow_concurrent_downloads;
 
-  /// No description provided for @allow_concurrent_downloads_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Download from different sources at the same time. A single source still downloads one chapter at a time so it isn\'t overloaded. Turn off to download one at a time everywhere.'**
-  String get allow_concurrent_downloads_subtitle;
-
   /// No description provided for @download_delay.
   ///
   /// In en, this message translates to:
   /// **'Download delay'**
   String get download_delay;
-
-  /// No description provided for @download_delay_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Off. Add a wait with random jitter between chapters to be gentler on sources.'**
-  String get download_delay_subtitle;
 
   /// No description provided for @save_search.
   ///
@@ -5832,12 +4896,6 @@ abstract class AppLocalizations {
   /// **'Enter a search to save first'**
   String get enter_search_to_save_first;
 
-  /// No description provided for @no_saved_searches.
-  ///
-  /// In en, this message translates to:
-  /// **'No saved searches for this source yet.\nRun a search, then pick \"Save search\".'**
-  String get no_saved_searches;
-
   /// No description provided for @source.
   ///
   /// In en, this message translates to:
@@ -5855,12 +4913,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'NodeLane Comics could not finish starting up'**
   String get startup_failed;
-
-  /// Header of the collapsed group in global search holding every source that failed or found nothing.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 source with no results} other{{count} sources with no results}}'**
-  String sources_with_no_results(int count);
 
   /// No description provided for @import_mode_title.
   ///
@@ -6115,12 +5167,6 @@ abstract class AppLocalizations {
   /// **'Merge duplicate manga'**
   String get merge_manga_title;
 
-  /// No description provided for @merge_manga_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Finds manga with matching titles under the same source (e.g. after merging duplicate sources) and folds them into one, without deleting anything you\'d want kept.'**
-  String get merge_manga_subtitle;
-
   /// No description provided for @merge_manga_none_found.
   ///
   /// In en, this message translates to:
@@ -6186,12 +5232,6 @@ abstract class AppLocalizations {
   /// **'Show memory usage'**
   String get memory_overlay;
 
-  /// No description provided for @memory_overlay_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A live readout of what the app is holding. For measuring on the device rather than guessing: watch it while scrolling the library or reading a chapter.'**
-  String get memory_overlay_subtitle;
-
   /// No description provided for @beta.
   ///
   /// In en, this message translates to:
@@ -6204,16 +5244,10 @@ abstract class AppLocalizations {
   /// **'Error reports'**
   String get error_reports;
 
-  /// No description provided for @error_reports_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Errors the app caught, and a way to report them'**
-  String get error_reports_subtitle;
-
   /// No description provided for @error_reports_empty.
   ///
   /// In en, this message translates to:
-  /// **'Nothing has gone wrong. Errors the app catches are kept here so you can report them.'**
+  /// **'No errors recorded.'**
   String get error_reports_empty;
 
   /// No description provided for @error_reports_likely_cause.
@@ -6227,12 +5261,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Report on GitHub'**
   String get error_reports_report;
-
-  /// No description provided for @error_reports_banner.
-  ///
-  /// In en, this message translates to:
-  /// **'NodeLane Comics ran into an error'**
-  String get error_reports_banner;
 
   /// No description provided for @error_reports_banner_action.
   ///
@@ -6288,23 +5316,11 @@ abstract class AppLocalizations {
   /// **'Welcome to NodeLane Comics'**
   String get onboarding_title;
 
-  /// No description provided for @onboarding_libraries_body.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick what you read and watch. The ones you leave out stay out of the navigation bar, and you can change this later under Appearance.'**
-  String get onboarding_libraries_body;
-
   /// No description provided for @onboarding_nav_title.
   ///
   /// In en, this message translates to:
   /// **'Your libraries'**
   String get onboarding_nav_title;
-
-  /// No description provided for @onboarding_nav_body.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep a tab for each of them, or put them together behind one Library tab you can switch inside.'**
-  String get onboarding_nav_body;
 
   /// No description provided for @onboarding_nav_split.
   ///
@@ -6317,12 +5333,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'One Library tab'**
   String get onboarding_nav_merged;
-
-  /// No description provided for @onboarding_nav_inside.
-  ///
-  /// In en, this message translates to:
-  /// **'Tapping Library swaps the bar for these'**
-  String get onboarding_nav_inside;
 
   /// No description provided for @onboarding_next.
   ///
@@ -6353,12 +5363,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} folders already set up'**
   String onboarding_local_existing(Object count);
-
-  /// No description provided for @onboarding_local_any_type.
-  ///
-  /// In en, this message translates to:
-  /// **'Manga, anime and novels all work. Each title goes to the right library based on what is inside it.'**
-  String get onboarding_local_any_type;
 
   /// No description provided for @onboarding_local_scanning.
   ///
@@ -6402,12 +5406,6 @@ abstract class AppLocalizations {
   /// **'Add a source'**
   String get onboarding_repo_title;
 
-  /// No description provided for @onboarding_body.
-  ///
-  /// In en, this message translates to:
-  /// **'NodeLane Comics comes with no sources of its own. Add a repository and the extensions it holds become available to install and browse.'**
-  String get onboarding_body;
-
   /// No description provided for @onboarding_add.
   ///
   /// In en, this message translates to:
@@ -6426,35 +5424,17 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get onboarding_continue;
 
-  /// No description provided for @onboarding_later.
-  ///
-  /// In en, this message translates to:
-  /// **'You can add one later in Settings, under Browse.'**
-  String get onboarding_later;
-
   /// No description provided for @onboarding_replay.
   ///
   /// In en, this message translates to:
   /// **'Show the welcome screen'**
   String get onboarding_replay;
 
-  /// No description provided for @onboarding_replay_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Opens the first-run screen again, the one a new install starts on.'**
-  String get onboarding_replay_subtitle;
-
   /// No description provided for @missing_source_check_title.
   ///
   /// In en, this message translates to:
   /// **'Check for missing sources'**
   String get missing_source_check_title;
-
-  /// No description provided for @missing_source_check_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Find library entries whose extension isn\'t installed - restoring a backup can leave entries pointing at a source you never installed on this device.'**
-  String get missing_source_check_subtitle;
 
   /// No description provided for @missing_source_check_none_found.
   ///
@@ -6474,23 +5454,11 @@ abstract class AppLocalizations {
   /// **'No {itemType} sources are installed.'**
   String global_search_no_sources(String itemType);
 
-  /// No description provided for @global_search_no_sources_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a repository under Browse, then install an extension for it.'**
-  String get global_search_no_sources_hint;
-
   /// No description provided for @global_search_only_pinned.
   ///
   /// In en, this message translates to:
   /// **'You have {count, plural, =1{1 source} other{{count} sources}} for this, but only pinned ones are searched.'**
   String global_search_only_pinned(int count);
-
-  /// No description provided for @global_search_only_pinned_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Pin one, or turn off \"Only include pinned sources\" in Browse settings.'**
-  String get global_search_only_pinned_hint;
 
   /// No description provided for @global_search_all_nsfw.
   ///
@@ -6498,16 +5466,10 @@ abstract class AppLocalizations {
   /// **'Every source you have for this is marked NSFW, and those are hidden.'**
   String get global_search_all_nsfw;
 
-  /// No description provided for @global_search_all_nsfw_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Turn on NSFW sources in Browse settings to search them.'**
-  String get global_search_all_nsfw_hint;
-
   /// No description provided for @missing_source_check_result_message.
   ///
   /// In en, this message translates to:
-  /// **'These library entries point at a source that isn\'t installed on this device. Tap one to migrate it to an installed source, install the matching extension, or use \"Delete a source & its manga\" to remove them.'**
+  /// **'These library entries point at a source that isn\'t installed on this device.'**
   String get missing_source_check_result_message;
 
   /// No description provided for @related_titles.
@@ -6570,12 +5532,6 @@ abstract class AppLocalizations {
   /// **'Automatic library updates'**
   String get auto_library_update;
 
-  /// No description provided for @auto_library_update_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Check every entry in your library for new chapters when the app starts.'**
-  String get auto_library_update_subtitle;
-
   /// No description provided for @auto_library_update_never.
   ///
   /// In en, this message translates to:
@@ -6611,12 +5567,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only on Wi-Fi'**
   String get auto_library_update_wifi_only;
-
-  /// No description provided for @auto_library_update_wifi_only_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Skip the scheduled update while on mobile data.'**
-  String get auto_library_update_wifi_only_subtitle;
 
   /// No description provided for @padding.
   ///
@@ -6912,29 +5862,11 @@ abstract class AppLocalizations {
   /// **'Page layout'**
   String get reader_page_layout;
 
-  /// No description provided for @reader_continuous_options.
-  ///
-  /// In en, this message translates to:
-  /// **'Continuous reading'**
-  String get reader_continuous_options;
-
-  /// No description provided for @reader_default_mode_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'The default reading mode applies to titles without an individual mode set while reading.'**
-  String get reader_default_mode_hint;
-
   /// No description provided for @extension_service.
   ///
   /// In en, this message translates to:
   /// **'Extension service'**
   String get extension_service;
-
-  /// No description provided for @extension_service_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage the extension runtime and proxy address.'**
-  String get extension_service_description;
 
   /// No description provided for @proxy_address.
   ///
@@ -6959,12 +5891,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, one{1 chapter} other{{count} chapters}}'**
   String download_queue_count(int count);
-
-  /// No description provided for @download_queue_empty_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Add downloads from a title’s chapter list.'**
-  String get download_queue_empty_hint;
 
   /// No description provided for @download_queue_order_hint.
   ///
@@ -7032,23 +5958,11 @@ abstract class AppLocalizations {
   /// **'FlareSolverr / Byparr endpoint. Leave empty to disable.'**
   String get cf_proxy_helper;
 
-  /// No description provided for @mobile_navigation_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag to reorder. Manga, anime and novels share the Library tab. The first visible item opens at launch. Browse and More stay visible; extra tabs appear under More.'**
-  String get mobile_navigation_description;
-
   /// No description provided for @text_align_justify.
   ///
   /// In en, this message translates to:
   /// **'Justify'**
   String get text_align_justify;
-
-  /// No description provided for @novel_session_modes_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Set reading mode and single or double pages while reading a title.'**
-  String get novel_session_modes_hint;
 
   /// No description provided for @tts_languages_failed.
   ///
@@ -7134,12 +6048,6 @@ abstract class AppLocalizations {
   /// **'The operation could not be completed. Check file access and try again.'**
   String get player_operation_incomplete;
 
-  /// No description provided for @custom_buttons_empty_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a player button with a label and a press action.'**
-  String get custom_buttons_empty_hint;
-
   /// No description provided for @custom_button_primary.
   ///
   /// In en, this message translates to:
@@ -7167,7 +6075,7 @@ abstract class AppLocalizations {
   /// No description provided for @tracking_entries_empty.
   ///
   /// In en, this message translates to:
-  /// **'No tracked entries for this media type. Add tracking from a title’s detail page.'**
+  /// **'No tracked entries for this media type.'**
   String get tracking_entries_empty;
 
   /// No description provided for @change_tracking_match.
@@ -7199,12 +6107,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This record is not linked to a local title, so it cannot be edited here.'**
   String get tracking_entry_unlinked;
-
-  /// No description provided for @backup_selection_shared.
-  ///
-  /// In en, this message translates to:
-  /// **'Changes to these selections are saved immediately and also apply to automatic backups.'**
-  String get backup_selection_shared;
 
   /// No description provided for @library_snapshot_history.
   ///
@@ -7246,18 +6148,6 @@ abstract class AppLocalizations {
     int historyCount,
     int updateCount,
   );
-
-  /// No description provided for @library_delete_pick_message.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a source to review its contents and deletion options.'**
-  String get library_delete_pick_message;
-
-  /// No description provided for @mobile_categories_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag to reorder. Open a category to rename it or change its visibility and updates.'**
-  String get mobile_categories_hint;
 
   /// No description provided for @mobile_category_visible.
   ///
@@ -7337,23 +6227,11 @@ abstract class AppLocalizations {
   /// **'Preparing installation…'**
   String get preparing_installation;
 
-  /// No description provided for @onboarding_mobile_libraries_body.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose what to read. You can change this later.'**
-  String get onboarding_mobile_libraries_body;
-
   /// No description provided for @onboarding_content_title.
   ///
   /// In en, this message translates to:
   /// **'Start reading'**
   String get onboarding_content_title;
-
-  /// No description provided for @onboarding_mobile_sources_body.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a way to start, or add content later.'**
-  String get onboarding_mobile_sources_body;
 
   /// No description provided for @onboarding_step_count.
   ///
@@ -7366,12 +6244,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Results for “{query}”'**
   String global_search_results_for(String query);
-
-  /// No description provided for @global_search_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'{type} · {count, plural, =1{1 source} other{{count} sources}}'**
-  String global_search_scope(String type, int count);
 
   /// No description provided for @migration_search_prompt.
   ///
@@ -7438,12 +6310,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ignore filters when searching'**
   String get bookshelf_ignore_filters;
-
-  /// No description provided for @bookshelf_ignore_filters_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search all works in this category, including those hidden by filters.'**
-  String get bookshelf_ignore_filters_hint;
 
   /// No description provided for @bookshelf_stop_update.
   ///
@@ -7523,12 +6389,6 @@ abstract class AppLocalizations {
   /// **'Bookshelf settings'**
   String get bookshelf_settings;
 
-  /// No description provided for @bookshelf_settings_live.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter, sort and display changes take effect immediately.'**
-  String get bookshelf_settings_live;
-
   /// No description provided for @bookshelf_filter_any.
   ///
   /// In en, this message translates to:
@@ -7577,23 +6437,11 @@ abstract class AppLocalizations {
   /// **'Bookshelf layout'**
   String get bookshelf_layout;
 
-  /// No description provided for @bookshelf_sources_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Select none to show all sources. Changes apply when you tap Filter.'**
-  String get bookshelf_sources_hint;
-
   /// No description provided for @bookshelf_choose_files.
   ///
   /// In en, this message translates to:
   /// **'Choose files'**
   String get bookshelf_choose_files;
-
-  /// No description provided for @bookshelf_import_wait.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a file in the picker and wait for the import to finish.'**
-  String get bookshelf_import_wait;
 
   /// No description provided for @bookshelf_import_incomplete.
   ///
@@ -7606,12 +6454,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saving assigns these categories to every selected work, replacing their previous categories.'**
   String get bookshelf_categories_replace;
-
-  /// No description provided for @bookshelf_categories_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose one or more categories, or leave the selection empty to assign none.'**
-  String get bookshelf_categories_hint;
 
   /// No description provided for @bookshelf_categories_hidden.
   ///
@@ -7628,7 +6470,7 @@ abstract class AppLocalizations {
   /// No description provided for @bookshelf_categories_none_visible.
   ///
   /// In en, this message translates to:
-  /// **'No categories are available here. Open category management to review them.'**
+  /// **'No categories are available here.'**
   String get bookshelf_categories_none_visible;
 
   /// No description provided for @bookshelf_manage_categories.
@@ -7649,16 +6491,10 @@ abstract class AppLocalizations {
   /// **'Download chapters'**
   String get manga_download_scope;
 
-  /// No description provided for @manga_download_scope_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose chapters within the current filters. Downloaded chapters are skipped.'**
-  String get manga_download_scope_hint;
-
   /// No description provided for @manga_download_scope_empty.
   ///
   /// In en, this message translates to:
-  /// **'No chapters match the current filters. Close this menu and adjust the chapter filters.'**
+  /// **'No chapters match the current filters.'**
   String get manga_download_scope_empty;
 
   /// No description provided for @manga_action_incomplete.
@@ -7673,23 +6509,11 @@ abstract class AppLocalizations {
   /// **'Chapter settings'**
   String get chapter_settings;
 
-  /// No description provided for @chapter_settings_live.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter and sort changes apply immediately.'**
-  String get chapter_settings_live;
-
   /// No description provided for @chapter_scanlators_all.
   ///
   /// In en, this message translates to:
   /// **'Show all scanlator groups'**
   String get chapter_scanlators_all;
-
-  /// No description provided for @chapter_scanlators_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Select groups to hide their chapters. Changes apply when you tap Filter.'**
-  String get chapter_scanlators_hint;
 
   /// No description provided for @chapter_scanlators_hidden.
   ///
@@ -7745,30 +6569,6 @@ abstract class AppLocalizations {
   /// **'The action did not finish. Some changes may already be saved. Close and check the chapters and downloads before continuing.'**
   String get chapter_action_incomplete;
 
-  /// No description provided for @reader_display_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Reading mode and manual page layout apply to this comic. Choose a change to return to reading.'**
-  String get reader_display_scope;
-
-  /// No description provided for @reader_display_single_only.
-  ///
-  /// In en, this message translates to:
-  /// **'Horizontal continuous reading uses single pages.'**
-  String get reader_display_single_only;
-
-  /// No description provided for @reader_display_manual_pages.
-  ///
-  /// In en, this message translates to:
-  /// **'Changing page layout turns off automatic double page for all comics.'**
-  String get reader_display_manual_pages;
-
-  /// No description provided for @reader_display_crop_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Applies to all comics.'**
-  String get reader_display_crop_scope;
-
   /// No description provided for @reader_chapter_locate.
   ///
   /// In en, this message translates to:
@@ -7780,12 +6580,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search chapters or scanlators'**
   String get reader_chapter_search;
-
-  /// No description provided for @reader_chapter_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Uses the chapter filters and sort order from comic details. Bookmarks are saved immediately.'**
-  String get reader_chapter_scope;
 
   /// No description provided for @reader_chapter_current_hidden.
   ///
@@ -7817,36 +6611,6 @@ abstract class AppLocalizations {
   /// **'Image actions'**
   String get reader_image_actions;
 
-  /// No description provided for @reader_image_original.
-  ///
-  /// In en, this message translates to:
-  /// **'Uses the full original page, without translation, cropping or reader color filters.'**
-  String get reader_image_original;
-
-  /// No description provided for @reader_image_save_ios.
-  ///
-  /// In en, this message translates to:
-  /// **'Save to the Pictures folder in the current app storage location.'**
-  String get reader_image_save_ios;
-
-  /// No description provided for @reader_image_save_android.
-  ///
-  /// In en, this message translates to:
-  /// **'Save to the device’s Pictures/nodelane-comics folder.'**
-  String get reader_image_save_android;
-
-  /// No description provided for @reader_image_share.
-  ///
-  /// In en, this message translates to:
-  /// **'Open the system share sheet.'**
-  String get reader_image_share;
-
-  /// No description provided for @reader_image_cover.
-  ///
-  /// In en, this message translates to:
-  /// **'Change this comic’s cover after confirmation.'**
-  String get reader_image_cover;
-
   /// No description provided for @reader_image_cover_limit.
   ///
   /// In en, this message translates to:
@@ -7858,36 +6622,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The action could not be confirmed. Close this menu and check the result before trying again.'**
   String get reader_image_action_failed;
-
-  /// No description provided for @reader_settings_book_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'These settings apply only to this comic.'**
-  String get reader_settings_book_scope;
-
-  /// No description provided for @reader_settings_global_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'These settings apply to all comics and save immediately.'**
-  String get reader_settings_global_scope;
-
-  /// No description provided for @reader_filters.
-  ///
-  /// In en, this message translates to:
-  /// **'Image filters'**
-  String get reader_filters;
-
-  /// No description provided for @reader_filter_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Applies to all comics. Changes the reading display without modifying original images.'**
-  String get reader_filter_scope;
-
-  /// No description provided for @reader_auto_scroll_pause.
-  ///
-  /// In en, this message translates to:
-  /// **'Scrolling pauses while settings are open.'**
-  String get reader_auto_scroll_pause;
 
   /// No description provided for @manga_synopsis.
   ///
@@ -7907,54 +6641,6 @@ abstract class AppLocalizations {
   /// **'Continue reading'**
   String get manga_continue_reading;
 
-  /// No description provided for @reader_settings_title.
-  ///
-  /// In en, this message translates to:
-  /// **'Reader settings'**
-  String get reader_settings_title;
-
-  /// No description provided for @reader_picker_book_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Only for this comic'**
-  String get reader_picker_book_scope;
-
-  /// No description provided for @reader_picker_global_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Applies to all comics'**
-  String get reader_picker_global_scope;
-
-  /// No description provided for @reader_picker_apply_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap to save and return to the previous level.'**
-  String get reader_picker_apply_hint;
-
-  /// No description provided for @reader_scale_fit_screen_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Fit the whole page on screen'**
-  String get reader_scale_fit_screen_hint;
-
-  /// No description provided for @reader_scale_stretch_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Fill the reading area'**
-  String get reader_scale_stretch_hint;
-
-  /// No description provided for @reader_scale_fit_width_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Fit the page to the width'**
-  String get reader_scale_fit_width_hint;
-
-  /// No description provided for @reader_scale_fit_height_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Fit the page to the height'**
-  String get reader_scale_fit_height_hint;
-
   /// No description provided for @source_filter_active.
   ///
   /// In en, this message translates to:
@@ -7966,18 +6652,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apply filters'**
   String get source_filter_apply;
-
-  /// No description provided for @source_filter_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Filters apply to this website only.'**
-  String get source_filter_scope;
-
-  /// No description provided for @source_filter_apply_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply filters to use your selections.'**
-  String get source_filter_apply_hint;
 
   /// Common extension filter display labels. Plugin values are never translated.
   ///
@@ -7991,23 +6665,11 @@ abstract class AppLocalizations {
   /// **'More display options'**
   String get bookshelf_more_display;
 
-  /// No description provided for @bookshelf_more_display_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Badges, sources and categories'**
-  String get bookshelf_more_display_hint;
-
   /// No description provided for @bookshelf_download_count.
   ///
   /// In en, this message translates to:
   /// **'Download count'**
   String get bookshelf_download_count;
-
-  /// No description provided for @bookshelf_source_global_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Source visibility uses the shared display preference.'**
-  String get bookshelf_source_global_hint;
 
   /// No description provided for @bookshelf_select_entries.
   ///
@@ -8021,18 +6683,6 @@ abstract class AppLocalizations {
   /// **'Search options'**
   String get bookshelf_search_options;
 
-  /// No description provided for @bookshelf_empty_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Collect works from sources or import local files.'**
-  String get bookshelf_empty_hint;
-
-  /// No description provided for @bookshelf_no_match_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Try other keywords or adjust the current filters.'**
-  String get bookshelf_no_match_hint;
-
   /// No description provided for @bookshelf_clear_query.
   ///
   /// In en, this message translates to:
@@ -8044,12 +6694,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View selected works'**
   String get bookshelf_view_selection;
-
-  /// No description provided for @bookshelf_import_canceled_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'You can choose again after cancelling the file picker.'**
-  String get bookshelf_import_canceled_hint;
 
   /// No description provided for @bookshelf_browse_sources.
   ///
@@ -8093,23 +6737,11 @@ abstract class AppLocalizations {
   /// **'Sign in to NodeLane'**
   String get nodelane_sign_in;
 
-  /// No description provided for @nodelane_account_intro.
-  ///
-  /// In en, this message translates to:
-  /// **'View your account, subscription and translation quota'**
-  String get nodelane_account_intro;
-
   /// No description provided for @nodelane_login_action.
   ///
   /// In en, this message translates to:
   /// **'Continue to sign in'**
   String get nodelane_login_action;
-
-  /// No description provided for @nodelane_login_browser.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in through the system browser, then return to the app'**
-  String get nodelane_login_browser;
 
   /// No description provided for @nodelane_account_id.
   ///
@@ -8387,12 +7019,6 @@ abstract class AppLocalizations {
   /// **'More tools'**
   String get settings_more_tools;
 
-  /// No description provided for @settings_more_tools_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Categories, statistics and calendar'**
-  String get settings_more_tools_hint;
-
   /// No description provided for @settings_appearance_interface.
   ///
   /// In en, this message translates to:
@@ -8441,12 +7067,6 @@ abstract class AppLocalizations {
   /// **'Used in the reader and web page translation'**
   String get settings_translation_scope;
 
-  /// No description provided for @settings_immediate_choice.
-  ///
-  /// In en, this message translates to:
-  /// **'Changes apply immediately'**
-  String get settings_immediate_choice;
-
   /// No description provided for @settings_translation_init_error.
   ///
   /// In en, this message translates to:
@@ -8476,12 +7096,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translated image cache'**
   String get settings_translation_cache;
-
-  /// No description provided for @settings_translation_cache_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep translation records and retrieve translated images again when needed'**
-  String get settings_translation_cache_hint;
 
   /// No description provided for @settings_cache_clear.
   ///
@@ -8543,47 +7157,17 @@ abstract class AppLocalizations {
   /// **'Choose at least one'**
   String get onboarding_choose_one;
 
-  /// No description provided for @onboarding_restore_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore your library from a backup'**
-  String get onboarding_restore_hint;
-
-  /// No description provided for @onboarding_browse_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Find titles on supported websites'**
-  String get onboarding_browse_hint;
-
   /// No description provided for @onboarding_import_folder.
   ///
   /// In en, this message translates to:
   /// **'Import a local folder'**
   String get onboarding_import_folder;
 
-  /// No description provided for @onboarding_import_folder_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Read manga, novels and anime on your device'**
-  String get onboarding_import_folder_hint;
-
   /// No description provided for @onboarding_third_party.
   ///
   /// In en, this message translates to:
   /// **'Add a third-party repository'**
   String get onboarding_third_party;
-
-  /// No description provided for @onboarding_third_party_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Use a repository address you already have'**
-  String get onboarding_third_party_hint;
-
-  /// No description provided for @onboarding_repository_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the address provided by the repository.'**
-  String get onboarding_repository_hint;
 
   /// No description provided for @onboarding_repository_address.
   ///
@@ -8632,12 +7216,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Backup created'**
   String get notice_backup_created;
-
-  /// No description provided for @notice_backup_ready.
-  ///
-  /// In en, this message translates to:
-  /// **'Save or share the backup file.'**
-  String get notice_backup_ready;
 
   /// No description provided for @notice_backup_restored.
   ///
@@ -8771,12 +7349,6 @@ abstract class AppLocalizations {
   /// **'Use the full HTTPS search URL of a Wyzie-compatible service, including its path (for example, /search). Enter an access token only if your service requires one.'**
   String get subtitle_custom_hint;
 
-  /// No description provided for @subtitle_service_off_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Online subtitle search is off. Embedded, source-provided and local subtitles remain available.'**
-  String get subtitle_service_off_hint;
-
   /// No description provided for @subtitle_setup_required.
   ///
   /// In en, this message translates to:
@@ -8855,12 +7427,6 @@ abstract class AppLocalizations {
   /// **'Getting chapter images…'**
   String get reader_loading_pages;
 
-  /// No description provided for @reader_loading_pages_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Reading will start automatically when ready.'**
-  String get reader_loading_pages_hint;
-
   /// No description provided for @reader_loading_failed.
   ///
   /// In en, this message translates to:
@@ -8915,12 +7481,6 @@ abstract class AppLocalizations {
   /// **'Loading image…'**
   String get reader_image_loading;
 
-  /// No description provided for @reader_image_failure_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'You can keep reading other pages.'**
-  String get reader_image_failure_hint;
-
   /// No description provided for @comic_paged.
   ///
   /// In en, this message translates to:
@@ -8933,29 +7493,11 @@ abstract class AppLocalizations {
   /// **'Scroll down'**
   String get comic_scroll;
 
-  /// No description provided for @comic_book_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Applies only to this book · changes save immediately'**
-  String get comic_book_scope;
-
   /// No description provided for @comic_defaults_title.
   ///
   /// In en, this message translates to:
   /// **'Defaults & habits'**
   String get comic_defaults_title;
-
-  /// No description provided for @comic_defaults_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Defaults apply to fields you have not customized for a book.'**
-  String get comic_defaults_hint;
-
-  /// No description provided for @comic_habits_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'These habits apply to every comic.'**
-  String get comic_habits_hint;
 
   /// No description provided for @comic_turn.
   ///
@@ -9017,12 +7559,6 @@ abstract class AppLocalizations {
   /// **'Auto'**
   String get comic_auto;
 
-  /// No description provided for @comic_layout_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto shows a spread when there is enough width.'**
-  String get comic_layout_hint;
-
   /// No description provided for @comic_width.
   ///
   /// In en, this message translates to:
@@ -9071,12 +7607,6 @@ abstract class AppLocalizations {
   /// **'Fine-tune image'**
   String get comic_image_title;
 
-  /// No description provided for @comic_image_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Crop and tone affect only this book.'**
-  String get comic_image_hint;
-
   /// No description provided for @comic_wide.
   ///
   /// In en, this message translates to:
@@ -9100,12 +7630,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rotate'**
   String get comic_rotate;
-
-  /// No description provided for @comic_wide_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Splitting follows the page-turn direction. Applies to single-page reading.'**
-  String get comic_wide_hint;
 
   /// No description provided for @comic_cover.
   ///
@@ -9167,12 +7691,6 @@ abstract class AppLocalizations {
   /// **'Tap to turn pages'**
   String get comic_tap;
 
-  /// No description provided for @comic_tap_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap the edges to move; tap the center to show controls.'**
-  String get comic_tap_hint;
-
   /// No description provided for @comic_scroll_start.
   ///
   /// In en, this message translates to:
@@ -9191,12 +7709,6 @@ abstract class AppLocalizations {
   /// **'Scroll speed'**
   String get comic_scroll_speed;
 
-  /// No description provided for @comic_scroll_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Starts when this panel closes. Pauses when the app leaves the foreground.'**
-  String get comic_scroll_hint;
-
   /// No description provided for @comic_save_failed.
   ///
   /// In en, this message translates to:
@@ -9208,12 +7720,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reading'**
   String get comic_reading;
-
-  /// No description provided for @comic_chapter_habits_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Chapter list habits apply to all books.'**
-  String get comic_chapter_habits_hint;
 
   /// No description provided for @browser_title.
   ///
@@ -9227,41 +7733,17 @@ abstract class AppLocalizations {
   /// **'Image display'**
   String get translation_image_display;
 
-  /// No description provided for @translation_display_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Show existing translations first. Keep the original when no translation is available.'**
-  String get translation_display_hint;
-
   /// No description provided for @translation_sign_in_required.
   ///
   /// In en, this message translates to:
   /// **'Sign in to enable translation'**
   String get translation_sign_in_required;
 
-  /// No description provided for @translation_sign_in_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'After signing in, switch to translated images to translate automatically.'**
-  String get translation_sign_in_hint;
-
   /// No description provided for @translation_automatic.
   ///
   /// In en, this message translates to:
   /// **'Automatic translation'**
   String get translation_automatic;
-
-  /// No description provided for @translation_original_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing originals. Switch to translated images to translate automatically.'**
-  String get translation_original_hint;
-
-  /// No description provided for @translation_window_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Process current and upcoming images only while showing translations.'**
-  String get translation_window_hint;
 
   /// No description provided for @translation_channel.
   ///
@@ -9287,23 +7769,11 @@ abstract class AppLocalizations {
   /// **'Completed {complete} / {total} images{issues, plural, =0{} =1{ · 1 image needs attention} other{ · {issues} images need attention}}'**
   String translation_progress(int complete, int total, int issues);
 
-  /// No description provided for @translation_image_actions_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Touch and hold an image for more actions, including translating it again.'**
-  String get translation_image_actions_hint;
-
   /// No description provided for @translation_title.
   ///
   /// In en, this message translates to:
   /// **'Manga translation'**
   String get translation_title;
-
-  /// No description provided for @translation_system_sign_in.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in using your system browser'**
-  String get translation_system_sign_in;
 
   /// No description provided for @translation_target_language.
   ///
@@ -9316,12 +7786,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear translated image cache'**
   String get translation_clear_cache;
-
-  /// No description provided for @translation_cache_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep translation records and retrieve results again when needed.'**
-  String get translation_cache_hint;
 
   /// No description provided for @translation_saved_read_failed.
   ///
@@ -9605,12 +8069,6 @@ abstract class AppLocalizations {
   /// **'Manage'**
   String get manage;
 
-  /// No description provided for @translation_settings_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatic translation, target language and channel'**
-  String get translation_settings_hint;
-
   /// No description provided for @translation_show_original.
   ///
   /// In en, this message translates to:
@@ -9659,12 +8117,6 @@ abstract class AppLocalizations {
   /// **'Website information'**
   String get source_website_info;
 
-  /// No description provided for @source_saved_search_title.
-  ///
-  /// In en, this message translates to:
-  /// **'{title} · Tap to search'**
-  String source_saved_search_title(String title);
-
   /// No description provided for @action_done.
   ///
   /// In en, this message translates to:
@@ -9682,18 +8134,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No saved searches yet'**
   String get source_no_saved_searches;
-
-  /// No description provided for @source_save_search_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search for a keyword, then save it from the website actions.'**
-  String get source_save_search_hint;
-
-  /// No description provided for @source_saved_search_scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Keywords are saved for this website only.'**
-  String get source_saved_search_scope;
 
   /// No description provided for @source_search_here.
   ///
@@ -9730,12 +8170,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No matching titles found'**
   String get source_no_titles;
-
-  /// No description provided for @source_no_titles_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Change your keywords or filters, or return to popular titles.'**
-  String get source_no_titles_hint;
 
   /// No description provided for @source_load_more_failed.
   ///
@@ -9881,12 +8315,6 @@ abstract class AppLocalizations {
   /// **'Refresh catalog'**
   String get repository_refresh;
 
-  /// No description provided for @repository_manage_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage where third-party sources are downloaded from.'**
-  String get repository_manage_hint;
-
   /// No description provided for @repository_invalid_address.
   ///
   /// In en, this message translates to:
@@ -9941,23 +8369,11 @@ abstract class AppLocalizations {
   /// **'{type} · Catalog recognized'**
   String repository_recognized(String type);
 
-  /// No description provided for @repository_choose_sources_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'After adding the repository, choose the sources you need.'**
-  String get repository_choose_sources_hint;
-
   /// No description provided for @search_scope.
   ///
   /// In en, this message translates to:
   /// **'Search scope'**
   String get search_scope;
-
-  /// No description provided for @search_scope_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose the websites to search'**
-  String get search_scope_hint;
 
   /// No description provided for @search_websites_action.
   ///
@@ -9995,12 +8411,6 @@ abstract class AppLocalizations {
   /// **'Select matching websites'**
   String get search_select_results;
 
-  /// No description provided for @search_no_websites_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'No matching websites. Try another name or language.'**
-  String get search_no_websites_hint;
-
   /// No description provided for @search_select_website_hint.
   ///
   /// In en, this message translates to:
@@ -10013,23 +8423,11 @@ abstract class AppLocalizations {
   /// **'Enter keywords to find titles'**
   String get search_start_title;
 
-  /// No description provided for @search_start_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search multiple websites at once and show matching titles.'**
-  String get search_start_hint;
-
   /// No description provided for @search_empty_scope.
   ///
   /// In en, this message translates to:
   /// **'No searchable websites in this scope'**
   String get search_empty_scope;
-
-  /// No description provided for @search_empty_scope_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to all websites or choose websites to search.'**
-  String get search_empty_scope_hint;
 
   /// No description provided for @search_result_count.
   ///
@@ -10042,12 +8440,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search titles'**
   String get search_titles;
-
-  /// No description provided for @search_actions.
-  ///
-  /// In en, this message translates to:
-  /// **'Search actions'**
-  String get search_actions;
 
   /// No description provided for @search_details.
   ///
@@ -10127,23 +8519,11 @@ abstract class AppLocalizations {
   /// **'No matching titles found'**
   String get search_no_matching_titles;
 
-  /// No description provided for @search_results_appear_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Results will appear here as they are found.'**
-  String get search_results_appear_hint;
-
   /// No description provided for @search_failed_websites_hint.
   ///
   /// In en, this message translates to:
-  /// **'Some websites could not finish searching. Retry them in search details.'**
+  /// **'Some websites could not finish searching.'**
   String get search_failed_websites_hint;
-
-  /// No description provided for @search_change_keywords_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Try shorter keywords or search more websites.'**
-  String get search_change_keywords_hint;
 
   /// No description provided for @search_view_details.
   ///
@@ -10168,12 +8548,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completed {completed} / {total}'**
   String search_completed_count(int completed, int total);
-
-  /// No description provided for @search_retry_website_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry failed websites individually'**
-  String get search_retry_website_hint;
 
   /// No description provided for @source_selected_count.
   ///
@@ -10252,12 +8626,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open'**
   String get source_open;
-
-  /// No description provided for @source_metadata_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Information comes from the source catalog. Categories describe the content covered by the website.'**
-  String get source_metadata_hint;
 
   /// No description provided for @source_region.
   ///
@@ -10397,12 +8765,6 @@ abstract class AppLocalizations {
   /// **'All languages'**
   String get source_all_languages;
 
-  /// No description provided for @action_apply.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply'**
-  String get action_apply;
-
   /// No description provided for @source_load_retry.
   ///
   /// In en, this message translates to:
@@ -10468,12 +8830,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No websites available'**
   String get source_no_websites;
-
-  /// No description provided for @source_search_installed_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search titles in installed sources'**
-  String get source_search_installed_hint;
 
   /// No description provided for @source_global_search.
   ///
@@ -10562,7 +8918,7 @@ abstract class AppLocalizations {
   /// No description provided for @tv_hidden_library_hint.
   ///
   /// In en, this message translates to:
-  /// **'Every title sits in a hidden category.\nHold OK on “All” to unhide one.'**
+  /// **'Every title sits in a hidden category.'**
   String get tv_hidden_library_hint;
 
   /// No description provided for @tv_no_matching_anime.
@@ -10576,12 +8932,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No matching anime in “{category}”'**
   String tv_no_matching_category(String category);
-
-  /// No description provided for @tv_filtered_empty_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'No anime matches the current filters.\nChange them from the button beside search.'**
-  String get tv_filtered_empty_hint;
 
   /// No description provided for @tv_new_episodes.
   ///
@@ -10598,7 +8948,7 @@ abstract class AppLocalizations {
   /// No description provided for @tv_empty_category_hint.
   ///
   /// In en, this message translates to:
-  /// **'No anime in this category yet.\nAdd titles to it from a title’s detail page.'**
+  /// **'No anime in this category yet.'**
   String get tv_empty_category_hint;
 
   /// No description provided for @tv_empty_library.
@@ -10606,12 +8956,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your anime library is empty'**
   String get tv_empty_library;
-
-  /// No description provided for @tv_empty_library_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Add anime from Browse to fill your home'**
-  String get tv_empty_library_hint;
 
   /// No description provided for @tv_browse_anime.
   ///
@@ -10628,7 +8972,7 @@ abstract class AppLocalizations {
   /// No description provided for @tv_category_hidden.
   ///
   /// In en, this message translates to:
-  /// **'Hid “{category}” · hold OK on “All” to unhide'**
+  /// **'Hid “{category}”'**
   String tv_category_hidden(String category);
 
   /// No description provided for @tv_no_hidden_categories.
@@ -10655,35 +8999,11 @@ abstract class AppLocalizations {
   /// **'Optional FlareSolverr / Byparr URL'**
   String get cloudflare_proxy_optional;
 
-  /// No description provided for @tv_home_layout_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Rows-based anime home (Continue · New Episodes · categories) instead of the flat grid'**
-  String get tv_home_layout_hint;
-
-  /// No description provided for @tv_hide_libraries_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide the manga & novel libraries (on by default on TV)'**
-  String get tv_hide_libraries_hint;
-
-  /// No description provided for @anime_only_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide manga & novel across the app. Turn off to show everything.'**
-  String get anime_only_hint;
-
   /// No description provided for @audio_auto_safe.
   ///
   /// In en, this message translates to:
   /// **'Auto-safe'**
   String get audio_auto_safe;
-
-  /// No description provided for @tv_player_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'On: dedicated TV player.  Off: original (desktop) player.'**
-  String get tv_player_hint;
 
   /// No description provided for @release_open_failed.
   ///
@@ -11117,12 +9437,6 @@ abstract class AppLocalizations {
   /// **'Preparing translation…'**
   String get translation_preparing_ellipsis;
 
-  /// No description provided for @translation_checking_original.
-  ///
-  /// In en, this message translates to:
-  /// **'Checking original image…'**
-  String get translation_checking_original;
-
   /// No description provided for @translation_submitting.
   ///
   /// In en, this message translates to:
@@ -11374,12 +9688,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'full  {percent}% of {count, plural, =1{1 sample} other{{count} samples}}'**
   String memory_full_samples(String percent, int count);
-
-  /// No description provided for @memory_reset_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'toggle it off and on in settings to reset'**
-  String get memory_reset_hint;
 
   /// No description provided for @action_hide.
   ///

@@ -29,7 +29,6 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
           children: [
             NodeLaneSwitchRow(
               title: l10n.enable_hardware_accel,
-              subtitle: l10n.enable_hardware_accel_info,
               icon: NodeLaneIcons.of(context).memory,
               value: hardware,
               onChanged: ref
@@ -105,14 +104,12 @@ class MobilePlayerDecoderScreen extends ConsumerWidget {
             ),
             NodeLaneSwitchRow(
               title: l10n.use_yuv420p,
-              subtitle: l10n.use_yuv420p_info,
               icon: NodeLaneIcons.of(context).palette,
               value: ref.watch(useYUV420PStateProvider),
               onChanged: ref.read(useYUV420PStateProvider.notifier).set,
             ),
             NodeLaneSwitchRow(
               title: l10n.enable_gpu_next,
-              subtitle: l10n.enable_gpu_next_info,
               icon: NodeLaneIcons.of(context).categories,
               value: ref.watch(useGpuNextStateProvider),
               onChanged: ref.read(useGpuNextStateProvider.notifier).set,

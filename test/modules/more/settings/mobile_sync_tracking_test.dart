@@ -311,7 +311,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(frequencies, [43200]);
       await tap(tester, find.text('Advanced'));
-      await tap(tester, find.text('About'));
+      expect(
+        find.widgetWithText(OutlinedButton, 'Upload only'),
+        findsOneWidget,
+      );
       expect(syncs, 0);
       expect(enabled, isEmpty);
       await tap(tester, find.byType(NodeLaneSwitchRow), delta: -250);

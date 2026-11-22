@@ -1,10 +1,95 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show SemanticsRole;
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+Future<T?> showNodeLaneBubbleMenu<T>(
+  BuildContext anchor, {
+  required String label,
+  required List<PopupMenuEntry<T>> items,
+  Offset? localPoint,
+}) => showNodeLaneBubble<T>(
+  anchor,
+  label: label,
+  localPoint: localPoint,
+  child: Semantics(
+    role: SemanticsRole.menu,
+    container: true,
+    explicitChildNodes: true,
+    child: ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(vertical: NodeLaneTokens.space4),
+      children: items,
+    ),
+  ),
+);
+
+/// Builds choices on opening so inactive menus don't subscribe or load data.
+class NodeLaneBubbleButton<T> extends StatelessWidget {
+  const NodeLaneBubbleButton({
+    super.key,
+    required this.itemBuilder,
+    required this.onSelected,
+    this.onOpened,
+    this.enabled = true,
+    this.tooltip,
+    this.icon,
+    this.child,
+    this.style,
+  });
+  final PopupMenuItemBuilder<T> itemBuilder;
+  final ValueChanged<T> onSelected;
+  final VoidCallback? onOpened;
+  final bool enabled;
+  final String? tooltip;
+  final Widget? icon, child;
+  final ButtonStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = tooltip ?? MaterialLocalizations.of(context).showMenuTooltip;
+    Future<void> open() async {
+      final items = itemBuilder(context);
+      if (items.isEmpty) return;
+      onOpened?.call();
+      final result = await showNodeLaneBubbleMenu<T>(
+        context,
+        label: label,
+        items: items,
+      );
+      if (context.mounted && result != null) onSelected(result);
+    }
+
+    if (child == null) {
+      return IconButton(
+        tooltip: label,
+        style: style,
+        onPressed: enabled ? open : null,
+        icon: icon ?? const Icon(Icons.more_vert),
+      );
+    }
+    return MergeSemantics(
+      child: Semantics(
+        button: enabled,
+        container: true,
+        tooltip: label,
+        child: Tooltip(
+          message: label,
+          excludeFromSemantics: true,
+          child: InkWell(
+            onTap: enabled ? open : null,
+            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// The route owns focus and dismissal. Only the bubble animates; the native
 /// page underneath stays in its original layer.
@@ -394,5 +479,37 @@ class NodeLaneBubbleHeading extends StatelessWidget {
             ),
       ],
     ),
+  );
+}
+
+/// A fixed heading over a scrollable body; the route accounts for keyboard and safe area.
+class NodeLaneBubblePanel extends StatelessWidget {
+  const NodeLaneBubblePanel({
+    super.key,
+    required this.title,
+    required this.child,
+    this.subtitle,
+    this.actions = const [],
+    this.closeButton,
+  });
+  final String title;
+  final String? subtitle;
+  final List<Widget> actions;
+  final Widget? closeButton;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      NodeLaneBubbleHeading(
+        title,
+        subtitle: subtitle,
+        actions: actions,
+        closeButton: closeButton,
+      ),
+      Flexible(child: child),
+    ],
   );
 }

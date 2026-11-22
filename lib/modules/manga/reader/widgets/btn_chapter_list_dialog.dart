@@ -1,6 +1,7 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
@@ -34,104 +35,133 @@ Widget btnToShowChapterListDialog(
       chapter.manga.value?.itemType == ItemType.manga) {
     return MobileReaderChaptersButton(chapter: chapter, onChanged: onChanged);
   }
-  Future<void> open() async {
+  Future<void> open(BuildContext anchor) async {
+    if (ModalRoute.isCurrentOf(anchor) != true) return;
     onChanged?.call(false);
-    if (labeled && isMobile && !isTv) {
-      await showNodeLaneCatalogSheet<void>(
-        context,
-        NodeLaneCatalogSheet(
-          title: title,
-          heightFactor: .75,
-          child: ChapterListWidget(chapter: chapter, mobile: true),
-        ),
-      );
-    } else {
-      await showNodeLaneDialog(
-        context: context,
-        builder: (context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            elevation: 8,
-            child: Container(
-              width: context.width(0.85),
-              constraints: BoxConstraints(maxHeight: context.height(0.8)),
-              decoration: BoxDecoration(
+    Chapter? selected;
+    try {
+      if (isMobile && !isTv) {
+        selected = await showNodeLaneBubble<Chapter>(
+          anchor,
+          label: title,
+          width: NodeLaneTokens.bubbleSettingsWidth,
+          child: NodeLaneBubblePanel(
+            title: title,
+            child: ChapterListWidget(chapter: chapter, mobile: true),
+          ),
+        );
+      } else {
+        selected = await showNodeLaneDialog<Chapter>(
+          context: context,
+          builder: (context) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    context.primaryColor.withValues(alpha: 0.05),
-                    Colors.transparent,
+              ),
+              elevation: 8,
+              child: Container(
+                width: context.width(0.85),
+                constraints: BoxConstraints(maxHeight: context.height(0.8)),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      context.primaryColor.withValues(alpha: 0.05),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: context.primaryColor.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.menu_book_rounded,
+                            color: context.primaryColor,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: context.primaryColor,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Icon(
+                              Icons.close_rounded,
+                              color: context.primaryColor.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                            tooltip: context.l10n.close,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Flexible(child: ChapterListWidget(chapter: chapter)),
                   ],
                 ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: context.primaryColor.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.menu_book_rounded,
-                          color: context.primaryColor,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: context.primaryColor,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: Icon(
-                            Icons.close_rounded,
-                            color: context.primaryColor.withValues(alpha: 0.7),
-                          ),
-                          tooltip: context.l10n.close,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Flexible(child: ChapterListWidget(chapter: chapter)),
-                ],
-              ),
-            ),
-          );
-        },
-      );
+            );
+          },
+        );
+      }
+      if (!context.mounted ||
+          selected == null ||
+          ModalRoute.isCurrentOf(context) != true) {
+        return;
+      }
+      final latest = chapterRepository.findByIdSync(selected.id!);
+      if (latest == null || latest.mangaId != chapter.mangaId) {
+        showNodeLaneNotice(
+          context.l10n.manga_action_incomplete,
+          kind: NodeLaneNoticeKind.error,
+        );
+        return;
+      }
+      if (latest.manga.value?.itemType == ItemType.manga) {
+        MangaChapterPageGalleryState.setNavigatingToChapter();
+      }
+      pushReplacementMangaReaderView(context: context, chapter: latest);
+    } finally {
+      if (context.mounted) onChanged?.call(true);
     }
-    if (context.mounted) onChanged?.call(true);
   }
 
   if (labeled) {
-    return NodeLaneToolbarAction(
-      label: title,
-      icon: Icons.format_list_bulleted_rounded,
-      onPressed: open,
+    return Builder(
+      builder: (anchor) => NodeLaneToolbarAction(
+        label: title,
+        icon: Icons.format_list_bulleted_rounded,
+        onPressed: () => open(anchor),
+      ),
     );
   }
-  return IconButton(
-    tooltip: title,
-    onPressed: open,
-    icon: Icon(Icons.format_list_numbered_outlined, color: iconColor),
+  return Builder(
+    builder: (anchor) => IconButton(
+      tooltip: title,
+      onPressed: () => open(anchor),
+      icon: Icon(Icons.format_list_numbered_outlined, color: iconColor),
+    ),
   );
 }
 
@@ -153,11 +183,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   late final chapterList = widget.chapter.manga.value!
       .getSortedFilteredChapters();
   late final currentChapIndex = chapterList.indexWhere(
-    (element) =>
-        element.name == widget.chapter.name &&
-        element.dateUpload == widget.chapter.dateUpload &&
-        element.scanlator == widget.chapter.scanlator &&
-        element.url == widget.chapter.url,
+    (element) => element.id == widget.chapter.id,
   );
   @override
   void initState() {
@@ -241,10 +267,8 @@ class _ChapterListTileState extends State<ChapterListTile> {
   late final chapter = widget.chapter;
   late bool isBookmarked = chapter.isBookmarked!;
   void _openChapter() {
-    if (!widget.currentChap) {
-      Navigator.pop(context);
-      MangaChapterPageGalleryState.setNavigatingToChapter();
-      pushReplacementMangaReaderView(context: context, chapter: chapter);
+    if (ModalRoute.isCurrentOf(context) == true) {
+      Navigator.pop(context, widget.currentChap ? null : chapter);
     }
   }
 

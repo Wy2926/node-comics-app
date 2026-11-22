@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
@@ -13,7 +14,7 @@ import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/image_actions_dialog.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_image_actions.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_image_actions.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
@@ -116,12 +117,11 @@ void main() {
           body: Builder(
             builder: (context) => TextButton(
               onPressed: () async {
-                await showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  enableDrag: false,
-                  builder: (_) => MobileReaderImageActions(
+                await showNodeLaneBubble<void>(
+                  context,
+                  label: 'Image actions',
+                  width: 420,
+                  child: MobileReaderImageActions(
                     bookTitle: title,
                     chapterTitle: 'Full chapter name',
                     pageNumber: 2,

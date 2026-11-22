@@ -50,16 +50,6 @@ class SoftwareUpdateView extends StatelessWidget {
     final l = context.l10n, t = NodeLaneTokens.of(context);
     final progress = total > 0 ? (received / total).clamp(0.0, 1.0) : null;
     final hasStatus = busy || hasError || readyToInstall || permissionRequired;
-    final compactFooter =
-        MediaQuery.textScalerOf(context).scale(14) > 20 ||
-        MediaQuery.sizeOf(context).height < 600;
-    final hint = Text(
-      downloadOnDevice
-          ? l.app_update_download_hint
-          : l.app_update_external_hint,
-      textAlign: TextAlign.center,
-      style: t.readerSecondary,
-    );
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -88,10 +78,6 @@ class SoftwareUpdateView extends StatelessWidget {
             ),
           ),
         ),
-        if (compactFooter && !hasStatus) ...[
-          const SizedBox(height: NodeLaneTokens.space24),
-          hint,
-        ],
       ],
     );
     final status = permissionRequired
@@ -206,16 +192,7 @@ class SoftwareUpdateView extends StatelessWidget {
                   child: footer,
                 ),
               )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (!compactFooter) ...[
-                    hint,
-                    const SizedBox(height: NodeLaneTokens.space16),
-                  ],
-                  footer,
-                ],
-              ),
+            : footer,
       ),
     );
   }

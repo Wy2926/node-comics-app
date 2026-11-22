@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
@@ -255,7 +255,7 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
                     for (final type in visibleTabTypes)
                       NodeLaneRow(
                         title: type.localized(l10n),
-                        icon: MobileMediaMenu.iconFor(context, type),
+                        icon: LibraryMediaButton.iconFor(context, type),
                         selected: type == selectedType,
                         accented: type == selectedType,
                         trailing: buildMobileMediaBadge(type),
@@ -277,7 +277,7 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
                         child: Padding(
                           padding: NodeLaneTokens.headerPadding,
                           child: NodeLanePageHeading.toolbar(
-                            mediaMenu: MobileMediaMenu(
+                            mediaMenu: LibraryMediaButton(
                               value: selectedType,
                               availableTypes: visibleTabTypes,
                               badgeBuilder: buildMobileMediaBadge,

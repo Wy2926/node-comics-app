@@ -128,9 +128,6 @@ class _MigrationScreenScreenState extends ConsumerState<MigrationScreen> {
       title: installed.isEmpty
           ? l10n.global_search_no_sources(widget.manga.itemType.localized(l10n))
           : l10n.global_search_only_pinned(installed.length),
-      message: installed.isEmpty
-          ? l10n.global_search_no_sources_hint
-          : l10n.global_search_only_pinned_hint,
       action: installed.isNotEmpty && NodeLaneBubbleFlow.contains(context)
           ? NodeLaneSwitchRow(
               title: l10n.only_include_pinned_sources,

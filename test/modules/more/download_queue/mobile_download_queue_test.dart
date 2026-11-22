@@ -196,10 +196,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(FilledButton), findsNothing);
       expect(
-        find.text('Add downloads from a title’s chapter list.'),
-        findsOneWidget,
-      );
-      expect(
         tester.getCenter(find.text('No downloads queued')).dx,
         closeTo(180, .01),
       );

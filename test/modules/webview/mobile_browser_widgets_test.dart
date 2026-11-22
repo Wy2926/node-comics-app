@@ -652,7 +652,7 @@ void main() {
       await tester.tap(find.byTooltip('删除'));
       await tester.pumpAndSettle();
       expect(store.history.single.title, 'Beta');
-      expect(find.text('这里还是空的'), findsOneWidget);
+      expect(find.text('没有匹配结果'), findsOneWidget);
       await tester.enterText(find.byType(TextField), '');
       tester.testTextInput.hide();
       await tester.pumpAndSettle();
@@ -666,6 +666,7 @@ void main() {
       await tester.tap(find.text('全部清除'));
       await tester.pumpAndSettle();
       expect(store.history, isEmpty);
+      expect(find.text('这里还是空的'), findsOneWidget);
       await tester.tap(find.byTooltip('关闭'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Bookmarks'));

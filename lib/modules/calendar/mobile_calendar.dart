@@ -10,7 +10,7 @@ import 'package:mangayomi/modules/calendar/models/upcoming_ui_model.dart';
 import 'package:mangayomi/modules/calendar/widgets/upcoming_calendar.dart';
 import 'package:mangayomi/modules/calendar/widgets/upcoming_item.dart'
     as widgets;
-import 'package:mangayomi/modules/more/widgets/mobile_media_selector.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -70,11 +70,15 @@ class _MobileCalendarState extends State<MobileCalendar> {
     final calendar = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        MobileMediaSelector(
-          types: widget.types,
-          selected: widget.itemType,
-          onChanged: widget.onTypeChanged,
-        ),
+        if (widget.itemType != null && widget.types.length > 1)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: LibraryMediaButton(
+              availableTypes: widget.types,
+              value: widget.itemType!,
+              onChanged: widget.onTypeChanged,
+            ),
+          ),
         if (widget.itemType != null)
           UpcomingCalendar(
             key: _calendarKey,

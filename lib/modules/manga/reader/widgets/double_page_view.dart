@@ -16,7 +16,8 @@ class DoublePageView extends StatefulWidget {
   final List<UChapDataPreload?> pages;
 
   /// Callback when an image is long-pressed.
-  final Function(UChapDataPreload data)? onLongPressData;
+  final void Function(UChapDataPreload data, Offset globalPosition)?
+  onLongPressData;
 
   /// Background color setting.
   final Color backgroundColor;
@@ -207,7 +208,7 @@ class _DoublePageViewState extends State<DoublePageView>
 
   Widget _buildPageImage(UChapDataPreload pageData) {
     final l10n = l10nLocalizations(context)!;
-    final onLongPress = widget.onLongPressData ?? (_) {};
+    final onLongPress = widget.onLongPressData ?? (_, _) {};
 
     return ImageViewVertical(
       data: pageData,
@@ -274,7 +275,6 @@ class _DoublePageViewState extends State<DoublePageView>
         child: SingleChildScrollView(
           child: ReaderContentStatus(
             message: l10n.image_loading_error,
-            description: l10n.reader_image_failure_hint,
             onRetry: () {
               state.reLoadImage();
               widget.onFailedToLoadImage?.call(pageData, false);

@@ -101,23 +101,13 @@ void main() {
     expect(find.widgetWithText(TextButton, 'Skip for now'), findsOneWidget);
   });
 
-  testWidgets('cannot add an empty repository', (tester) async {
+  testWidgets('adding a repository requires an absolute URL', (tester) async {
     await pump(tester);
     await toRepoStep(tester);
     expect(addButton(tester).onPressed, isNull);
-  });
-
-  testWidgets('cannot add something that is not a url', (tester) async {
-    await pump(tester);
-    await toRepoStep(tester);
     await tester.enterText(find.byType(TextField), 'not a url');
     await tester.pump();
     expect(addButton(tester).onPressed, isNull);
-  });
-
-  testWidgets('accepts an absolute url', (tester) async {
-    await pump(tester);
-    await toRepoStep(tester);
     await tester.enterText(
       find.byType(TextField),
       'https://example.invalid/index.json',
@@ -512,16 +502,18 @@ void main() {
       _StubHideItems.lastSet = null;
     });
 
-    testWidgets('never asks which libraries, it is a television', (
+    testWidgets('opens the optional repository step with remote focus', (
       tester,
     ) async {
-      // Nobody reads manga on a television, so the question has one answer and
-      // is not worth a screen of d-pad presses. The flow opens on the source.
       await pump(tester);
 
       expect(find.byType(TvPill), findsNothing);
       expect(find.byType(FilterChip), findsNothing);
-      expect(find.byType(TextField), findsOneWidget, reason: 'the repo step');
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).autofocus,
+        isTrue,
+      );
+      expect(find.widgetWithText(TextButton, 'Skip for now'), findsOneWidget);
     });
 
     testWidgets('and hides the libraries it did not choose', (tester) async {
@@ -535,41 +527,6 @@ void main() {
       expect(hidden, contains('/MangaLibrary'));
       expect(hidden, contains('/NovelLibrary'));
       expect(hidden, isNot(contains('/AnimeLibrary')));
-    });
-
-    testWidgets('the url field takes focus, so OK opens the keyboard', (
-      tester,
-    ) async {
-      await pump(tester);
-      final field = tester.widget<TextField>(find.byType(TextField));
-      expect(field.autofocus, isTrue);
-    });
-
-    testWidgets('says the repository can be added later instead', (
-      tester,
-    ) async {
-      await pump(tester);
-      // Typing a url on a remote is miserable; leaving now has to look like a
-      // real option rather than a failure.
-      expect(
-        find.text('You can add one later in Settings, under Browse.'),
-        findsOneWidget,
-      );
-      expect(find.widgetWithText(TextButton, 'Skip for now'), findsOneWidget);
-    });
-
-    testWidgets('the phone layout keeps chips and loses the hint', (
-      tester,
-    ) async {
-      debugIsTvOverride = false;
-      await pump(tester);
-      expect(find.byType(FilterChip), findsNWidgets(ItemType.values.length));
-      expect(find.byType(TvPill), findsNothing);
-      await toRepoStep(tester);
-      expect(
-        find.text('You can add one later in Settings, under Browse.'),
-        findsNothing,
-      );
     });
   });
 }

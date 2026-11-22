@@ -113,19 +113,6 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
               ),
               onChanged: onChanged,
             ),
-
-            const Divider(),
-
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                l10n.app_lock_description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).hintColor,
-                ),
-              ),
-            ),
           ],
         ),
       ),

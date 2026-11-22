@@ -367,7 +367,7 @@ class _TvAnimeHomeViewState extends ConsumerState<TvAnimeHomeView> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  context.l10n.tv_filtered_empty_hint,
+                  context.l10n.tv_no_matching_anime,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Theme.of(context).hintColor),
                 ),

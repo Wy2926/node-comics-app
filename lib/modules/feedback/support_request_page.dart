@@ -247,11 +247,6 @@ class _SupportRequestPageState extends State<SupportRequestPage> {
             const SizedBox(height: NodeLaneTokens.space12),
             SelectableText(received, style: NodeLaneTokens.of(context).caption),
           ] else ...[
-            Text(
-              _website ? l.feedback_source_hint : l.feedback_app_hint,
-              style: NodeLaneTokens.of(context).readerSecondary,
-            ),
-            const SizedBox(height: NodeLaneTokens.space16),
             Form(
               key: _form,
               autovalidateMode: AutovalidateMode.onUserInteractionIfError,

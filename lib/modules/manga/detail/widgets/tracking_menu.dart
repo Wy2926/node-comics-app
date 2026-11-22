@@ -41,7 +41,7 @@ void openTrackingMenu({
     useSafeArea: true,
     showDragHandle: true,
     sheetAnimationStyle: NodeLaneMotion.style(context),
-    shape: NodeLaneTokens.readerSheetShape,
+    shape: NodeLaneTokens.sheetShape,
     builder: (_) => Consumer(
       builder: (context, ref, _) {
         final isPureBlack = ref.watch(pureBlackDarkModeStateProvider);

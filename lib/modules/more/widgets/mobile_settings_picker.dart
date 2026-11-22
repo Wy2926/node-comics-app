@@ -1,4 +1,3 @@
-import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +23,7 @@ class MobileSettingOption<T> {
 }
 
 /// Returns the selected option, so a null-valued default remains distinct from
-/// dismissing the picker. Page and sheet share one list; callers own writes.
+/// dismissing the picker. Reader substeps and settings pages share one list.
 Future<MobileSettingOption<T>?> showMobileSettingsPicker<T>(
   BuildContext context, {
   required String title,
@@ -33,7 +32,6 @@ Future<MobileSettingOption<T>?> showMobileSettingsPicker<T>(
   bool searchable = false,
   String? description,
   String? emptyMessage,
-  bool inSheet = false,
 }) {
   final picker = _MobileSettingsPicker<T>(
     title: title,
@@ -42,10 +40,9 @@ Future<MobileSettingOption<T>?> showMobileSettingsPicker<T>(
     searchable: searchable,
     description: description,
     emptyMessage: emptyMessage,
-    inSheet: inSheet,
   );
-  return inSheet
-      ? showNodeLaneCatalogSheet<MobileSettingOption<T>>(context, picker)
+  return NodeLaneBubbleFlow.contains(context)
+      ? NodeLaneBubbleFlow.push<MobileSettingOption<T>>(context, picker)
       : Navigator.of(context).push<MobileSettingOption<T>>(
           MaterialPageRoute(builder: (_) => picker),
         );
@@ -57,14 +54,13 @@ class _MobileSettingsPicker<T> extends StatefulWidget {
     required this.current,
     required this.options,
     required this.searchable,
-    required this.inSheet,
     this.description,
     this.emptyMessage,
   });
   final String title;
   final T current;
   final List<MobileSettingOption<T>> options;
-  final bool searchable, inSheet;
+  final bool searchable;
   final String? description;
   final String? emptyMessage;
 
@@ -110,7 +106,6 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
         )
         .toList();
     final body = CustomScrollView(
-      shrinkWrap: widget.inSheet,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
         if (widget.description != null)
@@ -145,7 +140,6 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
                 title: query.isEmpty
                     ? widget.emptyMessage ?? l10n.no_result
                     : l10n.no_result,
-                message: query.isEmpty ? null : l10n.search_empty_hint,
                 action: query.isEmpty
                     ? null
                     : NodeLaneSecondaryButton(
@@ -193,22 +187,6 @@ class _MobileSettingsPickerState<T> extends State<_MobileSettingsPicker<T>> {
           ),
       ],
     );
-    if (widget.inSheet) {
-      return NodeLaneCatalogSheet(
-        title: widget.title,
-        fitContent: true,
-        heightFactor: NodeLaneTokens.readerSheetFraction,
-        child: body,
-      );
-    }
-    if (NodeLaneBubbleFlow.contains(context)) {
-      return MobileBrowsePage(title: widget.title, body: body);
-    }
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(context, title: widget.title),
-        body: SafeArea(top: false, child: body),
-      ),
-    );
+    return MobileBrowsePage(title: widget.title, body: body);
   }
 }

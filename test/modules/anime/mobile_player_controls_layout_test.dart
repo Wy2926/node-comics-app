@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/anime/widgets/mobile_player_controls_layout.dart';
 import 'package:mangayomi/modules/anime/widgets/tv_player_pills.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
 
 void main() {
   testWidgets('keeps the mobile top bar below the safe inset', (tester) async {
@@ -696,32 +696,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('compact shortcut pills use the original visual sizing', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: PlayerPillButton(
-              isCompact: true,
-              icon: Icons.speed,
-              label: '1.0x',
-              onTap: () {},
-            ),
-          ),
-        ),
-      ),
-    );
-
-    final button = find.byType(PlayerPillButton);
-    expect(tester.getSize(button).height, lessThan(44));
-    expect(tester.widget<Icon>(find.byIcon(Icons.speed)).size, 14);
-    expect(tester.widget<Text>(find.text('1.0x')).style?.fontSize, 11);
-  });
-
   testWidgets('icon-only shortcut keeps its icon and tooltip', (tester) async {
-    var longPressed = false;
+    var taps = 0;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -732,8 +708,7 @@ void main() {
               label: '1.0x',
               showLabel: false,
               tooltip: 'Playback speed',
-              onTap: () {},
-              onLongPress: () => longPressed = true,
+              onTap: () => taps++,
             ),
           ),
         ),
@@ -756,8 +731,8 @@ void main() {
       semanticsWidgets.any((widget) => widget.properties.value == '1.0x'),
       isTrue,
     );
-    await tester.longPress(find.byType(PlayerPillButton));
-    expect(longPressed, isTrue);
+    await tester.tap(find.byTooltip('Playback speed'));
+    expect(taps, 1);
   });
 
   test('uses icon-only controls only below the portrait breakpoint', () {
@@ -782,36 +757,6 @@ void main() {
       ),
       isFalse,
     );
-  });
-
-  testWidgets('settings home can run a portrait-only action', (tester) async {
-    var actionCalled = false;
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SettingsDrilldown(
-            title: 'Settings',
-            entries: [
-              SettingsEntry(
-                label: 'Share',
-                icon: Icons.share_outlined,
-                onTap: (_) => actionCalled = true,
-              ),
-            ],
-            onClose: () {},
-            initialIndex: 0,
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('Share'));
-    await tester.pump();
-
-    expect(actionCalled, isTrue);
-    expect(find.byKey(const ValueKey('home')), findsOneWidget);
-    expect(find.byKey(const ValueKey('section-0')), findsNothing);
   });
 }
 

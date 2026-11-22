@@ -130,8 +130,6 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(context.l10n.search_scope_hint, style: t.secondary),
-                  const SizedBox(height: NodeLaneTokens.space12),
                   NodeLaneSegments<SourceSearchScopeMode>(
                     value: mode,
                     pill: true,
@@ -230,7 +228,7 @@ class _SourceSearchScopePageState extends State<SourceSearchScopePage> {
               sliver: SliverToBoxAdapter(
                 child: Text(
                   matches.isEmpty
-                      ? context.l10n.search_no_websites_hint
+                      ? context.l10n.source_no_matching_websites
                       : context.l10n.search_select_website_hint,
                   style: t.readerSecondary,
                 ),

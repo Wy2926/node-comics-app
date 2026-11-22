@@ -47,10 +47,6 @@ class _PlayerAudioScreenState extends ConsumerState<PlayerAudioScreen> {
             SwitchListTile(
               value: enableAudioPitchCorrection,
               title: Text(context.l10n.enable_audio_pitch_correction),
-              subtitle: Text(
-                context.l10n.enable_audio_pitch_correction_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) {
                 ref
                     .read(enableAudioPitchCorrectionStateProvider.notifier)

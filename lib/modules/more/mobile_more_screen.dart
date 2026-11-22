@@ -257,7 +257,6 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                         child: NodeLaneEmptyState(
                           icon: icons.search,
                           title: l.settings_search_empty,
-                          message: l.search_empty_hint,
                           action: NodeLaneSecondaryButton(
                             onPressed: _clear,
                             child: Text(l.search_clear),
@@ -299,7 +298,6 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
                         if (query.isEmpty) ...[
                           NodeLaneDisclosure(
                             title: l.settings_more_tools,
-                            subtitle: l.settings_more_tools_hint,
                             icon: icons.folderOutline,
                             child: Column(children: matchingTools),
                           ),

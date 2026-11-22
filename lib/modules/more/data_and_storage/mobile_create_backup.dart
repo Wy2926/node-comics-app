@@ -67,7 +67,6 @@ class _MobileCreateBackupState extends State<MobileCreateBackup> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colors = NodeLaneTokens.of(context);
     return NodeLaneSurface(
       child: PopScope(
         canPop: !_busy,
@@ -78,13 +77,6 @@ class _MobileCreateBackupState extends State<MobileCreateBackup> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 24),
-                  child: Text(
-                    l10n.backup_selection_shared,
-                    style: TextStyle(color: colors.muted),
-                  ),
-                ),
                 _group(l10n.library, widget.libraryOptions),
                 _group(l10n.settings, widget.settingsOptions),
                 _group(l10n.extensions, widget.extensionOptions),

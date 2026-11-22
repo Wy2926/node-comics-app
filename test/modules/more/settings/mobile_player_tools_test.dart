@@ -262,11 +262,7 @@ void main() {
       repository.loadFails = false;
       await tester.tap(find.text('Retry'));
       await tester.pumpAndSettle();
-      expect(
-        find.text('Add a player button with a label and a press action.'),
-        findsOneWidget,
-      );
-      await tester.tap(find.byKey(const ValueKey('add-custom-button')));
+      await tester.tap(find.widgetWithText(FilledButton, 'Add custom button'));
       await tester.pumpAndSettle();
       final saveKey = find.byKey(const ValueKey('save-custom-button'));
       expect(tester.widget<NodeLaneIconButton>(saveKey).onPressed, isNull);

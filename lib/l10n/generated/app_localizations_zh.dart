@@ -16,13 +16,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_clip_here => '夹在这里';
 
   @override
-  String get browser_clip_saved => '已夹好，可从「继续读」回来';
+  String get browser_clip_saved => '已保存阅读位置';
 
   @override
   String get browser_continue => '继续读';
-
-  @override
-  String get browser_continue_hint => '读过的章节会自动记住进度，无需添加书签。';
 
   @override
   String get browser_insert_suggestion => '填入搜索建议';
@@ -70,9 +67,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get feedback_app_hint => '遇到问题或有改进建议？无需登录，直接告诉我们。';
 
   @override
-  String get feedback_source_hint => '希望适配哪个网站？无需登录即可提交申请。';
-
-  @override
   String get feedback_site_name => '网站名称';
 
   @override
@@ -117,9 +111,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_search_hint => '搜索或输入网址';
 
   @override
-  String get browser_start_hint => '从这里，发现新的精彩。';
-
-  @override
   String get browser_search_engine => '搜索引擎';
 
   @override
@@ -139,12 +130,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get browser_library_empty => '这里还是空的';
-
-  @override
-  String get browser_bookmarks_hint => '在网页菜单中添加书签，即可在这里找到它。';
-
-  @override
-  String get browser_history_hint => '访问过的网页会留在这里，关闭标签页后也能找回。';
 
   @override
   String get browser_recent => '最近访问';
@@ -179,9 +164,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get app_update_details_hint => '查看更新说明与安装方式';
-
-  @override
   String get app_update_download => '下载更新';
 
   @override
@@ -193,9 +175,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String app_update_full(String size) {
     return '下载完整安装包（$size）';
   }
-
-  @override
-  String get app_update_download_hint => '下载完成后，按提示安装更新。';
 
   @override
   String get bookshelf_all => '全部';
@@ -222,9 +201,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_search_empty => '未找到相关设置';
 
   @override
-  String get search_empty_hint => '试试其他关键词，或清除搜索查看全部内容。';
-
-  @override
   String get search_clear => '清除搜索';
 
   @override
@@ -238,9 +214,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get app_update_later => '稍后';
-
-  @override
-  String get app_update_external_hint => '在浏览器中打开更新链接';
 
   @override
   String get app_update_failed => '暂时无法检查更新，请重试。';
@@ -361,11 +334,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get compression_level => '压缩级别';
 
   @override
-  String compression_info(Object level) {
-    return '压缩率越高，备份文件占用的空间越小，但会消耗更多的CPU。默认值：$level';
-  }
-
-  @override
   String get comfortable_grid => '舒适网格';
 
   @override
@@ -420,9 +388,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get remove_everything => '删除所有';
 
   @override
-  String get remove_everything_msg => '你确定吗？所有历史将丢失';
-
-  @override
   String get remove_all_update_msg => '你确定吗？所有更新将被清除';
 
   @override
@@ -433,9 +398,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get remove => '移除';
-
-  @override
-  String get remove_history_msg => '这将移除此章节的阅读日期。你确定吗？';
 
   @override
   String get last_used => '最后使用';
@@ -478,17 +440,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mass_migration_installed => '已安装';
-
-  @override
-  String mass_migration_items_ready_for_review(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count个项目准备好复检',
-      one: '1个项目准备好复检',
-    );
-    return '$_temp0';
-  }
 
   @override
   String mass_migration_item_count(int count) {
@@ -700,13 +651,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get incognito_mode => '隐身模式';
 
   @override
-  String get incognito_mode_description => '暂停阅读历史';
-
-  @override
   String get downloaded_only => '仅已下载';
-
-  @override
-  String get downloaded_only_description => '仅显示库中已下载的条目';
 
   @override
   String get download_queue => '下载队列';
@@ -728,12 +673,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get no_downloads => '无下载';
-
-  @override
-  String get edit_categories => '编辑类别';
-
-  @override
-  String get edit_categories_description => '你还没有类别。点击加号按钮创建一个来组织你的图书馆';
 
   @override
   String get add => '添加';
@@ -771,9 +710,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get general => '通用';
-
-  @override
-  String get general_subtitle => '应用语言';
 
   @override
   String get app_language => '应用语言';
@@ -836,9 +772,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reading_mode_vertical => '垂直';
 
   @override
-  String get reading_mode_horizontal => '水平';
-
-  @override
   String get reading_mode_left_to_right => '从左到右';
 
   @override
@@ -851,28 +784,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reading_mode_webtoon => '网络漫画';
 
   @override
-  String get double_tap_animation_speed => '双击动画速度';
-
-  @override
   String get normal => '正常';
 
   @override
   String get fast => '快';
 
   @override
-  String get no_animation => '无动画';
-
-  @override
-  String get animate_page_transitions => '动画页面过渡';
-
-  @override
   String get crop_borders => '裁剪边框';
 
   @override
   String get downloads => '下载';
-
-  @override
-  String get downloads_subtitle => '下载设置';
 
   @override
   String get download_location => '下载位置';
@@ -969,18 +890,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unknown => '未知';
 
   @override
-  String get empty_placeholder => '空';
-
-  @override
   String get error => '错误';
 
   @override
   String error_with_message(Object error) {
     return '错误：$error';
   }
-
-  @override
-  String get no_pages_available => '错误：无可用页面';
 
   @override
   String get set_categories => '设置分类';
@@ -996,9 +911,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reset => '重置';
-
-  @override
-  String get by_source => '按来源';
 
   @override
   String get by_chapter_number => '按章节号';
@@ -1017,9 +929,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get developer_mode => '开发者模式';
-
-  @override
-  String get developer_mode_subtitle => '显示扩展开发者工具（创建扩展、编辑代码）';
 
   @override
   String get choose_extension_language => '选择扩展语言';
@@ -1177,9 +1086,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get no_more_chapter => '没有更多章节';
-
-  @override
   String get no_result => '无结果';
 
   @override
@@ -1217,12 +1123,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get split_epub_chapters => '分章节导入';
-
-  @override
-  String get split_epub_chapters_description => '将每个EPUB章节作为单独条目导入';
-
-  @override
-  String get nothing_read_recently => '最近未阅读';
 
   @override
   String get status => '状态';
@@ -1276,9 +1176,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sync_logged => '登录成功';
-
-  @override
-  String get syncing_subtitle => '填写你使用的同步服务器地址，通过浏览器登录后，在设备间同步阅读进度。';
 
   @override
   String get sync_service => '自建同步服务';
@@ -1379,9 +1276,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sync_auto_12_hours => '每12小时';
 
   @override
-  String get server_error => '服务器错误！';
-
-  @override
   String get dialog_confirm => '确认';
 
   @override
@@ -1391,19 +1285,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reorder_navigation => '自定义导航';
 
   @override
-  String get reorder_navigation_description => '根据需要重新排序和切换每个导航。';
-
-  @override
   String get floating_navigation_bar => '悬浮导航栏';
 
   @override
-  String get floating_navigation_bar_description => '使用悬浮胶囊式导航栏。';
-
-  @override
   String get full_screen_player => '使用全屏';
-
-  @override
-  String get full_screen_player_info => '播放视频时自动使用全屏。';
 
   @override
   String episode_progress(Object n) {
@@ -1480,9 +1365,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searching_for_updates => '正在搜索更新...';
 
   @override
-  String get no_new_updates_available => '没有新的更新可用';
-
-  @override
   String get uninstall => '卸载';
 
   @override
@@ -1499,10 +1381,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get show_nav_double_tap_tooltip => '显示双击搜索提示';
 
   @override
-  String get show_nav_double_tap_tooltip_subtitle =>
-      '在漫画/动画/小说导航栏上显示提示，说明双击可打开全局搜索。';
-
-  @override
   String already_in_library(Object source, Object title) {
     return '\"$title\" 已通过 $source 添加到您的书架中。';
   }
@@ -1511,38 +1389,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get add_anyway => '仍然添加';
 
   @override
-  String get langauage => '语言';
-
-  @override
   String get extension_detail => '扩展详情';
 
   @override
-  String get scale_type => '缩放类型';
-
-  @override
   String get scale_type_fit_screen => '适合屏幕';
-
-  @override
-  String get scale_type_stretch => '拉伸';
-
-  @override
-  String get scale_type_fit_width => '适合宽度';
-
-  @override
-  String get scale_type_fit_height => '适合高度';
-
-  @override
-  String get scale_type_original_size => '原始大小';
-
-  @override
-  String get scale_type_smart_fit => '智能适配';
-
-  @override
-  String get page_preload_amount => '页面预加载量';
-
-  @override
-  String get page_preload_amount_subtitle =>
-      '阅读时预加载的页面数量。更高的值将导致更顺畅的阅读体验，但会增加缓存和网络使用。';
 
   @override
   String get image_loading_error => '无法加载此图片';
@@ -1563,19 +1413,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get auto_extensions_updates => '自动更新第三方扩展';
 
   @override
-  String get auto_extensions_updates_subtitle => '自动更新已安装的第三方扩展。官方插件始终自动安装和更新。';
-
-  @override
   String get check_for_app_updates => '启动时检查应用更新';
 
   @override
   String get reading_mode => '阅读模式';
-
-  @override
-  String get custom_filter => '自定义筛选';
-
-  @override
-  String get background_color => '背景颜色';
 
   @override
   String get white => '白色';
@@ -1585,12 +1426,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get grey => '灰色';
-
-  @override
-  String get automaic => '自动';
-
-  @override
-  String get preferred_domain => '首选域';
 
   @override
   String get load_more => '加载更多';
@@ -1633,19 +1468,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get create_backup => '创建备份';
 
   @override
-  String get create_backup_dialog_title => '你想要备份什么？';
-
-  @override
-  String get create_backup_subtitle => '可用于恢复当前图书馆';
-
-  @override
   String get restore_backup => '恢复备份';
 
   @override
   String get encrypt_backups => '加密备份';
-
-  @override
-  String get encrypt_backups_info => '使用 AES 加密和密码保护备份文件';
 
   @override
   String get no_secure_storage => '未找到安全存储';
@@ -1672,9 +1498,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get password_required_to_restore => '需要密码才能恢复此备份。';
 
   @override
-  String get restore_backup_subtitle => '从备份文件恢复图书馆';
-
-  @override
   String get automatic_backups => '自动备份';
 
   @override
@@ -1682,15 +1505,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backup_location => '备份位置';
-
-  @override
-  String get backup_options => '备份选项';
-
-  @override
-  String get backup_options_dialog_title => '你想要备份什么？';
-
-  @override
-  String get backup_options_subtitle => '包含在备份文件中的信息';
 
   @override
   String get backup_and_restore_warning_info => '你应该在其他地方保存备份副本';
@@ -1757,9 +1571,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get services => '服务';
 
   @override
-  String get tracking_warning_info => '单向同步以更新跟踪服务中的章节进度。从它们的跟踪按钮为个别条目设置跟踪。';
-
-  @override
   String get use_page_tap_zones => '使用页面点击区域';
 
   @override
@@ -1785,9 +1596,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get video_audio => '音频';
-
-  @override
-  String get video_audio_info => '首选语言、音调校正、音频通道';
 
   @override
   String get player => '播放器';
@@ -1893,51 +1701,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get include_subtitles => '包含字幕';
 
   @override
-  String get blend_mode_default => '默认';
-
-  @override
-  String get blend_mode_multiply => '正片叠底';
-
-  @override
-  String get blend_mode_screen => '滤色';
-
-  @override
-  String get blend_mode_overlay => '叠加';
-
-  @override
-  String get blend_mode_colorDodge => '颜色减淡';
-
-  @override
-  String get blend_mode_lighten => '变亮';
-
-  @override
-  String get blend_mode_colorBurn => '颜色加深';
-
-  @override
-  String get blend_mode_darken => '变暗';
-
-  @override
-  String get blend_mode_difference => '差异';
-
-  @override
-  String get blend_mode_saturation => '饱和度';
-
-  @override
-  String get blend_mode_softLight => '柔光';
-
-  @override
-  String get blend_mode_plus => '加';
-
-  @override
-  String get blend_mode_exclusion => '排除';
-
-  @override
-  String get custom_color_filter => '自定义颜色滤镜';
-
-  @override
-  String get color_filter_blend_mode => '颜色滤镜混合模式';
-
-  @override
   String get enable_all => '启用全部';
 
   @override
@@ -1982,16 +1745,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get use_libass => '启用 libass';
 
   @override
-  String get use_libass_info => '使用基于 libass 的字幕渲染作为本地后端。';
-
-  @override
-  String get libass_not_disable_message => '在播放器设置中禁用 `use libass` 以便自定义字幕。';
-
-  @override
   String get override_ass_subtitles => '覆盖 ASS 字幕样式';
-
-  @override
-  String get override_ass_subtitles_info => '将自定义样式应用到 ASS/SSA 字幕';
 
   @override
   String get torrent_stream => '种子流';
@@ -2013,13 +1767,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get advanced_info => 'mpv 配置';
-
-  @override
-  String get use_native_http_client => '使用本地 HTTP 客户端';
-
-  @override
-  String get use_native_http_client_info =>
-      '它自动支持平台特性，如 VPN，支持更多 HTTP 特性，如 HTTP/3 和自定义重定向处理';
 
   @override
   String n_hour_ago(Object hour) {
@@ -2058,9 +1805,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get data_and_storage => '数据与存储';
 
   @override
-  String get download_location_info => '用于章节下载';
-
-  @override
   String get storage => '存储';
 
   @override
@@ -2089,9 +1833,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get recommendations => '推荐';
-
-  @override
-  String get recommendations_similar => '相似';
 
   @override
   String get recommendations_weights => '推荐权重';
@@ -2216,9 +1957,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enable_hardware_accel => '硬件加速';
 
   @override
-  String get enable_hardware_accel_info => '如果遇到错误或崩溃，请打开/关闭';
-
-  @override
   String get track_library_navigate => '转到现有本地条目';
 
   @override
@@ -2258,9 +1996,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enable_mpv => '启用 mpv 着色器/脚本';
 
   @override
-  String get mpv_info => '支持 mpv/scripts/ 下的 .js 脚本';
-
-  @override
   String get mpv_redownload => '重新下载 mpv 配置文件';
 
   @override
@@ -2271,9 +2006,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get custom_buttons => '自定义按钮';
-
-  @override
-  String get custom_buttons_info => '使用自定义按钮执行 lua 代码';
 
   @override
   String get custom_buttons_edit => '编辑自定义按钮';
@@ -2318,22 +2050,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get decoder => '解码器';
 
   @override
-  String get decoder_info => '硬件解码、像素格式、去色带';
-
-  @override
   String get enable_gpu_next => '启用 gpu-next（仅限 Android）';
-
-  @override
-  String get enable_gpu_next_info => '新的视频渲染引擎';
 
   @override
   String get debanding => '去色带';
 
   @override
   String get use_yuv420p => '使用 YUV420P 像素格式';
-
-  @override
-  String get use_yuv420p_info => '可以修复某些视频编解码器上的黑屏，也可以以质量为代价提高性能';
 
   @override
   String get audio_preferred_languages => '首选语言';
@@ -2346,9 +2069,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enable_audio_pitch_correction => '启用音频音调校正';
 
   @override
-  String get enable_audio_pitch_correction_info => '防止音频在较快速度时变高音，在较慢速度时变低音';
-
-  @override
   String get audio_channels => '音频通道';
 
   @override
@@ -2356,9 +2076,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get internal_player => '内部播放器';
-
-  @override
-  String get internal_player_info => '进度、控制、方向';
 
   @override
   String get subtitle_delay_text => '字幕延迟';
@@ -2462,9 +2179,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sequels => '续集';
 
   @override
-  String get recommendations_similarity => '相似度：';
-
-  @override
   String recommendation_rating_accessibility(String rating) {
     return '评分 $rating';
   }
@@ -2482,18 +2196,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rescan_local_folder => '立即重新扫描所有本地文件夹';
 
   @override
-  String get default_download_destination => '默认下载位置';
-
-  @override
-  String get ask_download_destination => '每次下载前询问位置';
-
-  @override
-  String get ask_download_destination_desc => '每次开始下载时选择本地文件夹。';
-
-  @override
-  String get select_download_destination => '选择下载位置';
-
-  @override
   String get clear_local_library => '清空本地书库';
 
   @override
@@ -2504,9 +2206,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get custom => '自定义';
-
-  @override
-  String get no_local_folder_available_for_downloads => '没有可用于下载的本地文件夹';
 
   @override
   String failed_to_create_cbz(Object error) {
@@ -2577,14 +2276,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String could_not_launch_url(Object url) {
-    return '无法打开 $url';
-  }
-
-  @override
-  String get text_size => '文字大小：';
-
-  @override
   String get text_align => '文字对齐';
 
   @override
@@ -2608,9 +2299,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get forceLandscapeMode => '强制横屏模式';
 
   @override
-  String get forceLandscapeModeSubtitle => '强制播放器使用横屏方向。';
-
-  @override
   String get dns_over_https => 'DNS-over-HTTPS (DoH)';
 
   @override
@@ -2624,9 +2312,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get app_locked => '应用已锁定';
-
-  @override
-  String get auth_to_continue => '验证以继续';
 
   @override
   String get authenticating => '正在验证...';
@@ -2654,9 +2339,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '此设备暂不可使用生物识别或设备密码验证';
 
   @override
-  String get app_lock_description => '启用应用锁后，每次打开应用或从后台返回时都会要求您进行身份验证。';
-
-  @override
   String get checking_device_authentication => '正在检查设备验证方式…';
 
   @override
@@ -2664,12 +2346,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get keep_screen_on => '保持屏幕开启';
-
-  @override
-  String get webtoon_side_padding => 'Webtoon侧边填充';
-
-  @override
-  String get show_page_gaps => '显示页面间隙';
 
   @override
   String get invert_colors => '反转颜色';
@@ -2687,28 +2363,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saturation => '饱和度';
 
   @override
-  String get navigation_layout => '导航布局';
-
-  @override
-  String get nav_layout_default => '默认';
-
-  @override
-  String get nav_layout_l_shaped => 'L形';
-
-  @override
-  String get nav_layout_kindle => 'Kindle';
-
-  @override
-  String get nav_layout_edge => '边缘';
-
-  @override
-  String get nav_layout_right_and_left => '右和左';
-
-  @override
   String get nav_layout_disabled => '已禁用';
-
-  @override
-  String get color_enhancements => '色彩增强';
 
   @override
   String get total => '总计';
@@ -2738,10 +2393,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get android_proxy_server_mihon => 'Android 代理服务器（Mihon）';
-
-  @override
-  String get android_proxy_server_mihon_description =>
-      '下载并配置使用 Mihon 扩展所需的代理服务器。';
 
   @override
   String get mihon_proxy_server => 'Mihon 代理服务器';
@@ -2798,10 +2449,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get latest_version => '最新版本';
-
-  @override
-  String get m_extension_server_description =>
-      '当您需要独立的 Android 设备代理时，请使用 M-Extension-Server。在此设置代理地址，并从 GitHub 下载 APK。';
 
   @override
   String get set_proxy_address => '设置代理地址';
@@ -2867,9 +2514,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get zero_interpreter => 'Zero 解释器';
 
   @override
-  String get zero_interpreter_description => '自动或手动控制 Zero 解释器服务。';
-
-  @override
   String get start_server_on_launch => '启动时开启服务';
 
   @override
@@ -2903,9 +2547,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tts_language => '语言';
 
   @override
-  String get tts_voice => '语音';
-
-  @override
   String get tts_stop => '停止';
 
   @override
@@ -2926,52 +2567,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get tts_settings => 'TTS设置';
-
-  @override
   String get tts_default => '默认';
 
   @override
-  String get webtoon_disable_zoom_out => 'Webtoon禁用缩小';
-
-  @override
-  String get webtoon_double_tap_zoom_enabled => 'Webtoon双击缩放';
-
-  @override
-  String get navigate_to_pan => '导航前移动已放大图像';
-
-  @override
-  String get navigate_to_pan_subtitle => '翻页前先移动放大的图像';
-
-  @override
-  String get split_wide_pages => '拆分双页';
-
-  @override
-  String get dual_page_invert => '反转拆分的半页';
-
-  @override
-  String get dual_page_rotate_to_fit => '旋转以适应';
-
-  @override
-  String get dual_page_rotate_to_fit_invert => '反转旋转方向';
-
-  @override
-  String get double_page_single_first_page => '首页单页显示';
-
-  @override
-  String get double_page_single_first_page_subtitle => '在双页模式下单页显示第一页（封面）';
-
-  @override
   String get double_page_auto => '自动双页';
-
-  @override
-  String get double_page_auto_subtitle => '横屏时自动切换到双页模式';
-
-  @override
-  String get landscape_zoom => '横屏自动缩放';
-
-  @override
-  String get zoom_start_position => '缩放起始位置';
 
   @override
   String get zoom_start_left => '左';
@@ -2983,106 +2582,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get zoom_start_center => '中';
 
   @override
-  String get automatic_background => '自动背景';
-
-  @override
-  String get tapping_inversion => '点击反转';
-
-  @override
-  String get tapping_inversion_none => '无';
-
-  @override
-  String get tapping_inversion_horizontal => '水平';
-
-  @override
-  String get tapping_inversion_vertical => '垂直';
-
-  @override
-  String get tapping_inversion_both => '两者';
-
-  @override
-  String get flash_on_page_change => '翻页时闪烁';
-
-  @override
-  String get flash_on_page_change_subtitle => 'AMOLED 防烧屏辅助';
-
-  @override
-  String get flash_color => '闪烁颜色';
-
-  @override
-  String get flash_color_black => '黑色';
-
-  @override
-  String get flash_color_white => '白色';
-
-  @override
-  String get flash_color_white_black => '白与黑';
-
-  @override
-  String get flash_interval_label => '闪烁间隔';
-
-  @override
-  String flash_interval_value(String n) {
-    return '$n页';
-  }
-
-  @override
-  String flash_interval(String n) {
-    return '闪烁间隔：$n页';
-  }
-
-  @override
-  String get flash_duration_label => '闪烁持续时间';
-
-  @override
-  String flash_duration_value(String n) {
-    return '$n毫秒';
-  }
-
-  @override
-  String flash_duration(String n) {
-    return '闪烁持续时间：$n毫秒';
-  }
-
-  @override
-  String get show_navigation_overlay_on_start => '启动时显示导航浮层';
-
-  @override
-  String get reader_hide_threshold => '隐藏阅读器界面的阈值';
-
-  @override
-  String get reader_hide_threshold_highest => '最高 (5 px)';
-
-  @override
-  String get reader_hide_threshold_high => '高 (13 px)';
-
-  @override
-  String get reader_hide_threshold_low => '低 (31 px)';
-
-  @override
-  String get reader_hide_threshold_lowest => '最低 (47 px)';
-
-  @override
-  String get error_no_pages_available => '错误：无可用页面';
-
-  @override
   String get app_ui_scale => '界面缩放';
-
-  @override
-  String get app_ui_scale_subtitle => '根据你的屏幕和观看距离，使界面更大或更小。';
 
   @override
   String get allow_concurrent_downloads => '允许并发下载';
 
   @override
-  String get allow_concurrent_downloads_subtitle =>
-      '同时从不同来源下载。单个来源仍然一次下载一个章节，因此不会过载。关闭后，可在任何地方一次下载一个。';
-
-  @override
   String get download_delay => '下载延迟';
-
-  @override
-  String get download_delay_subtitle => '关闭。在章节之间添加随机抖动的等待，以便更温柔地对待来源。';
 
   @override
   String get save_search => '保存搜索';
@@ -3094,9 +2600,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enter_search_to_save_first => '先输入搜索进行保存';
 
   @override
-  String get no_saved_searches => '此来源还没有保存的搜索。\n执行搜索，然后选择\"保存搜索\"。';
-
-  @override
   String get source => '来源';
 
   @override
@@ -3104,16 +2607,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get startup_failed => 'NodeLane漫译 无法完成启动';
-
-  @override
-  String sources_with_no_results(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count 个图源无结果',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get import_mode_title => '如何导入此备份？';
@@ -3267,9 +2760,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get merge_manga_title => '合并重复漫画';
 
   @override
-  String get merge_manga_subtitle => '查找同图源下标题相同的漫画并进行合并。';
-
-  @override
   String get merge_manga_none_found => '未找到重复漫画。';
 
   @override
@@ -3316,16 +2806,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get memory_overlay => '显示内存占用';
 
   @override
-  String get memory_overlay_subtitle => '实时显示应用占用的内存。可在滚动书架或阅读章节时实时观察设备上的内存变化。';
-
-  @override
   String get beta => 'Beta';
 
   @override
   String get error_reports => '错误报告';
-
-  @override
-  String get error_reports_subtitle => '应用捕获的错误及反馈入口';
 
   @override
   String get error_reports_empty => '运行正常，无错误记录。';
@@ -3335,9 +2819,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get error_reports_report => '在 GitHub 上反馈';
-
-  @override
-  String get error_reports_banner => 'NodeLane漫译 遇到了一个错误';
 
   @override
   String get error_reports_banner_action => '查看';
@@ -3369,22 +2850,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboarding_title => '欢迎使用 NodeLane漫译';
 
   @override
-  String get onboarding_libraries_body => '选择您要阅读和观看的内容类型。';
-
-  @override
   String get onboarding_nav_title => '您的书库';
-
-  @override
-  String get onboarding_nav_body => '可以为每种类型设置独立标签页，或合并在一个“书库”标签页中。';
 
   @override
   String get onboarding_nav_split => '独立标签页';
 
   @override
   String get onboarding_nav_merged => '统一书库标签页';
-
-  @override
-  String get onboarding_nav_inside => '点击“书库”可在各类型间切换';
 
   @override
   String get onboarding_next => '下一步';
@@ -3402,9 +2874,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String onboarding_local_existing(Object count) {
     return '已设置 $count 个文件夹';
   }
-
-  @override
-  String get onboarding_local_any_type => '支持漫画、动漫与轻小说。';
 
   @override
   String get onboarding_local_scanning => '正在扫描文件夹';
@@ -3430,9 +2899,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboarding_repo_title => '添加图源';
 
   @override
-  String get onboarding_body => '添加仓库即可浏览和安装丰富的扩展插件。';
-
-  @override
   String get onboarding_add => '添加仓库';
 
   @override
@@ -3442,19 +2908,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboarding_continue => '继续';
 
   @override
-  String get onboarding_later => '您可以稍后在“设置 > 浏览”中添加。';
-
-  @override
   String get onboarding_replay => '显示欢迎界面';
 
   @override
-  String get onboarding_replay_subtitle => '重新打开首次运行的引导设置界面。';
-
-  @override
   String get missing_source_check_title => '检查缺失图源';
-
-  @override
-  String get missing_source_check_subtitle => '查找未安装对应扩展的书库条目。';
 
   @override
   String get missing_source_check_none_found => '书库中所有条目的图源均已安装。';
@@ -3475,9 +2932,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get global_search_no_sources_hint => '请在“浏览”中添加仓库并安装相应的扩展插件。';
-
-  @override
   String global_search_only_pinned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3488,17 +2942,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get global_search_only_pinned_hint => '请固定某个来源，或在浏览设置中关闭“仅包含固定的来源”。';
-
-  @override
   String get global_search_all_nsfw => '该分类下的所有来源均被标记为 NSFW 并已被隐藏。';
 
   @override
-  String get global_search_all_nsfw_hint => '请在浏览设置中开启 NSFW 来源后再进行搜索。';
-
-  @override
-  String get missing_source_check_result_message =>
-      '这些条目关联的图源未安装。点击可进行迁移或安装对应扩展。';
+  String get missing_source_check_result_message => '这些条目关联的图源未安装。';
 
   @override
   String get related_titles => '相关作品';
@@ -3531,9 +2978,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get auto_library_update => '书架自动更新';
 
   @override
-  String get auto_library_update_subtitle => '在应用启动时检查书架中所有作品的最新章节。';
-
-  @override
   String get auto_library_update_never => '从不';
 
   @override
@@ -3550,9 +2994,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get auto_library_update_wifi_only => '仅限 Wi-Fi';
-
-  @override
-  String get auto_library_update_wifi_only_subtitle => '使用移动数据时跳过计划更新。';
 
   @override
   String get padding => '内边距';
@@ -3702,16 +3143,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reader_page_layout => '页面布局';
 
   @override
-  String get reader_continuous_options => '连续阅读';
-
-  @override
-  String get reader_default_mode_hint => '默认阅读模式用于尚未在阅读时单独设置模式的漫画。';
-
-  @override
   String get extension_service => '扩展服务';
-
-  @override
-  String get extension_service_description => '管理扩展运行服务与代理地址。';
 
   @override
   String get proxy_address => '代理地址';
@@ -3728,9 +3160,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String download_queue_count(int count) {
     return '$count 个章节';
   }
-
-  @override
-  String get download_queue_empty_hint => '从作品的章节列表添加下载';
 
   @override
   String get download_queue_order_hint => '拖动把手调整顺序';
@@ -3766,14 +3195,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cf_proxy_helper => 'FlareSolverr / Byparr 服务地址，留空关闭。';
 
   @override
-  String get mobile_navigation_description =>
-      '拖动调整顺序。漫画、动画和小说共用书架入口，首个显示项目为启动页。浏览与更多始终显示，多余入口收进更多。';
-
-  @override
   String get text_align_justify => '两端对齐';
-
-  @override
-  String get novel_session_modes_hint => '阅读模式与单／双页在打开小说后设置。';
 
   @override
   String get tts_languages_failed => '无法读取语音引擎的语言列表。';
@@ -3818,9 +3240,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get player_operation_incomplete => '未能完成操作，请检查文件访问权限后重试。';
 
   @override
-  String get custom_buttons_empty_hint => '添加播放器按钮，设置名称和点击时执行的操作。';
-
-  @override
   String get custom_button_primary => '默认按钮';
 
   @override
@@ -3833,7 +3252,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tracking_accounts_empty => '先在追踪设置中登录服务，再管理其中的条目。';
 
   @override
-  String get tracking_entries_empty => '此媒体类型暂无追踪条目，可从作品详情页添加追踪。';
+  String get tracking_entries_empty => '此媒体类型暂无追踪条目。';
 
   @override
   String get change_tracking_match => '更换匹配作品';
@@ -3851,9 +3270,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tracking_entry_unlinked => '此记录尚未关联本地作品，无法在这里编辑。';
-
-  @override
-  String get backup_selection_shared => '选择会立即保存，也用于自动备份。';
 
   @override
   String get library_snapshot_history => '恢复历史快照';
@@ -3880,12 +3296,6 @@ class AppLocalizationsZh extends AppLocalizations {
   ) {
     return '此图源包含 $mangaCount 个条目、$chapterCount 个章节、$historyCount 条历史与 $updateCount 条更新。下方选项决定保留哪些内容。';
   }
-
-  @override
-  String get library_delete_pick_message => '选择图源，查看其内容和删除选项。';
-
-  @override
-  String get mobile_categories_hint => '拖动调整顺序。打开分类可重命名，或设置显示与更新。';
 
   @override
   String get mobile_category_visible => '在书架中显示';
@@ -3927,13 +3337,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get preparing_installation => '正在准备安装…';
 
   @override
-  String get onboarding_mobile_libraries_body => '选择阅读内容，之后也可调整。';
-
-  @override
   String get onboarding_content_title => '开始阅读';
-
-  @override
-  String get onboarding_mobile_sources_body => '选择一种方式，也可以稍后添加。';
 
   @override
   String onboarding_step_count(int step, int total) {
@@ -3943,11 +3347,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String global_search_results_for(String query) {
     return '“$query”的搜索结果';
-  }
-
-  @override
-  String global_search_scope(String type, int count) {
-    return '$type · $count 个来源';
   }
 
   @override
@@ -3982,9 +3381,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookshelf_ignore_filters => '搜索时忽略筛选';
-
-  @override
-  String get bookshelf_ignore_filters_hint => '搜索当前分类中的全部作品，包括被筛选条件隐藏的作品。';
 
   @override
   String get bookshelf_stop_update => '停止书架更新';
@@ -4030,9 +3426,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookshelf_settings => '书架设置';
 
   @override
-  String get bookshelf_settings_live => '筛选、排序和显示更改即时生效。';
-
-  @override
   String get bookshelf_filter_any => '不限';
 
   @override
@@ -4059,13 +3452,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookshelf_layout => '书架布局';
 
   @override
-  String get bookshelf_sources_hint => '不选表示全部来源；点按“筛选”后生效。';
-
-  @override
   String get bookshelf_choose_files => '选择文件';
-
-  @override
-  String get bookshelf_import_wait => '请在文件选择器中选择文件，并等待导入完成。';
 
   @override
   String get bookshelf_import_incomplete =>
@@ -4075,16 +3462,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookshelf_categories_replace => '所选分类将统一替换这些作品原来的分类。';
 
   @override
-  String get bookshelf_categories_hint => '可多选分类；留空则不分配分类。';
-
-  @override
   String get bookshelf_categories_hidden => '该作品已有的隐藏分类会保留。';
 
   @override
   String get bookshelf_categories_incomplete => '分类未保存完成。请关闭后先核对书架，再继续操作。';
 
   @override
-  String get bookshelf_categories_none_visible => '没有可选分类，可前往管理分类查看。';
+  String get bookshelf_categories_none_visible => '没有可选分类。';
 
   @override
   String get bookshelf_manage_categories => '管理分类';
@@ -4096,10 +3480,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get manga_download_scope => '下载章节';
 
   @override
-  String get manga_download_scope_hint => '按当前目录筛选选择章节，已下载的章节会跳过。';
-
-  @override
-  String get manga_download_scope_empty => '当前筛选下没有章节。请关闭并调整目录筛选。';
+  String get manga_download_scope_empty => '当前筛选下没有章节。';
 
   @override
   String get manga_action_incomplete => '操作未完成。请先核对当前状态，再决定是否重新操作。';
@@ -4108,13 +3489,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chapter_settings => '章节设置';
 
   @override
-  String get chapter_settings_live => '筛选与排序即时生效，仅用于当前漫画。';
-
-  @override
   String get chapter_scanlators_all => '全部显示';
-
-  @override
-  String get chapter_scanlators_hint => '勾选要隐藏的翻译组，点按“筛选”后生效。';
 
   @override
   String chapter_scanlators_hidden(int count) {
@@ -4148,25 +3523,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chapter_action_incomplete => '操作未完成，部分更改可能已保存。请关闭后先核对章节与下载，再继续操作。';
 
   @override
-  String get reader_display_scope => '阅读模式和手动单双页应用于当前漫画；选择后返回阅读。';
-
-  @override
-  String get reader_display_single_only => '横向连续阅读仅使用单页。';
-
-  @override
-  String get reader_display_manual_pages => '切换单双页会关闭所有漫画的自动双页。';
-
-  @override
-  String get reader_display_crop_scope => '应用于所有漫画。';
-
-  @override
   String get reader_chapter_locate => '定位当前章节';
 
   @override
   String get reader_chapter_search => '搜索章节或翻译组';
-
-  @override
-  String get reader_chapter_scope => '沿用漫画详情的筛选和排序，书签即时保存。';
 
   @override
   String get reader_chapter_current_hidden => '正在阅读的章节不在当前筛选后的目录中。';
@@ -4184,41 +3544,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reader_image_actions => '图片操作';
 
   @override
-  String get reader_image_original => '使用原始整页图片，不含翻译、裁剪或阅读滤镜。';
-
-  @override
-  String get reader_image_save_ios => '保存到当前应用存储位置的 Pictures 文件夹。';
-
-  @override
-  String get reader_image_save_android =>
-      '保存到设备的 Pictures/nodelane-comics 文件夹。';
-
-  @override
-  String get reader_image_share => '打开系统分享面板。';
-
-  @override
-  String get reader_image_cover => '确认后修改这本漫画的封面。';
-
-  @override
   String get reader_image_cover_limit => '封面图片需小于 5 MB，仍可保存或分享。';
 
   @override
   String get reader_image_action_failed => '未能确认操作结果，请关闭菜单后核对，再决定是否重试。';
-
-  @override
-  String get reader_settings_book_scope => '以下设置仅用于当前漫画。';
-
-  @override
-  String get reader_settings_global_scope => '以下设置用于所有漫画，即时保存。';
-
-  @override
-  String get reader_filters => '图像滤镜';
-
-  @override
-  String get reader_filter_scope => '用于所有漫画，只改变阅读画面，不修改原始图片。';
-
-  @override
-  String get reader_auto_scroll_pause => '打开设置期间暂停滚动。';
 
   @override
   String get manga_synopsis => '简介';
@@ -4232,40 +3561,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get manga_continue_reading => '继续阅读';
 
   @override
-  String get reader_settings_title => '阅读设置';
-
-  @override
-  String get reader_picker_book_scope => '仅用于当前漫画';
-
-  @override
-  String get reader_picker_global_scope => '应用于所有漫画';
-
-  @override
-  String get reader_picker_apply_hint => '点选即保存并返回上一层。';
-
-  @override
-  String get reader_scale_fit_screen_hint => '整页适配屏幕';
-
-  @override
-  String get reader_scale_stretch_hint => '铺满阅读区域';
-
-  @override
-  String get reader_scale_fit_width_hint => '以页面宽度适配';
-
-  @override
-  String get reader_scale_fit_height_hint => '以页面高度适配';
-
-  @override
   String get source_filter_active => '已应用';
 
   @override
   String get source_filter_apply => '应用筛选';
-
-  @override
-  String get source_filter_scope => '筛选仅用于当前网站。';
-
-  @override
-  String get source_filter_apply_hint => '应用筛选后生效。';
 
   @override
   String source_filter_term(String term) {
@@ -4322,13 +3621,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookshelf_more_display => '更多显示选项';
 
   @override
-  String get bookshelf_more_display_hint => '徽章、来源与分类';
-
-  @override
   String get bookshelf_download_count => '下载数量';
-
-  @override
-  String get bookshelf_source_global_hint => '来源显示沿用全局设置。';
 
   @override
   String get bookshelf_select_entries => '选择作品';
@@ -4337,19 +3630,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bookshelf_search_options => '搜索选项';
 
   @override
-  String get bookshelf_empty_hint => '从来源收藏作品，或导入本地文件。';
-
-  @override
-  String get bookshelf_no_match_hint => '试试其他关键词，或调整当前筛选。';
-
-  @override
   String get bookshelf_clear_query => '清空关键词';
 
   @override
   String get bookshelf_view_selection => '查看所选作品';
-
-  @override
-  String get bookshelf_import_canceled_hint => '取消文件选择后，可继续重新选择。';
 
   @override
   String get bookshelf_browse_sources => '浏览来源';
@@ -4373,13 +3657,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nodelane_sign_in => '登录 NodeLane';
 
   @override
-  String get nodelane_account_intro => '查看账号、订阅和翻译额度';
-
-  @override
   String get nodelane_login_action => '前往登录';
-
-  @override
-  String get nodelane_login_browser => '通过系统浏览器登录后返回应用';
 
   @override
   String get nodelane_account_id => '账号 ID';
@@ -4524,9 +3802,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_more_tools => '更多工具';
 
   @override
-  String get settings_more_tools_hint => '分类、统计、日历';
-
-  @override
   String get settings_appearance_interface => '外观与界面';
 
   @override
@@ -4553,9 +3828,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings_translation_scope => '用于阅读器和网页翻译';
 
   @override
-  String get settings_immediate_choice => '选择后立即生效';
-
-  @override
   String get settings_translation_init_error => '暂时无法读取翻译设置，请重新启动应用后再试。';
 
   @override
@@ -4569,9 +3841,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settings_translation_cache => '译图缓存';
-
-  @override
-  String get settings_translation_cache_hint => '保留翻译记录，需要时重新读取译图';
 
   @override
   String get settings_cache_clear => '清理';
@@ -4606,25 +3875,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboarding_choose_one => '至少选择一种';
 
   @override
-  String get onboarding_restore_hint => '从已有备份恢复书库';
-
-  @override
-  String get onboarding_browse_hint => '从支持的网站找到作品';
-
-  @override
   String get onboarding_import_folder => '导入本地文件夹';
 
   @override
-  String get onboarding_import_folder_hint => '读取设备中的漫画、小说和动画';
-
-  @override
   String get onboarding_third_party => '添加第三方来源库';
-
-  @override
-  String get onboarding_third_party_hint => '已有来源库地址时使用';
-
-  @override
-  String get onboarding_repository_hint => '输入来源库提供的地址。';
 
   @override
   String get onboarding_repository_address => '地址';
@@ -4649,9 +3903,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notice_backup_created => '备份已创建';
-
-  @override
-  String get notice_backup_ready => '可将备份文件保存到其他位置。';
 
   @override
   String get notice_backup_restored => '备份已恢复';
@@ -4723,9 +3974,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '填写兼容 Wyzie 的完整 HTTPS 搜索地址，包含路径（如 /search）。服务需要鉴权时，再填写它的访问令牌。';
 
   @override
-  String get subtitle_service_off_hint => '在线字幕搜索已关闭，仍可使用内嵌字幕、片源字幕和本地字幕。';
-
-  @override
   String get subtitle_setup_required => '请先配置字幕服务，再搜索字幕。';
 
   @override
@@ -4765,9 +4013,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reader_loading_pages => '正在获取本话图片…';
 
   @override
-  String get reader_loading_pages_hint => '加载完成后自动进入阅读';
-
-  @override
   String get reader_loading_failed => '暂时无法加载';
 
   @override
@@ -4795,25 +4040,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reader_image_loading => '正在加载图片…';
 
   @override
-  String get reader_image_failure_hint => '其他页面仍可继续阅读';
-
-  @override
   String get comic_paged => '翻页';
 
   @override
   String get comic_scroll => '连续下滑';
 
   @override
-  String get comic_book_scope => '仅本书生效 · 修改即保存';
-
-  @override
   String get comic_defaults_title => '默认与操作习惯';
-
-  @override
-  String get comic_defaults_hint => '默认值用于尚未单独设置的书籍选项。';
-
-  @override
-  String get comic_habits_hint => '以下习惯对所有漫画生效。';
 
   @override
   String get comic_turn => '滑向下一页';
@@ -4846,9 +4079,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get comic_auto => '自动';
 
   @override
-  String get comic_layout_hint => '自动根据可用宽度显示单页或双页。';
-
-  @override
   String get comic_width => '内容宽度';
 
   @override
@@ -4873,9 +4103,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get comic_image_title => '画面微调';
 
   @override
-  String get comic_image_hint => '裁边与色调仅作用于本书。';
-
-  @override
   String get comic_wide => '横幅页处理';
 
   @override
@@ -4886,9 +4113,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get comic_rotate => '旋转适配';
-
-  @override
-  String get comic_wide_hint => '拆页顺序跟随翻页方向，仅用于单页翻阅。';
 
   @override
   String get comic_cover => '每章首页单独显示';
@@ -4921,9 +4145,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get comic_tap => '轻点翻页';
 
   @override
-  String get comic_tap_hint => '轻点两侧翻页，中间显示工具栏；下滑阅读时轻点上、下方移动。';
-
-  @override
   String get comic_scroll_start => '开始自动下滑';
 
   @override
@@ -4933,16 +4154,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get comic_scroll_speed => '下滑速度';
 
   @override
-  String get comic_scroll_hint => '关闭面板后开始；离开应用会暂停。';
-
-  @override
   String get comic_save_failed => '保存失败，请重试。';
 
   @override
   String get comic_reading => '阅读';
-
-  @override
-  String get comic_chapter_habits_hint => '章节列表操作习惯对所有书籍生效。';
 
   @override
   String get browser_title => '浏览器';
@@ -4951,22 +4166,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get translation_image_display => '图片显示';
 
   @override
-  String get translation_display_hint => '译图优先显示已有结果，暂无译图时保留原图。';
-
-  @override
   String get translation_sign_in_required => '登录后开启翻译';
 
   @override
-  String get translation_sign_in_hint => '登录后切换译图，即可自动翻译';
-
-  @override
   String get translation_automatic => '自动翻译';
-
-  @override
-  String get translation_original_hint => '当前显示原图，切到译图后自动翻译';
-
-  @override
-  String get translation_window_hint => '仅在显示译图时处理当前及后续图片';
 
   @override
   String get translation_channel => '翻译渠道';
@@ -4989,22 +4192,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get translation_image_actions_hint => '长按图片打开更多操作，可重新翻译单张图片。';
-
-  @override
   String get translation_title => '漫画翻译';
-
-  @override
-  String get translation_system_sign_in => '通过系统浏览器登录';
 
   @override
   String get translation_target_language => '目标语言';
 
   @override
   String get translation_clear_cache => '清理译图缓存';
-
-  @override
-  String get translation_cache_hint => '保留翻译记录，需要时重新读取结果';
 
   @override
   String get translation_saved_read_failed => '已有译图读取失败';
@@ -5154,9 +4348,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get manage => '管理';
 
   @override
-  String get translation_settings_hint => '自动翻译、目标语言与渠道';
-
-  @override
   String get translation_show_original => '点击切换为原图';
 
   @override
@@ -5181,11 +4372,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source_website_info => '网站说明';
 
   @override
-  String source_saved_search_title(String title) {
-    return '$title · 点击立即搜索';
-  }
-
-  @override
   String get action_done => '完成';
 
   @override
@@ -5195,12 +4381,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get source_no_saved_searches => '还没有保存的搜索';
-
-  @override
-  String get source_save_search_hint => '输入关键词搜索后，可从网站操作中保存。';
-
-  @override
-  String get source_saved_search_scope => '仅保存当前网站的关键词。';
 
   @override
   String get source_search_here => '搜索本站作品';
@@ -5219,9 +4399,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get source_no_titles => '没有找到相关作品';
-
-  @override
-  String get source_no_titles_hint => '调整关键词或筛选条件，也可返回热门浏览。';
 
   @override
   String get source_load_more_failed => '加载更多失败，请重试。';
@@ -5296,9 +4473,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get repository_refresh => '刷新目录';
 
   @override
-  String get repository_manage_hint => '管理第三方来源的获取地址';
-
-  @override
   String get repository_invalid_address => '请输入有效的 http 或 https 网址';
 
   @override
@@ -5328,13 +4502,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get repository_choose_sources_hint => '添加后可选择需要的来源。';
-
-  @override
   String get search_scope => '搜索范围';
-
-  @override
-  String get search_scope_hint => '选择本次要搜索的网站';
 
   @override
   String search_websites_action(int count) {
@@ -5359,22 +4527,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get search_select_results => '选中当前结果';
 
   @override
-  String get search_no_websites_hint => '没有匹配的网站，试试其他名称或语言。';
-
-  @override
   String get search_select_website_hint => '至少选择一个网站后即可搜索。';
 
   @override
   String get search_start_title => '输入关键词搜索作品';
 
   @override
-  String get search_start_hint => '一次搜索多个网站，只展示找到的作品。';
-
-  @override
   String get search_empty_scope => '当前范围没有可搜索的网站';
-
-  @override
-  String get search_empty_scope_hint => '切换到全部网站，或重新选择参与搜索的网站。';
 
   @override
   String search_result_count(int count) {
@@ -5383,9 +4542,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get search_titles => '搜作品';
-
-  @override
-  String get search_actions => '搜索操作';
 
   @override
   String get search_details => '搜索详情';
@@ -5431,13 +4587,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get search_no_matching_titles => '未找到相关作品';
 
   @override
-  String get search_results_appear_hint => '找到后会直接显示在这里。';
-
-  @override
-  String get search_failed_websites_hint => '有网站未能完成搜索，可在搜索详情中重试。';
-
-  @override
-  String get search_change_keywords_hint => '试试更短的关键词，或扩大搜索范围。';
+  String get search_failed_websites_hint => '有网站未能完成搜索。';
 
   @override
   String get search_view_details => '查看搜索详情';
@@ -5454,9 +4604,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String search_completed_count(int completed, int total) {
     return '已完成 $completed / $total';
   }
-
-  @override
-  String get search_retry_website_hint => '失败网站可单独重试';
 
   @override
   String source_selected_count(int count) {
@@ -5500,9 +4647,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get source_open => '进入';
-
-  @override
-  String get source_metadata_hint => '资料由来源目录提供，分类描述网站覆盖范围。';
 
   @override
   String get source_region => '地区';
@@ -5574,9 +4718,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source_all_languages => '全部语言';
 
   @override
-  String get action_apply => '应用';
-
-  @override
   String get source_load_retry => '网站暂时无法加载，请重试。';
 
   @override
@@ -5612,9 +4753,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get source_no_websites => '暂无可用网站';
-
-  @override
-  String get source_search_installed_hint => '在已安装来源中搜索作品';
 
   @override
   String get source_global_search => '跨来源搜索';
@@ -5661,7 +4799,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get source_custom_websites => '自选网站';
 
   @override
-  String get tv_hidden_library_hint => '所有作品都在隐藏分类中。\n在「全部」上长按确认键可取消隐藏。';
+  String get tv_hidden_library_hint => '所有作品都在隐藏分类中。';
 
   @override
   String get tv_no_matching_anime => '没有匹配的动画';
@@ -5672,22 +4810,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get tv_filtered_empty_hint => '没有符合当前筛选条件的动画。\n可通过搜索旁的按钮调整筛选。';
-
-  @override
   String get tv_new_episodes => '最新剧集';
 
   @override
   String get tv_recently_added => '最近添加';
 
   @override
-  String get tv_empty_category_hint => '此分类还没有动画。\n可在作品详情页添加。';
+  String get tv_empty_category_hint => '此分类还没有动画。';
 
   @override
   String get tv_empty_library => '动画书库为空';
-
-  @override
-  String get tv_empty_library_hint => '从浏览页面添加动画，即可在此查看';
 
   @override
   String get tv_browse_anime => '浏览动画';
@@ -5699,7 +4831,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String tv_category_hidden(String category) {
-    return '已隐藏「$category」· 在「全部」上长按确认键可取消隐藏';
+    return '已隐藏「$category」';
   }
 
   @override
@@ -5715,19 +4847,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudflare_proxy_optional => 'FlareSolverr / Byparr 地址（可选）';
 
   @override
-  String get tv_home_layout_hint => '按继续观看、最新剧集和分类分行显示动画主页';
-
-  @override
-  String get tv_hide_libraries_hint => '隐藏漫画和小说书库（电视端默认开启）';
-
-  @override
-  String get anime_only_hint => '在整个应用中隐藏漫画和小说，关闭后显示所有内容。';
-
-  @override
   String get audio_auto_safe => '自动（安全）';
-
-  @override
-  String get tv_player_hint => '开启时使用电视专用播放器；关闭时使用桌面播放器。';
 
   @override
   String get release_open_failed => '无法打开发布页面';
@@ -5954,9 +5074,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get translation_preparing_ellipsis => '准备翻译…';
 
   @override
-  String get translation_checking_original => '核对原图…';
-
-  @override
   String get translation_submitting => '正在提交…';
 
   @override
@@ -6093,9 +5210,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get memory_reset_hint => '在设置中关闭后重新开启即可重置';
-
-  @override
   String get action_hide => '隐藏';
 
   @override
@@ -6128,13 +5242,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_clip_here => '夾在這裡';
 
   @override
-  String get browser_clip_saved => '已夾好，可從「繼續讀」回來';
+  String get browser_clip_saved => '已儲存閱讀位置';
 
   @override
   String get browser_continue => '繼續讀';
-
-  @override
-  String get browser_continue_hint => '讀過的章節會自動記住進度，不必加入書籤。';
 
   @override
   String get browser_insert_suggestion => '填入搜尋建議';
@@ -6182,9 +5293,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get feedback_app_hint => '遇到問題或有改進建議？無需登入，直接告訴我們。';
 
   @override
-  String get feedback_source_hint => '希望支援哪個網站？無需登入即可提交申請。';
-
-  @override
   String get feedback_site_name => '網站名稱';
 
   @override
@@ -6229,9 +5337,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_search_hint => '搜尋或輸入網址';
 
   @override
-  String get browser_start_hint => '從這裡，發現新的精彩。';
-
-  @override
   String get browser_search_engine => '搜尋引擎';
 
   @override
@@ -6251,12 +5356,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get browser_library_empty => '這裡還是空的';
-
-  @override
-  String get browser_bookmarks_hint => '在網頁選單中加入書籤，即可在這裡找到它。';
-
-  @override
-  String get browser_history_hint => '造訪過的網頁會留在這裡，關閉分頁後也能找回。';
 
   @override
   String get browser_recent => '最近造訪';
@@ -6291,9 +5390,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get app_update_details_hint => '檢視更新說明與安裝方式';
-
-  @override
   String get app_update_download => '下載更新';
 
   @override
@@ -6305,9 +5401,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String app_update_full(String size) {
     return '下載完整安裝包（$size）';
   }
-
-  @override
-  String get app_update_download_hint => '下載完成後，按提示安裝更新。';
 
   @override
   String get bookshelf_all => '全部';
@@ -6334,9 +5427,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings_search_empty => '未找到相關設定';
 
   @override
-  String get search_empty_hint => '試試其他關鍵詞，或清除搜尋檢視全部內容。';
-
-  @override
   String get search_clear => '清除搜尋';
 
   @override
@@ -6350,9 +5440,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get app_update_later => '稍後';
-
-  @override
-  String get app_update_external_hint => '在瀏覽器中開啟更新連結';
 
   @override
   String get app_update_failed => '暫時無法檢查更新，請重試。';
@@ -6473,11 +5560,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get compression_level => '壓縮級別';
 
   @override
-  String compression_info(Object level) {
-    return '壓縮率越高，備份檔案佔用的空間越小，但會消耗更多的CPU。預設值：$level';
-  }
-
-  @override
   String get comfortable_grid => '舒適網格';
 
   @override
@@ -6532,9 +5614,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get remove_everything => '刪除所有';
 
   @override
-  String get remove_everything_msg => '你確定嗎？所有歷史將丟失';
-
-  @override
   String get remove_all_update_msg => '你確定嗎？所有更新將被清除';
 
   @override
@@ -6545,9 +5624,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get remove => '移除';
-
-  @override
-  String get remove_history_msg => '這將移除此章節的閱讀日期。你確定嗎？';
 
   @override
   String get last_used => '最後使用';
@@ -6590,17 +5666,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get mass_migration_installed => '已安裝';
-
-  @override
-  String mass_migration_items_ready_for_review(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count個專案準備好複檢',
-      one: '1個專案準備好複檢',
-    );
-    return '$_temp0';
-  }
 
   @override
   String mass_migration_item_count(int count) {
@@ -6812,13 +5877,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get incognito_mode => '隱身模式';
 
   @override
-  String get incognito_mode_description => '暫停閱讀歷史';
-
-  @override
   String get downloaded_only => '僅已下載';
-
-  @override
-  String get downloaded_only_description => '僅顯示庫中已下載的條目';
 
   @override
   String get download_queue => '下載佇列';
@@ -6840,12 +5899,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get no_downloads => '無下載';
-
-  @override
-  String get edit_categories => '編輯類別';
-
-  @override
-  String get edit_categories_description => '你還沒有類別。點選加號按鈕建立一個來組織你的圖書館';
 
   @override
   String get add => '新增';
@@ -6883,9 +5936,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get general => '通用';
-
-  @override
-  String get general_subtitle => '應用語言';
 
   @override
   String get app_language => '應用語言';
@@ -6948,9 +5998,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reading_mode_vertical => '垂直';
 
   @override
-  String get reading_mode_horizontal => '水平';
-
-  @override
   String get reading_mode_left_to_right => '從左到右';
 
   @override
@@ -6963,28 +6010,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reading_mode_webtoon => '網路漫畫';
 
   @override
-  String get double_tap_animation_speed => '雙擊動畫速度';
-
-  @override
   String get normal => '正常';
 
   @override
   String get fast => '快';
 
   @override
-  String get no_animation => '無動畫';
-
-  @override
-  String get animate_page_transitions => '動畫頁面過渡';
-
-  @override
   String get crop_borders => '裁剪邊框';
 
   @override
   String get downloads => '下載';
-
-  @override
-  String get downloads_subtitle => '下載設定';
 
   @override
   String get download_location => '下載位置';
@@ -7081,18 +6116,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get unknown => '未知';
 
   @override
-  String get empty_placeholder => '空';
-
-  @override
   String get error => '錯誤';
 
   @override
   String error_with_message(Object error) {
     return '錯誤：$error';
   }
-
-  @override
-  String get no_pages_available => '錯誤：無可用頁面';
 
   @override
   String get set_categories => '設定分類';
@@ -7108,9 +6137,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get reset => '重置';
-
-  @override
-  String get by_source => '按來源';
 
   @override
   String get by_chapter_number => '按章節號';
@@ -7129,9 +6155,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get developer_mode => '開發者模式';
-
-  @override
-  String get developer_mode_subtitle => '顯示擴充套件開發者工具（建立擴充套件、編輯程式碼）';
 
   @override
   String get choose_extension_language => '選擇擴充套件語言';
@@ -7289,9 +6312,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get no_more_chapter => '沒有更多章節';
-
-  @override
   String get no_result => '無結果';
 
   @override
@@ -7329,12 +6349,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get split_epub_chapters => '分章節匯入';
-
-  @override
-  String get split_epub_chapters_description => '將每個EPUB章節作為單獨條目匯入';
-
-  @override
-  String get nothing_read_recently => '最近未閱讀';
 
   @override
   String get status => '狀態';
@@ -7388,9 +6402,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get sync_logged => '登入成功';
-
-  @override
-  String get syncing_subtitle => '填寫你使用的同步伺服器地址，透過瀏覽器登入後，在裝置間同步閱讀進度。';
 
   @override
   String get sync_service => '自建同步服務';
@@ -7491,9 +6502,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sync_auto_12_hours => '每12小時';
 
   @override
-  String get server_error => '伺服器錯誤！';
-
-  @override
   String get dialog_confirm => '確認';
 
   @override
@@ -7503,19 +6511,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reorder_navigation => '自定義導航';
 
   @override
-  String get reorder_navigation_description => '根據需要重新排序和切換每個導航。';
-
-  @override
   String get floating_navigation_bar => '懸浮導航欄';
 
   @override
-  String get floating_navigation_bar_description => '使用懸浮膠囊式導航欄。';
-
-  @override
   String get full_screen_player => '使用全屏';
-
-  @override
-  String get full_screen_player_info => '播放影片時自動使用全屏。';
 
   @override
   String episode_progress(Object n) {
@@ -7592,9 +6591,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get searching_for_updates => '正在搜尋更新...';
 
   @override
-  String get no_new_updates_available => '沒有新的更新可用';
-
-  @override
   String get uninstall => '解除安裝';
 
   @override
@@ -7611,10 +6607,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get show_nav_double_tap_tooltip => '顯示雙擊搜尋提示';
 
   @override
-  String get show_nav_double_tap_tooltip_subtitle =>
-      '在漫畫/動畫/小說導航欄上顯示提示，說明雙擊可開啟全域性搜尋。';
-
-  @override
   String already_in_library(Object source, Object title) {
     return '\"$title\" 已透過 $source 新增到您的書架中。';
   }
@@ -7623,38 +6615,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get add_anyway => '仍然新增';
 
   @override
-  String get langauage => '語言';
-
-  @override
   String get extension_detail => '擴充套件詳情';
 
   @override
-  String get scale_type => '縮放型別';
-
-  @override
   String get scale_type_fit_screen => '適合螢幕';
-
-  @override
-  String get scale_type_stretch => '拉伸';
-
-  @override
-  String get scale_type_fit_width => '適合寬度';
-
-  @override
-  String get scale_type_fit_height => '適合高度';
-
-  @override
-  String get scale_type_original_size => '原始大小';
-
-  @override
-  String get scale_type_smart_fit => '智慧適配';
-
-  @override
-  String get page_preload_amount => '頁面預載入量';
-
-  @override
-  String get page_preload_amount_subtitle =>
-      '閱讀時預載入的頁面數量。更高的值將導致更順暢的閱讀體驗，但會增加快取和網路使用。';
 
   @override
   String get image_loading_error => '無法載入此圖片';
@@ -7675,20 +6639,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get auto_extensions_updates => '自動更新第三方擴充套件';
 
   @override
-  String get auto_extensions_updates_subtitle =>
-      '自動更新已安裝的第三方擴充套件。官方外掛始終自動安裝和更新。';
-
-  @override
   String get check_for_app_updates => '啟動時檢查應用更新';
 
   @override
   String get reading_mode => '閱讀模式';
-
-  @override
-  String get custom_filter => '自定義篩選';
-
-  @override
-  String get background_color => '背景顏色';
 
   @override
   String get white => '白色';
@@ -7698,12 +6652,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get grey => '灰色';
-
-  @override
-  String get automaic => '自動';
-
-  @override
-  String get preferred_domain => '首選域';
 
   @override
   String get load_more => '載入更多';
@@ -7746,19 +6694,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get create_backup => '建立備份';
 
   @override
-  String get create_backup_dialog_title => '你想要備份什麼？';
-
-  @override
-  String get create_backup_subtitle => '可用於恢復當前圖書館';
-
-  @override
   String get restore_backup => '恢復備份';
 
   @override
   String get encrypt_backups => '加密備份';
-
-  @override
-  String get encrypt_backups_info => '使用 AES 加密和密碼保護備份檔案';
 
   @override
   String get no_secure_storage => '未找到安全儲存';
@@ -7785,9 +6724,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get password_required_to_restore => '需要密碼才能恢復此備份。';
 
   @override
-  String get restore_backup_subtitle => '從備份檔案恢復圖書館';
-
-  @override
   String get automatic_backups => '自動備份';
 
   @override
@@ -7795,15 +6731,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get backup_location => '備份位置';
-
-  @override
-  String get backup_options => '備份選項';
-
-  @override
-  String get backup_options_dialog_title => '你想要備份什麼？';
-
-  @override
-  String get backup_options_subtitle => '包含在備份檔案中的資訊';
 
   @override
   String get backup_and_restore_warning_info => '你應該在其他地方儲存備份副本';
@@ -7870,9 +6797,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get services => '服務';
 
   @override
-  String get tracking_warning_info => '單向同步以更新跟蹤服務中的章節進度。從它們的跟蹤按鈕為個別條目設定跟蹤。';
-
-  @override
   String get use_page_tap_zones => '使用頁面點選區域';
 
   @override
@@ -7898,9 +6822,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get video_audio => '音訊';
-
-  @override
-  String get video_audio_info => '首選語言、音調校正、音訊通道';
 
   @override
   String get player => '播放器';
@@ -8006,51 +6927,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get include_subtitles => '包含字幕';
 
   @override
-  String get blend_mode_default => '預設';
-
-  @override
-  String get blend_mode_multiply => '正片疊底';
-
-  @override
-  String get blend_mode_screen => '濾色';
-
-  @override
-  String get blend_mode_overlay => '疊加';
-
-  @override
-  String get blend_mode_colorDodge => '顏色減淡';
-
-  @override
-  String get blend_mode_lighten => '變亮';
-
-  @override
-  String get blend_mode_colorBurn => '顏色加深';
-
-  @override
-  String get blend_mode_darken => '變暗';
-
-  @override
-  String get blend_mode_difference => '差異';
-
-  @override
-  String get blend_mode_saturation => '飽和度';
-
-  @override
-  String get blend_mode_softLight => '柔光';
-
-  @override
-  String get blend_mode_plus => '加';
-
-  @override
-  String get blend_mode_exclusion => '排除';
-
-  @override
-  String get custom_color_filter => '自定義顏色濾鏡';
-
-  @override
-  String get color_filter_blend_mode => '顏色濾鏡混合模式';
-
-  @override
   String get enable_all => '啟用全部';
 
   @override
@@ -8095,16 +6971,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get use_libass => '啟用 libass';
 
   @override
-  String get use_libass_info => '使用基於 libass 的字幕渲染作為本地後端。';
-
-  @override
-  String get libass_not_disable_message => '在播放器設定中禁用 `use libass` 以便自定義字幕。';
-
-  @override
   String get override_ass_subtitles => '覆蓋 ASS 字幕樣式';
-
-  @override
-  String get override_ass_subtitles_info => '將自定義樣式應用到 ASS/SSA 字幕';
 
   @override
   String get torrent_stream => '種子流';
@@ -8126,13 +6993,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get advanced_info => 'mpv 配置';
-
-  @override
-  String get use_native_http_client => '使用本地 HTTP 客戶端';
-
-  @override
-  String get use_native_http_client_info =>
-      '它自動支援平臺特性，如 VPN，支援更多 HTTP 特性，如 HTTP/3 和自定義重定向處理';
 
   @override
   String n_hour_ago(Object hour) {
@@ -8171,9 +7031,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get data_and_storage => '資料與儲存';
 
   @override
-  String get download_location_info => '用於章節下載';
-
-  @override
   String get storage => '儲存';
 
   @override
@@ -8202,9 +7059,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get recommendations => '推薦';
-
-  @override
-  String get recommendations_similar => '相似';
 
   @override
   String get recommendations_weights => '推薦權重';
@@ -8329,9 +7183,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get enable_hardware_accel => '硬體加速';
 
   @override
-  String get enable_hardware_accel_info => '如果遇到錯誤或崩潰，請開啟/關閉';
-
-  @override
   String get track_library_navigate => '轉到現有本地條目';
 
   @override
@@ -8371,9 +7222,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get enable_mpv => '啟用 mpv 著色器/指令碼';
 
   @override
-  String get mpv_info => '支援 mpv/scripts/ 下的 .js 指令碼';
-
-  @override
   String get mpv_redownload => '重新下載 mpv 配置檔案';
 
   @override
@@ -8384,9 +7232,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get custom_buttons => '自定義按鈕';
-
-  @override
-  String get custom_buttons_info => '使用自定義按鈕執行 lua 程式碼';
 
   @override
   String get custom_buttons_edit => '編輯自定義按鈕';
@@ -8431,22 +7276,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get decoder => '解碼器';
 
   @override
-  String get decoder_info => '硬體解碼、畫素格式、去色帶';
-
-  @override
   String get enable_gpu_next => '啟用 gpu-next（僅限 Android）';
-
-  @override
-  String get enable_gpu_next_info => '新的影片渲染引擎';
 
   @override
   String get debanding => '去色帶';
 
   @override
   String get use_yuv420p => '使用 YUV420P 畫素格式';
-
-  @override
-  String get use_yuv420p_info => '可以修復某些影片編解碼器上的黑屏，也可以以質量為代價提高效能';
 
   @override
   String get audio_preferred_languages => '首選語言';
@@ -8459,9 +7295,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get enable_audio_pitch_correction => '啟用音訊音調校正';
 
   @override
-  String get enable_audio_pitch_correction_info => '防止音訊在較快速度時變高音，在較慢速度時變低音';
-
-  @override
   String get audio_channels => '音訊通道';
 
   @override
@@ -8469,9 +7302,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get internal_player => '內部播放器';
-
-  @override
-  String get internal_player_info => '進度、控制、方向';
 
   @override
   String get subtitle_delay_text => '字幕延遲';
@@ -8575,9 +7405,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sequels => '續集';
 
   @override
-  String get recommendations_similarity => '相似度：';
-
-  @override
   String recommendation_rating_accessibility(String rating) {
     return '評分 $rating';
   }
@@ -8595,18 +7422,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rescan_local_folder => '立即重新掃描所有本地資料夾';
 
   @override
-  String get default_download_destination => '預設下載位置';
-
-  @override
-  String get ask_download_destination => '每次下載前詢問位置';
-
-  @override
-  String get ask_download_destination_desc => '每次開始下載時選擇本地資料夾。';
-
-  @override
-  String get select_download_destination => '選擇下載位置';
-
-  @override
   String get clear_local_library => '清空本地書庫';
 
   @override
@@ -8617,9 +7432,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get custom => '自定義';
-
-  @override
-  String get no_local_folder_available_for_downloads => '沒有可用於下載的本地資料夾';
 
   @override
   String failed_to_create_cbz(Object error) {
@@ -8690,14 +7502,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String could_not_launch_url(Object url) {
-    return '無法開啟 $url';
-  }
-
-  @override
-  String get text_size => '文字大小：';
-
-  @override
   String get text_align => '文字對齊';
 
   @override
@@ -8721,9 +7525,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get forceLandscapeMode => '強制橫屏模式';
 
   @override
-  String get forceLandscapeModeSubtitle => '強制播放器使用橫屏方向。';
-
-  @override
   String get dns_over_https => 'DNS-over-HTTPS (DoH)';
 
   @override
@@ -8737,9 +7538,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get app_locked => '應用已鎖定';
-
-  @override
-  String get auth_to_continue => '驗證以繼續';
 
   @override
   String get authenticating => '正在驗證...';
@@ -8767,9 +7565,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '此裝置暫不可使用生物識別或裝置密碼驗證';
 
   @override
-  String get app_lock_description => '啟用應用鎖後，每次開啟應用或從後臺返回時都會要求您進行身份驗證。';
-
-  @override
   String get checking_device_authentication => '正在檢查裝置驗證方式…';
 
   @override
@@ -8777,12 +7572,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get keep_screen_on => '保持螢幕開啟';
-
-  @override
-  String get webtoon_side_padding => 'Webtoon側邊填充';
-
-  @override
-  String get show_page_gaps => '顯示頁面間隙';
 
   @override
   String get invert_colors => '反轉顏色';
@@ -8800,28 +7589,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saturation => '飽和度';
 
   @override
-  String get navigation_layout => '導航佈局';
-
-  @override
-  String get nav_layout_default => '預設';
-
-  @override
-  String get nav_layout_l_shaped => 'L形';
-
-  @override
-  String get nav_layout_kindle => 'Kindle';
-
-  @override
-  String get nav_layout_edge => '邊緣';
-
-  @override
-  String get nav_layout_right_and_left => '右和左';
-
-  @override
   String get nav_layout_disabled => '已禁用';
-
-  @override
-  String get color_enhancements => '色彩增強';
 
   @override
   String get total => '總計';
@@ -8851,10 +7619,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get android_proxy_server_mihon => 'Android 代理伺服器（Mihon）';
-
-  @override
-  String get android_proxy_server_mihon_description =>
-      '下載並配置使用 Mihon 擴充套件所需的代理伺服器。';
 
   @override
   String get mihon_proxy_server => 'Mihon 代理伺服器';
@@ -8911,10 +7675,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get latest_version => '最新版本';
-
-  @override
-  String get m_extension_server_description =>
-      '當您需要獨立的 Android 裝置代理時，請使用 M-Extension-Server。在此設定代理地址，並從 GitHub 下載 APK。';
 
   @override
   String get set_proxy_address => '設定代理地址';
@@ -8980,9 +7740,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get zero_interpreter => 'Zero 直譯器';
 
   @override
-  String get zero_interpreter_description => '自動或手動控制 Zero 直譯器服務。';
-
-  @override
   String get start_server_on_launch => '啟動時開啟服務';
 
   @override
@@ -9016,9 +7773,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tts_language => '語言';
 
   @override
-  String get tts_voice => '語音';
-
-  @override
   String get tts_stop => '停止';
 
   @override
@@ -9039,52 +7793,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get tts_settings => 'TTS設定';
-
-  @override
   String get tts_default => '預設';
 
   @override
-  String get webtoon_disable_zoom_out => 'Webtoon禁用縮小';
-
-  @override
-  String get webtoon_double_tap_zoom_enabled => 'Webtoon雙擊縮放';
-
-  @override
-  String get navigate_to_pan => '導航前移動已放大影象';
-
-  @override
-  String get navigate_to_pan_subtitle => '翻頁前先移動放大的影象';
-
-  @override
-  String get split_wide_pages => '拆分雙頁';
-
-  @override
-  String get dual_page_invert => '反轉拆分的半頁';
-
-  @override
-  String get dual_page_rotate_to_fit => '旋轉以適應';
-
-  @override
-  String get dual_page_rotate_to_fit_invert => '反轉旋轉方向';
-
-  @override
-  String get double_page_single_first_page => '首頁單頁顯示';
-
-  @override
-  String get double_page_single_first_page_subtitle => '在雙頁模式下單頁顯示第一頁（封面）';
-
-  @override
   String get double_page_auto => '自動雙頁';
-
-  @override
-  String get double_page_auto_subtitle => '橫屏時自動切換到雙頁模式';
-
-  @override
-  String get landscape_zoom => '橫屏自動縮放';
-
-  @override
-  String get zoom_start_position => '縮放起始位置';
 
   @override
   String get zoom_start_left => '左';
@@ -9096,106 +7808,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get zoom_start_center => '中';
 
   @override
-  String get automatic_background => '自動背景';
-
-  @override
-  String get tapping_inversion => '點選反轉';
-
-  @override
-  String get tapping_inversion_none => '無';
-
-  @override
-  String get tapping_inversion_horizontal => '水平';
-
-  @override
-  String get tapping_inversion_vertical => '垂直';
-
-  @override
-  String get tapping_inversion_both => '兩者';
-
-  @override
-  String get flash_on_page_change => '翻頁時閃爍';
-
-  @override
-  String get flash_on_page_change_subtitle => 'AMOLED 防燒屏輔助';
-
-  @override
-  String get flash_color => '閃爍顏色';
-
-  @override
-  String get flash_color_black => '黑色';
-
-  @override
-  String get flash_color_white => '白色';
-
-  @override
-  String get flash_color_white_black => '白與黑';
-
-  @override
-  String get flash_interval_label => '閃爍間隔';
-
-  @override
-  String flash_interval_value(String n) {
-    return '$n頁';
-  }
-
-  @override
-  String flash_interval(String n) {
-    return '閃爍間隔：$n頁';
-  }
-
-  @override
-  String get flash_duration_label => '閃爍持續時間';
-
-  @override
-  String flash_duration_value(String n) {
-    return '$n毫秒';
-  }
-
-  @override
-  String flash_duration(String n) {
-    return '閃爍持續時間：$n毫秒';
-  }
-
-  @override
-  String get show_navigation_overlay_on_start => '啟動時顯示導航浮層';
-
-  @override
-  String get reader_hide_threshold => '隱藏閱讀器介面的閾值';
-
-  @override
-  String get reader_hide_threshold_highest => '最高 (5 px)';
-
-  @override
-  String get reader_hide_threshold_high => '高 (13 px)';
-
-  @override
-  String get reader_hide_threshold_low => '低 (31 px)';
-
-  @override
-  String get reader_hide_threshold_lowest => '最低 (47 px)';
-
-  @override
-  String get error_no_pages_available => '錯誤：無可用頁面';
-
-  @override
   String get app_ui_scale => '介面縮放';
-
-  @override
-  String get app_ui_scale_subtitle => '根據你的螢幕和觀看距離，使介面更大或更小。';
 
   @override
   String get allow_concurrent_downloads => '允許併發下載';
 
   @override
-  String get allow_concurrent_downloads_subtitle =>
-      '同時從不同來源下載。單個來源仍然一次下載一個章節，因此不會過載。關閉後，可在任何地方一次下載一個。';
-
-  @override
   String get download_delay => '下載延遲';
-
-  @override
-  String get download_delay_subtitle => '關閉。在章節之間新增隨機抖動的等待，以便更溫柔地對待來源。';
 
   @override
   String get save_search => '儲存搜尋';
@@ -9207,9 +7826,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get enter_search_to_save_first => '先輸入搜尋進行儲存';
 
   @override
-  String get no_saved_searches => '此來源還沒有儲存的搜尋。\n執行搜尋，然後選擇\"儲存搜尋\"。';
-
-  @override
   String get source => '來源';
 
   @override
@@ -9217,16 +7833,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get startup_failed => 'NodeLane漫譯 無法完成啟動';
-
-  @override
-  String sources_with_no_results(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count 個圖源無結果',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get import_mode_title => '如何匯入此備份？';
@@ -9380,9 +7986,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get merge_manga_title => '合併重複漫畫';
 
   @override
-  String get merge_manga_subtitle => '查詢同圖源下標題相同的漫畫並進行合併。';
-
-  @override
   String get merge_manga_none_found => '未找到重複漫畫。';
 
   @override
@@ -9429,17 +8032,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get memory_overlay => '顯示記憶體佔用';
 
   @override
-  String get memory_overlay_subtitle =>
-      '實時顯示應用佔用的記憶體。可在滾動書架或閱讀章節時實時觀察裝置上的記憶體變化。';
-
-  @override
   String get beta => 'Beta';
 
   @override
   String get error_reports => '錯誤報告';
-
-  @override
-  String get error_reports_subtitle => '應用捕獲的錯誤及反饋入口';
 
   @override
   String get error_reports_empty => '執行正常，無錯誤記錄。';
@@ -9449,9 +8045,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get error_reports_report => '在 GitHub 上反饋';
-
-  @override
-  String get error_reports_banner => 'NodeLane漫譯 遇到了一個錯誤';
 
   @override
   String get error_reports_banner_action => '檢視';
@@ -9483,22 +8076,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get onboarding_title => '歡迎使用 NodeLane漫譯';
 
   @override
-  String get onboarding_libraries_body => '選擇您要閱讀和觀看的內容型別。';
-
-  @override
   String get onboarding_nav_title => '您的書庫';
-
-  @override
-  String get onboarding_nav_body => '可以為每種型別設定獨立標籤頁，或合併在一個“書庫”標籤頁中。';
 
   @override
   String get onboarding_nav_split => '獨立標籤頁';
 
   @override
   String get onboarding_nav_merged => '統一書庫標籤頁';
-
-  @override
-  String get onboarding_nav_inside => '點選“書庫”可在各型別間切換';
 
   @override
   String get onboarding_next => '下一步';
@@ -9516,9 +8100,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String onboarding_local_existing(Object count) {
     return '已設定 $count 個資料夾';
   }
-
-  @override
-  String get onboarding_local_any_type => '支援漫畫、動漫與輕小說。';
 
   @override
   String get onboarding_local_scanning => '正在掃描資料夾';
@@ -9544,9 +8125,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get onboarding_repo_title => '新增圖源';
 
   @override
-  String get onboarding_body => '新增倉庫即可瀏覽和安裝豐富的擴充套件外掛。';
-
-  @override
   String get onboarding_add => '新增倉庫';
 
   @override
@@ -9556,19 +8134,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get onboarding_continue => '繼續';
 
   @override
-  String get onboarding_later => '您可以稍後在“設定 > 瀏覽”中新增。';
-
-  @override
   String get onboarding_replay => '顯示歡迎介面';
 
   @override
-  String get onboarding_replay_subtitle => '重新開啟首次執行的引導設定介面。';
-
-  @override
   String get missing_source_check_title => '檢查缺失圖源';
-
-  @override
-  String get missing_source_check_subtitle => '查詢未安裝對應擴充套件的書庫條目。';
 
   @override
   String get missing_source_check_none_found => '書庫中所有條目的圖源均已安裝。';
@@ -9589,9 +8158,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get global_search_no_sources_hint => '請在“瀏覽”中新增倉庫並安裝相應的擴充套件外掛。';
-
-  @override
   String global_search_only_pinned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -9602,17 +8168,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get global_search_only_pinned_hint => '請固定某個來源，或在瀏覽設定中關閉“僅包含固定的來源”。';
-
-  @override
   String get global_search_all_nsfw => '該分類下的所有來源均被標記為 NSFW 並已被隱藏。';
 
   @override
-  String get global_search_all_nsfw_hint => '請在瀏覽設定中開啟 NSFW 來源後再進行搜尋。';
-
-  @override
-  String get missing_source_check_result_message =>
-      '這些條目關聯的圖源未安裝。點選可進行遷移或安裝對應擴充套件。';
+  String get missing_source_check_result_message => '這些條目關聯的圖源未安裝。';
 
   @override
   String get related_titles => '相關作品';
@@ -9645,9 +8204,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get auto_library_update => '書架自動更新';
 
   @override
-  String get auto_library_update_subtitle => '在應用啟動時檢查書架中所有作品的最新章節。';
-
-  @override
   String get auto_library_update_never => '從不';
 
   @override
@@ -9664,9 +8220,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get auto_library_update_wifi_only => '僅限 Wi-Fi';
-
-  @override
-  String get auto_library_update_wifi_only_subtitle => '使用移動資料時跳過計劃更新。';
 
   @override
   String get padding => '內邊距';
@@ -9816,16 +8369,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reader_page_layout => '頁面佈局';
 
   @override
-  String get reader_continuous_options => '連續閱讀';
-
-  @override
-  String get reader_default_mode_hint => '預設閱讀模式用於尚未在閱讀時單獨設定模式的漫畫。';
-
-  @override
   String get extension_service => '擴充套件服務';
-
-  @override
-  String get extension_service_description => '管理擴充套件執行服務與代理地址。';
 
   @override
   String get proxy_address => '代理地址';
@@ -9842,9 +8386,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String download_queue_count(int count) {
     return '$count 個章節';
   }
-
-  @override
-  String get download_queue_empty_hint => '從作品的章節列表新增下載';
 
   @override
   String get download_queue_order_hint => '拖動把手調整順序';
@@ -9880,14 +8421,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get cf_proxy_helper => 'FlareSolverr / Byparr 服務地址，留空關閉。';
 
   @override
-  String get mobile_navigation_description =>
-      '拖動調整順序。漫畫、動畫和小說共用書架入口，首個顯示專案為啟動頁。瀏覽與更多始終顯示，多餘入口收進更多。';
-
-  @override
   String get text_align_justify => '兩端對齊';
-
-  @override
-  String get novel_session_modes_hint => '閱讀模式與單／雙頁在開啟小說後設定。';
 
   @override
   String get tts_languages_failed => '無法讀取語音引擎的語言列表。';
@@ -9932,9 +8466,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get player_operation_incomplete => '未能完成操作，請檢查檔案訪問許可權後重試。';
 
   @override
-  String get custom_buttons_empty_hint => '新增播放器按鈕，設定名稱和點選時執行的操作。';
-
-  @override
   String get custom_button_primary => '預設按鈕';
 
   @override
@@ -9947,7 +8478,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tracking_accounts_empty => '先在追蹤設定中登入服務，再管理其中的條目。';
 
   @override
-  String get tracking_entries_empty => '此媒體型別暫無追蹤條目，可從作品詳情頁新增追蹤。';
+  String get tracking_entries_empty => '此媒體型別暫無追蹤條目。';
 
   @override
   String get change_tracking_match => '更換匹配作品';
@@ -9965,9 +8496,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tracking_entry_unlinked => '此記錄尚未關聯本地作品，無法在這裡編輯。';
-
-  @override
-  String get backup_selection_shared => '選擇會立即儲存，也用於自動備份。';
 
   @override
   String get library_snapshot_history => '恢復歷史快照';
@@ -9994,12 +8522,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   ) {
     return '此圖源包含 $mangaCount 個條目、$chapterCount 個章節、$historyCount 條歷史與 $updateCount 條更新。下方選項決定保留哪些內容。';
   }
-
-  @override
-  String get library_delete_pick_message => '選擇圖源，檢視其內容和刪除選項。';
-
-  @override
-  String get mobile_categories_hint => '拖動調整順序。開啟分類可重新命名，或設定顯示與更新。';
 
   @override
   String get mobile_category_visible => '在書架中顯示';
@@ -10041,13 +8563,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get preparing_installation => '正在準備安裝…';
 
   @override
-  String get onboarding_mobile_libraries_body => '選擇閱讀內容，之後也可調整。';
-
-  @override
   String get onboarding_content_title => '開始閱讀';
-
-  @override
-  String get onboarding_mobile_sources_body => '選擇一種方式，也可以稍後新增。';
 
   @override
   String onboarding_step_count(int step, int total) {
@@ -10057,11 +8573,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String global_search_results_for(String query) {
     return '“$query”的搜尋結果';
-  }
-
-  @override
-  String global_search_scope(String type, int count) {
-    return '$type · $count 個來源';
   }
 
   @override
@@ -10096,9 +8607,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get bookshelf_ignore_filters => '搜尋時忽略篩選';
-
-  @override
-  String get bookshelf_ignore_filters_hint => '搜尋當前分類中的全部作品，包括被篩選條件隱藏的作品。';
 
   @override
   String get bookshelf_stop_update => '停止書架更新';
@@ -10144,9 +8652,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bookshelf_settings => '書架設定';
 
   @override
-  String get bookshelf_settings_live => '篩選、排序和顯示更改即時生效。';
-
-  @override
   String get bookshelf_filter_any => '不限';
 
   @override
@@ -10173,13 +8678,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bookshelf_layout => '書架佈局';
 
   @override
-  String get bookshelf_sources_hint => '不選表示全部來源；點按“篩選”後生效。';
-
-  @override
   String get bookshelf_choose_files => '選擇檔案';
-
-  @override
-  String get bookshelf_import_wait => '請在檔案選擇器中選擇檔案，並等待匯入完成。';
 
   @override
   String get bookshelf_import_incomplete =>
@@ -10189,16 +8688,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bookshelf_categories_replace => '所選分類將統一替換這些作品原來的分類。';
 
   @override
-  String get bookshelf_categories_hint => '可多選分類；留空則不分配分類。';
-
-  @override
   String get bookshelf_categories_hidden => '該作品已有的隱藏分類會保留。';
 
   @override
   String get bookshelf_categories_incomplete => '分類未儲存完成。請關閉後先核對書架，再繼續操作。';
 
   @override
-  String get bookshelf_categories_none_visible => '沒有可選分類，可前往管理分類檢視。';
+  String get bookshelf_categories_none_visible => '沒有可選分類。';
 
   @override
   String get bookshelf_manage_categories => '管理分類';
@@ -10210,10 +8706,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get manga_download_scope => '下載章節';
 
   @override
-  String get manga_download_scope_hint => '按當前目錄篩選選擇章節，已下載的章節會跳過。';
-
-  @override
-  String get manga_download_scope_empty => '當前篩選下沒有章節。請關閉並調整目錄篩選。';
+  String get manga_download_scope_empty => '當前篩選下沒有章節。';
 
   @override
   String get manga_action_incomplete => '操作未完成。請先核對當前狀態，再決定是否重新操作。';
@@ -10222,13 +8715,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get chapter_settings => '章節設定';
 
   @override
-  String get chapter_settings_live => '篩選與排序即時生效，僅用於當前漫畫。';
-
-  @override
   String get chapter_scanlators_all => '全部顯示';
-
-  @override
-  String get chapter_scanlators_hint => '勾選要隱藏的翻譯組，點按“篩選”後生效。';
 
   @override
   String chapter_scanlators_hidden(int count) {
@@ -10262,25 +8749,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get chapter_action_incomplete => '操作未完成，部分更改可能已儲存。請關閉後先核對章節與下載，再繼續操作。';
 
   @override
-  String get reader_display_scope => '閱讀模式和手動單雙頁應用於當前漫畫；選擇後返回閱讀。';
-
-  @override
-  String get reader_display_single_only => '橫向連續閱讀僅使用單頁。';
-
-  @override
-  String get reader_display_manual_pages => '切換單雙頁會關閉所有漫畫的自動雙頁。';
-
-  @override
-  String get reader_display_crop_scope => '應用於所有漫畫。';
-
-  @override
   String get reader_chapter_locate => '定位當前章節';
 
   @override
   String get reader_chapter_search => '搜尋章節或翻譯組';
-
-  @override
-  String get reader_chapter_scope => '沿用漫畫詳情的篩選和排序，書籤即時儲存。';
 
   @override
   String get reader_chapter_current_hidden => '正在閱讀的章節不在當前篩選後的目錄中。';
@@ -10298,41 +8770,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reader_image_actions => '圖片操作';
 
   @override
-  String get reader_image_original => '使用原始整頁圖片，不含翻譯、裁剪或閱讀濾鏡。';
-
-  @override
-  String get reader_image_save_ios => '儲存到當前應用儲存位置的 Pictures 資料夾。';
-
-  @override
-  String get reader_image_save_android =>
-      '儲存到裝置的 Pictures/nodelane-comics 資料夾。';
-
-  @override
-  String get reader_image_share => '開啟系統分享面板。';
-
-  @override
-  String get reader_image_cover => '確認後修改這本漫畫的封面。';
-
-  @override
   String get reader_image_cover_limit => '封面圖片需小於 5 MB，仍可儲存或分享。';
 
   @override
   String get reader_image_action_failed => '未能確認操作結果，請關閉選單後核對，再決定是否重試。';
-
-  @override
-  String get reader_settings_book_scope => '以下設定僅用於當前漫畫。';
-
-  @override
-  String get reader_settings_global_scope => '以下設定用於所有漫畫，即時儲存。';
-
-  @override
-  String get reader_filters => '影象濾鏡';
-
-  @override
-  String get reader_filter_scope => '用於所有漫畫，只改變閱讀畫面，不修改原始圖片。';
-
-  @override
-  String get reader_auto_scroll_pause => '開啟設定期間暫停滾動。';
 
   @override
   String get manga_synopsis => '簡介';
@@ -10346,40 +8787,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get manga_continue_reading => '繼續閱讀';
 
   @override
-  String get reader_settings_title => '閱讀設定';
-
-  @override
-  String get reader_picker_book_scope => '僅用於當前漫畫';
-
-  @override
-  String get reader_picker_global_scope => '應用於所有漫畫';
-
-  @override
-  String get reader_picker_apply_hint => '點選即儲存並返回上一層。';
-
-  @override
-  String get reader_scale_fit_screen_hint => '整頁適配螢幕';
-
-  @override
-  String get reader_scale_stretch_hint => '鋪滿閱讀區域';
-
-  @override
-  String get reader_scale_fit_width_hint => '以頁面寬度適配';
-
-  @override
-  String get reader_scale_fit_height_hint => '以頁面高度適配';
-
-  @override
   String get source_filter_active => '已應用';
 
   @override
   String get source_filter_apply => '應用篩選';
-
-  @override
-  String get source_filter_scope => '篩選僅用於當前網站。';
-
-  @override
-  String get source_filter_apply_hint => '應用篩選後生效。';
 
   @override
   String source_filter_term(String term) {
@@ -10436,13 +8847,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bookshelf_more_display => '更多顯示選項';
 
   @override
-  String get bookshelf_more_display_hint => '徽章、來源與分類';
-
-  @override
   String get bookshelf_download_count => '下載數量';
-
-  @override
-  String get bookshelf_source_global_hint => '來源顯示沿用全域性設定。';
 
   @override
   String get bookshelf_select_entries => '選擇作品';
@@ -10451,19 +8856,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bookshelf_search_options => '搜尋選項';
 
   @override
-  String get bookshelf_empty_hint => '從來源收藏作品，或匯入本地檔案。';
-
-  @override
-  String get bookshelf_no_match_hint => '試試其他關鍵詞，或調整當前篩選。';
-
-  @override
   String get bookshelf_clear_query => '清空關鍵詞';
 
   @override
   String get bookshelf_view_selection => '檢視所選作品';
-
-  @override
-  String get bookshelf_import_canceled_hint => '取消檔案選擇後，可繼續重新選擇。';
 
   @override
   String get bookshelf_browse_sources => '瀏覽來源';
@@ -10487,13 +8883,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get nodelane_sign_in => '登入 NodeLane';
 
   @override
-  String get nodelane_account_intro => '檢視賬號、訂閱和翻譯額度';
-
-  @override
   String get nodelane_login_action => '前往登入';
-
-  @override
-  String get nodelane_login_browser => '透過系統瀏覽器登入後返回應用';
 
   @override
   String get nodelane_account_id => '賬號 ID';
@@ -10638,9 +9028,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings_more_tools => '更多工具';
 
   @override
-  String get settings_more_tools_hint => '分類、統計、日曆';
-
-  @override
   String get settings_appearance_interface => '外觀與介面';
 
   @override
@@ -10667,9 +9054,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settings_translation_scope => '用於閱讀器和網頁翻譯';
 
   @override
-  String get settings_immediate_choice => '選擇後立即生效';
-
-  @override
   String get settings_translation_init_error => '暫時無法讀取翻譯設定，請重新啟動應用後再試。';
 
   @override
@@ -10683,9 +9067,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settings_translation_cache => '譯圖快取';
-
-  @override
-  String get settings_translation_cache_hint => '保留翻譯記錄，需要時重新讀取譯圖';
 
   @override
   String get settings_cache_clear => '清理';
@@ -10720,25 +9101,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get onboarding_choose_one => '至少選擇一種';
 
   @override
-  String get onboarding_restore_hint => '從已有備份恢復書庫';
-
-  @override
-  String get onboarding_browse_hint => '從支援的網站找到作品';
-
-  @override
   String get onboarding_import_folder => '匯入本地資料夾';
 
   @override
-  String get onboarding_import_folder_hint => '讀取裝置中的漫畫、小說和動畫';
-
-  @override
   String get onboarding_third_party => '新增第三方來源庫';
-
-  @override
-  String get onboarding_third_party_hint => '已有來源庫地址時使用';
-
-  @override
-  String get onboarding_repository_hint => '輸入來源庫提供的地址。';
 
   @override
   String get onboarding_repository_address => '地址';
@@ -10763,9 +9129,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get notice_backup_created => '備份已建立';
-
-  @override
-  String get notice_backup_ready => '可將備份檔案儲存到其他位置。';
 
   @override
   String get notice_backup_restored => '備份已恢復';
@@ -10837,9 +9200,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '填寫相容 Wyzie 的完整 HTTPS 搜尋地址，包含路徑（如 /search）。服務需要鑑權時，再填寫它的訪問令牌。';
 
   @override
-  String get subtitle_service_off_hint => '線上字幕搜尋已關閉，仍可使用內嵌字幕、片源字幕和本地字幕。';
-
-  @override
   String get subtitle_setup_required => '請先配置字幕服務，再搜尋字幕。';
 
   @override
@@ -10879,9 +9239,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reader_loading_pages => '正在獲取本話圖片…';
 
   @override
-  String get reader_loading_pages_hint => '載入完成後自動進入閱讀';
-
-  @override
   String get reader_loading_failed => '暫時無法載入';
 
   @override
@@ -10909,25 +9266,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reader_image_loading => '正在載入圖片…';
 
   @override
-  String get reader_image_failure_hint => '其他頁面仍可繼續閱讀';
-
-  @override
   String get comic_paged => '翻頁';
 
   @override
   String get comic_scroll => '連續下滑';
 
   @override
-  String get comic_book_scope => '僅本書生效 · 修改即儲存';
-
-  @override
   String get comic_defaults_title => '預設與操作習慣';
-
-  @override
-  String get comic_defaults_hint => '預設值用於尚未單獨設定的書籍選項。';
-
-  @override
-  String get comic_habits_hint => '以下習慣對所有漫畫生效。';
 
   @override
   String get comic_turn => '滑向下一頁';
@@ -10960,9 +9305,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get comic_auto => '自動';
 
   @override
-  String get comic_layout_hint => '自動根據可用寬度顯示單頁或雙頁。';
-
-  @override
   String get comic_width => '內容寬度';
 
   @override
@@ -10987,9 +9329,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get comic_image_title => '畫面微調';
 
   @override
-  String get comic_image_hint => '裁邊與色調僅作用於本書。';
-
-  @override
   String get comic_wide => '橫幅頁處理';
 
   @override
@@ -11000,9 +9339,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get comic_rotate => '旋轉適配';
-
-  @override
-  String get comic_wide_hint => '拆頁順序跟隨翻頁方向，僅用於單頁翻閱。';
 
   @override
   String get comic_cover => '每章首頁單獨顯示';
@@ -11035,9 +9371,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get comic_tap => '輕點翻頁';
 
   @override
-  String get comic_tap_hint => '輕點兩側翻頁，中間顯示工具欄；下滑閱讀時輕點上、下方移動。';
-
-  @override
   String get comic_scroll_start => '開始自動下滑';
 
   @override
@@ -11047,16 +9380,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get comic_scroll_speed => '下滑速度';
 
   @override
-  String get comic_scroll_hint => '關閉面板後開始；離開應用會暫停。';
-
-  @override
   String get comic_save_failed => '儲存失敗，請重試。';
 
   @override
   String get comic_reading => '閱讀';
-
-  @override
-  String get comic_chapter_habits_hint => '章節列表操作習慣對所有書籍生效。';
 
   @override
   String get browser_title => '瀏覽器';
@@ -11065,22 +9392,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get translation_image_display => '圖片顯示';
 
   @override
-  String get translation_display_hint => '譯圖優先顯示已有結果，暫無譯圖時保留原圖。';
-
-  @override
   String get translation_sign_in_required => '登入後開啟翻譯';
 
   @override
-  String get translation_sign_in_hint => '登入後切換譯圖，即可自動翻譯';
-
-  @override
   String get translation_automatic => '自動翻譯';
-
-  @override
-  String get translation_original_hint => '當前顯示原圖，切到譯圖後自動翻譯';
-
-  @override
-  String get translation_window_hint => '僅在顯示譯圖時處理當前及後續圖片';
 
   @override
   String get translation_channel => '翻譯渠道';
@@ -11103,22 +9418,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get translation_image_actions_hint => '長按圖片開啟更多操作，可重新翻譯單張圖片。';
-
-  @override
   String get translation_title => '漫畫翻譯';
-
-  @override
-  String get translation_system_sign_in => '透過系統瀏覽器登入';
 
   @override
   String get translation_target_language => '目標語言';
 
   @override
   String get translation_clear_cache => '清理譯圖快取';
-
-  @override
-  String get translation_cache_hint => '保留翻譯記錄，需要時重新讀取結果';
 
   @override
   String get translation_saved_read_failed => '已有譯圖讀取失敗';
@@ -11268,9 +9574,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get manage => '管理';
 
   @override
-  String get translation_settings_hint => '自動翻譯、目標語言與渠道';
-
-  @override
   String get translation_show_original => '點選切換為原圖';
 
   @override
@@ -11295,11 +9598,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get source_website_info => '網站說明';
 
   @override
-  String source_saved_search_title(String title) {
-    return '$title · 點選立即搜尋';
-  }
-
-  @override
   String get action_done => '完成';
 
   @override
@@ -11309,12 +9607,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get source_no_saved_searches => '還沒有儲存的搜尋';
-
-  @override
-  String get source_save_search_hint => '輸入關鍵詞搜尋後，可從網站操作中儲存。';
-
-  @override
-  String get source_saved_search_scope => '僅儲存當前網站的關鍵詞。';
 
   @override
   String get source_search_here => '搜尋本站作品';
@@ -11333,9 +9625,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get source_no_titles => '沒有找到相關作品';
-
-  @override
-  String get source_no_titles_hint => '調整關鍵詞或篩選條件，也可返回熱門瀏覽。';
 
   @override
   String get source_load_more_failed => '載入更多失敗，請重試。';
@@ -11410,9 +9699,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get repository_refresh => '重新整理目錄';
 
   @override
-  String get repository_manage_hint => '管理第三方來源的獲取地址';
-
-  @override
   String get repository_invalid_address => '請輸入有效的 http 或 https 網址';
 
   @override
@@ -11442,13 +9728,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get repository_choose_sources_hint => '新增後可選擇需要的來源。';
-
-  @override
   String get search_scope => '搜尋範圍';
-
-  @override
-  String get search_scope_hint => '選擇本次要搜尋的網站';
 
   @override
   String search_websites_action(int count) {
@@ -11473,22 +9753,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get search_select_results => '選中當前結果';
 
   @override
-  String get search_no_websites_hint => '沒有匹配的網站，試試其他名稱或語言。';
-
-  @override
   String get search_select_website_hint => '至少選擇一個網站後即可搜尋。';
 
   @override
   String get search_start_title => '輸入關鍵詞搜尋作品';
 
   @override
-  String get search_start_hint => '一次搜尋多個網站，只展示找到的作品。';
-
-  @override
   String get search_empty_scope => '當前範圍沒有可搜尋的網站';
-
-  @override
-  String get search_empty_scope_hint => '切換到全部網站，或重新選擇參與搜尋的網站。';
 
   @override
   String search_result_count(int count) {
@@ -11497,9 +9768,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get search_titles => '搜作品';
-
-  @override
-  String get search_actions => '搜尋操作';
 
   @override
   String get search_details => '搜尋詳情';
@@ -11545,13 +9813,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get search_no_matching_titles => '未找到相關作品';
 
   @override
-  String get search_results_appear_hint => '找到後會直接顯示在這裡。';
-
-  @override
-  String get search_failed_websites_hint => '有網站未能完成搜尋，可在搜尋詳情中重試。';
-
-  @override
-  String get search_change_keywords_hint => '試試更短的關鍵詞，或擴大搜尋範圍。';
+  String get search_failed_websites_hint => '有網站未能完成搜尋。';
 
   @override
   String get search_view_details => '檢視搜尋詳情';
@@ -11568,9 +9830,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String search_completed_count(int completed, int total) {
     return '已完成 $completed / $total';
   }
-
-  @override
-  String get search_retry_website_hint => '失敗網站可單獨重試';
 
   @override
   String source_selected_count(int count) {
@@ -11614,9 +9873,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get source_open => '進入';
-
-  @override
-  String get source_metadata_hint => '資料由來源目錄提供，分類描述網站覆蓋範圍。';
 
   @override
   String get source_region => '地區';
@@ -11688,9 +9944,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get source_all_languages => '全部語言';
 
   @override
-  String get action_apply => '應用';
-
-  @override
   String get source_load_retry => '網站暫時無法載入，請重試。';
 
   @override
@@ -11727,9 +9980,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get source_no_websites => '暫無可用網站';
-
-  @override
-  String get source_search_installed_hint => '在已安裝來源中搜尋作品';
 
   @override
   String get source_global_search => '跨來源搜尋';
@@ -11776,7 +10026,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get source_custom_websites => '自選網站';
 
   @override
-  String get tv_hidden_library_hint => '所有作品都在隱藏分類中。\n在「全部」上長按確認鍵可取消隱藏。';
+  String get tv_hidden_library_hint => '所有作品都在隱藏分類中。';
 
   @override
   String get tv_no_matching_anime => '沒有匹配的動畫';
@@ -11787,22 +10037,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get tv_filtered_empty_hint => '沒有符合當前篩選條件的動畫。\n可透過搜尋旁的按鈕調整篩選。';
-
-  @override
   String get tv_new_episodes => '最新劇集';
 
   @override
   String get tv_recently_added => '最近新增';
 
   @override
-  String get tv_empty_category_hint => '此分類還沒有動畫。\n可在作品詳情頁新增。';
+  String get tv_empty_category_hint => '此分類還沒有動畫。';
 
   @override
   String get tv_empty_library => '動畫書庫為空';
-
-  @override
-  String get tv_empty_library_hint => '從瀏覽頁面新增動畫，即可在此檢視';
 
   @override
   String get tv_browse_anime => '瀏覽動畫';
@@ -11814,7 +10058,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String tv_category_hidden(String category) {
-    return '已隱藏「$category」· 在「全部」上長按確認鍵可取消隱藏';
+    return '已隱藏「$category」';
   }
 
   @override
@@ -11830,19 +10074,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get cloudflare_proxy_optional => 'FlareSolverr / Byparr 地址（可選）';
 
   @override
-  String get tv_home_layout_hint => '按繼續觀看、最新劇集和分類分行顯示動畫主頁';
-
-  @override
-  String get tv_hide_libraries_hint => '隱藏漫畫和小說書庫（電視端預設開啟）';
-
-  @override
-  String get anime_only_hint => '在整個應用中隱藏漫畫和小說，關閉後顯示所有內容。';
-
-  @override
   String get audio_auto_safe => '自動（安全）';
-
-  @override
-  String get tv_player_hint => '開啟時使用電視專用播放器；關閉時使用桌面播放器。';
 
   @override
   String get release_open_failed => '無法開啟發布頁面';
@@ -12069,9 +10301,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get translation_preparing_ellipsis => '準備翻譯…';
 
   @override
-  String get translation_checking_original => '核對原圖…';
-
-  @override
   String get translation_submitting => '正在提交…';
 
   @override
@@ -12206,9 +10435,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String memory_full_samples(String percent, int count) {
     return '滿載 $percent% · $count 次取樣';
   }
-
-  @override
-  String get memory_reset_hint => '在設定中關閉後重新開啟即可重置';
 
   @override
   String get action_hide => '隱藏';

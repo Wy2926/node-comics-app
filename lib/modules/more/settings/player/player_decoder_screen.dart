@@ -36,10 +36,6 @@ class _PlayerDecoderScreenState extends ConsumerState<PlayerDecoderScreen> {
             SwitchListTile(
               value: enableHardwareAccel,
               title: Text(context.l10n.enable_hardware_accel),
-              subtitle: Text(
-                context.l10n.enable_hardware_accel_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) {
                 ref.read(enableHardwareAccelStateProvider.notifier).set(value);
               },
@@ -126,10 +122,6 @@ class _PlayerDecoderScreenState extends ConsumerState<PlayerDecoderScreen> {
             SwitchListTile(
               value: useGpuNext,
               title: Text(context.l10n.enable_gpu_next),
-              subtitle: Text(
-                context.l10n.enable_gpu_next_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) {
                 ref.read(useGpuNextStateProvider.notifier).set(value);
               },
@@ -199,10 +191,6 @@ class _PlayerDecoderScreenState extends ConsumerState<PlayerDecoderScreen> {
             SwitchListTile(
               value: useYUV420P,
               title: Text(context.l10n.use_yuv420p),
-              subtitle: Text(
-                context.l10n.use_yuv420p_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
               onChanged: (value) {
                 ref.read(useYUV420PStateProvider.notifier).set(value);
               },

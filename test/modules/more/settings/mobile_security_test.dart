@@ -255,14 +255,9 @@ void main() {
         await tester.scrollUntilVisible(notice, 250);
         await tester.pumpAndSettle();
         expect(notice, findsOneWidget);
-        final description = find.textContaining('When app lock is enabled');
-        await tester.scrollUntilVisible(description, 250);
         await tester.drag(find.byType(ListView), const Offset(0, -1500));
         await tester.pumpAndSettle();
-        expect(
-          tester.getBottomRight(description).dy,
-          lessThanOrEqualTo(440 - 34),
-        );
+        expect(tester.getBottomRight(notice).dy, lessThanOrEqualTo(440 - 34));
         expect(tester.takeException(), isNull);
       } finally {
         semantics.dispose();

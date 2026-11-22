@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_progress.dart';
 import 'package:flutter/cupertino.dart' show CupertinoPicker, CupertinoSwitch;
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
@@ -1391,13 +1392,9 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final motion = NodeLaneMotion.style(context);
     if (label != null) {
       final t = NodeLaneTokens.of(context);
-      return PopupMenuButton<T>(
-        position: PopupMenuPosition.under,
-        useRootNavigator: true,
-        popUpAnimationStyle: motion,
+      return NodeLaneBubbleButton<T>(
         onOpened: onOpened,
         enabled: enabled,
         tooltip: tooltip,
@@ -1441,10 +1438,7 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
     }
     return _iconButtonSurface(
       style: NodeLaneIconButtonStyle.glass,
-      child: PopupMenuButton<T>(
-        position: PopupMenuPosition.under,
-        useRootNavigator: true,
-        popUpAnimationStyle: motion,
+      child: NodeLaneBubbleButton<T>(
         onOpened: onOpened,
         enabled: enabled,
         tooltip: tooltip,

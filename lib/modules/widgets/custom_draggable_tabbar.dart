@@ -13,7 +13,7 @@ Future<void> customDraggableTabBar({
   useSafeArea: true,
   constraints: const BoxConstraints(maxWidth: double.infinity),
   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-  shape: NodeLaneTokens.readerSheetShape,
+  shape: NodeLaneTokens.sheetShape,
   clipBehavior: Clip.antiAlias,
   sheetAnimationStyle: NodeLaneMotion.style(context),
   builder: (_) => _TabSheet(tabs: tabs, children: children),

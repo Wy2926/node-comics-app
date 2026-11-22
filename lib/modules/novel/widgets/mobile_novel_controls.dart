@@ -50,7 +50,7 @@ class MobileNovelControls extends StatelessWidget {
   final Widget chapterAction;
   final int fontSize;
   final ValueChanged<int> onFontSizeChanged;
-  final VoidCallback onSettings;
+  final ValueChanged<BuildContext> onSettings;
   final VoidCallback? onPreviousChapter, onNextChapter, onListen;
   final ValueChanged<double>? onSeek;
   final bool listening;
@@ -111,10 +111,12 @@ class MobileNovelControls extends StatelessWidget {
                   active: listening,
                   onPressed: onListen,
                 ),
-              NodeLaneToolbarAction(
-                label: l10n.settings,
-                icon: NodeLaneIcons.of(context).adjustments,
-                onPressed: onSettings,
+              Builder(
+                builder: (anchor) => NodeLaneToolbarAction(
+                  label: l10n.settings,
+                  icon: NodeLaneIcons.of(context).adjustments,
+                  onPressed: () => onSettings(anchor),
+                ),
               ),
             ];
             final columns = MediaQuery.textScalerOf(context).scale(12) > 20

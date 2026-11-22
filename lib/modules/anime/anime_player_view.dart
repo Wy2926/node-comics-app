@@ -13,7 +13,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,7 +49,8 @@ import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.d
 import 'package:mangayomi/modules/anime/widgets/mobile.dart';
 import 'package:mangayomi/modules/anime/widgets/mobile_player_controls_layout.dart';
 import 'package:mangayomi/modules/anime/widgets/subtitle_view.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_menu.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_audio_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_decoder_state_provider.dart';
@@ -77,7 +78,7 @@ import 'package:mangayomi/modules/anime/utils/always_on_top.dart';
 import 'package:mangayomi/modules/anime/utils/mpv_subtitle_options.dart';
 import 'package:mangayomi/modules/anime/utils/player_labels.dart';
 import 'package:mangayomi/modules/anime/widgets/player_shortcut_pills.dart';
-import 'package:mangayomi/modules/widgets/image_actions_sheet.dart';
+import 'package:mangayomi/modules/widgets/image_actions_panel.dart';
 
 class AnimePlayerView extends riv.ConsumerStatefulWidget {
   final int episodeId;
@@ -1539,8 +1540,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
   // Bumped on each d-pad key (see _onPlayerKey) so the mobile controls reveal
   // themselves on a TV remote.
   final ValueNotifier<int> _revealControls = ValueNotifier(0);
-  // TV-only: when the advanced settings panel is open the video docks left and
-  // the panel slides in on the right (YouTube-style), instead of a bottom sheet.
+  // The TV player docks beside its remote-focusable settings panel.
   bool _tvSettingsOpen = false;
   // Owned focus anchors for the split view so Left/Right cross deterministically
   // (geometric directional focus was losing focus entirely).
@@ -1650,31 +1650,10 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         }
         _initSubtitleAndAudio = true;
       },
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
-  // When opened inside a SettingsDrilldown (mobile bottom sheet or desktop
-  // popup), an option selection navigates back to the settings home list so the
-  // user can see the new choice inline and adjust other options without having
-  // to reopen the menu from scratch. If opened directly via a shortcut, it
-  // closes the settings instead.
-  void _popSettings(BuildContext context) {
-    final scope = SettingsDrilldownScope.of(context);
-    if (scope != null && !scope.isDirectShortcut) {
-      scope.goHome();
-    } else if (scope != null) {
-      scope.close();
-    } else {
-      Navigator.pop(context);
-    }
-  }
-
-  // The settings home list — YouTube's pattern instead of the segmented tabs
-  // this used to be: each entry shows its current value inline, and tapping
-  // one drills into that section's content, reusing the exact same widgets
-  // the old tabs used. Computed fresh on every open, so the current-value
-  // previews always reflect the latest player state.
   List<SettingsEntry> _buildSettingsEntries(BuildContext context) {
     final hasSubtitleTrack = _computeHasSubtitleTrack();
     return [
@@ -1820,29 +1799,13 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         SettingsEntry(
           label: context.l10n.share,
           icon: Icons.adaptive.share,
-          onTap: (sheetContext) {
-            unawaited(
-              _showShareScreenshotActions(sheetContext, widget.episode),
-            );
+          onTap: (anchor) {
+            unawaited(_showShareScreenshotActions(anchor, widget.episode));
           },
         ),
     ];
   }
 
-  // Every player setting lives behind this one entry point instead of the
-  // old two-level stack (a draggable tab bar for quality/subtitle/audio,
-  // opening a *second* nested tab bar for font/color, plus separate
-  // PopupMenuButtons elsewhere for speed/chapters/shaders/stats).
-  // `initialIndex` lets a caller (the speed pill, the chapter label) jump
-  // straight into a section; -1 (the default, from the gear icon) opens the
-  // home list first, same as YouTube's gear menu.
-  //
-  // Desktop opens a small popup anchored to `context` — the widget the
-  // caller itself is built from (a Builder around the gear icon, the pill...)
-  // — matching YouTube's own settings gear there, and it doesn't pause
-  // playback for the same reason YouTube doesn't. Mobile keeps the modal
-  // bottom sheet, where a phone's screen has no room to spare, and does
-  // pause — a full-screen sheet already blocks watching anyway.
   void _openPlayerSettings(
     BuildContext context, {
     int initialIndex = -1,
@@ -1851,26 +1814,25 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     await _syncActiveSubtitleTrackFromMpv();
     if (!context.mounted) return;
     final entries = _buildSettingsEntries(context);
-    _player.pause();
-    if (isDesktop) {
-      await showDesktopPlayerSettingsMenu(
+    final wasPlaying = _player.state.playing;
+    if (wasPlaying) await _player.pause();
+    try {
+      if (!context.mounted) return;
+      await showPlayerSettingsMenu(
         context,
         title: context.l10n.settings,
         entries: entries,
+        mobile: !isDesktop,
         initialIndex: initialIndex,
       );
-      setState(() {});
-      _player.play();
-      return;
+    } finally {
+      if (mounted) {
+        setState(() {});
+        if (wasPlaying && ModalRoute.isCurrentOf(this.context) == true) {
+          await _player.play();
+        }
+      }
     }
-    await showUnifiedPlayerSettings(
-      context,
-      title: context.l10n.settings,
-      entries: entries,
-      initialIndex: initialIndex,
-    );
-    setState(() {});
-    _player.play();
   }
 
   bool _computeHasSubtitleTrack() {
@@ -1898,7 +1860,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
       chapterMarks: _chapterMarks.value,
       currentChapterMark: _currentChapterMark,
       onSeek: (ms) => _player.seek(Duration(milliseconds: ms)),
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
@@ -1906,7 +1868,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     return SpeedSectionWidget(
       playbackSpeed: _playbackSpeed,
       onSelect: _setPlaybackSpeed,
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
@@ -1918,7 +1880,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         _fit.value = fit;
         _key.currentState?.update(fit: fit);
       },
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
@@ -1927,7 +1889,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
       selectedShader: _selectedShader,
       onSelect: (arg) =>
           (_player.platform as NativePlayer).command(["script-message", arg]),
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
@@ -1935,7 +1897,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     return StatsSectionWidget(
       onSelect: (arg) =>
           (_player.platform as NativePlayer).command(["script-binding", arg]),
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
@@ -1946,7 +1908,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         "script-message",
         "call_button_${btn.id}",
       ]),
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
@@ -1961,7 +1923,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
       onSetSubtitleTrack: _setSubtitleTrack,
       subDelayController: _subDelayController,
       subSpeedController: _subSpeedController,
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
@@ -1978,13 +1940,11 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         _activeAudioTrack = track;
         unawaited(_setAudioTrack(track));
       },
-      onDone: () => _popSettings(context),
+      onDone: () => SettingsDrilldownScope.finishChoice(context),
     );
   }
 
-  // d-pad-focusable option data for the TV settings panel — the same track
-  // switching the bottom-sheet widgets do, minus the Navigator.pop (the panel
-  // is not a route). Records: (label, selected, onTap).
+  // TV track selections keep focus inside the docked panel.
   List<({String label, bool selected, VoidCallback onTap})>
   _tvQualityOptions() {
     final videoQuality = buildVideoQualityOptions(
@@ -2153,7 +2113,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     );
   }
 
-  // Sections in the unified sheet: quality(0), audio(1), subtitles(2), appearance(3),
+  // Player settings: quality(0), audio(1), subtitles(2), appearance(3),
   // then chapters(4) when present, then speed, then fit.
   int get _qualitySectionIndex => 0;
   int get _audioSectionIndex => 1;
@@ -2227,8 +2187,6 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
       onBack: _goBackToDetail,
       onRestart: () => _player.seek(Duration.zero),
       onSettings: () {
-        // On TV the settings open as the docked side panel; phones/desktop keep
-        // the bottom-sheet menu.
         if (isTv) {
           setState(() => _tvSettingsOpen = true);
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2543,34 +2501,25 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
       );
     }
 
-    Widget episodesButton() {
-      return btnToShowChapterListDialog(
-        context,
-        context.l10n.episodes,
-        widget.episode,
-        onChanged: (v) {
-          if (v) {
-            _player.play();
-          } else {
-            _player.pause();
-          }
-        },
-        iconColor: Colors.white,
-      );
+    var wasPlaying = false;
+    void onMenuVisibilityChanged(bool closed) {
+      if (!closed) {
+        wasPlaying = _player.state.playing;
+        if (wasPlaying) _player.pause();
+      } else if (wasPlaying &&
+          mounted &&
+          ModalRoute.isCurrentOf(this.context) == true) {
+        _player.play();
+      }
     }
 
-    Widget shareButton() {
-      return btnToShowShareScreenshot(
-        widget.episode,
-        onChanged: (v) {
-          if (v) {
-            _player.play();
-          } else {
-            _player.pause();
-          }
-        },
-      );
-    }
+    Widget episodesButton() => btnToShowChapterListDialog(
+      context,
+      context.l10n.episodes,
+      widget.episode,
+      onChanged: onMenuVisibilityChanged,
+      iconColor: Colors.white,
+    );
 
     final title = ListTile(
       dense: true,
@@ -2613,7 +2562,20 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
                 onPressed: toggleAlwaysOnTop,
               ),
             episodesButton(),
-            shareButton(),
+            Builder(
+              builder: (anchor) => IconButton(
+                tooltip: anchor.l10n.share,
+                icon: Icon(Icons.adaptive.share, color: Colors.white),
+                onPressed: () async {
+                  onMenuVisibilityChanged(false);
+                  try {
+                    await _showShareScreenshotActions(anchor, widget.episode);
+                  } finally {
+                    onMenuVisibilityChanged(true);
+                  }
+                },
+              ),
+            ),
           ],
         ),
         portraitActions: MobilePlayerPortraitActionTheme(
@@ -2894,25 +2856,21 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
   }
 
   Future<void> _showShareScreenshotActions(
-    BuildContext sheetContext,
-    Chapter episode, {
-    void Function(bool)? onChanged,
-  }) async {
+    BuildContext anchor,
+    Chapter episode,
+  ) async {
     Future<Uint8List?> screenshot() => _player.screenshot(
       format: "image/png",
       includeLibassSubtitles: _includeSubtitles,
     );
-    onChanged?.call(false);
     final name =
         "${episode.manga.value!.name} ${episode.name} - ${_currentPosition.value.toString()}"
             .replaceAll(RegExp(r'[^a-zA-Z0-9 .()\-\s]'), '_');
-    await showModalBottomSheet(
-      context: sheetContext,
-      sheetAnimationStyle: NodeLaneMotion.style(sheetContext),
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(sheetContext).width,
-      ),
-      builder: (context) => ImageActionsSheet(
+    await showNodeLaneBubble<void>(
+      anchor,
+      label: anchor.l10n.reader_image_actions,
+      width: NodeLaneTokens.bubbleFormWidth,
+      child: ImageActionsPanel(
         onSetCover: (context) async {
           final imageBytes = await screenshot();
           if (!context.mounted) return;
@@ -2953,31 +2911,18 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
             );
           }
         },
-        // The sheet is its own route, so the player's setState alone
-        // would leave the switch showing the old value.
+        // The bubble and player are separate routes.
         footer: StatefulBuilder(
-          builder: (context, setSheetState) => SwitchListTile(
+          builder: (context, refresh) => SwitchListTile(
             onChanged: (value) {
               setState(() => _includeSubtitles = value);
-              setSheetState(() {});
+              refresh(() {});
             },
             title: Text(context.l10n.include_subtitles),
             value: _includeSubtitles,
           ),
         ),
       ),
-    );
-    onChanged?.call(true);
-  }
-
-  Widget btnToShowShareScreenshot(
-    Chapter episode, {
-    void Function(bool)? onChanged,
-  }) {
-    return IconButton(
-      onPressed: () =>
-          _showShareScreenshotActions(context, episode, onChanged: onChanged),
-      icon: Icon(Icons.adaptive.share, color: Colors.white),
     );
   }
 

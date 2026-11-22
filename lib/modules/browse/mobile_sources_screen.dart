@@ -22,7 +22,7 @@ import 'package:mangayomi/modules/manga/detail/manga_detail_main.dart';
 import 'package:mangayomi/modules/manga/home/manga_home_screen.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_selection_bar.dart';
@@ -38,6 +38,7 @@ import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -483,21 +484,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   Future<void> _sourceActions(Source source, Offset point) async {
     _openIntent++;
     final l = context.l10n, icons = NodeLaneIcons.of(context);
-    final overlay =
-        Navigator.of(
-              context,
-              rootNavigator: true,
-            ).overlay!.context.findRenderObject()!
-            as RenderBox;
-    final action = await showMenu<_WebsiteAction>(
-      context: context,
-      useRootNavigator: true,
-      semanticLabel: source.name ?? l.source_actions,
-      position: RelativeRect.fromRect(
-        overlay.globalToLocal(point) & Size.zero,
-        Offset.zero & overlay.size,
+    final action = await showNodeLaneBubbleMenu<_WebsiteAction>(
+      context,
+      label: source.name ?? l.source_actions,
+      localPoint: (context.findRenderObject()! as RenderBox).globalToLocal(
+        point,
       ),
-      popUpAnimationStyle: NodeLaneMotion.style(context),
       items: [
         for (final (value, label, icon) in [
           (
@@ -673,7 +665,6 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
         title: noMatch
             ? l10n.source_no_matching_websites
             : l10n.source_no_websites,
-        message: searching ? l10n.source_search_installed_hint : null,
         action: action == null
             ? null
             : NodeLaneSecondaryButton(
@@ -712,10 +703,11 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     List<ItemType> types,
     DirectoryFilters filters,
     List<Source> catalog, {
+    required int? count,
     required bool open,
   }) {
     final l10n = context.l10n;
-    final media = MobileMediaMenu(
+    final media = LibraryMediaButton(
       value: type,
       availableTypes: types,
       onChanged: (value) => _switchDirectory(value, thirdParty),
@@ -765,14 +757,32 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                     ),
                   ),
                   const SizedBox(width: NodeLaneTokens.space8),
-                  Semantics(
-                    expanded: open,
-                    child: NodeLaneIconButton(
-                      tooltip: l10n.filter,
-                      icon: NodeLaneIcons.of(context).adjustments,
-                      style: NodeLaneIconButtonStyle.plain,
-                      active: open || filters.isNotEmpty,
-                      onPressed: () => _toggleFilters(open),
+                  Tooltip(
+                    message: l10n.filter,
+                    child: Semantics(
+                      liveRegion: true,
+                      label: count == null
+                          ? l10n.filter
+                          : '${l10n.filter}, ${l10n.search_result_count(count)}',
+                      expanded: open,
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size.square(
+                            NodeLaneTokens.minTapTarget,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: NodeLaneTokens.space4,
+                          ),
+                          foregroundColor: open || filters.isNotEmpty
+                              ? NodeLaneTokens.of(context).accent
+                              : NodeLaneTokens.of(context).ink,
+                        ),
+                        icon: Icon(NodeLaneIcons.of(context).adjustments),
+                        label: ExcludeSemantics(
+                          child: Text(count?.toString() ?? '…'),
+                        ),
+                        onPressed: () => _toggleFilters(open),
+                      ),
                     ),
                   ),
                   const SizedBox(width: NodeLaneTokens.space4),
@@ -821,17 +831,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     );
   }
 
-  Widget _summary(
-    DirectoryFilters filters,
-    String keyword,
-    int? count, {
-    required bool open,
-  }) {
+  Widget _activeFilters(DirectoryFilters filters) {
     final l10n = context.l10n, t = NodeLaneTokens.of(context);
-    final description = [
-      if (count != null) l10n.search_result_count(count),
-      if (keyword.isNotEmpty) keyword,
-    ].join(' · ');
     final active = [
       for (final entry in filters.entries)
         if (entry.value.length == 1)
@@ -859,32 +860,19 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                       padding: const EdgeInsets.symmetric(
                         vertical: NodeLaneTokens.space8,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            description,
-                            style: t.secondary,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (!open && active.isNotEmpty)
-                            Text(
-                              active,
-                              style: t.caption,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                        ],
+                      child: Text(
+                        active,
+                        style: t.caption,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
                 ),
-                if (filters.isNotEmpty)
-                  TextButton(
-                    onPressed: () => _setFilters(const {}),
-                    child: Text(l10n.action_clear),
-                  ),
+                TextButton(
+                  onPressed: () => _setFilters(const {}),
+                  child: Text(l10n.action_clear),
+                ),
               ],
             ),
           ),
@@ -1042,14 +1030,15 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                       slivers: [
                         if (!selecting) ...[
                           SliverFloatingHeader(
-                            child: _header(types, filters, catalog, open: open),
+                            child: _header(
+                              types,
+                              filters,
+                              catalog,
+                              open: open,
+                              count: waitingForDirectory ? null : all.length,
+                            ),
                           ),
-                          _summary(
-                            filters,
-                            keyword,
-                            waitingForDirectory ? null : all.length,
-                            open: open,
-                          ),
+                          if (filters.isNotEmpty) _activeFilters(filters),
                         ],
                         if (all.isEmpty)
                           SliverFillRemaining(

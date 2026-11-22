@@ -45,10 +45,7 @@ class MobileBookshelfSettings extends ConsumerWidget {
       length: 3,
       child: Column(
         children: [
-          Semantics(
-            hint: l10n.bookshelf_settings_live,
-            child: NodeLaneBubbleHeading(l10n.bookshelf_settings),
-          ),
+          Semantics(child: NodeLaneBubbleHeading(l10n.bookshelf_settings)),
           LibrarySettingsTabs([l10n.filter, l10n.sort, l10n.display]),
           Expanded(
             child: TabBarView(
@@ -363,7 +360,6 @@ class _Display extends ConsumerWidget {
         const SizedBox(height: NodeLaneTokens.space16),
         NodeLaneDisclosure(
           title: l10n.bookshelf_more_display,
-          subtitle: l10n.bookshelf_more_display_hint,
           child: Consumer(
             builder: (context, ref, _) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -397,13 +393,6 @@ class _Display extends ConsumerWidget {
                       onChanged: (v) => ref.read(local.notifier).set(v),
                     ),
                   ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: NodeLaneTokens.space8),
-                  child: Text(
-                    l10n.bookshelf_source_global_hint,
-                    style: NodeLaneTokens.of(context).readerSecondary,
-                  ),
                 ),
                 NodeLaneCatalogHeading(l10n.bookshelf_layout),
                 NodeLaneGroupSurface(
@@ -562,13 +551,6 @@ class _MobileBookshelfSourceFilterState
                     controller: _query,
                     hint: l10n.search,
                     onChanged: (_) => setState(() {}),
-                  ),
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text(
-                      l10n.bookshelf_sources_hint,
-                      style: NodeLaneTokens.of(context).secondary,
-                    ),
                   ),
                   NodeLaneCatalogHeading(
                     _selected.isEmpty

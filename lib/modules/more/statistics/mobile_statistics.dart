@@ -6,7 +6,7 @@ import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/statistics/statistics_provider.dart';
-import 'package:mangayomi/modules/more/widgets/mobile_media_selector.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
@@ -39,11 +39,15 @@ class _MobileStatisticsState extends ConsumerState<MobileStatistics> {
             child: MobileSettingsList(
               key: PageStorageKey('mobile-statistics-$type'),
               children: [
-                MobileMediaSelector(
-                  types: widget.types,
-                  selected: type,
-                  onChanged: (value) => setState(() => _type = value),
-                ),
+                if (type != null && widget.types.length > 1)
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: LibraryMediaButton(
+                      availableTypes: widget.types,
+                      value: type,
+                      onChanged: (value) => setState(() => _type = value),
+                    ),
+                  ),
                 if (type == null)
                   Text(l10n.no_result)
                 else

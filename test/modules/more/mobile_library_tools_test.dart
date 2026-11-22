@@ -155,7 +155,9 @@ void main() {
         await reveal(tester, find.text(value));
         expect(find.text(value), findsOneWidget);
       }
-      await tap(tester, find.text('Novel'), delta: -250);
+      await tap(tester, find.byTooltip('Manga'), delta: -250);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Novel'));
       await tester.pumpAndSettle();
       expect(find.textContaining('NaN'), findsNothing);
       await reveal(tester, find.text('0m').last);

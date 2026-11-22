@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/widgets/mobile_media_menu.dart';
+import 'package:mangayomi/modules/widgets/library_media_button.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -49,7 +49,7 @@ void main() {
               builder: (_) => Scaffold(
                 body: Align(
                   alignment: Alignment.topLeft,
-                  child: MobileMediaMenu(
+                  child: LibraryMediaButton(
                     value: ItemType.manga,
                     availableTypes: ItemType.values,
                     onChanged: changes.add,
@@ -70,7 +70,7 @@ void main() {
       try {
         expect(
           tester
-              .getSemantics(find.byType(MobileMediaMenu))
+              .getSemantics(find.byType(LibraryMediaButton))
               .getSemanticsData()
               .flagsCollection
               .isButton,
@@ -80,7 +80,7 @@ void main() {
         semantics.dispose();
       }
       Future<void> open() async {
-        await tester.tap(find.byType(MobileMediaMenu));
+        await tester.tap(find.byType(LibraryMediaButton));
         await tester.pumpAndSettle();
         expect(find.byType(PopupMenuItem<ItemType>), findsNWidgets(3));
         expect(root.pushed.last, isA<PopupRoute<dynamic>>());
@@ -113,14 +113,14 @@ void main() {
     final changes = <ItemType>[];
     await tester.pumpWidget(
       _app(
-        MobileMediaMenu(
+        LibraryMediaButton(
           value: ItemType.anime,
           availableTypes: const [ItemType.anime, ItemType.novel],
           onChanged: changes.add,
         ),
       ),
     );
-    await tester.tap(find.byType(MobileMediaMenu));
+    await tester.tap(find.byType(LibraryMediaButton));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(PopupMenuItem<ItemType>, 'Manga'), findsNothing);
     expect(find.byType(PopupMenuItem<ItemType>), findsNWidgets(2));
@@ -128,20 +128,20 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pumpWidget(
       _app(
-        MobileMediaMenu(
+        LibraryMediaButton(
           value: ItemType.anime,
           availableTypes: const [ItemType.anime],
           onChanged: changes.add,
         ),
       ),
     );
-    await tester.tap(find.byType(MobileMediaMenu));
+    await tester.tap(find.byType(LibraryMediaButton));
     await tester.pumpAndSettle();
     expect(find.byType(PopupMenuItem<ItemType>), findsNothing);
-    expect(find.byIcon(Icons.expand_more_rounded), findsNothing);
+    expect(find.byIcon(CupertinoIcons.chevron_down), findsNothing);
     expect(changes, isEmpty);
     expect(
-      tester.getSize(find.byType(MobileMediaMenu)).height,
+      tester.getSize(find.byType(LibraryMediaButton)).height,
       greaterThanOrEqualTo(44),
     );
   });

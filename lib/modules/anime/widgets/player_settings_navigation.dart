@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-typedef SettingsSectionBuilder = Widget Function(BuildContext context);
-
 /// One entry in the settings home list ("Qualité", "Vitesse"...): an icon, a
 /// label, an optional live current-value widget shown to the right of it
 /// (e.g. "1.0×"), and either drill-down content or a direct action.
@@ -9,7 +7,7 @@ class SettingsEntry {
   final String label;
   final IconData icon;
   final WidgetBuilder? valueBuilder;
-  final SettingsSectionBuilder? contentBuilder;
+  final WidgetBuilder? contentBuilder;
   final ValueChanged<BuildContext>? onTap;
 
   const SettingsEntry({
@@ -27,7 +25,7 @@ class SettingsEntry {
 /// An inherited widget that exposes navigation actions for the active
 /// settings surface, allowing options inside a section (e.g. playback speed,
 /// fit, video track) to navigate back to the settings home list rather than
-/// dismissing the whole sheet or popup menu.
+/// dismissing the whole menu.
 class SettingsDrilldownScope extends InheritedWidget {
   final VoidCallback goHome;
   final VoidCallback close;
@@ -45,6 +43,17 @@ class SettingsDrilldownScope extends InheritedWidget {
 
   static SettingsDrilldownScope? of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<SettingsDrilldownScope>();
+  }
+
+  static void finishChoice(BuildContext context) {
+    final scope = of(context);
+    if (scope == null) {
+      Navigator.pop(context);
+    } else if (scope.isDirectShortcut) {
+      scope.close();
+    } else {
+      scope.goHome();
+    }
   }
 
   @override

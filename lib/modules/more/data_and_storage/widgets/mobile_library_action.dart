@@ -9,11 +9,12 @@ class MobileLibraryAction extends StatefulWidget {
   const MobileLibraryAction({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.icon,
     required this.onOpen,
   });
-  final String title, subtitle;
+  final String title;
+  final String? subtitle;
   final IconData icon;
   final Future<void> Function() onOpen;
 

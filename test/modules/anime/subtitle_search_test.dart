@@ -190,6 +190,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(source.downloads, 1);
       source.pending = Completer<SubtitleContent>();
+      await tester.ensureVisible(find.text('Retry'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Retry'));
       await tester.pump();
       expect(source.downloads, 2);

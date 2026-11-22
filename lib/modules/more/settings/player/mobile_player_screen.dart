@@ -90,7 +90,6 @@ class MobilePlayerScreen extends ConsumerWidget {
             ),
             NodeLaneSwitchRow(
               title: l10n.use_libass,
-              subtitle: l10n.use_libass_info,
               icon: NodeLaneIcons.of(context).subtitles,
               value: ref.watch(useLibassStateProvider),
               onChanged: ref.read(useLibassStateProvider.notifier).set,
@@ -173,14 +172,12 @@ class _Display extends ConsumerWidget {
       children: [
         NodeLaneSwitchRow(
           title: l10n.full_screen_player,
-          subtitle: l10n.full_screen_player_info,
           icon: NodeLaneIcons.of(context).fullscreen,
           value: ref.watch(fullScreenPlayerStateProvider),
           onChanged: ref.read(fullScreenPlayerStateProvider.notifier).set,
         ),
         NodeLaneSwitchRow(
           title: l10n.forceLandscapeMode,
-          subtitle: l10n.forceLandscapeModeSubtitle,
           icon: NodeLaneIcons.of(context).rotate,
           value: ref.watch(forceLandscapePlayerStateProvider),
           onChanged: ref.read(forceLandscapePlayerStateProvider.notifier).set,

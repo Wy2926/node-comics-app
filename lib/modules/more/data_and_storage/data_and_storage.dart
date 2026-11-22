@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -155,23 +154,6 @@ class DataAndStorage extends ConsumerWidget {
                 style: TextStyle(fontSize: 11, color: context.secondaryColor),
               ),
             ),
-            ListTile(
-              title: Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      color: context.secondaryColor,
-                    ),
-                  ],
-                ),
-              ),
-              subtitle: Text(
-                l10n.download_location_info,
-                style: TextStyle(fontSize: 11, color: context.secondaryColor),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
               child: Row(
@@ -289,10 +271,6 @@ class DataAndStorage extends ConsumerWidget {
             ),
             SwitchListTile(
               title: Text(l10n.encrypt_backups),
-              subtitle: Text(
-                l10n.encrypt_backups_info,
-                style: TextStyle(fontSize: 11),
-              ),
               value: backupEncryptionEnabled,
               onChanged: (value) async {
                 if (!value) {
@@ -315,13 +293,6 @@ class DataAndStorage extends ConsumerWidget {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.compression_info(DeflateLevel.defaultCompression),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.secondaryColor,
-                    ),
-                  ),
                   TvEscapableSlider(
                     enabled: isTv,
                     onDecrease: () => ref

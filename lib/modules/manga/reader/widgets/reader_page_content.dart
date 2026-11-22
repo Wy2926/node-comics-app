@@ -11,7 +11,7 @@ import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subs
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/image_actions_dialog.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_image_actions.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 
 import '../settings/comic_reader_scope.dart';
@@ -111,7 +111,8 @@ class ReaderPageContent extends StatelessWidget {
         // screens for every prefetched page would exhaust memory on long strips.
         minCacheExtent: 1.5 * context.height(1),
         physics: const ClampingScrollPhysics(),
-        onLongPressData: (data) => ImageActionsDialog.show(
+        onLongPressData: (data, point) => showReaderImageActions(
+          globalPosition: point,
           context: context,
           data: data,
           manga: chapter.manga.value!,
@@ -182,14 +183,13 @@ class ReaderPageContent extends StatelessWidget {
               onFailedToLoadImage: onFailedToLoadImage,
               onImageLoaded: (pIdx, width, height) {},
               onWideSinglePageLoaded: onWideSinglePageLoaded,
-              onLongPressData: (datas) {
-                ImageActionsDialog.show(
-                  context: context,
-                  data: datas,
-                  manga: chapter.manga.value!,
-                  chapterName: chapter.name!,
-                );
-              },
+              onLongPressData: (datas, point) => showReaderImageActions(
+                globalPosition: point,
+                context: context,
+                data: datas,
+                manga: chapter.manga.value!,
+                chapterName: chapter.name!,
+              ),
             );
           }
           final page = pages[index];
@@ -298,7 +298,6 @@ class ReaderPagedItem extends StatelessWidget {
               child: SingleChildScrollView(
                 child: ReaderContentStatus(
                   message: l10n.image_loading_error,
-                  description: l10n.reader_image_failure_hint,
                   onRetry: () {
                     state.reLoadImage();
                     onFailedToLoadImage(page, false);
@@ -310,7 +309,8 @@ class ReaderPagedItem extends StatelessWidget {
         }
         return const SizedBox.shrink();
       },
-      onLongPressData: (datas) => ImageActionsDialog.show(
+      onLongPressData: (datas, point) => showReaderImageActions(
+        globalPosition: point,
         context: context,
         data: datas,
         manga: chapter.manga.value!,

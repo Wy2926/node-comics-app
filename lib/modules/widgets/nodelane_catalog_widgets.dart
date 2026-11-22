@@ -275,6 +275,6 @@ Future<T?> showNodeLaneCatalogSheet<T>(
   isDismissible: dismissible,
   enableDrag: dismissible,
   backgroundColor: Colors.transparent,
-  shape: NodeLaneTokens.readerSheetShape,
+  shape: NodeLaneTokens.sheetShape,
   builder: (_) => child,
 );

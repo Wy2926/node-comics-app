@@ -56,7 +56,6 @@ class MobileBookshelfMenu extends StatelessWidget {
           ),
         NodeLaneSwitchRow(
           title: l10n.bookshelf_ignore_filters,
-          subtitle: l10n.bookshelf_ignore_filters_hint,
           value: ignoreFilters,
           onChanged: (_) => onSelected(4),
         ),

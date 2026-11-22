@@ -5,7 +5,7 @@ import 'package:mangayomi/modules/anime/providers/anime_player_controller_provid
 import 'package:mangayomi/modules/anime/utils/audio_track_label.dart';
 import 'package:mangayomi/modules/anime/utils/player_labels.dart';
 import 'package:mangayomi/modules/anime/utils/video_prefs.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:media_kit/media_kit.dart';

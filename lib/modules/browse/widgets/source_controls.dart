@@ -6,7 +6,6 @@ import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart'
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 typedef SourceOption<T> = MobileSettingOption<T>;
@@ -17,31 +16,12 @@ Future<T?> showSourceChoice<T>(
   String? subtitle,
   required T? current,
   required List<SourceOption<T>> options,
-  String? hint,
 }) async {
   if (options.isEmpty) return null;
   if (options.length <= 8 && !NodeLaneBubbleFlow.contains(context)) {
-    final row = context.findRenderObject()! as RenderBox;
-    final overlay =
-        Navigator.of(
-              context,
-              rootNavigator: true,
-            ).overlay!.context.findRenderObject()!
-            as RenderBox;
-    final end = AlignmentDirectional.bottomEnd.resolve(
-      Directionality.of(context),
-    );
-    RelativeRect position() => RelativeRect.fromRect(
-      row.localToGlobal(end.alongSize(row.size), ancestor: overlay) & Size.zero,
-      Offset.zero & overlay.size,
-    );
-    final initial = position();
-    final value = await showMenu<T>(
-      context: context,
-      useRootNavigator: true,
-      positionBuilder: (_, _) => row.attached ? position() : initial,
-      semanticLabel: title,
-      popUpAnimationStyle: NodeLaneMotion.style(context),
+    final value = await showNodeLaneBubbleMenu<T>(
+      context,
+      label: title,
       items: [
         for (final o in options)
           CheckedPopupMenuItem<T>(
@@ -59,10 +39,7 @@ Future<T?> showSourceChoice<T>(
     current: current,
     options: options,
     searchable: options.length > 8,
-    description: [
-      ?subtitle,
-      hint ?? context.l10n.settings_immediate_choice,
-    ].join('\n'),
+    description: subtitle,
   );
   return option?.value == current ? null : option?.value;
 }

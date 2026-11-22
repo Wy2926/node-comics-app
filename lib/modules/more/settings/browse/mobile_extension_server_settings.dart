@@ -120,11 +120,6 @@ class _MobileExtensionServerSettingsState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            l10n.zero_interpreter_description,
-                            style: colors.readerSecondary,
-                          ),
-                          const SizedBox(height: 16),
                           Semantics(
                             liveRegion: true,
                             child: Text(
@@ -191,13 +186,6 @@ class _MobileExtensionServerSettingsState
                         ? '—'
                         : widget.proxyAddress,
                     onTap: _busy ? null : _editAddress,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      l10n.m_extension_server_description,
-                      style: colors.readerSecondary,
-                    ),
                   ),
                   NodeLaneRow(
                     title: l10n.get_m_extension_server,

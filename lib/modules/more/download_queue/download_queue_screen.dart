@@ -10,7 +10,7 @@ import 'package:mangayomi/modules/manga/download/providers/download_provider.dar
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/download_manager/download_queue_order.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
@@ -248,8 +248,7 @@ class _DownloadQueueScreenState extends ConsumerState<DownloadQueueScreen> {
                       }
                     },
                   )
-                : PopupMenuButton(
-                    popUpAnimationStyle: NodeLaneMotion.style(context),
+                : NodeLaneBubbleButton(
                     child: const Icon(Icons.more_vert),
                     onSelected: (value) => _onDownloadAction(
                       context,

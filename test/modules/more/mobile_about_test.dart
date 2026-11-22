@@ -143,10 +143,14 @@ void main() {
       await tester.pumpAndSettle();
       final reports = find.text('Error reports');
       await reveal(tester, reports);
-      expect(find.textContaining(' · 3'), findsOneWidget);
+      final count = find.descendant(
+        of: find.widgetWithText(NodeLaneRow, 'Error reports'),
+        matching: find.text('3'),
+      );
+      expect(count, findsOneWidget);
       await tester.tap(reports);
       await tester.pumpAndSettle();
-      expect(find.textContaining(' · 3'), findsNothing);
+      expect(count, findsNothing);
       final share = find.widgetWithText(NodeLaneRow, 'Share app logs');
       await reveal(tester, share);
       await tester.tap(share);

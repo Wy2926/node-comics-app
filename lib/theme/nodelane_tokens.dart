@@ -53,14 +53,11 @@ class NodeLaneTokens {
   static const readerEntryCoverWidth = 96.0, readerEntryCoverHeight = 136.0;
   static const chapterRowHeight = 72.0;
   static const defaultMobileAccent = Color(0xff006eff);
-  // Reader concept: all overlays use the same geometry, type and controls.
-  static const readerSheetFraction = .78;
   static const readerRowHeight = 62.0;
   static const readerChapterHeight = 68.0, readerActionHeight = 64.0;
-  static const readerImageActionHeight = 72.0;
   static const readerValueSwatchSize = 28.0;
   static const readerIconSize = 24.0, readerSliderTrack = 3.0;
-  static const readerSheetShape = RoundedRectangleBorder(
+  static const sheetShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(modalRadius)),
   );
   static const segmentInset = 3.0;
@@ -417,25 +414,12 @@ ThemeData _buildModalTheme(ThemeData base) {
       modalBarrierColor: Colors.black54,
       elevation: 0,
       modalElevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(NodeLaneTokens.modalRadius),
-        ),
-      ),
+      shape: NodeLaneTokens.sheetShape,
       clipBehavior: Clip.antiAlias,
       dragHandleColor: colors.muted,
       dragHandleSize: NodeLaneTokens.sheetHandleSize,
     ),
     popupMenuTheme: base.popupMenuTheme.copyWith(
-      color: colors.surface,
-      surfaceTintColor: Colors.transparent,
-      elevation: 6,
-      shadowColor: Colors.black26,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
-        side: BorderSide(color: colors.line, width: NodeLaneTokens.glassStroke),
-      ),
-      menuPadding: const EdgeInsets.all(6),
       textStyle: base.textTheme.bodyLarge?.copyWith(color: colors.ink),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => colors.readerLabel.copyWith(
@@ -444,7 +428,6 @@ ThemeData _buildModalTheme(ThemeData base) {
               : colors.ink,
         ),
       ),
-      position: PopupMenuPosition.under,
     ),
   );
 }

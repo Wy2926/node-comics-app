@@ -35,13 +35,6 @@ class MobileNavigationSettings extends ConsumerWidget {
           child: ReorderableListView.builder(
             padding: NodeLaneTokens.pagePadding,
             buildDefaultDragHandles: false,
-            header: Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: Text(
-                l10n.mobile_navigation_description,
-                style: colors.readerSecondary,
-              ),
-            ),
             footer: Padding(
               padding: const EdgeInsets.only(top: 24),
               child: MobileSettingsGroup(

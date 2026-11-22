@@ -90,11 +90,9 @@ class SearchActivitySummary extends StatelessWidget {
                   : failed
                   ? context.l10n.search_no_results_yet
                   : context.l10n.search_no_matching_titles,
-              message: searching
-                  ? context.l10n.search_results_appear_hint
-                  : failed
+              message: !searching && failed
                   ? context.l10n.search_failed_websites_hint
-                  : context.l10n.search_change_keywords_hint,
+                  : null,
               action: searching
                   ? null
                   : TextButton(
@@ -145,7 +143,7 @@ class SearchActivityPage extends StatelessWidget {
       valueListenable: activity,
       builder: (context, values, _) => ListView.builder(
         padding: NodeLaneTokens.pagePadding,
-        itemCount: sources.length + 2,
+        itemCount: sources.length + 1,
         itemBuilder: (context, index) {
           final t = NodeLaneTokens.of(context);
           if (index == 0) {
@@ -156,15 +154,6 @@ class SearchActivityPage extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: NodeLaneTokens.space16),
               child: Text(
                 '${context.l10n.search_query_websites(query, sources.length)}\n${context.l10n.search_completed_count(completed, sources.length)}',
-                style: t.readerSecondary,
-              ),
-            );
-          }
-          if (index == sources.length + 1) {
-            return Padding(
-              padding: const EdgeInsets.only(top: NodeLaneTokens.space16),
-              child: Text(
-                context.l10n.search_retry_website_hint,
                 style: t.readerSecondary,
               ),
             );

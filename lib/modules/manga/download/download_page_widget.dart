@@ -14,7 +14,7 @@ import 'package:mangayomi/modules/manga/download/providers/download_provider.dar
 import 'package:mangayomi/repositories/download_repository.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/utils/share.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path/path.dart' as p;
@@ -125,8 +125,7 @@ class ChapterPageDownload extends ConsumerWidget {
 
               // 1. Completely downloaded
               if (download.isDownload == true) {
-                return PopupMenuButton<int>(
-                  popUpAnimationStyle: NodeLaneMotion.style(context),
+                return NodeLaneBubbleButton<int>(
                   child: Icon(
                     size: 25,
                     Icons.check_circle,
@@ -150,8 +149,7 @@ class ChapterPageDownload extends ConsumerWidget {
               // 2. Failed download state
               if ((download.failed ?? 0) > 0 &&
                   download.isStartDownload != true) {
-                return PopupMenuButton<int>(
-                  popUpAnimationStyle: NodeLaneMotion.style(context),
+                return NodeLaneBubbleButton<int>(
                   child: Icon(
                     Icons.error_outline_outlined,
                     color: Colors.red,
@@ -178,8 +176,7 @@ class ChapterPageDownload extends ConsumerWidget {
 
                 if (succeeded > 0 && total > 0) {
                   final progress = (succeeded / total).clamp(0.0, 1.0);
-                  return PopupMenuButton<int>(
-                    popUpAnimationStyle: NodeLaneMotion.style(context),
+                  return NodeLaneBubbleButton<int>(
                     child: Stack(
                       children: [
                         Align(
@@ -227,8 +224,7 @@ class ChapterPageDownload extends ConsumerWidget {
                 }
 
                 // Started / queued with zero progress yet
-                return PopupMenuButton<int>(
-                  popUpAnimationStyle: NodeLaneMotion.style(context),
+                return NodeLaneBubbleButton<int>(
                   child: _DownloadProgressIcon(isLoading: true),
                   onSelected: (value) {
                     if (value == 0) {

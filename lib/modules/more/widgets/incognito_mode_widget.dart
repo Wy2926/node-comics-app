@@ -15,7 +15,7 @@ class IncognitoModeWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = l10nLocalizations(context);
+    final l10n = context.l10n;
     final incognitoMode = ref.watch(incognitoModeStateProvider);
     final hideDiscordRpcInIncognito = ref.watch(
       hideDiscordRpcInIncognitoStateProvider,
@@ -33,7 +33,7 @@ class IncognitoModeWidget extends ConsumerWidget {
 
     if (mobile) {
       return NodeLaneSwitchRow(
-        title: l10n!.incognito_mode,
+        title: l10n.incognito_mode,
         icon: NodeLaneIcons.of(context).incognito,
         value: incognitoMode,
         onChanged: change,
@@ -42,7 +42,6 @@ class IncognitoModeWidget extends ConsumerWidget {
     return ListTileWidget(
       onTap: () => change(!incognitoMode),
       icon: CupertinoIcons.eyeglasses,
-      subtitle: l10n!.incognito_mode_description,
       title: l10n.incognito_mode,
       trailing: Switch(value: incognitoMode, onChanged: change),
     );

@@ -147,12 +147,14 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
         ),
       );
     }
-    return IconButton(
-      tooltip: context.l10n.translation_title,
-      icon: Icon(
-        scope.notifier!.enabled ? Icons.translate : Icons.translate_outlined,
+    return Builder(
+      builder: (anchor) => IconButton(
+        tooltip: context.l10n.translation_title,
+        icon: Icon(
+          scope.notifier!.enabled ? Icons.translate : Icons.translate_outlined,
+        ),
+        onPressed: () => showTranslationControls(anchor, scope.notifier!),
       ),
-      onPressed: () => showTranslationControls(context, scope.notifier!),
     );
   }
 

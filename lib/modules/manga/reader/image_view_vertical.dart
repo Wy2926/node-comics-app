@@ -16,7 +16,8 @@ import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subs
 
 class ImageViewVertical extends ConsumerStatefulWidget {
   final UChapDataPreload data;
-  final Function(UChapDataPreload data) onLongPressData;
+  final void Function(UChapDataPreload data, Offset globalPosition)
+  onLongPressData;
   final bool isHorizontal;
   final Function(bool) failedToLoadImage;
   final Widget? Function(SubsamplingImageState)? loadStateChanged;
@@ -104,7 +105,8 @@ class _ImageViewVerticalState extends ConsumerState<ImageViewVertical> {
       widget.data,
       child: applyReaderColorFilter(
         GestureDetector(
-          onLongPress: () => widget.onLongPressData(widget.data),
+          onLongPressStart: (press) =>
+              widget.onLongPressData(widget.data, press.globalPosition),
           child: SizedBox(width: double.infinity, child: imageWidget),
         ),
         profile,

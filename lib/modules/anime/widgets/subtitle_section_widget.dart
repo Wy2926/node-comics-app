@@ -9,11 +9,11 @@ import 'package:mangayomi/models/video.dart' as vid;
 import 'package:mangayomi/modules/anime/utils/audio_track_label.dart';
 import 'package:mangayomi/modules/anime/utils/track_list_builder.dart';
 import 'package:mangayomi/modules/anime/widgets/search_subtitles.dart';
-import 'package:mangayomi/modules/anime/widgets/unified_settings_sheet.dart';
+import 'package:mangayomi/modules/anime/widgets/player_settings_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:media_kit/media_kit.dart';
 
-/// Subtitle tracks, local files and online search in the player settings sheet.
+/// Subtitle tracks, local files and online search in the player menu.
 /// Delay/speed display state stays here; the caller's text-controller listeners
 /// apply the corresponding mpv properties.
 class SubtitleSectionWidget extends StatefulWidget {
@@ -220,35 +220,37 @@ class _SubtitleSectionWidgetState extends State<SubtitleSectionWidget> {
               }
             },
           ),
-          SettingsActionRow(
-            label: context.l10n.search_subtitles,
-            icon: Icons.search,
-            onTap: () async {
-              try {
-                final subtitle = await showSubtitleSearch(
-                  context,
-                  chapter: widget.episode,
-                  isLocal: widget.isLocal,
-                );
-                if (subtitle != null && context.mounted) {
-                  final track = SubtitleTrack.data(
-                    subtitle.text,
-                    title: subtitle.name,
-                    language: subtitle.language,
+          Builder(
+            builder: (anchor) => SettingsActionRow(
+              label: context.l10n.search_subtitles,
+              icon: Icons.search,
+              onTap: () async {
+                try {
+                  final subtitle = await showSubtitleSearch(
+                    anchor,
+                    chapter: widget.episode,
+                    isLocal: widget.isLocal,
                   );
-                  await widget.onSetSubtitleTrack(track);
+                  if (subtitle != null && context.mounted) {
+                    final track = SubtitleTrack.data(
+                      subtitle.text,
+                      title: subtitle.name,
+                      language: subtitle.language,
+                    );
+                    await widget.onSetSubtitleTrack(track);
+                  }
+                  if (!context.mounted) return;
+                  widget.onDone();
+                } catch (_) {
+                  if (!context.mounted) return;
+                  showNodeLaneNotice(
+                    context.l10n.error,
+                    kind: NodeLaneNoticeKind.error,
+                  );
+                  widget.onDone();
                 }
-                if (!context.mounted) return;
-                widget.onDone();
-              } catch (_) {
-                if (!context.mounted) return;
-                showNodeLaneNotice(
-                  context.l10n.error,
-                  kind: NodeLaneNoticeKind.error,
-                );
-                widget.onDone();
-              }
-            },
+              },
+            ),
           ),
         ],
       ),

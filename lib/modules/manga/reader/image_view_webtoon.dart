@@ -82,7 +82,8 @@ class ImageViewWebtoon extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final double minCacheExtent;
   final ScrollPhysics physics;
-  final Function(UChapDataPreload data) onLongPressData;
+  final void Function(UChapDataPreload data, Offset globalPosition)
+  onLongPressData;
   final void Function(UChapDataPreload page, bool failed) onFailedToLoadImage;
   final Color backgroundColor;
   final double widthFactor, gap;

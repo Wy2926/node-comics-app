@@ -30,7 +30,7 @@ import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/utils/headers.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -847,8 +847,7 @@ class DetailGenreChip extends StatelessWidget {
       padding: const EdgeInsets.only(left: 2, right: 2, bottom: 5),
       child: SizedBox(
         height: 30,
-        child: PopupMenuButton<int>(
-          popUpAnimationStyle: NodeLaneMotion.style(context),
+        child: NodeLaneBubbleButton<int>(
           itemBuilder: (context) => [
             // These are the only two menu rows in the app that set their own
             // height, and 40 is under the minimum target on Material and Apple.

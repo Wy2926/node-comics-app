@@ -34,7 +34,6 @@ class PlayerOverviewScreen extends StatelessWidget {
                   return SwitchListTile(
                     secondary: const Icon(Icons.smart_display_outlined),
                     title: Text(context.l10n.tv_player_beta),
-                    subtitle: Text(context.l10n.tv_player_hint),
                     value: useTvPlayer,
                     onChanged: (v) =>
                         ref.read(tvPlayerStyleProvider.notifier).set(v),
@@ -43,31 +42,26 @@ class PlayerOverviewScreen extends StatelessWidget {
               ),
             ListTileWidget(
               title: l10n.internal_player,
-              subtitle: l10n.internal_player_info,
               icon: Icons.play_circle_outline_outlined,
               onTap: () => context.push('/playerMode'),
             ),
             ListTileWidget(
               title: l10n.decoder,
-              subtitle: l10n.decoder_info,
               icon: Icons.memory_outlined,
               onTap: () => context.push('/playerDecoderScreen'),
             ),
             ListTileWidget(
               title: l10n.video_audio,
-              subtitle: l10n.video_audio_info,
               icon: Icons.audiotrack_outlined,
               onTap: () => context.push('/playerAudioScreen'),
             ),
             ListTileWidget(
               title: l10n.custom_buttons,
-              subtitle: l10n.custom_buttons_info,
               icon: Icons.terminal_outlined,
               onTap: () => context.push('/customButtonScreen'),
             ),
             ListTileWidget(
               title: l10n.advanced,
-              subtitle: l10n.advanced_info,
               icon: Icons.code_outlined,
               onTap: () => context.push('/playerAdvancedScreen'),
             ),
@@ -91,13 +85,11 @@ class MobilePlayerOverviewScreen extends StatelessWidget {
           children: [
             NodeLaneRow(
               title: l10n.internal_player,
-              subtitle: l10n.internal_player_info,
               icon: NodeLaneIcons.of(context).anime,
               onTap: () => context.push('/playerMode'),
             ),
             NodeLaneRow(
               title: l10n.video_audio,
-              subtitle: l10n.video_audio_info,
               icon: NodeLaneIcons.of(context).headphones,
               onTap: () => context.push('/playerAudioScreen'),
             ),
@@ -113,13 +105,11 @@ class MobilePlayerOverviewScreen extends StatelessWidget {
               children: [
                 NodeLaneRow(
                   title: l10n.decoder,
-                  subtitle: l10n.decoder_info,
                   icon: NodeLaneIcons.of(context).memory,
                   onTap: () => context.push('/playerDecoderScreen'),
                 ),
                 NodeLaneRow(
                   title: l10n.custom_buttons,
-                  subtitle: l10n.custom_buttons_info,
                   icon: NodeLaneIcons.of(context).code,
                   onTap: () => context.push('/customButtonScreen'),
                 ),

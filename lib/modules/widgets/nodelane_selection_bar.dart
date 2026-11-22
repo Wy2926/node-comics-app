@@ -1,5 +1,3 @@
-import 'dart:ui' show SemanticsRole;
-
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -25,16 +23,10 @@ class NodeLaneSelectionBar<T> extends StatelessWidget {
   final bool busy;
 
   Future<void> _showMore(BuildContext button) async {
-    final picked = await showNodeLaneBubble<T>(
+    final picked = await showNodeLaneBubbleMenu<T>(
       button,
       label: moreLabel,
-      child: Semantics(
-        role: SemanticsRole.menu,
-        child: SingleChildScrollView(
-          padding: PopupMenuTheme.of(button).menuPadding,
-          child: ListBody(children: moreItems),
-        ),
-      ),
+      items: moreItems,
     );
     if (picked != null && button.mounted) onMore(picked);
   }

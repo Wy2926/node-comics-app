@@ -81,10 +81,12 @@ class ReaderBottomBar extends ConsumerWidget {
         ),
         Expanded(child: ReaderTranslationHost.button(context, labeled: true)),
         Expanded(
-          child: NodeLaneToolbarAction(
-            label: context.l10n.comic_reading,
-            icon: NodeLaneIcons.of(context).adjustments,
-            onPressed: () => onSettingsPressed(context),
+          child: Builder(
+            builder: (anchor) => NodeLaneToolbarAction(
+              label: context.l10n.comic_reading,
+              icon: NodeLaneIcons.of(context).adjustments,
+              onPressed: () => onSettingsPressed(anchor),
+            ),
           ),
         ),
       ],

@@ -41,7 +41,7 @@ import 'package:mangayomi/modules/manga/home/widget/mangas_card_selector.dart';
 import 'package:mangayomi/modules/widgets/cover_grid_skeleton.dart';
 import 'package:mangayomi/modules/widgets/gridview_widget.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:marquee/marquee.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -426,7 +426,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Text(
-                context.l10n.no_saved_searches,
+                context.l10n.source_no_saved_searches,
                 textAlign: TextAlign.center,
               ),
             );
@@ -775,44 +775,25 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
               },
             )
           else
-            PopupMenuButton(
-              popUpAnimationStyle: NodeLaneMotion.style(context),
+            NodeLaneBubbleButton<Object>(
               icon: Icon(displayTypeIcon),
+              tooltip: context.l10n.display_mode,
               itemBuilder: (context) {
-                final displayType = ref.watch(
-                  mangaHomeDisplayTypeStateProvider,
-                );
-                final displayTypeNotifier = ref.read(
-                  mangaHomeDisplayTypeStateProvider.notifier,
-                );
+                final displayType = ref.read(mangaHomeDisplayTypeStateProvider);
                 return [
-                  PopupMenuItem<int>(
-                    value: 0,
-                    child: RadioGroup(
-                      groupValue: displayType,
-                      onChanged: (a) {
-                        context.pop();
-                        displayTypeNotifier.setMangaHomeDisplayType(a!);
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RadioListTile(
-                            title: Text(context.l10n.comfortable_grid),
-                            value: DisplayType.comfortableGrid,
-                          ),
-                          RadioListTile(
-                            title: Text(context.l10n.compact_grid),
-                            value: DisplayType.compactGrid,
-                          ),
-                          RadioListTile(
-                            title: Text(context.l10n.list),
-                            value: DisplayType.list,
-                          ),
-                        ],
-                      ),
+                  for (final (mode, title) in [
+                    (
+                      DisplayType.comfortableGrid,
+                      context.l10n.comfortable_grid,
                     ),
-                  ),
+                    (DisplayType.compactGrid, context.l10n.compact_grid),
+                    (DisplayType.list, context.l10n.list),
+                  ])
+                    CheckedPopupMenuItem<Object>(
+                      value: mode,
+                      checked: mode == displayType,
+                      child: Text(title),
+                    ),
                   PopupMenuItem<int>(
                     value: 2,
                     child: Text(context.l10n.save_search),
@@ -824,7 +805,13 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                 ];
               },
               onSelected: (value) {
-                if (value == 2) {
+                if (value is DisplayType) {
+                  if (ref.read(mangaHomeDisplayTypeStateProvider) != value) {
+                    ref
+                        .read(mangaHomeDisplayTypeStateProvider.notifier)
+                        .setMangaHomeDisplayType(value);
+                  }
+                } else if (value == 2) {
                   _promptSaveSearch();
                 } else if (value == 3) {
                   _showSavedSearches();
@@ -849,8 +836,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                 },
               )
             else
-              PopupMenuButton(
-                popUpAnimationStyle: NodeLaneMotion.style(context),
+              NodeLaneBubbleButton(
                 itemBuilder: (context) {
                   return [
                     PopupMenuItem<int>(

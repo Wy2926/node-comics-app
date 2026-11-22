@@ -1,6 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
-import 'package:archive/archive.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -143,12 +142,10 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
       String title,
       IconData icon,
       Future<void> Function() action, {
-      String? subtitle,
       String? value,
       bool enabled = true,
     }) => NodeLaneRow(
       title: title,
-      subtitle: subtitle,
       value: value,
       icon: icon,
       trailing: TextButton(
@@ -237,7 +234,6 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                           l.settings_translation_cache,
                           icons.translate,
                           _clearTranslation,
-                          subtitle: l.settings_translation_cache_hint,
                           enabled: !translation.busy,
                         ),
                       ),
@@ -252,6 +248,9 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                         value: location.$2.isEmpty
                             ? l.default0
                             : l.custom_location,
+                        subtitle: location.$2.isEmpty
+                            ? location.$1
+                            : location.$2,
                         onTap: () => _downloadLocation(location),
                       ),
                     ],
@@ -291,7 +290,6 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                           ),
                         NodeLaneSwitchRow(
                           title: l.encrypt_backups,
-                          subtitle: l.encrypt_backups_info,
                           icon: icons.security,
                           value: ref.watch(backupEncryptionEnabledProvider),
                           onChanged: _busy
@@ -302,9 +300,6 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                         ),
                         NodeLaneSliderRow(
                           title: l.compression_level,
-                          subtitle: l.compression_info(
-                            DeflateLevel.defaultCompression,
-                          ),
                           value: compression.clamp(0, 9).toDouble(),
                           min: 0,
                           max: 9,
@@ -333,13 +328,6 @@ class _MobileDataAndStorageState extends ConsumerState<MobileDataAndStorage> {
                                           .notifier,
                                     )
                                     .set,
-                        ),
-                        Padding(
-                          padding: NodeLaneTokens.groupPadding,
-                          child: Text(
-                            '${l.download_location_info}\n${location.$2.isEmpty ? location.$1 : location.$2}',
-                            style: t.readerSecondary,
-                          ),
                         ),
                         ...widget.maintenance,
                       ],

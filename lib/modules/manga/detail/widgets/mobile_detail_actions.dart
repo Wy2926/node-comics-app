@@ -187,11 +187,6 @@ class MobileMangaDownloadActionsButton extends StatelessWidget {
                       ),
                   ],
                 ),
-                if (!episodes)
-                  Text(
-                    l.manga_download_scope_hint,
-                    style: NodeLaneTokens.of(context).readerSecondary,
-                  ),
               ],
       ),
     );

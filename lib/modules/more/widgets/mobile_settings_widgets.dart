@@ -64,7 +64,6 @@ class MobileSettingsChoice<T> extends StatelessWidget {
         current: value,
         options: options,
         searchable: searchable,
-        inSheet: NodeLaneReaderScope.activeOf(context),
       );
       if (context.mounted && result != null && result.value != value) {
         onChanged(result.value);
