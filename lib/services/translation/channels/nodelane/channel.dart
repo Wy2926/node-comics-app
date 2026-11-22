@@ -796,7 +796,8 @@ class OfficialRuntime implements ChannelRuntime {
     _watchTimer = null;
     _watchCancellation?.cancel();
     _watchCancellation = null;
-    _subscription?.cancel();
+    // Aborting the HTTP request can also fail the discarded stream's cancel future.
+    _subscription?.cancel().ignore();
     _subscription = null;
     _watchIds = '';
   }

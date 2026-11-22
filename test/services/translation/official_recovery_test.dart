@@ -98,6 +98,7 @@ void main() {
   (int, String)? rejectCreate;
   Map<String, dynamic>? translatedResult;
   List<int>? artifactBytes;
+  Completer<HttpResponse>? pendingEvents;
 
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
@@ -137,6 +138,7 @@ void main() {
     echoModel = requireUpload = true;
     translatedResult = null;
     artifactBytes = null;
+    pendingEvents = null;
     downloads = 0;
     dropCreate = false;
     absentCreate = false;
@@ -165,6 +167,10 @@ void main() {
           'limits': {'max_bytes': 1, 'max_dimension': 1},
         };
       } else if (path.endsWith('/events')) {
+        if (pendingEvents case final pending?) {
+          pending.complete(request.response);
+          return;
+        }
         request.response.headers.contentType = ContentType(
           'text',
           'event-stream',
@@ -946,6 +952,18 @@ void main() {
       },
     );
   }
+
+  test('disposing during an event connection leaves the queued operation recoverable', () async {
+    requireUpload = false;
+    final pending = pendingEvents = Completer<HttpResponse>();
+    final value = runtime()..setWindow('reader', [target]);
+    final response = await pending.future;
+    final id = puts.single.$1;
+    await stop(value);
+    await response.close();
+    final receipt = await repository.read('operation:${value.scope}:$id');
+    expect(receipt?['snapshot'], containsPair('state', 'queued'));
+  });
 
   test('unavailable local encoder cannot block parent submission; an input mismatch requires explicit recovery', () async {
     final first = runtime()..setWindow('reader', [target]);
