@@ -9,6 +9,9 @@ import 'package:mangayomi/services/support_requests.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show CustomSemanticsAction;
+import 'package:flutter/gestures.dart'
+    show kLongPressTimeout, kPrimaryButton, kTouchSlop;
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,6 +27,7 @@ import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 
 import 'browser_session_store.dart';
+import 'browser_focus_tools.dart';
 import 'browser_webview_cache.dart';
 import 'browser_page_controller.dart';
 import 'browser_protection_panel.dart';
@@ -71,12 +75,13 @@ class BrowserTab {
   bool get isBlank => url.isEmpty;
   bool pageReady = false;
   bool chapter = false;
+  bool focusToolsOpen = false;
   String? nextChapter, focusOnChapter;
   bool get focused => pageReady && chapter && focusOnChapter == url;
   int document = 0;
   void resetReading() {
     document++;
-    chapter = pageReady = false;
+    focusToolsOpen = chapter = pageReady = false;
     nextChapter = null;
   }
 
@@ -724,6 +729,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
         tab.document == document &&
         tab.chapter &&
         tab.pageReady;
+    if (!currentPage()) return;
     final anchor = await tab.captureAnchor?.call();
     if (!currentPage() || tab.focused != old) return;
     setState(() => tab.focusOnChapter = old ? null : tab.url);
@@ -733,6 +739,28 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       await tab.restoreAnchor?.call(anchor).catchError((_) {});
     }
   }
+
+  void _nextChapter(BrowserTab tab) {
+    final next = tab.nextChapter;
+    if (next == null || !tab.pageReady || !tab.chapter) return;
+    tab.focusOnChapter = tab.focused ? next : null;
+    _openAddress(next);
+  }
+
+  Widget _focusTools(BrowserTab tab, VoidCallback dismiss) => ListenableBuilder(
+    listenable: tab.translation,
+    builder: (context, _) => BrowserFocusTools(
+      onClose: dismiss,
+      translated: tab.translation.showTranslation,
+      onExit: () => _toggleFocus(tab),
+      onClip: _clipping ? null : () => _clip(tab),
+      onDisplay: (value) {
+        tab.translation.configure(showTranslation: value);
+        _save();
+      },
+      onNext: tab.nextChapter == null ? null : () => _nextChapter(tab),
+    ),
+  );
 
   Future<void> _showTabs(BuildContext anchor) async {
     if (_showingTabs) return;
@@ -857,6 +885,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       return;
     }
     final bookmarked = browserLibraryStore.isBookmarked(tab.url);
+    final chapter = tab.pageReady && tab.chapter && !tab.findOpen;
+    final next = tab.nextChapter;
     final action = await showBrowserPageMenu(
       anchor,
       canForward: tab.canMove(1),
@@ -865,12 +895,18 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       clearingLogins: _clearingLogins,
       hasReader: target != null,
       canClip: tab.pageReady,
+      canFocus: chapter,
+      hasNextChapter: chapter && next != null,
     );
     if (!mounted || !samePage() || action == null) {
       return;
     }
     try {
       switch (action) {
+        case 'focus':
+          await _toggleFocus(tab);
+        case 'next':
+          if (tab.nextChapter == next) _nextChapter(tab);
         case 'clip':
           await _clip(tab);
         case 'reader':
@@ -1073,15 +1109,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
   @override
   Widget build(BuildContext context) {
     final tab = current;
+    final focused = tab?.focused == true;
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom != 0;
     final width =
         MediaQuery.sizeOf(context).width -
         MediaQuery.paddingOf(context).horizontal;
     final inline = context.hasPaneWidth(width);
-    final toolbar =
-        tab == null ||
-            tab.isBlank ||
-            tab.focused ||
-            MediaQuery.viewInsetsOf(context).bottom != 0
+    final toolbar = tab == null || tab.isBlank || focused || keyboardOpen
         ? null
         : ListenableBuilder(
             listenable: tab.translation,
@@ -1109,7 +1143,9 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       canPop: _savedOnExit || tab == null,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && !_leaving) {
-          if (tab?.focused == true) {
+          if (tab?.focusToolsOpen == true) {
+            setState(() => tab!.focusToolsOpen = false);
+          } else if (tab?.focused == true) {
             _toggleFocus(tab!);
           } else if (tab?.canMove(-1) == true) {
             _history(-1);
@@ -1121,13 +1157,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       child: NodeLaneSurface(
         child: Scaffold(
           body: SafeArea(
-            top: false,
-            left: false,
-            right: false,
+            top: focused,
+            left: focused,
+            right: focused,
             bottom: inline && toolbar != null,
             child: Column(
               children: [
-                if (tab != null && !tab.isBlank && !tab.focused)
+                if (tab != null && !tab.isBlank && !focused)
                   MobileBrowserHeader(
                     key: ValueKey(tab.id),
                     url: tab.url,
@@ -1233,54 +1269,14 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                         newTab: _new,
                                         editAddress: _addressFocus.requestFocus,
                                         recreate: () => _recreate(item),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              if (tab != null &&
-                                  tab.chapter &&
-                                  tab.pageReady &&
-                                  !tab.findOpen &&
-                                  MediaQuery.viewInsetsOf(context).bottom == 0)
-                                PositionedDirectional(
-                                  bottom: NodeLaneTokens.space8,
-                                  start: NodeLaneTokens.space8,
-                                  end: NodeLaneTokens.space8,
-                                  child: SafeArea(
-                                    top: false,
-                                    bottom: tab.focused,
-                                    child: Center(
-                                      child: ListenableBuilder(
-                                        listenable: tab.translation,
-                                        builder: (context, _) =>
-                                            BrowserChapterTools(
-                                              focused: tab.focused,
-                                              translated: tab
-                                                  .translation
-                                                  .showTranslation,
-                                              onFocus: () => _toggleFocus(tab),
-                                              onClip: _clipping
-                                                  ? null
-                                                  : () => _clip(tab),
-                                              onDisplay: (value) {
-                                                tab.translation.configure(
-                                                  showTranslation: value,
-                                                );
-                                                _save();
-                                              },
-                                              onNext: tab.nextChapter == null
-                                                  ? null
-                                                  : () {
-                                                      final next =
-                                                          tab.nextChapter;
-                                                      if (next == null) return;
-                                                      tab.focusOnChapter =
-                                                          tab.focused
-                                                          ? next
-                                                          : null;
-                                                      _openAddress(next);
-                                                    },
-                                            ),
+                                        focusTools:
+                                            _visible &&
+                                                item == tab &&
+                                                focused &&
+                                                !keyboardOpen
+                                            ? (dismiss) =>
+                                                  _focusTools(item, dismiss)
+                                            : null,
                                       ),
                                     ),
                                   ),
@@ -1310,6 +1306,7 @@ class _BrowserTabView extends StatefulWidget {
     required this.newTab,
     required this.editAddress,
     required this.recreate,
+    this.focusTools,
   });
   final BrowserTab tab;
   final bool useGecko;
@@ -1320,6 +1317,7 @@ class _BrowserTabView extends StatefulWidget {
   final void Function(String, {bool background}) newTab;
   final VoidCallback editAddress;
   final VoidCallback recreate;
+  final Widget Function(VoidCallback dismiss)? focusTools;
   @override
   State<_BrowserTabView> createState() => _BrowserTabViewState();
 }
@@ -1341,6 +1339,8 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   bool get loading => widget.tab.loading;
   bool _imageMenuOpen = false;
   Offset? _pressPoint;
+  PointerDownEvent? _focusTap;
+  final _pointers = <int>{};
   double progress = 0;
   String? loadingUrl;
   int navigation = 0;
@@ -1446,6 +1446,11 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   @override
   void didUpdateWidget(_BrowserTabView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusTools != null && widget.focusTools == null) {
+      _focusTap = null;
+      _pointers.clear();
+      widget.tab.focusToolsOpen = false;
+    }
     if (oldWidget.active != widget.active) {
       _visibility();
       if (!widget.active && widget.tab.findOpen) {
@@ -1560,38 +1565,119 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     }
   }
 
+  void _hideTools() {
+    if (widget.tab.focusToolsOpen) {
+      setState(() => widget.tab.focusToolsOpen = false);
+    }
+  }
+
+  void _showTools() {
+    if (mounted &&
+        !widget.tab.focusToolsOpen &&
+        widget.focusTools != null &&
+        !_imageMenuOpen &&
+        ModalRoute.isCurrentOf(context) == true) {
+      setState(() => widget.tab.focusToolsOpen = true);
+    }
+  }
+
+  // Observe raw taps without entering the native page's gesture arena.
+  void _pointerDown(PointerDownEvent event) {
+    _pressPoint = (context.findRenderObject()! as RenderBox).globalToLocal(
+      event.position,
+    );
+    if (widget.focusTools == null) return;
+    _pointers.add(event.pointer);
+    _focusTap = null;
+    if (widget.tab.focusToolsOpen) {
+      _hideTools();
+      return;
+    }
+    final size = context.size!;
+    if (_pointers.length == 1 &&
+        event.buttons == kPrimaryButton &&
+        Rect.fromCenter(
+          center: size.center(Offset.zero),
+          width: size.width / 2,
+          height: size.height / 2,
+        ).contains(event.localPosition)) {
+      _focusTap = event;
+    }
+  }
+
+  void _pointerUp(PointerUpEvent event) {
+    final down = _focusTap;
+    _focusTap = null;
+    _pointers.remove(event.pointer);
+    if (down != null &&
+        down.pointer == event.pointer &&
+        event.timeStamp - down.timeStamp < kLongPressTimeout &&
+        (event.position - down.position).distance <= kTouchSlop) {
+      _showTools();
+    }
+  }
+
   @override
-  Widget build(BuildContext context) => Listener(
-    onPointerDown: (e) => _pressPoint = e.localPosition,
-    child: Column(
-      children: [
-        if (widget.tab.findOpen && widget.active)
-          MobileBrowserFindBar(
-            current: activeMatch,
-            total: matches,
-            onFind: (text) {
-              setState(() {
-                activeMatch = 0;
-                matches = 0;
-              });
-              _find(
-                () => text.isEmpty ? _clearFind() : _searchText(text, true),
-              );
-            },
-            onNext: (forward) => _find(() => _searchText(null, forward)),
-            onClose: () {
-              setState(() => widget.tab.findOpen = false);
-              _find(_clearFind);
-            },
-          ),
-        Expanded(child: _buildPage(context)),
-      ],
-    ),
+  Widget build(BuildContext context) => Column(
+    children: [
+      if (widget.tab.findOpen && widget.active)
+        MobileBrowserFindBar(
+          current: activeMatch,
+          total: matches,
+          onFind: (text) {
+            setState(() {
+              activeMatch = 0;
+              matches = 0;
+            });
+            _find(() => text.isEmpty ? _clearFind() : _searchText(text, true));
+          },
+          onNext: (forward) => _find(() => _searchText(null, forward)),
+          onClose: () {
+            setState(() => widget.tab.findOpen = false);
+            _find(_clearFind);
+          },
+        ),
+      Expanded(child: _buildPage(context)),
+    ],
   );
 
   Widget _buildPage(BuildContext context) => Stack(
     children: [
-      webview,
+      Semantics(
+        container: widget.focusTools != null,
+        explicitChildNodes: widget.focusTools != null,
+        label: widget.focusTools == null ? null : context.l10n.browser_focus,
+        customSemanticsActions: widget.focusTools == null
+            ? null
+            : {
+                CustomSemanticsAction(label: context.l10n.settings_more_tools):
+                    _showTools,
+              },
+        child: Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: _pointerDown,
+          onPointerMove: widget.focusTools == null
+              ? null
+              : (event) {
+                  final down = _focusTap;
+                  if (down != null &&
+                      (event.position - down.position).distance > kTouchSlop) {
+                    _focusTap = null;
+                  }
+                },
+          onPointerUp: widget.focusTools == null ? null : _pointerUp,
+          onPointerCancel: widget.focusTools == null
+              ? null
+              : (event) {
+                  _pointers.remove(event.pointer);
+                  _focusTap = null;
+                },
+          onPointerSignal: widget.tab.focusToolsOpen
+              ? (_) => _hideTools()
+              : null,
+          child: webview,
+        ),
+      ),
       if (preview != null)
         Positioned.fill(
           child: IgnorePointer(
@@ -1632,6 +1718,14 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
                 ? widget.recreate
                 : () =>
                       widget.tab.controller?.load(loadingUrl ?? widget.tab.url),
+          ),
+        ),
+      if (widget.focusTools case final tools?)
+        Positioned.fill(
+          child: BrowserFocusOverlay(
+            visible: widget.tab.focusToolsOpen,
+            onReveal: _showTools,
+            child: tools(_hideTools),
           ),
         ),
     ],
@@ -2007,6 +2101,8 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   void _changeDocument(String? url) {
     if (widget.active) widget.leavingDocument();
     _pressPoint = null;
+    _focusTap = null;
+    _pointers.clear();
     widget.tab.resetReading();
     if (widget.tab.pendingClip?.url != url) widget.tab.pendingClip = null;
     if (url != widget.tab.url) {

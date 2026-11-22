@@ -71,8 +71,8 @@ class TranslationControlsContent extends ConsumerWidget {
             if (issue.message.isNotEmpty) issue.message,
           ?controller.error,
         };
-        final controls = Padding(
-          padding: NodeLaneTokens.modalContentPadding,
+        return SingleChildScrollView(
+          padding: NodeLaneTokens.bubbleContentPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -85,46 +85,49 @@ class TranslationControlsContent extends ConsumerWidget {
                 ),
                 const SizedBox(height: NodeLaneTokens.space12),
               ],
-              NodeLaneGroupSurface(
-                child: Padding(
-                  padding: const EdgeInsets.all(NodeLaneTokens.space16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        context.l10n.translation_image_display,
-                        style: t.readerLabel,
-                      ),
-                      const SizedBox(height: NodeLaneTokens.space12),
-                      TranslationDisplaySwitch(
-                        translated: controller.showTranslation,
-                        onChanged: (value) =>
-                            controller.configure(showTranslation: value),
-                      ),
-                    ],
+              if (!browser) ...[
+                NodeLaneGroupSurface(
+                  outlined: true,
+                  child: Padding(
+                    padding: NodeLaneTokens.groupPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          context.l10n.translation_image_display,
+                          style: t.readerLabel,
+                        ),
+                        const SizedBox(height: NodeLaneTokens.space12),
+                        TranslationDisplaySwitch(
+                          translated: controller.showTranslation,
+                          onChanged: (value) =>
+                              controller.configure(showTranslation: value),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: NodeLaneTokens.space16),
+                const SizedBox(height: NodeLaneTokens.space12),
+              ],
               NodeLaneGroupSurface(
-                children: [
-                  if (controller.runtime == null)
-                    NodeLaneRow(
-                      title: context.l10n.translation_sign_in_required,
-                      icon: icons.account,
-                      onTap: () => _openAccount(context),
-                    )
-                  else
-                    NodeLaneSwitchRow(
-                      title: context.l10n.translation_automatic,
-                      value: controller.enabled,
-                      onChanged: (value) =>
-                          controller.configure(enabled: value),
-                    ),
-                ],
+                outlined: true,
+                child: controller.runtime == null
+                    ? NodeLaneRow(
+                        title: context.l10n.translation_sign_in_required,
+                        icon: icons.account,
+                        onTap: () => _openAccount(context),
+                      )
+                    : NodeLaneSwitchRow(
+                        title: context.l10n.translation_automatic,
+                        icon: icons.translate,
+                        value: controller.enabled,
+                        onChanged: (value) =>
+                            controller.configure(enabled: value),
+                      ),
               ),
-              const SizedBox(height: NodeLaneTokens.space16),
+              const SizedBox(height: NodeLaneTokens.space12),
               NodeLaneGroupSurface(
+                outlined: true,
                 children: [
                   const TranslationLanguageRow(),
                   const TranslationModelRow(),
@@ -135,8 +138,8 @@ class TranslationControlsContent extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: NodeLaneTokens.space16),
               if (controller.runtime != null && controller.enabled) ...[
+                const SizedBox(height: NodeLaneTokens.space12),
                 Text(
                   states.isEmpty
                       ? (browser
@@ -149,12 +152,10 @@ class TranslationControlsContent extends ConsumerWidget {
                         ),
                   style: t.readerSecondary,
                 ),
-                const SizedBox(height: NodeLaneTokens.space8),
               ],
             ],
           ),
         );
-        return SingleChildScrollView(child: controls);
       },
     );
     return NodeLaneBubblePanel(title: heading, subtitle: subtitle, child: body);

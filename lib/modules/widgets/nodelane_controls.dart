@@ -1985,6 +1985,7 @@ class NodeLaneToolbarAction extends StatelessWidget {
   const NodeLaneToolbarAction({
     super.key,
     required this.label,
+    this.alternateLabel,
     required this.icon,
     this.onPressed,
     this.active = false,
@@ -1992,6 +1993,7 @@ class NodeLaneToolbarAction extends StatelessWidget {
     this.destructive = false,
   });
   final String label;
+  final String? alternateLabel;
   final IconData icon;
   final VoidCallback? onPressed;
   final bool active, enabled, destructive;
@@ -2006,6 +2008,17 @@ class NodeLaneToolbarAction extends StatelessWidget {
         : active
         ? colors.accent
         : colors.ink;
+    Widget caption(String text) => Text(
+      text,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: NodeLaneTokens.captionSize,
+        fontWeight: FontWeight.w500,
+        color: color,
+      ),
+    );
     final content = Container(
       width: double.infinity,
       constraints: const BoxConstraints(
@@ -2020,17 +2033,13 @@ class NodeLaneToolbarAction extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: NodeLaneTokens.readerIconSize),
           const SizedBox(height: NodeLaneTokens.space4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: NodeLaneTokens.captionSize,
-              fontWeight: FontWeight.w500,
-              color: color,
+          if (alternateLabel == null)
+            caption(label)
+          else
+            IndexedStack(
+              alignment: Alignment.center,
+              children: [caption(label), caption(alternateLabel!)],
             ),
-          ),
         ],
       ),
     );

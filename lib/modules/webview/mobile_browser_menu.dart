@@ -45,6 +45,8 @@ Future<String?> showBrowserPageMenu(
   required bool clearingLogins,
   bool hasReader = false,
   bool canClip = false,
+  bool canFocus = false,
+  bool hasNextChapter = false,
 }) {
   final l = anchor.l10n, icons = NodeLaneIcons.of(anchor);
   return showNodeLaneBubble<String>(
@@ -63,9 +65,11 @@ Future<String?> showBrowserPageMenu(
           String title,
           IconData icon, {
           bool enabled = true,
+          String? subtitle,
         }) => NodeLaneRow(
           compact: true,
           title: title,
+          subtitle: subtitle,
           icon: icon,
           enabled: enabled,
           trailing: const SizedBox.shrink(),
@@ -108,8 +112,17 @@ Future<String?> showBrowserPageMenu(
                 ],
               ),
               const NodeLaneGroupDivider(),
+              if (canFocus)
+                row(
+                  'focus',
+                  l.browser_focus,
+                  icons.fullscreen,
+                  subtitle: l.browser_focus_hint,
+                ),
               if (canClip)
                 row('clip', l.browser_clip_here, icons.bookmarkOutline),
+              if (hasNextChapter)
+                row('next', l.browser_next_chapter, icons.nextChapter),
               if (hasReader) row('reader', l.browser_open_reader, icons.manga),
               row('find', l.browser_find, icons.search, enabled: pageReady),
               row('bookmarks', l.browser_bookmarks, icons.bookmark),

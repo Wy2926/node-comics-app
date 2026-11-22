@@ -28,7 +28,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser_focus => 'القراءة دون تشتيت';
 
   @override
-  String get browser_web_tools => 'إظهار أدوات المتصفح';
+  String get browser_focus_hint => 'اضغط على وسط الصفحة لإظهار أدوات القراءة.';
+
+  @override
+  String get browser_exit_focus => 'الخروج من وضع القراءة دون تشتيت';
 
   @override
   String get browser_open_reader => 'فتح في قارئ التطبيق';
@@ -37,7 +40,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser_next_chapter => 'الفصل التالي';
 
   @override
-  String get browser_protection => 'حماية الموقع';
+  String get browser_protection => 'تصفية الإعلانات';
+
+  @override
+  String get browser_filter_waiting =>
+      'ستظهر حالة التصفية عندما تصبح الصفحة جاهزة.';
+
+  @override
+  String get browser_filter_unavailable =>
+      'يتعذر حاليًا تأكيد حالة التصفية لهذا الموقع.';
 
   @override
   String get browser_filter_site => 'حجب الإعلانات على هذا الموقع';

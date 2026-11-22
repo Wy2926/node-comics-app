@@ -28,7 +28,11 @@ class AppLocalizationsUk extends AppLocalizations {
   String get browser_focus => 'Читати без відволікань';
 
   @override
-  String get browser_web_tools => 'Показати інструменти браузера';
+  String get browser_focus_hint =>
+      'Торкніться центру сторінки, щоб відкрити інструменти читання.';
+
+  @override
+  String get browser_exit_focus => 'Вийти з режиму читання';
 
   @override
   String get browser_open_reader => 'Відкрити в читачі застосунку';
@@ -37,7 +41,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get browser_next_chapter => 'Наступний розділ';
 
   @override
-  String get browser_protection => 'Захист сайту';
+  String get browser_protection => 'Фільтрація реклами';
+
+  @override
+  String get browser_filter_waiting =>
+      'Стан фільтра з’явиться, коли сторінка буде готова.';
+
+  @override
+  String get browser_filter_unavailable =>
+      'Зараз не вдається перевірити стан фільтра для цього сайту.';
 
   @override
   String get browser_filter_site => 'Блокувати рекламу на цьому сайті';

@@ -64,6 +64,7 @@ class _Controller extends Fake implements InAppWebViewController {
 }
 
 class _Runtime extends Fake implements ChannelRuntime {
+  File? resultFile;
   void Function(List<TranslationTarget>)? onWindow;
   @override
   Stream<void> get changes => const Stream.empty();
@@ -79,18 +80,31 @@ class _Runtime extends Fake implements ChannelRuntime {
   }
 
   @override
-  PageTranslationState stateFor(TranslationPage page) =>
-      const PageTranslationState();
+  PageTranslationState stateFor(TranslationPage page) => PageTranslationState(
+    result: resultFile == null
+        ? null
+        : const TranslationResultRef('local', 'op'),
+  );
+  @override
+  Future<DisplayImageLease> readResult(
+    TranslationResultRef result,
+    TranslationCancellation cancel,
+  ) async => DisplayImageLease(file: resultFile!, width: 1, height: 1);
   @override
   void pause(String consumer) {}
 }
 
 class _InPageReader implements ReaderTransport {
+  _InPageReader([this.archive]);
   String? token;
   ReaderMessage? send;
   final operations = <String>[];
+  Map? validated;
+  final states = <(int, bool)>[];
+  final sent = Completer<void>();
+  bool unreadablePixels = false;
   @override
-  WebImageArchive? get archive => null;
+  final WebImageArchive? archive;
   @override
   void listen(ReaderMessage? receive) => send = receive;
   @override
@@ -107,6 +121,14 @@ class _InPageReader implements ReaderTransport {
     Map<String, dynamic> args,
   ) async {
     operations.add(operation);
+    if (operation == 'state') {
+      states.add((args['scope'] as int, args['translated'] as bool));
+    }
+    if (operation == 'resultEnd' && !sent.isCompleted) sent.complete();
+    if (operation == 'validate') validated = args;
+    if (operation == 'inputBegin' && unreadablePixels) {
+      return {'error': 'SOURCE_MISSING'};
+    }
     return {
       'value': switch (operation) {
         'inputBegin' => {'size': 3},
@@ -261,6 +283,117 @@ void main() {
       }
     },
   );
+
+  test('warm toggles send only display state and switching account invalidates the prepared scope', () async {
+    final files = WebImageTestDirectory();
+    await files.setUp();
+    addTearDown(files.tearDown);
+    final file = await File('${files.directory.path}/result')
+        .writeAsBytes(List.filled(140000, 123));
+    final reader = TranslationViewController()
+      ..attach(_Runtime()..resultFile = file);
+    final engine = _InPageReader();
+    final connected = WebTranslationBridge(
+      engine,
+      reader,
+      'warm',
+      l10n: AppLocalizationsEn(),
+    );
+    addTearDown(reader.dispose);
+    addTearDown(connected.dispose);
+    const origin = 'https://reader.example', url = '$origin/read/2';
+    await connected.install(Uri.parse(url));
+    await engine.send!(origin, url, {
+      'token': engine.token,
+      'seq': 1,
+      'items': [
+        {'id': '1', 'revision': '1', 'kind': 'pixels', 'url': ''},
+      ],
+    });
+    reader.configure(showTranslation: true);
+    await engine.sent.future.timeout(const Duration(seconds: 3));
+    await pumpEventQueue();
+    expect(engine.operations.where((op) => op == 'resultChunk'), hasLength(2));
+    final scope = engine.states.last.$1;
+    engine.operations.clear();
+    for (final show in [false, true, false, true]) {
+      reader.configure(showTranslation: show);
+    }
+    await pumpEventQueue();
+    expect(engine.operations, List.filled(4, 'state'));
+    expect(engine.states.sublist(engine.states.length - 4), [
+      (scope, false),
+      (scope, true),
+      (scope, false),
+      (scope, true),
+    ]);
+    reader.attach(_Runtime());
+    expect(engine.states.last.$1, isNot(scope));
+  });
+
+  test('archived SVG uses the original viewport and falls back to its bytes if pixel export fails', () async {
+    final files = WebImageTestDirectory();
+    await files.setUp();
+    addTearDown(files.tearDown);
+    const origin = 'https://reader.example',
+        url = '$origin/read/1',
+        image = '$origin/page';
+    const svg =
+        '<!-- <svg viewBox="wrong"> --><svg xmlns="http://www.w3.org/2000/svg" '
+        'width="40" height="60" viewBox="10 20 30 30" preserveAspectRatio="xMaxYMin meet"><g/></svg>';
+    final engine = _InPageReader(
+      WebImageArchive(
+        apple: false,
+        save: (path) async {
+          await File(path)
+              .writeAsString(archiveFixture({image: utf8.encode(svg)}));
+          return path;
+        },
+      ),
+    );
+    final reader = TranslationViewController()..attach(_Runtime());
+    final connected = WebTranslationBridge(
+      engine,
+      reader,
+      'svg',
+      l10n: AppLocalizationsEn(),
+    );
+    addTearDown(reader.dispose);
+    addTearDown(connected.dispose);
+    await connected.install(Uri.parse(url));
+    await engine.send!(origin, url, {
+      'token': engine.token,
+      'seq': 1,
+      'items': [
+        {'id': '1', 'revision': '2', 'kind': 'http', 'url': image},
+      ],
+    });
+    final target = reader.targets.single;
+    for (final tainted in [false, true]) {
+      engine.unreadablePixels = tainted;
+      final lease = await target.source.acquire(
+        target.page,
+        TranslationCancellation(),
+      );
+      try {
+        expect(engine.validated, {
+          'id': '1',
+          'revision': '2',
+          'svg': {
+            'viewBox': '10 20 30 30',
+            'preserveAspectRatio': 'xMaxYMin meet',
+          },
+        });
+        expect(
+          await lease.file.readAsBytes(),
+          tainted ? utf8.encode(svg) : [1, 2, 3],
+        );
+      } finally {
+        lease.release();
+      }
+    }
+    connected.navigate();
+  });
 
   test('reinstall starts a fresh window sequence and consecutive updates are not dropped', () async {
     view.runtime = _Runtime();

@@ -28,7 +28,11 @@ class AppLocalizationsId extends AppLocalizations {
   String get browser_focus => 'Baca tanpa gangguan';
 
   @override
-  String get browser_web_tools => 'Tampilkan alat peramban';
+  String get browser_focus_hint =>
+      'Ketuk bagian tengah halaman untuk menampilkan alat baca.';
+
+  @override
+  String get browser_exit_focus => 'Keluar dari mode baca';
 
   @override
   String get browser_open_reader => 'Buka di pembaca aplikasi';
@@ -37,7 +41,15 @@ class AppLocalizationsId extends AppLocalizations {
   String get browser_next_chapter => 'Bab berikutnya';
 
   @override
-  String get browser_protection => 'Perlindungan situs';
+  String get browser_protection => 'Filter iklan';
+
+  @override
+  String get browser_filter_waiting =>
+      'Status filter akan muncul saat halaman siap.';
+
+  @override
+  String get browser_filter_unavailable =>
+      'Status filter untuk situs ini belum dapat dipastikan.';
 
   @override
   String get browser_filter_site => 'Filter iklan di situs ini';

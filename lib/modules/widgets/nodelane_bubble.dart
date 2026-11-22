@@ -113,7 +113,10 @@ Future<T?> showNodeLaneBubble<T>(
       ? render
       : anchor.findAncestorRenderObjectOfType<RenderBox>() ?? overlay;
   Rect measure() => localPoint == null
-      ? box.localToGlobal(Offset.zero, ancestor: overlay) & box.size
+      ? MatrixUtils.transformRect(
+          box.getTransformTo(overlay),
+          Offset.zero & box.size,
+        )
       : box.localToGlobal(localPoint, ancestor: overlay) & Size.zero;
   var lastRect = measure();
   return navigator.push<T>(
@@ -145,79 +148,51 @@ Future<T?> showNodeLaneBubble<T>(
             if (rect.height > bounds.height * .6) {
               rect = rect.center & Size.zero;
             }
-            final w = math.min(width, bounds.width);
-            final left = (rect.center.dx - w / 2).clamp(
-              bounds.left,
-              bounds.right - w,
+            final layout = _BubbleLayout(
+              bounds,
+              rect,
+              width,
+              keepFieldVisible: !requestFocus,
             );
-            final tip = (rect.center.dx - left)
-                .clamp(math.min(22, w / 2), math.max(w - 22, w / 2))
-                .toDouble();
-            var above = (rect.top - 3).clamp(bounds.top, bounds.bottom);
-            var below = (rect.bottom + 3).clamp(bounds.top, bounds.bottom);
-            final down = bounds.bottom - below >= above - bounds.top;
-            // A focused form can overlap its trigger. Menus which leave focus in
-            // an underlying text field must leave that field visible.
-            if (requestFocus) {
-              final needed = math.min(
-                bounds.height,
-                3 *
-                    NodeLaneTokens.minTapTarget *
-                    math.max(1, media.textScaler.scale(16) / 16),
-              );
-              if (down) {
-                below = math.min(below, bounds.bottom - needed);
-              } else {
-                above = math.max(above, bounds.top + needed);
-              }
-            }
-            final height = down ? bounds.bottom - below : above - bounds.top;
-            final pivot = Alignment(tip / w * 2 - 1, down ? -1 : 1);
+            final pivot = Alignment(
+              rect.center.dx.clamp(bounds.left, bounds.right) / size.width * 2 -
+                  1,
+              rect.center.dy.clamp(bounds.top, bounds.bottom) /
+                      size.height *
+                      2 -
+                  1,
+            );
             final colors = NodeLaneTokens.of(context);
-            return Stack(
-              children: [
-                Positioned(
-                  left: left,
-                  width: w,
-                  top: down ? below : null,
-                  bottom: down ? null : size.height - above,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: math.min(
-                        NodeLaneTokens.bubbleMaxHeight,
-                        height,
+            return NodeLaneMotion.anchored(
+              context,
+              animation,
+              pivot,
+              CustomSingleChildLayout(
+                delegate: layout,
+                child: RepaintBoundary(
+                  child: Material(
+                    color: colors.surface,
+                    surfaceTintColor: Colors.transparent,
+                    elevation: 7,
+                    shadowColor: Colors.black26,
+                    animationDuration: Duration.zero,
+                    shape: _BubbleOutline(layout, colors.line),
+                    clipBehavior: Clip.antiAlias,
+                    child: Padding(
+                      padding: const EdgeInsets.all(
+                        NodeLaneTokens.bubbleTipHeight,
                       ),
-                    ),
-                    child: NodeLaneMotion.anchored(
-                      context,
-                      animation,
-                      pivot,
-                      Material(
-                        color: colors.surface,
-                        surfaceTintColor: Colors.transparent,
-                        elevation: 7,
-                        shadowColor: Colors.black26,
-                        animationDuration: Duration.zero,
-                        shape: _BubbleOutline(down, tip, colors.line),
-                        clipBehavior: Clip.antiAlias,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            top: down ? NodeLaneTokens.bubbleTipHeight : 0,
-                            bottom: down ? 0 : NodeLaneTokens.bubbleTipHeight,
-                          ),
-                          child: Semantics(
-                            namesRoute: true,
-                            scopesRoute: true,
-                            explicitChildNodes: true,
-                            label: label,
-                            child: child,
-                          ),
-                        ),
+                      child: Semantics(
+                        namesRoute: true,
+                        scopesRoute: true,
+                        explicitChildNodes: true,
+                        label: label,
+                        child: child,
                       ),
                     ),
                   ),
                 ),
-              ],
+              ),
             );
           },
         ),
@@ -524,10 +499,109 @@ class _LiveBubbleButtonState extends State<NodeLaneLiveBubbleButton> {
       widget.builder(context, widget.enabled ? _open : null, _editor != null);
 }
 
+typedef _BubbleFrame = ({Offset origin, AxisDirection? direction, Offset tip});
+
+class _BubbleLayout extends SingleChildLayoutDelegate {
+  const _BubbleLayout(
+    this.bounds,
+    this.anchor,
+    this.width, {
+    required this.keepFieldVisible,
+  });
+  final Rect bounds, anchor;
+  final double width;
+  final bool keepFieldVisible;
+  static const tip = NodeLaneTokens.bubbleTipHeight;
+  static const inset = Offset(tip, tip);
+  static const gap = NodeLaneTokens.space4 + tip;
+
+  double get above =>
+      (anchor.top - gap).clamp(bounds.top, bounds.bottom) - bounds.top;
+  double get below =>
+      bounds.bottom - (anchor.bottom + gap).clamp(bounds.top, bounds.bottom);
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    final full = math.min(NodeLaneTokens.bubbleMaxHeight, bounds.height);
+    final room = math.max(above, below);
+    // Prefer scrolling by one row to covering a nearby trigger. An underlying editor always stays clear.
+    final height =
+        keepFieldVisible ||
+            full - room <= math.min(NodeLaneTokens.rowHeight, full * .15)
+        ? math.min(full, room)
+        : full;
+    return BoxConstraints.tightFor(
+      width: math.min(width, bounds.width) + 2 * tip,
+    ).copyWith(maxHeight: height + 2 * tip);
+  }
+
+  _BubbleFrame place(Size outer) {
+    final body = (Offset.zero & outer).deflate(tip).size;
+    final right = bounds.right - anchor.right - gap,
+        left = anchor.left - gap - bounds.left;
+    final AxisDirection? direction;
+    if (keepFieldVisible || outer.height <= math.max(above, below) + 2 * tip) {
+      direction = below >= above ? AxisDirection.down : AxisDirection.up;
+    } else if (body.width <= math.max(left, right)) {
+      direction = right >= left ? AxisDirection.right : AxisDirection.left;
+    } else {
+      direction = null;
+    }
+    final center = direction == null ? bounds.center : anchor.center;
+    final x = switch (direction) {
+      AxisDirection.left => anchor.left - gap - body.width,
+      AxisDirection.right => anchor.right + gap,
+      _ => center.dx - body.width / 2,
+    };
+    final y = switch (direction) {
+      AxisDirection.up => anchor.top - gap - body.height,
+      AxisDirection.down => anchor.bottom + gap,
+      _ => center.dy - body.height / 2,
+    };
+    final origin = Offset(
+      x.clamp(bounds.left, math.max(bounds.left, bounds.right - body.width)),
+      y.clamp(bounds.top, math.max(bounds.top, bounds.bottom - body.height)),
+    );
+    double along(double value, double length) {
+      final margin = math.min(
+        NodeLaneTokens.groupRadius + NodeLaneTokens.space4,
+        length / 2,
+      );
+      return value.clamp(margin, length - margin);
+    }
+
+    final target = anchor.center - origin;
+    final apex = switch (direction) {
+      AxisDirection.down => Offset(along(target.dx, body.width), -tip),
+      AxisDirection.up => Offset(
+        along(target.dx, body.width),
+        body.height + tip,
+      ),
+      AxisDirection.right => Offset(-tip, along(target.dy, body.height)),
+      AxisDirection.left => Offset(
+        body.width + tip,
+        along(target.dy, body.height),
+      ),
+      null => Offset.zero,
+    };
+    return (origin: origin - inset, direction: direction, tip: apex + inset);
+  }
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) =>
+      place(childSize).origin;
+
+  @override
+  bool shouldRelayout(_BubbleLayout old) =>
+      old.bounds != bounds ||
+      old.anchor != anchor ||
+      old.width != width ||
+      old.keepFieldVisible != keepFieldVisible;
+}
+
 class _BubbleOutline extends ShapeBorder {
-  const _BubbleOutline(this.down, this.tip, this.line);
-  final bool down;
-  final double tip;
+  const _BubbleOutline(this.layout, this.line);
+  final _BubbleLayout layout;
   final Color line;
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
@@ -535,28 +609,34 @@ class _BubbleOutline extends ShapeBorder {
   ShapeBorder scale(double t) => this;
   @override
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    final body = EdgeInsets.only(
-      top: down ? NodeLaneTokens.bubbleTipHeight : 0,
-      bottom: down ? 0 : NodeLaneTokens.bubbleTipHeight,
-    ).deflateRect(rect);
-    final x = rect.left + tip,
-        y = down ? body.top : body.bottom,
-        sign = down ? -1.0 : 1.0;
-    final tipY = y + sign * NodeLaneTokens.bubbleTipHeight;
+    const h = NodeLaneTokens.bubbleTipHeight;
+    final body = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          rect.deflate(h),
+          const Radius.circular(NodeLaneTokens.groupRadius),
+        ),
+      );
+    final frame = layout.place(rect.size);
+    if (frame.direction == null) return body;
+    final angle = switch (frame.direction!) {
+      AxisDirection.down => 0.0,
+      AxisDirection.up => math.pi,
+      AxisDirection.left => math.pi / 2,
+      AxisDirection.right => -math.pi / 2,
+    };
+    final tip = rect.topLeft + frame.tip;
+    final transform = Matrix4.translationValues(tip.dx, tip.dy, 0)
+      ..rotateZ(angle);
     final pointer = Path()
-      ..moveTo(x - 10, y - sign)
-      ..cubicTo(x - 5, y, x - 2, tipY, x, tipY)
-      ..cubicTo(x + 2, tipY, x + 5, y, x + 10, y - sign)
+      ..moveTo(-10, h + 1)
+      ..cubicTo(-5, h, -2, 0, 0, 0)
+      ..cubicTo(2, 0, 5, h, 10, h + 1)
       ..close();
     return Path.combine(
       PathOperation.union,
-      Path()..addRRect(
-        RRect.fromRectAndRadius(
-          body,
-          const Radius.circular(NodeLaneTokens.groupRadius),
-        ),
-      ),
-      pointer,
+      body,
+      pointer.transform(transform.storage),
     );
   }
 

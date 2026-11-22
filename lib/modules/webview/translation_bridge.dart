@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:xml/xml_events.dart';
 import 'package:mangayomi/repositories/db_write_queue.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/identity.dart';
@@ -16,6 +17,34 @@ import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 
 import 'reader_transport.dart';
 import 'browser_url.dart';
+
+/// Only the original SVG root describes how the browser painted its viewBox.
+Future<Map<String, String>?> _svgViewport(File file) async {
+  final xml = await file
+      .openRead(0, 1)
+      .any(
+        (bytes) =>
+            bytes.isNotEmpty &&
+            const [0x3c, 0xef, 9, 10, 13, 32].contains(bytes.first),
+      );
+  if (!xml) return null;
+  try {
+    await for (final batch
+        in file.openRead().transform(utf8.decoder).toXmlEvents()) {
+      for (final root in batch.whereType<XmlStartElementEvent>()) {
+        if (root.name.split(':').last != 'svg') return null;
+        return {
+          for (final a in root.attributes)
+            if (a.name == 'viewBox' || a.name == 'preserveAspectRatio')
+              a.name: a.value,
+        };
+      }
+    }
+  } on FormatException {
+    // Presentation metadata is optional; the source reader still owns the original bytes.
+  }
+  return null;
+}
 
 class WebTranslationBridge {
   WebTranslationBridge(
@@ -31,7 +60,7 @@ class WebTranslationBridge {
     view.addListener(_changed);
   }
   late final _archive = transport.archive;
-  ChannelRuntime? _archiveRuntime;
+  ChannelRuntime? _resourceRuntime;
   final ReaderTransport transport;
   final TranslationViewController view;
   final String tabId;
@@ -52,10 +81,10 @@ class WebTranslationBridge {
 
   final _inputQueue = DbWriteQueue(), _outputQueue = DbWriteQueue();
   final _elements = <String, Map<String, dynamic>>{};
-  final _displayed = <String, String>{};
+  final _prepared = <String, String>{};
   final _sending = <String>{};
   String _token = '', _document = '', _state = '';
-  int _sequence = 0, _epoch = 0;
+  int _sequence = 0, _epoch = 0, _displayScope = 0;
   bool _ready = false, _disposed = false;
   bool get active => view.foreground && view.runtime != null && !_disposed;
 
@@ -67,7 +96,7 @@ class WebTranslationBridge {
     _sequence = 0;
     _state = '';
     _elements.clear();
-    _displayed.clear();
+    _prepared.clear();
     view.window(const []);
   }
 
@@ -180,8 +209,8 @@ class WebTranslationBridge {
     _elements
       ..clear()
       ..addAll(entries);
-    _displayed.removeWhere((id, _) => !entries.containsKey(id));
-    _syncArchive();
+    _prepared.removeWhere((id, _) => !entries.containsKey(id));
+    _syncResources();
     view.window(targets);
     return true;
   }
@@ -245,10 +274,11 @@ class WebTranslationBridge {
   }
 
   void _changed() {
-    _syncArchive();
+    _syncResources();
     if (!_ready || _disposed) return;
     final status = {
       'active': active,
+      'scope': _displayScope,
       'reading': onReading != null && view.foreground,
       'translated': view.showTranslation,
       'theme': _theme,
@@ -274,7 +304,7 @@ class WebTranslationBridge {
     final state = jsonEncode(status);
     if (_state != state) {
       _state = state;
-      if (!active || !view.showTranslation) _displayed.clear();
+      if (!active) _prepared.clear();
       final epoch = _epoch;
       // Display switches must not wait behind a full image's chunk transfer.
       _call('state', status, epoch).catchError((_) {
@@ -282,19 +312,21 @@ class WebTranslationBridge {
         return null;
       });
     }
-    if (!active || !view.showTranslation) return;
+    if (!active) return;
     for (final entry in _elements.entries) {
       final page = entry.value['page'] as TranslationPage;
       final image = view.images[page.identity];
-      final signature = '${entry.value['revision']}:${image?.file.path}';
-      if (image == null && _displayed.remove(entry.key) != null) {
+      final scope = _displayScope;
+      final signature = '$scope:${entry.value['revision']}:${image?.file.path}';
+      if (image == null && _prepared.remove(entry.key) != null) {
         final epoch = _epoch;
         _outputQueue
             .run(() => _call('resultClear', {'id': entry.key}, epoch))
             .catchError((_) => null);
       }
-      if (image == null ||
-          _displayed[entry.key] == signature ||
+      if (!view.showTranslation ||
+          image == null ||
+          _prepared[entry.key] == signature ||
           !_sending.add(entry.key)) {
         continue;
       }
@@ -308,6 +340,7 @@ class WebTranslationBridge {
             }
             final length = await image.file.length();
             await _call('resultBegin', {
+              'scope': scope,
               'id': entry.key,
               'revision': entry.value['revision'],
               'size': length,
@@ -336,7 +369,7 @@ class WebTranslationBridge {
               await _call('resultEnd', {'id': entry.key}, epoch);
               if (epoch == _epoch) {
                 if (view.images[page.identity] == image) {
-                  _displayed[entry.key] = signature;
+                  _prepared[entry.key] = signature;
                 } else {
                   await _call('resultClear', {'id': entry.key}, epoch);
                 }
@@ -359,10 +392,14 @@ class WebTranslationBridge {
     }
   }
 
-  void _syncArchive() {
-    if (!active || !identical(_archiveRuntime, view.runtime)) {
+  void _syncResources() {
+    if (!identical(_resourceRuntime, view.runtime)) {
+      _displayScope++;
+      _prepared.clear();
       _archive?.clear();
-      _archiveRuntime = view.runtime;
+      _resourceRuntime = view.runtime;
+    } else if (!active) {
+      _archive?.clear();
     }
     if (active) {
       _archive?.retain({
@@ -389,7 +426,7 @@ class WebTranslationBridge {
     }
     if (entry['kind'] == 'http' && _archive != null) {
       // Runtime scheduling can start before the view's changed notification.
-      _syncArchive();
+      _syncResources();
       final pageUrl = Uri.parse(_document),
           url = Uri.parse(entry['url'] as String);
       final original =
@@ -415,6 +452,7 @@ class WebTranslationBridge {
             },
           ).acquire(entry['page'] as TranslationPage, cancel);
       try {
+        final svg = await _svgViewport(original.file);
         cancel.check();
         if (!active ||
             epoch != _epoch ||
@@ -424,77 +462,95 @@ class WebTranslationBridge {
         await _call('validate', {
           'id': id,
           'revision': entry['revision'],
+          'svg': ?svg,
         }, epoch);
+        if (svg != null) {
+          try {
+            final pixels = await _readInPage(id, entry, epoch, cancel);
+            original.release();
+            return pixels;
+          } on TranslationFailure catch (error) {
+            // A tainted canvas cannot export pixels; keep the archived original available.
+            if (error.code != 'SOURCE_MISSING') rethrow;
+          }
+        }
         return original;
       } catch (_) {
         original.release();
         rethrow;
       }
     }
-    return _inputQueue.run(() async {
-      cancel.check();
-      final file = File(
-        '${(await getTemporaryDirectory()).path}/nodelane-bridge-${translationUuid()}',
-      );
-      cancel.check();
-      final stop = _archive == null
-          ? cancel.onCancel(() {
-              if (_ready && epoch == _epoch) {
-                _call('inputEnd', {}, epoch).catchError((_) => null);
-              }
-            })
-          : null;
-      try {
-        final meta = await _call('inputBegin', {
-          'id': id,
-          'revision': entry['revision'],
-        }, epoch);
-        if (meta is! Map || meta['size'] is! int || meta['size'] <= 0) {
-          throw const TranslationFailure('BRIDGE_INVALID');
-        }
-        final sink = file.openWrite();
-        var offset = 0;
-        try {
-          while (offset < meta['size']) {
-            cancel.check();
-            final chunk = await _call('inputChunk', {
-              'id': id,
-              'offset': offset,
-            }, epoch);
-            if (chunk is! String || chunk.length > 174764) {
-              throw const TranslationFailure('BRIDGE_INVALID');
-            }
-            final Uint8List bytes = base64Decode(chunk);
-            if (bytes.isEmpty ||
-                bytes.length > 128 * 1024 ||
-                offset + bytes.length > meta['size']) {
-              throw const TranslationFailure('BRIDGE_INVALID');
-            }
-            offset += bytes.length;
-            sink.add(bytes);
-            await sink.flush();
-          }
-        } finally {
-          await sink.close();
-        }
-        cancel.check();
-        return OriginalImageLease(
-          file,
-          release: () {
-            file.delete().catchError((_) => file);
-          },
-        );
-      } catch (_) {
-        await file.delete().catchError((_) => file);
-        rethrow;
-      } finally {
-        stop?.call();
-        if (_ready && epoch == _epoch) {
-          await _call('inputEnd', {}, epoch).catchError((_) => null);
-        }
-      }
-    });
+    return _readInPage(id, entry, epoch, cancel);
   }
+
+  Future<OriginalImageLease> _readInPage(
+    String id,
+    Map<String, dynamic> entry,
+    int epoch,
+    TranslationCancellation cancel,
+  ) => _inputQueue.run(() async {
+    cancel.check();
+    final file = File(
+      '${(await getTemporaryDirectory()).path}/nodelane-bridge-${translationUuid()}',
+    );
+    cancel.check();
+    final stop = _archive == null
+        ? cancel.onCancel(() {
+            if (_ready && epoch == _epoch) {
+              _call('inputEnd', {}, epoch).catchError((_) => null);
+            }
+          })
+        : null;
+    try {
+      final meta = await _call('inputBegin', {
+        'id': id,
+        'revision': entry['revision'],
+      }, epoch);
+      if (meta is! Map || meta['size'] is! int || meta['size'] <= 0) {
+        throw const TranslationFailure('BRIDGE_INVALID');
+      }
+      final sink = file.openWrite();
+      var offset = 0;
+      try {
+        while (offset < meta['size']) {
+          cancel.check();
+          final chunk = await _call('inputChunk', {
+            'id': id,
+            'offset': offset,
+          }, epoch);
+          if (chunk is! String || chunk.length > 174764) {
+            throw const TranslationFailure('BRIDGE_INVALID');
+          }
+          final Uint8List bytes = base64Decode(chunk);
+          if (bytes.isEmpty ||
+              bytes.length > 128 * 1024 ||
+              offset + bytes.length > meta['size']) {
+            throw const TranslationFailure('BRIDGE_INVALID');
+          }
+          offset += bytes.length;
+          sink.add(bytes);
+          await sink.flush();
+        }
+      } finally {
+        await sink.close();
+      }
+      cancel.check();
+      return OriginalImageLease(
+        file,
+        release: () {
+          file.delete().catchError((_) => file);
+        },
+      );
+    } catch (_) {
+      await file.delete().catchError((_) => file);
+      rethrow;
+    } finally {
+      stop?.call();
+      if (_ready && epoch == _epoch) {
+        await _call('inputEnd', {}, epoch).catchError((_) => null);
+      }
+    }
+  });
 
   void dispose() {
     _archive?.clear();

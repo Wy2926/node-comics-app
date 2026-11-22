@@ -14,6 +14,7 @@ import 'package:mangayomi/modules/webview/browser_pinned_sources_provider.dart';
 import 'package:mangayomi/modules/webview/browser_page_controller.dart';
 import 'package:mangayomi/modules/webview/browser_library_store.dart';
 import 'package:mangayomi/modules/webview/browser_library_panel.dart';
+import 'package:mangayomi/modules/webview/browser_focus_tools.dart';
 import 'package:mangayomi/modules/webview/browser_session_store.dart';
 import 'package:mangayomi/modules/webview/browser_webview_cache.dart';
 import 'package:mangayomi/modules/webview/mobile_browser.dart';
@@ -293,12 +294,20 @@ void main() {
     final web = InAppWebViewController.fromPlatform(
       platform: _StaticController(),
     );
+    Future<void> choosePageTool(String label) async {
+      await tester.tap(find.byTooltip('更多'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.tap(find.text(label));
+      await tester.pump();
+    }
+
     events.onTitleChanged!(web, 'One');
     await tester.pump();
-    await tester.tap(find.text('夹在这里'));
+    await choosePageTool('夹在这里');
     events.onLoadStart!(web, WebUri('https://fixed.example/other'));
     delayed.complete({'x': 0, 'y': 599, 'slot': 1, 'fraction': 0.3});
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
     expect(find.text('专注阅读'), findsNothing);
     expect(browserLibraryStore.isBookmarked(oldUrl), isFalse);
     expect(browserLibraryStore.isBookmarked(tab.url), isFalse);
@@ -318,7 +327,7 @@ void main() {
       ..captureAnchor = () async => confirmed;
     events.onTitleChanged!(web, 'Two');
     await tester.pump();
-    await tester.tap(find.text('夹在这里'));
+    await choosePageTool('夹在这里');
     await tester.pump();
     events.onLoadStart!(web, WebUri('https://fixed.example/last'));
     frame.result.complete(Uint8List.fromList([1, 2, 3]));
@@ -351,6 +360,76 @@ void main() {
     expect(browserLibraryStore.reading.first.url, ordinary);
     expect(browserLibraryStore.reading.first.anchor?['fraction'], .67);
     expect(browserLibraryStore.isBookmarked(ordinary), isFalse);
+    final restored = <Map<String, dynamic>?>[];
+    tab.restoreAnchor = (anchor) async => restored.add(anchor);
+    final created = platform.created;
+    tester.view.viewPadding = tester.view.padding = const FakeViewPadding(
+      top: 24,
+      bottom: 24,
+    );
+    await tester.pump();
+    expect(find.text('专注阅读'), findsNothing);
+    await choosePageTool('专注阅读');
+    await tester.pumpAndSettle();
+    final tools = find.byType(BrowserFocusTools);
+    final page = find.byType(InAppWebView);
+    final viewport = tester.getRect(page);
+    expect(
+      viewport.bottom,
+      tester.view.physicalSize.height / tester.view.devicePixelRatio,
+    );
+    expect(find.byType(MobileBrowserHeader), findsNothing);
+    expect(tools, findsNothing);
+    await tester.dragFrom(viewport.center, const Offset(0, -100));
+    final hold = await tester.startGesture(viewport.center);
+    await hold.up(timeStamp: const Duration(seconds: 1));
+    await tester.pump();
+    expect(tools, findsNothing);
+    await tester.tapAt(viewport.center);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 40));
+    final entering = tester.getRect(tools);
+    await tester.pumpAndSettle();
+    final open = tester.getRect(tools);
+    expect(entering.top, greaterThan(open.top));
+    expect(open.center.dx, viewport.center.dx);
+    expect(open.bottom, viewport.bottom - 24);
+    expect(open.height, 52);
+    expect(find.byTooltip('夹在这里').hitTestable(), findsOneWidget);
+    expect(tester.getRect(page), viewport);
+    await tester.dragFrom(viewport.center, const Offset(0, -100));
+    await tester.pumpAndSettle();
+    expect(tools, findsNothing);
+    await tester.tapAt(viewport.center);
+    await tester.pumpAndSettle();
+    expect(find.text('译图'), findsNothing);
+    await tester.tap(find.text('原图'));
+    await tester.pumpAndSettle();
+    expect(tab.translation.showTranslation, isTrue);
+    expect(find.byTooltip('点击切换为原图').hitTestable(), findsOneWidget);
+    expect(tester.getRect(tools), open);
+    expect(tester.getRect(page), viewport);
+    await tester.tap(find.byTooltip('关闭'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(tester.getRect(tools).top, greaterThan(open.top));
+    expect(find.text('译图').hitTestable(), findsNothing);
+    await tester.pumpAndSettle();
+    expect(tools, findsNothing);
+    await tester.tapAt(viewport.center);
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(tools, findsNothing);
+    expect(tab.focused, isTrue);
+    await tester.tapAt(viewport.center);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('退出专注阅读'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MobileBrowserHeader), findsOneWidget);
+    expect(tools, findsNothing);
+    expect(platform.created, created);
+    expect(restored.map((anchor) => anchor?['fraction']), [.67, .67]);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();

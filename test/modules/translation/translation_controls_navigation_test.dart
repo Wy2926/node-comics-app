@@ -99,7 +99,7 @@ void main() {
   late ScrollController readingPosition;
   late GlobalKey readerKey;
 
-  Future<void> mount(WidgetTester tester) async {
+  Future<void> mount(WidgetTester tester, {bool browser = false}) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -141,6 +141,7 @@ void main() {
                           home: TranslationControlsContent(
                             controller: controller,
                             mobile: true,
+                            browser: browser,
                           ),
                         ),
                       ),
@@ -161,6 +162,23 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'web settings change automatic translation independently of image display',
+    (tester) async {
+      await mount(tester, browser: true);
+      controller.attach(_Runtime());
+      await tester.tap(find.byTooltip('Translation'));
+      await tester.pumpAndSettle();
+      expect(find.text('原图'), findsNothing);
+      expect(find.text('译图'), findsNothing);
+      await tester.tap(find.text('自动翻译'));
+      await tester.pumpAndSettle();
+      expect(controller.enabled, isFalse);
+      expect(controller.showTranslation, isFalse);
+      expect(find.text('翻译目标语言'), findsOneWidget);
+    },
+  );
 
   Future<void> openLogin(WidgetTester tester) async {
     await tester.tap(find.byTooltip('Translation'));
@@ -192,6 +210,7 @@ void main() {
         ]);
       await tester.tap(find.byTooltip('Translation'));
       await tester.pumpAndSettle();
+      expect(find.text('原图'), findsOneWidget);
       expect(find.text(reason).hitTestable(), findsOneWidget);
       controller.window([]);
       await tester.pumpAndSettle();

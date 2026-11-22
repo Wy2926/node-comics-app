@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
-import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -17,8 +16,6 @@ import 'browser_library_store.dart';
 import 'browser_session_store.dart';
 import 'browser_search_suggestions.dart';
 import 'mobile_browser_menu.dart';
-
-import 'package:mangayomi/modules/translation/translation_display_switch.dart';
 
 ButtonStyle _barIconStyle(Color color) => IconButton.styleFrom(
   fixedSize: const Size.square(NodeLaneTokens.minTapTarget),
@@ -136,6 +133,59 @@ class MobileBrowserHeader extends StatelessWidget {
   }
 }
 
+class BrowserDisplayButton extends StatelessWidget {
+  const BrowserDisplayButton({
+    super.key,
+    required this.translated,
+    required this.onChanged,
+  });
+
+  final bool translated;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n,
+        t = NodeLaneTokens.of(context),
+        icons = NodeLaneIcons.of(context);
+    return Tooltip(
+      message: translated
+          ? l.translation_show_original
+          : l.translation_show_translated,
+      child: TextButton.icon(
+        onPressed: onChanged == null ? null : () => onChanged!(!translated),
+        style: TextButton.styleFrom(
+          fixedSize: const Size.fromHeight(NodeLaneTokens.minTapTarget),
+          minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
+          padding: const EdgeInsets.symmetric(
+            horizontal: NodeLaneTokens.space8,
+          ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.standard,
+          foregroundColor: translated ? t.accent : t.ink,
+          backgroundColor: translated ? t.accentSoft : null,
+          textStyle: t.label,
+        ),
+        icon: Icon(
+          translated ? icons.translate : icons.image,
+          size: NodeLaneTokens.smallIconSize,
+        ),
+        label: IndexedStack(
+          index: translated ? 1 : 0,
+          alignment: Alignment.center,
+          children: [
+            for (final label in [
+              l.translation_original,
+              l.translation_translated,
+            ])
+              Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class MobileBrowserToolbar extends StatelessWidget {
   const MobileBrowserToolbar({
     super.key,
@@ -163,9 +213,7 @@ class MobileBrowserToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final controls = SizedBox(
-      height: inline
-          ? NodeLaneTokens.browserAddressHeight
-          : NodeLaneTokens.browserToolbarHeight,
+      height: NodeLaneTokens.minTapTarget,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space16),
         child: LayoutBuilder(
@@ -191,9 +239,10 @@ class MobileBrowserToolbar extends StatelessWidget {
                         maxWidth: NodeLaneTokens.browserDisplayWidth,
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
-                            child: TranslationDisplaySwitch(
+                          Flexible(
+                            child: BrowserDisplayButton(
                               translated: showTranslation,
                               onChanged: onDisplayChanged,
                             ),
@@ -249,76 +298,6 @@ class MobileBrowserToolbar extends StatelessWidget {
           ),
         ),
         child: SafeArea(top: false, child: controls),
-      ),
-    );
-  }
-}
-
-class BrowserChapterTools extends StatelessWidget {
-  const BrowserChapterTools({
-    super.key,
-    required this.focused,
-    required this.onFocus,
-    required this.onClip,
-    required this.translated,
-    required this.onDisplay,
-    this.onNext,
-  });
-  final bool focused, translated;
-  final VoidCallback onFocus;
-  final VoidCallback? onClip, onNext;
-  final ValueChanged<bool> onDisplay;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n,
-        icons = NodeLaneIcons.of(context),
-        t = NodeLaneTokens.of(context);
-    Widget action(String label, IconData icon, VoidCallback? onPressed) =>
-        TextButton.icon(
-          style: TextButton.styleFrom(
-            foregroundColor: t.accent,
-            textStyle: t.label,
-            minimumSize: const Size(
-              NodeLaneTokens.minTapTarget,
-              NodeLaneTokens.minTapTarget,
-            ),
-          ),
-          onPressed: onPressed,
-          icon: Icon(icon, size: NodeLaneTokens.smallIconSize),
-          label: Text(label),
-        );
-    return NodeLaneNoticeAvoidance(
-      child: NodeLaneGlassSurface(
-        elevated: true,
-        borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            if (focused) ...[
-              NodeLaneIconButton(
-                tooltip: l.browser_web_tools,
-                icon: icons.web,
-                style: NodeLaneIconButtonStyle.plain,
-                onPressed: onFocus,
-              ),
-              SizedBox(
-                width:
-                    NodeLaneTokens.browserDisplayWidth -
-                    NodeLaneTokens.minTapTarget,
-                child: TranslationDisplaySwitch(
-                  translated: translated,
-                  onChanged: onDisplay,
-                ),
-              ),
-            ] else
-              action(l.browser_focus, icons.fullscreen, onFocus),
-            action(l.browser_clip_here, icons.bookmarkOutline, onClip),
-            if (onNext != null)
-              action(l.browser_next_chapter, icons.nextChapter, onNext),
-          ],
-        ),
       ),
     );
   }

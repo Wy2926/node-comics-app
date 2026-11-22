@@ -272,6 +272,7 @@ class MobileBrowserStartPage extends StatelessWidget {
               for (final item in recent)
                 NodeLaneRow(
                   compact: true,
+                  leading: NodeLaneWebsiteIcon(url: item.faviconUrl),
                   title: item.displayTitle,
                   titleMaxLines: 1,
                   subtitleMaxLines: 1,

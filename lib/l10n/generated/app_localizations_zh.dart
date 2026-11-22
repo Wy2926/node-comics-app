@@ -28,7 +28,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_focus => '专注阅读';
 
   @override
-  String get browser_web_tools => '返回网页工具';
+  String get browser_focus_hint => '轻点页面中央可显示阅读工具';
+
+  @override
+  String get browser_exit_focus => '退出专注阅读';
 
   @override
   String get browser_open_reader => '用 App 阅读器打开';
@@ -37,7 +40,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_next_chapter => '下一话';
 
   @override
-  String get browser_protection => '站点保护';
+  String get browser_protection => '广告过滤';
+
+  @override
+  String get browser_filter_waiting => '网页就绪后显示过滤状态';
+
+  @override
+  String get browser_filter_unavailable => '暂时无法确认本站的过滤状态';
 
   @override
   String get browser_filter_site => '过滤本站广告';
@@ -5266,7 +5275,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_focus => '專注閱讀';
 
   @override
-  String get browser_web_tools => '返回網頁工具';
+  String get browser_focus_hint => '輕點頁面中央可顯示閱讀工具';
+
+  @override
+  String get browser_exit_focus => '退出專注閱讀';
 
   @override
   String get browser_open_reader => '用 App 閱讀器開啟';
@@ -5275,7 +5287,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_next_chapter => '下一話';
 
   @override
-  String get browser_protection => '網站防護';
+  String get browser_protection => '廣告過濾';
+
+  @override
+  String get browser_filter_waiting => '網頁就緒後顯示過濾狀態';
+
+  @override
+  String get browser_filter_unavailable => '暫時無法確認此網站的過濾狀態';
 
   @override
   String get browser_filter_site => '過濾此網站的廣告';

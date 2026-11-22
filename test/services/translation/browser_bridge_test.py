@@ -37,6 +37,7 @@ const readInput = async item => {
   await call('inputEnd',{});
   return {meta,chunks};
 };
+__PAINT_FIXTURE__
 (async () => {
   const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=768;
   const pixels = canvas.getContext('2d').createImageData(512,768);
@@ -104,6 +105,13 @@ const readInput = async item => {
   for(const chunk of chunks) await call('resultChunk',{id:item.id,...chunk});
   await call('resultEnd',{id:item.id});
   assert(img.style.content.startsWith('url('),'image replacement missing');
+  const readyUrl=img.style.content;
+  for(let i=0;i<3;i++) {
+    await call('state',{active:true,translated:false});
+    assert(!img.style.content,'switch to original waited for a transfer');
+    await call('state',{active:true,translated:true});
+    assert(img.style.content===readyUrl && scrollY===before,'switch reloaded a warm result or moved the viewport');
+  }
   assert(JSON.stringify(await readInput(item))===JSON.stringify({meta,chunks}),'translation replacement contaminated original pixels');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'source or reading anchor mutated');
   const theme={surface:'#1e242c',ink:'#f0f3f8',line:'#353e4a',accent:'#006eff',error:'#ff8888',inset:8,gap:8,padding:12,radius:24,tap:44,fontSize:13,reduceMotion:true};
@@ -192,6 +200,30 @@ const readInput = async item => {
   const displayed=dataImage.getBoundingClientRect();
   assert(dataImage.style.content && Math.abs(rect.width-displayed.width)<.1 && Math.abs(rect.height-displayed.height)<.1,'CSS transform/cover geometry changed');
   assert(dataImage.src===tiny.toDataURL(),'data image source changed');
+  const decode=HTMLImageElement.prototype.decode;
+  let decoded;
+  HTMLImageElement.prototype.decode=function(){return new Promise(yes=>{decoded=()=>decode.call(this).then(yes);});};
+  async function startResult() {
+    await call('resultBegin',{...dataItem,size:dataInput.meta.size});
+    for(const chunk of dataInput.chunks) await call('resultChunk',{id:dataItem.id,...chunk});
+    return {end:call('resultEnd',dataItem)};
+  }
+  try {
+    const warm=dataImage.style.content;
+    const first=await startResult();
+    assert(dataImage.style.content===warm,'old paint removed before replacement decoded');
+    await call('state',{active:true,translated:false});
+    decoded(); await first.end;
+    assert(!dataImage.style.content,'late decode overrode original selection');
+    await call('state',{active:true,translated:true});
+    assert(dataImage.style.content && dataImage.style.content!==warm,'finished hidden result did not become immediately available');
+    const replaced=await startResult();
+    await call('state',{active:true,translated:false,scope:2});
+    await call('state',{active:true,translated:true,scope:2});
+    decoded(); await rejects(()=>replaced.end,'SOURCE_CHANGED');
+    await rejects(()=>call('resultBegin',{...dataItem,size:1}),'SOURCE_CHANGED');
+    assert(!dataImage.style.content,'cached result crossed accounts');
+  } finally { HTMLImageElement.prototype.decode=decode; }
   await call('state',{active:true,translated:false});
   assert(!dataImage.style.content && dataImage.style.objectFit==='cover' && dataImage.style.transform==='rotate(15deg)','original CSS not restored');
   dataImage.remove();
@@ -208,6 +240,7 @@ const readInput = async item => {
   assert(tiny.toDataURL()===pixelsBefore,'canvas pixels changed by translation');
   tiny.getContext('2d').fillStyle='red'; tiny.getContext('2d').fillRect(0,0,9,7);
   await wait(800);
+  assert(!preview.isConnected,'redrawn canvas still shows the previous translation');
   const changedCanvas=windows.at(-1).items.find(value=>value.id===canvasItem.id);
   assert(changedCanvas.revision!==canvasItem.revision,'same-size canvas repaint retained old identity');
   await rejects(()=>call('validate',canvasItem),'SOURCE_CHANGED');
@@ -255,11 +288,12 @@ const readInput = async item => {
   const horizontal=await call('anchor',{});assert(horizontal.page===2,'horizontal clip chose an offscreen panel');
   strip.scrollTo(0,0);await call('restore',horizontal);await wait(260);
   assert(Math.abs(strip.scrollLeft-innerWidth)<2 && Math.abs(strip.scrollTop-innerHeight/3)<2,'inner scroller lost image position');
-  window.__nodelaneReader.dispose();
+  await preparePaintFixture();
   document.getElementById('result').textContent='NODELANE_BRIDGE_PASS';
 })().catch(error => document.getElementById('result').textContent='NODELANE_BRIDGE_FAIL: '+error.message);
 </script></body></html>
-'''.replace('__SCRIPT__', SCRIPT)
+'''.replace('__SCRIPT__', SCRIPT).replace('__PAINT_FIXTURE__',
+    Path(__file__).with_name('browser_paint_fixture.js').read_text(encoding='utf-8'))
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -308,12 +342,25 @@ for(let attempt=0;attempt<150;attempt++) {
  if(status!=='pending') break;
  await new Promise(resolve=>setTimeout(resolve,100));
 }
-await send('Browser.close',{}); ws.close(); console.log(status); if(status!=='NODELANE_BRIDGE_PASS') process.exitCode=1;
+const evaluate=async expression=>{
+ const r=(await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true})).result;
+ if(r.exceptionDetails) throw Error(r.exceptionDetails.exception?.description??r.exceptionDetails.text);
+};
+try {
+ if(status!=='NODELANE_BRIDGE_PASS') throw Error(status);
+ for(const [mode,width] of [['original',360],['original',540],['translated',540],['translated',360],['restored',360],['translated',360]]) {
+   await evaluate(`paintLayout('${mode}',${width})`);
+   const {data}=(await send('Page.captureScreenshot',{format:'png'})).result;
+   await evaluate(`checkPaint('${mode}',${width},'${data}')`);
+ }
+ await evaluate('window.__nodelaneReader.dispose()');
+} catch(e) { console.error(e.message); process.exitCode=1; }
+finally { await send('Browser.close',{}); ws.close(); }
 '''
                 run = subprocess.run([node, '--input-type=module', '-e', probe,
-                    f'http://127.0.0.1:{port}', f'http://127.0.0.1:{server.server_port}'], capture_output=True, text=True, timeout=25)
-                if run.returncode: raise SystemExit(run.stdout.strip() or run.stderr[:500])
-                print('PASS: image capture, display, actions and chunks; chapter detection, next-link ambiguity and clip restoration after reflow')
+                    f'http://127.0.0.1:{port}', f'http://127.0.0.1:{server.server_port}'], capture_output=True, text=True, timeout=35)
+                if run.returncode: raise SystemExit(run.stdout.strip() or run.stderr[:1000])
+                print('PASS: painted pixels in original/translated/restored responsive images, cropped canvas and SVG; image actions, chunks, chapters and reading anchors')
             finally:
                 try:
                     browser.wait(timeout=10)

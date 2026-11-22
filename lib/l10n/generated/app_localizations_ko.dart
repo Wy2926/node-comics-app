@@ -28,7 +28,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get browser_focus => '집중해서 읽기';
 
   @override
-  String get browser_web_tools => '브라우저 도구로 돌아가기';
+  String get browser_focus_hint => '페이지 가운데를 탭하면 읽기 도구가 표시됩니다.';
+
+  @override
+  String get browser_exit_focus => '집중 읽기 종료';
 
   @override
   String get browser_open_reader => '앱 리더로 열기';
@@ -37,7 +40,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get browser_next_chapter => '다음 화';
 
   @override
-  String get browser_protection => '사이트 보호';
+  String get browser_protection => '광고 필터링';
+
+  @override
+  String get browser_filter_waiting => '페이지가 준비되면 필터 상태가 표시됩니다.';
+
+  @override
+  String get browser_filter_unavailable => '현재 이 사이트의 필터 상태를 확인할 수 없습니다.';
 
   @override
   String get browser_filter_site => '이 사이트의 광고 차단';

@@ -9,6 +9,7 @@ import 'package:http/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangayomi/modules/webview/browser_navigation.dart';
+import 'package:mangayomi/modules/webview/browser_focus_tools.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_widgets.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
 import 'package:mangayomi/models/source.dart';
@@ -62,6 +63,7 @@ void main() {
     WidgetTester tester,
     Widget child, {
     double scale = 1,
+    Locale locale = const Locale('zh'),
   }) async {
     tester.view.physicalSize = const Size(320, 600);
     tester.view.devicePixelRatio = 1;
@@ -69,7 +71,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        locale: const Locale("zh"),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
@@ -103,7 +105,7 @@ void main() {
             addressFocus: focus,
             onClose: () => closes++,
             protection: IconButton(
-              tooltip: '站点保护',
+              tooltip: '广告过滤',
               icon: const Icon(Icons.shield),
               onPressed: () => protection++,
             ),
@@ -131,11 +133,11 @@ void main() {
       ),
     );
     expect(find.textContaining('private'), findsNothing);
-    await tester.tap(find.byTooltip('站点保护'));
+    await tester.tap(find.byTooltip('广告过滤'));
     expect(protection, 1);
     await tester.tap(find.byType(TextField));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('站点保护'), findsNothing);
+    expect(find.byTooltip('广告过滤'), findsNothing);
     expect(
       find.text('https://preview.example/chapter?private=value'),
       findsOneWidget,
@@ -144,7 +146,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('离开网页'));
     await tester.tap(find.text('12'));
-    await tester.tap(find.text('译图'));
+    expect(find.text('译图'), findsNothing);
+    await tester.tap(find.text('原图'));
     await tester.tap(find.byTooltip('新建标签页'));
     await tester.tap(find.byTooltip('网页翻译'));
     expect([closes, tabs, controls, pages, newTabs], [1, 1, 1, 0, 1]);
@@ -163,6 +166,52 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'inline and bottom browser controls stay one touch target high at large text',
+    (tester) async {
+      final page = find.byKey(const Key('viewport')),
+          button = find.byType(BrowserDisplayButton);
+      for (final inline in [false, true]) {
+        var translated = false;
+        await mount(
+          tester,
+          StatefulBuilder(
+            builder: (_, setState) => Column(
+              children: [
+                const Expanded(child: SizedBox.expand(key: Key('viewport'))),
+                MobileBrowserToolbar(
+                  inline: inline,
+                  tabCount: 1,
+                  onTabs: (_) {},
+                  onNew: () {},
+                  showTranslation: translated,
+                  onDisplayChanged: (show) => setState(() => translated = show),
+                ),
+              ],
+            ),
+          ),
+          locale: const Locale('en'),
+          scale: 2,
+        );
+        final viewport = tester.getRect(page), target = tester.getRect(button);
+        expect(target.height, 44);
+        expect(target.width, greaterThanOrEqualTo(44));
+        expect(
+          tester.getSize(find.byType(MobileBrowserToolbar)).height,
+          inline ? 44 : 44 + 24,
+        ); // Bottom safe area.
+        for (final label in ['Original', 'Translated']) {
+          await tester.tap(find.text(label));
+          await tester.pumpAndSettle();
+          expect(tester.getRect(page), viewport);
+          expect(tester.getRect(button), target);
+        }
+        expect(translated, isFalse);
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('tab preview selection and close remain separate', (
     tester,
@@ -283,6 +332,7 @@ void main() {
           history: [
             BrowserPageEntry(
               url: 'https://visited.example',
+              iconUrl: 'https://visited.example/mark.png',
               title: 'Last visit',
               time: clip.time,
             ),
@@ -305,6 +355,14 @@ void main() {
         ),
       );
       final bookmarks = find.byTooltip('书签'), history = find.text('历史');
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is NodeLaneWebsiteIcon &&
+              w.url == 'https://visited.example/mark.png',
+        ),
+        findsOneWidget,
+      );
       expect(
         tester.getCenter(bookmarks).dy,
         lessThan(tester.getTopLeft(find.byType(MobileBrowserAddressField)).dy),
@@ -675,6 +733,105 @@ void main() {
       await tester.pumpAndSettle();
       expect(chosen?.url, 'https://example.org/b');
       expect(chosen?.anchor, isNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'history uses the space beside its trigger, then centers on a narrow screen with a pinned heading',
+    (tester) async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final store = BrowserLibraryStore();
+      addTearDown(store.dispose);
+      for (var i = 0; i < 24; i++) {
+        await store.visit('https://example.org/$i', 'Page $i');
+      }
+      await mount(
+        tester,
+        Align(
+          alignment: Alignment.centerRight,
+          child: Builder(
+            builder: (anchor) => TextButton(
+              onPressed: () => BrowserLibraryPanel.show(anchor, store: store),
+              child: const Text('History'),
+            ),
+          ),
+        ),
+      );
+      tester.view.physicalSize = const Size(720, 400);
+      await tester.pumpAndSettle();
+      final anchor = tester.getRect(find.text('History'));
+      await tester.tap(find.text('History'));
+      await tester.pumpAndSettle();
+      final panel = find.byType(BrowserLibraryPanel);
+      final wide = tester.getRect(panel);
+      expect(wide.right, lessThan(anchor.left));
+      expect(wide.height, greaterThan(310));
+      expect(find.text('Page 22').hitTestable(), findsOneWidget);
+      final close = find.byTooltip('关闭');
+      final bounds = tester.getRect(close);
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -460));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 23').hitTestable(), findsNothing);
+      expect(tester.getRect(close), bounds);
+      expect(find.byTooltip('清除浏览历史').hitTestable(), findsOneWidget);
+      tester.view.physicalSize = const Size(320, 530);
+      await tester.pumpAndSettle();
+      final narrow = tester.getRect(panel);
+      expect(narrow.center, const Offset(160, 265));
+      expect(narrow.height, greaterThan(430));
+      await tester.tap(close);
+      await tester.pumpAndSettle();
+      expect(find.byType(BrowserLibraryPanel), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'reduced motion reveals the focus palette immediately and large text actions remain reachable',
+    (tester) async {
+      final visible = ValueNotifier(false);
+      addTearDown(visible.dispose);
+      var exited = false;
+      await mount(
+        tester,
+        Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: ValueListenableBuilder(
+              valueListenable: visible,
+              builder: (_, show, _) => BrowserFocusOverlay(
+                visible: show,
+                onReveal: () => visible.value = true,
+                child: BrowserFocusTools(
+                  translated: false,
+                  onDisplay: (_) {},
+                  onClip: () {},
+                  onNext: () {},
+                  onClose: () => visible.value = false,
+                  onExit: () => exited = true,
+                ),
+              ),
+            ),
+          ),
+        ),
+        scale: 2,
+        locale: const Locale('en'),
+      );
+      tester.view.physicalSize = const Size(320, 300);
+      await tester.pump();
+      visible.value = true;
+      await tester.pump();
+      final palette = find.byType(BrowserFocusTools);
+      final rect = tester.getRect(palette);
+      expect(rect.center.dx, 160);
+      expect(rect.height, 52);
+      expect(rect.top, greaterThanOrEqualTo(24));
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(tester.getRect(palette), rect);
+      await tester.tap(find.byTooltip('Exit focus reading'));
+      await tester.pump();
+      expect(exited, isTrue);
+      expect(palette, findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

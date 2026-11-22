@@ -5,6 +5,59 @@ import 'package:mangayomi/theme/nodelane_motion.dart';
 
 void main() {
   testWidgets(
+    'a popup changes edge when its contents grow and returns when they shrink',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(780, 400);
+      addTearDown(tester.view.reset);
+      final height = ValueNotifier(60.0);
+      addTearDown(height.dispose);
+      const key = ValueKey('content');
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.centerLeft,
+              child: Builder(
+                builder: (anchor) => TextButton(
+                  onPressed: () => showNodeLaneBubble<void>(
+                    anchor,
+                    label: 'Tools',
+                    child: ValueListenableBuilder(
+                      valueListenable: height,
+                      builder: (_, h, _) => SizedBox(key: key, height: h),
+                    ),
+                  ),
+                  child: const Text('Open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final opener = find.widgetWithText(TextButton, 'Open');
+      final trigger = tester.getRect(opener);
+      await tester.tap(opener);
+      await tester.pumpAndSettle();
+      final panel = find.byKey(key), element = tester.element(find.byKey(key));
+      final compact = tester.getRect(panel);
+      expect(
+        compact.top >= trigger.bottom || compact.bottom <= trigger.top,
+        isTrue,
+      );
+      height.value = 300;
+      await tester.pump();
+      final tall = tester.getRect(panel);
+      expect(tall.left, greaterThan(trigger.right));
+      expect(tall.height, 300);
+      height.value = 60;
+      await tester.pump();
+      expect(tester.getRect(panel), compact);
+      expect(tester.element(panel), same(element));
+    },
+  );
+
+  testWidgets(
     'a compact panel returns to the same nested draft and respects its write lock',
     (tester) async {
       final busy = ValueNotifier(true);

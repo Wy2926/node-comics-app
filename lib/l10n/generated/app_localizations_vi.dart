@@ -28,7 +28,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_focus => 'Đọc tập trung';
 
   @override
-  String get browser_web_tools => 'Hiện công cụ trình duyệt';
+  String get browser_focus_hint => 'Chạm vào giữa trang để hiện công cụ đọc.';
+
+  @override
+  String get browser_exit_focus => 'Thoát chế độ đọc tập trung';
 
   @override
   String get browser_open_reader => 'Mở trong trình đọc của ứng dụng';
@@ -37,7 +40,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_next_chapter => 'Chương tiếp theo';
 
   @override
-  String get browser_protection => 'Bảo vệ trang web';
+  String get browser_protection => 'Lọc quảng cáo';
+
+  @override
+  String get browser_filter_waiting =>
+      'Trạng thái bộ lọc sẽ xuất hiện khi trang sẵn sàng.';
+
+  @override
+  String get browser_filter_unavailable =>
+      'Hiện chưa thể xác nhận trạng thái bộ lọc cho trang này.';
 
   @override
   String get browser_filter_site => 'Lọc quảng cáo trên trang web này';

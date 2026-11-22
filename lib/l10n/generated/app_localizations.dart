@@ -163,11 +163,17 @@ abstract class AppLocalizations {
   /// **'Focus reading'**
   String get browser_focus;
 
-  /// No description provided for @browser_web_tools.
+  /// No description provided for @browser_focus_hint.
   ///
   /// In en, this message translates to:
-  /// **'Show browser tools'**
-  String get browser_web_tools;
+  /// **'Tap the center of the page for reading tools.'**
+  String get browser_focus_hint;
+
+  /// No description provided for @browser_exit_focus.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit focus reading'**
+  String get browser_exit_focus;
 
   /// No description provided for @browser_open_reader.
   ///
@@ -184,8 +190,20 @@ abstract class AppLocalizations {
   /// No description provided for @browser_protection.
   ///
   /// In en, this message translates to:
-  /// **'Site protection'**
+  /// **'Ad filtering'**
   String get browser_protection;
+
+  /// No description provided for @browser_filter_waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter status will appear when the page is ready.'**
+  String get browser_filter_waiting;
+
+  /// No description provided for @browser_filter_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Can’t confirm the filter status for this site right now.'**
+  String get browser_filter_unavailable;
 
   /// No description provided for @browser_filter_site.
   ///

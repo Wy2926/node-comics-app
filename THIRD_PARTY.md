@@ -8,7 +8,7 @@ Android 浏览器通过 [Mozilla Maven](https://maven.mozilla.org/maven2/org/moz
 
 `assets/nodelane_reader.js` 的图片呈现、Canvas 同级覆盖与视口排序基于 [NodeLane Comics](https://github.com/Wy2926/node-comics) 的 `apps/extension/src/inline/display.ts`、`canvas-display.ts`、`window.ts` 适配，参考提交为 `92f16b548da98431be1607eed57bb561b239156d`。该脚本采用 **GPL-3.0-only**，条款见 [GPL 许可全文](assets/brand/LICENSE-GPL-3.0-only)；不应将它标为 Apache-2.0。分发包含该代码的组合应用需遵循 GPL-3.0-only，保留上游 Apache-2.0 及其他第三方声明。
 
-没有引入同级仓库的运行时路径依赖。图片解码继续使用项目已有的 `image`、Flutter 平台编解码器与 AVIF 支持。
+没有引入同级仓库的运行时路径依赖。图片解码继续使用项目已有的 `image`、Flutter 平台编解码器与 AVIF 支持。网页图片显示从已取得的 SVG 读取根元素的视口属性，使用锁文件中既有的 [Dart XML](https://github.com/renggli/dart-xml)（MIT，Lukas Renggli）。
 
 来源目录截图中的标识来自各网站，[站内作品与详情截图](docs/MOBILE_UI_DESIGN.md#来源与搜索)中的封面和简介来自 FEEL web。第三方作品和商标归各自权利人所有，不随本项目代码许可再授权。
 

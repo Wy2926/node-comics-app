@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/webview/browser_page_controller.dart';
 import 'package:mangayomi/modules/webview/browser_protection_panel.dart';
-import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
 class _Protection extends Fake implements BrowserProtection {
@@ -81,6 +80,9 @@ void main() {
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
         final protection = _Protection();
+        final ready = ValueNotifier(false);
+        addTearDown(ready.dispose);
+        addTearDown(protection.changes.dispose);
         SiteProtectionAction? action;
         await tester.pumpWidget(
           MaterialApp(
@@ -97,32 +99,40 @@ void main() {
               child: child!,
             ),
             home: Scaffold(
-              body: Builder(
-                builder: (context) => TextButton(
-                  onPressed: () async =>
-                      action = await showNodeLaneBubble<SiteProtectionAction>(
-                        context,
-                        label: '站点保护',
-                        child: BrowserProtectionPanel(
-                          protection: protection,
-                          url: url,
-                        ),
-                      ),
-                  child: const Text('open'),
+              body: ValueListenableBuilder(
+                valueListenable: ready,
+                builder: (_, value, _) => BrowserProtectionButton(
+                  protection: protection,
+                  ready: value,
+                  url: url,
+                  onAction: (result) => action = result,
                 ),
               ),
             ),
           ),
         );
-        await tester.tap(find.text('open'));
+        await tester.tap(find.byTooltip('广告过滤'));
+        await tester.pumpAndSettle();
+        expect(protection.calls, isEmpty);
+        expect(find.text('网页就绪后显示过滤状态'), findsOneWidget);
+        expect(find.textContaining('操作未完成'), findsNothing);
+        ready.value = true;
         await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(find.byType(NodeLaneSwitch), findsNothing);
+        protection.reply.completeError(StateError('No status yet'));
+        await tester.pumpAndSettle();
+        expect(find.text('暂时无法确认本站的过滤状态'), findsOneWidget);
+        expect(find.textContaining('操作未完成'), findsNothing);
+        await tester.tap(find.byTooltip('重试'));
+        await tester.pump();
         protection.reply.complete((enabled: true, blocked: 2, total: 71));
         await tester.pumpAndSettle();
         expect(find.text('reader.example'), findsOneWidget);
         expect(find.textContaining('private'), findsNothing);
         expect(find.text('71'), findsOneWidget);
         await tester.tap(find.text('过滤本站广告'));
+        await tester.pump();
         await tester.pump();
         final pending = tester.widget<NodeLaneSwitch>(
           find.byType(NodeLaneSwitch),
@@ -132,9 +142,14 @@ void main() {
         protection.reply.completeError(StateError('Lost response'));
         await tester.pumpAndSettle();
         expect(find.byType(NodeLaneSwitch), findsNothing);
-        await tester.tap(find.text('重试'));
+        await tester.tap(find.byTooltip('重试'));
         await tester.pump();
-        expect(protection.calls, [(url, null), (url, false), (url, null)]);
+        expect(protection.calls, [
+          (url, null),
+          (url, null),
+          (url, false),
+          (url, null),
+        ]);
         protection.reply.complete((enabled: false, blocked: 2, total: 72));
         await tester.pumpAndSettle();
         expect(

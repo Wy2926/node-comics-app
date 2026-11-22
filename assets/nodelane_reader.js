@@ -17,7 +17,7 @@
   const menus = new Map();
   let press = null, pressTimer, menuBusy = false, suppressClick = null;
   let theme = {};
-  let next = 0, nextVersion = 0, seq = 0, active = false, translated = false, timer, disposed = false;
+  let next = 0, nextVersion = 0, seq = 0, active = false, translated = false, displayScope, timer, disposed = false;
   let input = null, output = null, observer, restoreTimer;
   const near = new Set();
   let viewport, margin, slots;
@@ -126,61 +126,88 @@
   function drop(id) {
     const value = overlays.get(id);
     if (!value) return;
-    value.restore(); URL.revokeObjectURL(value.url); overlays.delete(id);
+    value.restore(); URL.revokeObjectURL(value.url); value.preview.removeAttribute('src'); overlays.delete(id);
   }
-  function display(el, url) {
-    const undo = [], repairs = [];
-    const set = (element, name, value) => {
-      let old = element.style.getPropertyValue(name), priority = element.style.getPropertyPriority(name);
-      element.style.setProperty(name, value, 'important');
-      const applied = element.style.getPropertyValue(name);
-      repairs.push(() => {
-        if (element.style.getPropertyValue(name) === applied && element.style.getPropertyPriority(name) === 'important') return;
-        old = element.style.getPropertyValue(name); priority = element.style.getPropertyPriority(name);
-        element.style.setProperty(name, value, 'important');
-      });
-      undo.push(() => {
-        if (element.style.getPropertyValue(name) !== applied || element.style.getPropertyPriority(name) !== 'important') return;
-        if (old) element.style.setProperty(name, old, priority); else element.style.removeProperty(name);
-      });
-    };
-    if (el instanceof HTMLImageElement) {
-      if (!el.hasAttribute('style')) undo.push(() => { if (!el.style.length) el.removeAttribute('style'); });
-      for (const [name, value] of [['width',el.naturalWidth],['height',el.naturalHeight]]) {
-        if (el.hasAttribute(name)) continue;
-        el.setAttribute(name, String(value));
-        undo.push(() => { if (el.getAttribute(name) === String(value)) el.removeAttribute(name); });
+  async function svgViewport(svg) {
+    const root = new DOMParser().parseFromString(await svg.text(), 'image/svg+xml').documentElement;
+    return root.localName === 'svg' ? {
+      viewBox:root.getAttribute('viewBox'), preserveAspectRatio:root.getAttribute('preserveAspectRatio'),
+    } : null;
+  }
+  async function localSvg(url) {
+    // Blob/data sources are captured as pixels. Only inspect local bytes; never re-request a website image.
+    if (!/^(blob:|data:image\/svg\+xml[;,])/i.test(url)) return null;
+    try {
+      const response = await fetch(url);
+      if (!/^image\/svg\+xml\b/i.test(response.headers.get('content-type') || '')) {
+        await response.body?.cancel(); return null;
       }
-      const ratio = getComputedStyle(el).aspectRatio;
-      if (ratio === 'auto' || ratio.startsWith('auto ')) set(el, 'aspect-ratio', el.naturalWidth+' / '+el.naturalHeight);
-      set(el, 'content', 'url("'+url+'")');
-    } else {
-      const preview = new Image(), parent = el.parentElement;
-      preview.src = url; preview.alt = ''; preview.dataset.nodelaneOverlay = 'translation';
-      preview.setAttribute('aria-hidden', 'true'); el.after(preview);
-      undo.push(() => preview.remove());
-      if (getComputedStyle(parent).position === 'static') set(parent, 'position', 'relative');
-      repairs.push(() => {
-        if (el.parentElement !== parent) { drop(ids.get(el)); return; }
+      return await svgViewport(response);
+    } catch (_) {} // A revoked Blob still has readable decoded pixels.
+    return null;
+  }
+  async function displayUrl(el, png, preview) {
+    const original = versions.get(el), {width:w,height:h} = original;
+    if (original.svg === undefined) original.svg = await localSvg(original.url);
+    const svg = original.svg;
+    if (!svg && w === preview.naturalWidth && h === preview.naturalHeight) return preview.src;
+    let fit = 'none', box = [0,0,w,h];
+    if (svg) {
+      // Map the natural raster's coordinates back to the SVG viewport, including its alignment and gutters.
+      const par = /^(?:defer\s+)?(none|x(Min|Mid|Max)Y(Min|Mid|Max))(?:\s+(meet|slice))?$/.exec(
+        (svg.preserveAspectRatio || '').trim()) || ['','xMidYMid','Mid','Mid','meet'];
+      fit = par[1] === 'none' ? 'none' : par[1]+' '+(par[4] || 'meet');
+      const vb = (svg.viewBox || '').trim().split(/[\s,]+/).map(Number);
+      if (fit !== 'none' && vb.length === 4 && vb.every(Number.isFinite) && vb[2] > 0 && vb[3] > 0) {
+        const k = (par[4] === 'slice' ? Math.max : Math.min)(w/vb[2], h/vb[3]);
+        const bw = vb[2]*k, bh = vb[3]*k, align = {Min:0,Mid:.5,Max:1};
+        if (Number.isFinite(bw) && Number.isFinite(bh)) box = [(w-bw)*align[par[2]],(h-bh)*align[par[3]],bw,bh];
+      }
+    }
+    // CSS sizes the original object; only the pixels inside its coordinate system change.
+    const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${box.join(' ')}" preserveAspectRatio="${fit}"><image width="${w}" height="${h}" preserveAspectRatio="none" href="data:image/png;base64,`];
+    const stride = CHUNK - CHUNK % 3;
+    for (let at=0; at<png.size; at+=stride) {
+      if (!active || disposed || !el.isConnected) throw Error('SOURCE_CHANGED');
+      parts.push(new Blob([encode(new Uint8Array(await png.slice(at,at+stride).arrayBuffer()))]));
+    }
+    parts.push('"/></svg>');
+    return URL.createObjectURL(new Blob(parts, {type:'image/svg+xml'}));
+  }
+  function display(el, preview) {
+    if (el instanceof HTMLCanvasElement) {
+      // Canvas ignores CSS content in Blink. Keep its backing store and pointer target intact.
+      preview.alt = '';
+      preview.dataset.nodelaneOverlay = 'translation'; preview.setAttribute('aria-hidden','true');
+      const style = preview.style;
+      style.cssText = 'all:initial!important;display:block!important;pointer-events:none!important;user-select:none!important;border-color:transparent!important';
+      const sync = () => {
         if (preview.previousElementSibling !== el) el.after(preview);
         const css = getComputedStyle(el);
-        const size = axis => {
-          const value = parseFloat(css[axis]);
-          if (!css[axis].endsWith('px') || !Number.isFinite(value)) return axis === 'width' ? el.offsetWidth : el.offsetHeight;
-          const edges = axis === 'width' ? ['left','right'] : ['top','bottom'];
-          return value + (css.boxSizing === 'border-box' ? 0 : edges.reduce((sum, edge) => sum +
-            (parseFloat(css.getPropertyValue('padding-'+edge)) || 0) + (parseFloat(css.getPropertyValue('border-'+edge+'-width')) || 0), 0));
-        };
-        const props = {all:'initial',position:'absolute',display:'block',left:el.offsetLeft+'px',top:el.offsetTop+'px',
-          width:size('width')+'px',height:size('height')+'px','max-width':'none','max-height':'none',
-          'pointer-events':'none','user-select':'none','object-fit':css.objectFit,'object-position':css.objectPosition,'z-index':'1'};
-        for (const name of ['transform','transform-origin','translate','rotate','scale','border-radius']) props[name] = css.getPropertyValue(name);
+        const props = {position:css.position === 'fixed' ? 'fixed' : 'absolute',left:el.offsetLeft+'px',top:el.offsetTop+'px'};
+        for (const name of ['width','height','box-sizing','padding','border-width','border-style','border-radius',
+          'object-fit','object-position','transform','transform-origin','translate','rotate','scale','clip-path',
+          'overflow','overflow-clip-margin','filter','opacity','visibility','z-index','image-rendering']) props[name] = css.getPropertyValue(name);
         for (const [name, value] of Object.entries(props)) {
-          if (preview.style.getPropertyValue(name) !== value || preview.style.getPropertyPriority(name) !== 'important') preview.style.setProperty(name, value, 'important');
+          if (style.getPropertyValue(name) !== value) style.setProperty(name,value,'important');
         }
-      });
+      };
+      return {sync, restore:() => preview.remove()};
     }
-    return {sync:() => repairs.forEach(repair => repair()), restore:() => undo.reverse().forEach(restore => restore())};
+    const style = el.style, content = 'url("'+preview.src+'")';
+    let old, priority, hadStyle, applied;
+    const owns = () => applied !== undefined && style.content === applied && style.getPropertyPriority('content') === 'important';
+    const sync = () => {
+      if (owns()) return;
+      hadStyle = el.hasAttribute('style'); old = style.content; priority = style.getPropertyPriority('content');
+      style.setProperty('content', content, 'important'); applied = style.content;
+    };
+    return {sync, restore:() => {
+      if (!owns()) return;
+      if (old) style.setProperty('content',old,priority); else style.removeProperty('content');
+      if (!hadStyle && !style.length) el.removeAttribute('style');
+      applied = undefined;
+    }};
   }
   function dropBadge(id) {
     badges.get(id)?.host.remove(); badges.delete(id);
@@ -332,8 +359,8 @@
   function place() {
     for (const [id, value] of overlays) {
       const rec = records.get(id);
-      if (!active || !translated || !rec || !rec.el.isConnected || revision(rec.el) !== value.revision) { drop(id); continue; }
-      value.sync();
+      if (!active || !rec || !rec.el.isConnected || revision(rec.el) !== value.revision) { drop(id); continue; }
+      if (translated) value.sync(); else value.restore();
     }
     for (const [id, badge] of badges) {
       const rec=records.get(id);
@@ -435,16 +462,25 @@
     if (operation === 'imageMenuClaimed') return !!press || menuBusy || Date.now() < (suppressClick?.until || 0);
     if (operation === 'restore') { restore(args); return true; }
     if (operation === 'state') {
+      if (!args.active || args.scope !== displayScope) {
+        output = null;
+        for (const id of [...overlays.keys()]) drop(id);
+      }
+      displayScope = args.scope;
       active = args.active; translated = args.translated;
       reading = args.reading === true;
       if (!reading) lastReading = null;
       if (args.theme) theme=args.theme;
       if (args.items) { updateBadges(active ? args.items : []); updateMenus(active ? args.items : []); }
-      if (!active) { cancelPress(); for (const id of [...menus.keys()]) dropMenu(id); input?.abort?.abort(); input = null; output = null; for (const id of [...overlays.keys()]) drop(id); for (const id of [...badges.keys()]) dropBadge(id); }
+      if (!active) { cancelPress(); for (const id of [...menus.keys()]) dropMenu(id); input?.abort?.abort(); input = null; for (const id of [...badges.keys()]) dropBadge(id); }
       place(); if (active || reading) schedule(); return true;
     }
     if (!active) throw Error('BRIDGE_INVALID');
-    if (operation === 'validate') { record(args.id, args.revision); return true; }
+    if (operation === 'validate') {
+      const {el} = record(args.id, args.revision);
+      if (args.svg) versions.get(el).svg = args.svg;
+      return true;
+    }
     if (operation === 'inputBegin') {
       if (input) throw Error('RESOURCE_LIMIT');
       const {el} = record(args.id, args.revision);
@@ -454,20 +490,27 @@
       if (!width || !height) throw Error('SOURCE_MISSING');
       const value = {blob: null, id: args.id, revision: args.revision, offset: 0};
       input = value;
-      let canvas;
+      let canvas, vectorUrl;
       try {
-        let blob;
+        let blob, pixels = el;
         if (config.readImage && !isCanvas && /^https?:/i.test(source(el))) {
           value.abort = new AbortController();
           try { blob = await config.readImage(el, value.abort.signal); } catch (_) {}
           if (input !== value || !active || disposed) throw Error('SOURCE_CHANGED');
+          if (/^image\/svg\+xml\b/i.test(blob?.type || '')) {
+            versions.get(el).svg = await svgViewport(blob);
+            // The translation pipeline accepts raster pixels. The local copy also works for cross-origin SVGs.
+            const copy = new Image(); copy.src = vectorUrl = URL.createObjectURL(blob);
+            try { await copy.decode(); pixels = copy; } catch (_) {} // The already displayed image can still be readable.
+            blob = null;
+          }
         }
         if (!blob?.size) try {
           // Read decoded pixels consistently, even when the page revoked its Blob URL.
           canvas = isCanvas ? el : document.createElement('canvas');
           if (!isCanvas) {
             canvas.width = width; canvas.height = height;
-            canvas.getContext('2d').drawImage(el, 0, 0);
+            canvas.getContext('2d').drawImage(pixels, 0, 0, width, height);
           }
           blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         } catch (_) { throw Error('SOURCE_MISSING'); }
@@ -480,6 +523,7 @@
         if (input === value) input = null;
         throw error;
       } finally {
+        if (vectorUrl) URL.revokeObjectURL(vectorUrl);
         if (canvas && !isCanvas) canvas.width = canvas.height = 0;
       }
     }
@@ -498,6 +542,7 @@
     if (operation === 'inputEnd') { const value = input; input = null; value?.abort?.abort(); if (value) record(value.id, value.revision); return true; }
     if (operation === 'resultClear') { drop(args.id); return true; }
     if (operation === 'resultBegin') {
+      if (args.scope !== displayScope) throw Error('SOURCE_CHANGED');
       record(args.id, args.revision);
       if (output || !Number.isSafeInteger(args.size) || args.size < 1) throw Error('BRIDGE_INVALID');
       output = {...args, chunks: [], offset: 0}; return true;
@@ -510,18 +555,30 @@
       output.chunks.push(bytes); return true;
     }
     if (operation === 'resultEnd') {
-      const value = output; output = null;
-      if (!value || value.id !== args.id || value.offset !== value.size) throw Error('BRIDGE_INVALID');
+      const value = output;
+      if (!value || value.id !== args.id || value.offset !== value.size || value.decoding) throw Error('BRIDGE_INVALID');
+      value.decoding = true;
       record(value.id, value.revision);
-      const url = URL.createObjectURL(new Blob(value.chunks, {type:'image/png'}));
+      const png = new Blob(value.chunks, {type:'image/png'});
+      value.chunks.length = 0;
+      let url = URL.createObjectURL(png);
       const preview = new Image(); preview.src = url;
       try {
         await preview.decode();
-        if (!active || !translated || disposed) throw Error('SOURCE_CHANGED');
+        if (!active || output !== value || disposed) throw Error('SOURCE_CHANGED');
         const {el} = record(value.id, value.revision);
+        const sized = await displayUrl(el, png, preview);
+        if (sized !== url) {
+          URL.revokeObjectURL(url); url = sized; preview.src = url;
+          await preview.decode();
+        }
+        if (!active || output !== value || disposed) throw Error('SOURCE_CHANGED');
+        record(value.id, value.revision);
         drop(value.id);
-        overlays.set(value.id, {...display(el, url), url, revision:value.revision}); place(); return true;
+        // Keep the decoded image hot only inside the current reading window. Switching views is paint-only.
+        overlays.set(value.id, {...display(el, preview), preview, url, revision:value.revision}); place(); return true;
       } catch (error) { URL.revokeObjectURL(url); throw error; }
+      finally { if (output === value) output = null; }
     }
     if (operation === 'resultAbort') { output = null; return true; }
     throw Error('BRIDGE_INVALID');

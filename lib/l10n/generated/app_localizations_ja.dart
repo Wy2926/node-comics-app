@@ -28,7 +28,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get browser_focus => '集中して読む';
 
   @override
-  String get browser_web_tools => 'ブラウザのツールに戻る';
+  String get browser_focus_hint => 'ページの中央をタップすると読書ツールが表示されます。';
+
+  @override
+  String get browser_exit_focus => '集中モードを終了';
 
   @override
   String get browser_open_reader => 'アプリのリーダーで開く';
@@ -37,7 +40,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get browser_next_chapter => '次の話';
 
   @override
-  String get browser_protection => 'サイトの保護';
+  String get browser_protection => '広告フィルター';
+
+  @override
+  String get browser_filter_waiting => 'ページの準備ができるとフィルターの状態が表示されます。';
+
+  @override
+  String get browser_filter_unavailable => '現在、このサイトのフィルターの状態を確認できません。';
 
   @override
   String get browser_filter_site => 'このサイトの広告をブロック';

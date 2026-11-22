@@ -1,10 +1,9 @@
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/translation/translation_display_switch.dart';
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -130,21 +129,9 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
     if (scope == null) return const SizedBox.shrink();
     if (labeled) {
       final controller = scope.notifier!;
-      final translated = controller.showTranslation;
-      return Tooltip(
-        message: translated
-            ? context.l10n.translation_show_original
-            : context.l10n.translation_show_translated,
-        child: NodeLaneToolbarAction(
-          label: translated
-              ? context.l10n.translation_translated
-              : context.l10n.translation_original,
-          active: translated,
-          icon: translated
-              ? NodeLaneIcons.of(context).translate
-              : NodeLaneIcons.of(context).image,
-          onPressed: () => controller.configure(showTranslation: !translated),
-        ),
+      return TranslationDisplayButton(
+        translated: controller.showTranslation,
+        onChanged: (value) => controller.configure(showTranslation: value),
       );
     }
     return Builder(

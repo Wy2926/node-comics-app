@@ -50,7 +50,7 @@ abstract final class NodeLaneMotion {
       child: ScaleTransition(
         alignment: pivot,
         scale: progress.drive(_bubbleScale),
-        child: RepaintBoundary(child: child),
+        child: child,
       ),
     );
   }

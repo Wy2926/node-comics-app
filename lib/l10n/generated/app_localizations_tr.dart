@@ -28,7 +28,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get browser_focus => 'Odaklanarak oku';
 
   @override
-  String get browser_web_tools => 'Tarayıcı araçlarını göster';
+  String get browser_focus_hint =>
+      'Okuma araçlarını görmek için sayfanın ortasına dokunun.';
+
+  @override
+  String get browser_exit_focus => 'Odaklanarak okuma modundan çık';
 
   @override
   String get browser_open_reader => 'Uygulamanın okuyucusunda aç';
@@ -37,7 +41,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get browser_next_chapter => 'Sonraki bölüm';
 
   @override
-  String get browser_protection => 'Site koruması';
+  String get browser_protection => 'Reklam filtreleme';
+
+  @override
+  String get browser_filter_waiting =>
+      'Sayfa hazır olduğunda filtre durumu gösterilecek.';
+
+  @override
+  String get browser_filter_unavailable =>
+      'Bu sitenin filtre durumu şu anda doğrulanamıyor.';
 
   @override
   String get browser_filter_site => 'Bu sitedeki reklamları filtrele';

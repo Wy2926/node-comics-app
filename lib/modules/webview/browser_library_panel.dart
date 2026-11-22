@@ -116,152 +116,163 @@ class _BrowserLibraryPanelState extends State<BrowserLibraryPanel> {
                     '${e.title} ${e.url}'.toLowerCase().contains(term),
               )
               .toList();
-      return CustomScrollView(
-        shrinkWrap: true,
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        slivers: [
-          SliverToBoxAdapter(
-            child: NodeLaneBubbleHeading(
-              collection.title(context),
-              actions: [
-                if (history && ready && widget.store.history.isNotEmpty)
-                  NodeLaneIconButton(
-                    icon: icons.delete,
-                    tooltip: context.l10n.browser_clear_history,
-                    style: NodeLaneIconButtonStyle.plain,
-                    onPressed: busy ? null : _clear,
-                  ),
-              ],
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: NodeLaneTokens.gutter,
-                  ),
-                  child: NodeLaneTextField.search(
-                    controller: query,
-                    hint: context.l10n.browser_search_library,
-                    clearLabel: context.l10n.search_clear,
-                    onChanged: (_) => setState(() {}),
-                  ),
-                ),
-                if (error != null)
-                  Padding(
-                    padding: NodeLaneTokens.groupPadding,
-                    child: Text(
-                      error!,
-                      style: NodeLaneTokens.of(context).readerSecondary,
-                    ),
-                  ),
-                const SizedBox(height: NodeLaneTokens.space12),
-              ],
-            ),
-          ),
-          if (failed || !ready || entries.isEmpty)
-            SliverToBoxAdapter(
-              child: failed
-                  ? NodeLaneEmptyState.error(
-                      message: context.l10n.browser_data_failed,
-                      onRetry: _load,
-                    )
-                  : !ready
-                  ? const NodeLaneEmptyState.loading()
-                  : NodeLaneEmptyState(
-                      icon: switch (collection) {
-                        BrowserCollection.bookmarks => icons.bookmarkOutline,
-                        BrowserCollection.history => icons.history,
-                        BrowserCollection.reading => icons.library,
-                      },
-                      title: query.text.isNotEmpty
-                          ? context.l10n.search_no_results
-                          : context.l10n.browser_library_empty,
-                    ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              sliver: SliverList.builder(
-                itemCount: entries.length,
-                itemBuilder: (context, index) {
-                  final entry = entries[index];
-                  final select = busy
-                      ? null
-                      : () => Navigator.pop(context, entry);
-                  final remove = NodeLaneIconButton(
-                    icon: icons.delete,
-                    tooltip: context.l10n.delete,
-                    style: NodeLaneIconButtonStyle.plain,
-                    onPressed: busy
-                        ? null
-                        : () => _write(
-                            () => switch (collection) {
-                              BrowserCollection.history => store.removeHistory(
-                                entry,
-                              ),
-                              BrowserCollection.bookmarks =>
-                                store.setBookmarked(
-                                  entry.url,
-                                  entry.title,
-                                  false,
-                                ),
-                              BrowserCollection.reading => store.removeReading(
-                                entry.url,
-                              ),
-                            },
-                          ),
-                  );
-                  if (collection == BrowserCollection.reading) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: BrowserReadingCard(
-                        entry,
-                        key: ValueKey(entry.url),
-                        onTap: select,
-                        trailing: remove,
-                      ),
-                    );
-                  }
-                  final date = entry.time.toLocal();
-                  final newDay =
-                      index == 0 ||
-                      !DateUtils.isSameDay(
-                        entries[index - 1].time.toLocal(),
-                        date,
-                      );
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (history && newDay)
-                        NodeLaneCatalogHeading(
-                          MaterialLocalizations.of(context)
-                              .formatMediumDate(date),
-                        ),
-                      NodeLaneRow.card(
-                        title: entry.displayTitle,
-                        titleMaxLines: 1,
-                        subtitle: entry.url,
-                        subtitleMaxLines: 1,
-                        metadata: !history
-                            ? null
-                            : MaterialLocalizations.of(context).formatTimeOfDay(
-                                TimeOfDay.fromDateTime(date),
-                                alwaysUse24HourFormat:
-                                    MediaQuery.alwaysUse24HourFormatOf(context),
-                              ),
-                        leading: NodeLaneWebsiteIcon(url: entry.faviconUrl),
-                        onTap: select,
-                        trailing: remove,
-                      ),
-                      const SizedBox(height: NodeLaneTokens.space8),
-                    ],
-                  );
-                },
-              ),
+      return NodeLaneBubblePanel(
+        title: collection.title(context),
+        actions: [
+          if (history && ready && store.history.isNotEmpty)
+            NodeLaneIconButton(
+              icon: icons.delete,
+              tooltip: context.l10n.browser_clear_history,
+              style: NodeLaneIconButtonStyle.plain,
+              destructive: true,
+              onPressed: busy ? null : _clear,
             ),
         ],
+        child: Padding(
+          padding: NodeLaneTokens.bubbleContentPadding,
+          child: CustomScrollView(
+            primary: false,
+            shrinkWrap: true,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    NodeLaneTextField.search(
+                      controller: query,
+                      hint: context.l10n.browser_search_library,
+                      clearLabel: context.l10n.search_clear,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    if (error != null)
+                      Padding(
+                        padding: NodeLaneTokens.groupPadding,
+                        child: Text(
+                          error!,
+                          style: NodeLaneTokens.of(context).readerSecondary
+                              .copyWith(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                        ),
+                      ),
+                    const SizedBox(height: NodeLaneTokens.space12),
+                  ],
+                ),
+              ),
+              if (failed || !ready || entries.isEmpty)
+                SliverToBoxAdapter(
+                  child: failed
+                      ? NodeLaneEmptyState.error(
+                          message: context.l10n.browser_data_failed,
+                          onRetry: _load,
+                        )
+                      : !ready
+                      ? const NodeLaneEmptyState.loading()
+                      : NodeLaneEmptyState(
+                          icon: switch (collection) {
+                            BrowserCollection.bookmarks =>
+                              icons.bookmarkOutline,
+                            BrowserCollection.history => icons.history,
+                            BrowserCollection.reading => icons.library,
+                          },
+                          title: query.text.isNotEmpty
+                              ? context.l10n.search_no_results
+                              : context.l10n.browser_library_empty,
+                        ),
+                )
+              else
+                SliverList.builder(
+                  itemCount: entries.length,
+                  itemBuilder: (context, index) {
+                    final entry = entries[index];
+                    final select = busy
+                        ? null
+                        : () => Navigator.pop(context, entry);
+                    final remove = NodeLaneIconButton(
+                      icon: icons.delete,
+                      tooltip: context.l10n.delete,
+                      style: NodeLaneIconButtonStyle.plain,
+                      destructive: true,
+                      onPressed: busy
+                          ? null
+                          : () => _write(
+                              () => switch (collection) {
+                                BrowserCollection.history =>
+                                  store.removeHistory(entry),
+                                BrowserCollection.bookmarks =>
+                                  store.setBookmarked(
+                                    entry.url,
+                                    entry.title,
+                                    false,
+                                  ),
+                                BrowserCollection.reading =>
+                                  store.removeReading(entry.url),
+                              },
+                            ),
+                    );
+                    if (collection == BrowserCollection.reading) {
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: NodeLaneTokens.space8,
+                        ),
+                        child: BrowserReadingCard(
+                          entry,
+                          key: ValueKey(entry.url),
+                          onTap: select,
+                          trailing: remove,
+                        ),
+                      );
+                    }
+                    final date = entry.time.toLocal();
+                    final newDay =
+                        index == 0 ||
+                        !DateUtils.isSameDay(
+                          entries[index - 1].time.toLocal(),
+                          date,
+                        );
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (history && newDay)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: NodeLaneTokens.space8,
+                            ),
+                            child: NodeLaneSectionHeading(
+                              MaterialLocalizations.of(context)
+                                  .formatMediumDate(date),
+                            ),
+                          ),
+                        NodeLaneGroupSurface(
+                          outlined: true,
+                          child: NodeLaneRow(
+                            title: entry.displayTitle,
+                            titleMaxLines: 1,
+                            subtitle: entry.url,
+                            subtitleMaxLines: 1,
+                            metadata: !history
+                                ? null
+                                : MaterialLocalizations.of(context)
+                                      .formatTimeOfDay(
+                                        TimeOfDay.fromDateTime(date),
+                                        alwaysUse24HourFormat:
+                                            MediaQuery.alwaysUse24HourFormatOf(
+                                              context,
+                                            ),
+                                      ),
+                            leading: NodeLaneWebsiteIcon(url: entry.faviconUrl),
+                            onTap: select,
+                            trailing: remove,
+                          ),
+                        ),
+                        const SizedBox(height: NodeLaneTokens.space8),
+                      ],
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
       );
     },
   );

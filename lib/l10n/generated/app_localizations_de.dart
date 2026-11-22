@@ -28,7 +28,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get browser_focus => 'Ungestört lesen';
 
   @override
-  String get browser_web_tools => 'Browser-Werkzeuge anzeigen';
+  String get browser_focus_hint =>
+      'Tippe für die Lesewerkzeuge auf die Seitenmitte.';
+
+  @override
+  String get browser_exit_focus => 'Lesemodus beenden';
 
   @override
   String get browser_open_reader => 'Im App-Reader öffnen';
@@ -37,7 +41,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get browser_next_chapter => 'Nächstes Kapitel';
 
   @override
-  String get browser_protection => 'Website-Schutz';
+  String get browser_protection => 'Werbefilter';
+
+  @override
+  String get browser_filter_waiting =>
+      'Der Filterstatus erscheint, sobald die Seite bereit ist.';
+
+  @override
+  String get browser_filter_unavailable =>
+      'Der Filterstatus für diese Website lässt sich gerade nicht bestätigen.';
 
   @override
   String get browser_filter_site => 'Werbung auf dieser Website filtern';
